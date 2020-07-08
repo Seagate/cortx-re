@@ -2,14 +2,14 @@ Name:       cortx
 Version:    release-version
 Release:    1
 Summary:    Most simple RPM package
-License:    FIXME
+License:    Seagate LLC
 
 Requires:   builddep
 %description
-This is my first RPM package, which does nothing.
+This meta rpm used to install/update the cortx rpms.
 
 %prep
-# we have no source, so nothing here
+# TODO
 
 %build
 cat > meta-rpm.sh <<EOF
@@ -25,4 +25,4 @@ install -m 755 meta-rpm.sh %{buildroot}/usr/bin/meta-rpm.sh
 /usr/bin/meta-rpm.sh
 
 %changelog
-# let's skip this for now
+# TODO
