@@ -12,6 +12,8 @@ ARG USER_PASS
 # RUN rm -rf /etc/yum.repos.d/*.repo
 COPY C${CENTOS_RELEASE}.repo eos_${CENTOS_RELEASE}.repo python3_uploads.repo eos_uploads.repo /etc/yum.repos.d/
 
+RUN yum repolist
+
 # upgrade all
 RUN yum --assumeyes upgrade
 
