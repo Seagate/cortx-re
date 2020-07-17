@@ -15,4 +15,4 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build the Docker image
-      run: pushd docker/cortx_components/centos/ && docker build . --file Dockerfile --build-arg CENTOS_RELEASE=7.7.1908 --tag centos_eos:$(date +%s) && popd
+      run: pushd docker/cortx_components/centos/ && sed -i 's/enabled=1/enabled=0/g' *.repo && docker build . --file Dockerfile --build-arg CENTOS_RELEASE=7.7.1908 --tag centos_eos:$(date +%s) && popd
