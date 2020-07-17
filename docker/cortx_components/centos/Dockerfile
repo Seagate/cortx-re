@@ -16,7 +16,7 @@ COPY C${CENTOS_RELEASE}.repo eos_${CENTOS_RELEASE}.repo python3_uploads.repo eos
 RUN yum --assumeyes upgrade
 
 # enable EPEL and SCL repos
-RUN yum --assumeyes install centos-release-scl
+RUN yum --assumeyes install epel-release centos-release-scl
 
 # workaround broken CentOS 7.6 compatibility witn EPEL
 #RUN if (( $(grep -Po '(?<=release 7\.).' /etc/redhat-release) < 7 )) ; then \
