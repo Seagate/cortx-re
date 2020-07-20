@@ -2,10 +2,8 @@ name: Docker Image CI
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-
+    paths: docker/cortx_components/centos/Dockerfile
+  
 jobs:
 
   build:
