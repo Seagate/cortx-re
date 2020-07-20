@@ -26,5 +26,5 @@ jobs:
     # Runs a set of commands using the runners shell
     - name: Run a multi-line script
       run: |
-        sh ./devops/rpms/buildrpm.sh -g \$(git rev-parse --short HEAD) -e 1.0.0 -b ${BUILD_NUMBER}
-        sh ./cli/buildrpm.sh -g \$(git rev-parse --short HEAD) -e 1.0.0 -b ${BUILD_NUMBER}
+        sh ./devops/rpms/buildrpm.sh -g test -e 1.0.0 -b 10
+        sh ./cli/buildrpm.sh -g test -e 1.0.0 -b 10
