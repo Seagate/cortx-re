@@ -26,5 +26,5 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
         registry: docker.pkg.github.com
-        repository: shailesh-vaidya/cortx-re
-        tags: latest
+        repository: shailesh-vaidya/cortx-re/eos_eos
+        tags: 7.7.1908
