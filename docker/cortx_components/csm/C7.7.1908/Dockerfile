@@ -3,6 +3,7 @@ FROM docker.pkg.github.com/shailesh-vaidya/cortx-re/cortx_centos:7.7.1908
 #Remove cortx specific repositories. 
 #RUN rm -rf /etc/yum.repos.d/CentOS-*.repo
 #COPY *.repo  /etc/yum.repos.d/
+#
 
 # upgrade all
 RUN yum --assumeyes upgrade --exclude=centos-release && \
