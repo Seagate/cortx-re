@@ -18,7 +18,7 @@ jobs:
           DEFAULT_PASSWORD: ${{ secrets.DEFAULT_PASSWORD }}
       with:
         # Path to the Dockerfile (Default is '{path}/Dockerfile')
-        dockerfile: csm/C7.7.1908/Dockerfile
+        dockerfile: docker/cortx_components/csm/C7.7.1908/Dockerfile
         # Build Arguments for docker image build. 
         build_args: 'CENTOS_RELEASE=7.7.1908'
         username: ${{ github.actor }}
