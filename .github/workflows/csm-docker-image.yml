@@ -21,6 +21,7 @@ jobs:
         dockerfile: docker/cortx_components/csm/C7.7.1908/Dockerfile
         # Build Arguments for docker image build. 
         build_args: 'CENTOS_RELEASE=7.7.1908'
+        path: docker/cortx_components/csm/C7.7.1908
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
         registry: docker.pkg.github.com
