@@ -17,6 +17,9 @@ jobs:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
     container: docker.pkg.github.com/shailesh-vaidya/cortx-re/cortx_centos:7.7.1908
+    env:
+      username: ${{ github.actor }}
+      password: ${{ secrets.GITHUB_TOKEN }}
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
