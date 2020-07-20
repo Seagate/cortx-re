@@ -1,4 +1,4 @@
-FROM docker.pkg.github.com/shailesh-vaidya/cortx-re/eos_centos:7.7.1908
+FROM docker.pkg.github.com/shailesh-vaidya/cortx-re/cortx_centos:7.7.1908
 
 #Remove cortx specific repositories. 
 #RUN rm -rf /etc/yum.repos.d/CentOS-*.repo
