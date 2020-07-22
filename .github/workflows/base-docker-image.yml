@@ -28,4 +28,4 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
         registry: docker.pkg.github.com
         repository: $REPO_NAME
-        tags: 7.7.1908
+        tags: cortx_centos:7.7.1908
