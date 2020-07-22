@@ -6,17 +6,22 @@ ARG CENTOS_RELEASE
 ARG USER_PASS
 
 # disable all repos except for the specific release we're targeting
-#RUN yum-config-manager --disable '*'
+RUN yum-config-manager --disable updates
 
 # Remove all public repos.
-RUN rm -rf /etc/yum.repos.d/*.repo
-COPY C${CENTOS_RELEASE}.repo eos_${CENTOS_RELEASE}.repo python3_uploads.repo eos_uploads.repo /etc/yum.repos.d/
+# RUN rm -rf /etc/yum.repos.d/*.repo
+# COPY C${CENTOS_RELEASE}.repo eos_${CENTOS_RELEASE}.repo python3_uploads.repo eos_uploads.repo /etc/yum.repos.d/
+#
 
 # upgrade all
-RUN yum --assumeyes upgrade
+RUN yum --assumeyes upgrade --exclude=centos-release && \
+    yum clean all \
+    && rm -rf /var/cache/yum
 
 # enable EPEL and SCL repos
-RUN yum --assumeyes install centos-release-scl
+RUN yum --assumeyes install epel-release centos-release-scl && \
+    yum clean all \
+    && rm -rf /var/cache/yum
 
 # workaround broken CentOS 7.6 compatibility witn EPEL
 #RUN if (( $(grep -Po '(?<=release 7\.).' /etc/redhat-release) < 7 )) ; then \
@@ -41,8 +46,9 @@ java-1.8.0-openjdk \
 make \
 gcc \
 cmake \
-gcc-c++ \
-eos-py-utils
+gcc-c++ && \
+yum clean all \
+&& rm -rf /var/cache/yum
 
 # enable Git from SLC repo (it's more up to date version)
 RUN ln -nsf /opt/rh/sclo-git212/root/bin/* /usr/local/bin/ \

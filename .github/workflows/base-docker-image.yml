@@ -1,0 +1,28 @@
+name: Base Docker Image CI
+
+on:
+  push:
+    paths: docker/cortx_components/centos/Dockerfile
+  
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build and push Docker images
+      uses: docker/build-push-action@v1.1.0
+      env:
+          DEFAULT_PASSWORD: ${{ secrets.DEFAULT_PASSWORD }}
+      with:
+        # Path to the Dockerfile (Default is '{path}/Dockerfile')
+        dockerfile: docker/cortx_components/centos/Dockerfile 
+        # Build Arguments for docker image build. 
+        build_args: 'CENTOS_RELEASE=7.7.1908,USER_PASS=root:$DEFAULT_PASSWORD'
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+        registry: docker.pkg.github.com
+        repository: shailesh-vaidya/cortx-re/cortx_centos
+        tags: 7.7.1908
