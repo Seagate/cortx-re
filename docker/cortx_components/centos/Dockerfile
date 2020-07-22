@@ -6,11 +6,12 @@ ARG CENTOS_RELEASE
 ARG USER_PASS
 
 # disable all repos except for the specific release we're targeting
-RUN yum-config-manager --disable updates
+# RUN yum-config-manager --disable updates
 
 # Remove all public repos.
-# RUN rm -rf /etc/yum.repos.d/*.repo
+RUN rm -rf /etc/yum.repos.d/*.repo
 # COPY C${CENTOS_RELEASE}.repo eos_${CENTOS_RELEASE}.repo python3_uploads.repo eos_uploads.repo /etc/yum.repos.d/
+COPY C${CENTOS_RELEASE}.repo /etc/yum.repos.d/
 #
 
 # upgrade all
