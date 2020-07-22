@@ -65,7 +65,7 @@ ENV LANG=en_US.UTF-8 \
 RUN rpmdev-setuptree
 
 RUN mkdir /var/run/sshd
-RUN echo "${USER_PASS}" | chpasswd
+RUN echo "${USER_PASS}";echo "${USER_PASS}" | chpasswd
 RUN sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 RUN ssh-keygen -P "" -t rsa -f /etc/ssh/ssh_host_rsa_key
 # SSH login fix. Otherwise user is kicked off after login
