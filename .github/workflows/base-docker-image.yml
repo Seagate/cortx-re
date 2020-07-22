@@ -27,5 +27,5 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
         registry: docker.pkg.github.com
-        repository: cortx-re/cortx_centos
+        repository: ${{ env.INPUT_REPOSITORY }}
         tags: 7.7.1908
