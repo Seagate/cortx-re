@@ -1,4 +1,4 @@
-ARG CENTOS_RELEASE
+RG CENTOS_RELEASE
 
 FROM centos:${CENTOS_RELEASE}
 
@@ -79,4 +79,3 @@ RUN echo "export VISIBLE=now" >> /etc/profile
 
 EXPOSE 22
 CMD ["/usr/sbin/sshd", "-D"]
-
