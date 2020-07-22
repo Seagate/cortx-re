@@ -3,7 +3,7 @@ name: Base Docker Image CI
 on:
   push:
     paths: docker/cortx_components/centos/Dockerfile
-  workflow_dispatch:  
+  workflow_dispatch:
   
 jobs:
 
