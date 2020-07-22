@@ -16,6 +16,7 @@ jobs:
       uses: docker/build-push-action@v1.1.0
       env:
           DEFAULT_PASSWORD: ${{ secrets.DEFAULT_PASSWORD }}
+          REPO_NAME: ${{ github.event.repository.name }}
       with:
         # Path to the Dockerfile (Default is '{path}/Dockerfile')
         dockerfile: docker/cortx_components/centos/Dockerfile 
@@ -25,5 +26,5 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
         registry: docker.pkg.github.com
-        repository: $GITHUB_REPOSITORY/cortx_centos
+        repository: $REPO_NAME/cortx_centos
         tags: 7.7.1908
