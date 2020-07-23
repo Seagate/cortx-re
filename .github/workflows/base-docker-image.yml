@@ -3,8 +3,8 @@ name: Base Docker Image CI
 on:
   push:
     paths: docker/cortx_components/centos/Dockerfile
-  workflow_dispatch:
-  
+  workflow_dispatch:  
+
 jobs:
 
   build:
@@ -15,7 +15,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: Set ENV
       run: |
-        echo ::set-env name=INPUT_REPOSITORY::$GITHUB_REPOSITORY
+        echo ::set-env name=INPUT_REPOSITORY::$( echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]')
     - name: Build and push Docker images
       uses: docker/build-push-action@v1.1.0
       env:
@@ -30,5 +30,5 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
         registry: docker.pkg.github.com
-        repository: ${{ env.INPUT_REPOSITORY }}
+        repository: ${{ env.INPUT_REPOSITORY }}/cortx_centos
         tags: 7.7.1908
