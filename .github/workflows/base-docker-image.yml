@@ -15,7 +15,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: Set ENV
       run: |
-        echo ::set-env name=INPUT_REPOSITORY::$GITHUB_REPOSITORY/${GITHUB_REPOSITORY##*/}
+        echo ::set-env name=INPUT_REPOSITORY::$GITHUB_REPOSITORY
     - name: Build and push Docker images
       uses: docker/build-push-action@v1.1.0
       env:
