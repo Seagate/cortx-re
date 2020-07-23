@@ -16,6 +16,8 @@ jobs:
     - name: Set ENV
       run: |
         echo ::set-env name=INPUT_REPOSITORY::$( echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]')
+        echo ::set-env name=IMAGE_NAME::cortx_centos
+        echo ::set-env name=TAG::7.7.1908
     - name: Build and push Docker images
       uses: docker/build-push-action@v1.1.0
       env:
@@ -30,5 +32,5 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
         registry: docker.pkg.github.com
-        repository: ${{ env.INPUT_REPOSITORY }}/cortx_centos
-        tags: 7.7.1908
+        repository: ${{ env.INPUT_REPOSITORY }}/${{ env.IMAGE_NAME }
+        tags: ${{ env.TAG }
