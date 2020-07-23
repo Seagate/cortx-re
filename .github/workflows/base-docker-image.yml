@@ -32,5 +32,5 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
         registry: docker.pkg.github.com
-        repository: ${{ env.INPUT_REPOSITORY }}/${{ env.IMAGE_NAME }
-        tags: ${{ env.TAG }
+        repository: ${{ env.INPUT_REPOSITORY }}/${{ env.IMAGE_NAME }}
+        tags: ${{ env.TAG }}
