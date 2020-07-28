@@ -1,4 +1,4 @@
-Name:       cortx
+Name:       release-name
 Version:    release-version
 Release:    1
 Summary:    Most simple RPM package
