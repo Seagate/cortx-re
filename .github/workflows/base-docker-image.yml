@@ -6,7 +6,6 @@ on:
 jobs:
 
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -25,7 +24,7 @@ jobs:
         # Path to the Dockerfile (Default is '{path}/Dockerfile')
         dockerfile: docker/cortx_components/centos/Dockerfile 
         # Build Arguments for docker image build. 
-        build_args: 'CENTOS_RELEASE=7.7.1908,USER_PASS=root:"$DEFAULT_PASSWORD"'
+        build_args: 'CENTOS_RELEASE=7.7.1908'
         path: docker/cortx_components/centos/
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
