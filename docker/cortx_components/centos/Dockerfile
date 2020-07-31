@@ -6,17 +6,25 @@ ARG CENTOS_RELEASE
 ARG USER_PASS
 
 # disable all repos except for the specific release we're targeting
-#RUN yum-config-manager --disable '*'
+# RUN yum-config-manager --disable updates
+#
+
 
 # Remove all public repos.
 RUN rm -rf /etc/yum.repos.d/*.repo
-COPY C${CENTOS_RELEASE}.repo eos_${CENTOS_RELEASE}.repo python3_uploads.repo eos_uploads.repo /etc/yum.repos.d/
+# COPY C${CENTOS_RELEASE}.repo eos_${CENTOS_RELEASE}.repo python3_uploads.repo eos_uploads.repo /etc/yum.repos.d/
+COPY C${CENTOS_RELEASE}.repo /etc/yum.repos.d/
+#
 
 # upgrade all
-RUN yum --assumeyes upgrade
+RUN yum --assumeyes upgrade --exclude=centos-release && \
+    yum clean all \
+    && rm -rf /var/cache/yum
 
 # enable EPEL and SCL repos
-RUN yum --assumeyes install centos-release-scl
+RUN yum --assumeyes install epel-release centos-release-scl && \
+    yum clean all \
+    && rm -rf /var/cache/yum
 
 # workaround broken CentOS 7.6 compatibility witn EPEL
 #RUN if (( $(grep -Po '(?<=release 7\.).' /etc/redhat-release) < 7 )) ; then \
@@ -41,8 +49,9 @@ java-1.8.0-openjdk \
 make \
 gcc \
 cmake \
-gcc-c++ \
-eos-py-utils
+gcc-c++ && \
+yum clean all \
+&& rm -rf /var/cache/yum
 
 # enable Git from SLC repo (it's more up to date version)
 RUN ln -nsf /opt/rh/sclo-git212/root/bin/* /usr/local/bin/ \
@@ -59,16 +68,5 @@ ENV LANG=en_US.UTF-8 \
 # set up rpmbuild directory
 RUN rpmdev-setuptree
 
-RUN mkdir /var/run/sshd
-RUN echo "${USER_PASS}" | chpasswd
-RUN sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
-RUN ssh-keygen -P "" -t rsa -f /etc/ssh/ssh_host_rsa_key
-# SSH login fix. Otherwise user is kicked off after login
-RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
-
-ENV NOTVISIBLE "in users profile"
-RUN echo "export VISIBLE=now" >> /etc/profile
-
-EXPOSE 22
-CMD ["/usr/sbin/sshd", "-D"]
-
+CMD ["/usr/sbin/init"]
+ENTRYPOINT ["/bin/bash", "-c"]
