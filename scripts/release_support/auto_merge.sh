@@ -36,7 +36,7 @@ pushd $clone_dir/clone || exit
           fi
          pushd "$dir" || exit
          echo -e "\t--[ Automated merge for $dir ]--"
-         git checkout "$DEST_BRANCH" && git merge "$SOURCE_BRANCH" -m "Automated merge from $SOURCE_BRANCH" to $DEST_BRANCH" at $(date +"%d-%b-%Y %H:%M")" && git push origin release
+         git checkout "$DEST_BRANCH" && git merge "$SOURCE_BRANCH" -m "Automated merge from $SOURCE_BRANCH to $DEST_BRANCH at $(date +"%d-%b-%Y %H:%M")" && git push origin release
         rc=$?
           if [ $rc -ne 0 ]; then
           echo "ERROR:git auto merge failed for $dir"
