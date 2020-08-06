@@ -23,7 +23,7 @@ git config --global user.name "cortx-admin"
 
 REPO_CLONE_URL="${REPO_URL//github/$TOKEN@github}"
 clone_dir="/root/git_auto_merge"
-if [[ test -d $clone_dir/clone ]]; then
+if [ -d "$clone_dir/clone" ]; then
     $(rm -rf $clone_dir/clone;mkdir -p $clone_dir/clone)
 else
     mkdir -p $clone_dir/clone
@@ -32,7 +32,7 @@ fi
 pushd $clone_dir/clone || exit
 
          dir=$(echo "$REPO_CLONE_URL" |  awk -F'/' '{print $NF}')
-         git clone --branch $SOURCE_BRANCH "$REPO_CLONE_URL"  "$dir"
+         git clone --branch "$SOURCE_BRANCH" "$REPO_CLONE_URL"  "$dir"
          rc=$?
           if [ $rc -ne 0 ]; then
           echo "ERROR:git clone failed for $dir"
@@ -40,7 +40,7 @@ pushd $clone_dir/clone || exit
           fi
          pushd "$dir" || exit
          echo -e "\t--[ Automated merge for $dir ]--"
-         git checkout "$DEST_BRANCH" && git merge "$SOURCE_BRANCH" -m "Automated merge from $SOURCE_BRANCH to $DEST_BRANCH at $(date +"%d-%b-%Y %H:%M")" && git push origin $DEST_BRANCH
+         git checkout "$DEST_BRANCH" && git merge "$SOURCE_BRANCH" -m "Automated merge from $SOURCE_BRANCH to $DEST_BRANCH at $(date +"%d-%b-%Y %H:%M")" && git push origin "$DEST_BRANCH"
         rc=$?
           if [ $rc -ne 0 ]; then
           echo "ERROR:git auto merge failed for $dir"
