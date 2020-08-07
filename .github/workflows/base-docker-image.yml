@@ -12,7 +12,7 @@ jobs:
     - name: Build and push ${{ github.event.repository.name }} docker image
       uses: docker/build-push-action@v1.1.0
       env:
-          TOKEN: ${{ secrets.USER_TOKEN }}
+          TOKEN: ${{ secrets.TOKEN }}
           TAG: 7.7.1908
       with:
         # Path to the Dockerfile (Default is '{path}/Dockerfile')
