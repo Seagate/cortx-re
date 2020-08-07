@@ -10,24 +10,18 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Set ENV
-      run: |
-        echo ::set-env name=INPUT_REPOSITORY::$( echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]')
-        echo ::set-env name=IMAGE_NAME::cortx_centos
-        echo ::set-env name=TAG::7.7.1908
-    - name: Build and push Docker images
+    - name: Build and push ${{ github.event.repository.name }} docker image
       uses: docker/build-push-action@v1.1.0
       env:
-          DEFAULT_PASSWORD: ${{ secrets.DEFAULT_PASSWORD }}
-          REPO_NAME: ${{ github.event.repository.name }}
+          TOKEN: ${{ secrets.USER_TOKEN }}
+          TAG: 7.7.1908
       with:
         # Path to the Dockerfile (Default is '{path}/Dockerfile')
         dockerfile: docker/cortx_components/centos/Dockerfile 
         # Build Arguments for docker image build. 
-        build_args: 'CENTOS_RELEASE=7.7.1908'
-        path: docker/cortx_components/centos/
+        build_args: 'CENTOS_RELEASE=7.7.1908'  # Define build arguments required in your dockerfile here
         username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+        password: ${{ env.TOKEN }}
         registry: docker.pkg.github.com
-        repository: ${{ env.INPUT_REPOSITORY }}/${{ env.IMAGE_NAME }}
+        repository: ${{ github.repository }}/${{ github.event.repository.name }}
         tags: ${{ env.TAG }}
