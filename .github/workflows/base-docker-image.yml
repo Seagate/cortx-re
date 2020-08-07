@@ -15,9 +15,7 @@ jobs:
           TOKEN: ${{ secrets.TOKEN }}
           TAG: 7.7.1908
       with:
-        # Path to the Dockerfile (Default is '{path}/Dockerfile')
-        dockerfile: docker/cortx_components/centos/Dockerfile 
-        # Build Arguments for docker image build. 
+        path: docker/cortx_components/centos/
         build_args: 'CENTOS_RELEASE=7.7.1908'  # Define build arguments required in your dockerfile here
         username: ${{ github.actor }}
         password: ${{ env.TOKEN }}
