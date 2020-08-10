@@ -17,3 +17,4 @@ markComment: >
 closeComment: >
   This issue/pull request has been automatically marked as closed because it has not had
   recent activity.
+closeLabel: auto-closed
