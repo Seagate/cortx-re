@@ -20,5 +20,5 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ env.TOKEN }}
         registry: docker.pkg.github.com
-        repository: ${{ github.repository }}/cortx_centos
+        repository: ${{ github.repository }}/cortx-centos
         tags: ${{ env.TAG }}
