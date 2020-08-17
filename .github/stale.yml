@@ -1,11 +1,12 @@
 # Number of days of inactivity before an issue becomes stale
 daysUntilStale: 1
 # Number of days of inactivity before a stale issue is closed
-daysUntilClose: 1
+# daysUntilClose: 1
 # Issues with these labels will never be considered stale
 exemptLabels:
   - pinned
   - security
+  - feature
 # Label to use when marking an issue as stale
 staleLabel: auto-stale
 # Comment to post when marking an issue as stale. Set to `false` to disable
@@ -14,4 +15,4 @@ markComment: >
   recent activity. It will be closed if no further activity occurs. Thank you
   for your contributions.
 # Comment to post when closing a stale issue. Set to `false` to disable
-closeComment: false
+# closeComment: false
