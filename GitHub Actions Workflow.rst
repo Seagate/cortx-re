@@ -7,7 +7,7 @@ GitHub Actions enables you to create custom software development life cycle (SDL
 For complete information on GitHub actions workflow, refer `GitHub Actions Workflow <https://docs.github.com/en/actions>`_.
 
 ********************
-Samples of Workflow
+Generated Workflows
 ********************
 
 The links to the generated workflows are mentioned below.
