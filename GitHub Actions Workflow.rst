@@ -33,4 +33,4 @@ Different use cases associated with the GitHub actions are mentioned below.
 
 - The below mentioned workflow can be used to run python script on push or pull-request events and scheduled time.
 
-.. figure :: cortx-re/UC1.PNG
+ .. figure:: cortx-re/UC1.PNG
