@@ -2,3 +2,7 @@ performance
 misc
 *src.rpm
 lyve_platform.tar
+elasticsearch-6.8.8.rpm
+elasticsearch-7.3.2-x86_64.rpm
+kibana-6.8.8-x86_64.rpm
+kibana-7.6.2-x86_64.rpm
