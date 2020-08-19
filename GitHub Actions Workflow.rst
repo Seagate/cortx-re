@@ -25,3 +25,12 @@ The links to the generated workflows are mentioned below.
 
 - `https://github.com/Seagate/cortx/blob/master/.github/workflows/update-submodules.yml <https://github.com/Seagate/cortx/blob/master/.github/workflows/update-submodules.yml>`_
 - `https://github.com/Seagate/cortx-s3server/blob/dev/.github/workflows/dispatch_submodule_update.yml <https://github.com/Seagate/cortx-s3server/blob/dev/.github/workflows/dispatch_submodule_update.yml>`_
+
+*********
+Use Cases
+*********
+Different use cases associated with the GitHub actions are mentioned below.
+
+- The below mentioned workflow can be used to run python script on push or pull-request events and scheduled time.
+
+.. image ::UC1.png
