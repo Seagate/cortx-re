@@ -1,3 +1,22 @@
+#
+# Copyright (c) 2020 Seagate Technology LLC and/or its Affiliates
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# For any questions about this software or licensing,
+# please email opensource@seagate.com or cortx-questions@seagate.com.
+#
+
 version: "3"
 
 services:
@@ -7,8 +26,11 @@ services:
     ports:
       - "80:8080"
       - "50000:50000"
+      - "443:8083"
     volumes:
+      - /mnt/jenkins-dev/jenkins.jks:/var/lib/jenkins/jenkins.jks
       - /mnt/jenkins-dev:/var/jenkins_home
       - /mnt/bigstorage/:/mnt/bigstorage
     environment:
       - JAVA_OPTS=-Xmx3072m
+      - JENKINS_OPTS= --httpPort=-1 --httpsPort=8083 --httpsKeyStore=/var/lib/jenkins/jenkins.jks --httpsKeyStorePassword=admin123

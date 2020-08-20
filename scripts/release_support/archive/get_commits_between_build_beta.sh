@@ -1,4 +1,22 @@
 #!/bin/bash
+#
+# Copyright (c) 2020 Seagate Technology LLC and/or its Affiliates
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# For any questions about this software or licensing,
+# please email opensource@seagate.com or cortx-questions@seagate.com.
+#
 
 START_BUILD=$1
 TARGET_BUILD=$2
@@ -35,8 +53,8 @@ export TZ=$time_zone;ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ 
 
 pushd $clone_dir/clone
 
-wget -q http://ci-storage.mero.colo.seagate.com/releases/eos/Cortx-v1.0.0_Beta/rhel-7.7.1908/$START_BUILD/prod/RELEASE.INFO -O start_build_manifest.txt
-wget -q http://ci-storage.mero.colo.seagate.com/releases/eos/Cortx-v1.0.0_Beta/rhel-7.7.1908/$TARGET_BUILD/prod/RELEASE.INFO -O target_build_manifest.txt
+wget -q http://cortx-storage.colo.seagate.com/releases/eos/Cortx-v1.0.0_Beta/rhel-7.7.1908/$START_BUILD/prod/RELEASE.INFO -O start_build_manifest.txt
+wget -q http://cortx-storage.colo.seagate.com/releases/eos/Cortx-v1.0.0_Beta/rhel-7.7.1908/$TARGET_BUILD/prod/RELEASE.INFO -O target_build_manifest.txt
 
 for component in "${!COMPONENT_LIST[@]}"
 do
