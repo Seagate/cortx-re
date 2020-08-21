@@ -13,6 +13,6 @@ staleLabel: auto-stale
 markComment: >
   This issue/pull request has been automatically marked as stale because it has not had
   recent activity. It will be closed if no further activity occurs. Thank you
-  for your contributions.
+  for your contributions. Please contact @shailesh-vaidya 
 # Comment to post when closing a stale issue. Set to `false` to disable
 # closeComment: false
