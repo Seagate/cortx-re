@@ -1,7 +1,7 @@
 # Number of days of inactivity before an issue becomes stale
 daysUntilStale: 1
 # Number of days of inactivity before a stale issue is closed
-# daysUntilClose: 1
+daysUntilClose: false
 # Issues with these labels will never be considered stale
 exemptLabels:
   - pinned
@@ -14,5 +14,8 @@ markComment: >
   This issue/pull request has been automatically marked as stale because it has not had
   recent activity. It will be closed if no further activity occurs. Thank you
   for your contributions. Please contact @shailesh-vaidya 
+# Comment to post when removing the stale label. Set to `false` to disable
+unmarkComment: |
+  Thank you for updating this issue. It is no longer marked as stale.
 # Comment to post when closing a stale issue. Set to `false` to disable
-# closeComment: false
+closeComment: false
