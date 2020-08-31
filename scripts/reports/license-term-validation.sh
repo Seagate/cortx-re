@@ -13,7 +13,7 @@ if [ -z "$GITHUB_TOKEN" ]
     exit 1
 fi
 
-SEARCH_KEYWORDS=("# Copyright")
+SEARCH_KEYWORDS=("Copyright (c)")
 
 GITUB_REPO_QUERY_API="https://api.github.com/orgs/seagate/repos?access_token=${GITHUB_TOKEN}&per_page=100&page=1"
 
