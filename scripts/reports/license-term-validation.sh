@@ -5,7 +5,7 @@ set +x
 #REPORT_HEADER=${2:-"Word Search Report"}
 
 GITHUB_TOKEN="90edd63364c65a353dec1dd593c42667f67f42e5"
-REPORT_HEADER="Contentious Word Reference"
+REPORT_HEADER="License Term Validator"
 
 if [ -z "$GITHUB_TOKEN" ]
   then
@@ -17,21 +17,21 @@ SEARCH_KEYWORDS=("# Copyright")
 
 GITUB_REPO_QUERY_API="https://api.github.com/orgs/seagate/repos?access_token=${GITHUB_TOKEN}&per_page=100&page=1"
 
-#GITHUB_REPOS=(  "Motr:cortx-motr"
-#                "S3Server:cortx-s3server"
-#                "Hare:cortx-hare"
-#                "HA:cortx-ha"
-#                "CSM:cortx-csm,statsd-utils,cortx-py-utils"
-#                "NFS:cortx-posix,cortx-fs,cortx-utils,cortx-nsal,cortx-dsal,cortx-fs-ganesha"
-#                "Provisioner:cortx-prvsnr"
-#                "SSPL:cortx-sspl"
-#                "RE:cortx-re"
-#                "Motr-Test:castor-integration-tests,engservice-tools,xperior,xperior-perl-libs")
-
-GITHUB_REPOS=(
-                "RE:cortx-re"
+GITHUB_REPOS=(  "Motr:cortx-motr"
+                "S3Server:cortx-s3server"
+                "Hare:cortx-hare"
+                "HA:cortx-ha"
+                "CSM:cortx-csm,statsd-utils,cortx-py-utils"
+                "NFS:cortx-posix,cortx-fs,cortx-utils,cortx-nsal,cortx-dsal,cortx-fs-ganesha"
                 "Provisioner:cortx-prvsnr"
-                )
+                "SSPL:cortx-sspl"
+                "RE:cortx-re"
+                "Motr-Test:castor-integration-tests,engservice-tools,xperior,xperior-perl-libs")
+
+#GITHUB_REPOS=(
+#                "RE:cortx-re"
+#                "Provisioner:cortx-prvsnr"
+#                )
 
 
 TABLE_HTML="<!DOCTYPE html><html><head><style>#search{font-family: 'Trebuchet MS', Arial, Helvetica, sans-serif;
@@ -109,7 +109,7 @@ _generate_search_report(){
             occurrences_text="-"
             if [[ $search_occurrences_count -ne 0 ]];
             then
-                occurrences_text="Found $search_occurrences_count occurrences in $search_occurrences_file_count Files"
+                occurrences_text="Found $search_occurrences_file_count Files without License Term"
             fi
 
             result_html+="<tr class='repo'><td>${keywords}</td><td>$search_result</td><td>$occurrences_text</td></tr>"
@@ -238,5 +238,4 @@ done
 _generate_summary_report
 
 _clean_repo
-
 
