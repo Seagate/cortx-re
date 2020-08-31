@@ -206,7 +206,8 @@ _generate_summary_report(){
     summary_data+="<td>$summary_total_file_count</td></tr>"
 
     summary_data=${SUMMARY_HTML/SUMMARY_DATA_SECTION/$summary_data}
-    echo ${summary_data/TOTAL_KEYWORD_REF/Found $summary_total_keyword_count occurrences in $summary_total_file_count file } > summary.html
+    echo ${summary_data/TOTAL_KEYWORD_REF/Found $summary_total_file_count files without 'Copyright (c)' } > summary.html
+    #echo ${summary_data/TOTAL_KEYWORD_REF/Found $summary_total_keyword_count occurrences in $summary_total_file_count file } > summary.html
     #echo ${summary_data/TOTAL_KEYWORD_REF/Found $summary_total_file_count files } > summary.html
 
 }
