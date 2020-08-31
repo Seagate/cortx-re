@@ -4,8 +4,8 @@ set +x
 #GITHUB_TOKEN=$1
 #REPORT_HEADER=${2:-"Word Search Report"}
 
-GITHUB_TOKEN=$1
-REPORT_HEADER="Licnese String validation"
+GITHUB_TOKEN="90edd63364c65a353dec1dd593c42667f67f42e5"
+REPORT_HEADER="Contentious Word Reference"
 
 if [ -z "$GITHUB_TOKEN" ]
   then
@@ -13,7 +13,7 @@ if [ -z "$GITHUB_TOKEN" ]
     exit 1
 fi
 
-EXCLUDE_SEARCH_KEYWORDS=("Copyright")
+SEARCH_KEYWORDS=("Copyright")
 
 GITUB_REPO_QUERY_API="https://api.github.com/orgs/seagate/repos?access_token=${GITHUB_TOKEN}&per_page=100&page=1"
 
@@ -28,9 +28,9 @@ GITUB_REPO_QUERY_API="https://api.github.com/orgs/seagate/repos?access_token=${G
 #                "RE:cortx-re"
 #                "Motr-Test:castor-integration-tests,engservice-tools,xperior,xperior-perl-libs")
 
-
-GITHUB_REPOS=(  "Provisioner:cortx-prvsnr"
+GITHUB_REPOS=(
                 "RE:cortx-re"
+                "Provisioner:cortx-prvsnr"
                 )
 
 
@@ -54,7 +54,7 @@ summary_total_file_count=0
 _clone_repo(){
     for repo in "${component_repos[@]}"
     do
-                git clone https://$GITHUB_TOKEN@github.com/Seagate/$repo.git
+            git clone https://$GITHUB_TOKEN@github.com/Seagate/$repo.git
     done
 }
 
@@ -67,10 +67,11 @@ _clean_repo(){
 
 _prepare_summary_report_header(){
     summary_header=""
-    for keywords in "${EXCLUDE_SEARCH_KEYWORDS[@]}"
+    for keywords in "${SEARCH_KEYWORDS[@]}"
     do
         summary_header+="<th>$keywords</th>"
     done
+    #summary_header+="<th>Total No of Occurrences</th><th>Total Files</th>"
     summary_header+="<th>Total Files</th>"
     SUMMARY_HTML=${SUMMARY_HTML/HEADER_SECTION/$summary_header}
 }
@@ -86,28 +87,37 @@ _generate_search_report(){
         result_html=""
         default_git_branch=$(cd $repo_name && git symbolic-ref --short HEAD)
         git_repo=$(cd $repo_name && git config --get remote.origin.url)
-		for keywords in "${EXCLUDE_SEARCH_KEYWORDS[@]}"
+        for keywords in "${SEARCH_KEYWORDS[@]}"
+        do
 
-		do
-			echo "Searching for files without Keyword [ $keywords ] in branch [ $default_git_branch ]"
-			echo "------------------------------------"
-			search_occurrences_file_count=$(grep -riL "$keywords" "$repo_name" --exclude-dir=".git" | wc -l)
-			search_result=$(grep -riL "$keywords" "$repo_name" --exclude-dir=".git" | sed "s|.*|<a href=\"$git_repo\/&\" target=\"_blank\">&<\/a>|")
-			search_result=$(echo -e ${search_result//$'\n'/<br />})
-			search_result=$(echo -e ${search_result} | sed -e "s=/$repo_name.git/$repo_name=/$repo_name/blob/$default_git_branch=g")
+            GREP_EXTRA_ARG="w"
+            for fullsearch_word in "${FULL_SEARCH_KEYWORDS[@]}"
+            do
+                if [ "$fullsearch_word" == "$keywords" ] ; then
+                    GREP_EXTRA_ARG=""
+                fi
+            done
 
-			occurrences_text="-"
-			if [[ $search_occurrences_file_count -ne 0 ]];
-			then
-			occurrences_text="Found $search_occurrences_file_count Files"
-			fi
+            echo "Searching for Keyword [ $keywords ] in branch [ $default_git_branch ] with GREP_EXTRA_ARG=$GREP_EXTRA_ARG"
+            echo "------------------------------------"
+            search_occurrences_count=$(grep -riL$GREP_EXTRA_ARG "$keywords" "$repo_name" --exclude-dir=".git" | wc -l)
+            search_occurrences_file_count=$(grep -riL$GREP_EXTRA_ARG "$keywords" "$repo_name" --exclude-dir=".git" | wc -l)
+            search_result=$(grep -riL$GREP_EXTRA_ARG "$keywords" "$repo_name" --exclude-dir=".git" | sed "s|.*|<a href=\"$git_repo\/&\" target=\"_blank\">&<\/a>|")
+            search_result=$(echo -e ${search_result//$'\n'/<br />})
+            search_result=$(echo -e ${search_result} | sed -e "s=/$repo_name.git/$repo_name=/$repo_name/blob/$default_git_branch=g")
 
-			result_html+="<tr class='repo'><td>${keywords}</td><td>$search_result</td><td>$occurrences_text</td></tr>"
+            occurrences_text="-"
+            if [[ $search_occurrences_count -ne 0 ]];
+            then
+                occurrences_text="Found $search_occurrences_count occurrences in $search_occurrences_file_count Files"
+            fi
 
-			echo -e "\t Found $search_occurrences_file_count files without $keywords in $repo_name"
-			echo "------------------------------------"
-		done
+            result_html+="<tr class='repo'><td>${keywords}</td><td>$search_result</td><td>$occurrences_text</td></tr>"
 
+            echo -e "\t Found $search_occurrences_count in $search_occurrences_file_count file for $keywords in $repo_name"
+            echo "------------------------------------"
+
+        done
 
         local_html=${TABLE_HTML/$REPORT_HEADER/$REPORT_HEADER in $repo_name}
         echo ${local_html/TABLE_DATA_SECTION/$result_html} > $repo_name.html
@@ -125,53 +135,79 @@ _calculate_summary(){
     for keywords in "${SEARCH_KEYWORDS[@]}"
     do
 
-        
+        GREP_EXTRA_ARG="w"
+        for fullsearch_word in "${FULL_SEARCH_KEYWORDS[@]}"
+        do
+            if [ "$fullsearch_word" == "$keywords" ] ; then
+                GREP_EXTRA_ARG=""
+            fi
+        done
+
+        search_occurrences_count=0
+        search_occurrences_file_count=0
         for repo_name in ${component_repos[@]}
-        do 
+        do
+            local_search_occurrences_count=0
             local_search_occurrences_file_count=0
-            local_search_occurrences_file_count=$(grep -riL "$keywords" "$repo_name" --exclude-dir=".git" | wc -l)
+            local_search_occurrences_count=$(grep -riL$GREP_EXTRA_ARG "$keywords" "$repo_name" --exclude-dir=".git" | wc -l)
+            local_search_occurrences_file_count=$(grep -riL$GREP_EXTRA_ARG "$keywords" "$repo_name" --exclude-dir=".git" | wc -l)
+
+            search_occurrences_count=$((search_occurrences_count + local_search_occurrences_count))
             search_occurrences_file_count=$((search_occurrences_file_count + local_search_occurrences_file_count))
         done
 
-        summary_data+="<td>$search_occurrences_file_count</td>"
+        summary_data+="<td>$search_occurrences_count</td>"
 
-        total_search_occurrences_count=$((search_occurrences_file_count + total_search_occurrences_count))
+        total_search_occurrences_count=$((search_occurrences_count + total_search_occurrences_count))
         total_search_occurrences_file_count=$((search_occurrences_file_count + total_search_occurrences_file_count))
 
     done
 
-    
+    summary_total_keyword_count=$((summary_total_keyword_count + total_search_occurrences_count))
     summary_total_file_count=$((summary_total_file_count + total_search_occurrences_file_count))
+    #summary_data+="<td>$total_search_occurrences_count</td><td>$total_search_occurrences_file_count</td></tr>"
     summary_data+="<td>$total_search_occurrences_file_count</td></tr>"
 }
 
 _generate_summary_report(){
 
     # Generate Summary Report
-   
+    total_search_occurrences_count=0
     total_search_occurrences_file_count=0
     summary_data+="<tr><td>Total</td><td>-</td>"
-    for keywords in "${EXCLUDE_SEARCH_KEYWORDS[@]}"
+    for keywords in "${SEARCH_KEYWORDS[@]}"
     do
 
-        
+        GREP_EXTRA_ARG="w"
+        for fullsearch_word in "${FULL_SEARCH_KEYWORDS[@]}"
+        do
+            if [ "$fullsearch_word" == "$keywords" ] ; then
+                GREP_EXTRA_ARG=""
+            fi
+        done
+
+        search_occurrences_count=0
         search_occurrences_file_count=0
         for repo_name in ${all_Repo[@]}
         do
-            
-            local_search_occurrences_file_count=$(grep -riL "$keywords" "$repo_name" --exclude-dir=".git" | wc -l)
+            local_search_occurrences_count=$(grep -riL$GREP_EXTRA_ARG "$keywords" "$repo_name" --exclude-dir=".git" | wc -l)
+            local_search_occurrences_file_count=$(grep -riL$GREP_EXTRA_ARG "$keywords" "$repo_name" --exclude-dir=".git" | wc -l)
+
+            search_occurrences_count=$((search_occurrences_count + local_search_occurrences_count))
             search_occurrences_file_count=$((search_occurrences_file_count + local_search_occurrences_file_count))
 
         done
 
-        summary_data+="<td>$search_occurrences_file_count</td>"
+        summary_data+="<td>$search_occurrences_count</td>"
 
     done
 
-    summary_data+="<td>$search_occurrences_file_count</td></tr>"
+    #summary_data+="<td>$summary_total_keyword_count</td><td>$summary_total_file_count</td></tr>"
+    summary_data+="<td>$summary_total_file_count</td></tr>"
 
     summary_data=${SUMMARY_HTML/SUMMARY_DATA_SECTION/$summary_data}
-    echo ${summary_data/TOTAL_KEYWORD_REF/Found $search_occurrences_file_count files } > summary.html
+    echo ${summary_data/TOTAL_KEYWORD_REF/Found $summary_total_keyword_count occurrences in $summary_total_file_count file } > summary.html
+    #echo ${summary_data/TOTAL_KEYWORD_REF/Found $summary_total_file_count files } > summary.html
 
 }
 
@@ -202,3 +238,5 @@ done
 _generate_summary_report
 
 _clean_repo
+
+
