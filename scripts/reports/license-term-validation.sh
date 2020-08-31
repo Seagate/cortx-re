@@ -71,7 +71,7 @@ _prepare_summary_report_header(){
     do
         summary_header+="<th>$keywords</th>"
     done
-    summary_header+="<th>Total No of Occurrences</th><th>Total Files</th>"
+    summary_header+="<th>Total Files</th>"
     SUMMARY_HTML=${SUMMARY_HTML/HEADER_SECTION/$summary_header}
 }
 
@@ -89,10 +89,10 @@ _generate_search_report(){
 		for keywords in "${EXCLUDE_SEARCH_KEYWORDS[@]}"
 
 		do
-			echo "Searching for files without Keyword [ $keywords ] in branch [ $default_git_branch ] with GREP_EXTRA_ARG=$GREP_EXTRA_ARG"
+			echo "Searching for files without Keyword [ $keywords ] in branch [ $default_git_branch ]"
 			echo "------------------------------------"
-			search_occurrences_file_count=$(grep -riL$GREP_EXTRA_ARG "$keywords" "$repo_name" --exclude-dir=".git" | wc -l)
-			search_result=$(grep -riL$GREP_EXTRA_ARG "$keywords" "$repo_name" --exclude-dir=".git" | sed "s|.*|<a href=\"$git_repo\/&\" target=\"_blank\">&<\/a>|")
+			search_occurrences_file_count=$(grep -riL "$keywords" "$repo_name" --exclude-dir=".git" | wc -l)
+			search_result=$(grep -riL "$keywords" "$repo_name" --exclude-dir=".git" | sed "s|.*|<a href=\"$git_repo\/&\" target=\"_blank\">&<\/a>|")
 			search_result=$(echo -e ${search_result//$'\n'/<br />})
 			search_result=$(echo -e ${search_result} | sed -e "s=/$repo_name.git/$repo_name=/$repo_name/blob/$default_git_branch=g")
 
@@ -125,60 +125,53 @@ _calculate_summary(){
     for keywords in "${SEARCH_KEYWORDS[@]}"
     do
 
-        search_occurrences_count=0
-        search_occurrences_file_count=0
+        
         for repo_name in ${component_repos[@]}
-        do
-            local_search_occurrences_count=0
+        do 
             local_search_occurrences_file_count=0
-            local_search_occurrences_count=$(grep -rio$GREP_EXTRA_ARG "$keywords" "$repo_name" --exclude-dir=".git" | wc -l)
-            local_search_occurrences_file_count=$(grep -ril$GREP_EXTRA_ARG "$keywords" "$repo_name" --exclude-dir=".git" | wc -l)
-
-            search_occurrences_count=$((search_occurrences_count + local_search_occurrences_count))
+            local_search_occurrences_file_count=$(grep -riL "$keywords" "$repo_name" --exclude-dir=".git" | wc -l)
             search_occurrences_file_count=$((search_occurrences_file_count + local_search_occurrences_file_count))
         done
 
-        summary_data+="<td>$search_occurrences_count</td>"
+        summary_data+="<td>$search_occurrences_file_count</td>"
 
-        total_search_occurrences_count=$((search_occurrences_count + total_search_occurrences_count))
+        total_search_occurrences_count=$((search_occurrences_file_count + total_search_occurrences_count))
         total_search_occurrences_file_count=$((search_occurrences_file_count + total_search_occurrences_file_count))
 
     done
 
-    summary_total_keyword_count=$((summary_total_keyword_count + total_search_occurrences_count))
+    
     summary_total_file_count=$((summary_total_file_count + total_search_occurrences_file_count))
-    summary_data+="<td>$total_search_occurrences_count</td><td>$total_search_occurrences_file_count</td></tr>"
+    summary_data+="<td>$total_search_occurrences_file_count</td></tr>"
 }
 
 _generate_summary_report(){
 
     # Generate Summary Report
-    total_search_occurrences_count=0
+   
     total_search_occurrences_file_count=0
     summary_data+="<tr><td>Total</td><td>-</td>"
     for keywords in "${EXCLUDE_SEARCH_KEYWORDS[@]}"
     do
 
-        search_occurrences_count=0
+        
         search_occurrences_file_count=0
         for repo_name in ${all_Repo[@]}
         do
-            local_search_occurrences_count=$(grep -rio$GREP_EXTRA_ARG "$keywords" "$repo_name" --exclude-dir=".git" | wc -l)
-            local_search_occurrences_file_count=$(grep -ril$GREP_EXTRA_ARG "$keywords" "$repo_name" --exclude-dir=".git" | wc -l)
-
-            search_occurrences_count=$((search_occurrences_count + local_search_occurrences_count))
+            
+            local_search_occurrences_file_count=$(grep -riL "$keywords" "$repo_name" --exclude-dir=".git" | wc -l)
             search_occurrences_file_count=$((search_occurrences_file_count + local_search_occurrences_file_count))
 
         done
 
-        summary_data+="<td>$search_occurrences_count</td>"
+        summary_data+="<td>$search_occurrences_file_count</td>"
 
     done
 
-    summary_data+="<td>$summary_total_keyword_count</td><td>$summary_total_file_count</td></tr>"
+    summary_data+="<td>$search_occurrences_file_count</td></tr>"
 
     summary_data=${SUMMARY_HTML/SUMMARY_DATA_SECTION/$summary_data}
-    echo ${summary_data/TOTAL_KEYWORD_REF/Found $summary_total_keyword_count occurrences in $summary_total_file_count file } > summary.html
+    echo ${summary_data/TOTAL_KEYWORD_REF/Found $search_occurrences_file_count files } > summary.html
 
 }
 
