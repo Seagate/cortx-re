@@ -100,9 +100,9 @@ _generate_search_report(){
 
             echo "Searching for Keyword [ $keywords ] in branch [ $default_git_branch ] with GREP_EXTRA_ARG=$GREP_EXTRA_ARG"
             echo "------------------------------------"
-            search_occurrences_count=$(grep -riL$GREP_EXTRA_ARG "$keywords" "$repo_name" --exclude-dir=".git" | wc -l)
-            search_occurrences_file_count=$(grep -riL$GREP_EXTRA_ARG "$keywords" "$repo_name" --exclude-dir=".git" | wc -l)
-            search_result=$(grep -riL$GREP_EXTRA_ARG "$keywords" "$repo_name" --exclude-dir=".git" | sed "s|.*|<a href=\"$git_repo\/&\" target=\"_blank\">&<\/a>|")
+            search_occurrences_count=$(grep -riLI$GREP_EXTRA_ARG "$keywords" "$repo_name" --exclude-dir=".git" | wc -l)
+            search_occurrences_file_count=$(grep -riLI$GREP_EXTRA_ARG "$keywords" "$repo_name" --exclude-dir=".git" | wc -l)
+            search_result=$(grep -riLI$GREP_EXTRA_ARG "$keywords" "$repo_name" --exclude-dir=".git" | sed "s|.*|<a href=\"$git_repo\/&\" target=\"_blank\">&<\/a>|")
             search_result=$(echo -e ${search_result//$'\n'/<br />})
             search_result=$(echo -e ${search_result} | sed -e "s=/$repo_name.git/$repo_name=/$repo_name/blob/$default_git_branch=g")
 
@@ -149,8 +149,8 @@ _calculate_summary(){
         do
             local_search_occurrences_count=0
             local_search_occurrences_file_count=0
-            local_search_occurrences_count=$(grep -riL$GREP_EXTRA_ARG "$keywords" "$repo_name" --exclude-dir=".git" | wc -l)
-            local_search_occurrences_file_count=$(grep -riL$GREP_EXTRA_ARG "$keywords" "$repo_name" --exclude-dir=".git" | wc -l)
+            local_search_occurrences_count=$(grep -riLI$GREP_EXTRA_ARG "$keywords" "$repo_name" --exclude-dir=".git" | wc -l)
+            local_search_occurrences_file_count=$(grep -riLI$GREP_EXTRA_ARG "$keywords" "$repo_name" --exclude-dir=".git" | wc -l)
 
             search_occurrences_count=$((search_occurrences_count + local_search_occurrences_count))
             search_occurrences_file_count=$((search_occurrences_file_count + local_search_occurrences_file_count))
@@ -190,8 +190,8 @@ _generate_summary_report(){
         search_occurrences_file_count=0
         for repo_name in ${all_Repo[@]}
         do
-            local_search_occurrences_count=$(grep -riL$GREP_EXTRA_ARG "$keywords" "$repo_name" --exclude-dir=".git" | wc -l)
-            local_search_occurrences_file_count=$(grep -riL$GREP_EXTRA_ARG "$keywords" "$repo_name" --exclude-dir=".git" | wc -l)
+            local_search_occurrences_count=$(grep -riLI$GREP_EXTRA_ARG "$keywords" "$repo_name" --exclude-dir=".git" | wc -l)
+            local_search_occurrences_file_count=$(grep -riLI$GREP_EXTRA_ARG "$keywords" "$repo_name" --exclude-dir=".git" | wc -l)
 
             search_occurrences_count=$((search_occurrences_count + local_search_occurrences_count))
             search_occurrences_file_count=$((search_occurrences_file_count + local_search_occurrences_file_count))
