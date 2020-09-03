@@ -26,7 +26,7 @@ yum --enablerepo=centos-sclo-rh install rh-ruby23 rh-ruby23-ruby-devel gcc make 
 cat <<EOF >>rh-ruby23.sh
 #!/bin/bash
 source /opt/rh/rh-ruby23/enable
-export X_SCLS="`scl enable rh-ruby23 'echo $X_SCLS'`"
+export X_SCLS="$(scl enable rh-ruby23 "echo $X_SCLS")"
 EOF
 
 source rh-ruby23.sh
