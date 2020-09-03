@@ -18,7 +18,7 @@
 #
 
 ARG  CENTOS_RELEASE=7.7.1908
-FROM ssc-vm-0279.colo.seagate.com:5000/centos_eos:${CENTOS_RELEASE}
+FROM ssc-vm-0279.colo.seagate.com:5000/cortx:C7.7.1908
 
 COPY setup_fpm.sh /tmp/
 RUN bash /tmp/setup_fpm.sh \
