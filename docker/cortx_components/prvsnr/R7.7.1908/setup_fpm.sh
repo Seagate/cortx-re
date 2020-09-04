@@ -1,3 +1,4 @@
+#!/bin/bash
 #
 # Copyright (c) 2020 Seagate Technology LLC and/or its Affiliates
 #
@@ -17,22 +18,26 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
-FROM registry.gitlab.mero.colo.seagate.com/mero/mero:eos
-ARG USER_PASS
 
-COPY ./repos/*.repo /etc/yum.repos.d/
+set -ex
 
-RUN yum install -y openssh-server java-1.8.0-openjdk
-RUN mkdir /var/run/sshd
-RUN echo  "${USER_PASS}" | chpasswd
-RUN sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
-RUN ssh-keygen -P "" -t rsa -f /etc/ssh/ssh_host_rsa_key
-# SSH login fix. Otherwise user is kicked off after login
-RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
+#yum install -y ruby-devel gcc make rpm-build rubygems python36
+yum --enablerepo=rhel-server-rhscl-7-rpms install rh-ruby23 rh-ruby23-ruby-devel gcc make rpm-build rubygems -y
+cat <<EOF >>rh-ruby23.sh
+#!/bin/bash
+source /opt/rh/rh-ruby23/enable
+export X_SCLS="$(scl enable rh-ruby23 "echo $X_SCLS")"
+EOF
 
-ENV NOTVISIBLE "in users profile"
-RUN echo "export VISIBLE=now" >> /etc/profile
+source rh-ruby23.sh
+cp rh-ruby23.sh /etc/profile.d/
 
-EXPOSE 22
-CMD ["/usr/sbin/sshd", "-D"]
 
+# issues with pip>=10:
+# https://github.com/pypa/pip/issues/5240
+# https://github.com/pypa/pip/issues/5221
+python3 -m pip install -U pip setuptools
+
+gem install --no-ri --no-rdoc rake fpm
+
+rm -rf /var/cache/yum
