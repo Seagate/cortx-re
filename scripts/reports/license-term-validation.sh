@@ -15,7 +15,7 @@ fi
 
 SEARCH_KEYWORDS=("Copyright (c)")
 
-GITUB_REPO_QUERY_API="https://api.github.com/orgs/seagate/repos?access_token=${GITHUB_TOKEN}&per_page=100&page=1"
+#GITUB_REPO_QUERY_API="https://api.github.com/orgs/seagate/repos?access_token=${GITHUB_TOKEN}&per_page=100&page=1"
 
 GITHUB_REPOS=(  "Motr:cortx-motr"
                 "S3Server:cortx-s3server"
@@ -54,14 +54,14 @@ summary_total_file_count=0
 _clone_repo(){
     for repo in "${component_repos[@]}"
     do
-            git clone https://$GITHUB_TOKEN@github.com/Seagate/$repo.git
+            git clone https://$GITHUB_TOKEN@github.com/Seagate/"$repo".git
     done
 }
 
 _clean_repo(){
     for repo in "${all_repo[@]}"
     do
-        rm -rf $repo
+        rm -rf "$repo"
     done
 }
 
@@ -78,15 +78,15 @@ _prepare_summary_report_header(){
 
 _generate_search_report(){
 
-    total_occurrences_count=0
-    total_occurrences_file_count=0
+    #total_occurrences_count=0
+    #total_occurrences_file_count=0
 
     # Generate Repository Report
-    for repo_name in ${component_repos[@]}
+    for repo_name in "${component_repos[@]}"
     do
         result_html=""
-        default_git_branch=$(cd $repo_name && git symbolic-ref --short HEAD)
-        git_repo=$(cd $repo_name && git config --get remote.origin.url)
+        default_git_branch=$(cd "$repo_name" && git symbolic-ref --short HEAD)
+        git_repo=$(cd "$repo_name" && git config --get remote.origin.url)
         for keywords in "${SEARCH_KEYWORDS[@]}"
         do
 
@@ -100,11 +100,11 @@ _generate_search_report(){
 
             echo "Searching for Keyword [ $keywords ] in branch [ $default_git_branch ] with GREP_EXTRA_ARG=$GREP_EXTRA_ARG"
             echo "------------------------------------"
-            search_occurrences_count=$(grep -riLI$GREP_EXTRA_ARG "$keywords" "$repo_name" --exclude-dir=".git" --exclude={*.png,*.gpg,*.gpeg,LICENSE} | wc -l)
-            search_occurrences_file_count=$(grep -riLI$GREP_EXTRA_ARG "$keywords" "$repo_name" --exclude-dir=".git" --exclude={*.png,*.gpg,*.gpeg,LICENSE} | wc -l)
-            search_result=$(grep -riLI$GREP_EXTRA_ARG "$keywords" "$repo_name" --exclude-dir=".git" --exclude={*.png,*.gpg,*.gpeg,LICENSE} | sed "s|.*|<a href=\"$git_repo\/&\" target=\"_blank\">&<\/a>|")
-            search_result=$(echo -e ${search_result//$'\n'/<br />})
-            search_result=$(echo -e ${search_result} | sed -e "s=/$repo_name.git/$repo_name=/$repo_name/blob/$default_git_branch=g")
+            search_occurrences_count=$(grep -riLI"$GREP_EXTRA_ARG" "$keywords" "$repo_name" --exclude-dir=".git" --exclude={*.png,*.gpg,*.gpeg,LICENSE} | wc -l)
+            search_occurrences_file_count=$(grep -riLI"$GREP_EXTRA_ARG" "$keywords" "$repo_name" --exclude-dir=".git" --exclude={*.png,*.gpg,*.gpeg,LICENSE} | wc -l)
+            search_result=$(grep -riLI"$GREP_EXTRA_ARG" "$keywords" "$repo_name" --exclude-dir=".git" --exclude={*.png,*.gpg,*.gpeg,LICENSE} | sed "s|.*|<a href=\"$git_repo\/&\" target=\"_blank\">&<\/a>|")
+            search_result=$(echo -e "${search_result//$'\n'/<br />}")
+            search_result=$(echo -e "${search_result}" | sed -e "s=/$repo_name.git/$repo_name=/$repo_name/blob/$default_git_branch=g")
 
             occurrences_text="-"
             if [[ $search_occurrences_count -ne 0 ]];
@@ -120,9 +120,9 @@ _generate_search_report(){
         done
 
         local_html=${TABLE_HTML/$REPORT_HEADER/$REPORT_HEADER in $repo_name}
-        echo ${local_html/TABLE_DATA_SECTION/$result_html} > $repo_name.html
+        echo "${local_html/TABLE_DATA_SECTION/$result_html}" > "$repo_name".html
 
-        component_cell=""
+        #component_cell=""
     done
 }
 
@@ -145,12 +145,12 @@ _calculate_summary(){
 
         search_occurrences_count=0
         search_occurrences_file_count=0
-        for repo_name in ${component_repos[@]}
+        for repo_name in "${component_repos[@]}"
         do
             local_search_occurrences_count=0
             local_search_occurrences_file_count=0
-            local_search_occurrences_count=$(grep -riLI$GREP_EXTRA_ARG "$keywords" "$repo_name" --exclude-dir=".git" --exclude={*.png,*.gpg,*.gpeg,LICENSE} | wc -l)
-            local_search_occurrences_file_count=$(grep -riLI$GREP_EXTRA_ARG "$keywords" "$repo_name" --exclude-dir=".git" --exclude={*.png,*.gpg,*.gpeg,LICENSE} | wc -l)
+            local_search_occurrences_count=$(grep -riLI"$GREP_EXTRA_ARG" "$keywords" "$repo_name" --exclude-dir=".git" --exclude={*.png,*.gpg,*.gpeg,LICENSE} | wc -l)
+            local_search_occurrences_file_count=$(grep -riLI"$GREP_EXTRA_ARG" "$keywords" "$repo_name" --exclude-dir=".git" --exclude={*.png,*.gpg,*.gpeg,LICENSE} | wc -l)
 
             search_occurrences_count=$((search_occurrences_count + local_search_occurrences_count))
             search_occurrences_file_count=$((search_occurrences_file_count + local_search_occurrences_file_count))
@@ -188,10 +188,10 @@ _generate_summary_report(){
 
         search_occurrences_count=0
         search_occurrences_file_count=0
-        for repo_name in ${all_Repo[@]}
+        for repo_name in "${all_Repo[@]}"
         do
-            local_search_occurrences_count=$(grep -riLI$GREP_EXTRA_ARG "$keywords" "$repo_name" --exclude-dir=".git" --exclude={*.png,*.gpg,*.gpeg,LICENSE} | wc -l)
-            local_search_occurrences_file_count=$(grep -riLI$GREP_EXTRA_ARG "$keywords" "$repo_name" --exclude-dir=".git" --exclude={*.png,*.gpg,*.gpeg,LICENSE} | wc -l)
+            local_search_occurrences_count=$(grep -riLI"$GREP_EXTRA_ARG" "$keywords" "$repo_name" --exclude-dir=".git" --exclude={*.png,*.gpg,*.gpeg,LICENSE} | wc -l)
+            local_search_occurrences_file_count=$(grep -riLI"$GREP_EXTRA_ARG" "$keywords" "$repo_name" --exclude-dir=".git" --exclude={*.png,*.gpg,*.gpeg,LICENSE} | wc -l)
 
             search_occurrences_count=$((search_occurrences_count + local_search_occurrences_count))
             search_occurrences_file_count=$((search_occurrences_file_count + local_search_occurrences_file_count))
@@ -206,7 +206,7 @@ _generate_summary_report(){
     summary_data+="<td>$summary_total_file_count</td></tr>"
 
     summary_data=${SUMMARY_HTML/SUMMARY_DATA_SECTION/$summary_data}
-    echo ${summary_data/TOTAL_KEYWORD_REF/Found $summary_total_file_count files without 'Copyright (c)' } > summary.html
+    echo "${summary_data/TOTAL_KEYWORD_REF/Found $summary_total_file_count files without 'Copyright (c)' }" > summary.html
     #echo ${summary_data/TOTAL_KEYWORD_REF/Found $summary_total_keyword_count occurrences in $summary_total_file_count file } > summary.html
     #echo ${summary_data/TOTAL_KEYWORD_REF/Found $summary_total_file_count files } > summary.html
 
@@ -214,16 +214,16 @@ _generate_summary_report(){
 
 _prepare_summary_report_header
 all_Repo=()
-for component_repo_group in ${GITHUB_REPOS[@]}
+for component_repo_group in "${GITHUB_REPOS[@]}"
 do
     unset component_repos
     unset component_name
     if [[ $component_repo_group == *":"* ]]
     then
-        tmp_component_repo_group=(${component_repo_group//:/ })
+        tmp_component_repo_group="(${component_repo_group//:/ })"
         component_name=${tmp_component_repo_group[0]}
         component_repos=${tmp_component_repo_group[1]}
-        component_repos=(${component_repos//,/ })
+        component_repos="(${component_repos//,/ })"
 
         _clone_repo
 
@@ -239,5 +239,3 @@ done
 _generate_summary_report
 
 _clean_repo
-
-
