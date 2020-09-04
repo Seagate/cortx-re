@@ -15,7 +15,7 @@ fi
 
 SEARCH_KEYWORDS=("Copyright (c)")
 
-GITUB_REPO_QUERY_API="https://api.github.com/orgs/seagate/repos?access_token=${GITHUB_TOKEN}&per_page=100&page=1"
+#GITUB_REPO_QUERY_API="https://api.github.com/orgs/seagate/repos?access_token=${GITHUB_TOKEN}&per_page=100&page=1"
 
 GITHUB_REPOS=(  "Motr:cortx-motr"
                 "S3Server:cortx-s3server"
@@ -78,8 +78,8 @@ _prepare_summary_report_header(){
 
 _generate_search_report(){
 
-    total_occurrences_count=0
-    total_occurrences_file_count=0
+    #total_occurrences_count=0
+    #total_occurrences_file_count=0
 
     # Generate Repository Report
     for repo_name in ${component_repos[@]}
@@ -122,7 +122,7 @@ _generate_search_report(){
         local_html=${TABLE_HTML/$REPORT_HEADER/$REPORT_HEADER in $repo_name}
         echo "${local_html/TABLE_DATA_SECTION/$result_html}" > "$repo_name".html
 
-        component_cell=""
+        #component_cell=""
     done
 }
 
