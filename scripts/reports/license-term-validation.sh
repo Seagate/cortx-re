@@ -71,7 +71,7 @@ summary_total_file_count=0
 _clone_repo(){
     for repo in "${component_repos[@]}"
     do
-            git clone https://$GITHUB_TOKEN@github.com/Seagate/"$repo".git
+            git clone https://"$GITHUB_TOKEN"@github.com/Seagate/"$repo".git
     done
 }
 
