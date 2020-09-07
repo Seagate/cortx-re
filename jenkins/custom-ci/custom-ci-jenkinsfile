@@ -35,7 +35,7 @@ pipeline {
 		string(name: 'S3_BRANCH', defaultValue: 'dev', description: 'Branch for S3Server')
 		string(name: 'S3_URL', defaultValue: 'https://github.com/Seagate/cortx-s3server.git', description: 'S3Server URL')
 		string(name: 'SSPL_BRANCH', defaultValue: 'dev', description: 'Branch for SSPL')
-		string(name: 'SSPL_URL', defaultValue: 'https://github.com/Seagate/cortx-sspl.git', description: 'SSPL URL')
+		string(name: 'SSPL_URL', defaultValue: 'https://github.com/Seagate/cortx-monitor.git', description: 'SSPL URL')
 		
 		choice(
             name: 'OTHER_COMPONENT_BRANCH', 
