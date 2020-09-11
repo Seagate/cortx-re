@@ -109,7 +109,7 @@ pipeline {
 						build job: 'S3server', wait: true,
 						parameters: [
 									string(name: 'S3_BRANCH', value: "${S3_BRANCH}"),
-									string(name: 'MERO_BRANCH', value: "custom-ci"),
+									string(name: 'MOTR_BRANCH', value: "${MOTR_BRANCH}"),
 									string(name: 'S3_URL', value: "${S3_URL}")
 								]
 					}
