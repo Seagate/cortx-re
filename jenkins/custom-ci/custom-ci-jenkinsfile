@@ -47,7 +47,7 @@ pipeline {
 		
 	stages {	
 	
-		stage ("Trigger Downstream Jobs") {
+		stage ("Trigger Component Jobs") {
 			parallel {
 			
 				stage ("Build Mero, Hare and S3Server") {
@@ -318,7 +318,7 @@ pipeline {
 		stage ('Tag Release') {
 			steps {
                 script { build_stage=env.STAGE_NAME }
-                sh label: 'Tag last_successful', script: '''
+                sh label: 'Tag Release', script: '''
                     pushd $release_dir/github/integration-custom-ci/release
                     test -d $release_dir/github/integration-custom-ci/$release_tag && rm -f $release_tag
                     ln -s $integration_dir/$release_tag/dev $release_tag
