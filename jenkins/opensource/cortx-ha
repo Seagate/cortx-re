@@ -13,7 +13,7 @@ pipeline {
     
 	environment {
         env="dev"
-		component="ha"
+		component="cortx-ha"
         branch="$HA_BRANCH"
         os_version="rhel-7.7.1908"
         release_dir="/mnt/bigstorage/releases/eos"
