@@ -10,7 +10,7 @@ pipeline {
 		os_version="rhel-7.7.1908"
 		release_dir="/mnt/bigstorage/releases/eos"
         integration_dir="$release_dir/github/opensource/$branch/$os_version"
-        components_dir="$release_dir/components/github/opensource/$branch/$os_version/$env/$component/"
+        components_dir="$release_dir/components/github/opensource/$branch/$os_version"
         release_tag="cortx-1.0-$BUILD_ID"
         passphrase = credentials('rpm-sign-passphrase')
     }
