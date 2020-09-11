@@ -8,7 +8,7 @@ pipeline {
 
 	parameters {  
 	    string(name: 'HARE_URL', defaultValue: 'https://github.com/Seagate/cortx-hare/', description: 'Branch for Hare')
-        string(name: 'HARE_BRANCH', defaultValue: 'dev', description: 'Branch for Hare')
+        string(name: 'HARE_BRANCH', defaultValue: 'main', description: 'Branch for Hare')
 		
 		choice(
             name: 'MOTR_BRANCH', 

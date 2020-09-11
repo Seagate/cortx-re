@@ -9,9 +9,9 @@ pipeline {
 	environment {
 		os_version="rhel-7.7.1908"
 		release_dir="/mnt/bigstorage/releases/eos"
-        integration_dir="$release_dir/github/integration-custom-ci/release/$os_version"
-        components_dir="$release_dir/components/github/custom-ci/release/$os_version"
-        release_tag="custom-build-$BUILD_ID"
+        integration_dir="$release_dir/github/opensource/$branch/$os_version"
+        components_dir="$release_dir/components/github/opensource/$branch/$os_version/$env/$component/"
+        release_tag="cortx-1.0-$BUILD_ID"
         passphrase = credentials('rpm-sign-passphrase')
     }
 	
@@ -22,27 +22,7 @@ pipeline {
 	}
 	
 	parameters {
-		string(name: 'CSM_BRANCH', defaultValue: 'dev', description: 'Branch for CSM')
-		string(name: 'CSM_URL', defaultValue: 'https://github.com/Seagate/cortx-csm.git', description: 'CSM URL')
-		string(name: 'HARE_BRANCH', defaultValue: 'dev', description: 'Branch for Hare')
-		string(name: 'HARE_URL', defaultValue: 'https://github.com/Seagate/cortx-hare', description: 'Hare URL')
-		string(name: 'HA_BRANCH', defaultValue: 'dev', description: 'Branch for Cortx-HA')
-		string(name: 'HA_URL', defaultValue: 'https://github.com/Seagate/cortx-ha.git', description: 'Cortx-HA URL')
-		string(name: 'MOTR_BRANCH', defaultValue: 'dev', description: 'Branch for Motr')
-		string(name: 'MOTR_URL', defaultValue: 'https://github.com/Seagate/cortx-motr.git', description: 'Motr URL')
-		string(name: 'PRVSNR_BRANCH', defaultValue: 'dev', description: 'Branch for Provisioner')
-		string(name: 'PRVSNR_URL', defaultValue: 'https://github.com/Seagate/cortx-prvsnr.git', description: 'Provisioner URL')
-		string(name: 'S3_BRANCH', defaultValue: 'dev', description: 'Branch for S3Server')
-		string(name: 'S3_URL', defaultValue: 'https://github.com/Seagate/cortx-s3server.git', description: 'S3Server URL')
-		string(name: 'SSPL_BRANCH', defaultValue: 'dev', description: 'Branch for SSPL')
-		string(name: 'SSPL_URL', defaultValue: 'https://github.com/Seagate/cortx-monitor.git', description: 'SSPL URL')
-		
-		choice(
-            name: 'OTHER_COMPONENT_BRANCH', 
-            choices: ['dev', 'release', 'Cortx-v1.0.0_Beta'],
-            description: 'Branch name to pick-up other components rpms'
-        )  
-
+		string(name: 'branch', defaultValue: 'main', description: 'Branch for Release Build')
     }	
 		
 	stages {	
@@ -53,14 +33,14 @@ pipeline {
 				stage ("Build Mero, Hare and S3Server") {
 					steps {
 						script { build_stage=env.STAGE_NAME }
-						build job: 'motr-custom-build', wait: true,
+						build job: 'motr', wait: true,
 						parameters: [
-									string(name: 'MOTR_URL', value: "${MOTR_URL}"),
-									string(name: 'MOTR_BRANCH', value: "${MOTR_BRANCH}"),
-									string(name: 'S3_URL', value: "${S3_URL}"),
-									string(name: 'S3_BRANCH', value: "${S3_BRANCH}"),
-									string(name: 'HARE_URL', value: "${HARE_URL}"),
-									string(name: 'HARE_BRANCH', value: "${HARE_BRANCH}")
+									string(name: 'MOTR_URL', value: "https://github.com/Seagate/cortx-motr"),
+									string(name: 'MOTR_BRANCH', value: "${BRANCH}"),
+									string(name: 'S3_URL', value: "https://github.com/Seagate/cortx-s3server"),
+									string(name: 'S3_BRANCH', value: "${BRANCH}"),
+									string(name: 'HARE_URL', value: "https://github.com/Seagate/cortx-hare"),
+									string(name: 'HARE_BRANCH', value: "${BRANCH}")
 								]
 					}
 				}
@@ -68,10 +48,10 @@ pipeline {
 				stage ("Build Provisioner") {
 					steps {
 						script { build_stage=env.STAGE_NAME }
-						build job: 'prvsnr-custom-build', wait: true,
+						build job: 'Provisioner', wait: true,
 						parameters: [
-									string(name: 'PRVSNR_URL', value: "${PRVSNR_URL}"),
-									string(name: 'PRVSNR_BRANCH', value: "${PRVSNR_BRANCH}")
+									string(name: 'PRVSNR_URL', value: "https://github.com/Seagate/cortx-prvsnr"),
+									string(name: 'PRVSNR_BRANCH', value: "${BRANCH}")
 								]
 					}
 				}
@@ -79,16 +59,10 @@ pipeline {
 				stage ("Build HA") {
 					steps {
 						script { build_stage=env.STAGE_NAME }
-						sh label: 'Copy RPMS', script:'''
-						  if [ "$HA_BRANCH" == "Cortx-v1.0.0_Beta"  ]; then
-							echo "cortx-ha does not have Cortx-v1.0.0_Beta branch."
-							exit 1
-						  fi
-						'''  
-						build job: 'cortx-ha', wait: true,
+						build job: 'ha', wait: true,
 						parameters: [
-									string(name: 'HA_URL', value: "${HA_URL}"),
-									string(name: 'HA_BRANCH', value: "${HA_BRANCH}")
+									string(name: 'HA_URL', value: "https://github.com/Seagate/cortx-ha"),
+									string(name: 'HA_BRANCH', value: "${BRANCH}")
 								]
 					}
 				}
@@ -97,38 +71,28 @@ pipeline {
 					steps {
 						script { build_stage=env.STAGE_NAME }
 						script {
-							if( env.CSM_BRANCH == 'Cortx-v1.0.0_Beta' ) {
-                            echo "Using Cortx-v1.0.0_Beta  branch"    
-                            build job: 'csm-custom-build', wait: true,
-                            parameters: [
-                                        string(name: 'CSM_URL', value: "${CSM_URL}"),
-                                        string(name: 'CSM_BRANCH', value: "${CSM_BRANCH}")
-                                    ]
-							}
-                            else {
-							
-								build job: 'custom-csm-agent-build', wait: true,
+								build job: 'management', wait: true,
 									parameters: [
 									string(name: 'CSM_AGENT_URL', value: "https://github.com/Seagate/cortx-management/"),
-									string(name: 'CSM_AGENT_BRANCH', value: "${CSM_BRANCH}")
+									string(name: 'CSM_AGENT_BRANCH', value: "${BRANCH}")
 									]
-								build job: 'custom-csm-web-build', wait: true,
+								build job: 'management-web', wait: true,
 									parameters: [
 									string(name: 'CSM_WEB_URL', value: "https://github.com/Seagate/cortx-management-web"),
-									string(name: 'CSM_WEB_BRANCH', value: "${CSM_BRANCH}")
+									string(name: 'CSM_WEB_BRANCH', value: "${BRANCH}")
 									]		
 							}
 						}	
 					}	
 				}
 
-				stage ("Build SSPL") {
+				stage ("Build cortx-monitor") {
 					steps {
 						script { build_stage=env.STAGE_NAME }
-						build job: 'sspl-custom-build', wait: true,
+						build job: 'monitor', wait: true,
 						parameters: [
-									string(name: 'SSPL_URL', value: "${SSPL_URL}"),
-									string(name: 'SSPL_BRANCH', value: "${SSPL_BRANCH}")
+									string(name: 'SSPL_URL', value: "https://github.com/Seagate/cortx-monitor"),
+									string(name: 'SSPL_BRANCH', value: "${BRANCH}")
 								]
 					}
 				}

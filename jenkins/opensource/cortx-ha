@@ -6,8 +6,8 @@ pipeline {
 	}
 
 	parameters {
-		string(name: 'HA_URL', defaultValue: 'http://gitlab.mero.colo.seagate.com/eos/cortx-ha', description: 'Branch to be used for Hare build.')
-		string(name: 'HA_BRANCH', defaultValue: 'release', description: 'Branch to be used for Hare build.')
+		string(name: 'HA_URL', defaultValue: 'https://github.com/Seagate/cortx-ha', description: 'Branch to be used for Hare build.')
+		string(name: 'HA_BRANCH', defaultValue: 'main', description: 'Branch to be used for Hare build.')
 	}
 	
     
