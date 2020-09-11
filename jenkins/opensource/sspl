@@ -5,13 +5,19 @@ pipeline {
 		}
 	}
 
-	environment {   
+	parameters {  
+        string(name: 'SSPL_URL', defaultValue: 'https://github.com/Seagate/cortx-monitor.git', description: 'Branch for cortx-monitor.')
+		string(name: 'SSPL_BRANCH', defaultValue: 'release', description: 'Branch for cortx-monitor.')
+	}	
+
+
+	environment {
         env="dev"
-		component="sspl"
-        branch="release"
+		component="provisioner"
+        branch="$SSPL_BRANCH"
         os_version="rhel-7.7.1908"
         release_dir="/mnt/bigstorage/releases/eos"
-        build_upload_dir="$release_dir/components/opensource/$branch/$os_version/$env/$component/"
+        build_upload_dir="$release_dir/components/github/opensource/$branch/$os_version/$env/$component/"
     }
 
 	options {
@@ -21,12 +27,6 @@ pipeline {
         disableConcurrentBuilds()  
 	}
 	
-	parameters {  
-        string(name: 'SSPL_URL', defaultValue: 'https://github.com/Seagate/cortx-monitor.git', description: 'Branch for cortx-monitor.')
-		string(name: 'SSPL_BRANCH', defaultValue: 'release', description: 'Branch for cortx-monitor.')
-	}	
-
-
 	stages {
 		stage('Checkout') {
 			steps {
@@ -51,17 +51,10 @@ pipeline {
 				script { build_stage=env.STAGE_NAME }
 				sh label: 'Build', returnStatus: true, script: '''
 					set -xe
-					if [ "${SSPL_BRANCH}" == "Cortx-v1.0.0_Beta" ]; then
-						mv cortx-sspl sspl
-						pushd sspl
-					else
-						pushd cortx-sspl
-					fi	
+					pushd cortx-sspl
 					VERSION=$(cat VERSION)
 					export build_number=${BUILD_ID}
-					#Execute build script
 					echo "Executing build script"
-					echo "VERSION:$VERSION"
 					./jenkins/build.sh -l DEBUG
 					popd
 				'''	
