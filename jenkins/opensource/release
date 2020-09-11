@@ -67,22 +67,27 @@ pipeline {
 					}
 				}
 
-				stage ("Build CSM") {
+				stage ("Build management") {
 					steps {
 						script { build_stage=env.STAGE_NAME }
-						script {
-							build job: 'management', wait: true,
-								parameters: [
-								string(name: 'CSM_AGENT_URL', value: "https://github.com/Seagate/cortx-management/"),
-								string(name: 'CSM_AGENT_BRANCH', value: "${BRANCH}")
-								]
-							build job: 'management-web', wait: true,
+						build job: 'management-web', wait: true,
 								parameters: [
 								string(name: 'CSM_WEB_URL', value: "https://github.com/Seagate/cortx-management-web"),
-								string(name: 'CSM_WEB_BRANCH', value: "${BRANCH}")
-								]		
-						}
-					}	
+								string(name: 'CSM_WEB_BRANCH', value: "release")
+								]	
+					}
+				}
+
+
+				stage ("Build management-web") {
+					steps {
+						script { build_stage=env.STAGE_NAME }
+						build job: 'management', wait: true,
+								parameters: [
+								string(name: 'CSM_AGENT_URL', value: "https://github.com/Seagate/cortx-management/"),
+								string(name: 'CSM_AGENT_BRANCH', value: "release")
+								]
+					}
 				}
 
 				stage ("Build cortx-monitor") {
