@@ -7,13 +7,13 @@ pipeline {
 
 	parameters {  
         string(name: 'SSPL_URL', defaultValue: 'https://github.com/Seagate/cortx-monitor.git', description: 'Branch for cortx-monitor.')
-		string(name: 'SSPL_BRANCH', defaultValue: 'release', description: 'Branch for cortx-monitor.')
+		string(name: 'SSPL_BRANCH', defaultValue: 'main', description: 'Branch for cortx-monitor.')
 	}	
 
 
 	environment {
         env="dev"
-		component="provisioner"
+		component="sspl"
         branch="$SSPL_BRANCH"
         os_version="rhel-7.7.1908"
         release_dir="/mnt/bigstorage/releases/eos"
