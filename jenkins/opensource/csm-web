@@ -4,14 +4,19 @@ pipeline {
 			label 'docker-rhel7.7.1908-csm-cortx-node'
 		}
 	}
-	
+		
+	parameters {  
+        string(name: 'CSM_WEB_URL', defaultValue: 'https://github.com/Seagate/cortx-management-web.git', description: 'Branch for Provisioner.')
+		string(name: 'CSM_WEB_BRANCH', defaultValue: 'release', description: 'Branch for Provisioner.')
+	}	
+
 	environment {      
         env="dev"
 		component="csm-web"
-        branch="release"
+        branch="$CSM_WEB_BRANCH"
         os_version="rhel-7.7.1908"
         release_dir="/mnt/bigstorage/releases/eos"
-        build_upload_dir="$release_dir/components/github/custom-ci/$branch/$os_version/$env/$component/"
+        build_upload_dir="$release_dir/components/github/opensource/$branch/$os_version/$env/$component/"
     }
 
 	options {
@@ -20,12 +25,6 @@ pipeline {
         ansiColor('xterm')
         disableConcurrentBuilds()
 	}
-	
-	parameters {  
-        string(name: 'CSM_WEB_URL', defaultValue: 'https://github.com/Seagate/cortx-management-web.git', description: 'Branch for Provisioner.')
-		string(name: 'CSM_WEB_BRANCH', defaultValue: 'release', description: 'Branch for Provisioner.')
-	}	
-
 
 	stages {
 

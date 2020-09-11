@@ -5,13 +5,18 @@ pipeline {
 		}
 	}
 	
+	parameters {  
+        string(name: 'CSM_AGENT_URL', defaultValue: 'https://github.com/Seagate/cortx-management.git', description: 'Branch for Provisioner.')
+		string(name: 'CSM_AGENT_BRANCH', defaultValue: 'release', description: 'Branch for Provisioner.')
+	}	
+
 	environment {      
         env="dev"
 		component="csm-agent"
-        branch="release"
+        branch="$CSM_AGENT_BRANCH"
         os_version="rhel-7.7.1908"
         release_dir="/mnt/bigstorage/releases/eos"
-        build_upload_dir="$release_dir/components/github/custom-ci/$branch/$os_version/$env/$component/"
+        build_upload_dir="$release_dir/components/github/opensource/$branch/$os_version/$env/$component/"
     }
 
 	options {
@@ -21,12 +26,6 @@ pipeline {
         disableConcurrentBuilds()
 	}
 	
-	parameters {  
-        string(name: 'CSM_AGENT_URL', defaultValue: 'https://github.com/Seagate/cortx-management.git', description: 'Branch for Provisioner.')
-		string(name: 'CSM_AGENT_BRANCH', defaultValue: 'release', description: 'Branch for Provisioner.')
-	}	
-
-
 	stages {
 
 		stage('Checkout') {
@@ -41,13 +40,8 @@ pipeline {
 			steps {
 				script { build_stage=env.STAGE_NAME }
 				sh label: '', script: '''
-					if [ "${CSM_BRANCH}" == "Cortx-v1.0.0_Beta" ]; then
-						yum install -y eos-py-utils
-						pip3.6 install  pyinstaller==3.5
-					else
-						yum install -y eos-py-utils cortx-prvsnr
-						pip3.6 install  pyinstaller==3.5
-					fi
+					yum install -y eos-py-utils cortx-prvsnr
+					pip3.6 install  pyinstaller==3.5
 				'''
 			}
 		}	
@@ -58,9 +52,6 @@ pipeline {
 				sh label: 'Build', returnStatus: true, script: '''
 					BUILD=$(git rev-parse --short HEAD)
 					VERSION=$(cat $WORKSPACE/VERSION)
-					echo "Executing build script"
-					echo "VERSION:$VERSION"
-					echo "Python:$(python --version)"
 					./cicd/build.sh -v $VERSION -b $BUILD_NUMBER -t -i
 				'''	
 			}

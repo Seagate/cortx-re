@@ -21,12 +21,12 @@ pipeline {
 	}	
 
 	environment {
-     	release_dir="/mnt/bigstorage/releases/eos"
-		os_version="rhel-7.7.1908"
-		branch="release"
+        env="dev"
 		component="motr"
-		env="dev"
-		component_dir="$release_dir/components/github/custom-ci/$branch/$os_version/$env/$component"
+        branch="$MOTR_BRANCH"
+        os_version="rhel-7.7.1908"
+        release_dir="/mnt/bigstorage/releases/eos"
+        build_upload_dir="$release_dir/components/github/opensource/$branch/$os_version/$env/$component/"
     }
 
 	stages {	
@@ -45,17 +45,9 @@ pipeline {
 				sh label: '', script: '''
 						export build_number=${BUILD_ID}
 						kernel_src=$(ls -1rd /lib/modules/*/build | head -n1)
-						
-						
-						if [ "${MOTR_BRANCH}" == "Cortx-v1.0.0_Beta" ]; then
-						cp mero.spec.in mero.spec
-						sed -i 's/@.*@/111/g' mero.spec
-						yum-builddep -y mero.spec 
-						else
 						cp cortx-motr.spec.in cortx-motr.spec
 						sed -i 's/@.*@/111/g' cortx-motr.spec
 						yum-builddep -y cortx-motr.spec
-						fi
 					'''	
 			}
 		}
@@ -129,7 +121,7 @@ pipeline {
 						build job: 'hare-custom-build', wait: true,
 						parameters: [
 									string(name: 'HARE_BRANCH', value: "${HARE_BRANCH}"),
-									string(name: 'MERO_BRANCH', value: "custom-ci"),
+									string(name: 'MOTR_BRANCH', value: "${MOTR_BRANCH}"),
 									string(name: 'HARE_URL', value: "${HARE_URL}")
 								]
 					}

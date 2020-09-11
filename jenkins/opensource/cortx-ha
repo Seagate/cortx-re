@@ -4,22 +4,22 @@ pipeline {
 			label 'docker-rhel7.7-hare-github-node'
 		}
 	}
-    
-    environment {
-        env="dev"
-		component="cortx-ha"
-        branch="release"
-        os_version="rhel-7.7.1908"
-        release_dir="/mnt/bigstorage/releases/eos"
-        component_dir="$release_dir/components/github/custom-ci/$branch/$os_version/$env/$component/"
-    }
-	
+
 	parameters {
 		string(name: 'HA_URL', defaultValue: 'http://gitlab.mero.colo.seagate.com/eos/cortx-ha', description: 'Branch to be used for Hare build.')
 		string(name: 'HA_BRANCH', defaultValue: 'release', description: 'Branch to be used for Hare build.')
 	}
 	
-	
+    
+	environment {
+        env="dev"
+		component="ha"
+        branch="$HA_BRANCH"
+        os_version="rhel-7.7.1908"
+        release_dir="/mnt/bigstorage/releases/eos"
+        build_upload_dir="$release_dir/components/github/opensource/$branch/$os_version/$env/$component/"
+    }
+
 	options {
 		timeout(time: 35, unit: 'MINUTES')
 		timestamps()
@@ -42,12 +42,7 @@ pipeline {
 				script { build_stage=env.STAGE_NAME }
 				sh label: '', script: '''
 					pushd $component
-					sed '/baseurl/d' /etc/yum.repos.d/mero_current_build.repo
-                    echo "baseurl=http://cortx-storage.colo.seagate.com/releases/cortx/components/github/custom-ci/release/rhel-7.7.1908/dev/motr/current_build/"  >> /etc/yum.repos.d/mero_current_build.repo	
-				    rm -f /etc/yum.repos.d/eos_7.7.1908.repo
-				    
-					yum clean all;rm -rf /var/cache/yum
-					yum -q erase eos-py-utils -y;yum install eos-py-utils -y
+					yum install eos-py-utils -y
 					bash jenkins/cicd/cortx-ha-dep.sh
 					pip3 install numpy
 					popd
