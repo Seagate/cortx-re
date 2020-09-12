@@ -117,22 +117,7 @@ pipeline {
 			steps {
                 script { build_stage=env.STAGE_NAME }
                 sh label: 'Copy RPMS', script:'''
-				  if [ "$OTHER_COMPONENT_BRANCH" == "release"  ]; then
-					RPM_COPY_PATH="/mnt/bigstorage/releases/eos/components/github/release/$os_version/dev/"
-				  elif [ "$OTHER_COMPONENT_BRANCH" == "dev"  ]; then
-						RPM_COPY_PATH="/mnt/bigstorage/releases/eos/components/github/release/$os_version/dev/"
-				  elif [ "$OTHER_COMPONENT_BRANCH" == "Cortx-v1.0.0_Beta"  ]; then
-						RPM_COPY_PATH="/mnt/bigstorage/releases/eos/components/github/Cortx-v1.0.0_Beta/$os_version/dev/"
-				  else
-						RPM_COPY_PATH="/mnt/bigstorage/releases/eos/components/github/custom-ci/release/$os_version/dev"
-				  fi
-					
-					if [ "$CSM_BRANCH" == "dev" ] || [ "$CSM_BRANCH" == "release" ]; then
 					CUSTOM_COMPONENT_NAME="motr|s3server|hare|cortx-ha|provisioner|csm-agent|csm-web|sspl"
-					else
-					CUSTOM_COMPONENT_NAME="motr|s3server|hare|cortx-ha|provisioner|csm|sspl"
-					fi
-					
                     for env in "dev" ;
                     do
 						test -d $integration_dir/$release_tag/ && rm -rf $integration_dir/$release_tag
@@ -151,19 +136,6 @@ pipeline {
 								fi
 							done
 						popd
-
-
-						pushd $RPM_COPY_PATH
-						for component in `ls -1 | grep -E -v "$CUSTOM_COMPONENT_NAME" | grep -E -v 'luster|halon|mero|motr|csm'`
-						do
-							echo -e "Copying RPM's for $component"
-							if ls $component/last_successful/*.rpm 1> /dev/null 2>&1; then
-								cp $component/last_successful/*.rpm $integration_dir/$release_tag/$env
-							else
-								echo "Packages not available for $component. Exiting"
-							exit 1	
-							fi
-						done
                     done
                 '''
 			}
@@ -265,7 +237,7 @@ pipeline {
                 script { build_stage=env.STAGE_NAME }
                 sh label: 'Repo Creation', script: '''
                     pushd $integration_dir/$release_tag/dev
-                    rpm -qi createrepo || yum install -y createrepo
+                    yum install -y createrepo
                     createrepo .
                     popd
                 '''
