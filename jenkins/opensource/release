@@ -259,8 +259,8 @@ pipeline {
 			steps {
                 script { build_stage=env.STAGE_NAME }
                 sh label: 'Tag Release', script: '''
-                    pushd $integration_dir
-                    test -d $integration_dir/$release_tag && rm -f $release_tag
+                    pushd /mnt/bigstorage/releases/eos/github/opensource
+                    test -d /mnt/bigstorage/releases/eos/github/opensource/$release_tag && rm -f $release_tag
                     ln -s $integration_dir/$release_tag/dev $release_tag
                     popd
                 '''
