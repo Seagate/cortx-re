@@ -49,7 +49,7 @@ pipeline {
 		stage('Build') {
 			steps {
 				script { build_stage=env.STAGE_NAME }
-				sh label: 'Build', returnStatus: true, script: '''
+				sh label: 'Build', script: '''
 					BUILD=$(git rev-parse --short HEAD)
 					VERSION=$(cat $WORKSPACE/VERSION)
 					./cicd/build.sh -v $VERSION -b $BUILD_NUMBER -t -i
