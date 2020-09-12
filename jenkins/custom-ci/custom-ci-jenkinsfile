@@ -283,7 +283,7 @@ pipeline {
 
                 sh label: 'Build MANIFEST', script: """
 					pushd scripts/release_support
-                    sh build_manifest.sh $integration_dir/$release_tag/dev
+                    sh build_release_info.sh $integration_dir/$release_tag/dev
 					sh build_readme.sh $integration_dir/$release_tag
 					popd
 					
