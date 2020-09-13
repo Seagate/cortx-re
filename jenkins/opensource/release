@@ -106,8 +106,8 @@ pipeline {
 						script { build_stage=env.STAGE_NAME }
 						build job: 'nfs', wait: true,
 						parameters: [
-									string(name: 'SSPL_URL', value: "https://github.com/Seagate/cortx-posix),
-									string(name: 'SSPL_BRANCH', value: "dev")
+									string(name: 'NFS_URL', value: "https://github.com/Seagate/cortx-posix"),
+									string(name: 'NFS_BRANCH', value: "dev")
 								]
 					}
 				}
