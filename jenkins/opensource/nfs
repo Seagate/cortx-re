@@ -54,6 +54,11 @@ pipeline {
 				script { build_stage=env.STAGE_NAME }
 				sh label: 'Build', script: '''
 					set -xe
+					git clone https://cortx-admin:${passphrase}@github.com/Seagate/cortx-posix --recursive cortx-posix-clone
+					pushd cortx-posix-clone
+						git config --global credential.helper cache
+						git pull origin dev
+                    popd
 					pushd cortx-posix
 					VERSION=$(cat VERSION)
 					#Execute build script
