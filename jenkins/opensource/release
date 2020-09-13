@@ -100,6 +100,17 @@ pipeline {
 								]
 					}
 				}
+
+				stage ("Build NFS") {
+					steps {
+						script { build_stage=env.STAGE_NAME }
+						build job: 'nfs', wait: true,
+						parameters: [
+									string(name: 'SSPL_URL', value: "https://github.com/Seagate/cortx-posix),
+									string(name: 'SSPL_BRANCH', value: "dev")
+								]
+					}
+				}
 			}	
 		}
 
@@ -117,7 +128,7 @@ pipeline {
 			steps {
                 script { build_stage=env.STAGE_NAME }
                 sh label: 'Copy RPMS', script:'''
-					CUSTOM_COMPONENT_NAME="motr|s3server|hare|cortx-ha|provisioner|csm-agent|csm-web|sspl"
+					CUSTOM_COMPONENT_NAME="motr|s3server|hare|cortx-ha|provisioner|csm-agent|csm-web|sspl|nfs"
                     for env in "dev" ;
                     do
 						test -d $integration_dir/$release_tag/ && rm -rf $integration_dir/$release_tag
