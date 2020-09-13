@@ -26,6 +26,10 @@ pipeline {
 	parameters {
 		string(name: 'CSM_BRANCH', defaultValue: 'dev', description: 'Branch for CSM')
 		string(name: 'CSM_URL', defaultValue: 'https://github.com/Seagate/cortx-csm.git', description: 'CSM URL')
+		string(name: 'CSM_AGENT_BRANCH', defaultValue: 'dev', description: 'Branch for CSM Agent')
+		string(name: 'CSM_AGENT_URL', defaultValue: 'https://github.com/Seagate/cortx-manager', description: 'CSM_AGENT URL')
+		string(name: 'CSM_WEB_BRANCH', defaultValue: 'dev', description: 'Branch for CSM Web')
+		string(name: 'CSM_WEB_URL', defaultValue: 'https://github.com/Seagate/cortx-management-portal', description: 'CSM WEB URL')
 		string(name: 'HARE_BRANCH', defaultValue: 'dev', description: 'Branch for Hare')
 		string(name: 'HARE_URL', defaultValue: 'https://github.com/Seagate/cortx-hare', description: 'Hare URL')
 		string(name: 'HA_BRANCH', defaultValue: 'dev', description: 'Branch for Cortx-HA')
@@ -111,13 +115,13 @@ pipeline {
 							
 								build job: 'custom-csm-agent-build', wait: true,
 									parameters: [
-									string(name: 'CSM_AGENT_URL', value: "https://github.com/Seagate/cortx-management/"),
-									string(name: 'CSM_AGENT_BRANCH', value: "${CSM_BRANCH}")
+									string(name: 'CSM_AGENT_URL', value: "${CSM_AGENT_URL}"),
+									string(name: 'CSM_AGENT_BRANCH', value: "${CSM_AGENT_BRANCH}")
 									]
 								build job: 'custom-csm-web-build', wait: true,
 									parameters: [
-									string(name: 'CSM_WEB_URL', value: "https://github.com/Seagate/cortx-management-web"),
-									string(name: 'CSM_WEB_BRANCH', value: "${CSM_BRANCH}")
+									string(name: 'CSM_WEB_URL', value: "${CSM_WEB_URL}"),
+									string(name: 'CSM_WEB_BRANCH', value: "${CSM_WEB_BRANCH}")
 									]		
 							}
 						}	
