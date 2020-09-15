@@ -1,7 +1,7 @@
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/9423ded8ce6142f48f269cd50b255da2)](https://www.codacy.com?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Seagate/cortx-re&amp;utm_campaign=Badge_Grade)
 
 # Cortx Release Engineering
-The purpose of this repository is to keep the scripts, tools, and other configuration used in the Release Engineering. 
+the purpose of this repository is to keep the scripts, tools, and other configuration used in the Release Engineering. 
 
 Release Engineering team is responsible for the followings
 
