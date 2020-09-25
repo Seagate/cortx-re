@@ -12,13 +12,13 @@ pipeline {
 	
 
     parameters {  
-	    string(name: 'NFS_URL', defaultValue: 'https://github.com/Seagate/cortx-posix', description: 'URL for NFS')
+	    string(name: 'NFS_URL', defaultValue: 'https://github.com/Seagate/cortx-posix', description: 'Repository URL for NFS')
         string(name: 'BRANCH_NAME', defaultValue: 'release', description: 'Branch for NFS')
 	}
 
 	environment {
         
-		release_dir="/mnt/bigstorage/releases/eos"
+		release_dir="/mnt/bigstorage/releases/cortx"
 		version="multibranch"
 		component="nfs"
       	passphrase = credentials('shailesh-github-token')
@@ -84,6 +84,16 @@ pipeline {
 			'''
 			}
 		}
-		
 	}
+
+	post {
+        always {
+            script {
+
+                currentBuild.upstreamBuilds?.each { b -> env.upstream_project = "${b.getProjectName()}";env.upstream_build = "${b.getId()}" }
+                TRIGGER = (env.upstream_project != null) ? "${env.upstream_project}/${env.upstream_build}" : currentBuild.getBuildCauses('hudson.model.Cause$UserIdCause')[0].userName
+                manager.addShortText("${BRANCH_NAME} <- ${TRIGGER}")
+            }                            
+        }
+    }
 }

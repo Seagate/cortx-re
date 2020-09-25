@@ -6,16 +6,16 @@ pipeline {
 		}
 	
     parameters {  
-        string(name: 'CSM_AGENT_URL', defaultValue: 'https://github.com/Seagate/cortx-management.git', description: 'Branch for Provisioner.')
-		string(name: 'BRANCH_NAME', defaultValue: 'release', description: 'Branch for Provisioner.')
+        string(name: 'CSM_AGENT_URL', defaultValue: 'https://github.com/Seagate/cortx-manager', description: 'Repo for CSM Agent.')
+		string(name: 'BRANCH_NAME', defaultValue: 'stable', description: 'Branch for CSM Agent.')
 	}	
 
 
 	environment {
         
-		release_dir="/mnt/bigstorage/releases/eos"
+		release_dir="/mnt/bigstorage/releases/cortx"
 		version="multibranch"
-		component="cortx-managemer"
+		component="cortx-manager"
         
     }
 	options {
@@ -28,7 +28,7 @@ pipeline {
         stage('Checkout') {
 			steps {
 				script { build_stage=env.STAGE_NAME }
-                dir('cortx-managemer')
+                dir('cortx-manager')
                 {
                     checkout([$class: 'GitSCM', branches: [[name: '${BRANCH_NAME}']], doGenerateSubmoduleConfigurations: false,  extensions: [[$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: '${CSM_AGENT_URL}']]])
                 }
@@ -48,7 +48,7 @@ pipeline {
 		stage('Build') {
 			steps {
 				sh label: 'Build', script: '''
-                pushd cortx-managemer
+                pushd cortx-manager
                     BUILD=$(git rev-parse --short HEAD)
                     VERSION=$(cat VERSION)
                     echo "Executing build script"
@@ -66,9 +66,20 @@ pipeline {
 			sh label: 'Copy RPMS', script: '''
 			rm -rf $release_dir/components/dev/$version/$component/$BRANCH_NAME
 			mkdir -p $release_dir/components/dev/$version/$component/$BRANCH_NAME
-			cp ./cortx-managemer/dist/rpmbuild/RPMS/x86_64/*.rpm $release_dir/components/dev/$version/$component/$BRANCH_NAME
+			cp ./cortx-manager/dist/rpmbuild/RPMS/x86_64/*.rpm $release_dir/components/dev/$version/$component/$BRANCH_NAME
 			'''
 			}
 		}
 	}
+
+    post {
+        always {
+            script {
+
+                currentBuild.upstreamBuilds?.each { b -> env.upstream_project = "${b.getProjectName()}";env.upstream_build = "${b.getId()}" }
+                TRIGGER = (env.upstream_project != null) ? "${env.upstream_project}/${env.upstream_build}" : currentBuild.getBuildCauses('hudson.model.Cause$UserIdCause')[0].userName
+                manager.addShortText("${BRANCH_NAME} <- ${TRIGGER}")
+            }                            
+        }
+    }
 }

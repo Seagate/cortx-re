@@ -11,13 +11,13 @@ pipeline {
 	}
 
     parameters {  
-	    string(name: 'S3_URL', defaultValue: 'https://github.com/Seagate/cortx-s3server', description: 'Branch for S3Server')
+	    string(name: 'S3_URL', defaultValue: 'https://github.com/Seagate/cortx-s3server', description: 'Repository URL for S3Server')
         string(name: 'S3_BRANCH', defaultValue: 'release', description: 'Branch for S3Server')
 	}
  	
 	stages {	
 	
-            stage('Checkout') {
+        stage('Checkout') {
             steps {
                 step([$class: 'WsCleanup'])
                 checkout([$class: 'GitSCM', branches: [[name: "${S3_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog'], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: '${S3_URL}']]])
@@ -31,19 +31,19 @@ pipeline {
             } 
 
 
-            stage ('Dev build & tests') {
-                steps {
-                    sh label: 'Script', script: '''
-                        git remote -v 
-                        rm -rf /root/.seagate_src_cache/
-                        rm -rf /root/.cache/bazel/*
-                        git branch
-                        echo "Install prerequisite"
-                        systemctl start haproxy
-                        yum install python36 -y 
-                        echo $PWD
-                        ./jenkins-build.sh
-                    '''
+        stage ('Dev build & tests') {
+            steps {
+                sh label: 'Script', script: '''
+                    git remote -v 
+                    rm -rf /root/.seagate_src_cache/
+                    rm -rf /root/.cache/bazel/*
+                    git branch
+                    echo "Install prerequisite"
+                    systemctl start haproxy
+                    yum install python36 -y 
+                    echo $PWD
+                    ./jenkins-build.sh
+                '''
                 }
             }	
 
@@ -67,6 +67,11 @@ pipeline {
         
         post {
             always {
+
+                currentBuild.upstreamBuilds?.each { b -> env.upstream_project = "${b.getProjectName()}";env.upstream_build = "${b.getId()}" }
+                TRIGGER = (env.upstream_project != null) ? "${env.upstream_project}/${env.upstream_build}" : currentBuild.getBuildCauses('hudson.model.Cause$UserIdCause')[0].userName
+                manager.addShortText("${BRANCH_NAME} <- ${TRIGGER}")
+
                 echo 'Cleanup Workspace.'
                 deleteDir() /* clean up our workspace */
                 sh label: 'cleanup', script: '''
@@ -91,5 +96,5 @@ pipeline {
                     rm -rf /root/.cache/bazel/*
                 '''
             }
-        }	
+        }
 }

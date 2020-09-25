@@ -11,12 +11,12 @@ pipeline {
     }
 	
 	parameters {
-		string(name: 'HA_URL', defaultValue: 'https://github.com/Seagate/cortx-ha', description: 'Branch to be used for Hare build.')
-		string(name: 'HA_BRANCH', defaultValue: 'release', description: 'Branch to be used for Hare build.')
+		string(name: 'HA_URL', defaultValue: 'https://github.com/Seagate/cortx-ha', description: 'Repository URL for HA.')
+		string(name: 'HA_BRANCH', defaultValue: 'release', description: 'Branch for HA.')
 	}
 	
 	environment {
-     	release_dir="/mnt/bigstorage/releases/eos"
+     	release_dir="/mnt/bigstorage/releases/cortx"
 		version="multibranch"
 		component="cortx-ha"
 		env="dev"
@@ -81,4 +81,15 @@ pipeline {
 			}
 		}			
 	}
+
+	post {
+        always {
+            script {
+
+                currentBuild.upstreamBuilds?.each { b -> env.upstream_project = "${b.getProjectName()}";env.upstream_build = "${b.getId()}" }
+                TRIGGER = (env.upstream_project != null) ? "${env.upstream_project}/${env.upstream_build}" : currentBuild.getBuildCauses('hudson.model.Cause$UserIdCause')[0].userName
+                manager.addShortText("${BRANCH_NAME} <- ${TRIGGER}")
+            }                            
+        }
+    }
 }
