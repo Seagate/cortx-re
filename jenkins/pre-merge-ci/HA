@@ -1,0 +1,84 @@
+pipeline { 
+    agent {
+        node {
+            label 'ha-centos-docker-swarm-agent'
+        }
+    }
+    
+    options {
+        timeout(time: 60, unit: 'MINUTES')
+        timestamps()
+    }
+	
+	parameters {
+		string(name: 'HA_URL', defaultValue: 'https://github.com/Seagate/cortx-ha', description: 'Branch to be used for Hare build.')
+		string(name: 'HA_BRANCH', defaultValue: 'release', description: 'Branch to be used for Hare build.')
+	}
+	
+	environment {
+     	release_dir="/mnt/bigstorage/releases/eos"
+		version="multibranch"
+		component="cortx-ha"
+		env="dev"
+		component_dir="$release_dir/components/$env/$version/$component"
+    }
+
+    stages {
+	
+		stage('Checkout') {
+			steps {
+				script { build_stage=env.STAGE_NAME }
+				dir ('cortx-ha') {
+					checkout([$class: 'GitSCM', branches: [[name: '$HA_BRANCH']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: false, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: '$HA_URL']]])
+				}
+			}
+		}
+       
+		stage('Install Dependencies') {
+			steps {
+				script { build_stage=env.STAGE_NAME }
+				sh label: '', script: '''
+                    yum clean all;rm -rf /var/cache/yum
+                    yum -q erase eos-py-utils -y;yum install eos-py-utils -y
+				'''
+			}
+		}
+
+		stage('Build') {
+			steps {
+				script { build_stage=env.STAGE_NAME }
+				sh label: 'Build', script: '''
+					pushd $component
+                        bash jenkins/cicd/cortx-ha-dep.sh
+                        pip3 install numpy
+                        echo "Executing build script"
+                        ./jenkins/build.sh -b $BUILD_NUMBER
+                    popd  
+				'''	
+			}
+		}
+		
+		stage('Validation') {
+			steps {
+				script { build_stage=env.STAGE_NAME }
+				sh label: 'Validation', script: '''
+					pushd $component
+                        yum localinstall $WORKSPACE/cortx-ha/dist/rpmbuild/RPMS/x86_64/cortx-ha-*.rpm -y
+                        bash jenkins/cicd/cortx-ha-cicd.sh
+                    popd  
+				'''	
+			}
+		}
+        
+		stage ('Copy RPMS') {
+			steps {
+				script { build_stage=env.STAGE_NAME }
+				sh label: 'Copy RPMS', script: '''
+                    rm -rf $component_dir/$HA_BRANCH
+                    mkdir -p $component_dir/$HA_BRANCH
+                    cp $WORKSPACE/cortx-ha/dist/rpmbuild/RPMS/x86_64/*.rpm $component_dir/$HA_BRANCH
+				'''
+			}
+		}			
+	}
+}

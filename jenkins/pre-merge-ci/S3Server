@@ -1,0 +1,95 @@
+pipeline {
+	 	 
+    agent {
+		node {
+			label 's3-dev-build'
+			}
+	}
+
+	options {
+		timestamps() 
+	}
+
+    parameters {  
+	    string(name: 'S3_URL', defaultValue: 'https://github.com/Seagate/cortx-s3server', description: 'Branch for S3Server')
+        string(name: 'S3_BRANCH', defaultValue: 'release', description: 'Branch for S3Server')
+	}
+ 	
+	stages {	
+	
+            stage('Checkout') {
+            steps {
+                step([$class: 'WsCleanup'])
+                checkout([$class: 'GitSCM', branches: [[name: "${S3_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog'], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: '${S3_URL}']]])
+                sh label: 'Script', script: '''
+                set +x
+                echo "---------------------------------------------------------------------------"
+                echo "Building & Running S3 from '${S3_BRANCH}'"
+                echo "---------------------------------------------------------------------------"
+                '''
+                }
+            } 
+
+
+            stage ('Dev build & tests') {
+                steps {
+                    sh label: 'Script', script: '''
+                        git remote -v 
+                        rm -rf /root/.seagate_src_cache/
+                        rm -rf /root/.cache/bazel/*
+                        git branch
+                        echo "Install prerequisite"
+                        systemctl start haproxy
+                        yum install python36 -y 
+                        echo $PWD
+                        ./jenkins-build.sh
+                    '''
+                }
+            }	
+
+            stage ('S3 RPM build') {
+                steps {
+                    sh label: 'Script', script: '''
+                        echo "Building S3 rpms"
+                        rm -rf  /root/rpmbuild/*/*
+                        yum clean all
+                        yum erase cortx-motr{,-devel} -y -q
+                        yum install cortx-motr{,-devel} -y
+                        yum erase log4cxx_eos-devel -q -y
+                        ./rpms/s3/buildrpm.sh -P $PWD
+                        ./rpms/s3iamcli/buildrpm.sh -P $PWD
+                        echo "Clean up"
+                        rm -rf  /root/rpmbuild/*/*
+                    '''
+                }
+            }	
+        }
+        
+        post {
+            always {
+                echo 'Cleanup Workspace.'
+                deleteDir() /* clean up our workspace */
+                sh label: 'cleanup', script: '''
+                rm -rf /root/.seagate_src_cache/
+                '''
+                emailext (
+                    subject: "[Jenkins Build ${currentBuild.currentResult}] : S3Server Multibranch - ${env.JOB_BASE_NAME}",
+                    body: """
+                    <h> Job S3Server Multibranch [${env.JOB_BASE_NAME}] :</h>
+                    <p>Check console output at "<a href="${env.BUILD_URL}/console">${env.JOB_NAME}</a>"</p>
+                    """,
+                    recipientProviders: [[$class: 'DevelopersRecipientProvider']]
+                )
+            }
+
+            success {
+                sh label: 'cleanup', script: '''
+                    rm -rf /var/mero/*
+                    rm -rf /var/motr/*
+                    rm -rf /var/log/seagate/*
+                    rm -rf  /root/rpmbuild/*/*
+                    rm -rf /root/.cache/bazel/*
+                '''
+            }
+        }	
+}

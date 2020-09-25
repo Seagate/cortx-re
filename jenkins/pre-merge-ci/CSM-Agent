@@ -1,0 +1,74 @@
+pipeline {
+    agent {
+		node {
+			   label 'csm-centos-docker-swarm-agent'
+			}
+		}
+	
+    parameters {  
+        string(name: 'CSM_AGENT_URL', defaultValue: 'https://github.com/Seagate/cortx-management.git', description: 'Branch for Provisioner.')
+		string(name: 'BRANCH_NAME', defaultValue: 'release', description: 'Branch for Provisioner.')
+	}	
+
+
+	environment {
+        
+		release_dir="/mnt/bigstorage/releases/eos"
+		version="multibranch"
+		component="cortx-managemer"
+        
+    }
+	options {
+		timeout(time: 120, unit: 'MINUTES')
+		timestamps ()
+	}
+
+	stages {
+			
+        stage('Checkout') {
+			steps {
+				script { build_stage=env.STAGE_NAME }
+                dir('cortx-managemer')
+                {
+                    checkout([$class: 'GitSCM', branches: [[name: '${BRANCH_NAME}']], doGenerateSubmoduleConfigurations: false,  extensions: [[$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: '${CSM_AGENT_URL}']]])
+                }
+			}
+		}    
+		
+		stage('Install Dependencies') {
+			steps {
+				sh label: 'Install Dependencies', script: '''
+				yum erase -y -q eos-py-utils
+				yum install -y eos-py-utils cortx-prvsnr
+				pip3.6 install  pyinstaller==3.5
+				'''
+			}	
+		}	
+		
+		stage('Build') {
+			steps {
+				sh label: 'Build', script: '''
+                pushd cortx-managemer
+                    BUILD=$(git rev-parse --short HEAD)
+                    VERSION=$(cat VERSION)
+                    echo "Executing build script"
+                    echo "VERSION:$VERSION"
+                    echo "Python:$(python --version)"
+                    export PATH=$PATH:/root/.nvm/versions/node/v12.13.0/bin:/opt/rh/sclo-git212/root/usr/bin
+                    ./cicd/build.sh -v $VERSION -b $BUILD_NUMBER -t -i
+                popd
+				'''	
+			}
+		}
+		
+      	stage ('Copy RPMS') {
+			steps {
+			sh label: 'Copy RPMS', script: '''
+			rm -rf $release_dir/components/dev/$version/$component/$BRANCH_NAME
+			mkdir -p $release_dir/components/dev/$version/$component/$BRANCH_NAME
+			cp ./cortx-managemer/dist/rpmbuild/RPMS/x86_64/*.rpm $release_dir/components/dev/$version/$component/$BRANCH_NAME
+			'''
+			}
+		}
+	}
+}

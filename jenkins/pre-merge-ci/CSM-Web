@@ -1,0 +1,78 @@
+pipeline {
+    agent {
+        node {
+                label 'csm-centos-docker-swarm-agent'
+            }
+    }
+
+    parameters {  
+        string(name: 'CSM_WEB_URL', defaultValue: 'https://github.com/Seagate/cortx-management-portal', description: 'Branch for Provisioner.')
+		string(name: 'CSM_WEB_BRANCH', defaultValue: 'release', description: 'Branch for Provisioner.')
+	}	
+    
+	
+	environment {
+     	release_dir="/mnt/bigstorage/releases/eos"
+		version="multibranch"
+		component="cortx-management-portal"
+		env="dev"
+		component_dir="$release_dir/components/$env/$version/$component"
+    }
+
+	options {
+		timeout(time: 120, unit: 'MINUTES')
+		timestamps ()
+	}
+
+	stages {
+			
+        stage('Checkout') {
+			steps {
+				script { build_stage=env.STAGE_NAME }
+				dir('cortx-management-portal'){
+				    checkout([$class: 'GitSCM', branches: [[name: "${CSM_WEB_BRANCH}"]], doGenerateSubmoduleConfigurations: false,  extensions: [[$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-management-portal']]])
+				}
+				dir('seagate-ldr'){
+				    checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/seagate-ldr.git']]])
+				}
+			}
+		}
+
+		stage('Install Dependencies') {
+			steps {
+				sh label: '', script: '''
+				yum erase -y -q eos-py-utils
+                yum install -y cortx-py-utils cortx-prvsnr
+				pip3.6 install  pyinstaller==3.5
+				'''
+			}
+		}	
+		
+		stage('Build') {
+			steps {
+				sh label: 'Build', script: '''
+                pushd $component
+                    ls -ltr
+                    BUILD=$(git rev-parse --short HEAD)
+                    VERSION=$(cat $WORKSPACE/cortx-management-portal/VERSION)
+                    echo "Executing build script"
+                    echo "VERSION:$VERSION"
+                    echo "Python:$(python --version)"
+                    export PATH=$PATH:/root/.nvm/versions/node/v12.13.0/bin:/opt/rh/sclo-git212/root/usr/bin
+                    ./cicd/build.sh -v $VERSION -b $BUILD_NUMBER -t -i
+                popd    
+                '''	
+			}
+		}
+		
+      	stage ('Copy RPMS') {
+			steps {
+			sh label: 'Copy RPMS', script: '''
+			rm -rf $component_dir/$CSM_WEB_BRANCH
+            mkdir -p $component_dir/$CSM_WEB_BRANCH
+			cp ./cortx-management-portal/dist/rpmbuild/RPMS/x86_64/*.rpm $component_dir/$CSM_WEB_BRANCH
+			'''
+			}
+		}
+	}
+}

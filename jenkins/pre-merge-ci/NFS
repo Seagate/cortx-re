@@ -1,0 +1,89 @@
+pipeline {
+	agent {
+		node {
+			label 'nfs-centos-docker-swarm-agent'
+		}
+	}
+    
+	options {
+		timeout(time: 35, unit: 'MINUTES')
+		timestamps() 
+	}
+	
+
+    parameters {  
+	    string(name: 'NFS_URL', defaultValue: 'https://github.com/Seagate/cortx-posix', description: 'URL for NFS')
+        string(name: 'BRANCH_NAME', defaultValue: 'release', description: 'Branch for NFS')
+	}
+
+	environment {
+        
+		release_dir="/mnt/bigstorage/releases/eos"
+		version="multibranch"
+		component="nfs"
+      	passphrase = credentials('shailesh-github-token')
+        
+    }
+
+	stages {
+	
+      	stage('Checkout nfs-ganesha') {
+			steps {
+				script { build_stage=env.STAGE_NAME }
+
+                dir ('cortx-posix') {
+					checkout([$class: 'GitSCM', branches: [[name: '$BRANCH_NAME']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: '$NFS_URL']]])
+				}
+
+				sh 'mkdir -p nfs-ganesha'
+				dir ('nfs-ganesha') {
+                	checkout([$class: 'GitSCM', branches: [[name: '*/2.8-stable-eos']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CheckoutOption'], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: false, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[url: 'http://gitlab.mero.colo.seagate.com/eos/fs/nfs-ganesha.git']]])
+				}	
+			}
+		}
+
+      
+		stage('Preparation') {
+			steps {
+				script { build_stage=env.STAGE_NAME }
+				sh label: '', script: '''
+					rm -rf /root/rpmbuild/RPMS/x86_64/*.rpm
+					yum erase eos-core{,-devel,-debuginfo} -y -q
+					yum install userspace-rcu-devel dbus-devel cortx-motr{,-devel} -y
+		        '''
+			}
+		}
+					
+		stage('Build') {
+			steps {
+				script { build_stage=env.STAGE_NAME }
+				sh label: 'Build', script: '''
+					set -xe
+					git clone https://cortx-admin:${passphrase}@github.com/Seagate/cortx-posix --recursive cortx-posix-clone
+					pushd cortx-posix-clone
+                        git config --global credential.helper cache
+                        git pull origin dev
+                    popd
+                    pushd cortx-posix
+                        VERSION=$(cat VERSION)
+                        #Execute build script
+                        echo "Executing build script"
+                        echo "VERSION:$VERSION"
+                        ./jenkins/build.sh -v $VERSION -b $BUILD_NUMBER -p ../nfs-ganesha/src/
+                    popd
+				'''	
+			}
+		}
+		
+		stage ('Copy RPMS') {
+			steps {
+			sh label: 'Copy RPMS', script: '''
+			rm -rf $release_dir/components/dev/$version/$component/$BRANCH_NAME
+			mkdir -p $release_dir/components/dev/$version/$component/$BRANCH_NAME
+			cp /root/rpmbuild/RPMS/x86_64/*.rpm $release_dir/components/dev/$version/$component/$BRANCH_NAME
+			'''
+			}
+		}
+		
+	}
+}
