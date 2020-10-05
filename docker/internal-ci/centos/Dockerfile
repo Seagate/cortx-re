@@ -38,7 +38,7 @@ RUN yum install centos-release-scl -y && yum clean all \
 && rm -rf /var/cache/yum
 
 # install common tools
-RUN yum -y install python3{,-{devel,pip,setuptools,PyYAML}} \
+RUN yum -y install python3{,-{devel,pip,setuptools}} \
 createrepo \
 file \
 git \
