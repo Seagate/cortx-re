@@ -68,10 +68,6 @@ libcmocka-devel.x86_64 \
 jemalloc \
 json-c-devel \
 json-c \
-libevhtp \
-libevhtp-devel \
-libevent \
-libevent-devel \
 openssl \
 openssl-devel \
 cmake3 \
@@ -173,22 +169,17 @@ RUN curl -k https://raw.githubusercontent.com/Seagate/cortx-motr/main/cortx-motr
 
 RUN curl -k https://raw.githubusercontent.com/Seagate/cortx-s3server/main/rpms/s3/s3rpm.spec -o s3rpm.spec \
      && yum install -y http://cortx-storage.colo.seagate.com/releases/cortx/components/github/motr-base/cortx-motr-1.0.0-0_git588b298_3.10.0_1062.el7.x86_64.rpm \
-    http://cortx-storage.colo.seagate.com/releases/cortx/components/github/motr-base/cortx-motr-devel-1.0.0-0_git588b298_3.10.0_1062.el7.x86_64.rpm \
+     http://cortx-storage.colo.seagate.com/releases/cortx/components/github/motr-base/cortx-motr-devel-1.0.0-0_git588b298_3.10.0_1062.el7.x86_64.rpm \
     && yum install -y git-clang-format \
     && yum-builddep -y s3rpm.spec \
     && rm -f s3rpm.spec \
-    && yum remove -y motr motr-devel
+    && yum remove -y cortx-motr cortx-motr-devel
 
 ENV HARE_VENV_DIR=$HOME/.hare-venv
 
 RUN mkdir $HARE_VENV_DIR \
     && python3 -m venv $HARE_VENV_DIR
 
-# PyYAML - for cfgen
-# flake8 - for hax
-# mypy   - for hax
-# ply    - for motr
-# wheel  - for hax
 RUN source $HARE_VENV_DIR/bin/activate \
     && pip3 install PyYAML flake8 mypy ply wheel
 
@@ -196,5 +187,3 @@ ADD https://github.com/dhall-lang/dhall-haskell/releases/download/1.26.1/dhall-1
 ADD https://github.com/dhall-lang/dhall-haskell/releases/download/1.26.1/dhall-json-1.4.1-x86_64-linux.tar.bz2  /var/cache
 
 RUN for f in /var/cache/dhall*.tar*; do tar -C /usr/local -xf $f; done
-
-
