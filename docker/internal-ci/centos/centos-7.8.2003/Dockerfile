@@ -113,7 +113,7 @@ RUN bash /opt/setup_fpm.sh \
 && rm -f /opt/setup_fpm.sh && yum clean all \
 && rm -rf /var/cache/yum
 
-# Setup SSH daemon for Jenkins
+# For Jenkins SSH connection
 RUN mkdir /var/run/sshd
 RUN echo "${USER_PASS}" | chpasswd
 RUN sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
@@ -127,7 +127,6 @@ RUN echo "export VISIBLE=now" >> /etc/profile
 EXPOSE 22
 CMD ["/usr/sbin/sshd", "-D"]
 
-
 FROM base as lustre-rpm-builder
 
 ARG LUSTRE_VERSION 
@@ -138,7 +137,7 @@ RUN rpm -i lustre-${LUSTRE_VERSION}-1.src.rpm
 COPY lustre-2.9.0.spec.patch .
 RUN patch -p1 -i lustre-2.9.0.spec.patch /root/rpmbuild/SPECS/lustre.spec
 
-RUN yum -y install kernel-3.10.0-1062.el7.x86_64 kernel-devel-3.10.0-1062.el7.x86_64 \
+RUN yum -y install kernel kernel-devel \
 	&& yum-builddep -y /root/rpmbuild/SPECS/lustre.spec
 	
 RUN QA_RPATHS=255 rpmbuild -bb --without servers --without lustre-tests \
