@@ -19,9 +19,6 @@ ARG CENTOS_RELEASE
 
 FROM centos:${CENTOS_RELEASE} AS base
 
-
-ARG USER_PASS
-
 ENV BASH_ENV "/etc/profile"
 ENV PATH="/root/.nvm/versions/node/v12.13.0/bin:${PATH}"
 ENV LANG=en_US.UTF-8 \
@@ -112,20 +109,6 @@ RUN sh /opt/systemctl-replacement.sh \
 RUN bash /opt/setup_fpm.sh \
 && rm -f /opt/setup_fpm.sh && yum clean all \
 && rm -rf /var/cache/yum
-
-# For Jenkins SSH connection
-RUN mkdir /var/run/sshd
-RUN echo "${USER_PASS}" | chpasswd
-RUN sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
-RUN ssh-keygen -P "" -t rsa -f /etc/ssh/ssh_host_rsa_key
-# SSH login fix. Otherwise user is kicked off after login
-RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
-
-ENV NOTVISIBLE "in users profile"
-RUN echo "export VISIBLE=now" >> /etc/profile
-
-EXPOSE 22
-CMD ["/usr/sbin/sshd", "-D"]
 
 FROM base as lustre-rpm-builder
 
