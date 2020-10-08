@@ -14,6 +14,8 @@ pipeline {
         components_dir="$release_dir/components/github/custom-ci/release/$os_version"
         release_tag="custom-build-$BUILD_ID"
         passphrase = credentials('rpm-sign-passphrase')
+        cortx_build_dir="/mnt/bigstorage/releases/cortx_builds/$os_version"
+        thrid_party_dir="/mnt/bigstorage/releases/cortx/third-party-deps/rhel/rhel-7.7.1908/"
     }
 	
 	
@@ -336,6 +338,12 @@ pipeline {
                     echo "Custom Release Build and ISO is available at,"
 					echo "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/release/$release_tag"
 					echo "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/release/iso/$release_tag.iso"
+                   pushd $cortx_build_dir
+                        test -d $release_tag && rm -f $release_tag
+                        mkdir $release_tag && pushd $release_tag
+                            ln -s $integration_dir/$release_tag/prod cortx_iso
+                            ln -s $thrid_party_dir 3rd_party
+                   popd
 					
                 '''
 			}
