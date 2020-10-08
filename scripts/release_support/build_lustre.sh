@@ -20,6 +20,8 @@
 
 set -eo pipefail
 
+yum install libtool kernel kernel-devel libyaml-devel zlib-devel mock rpm-build -y
+
 rm -rf lustre
 lustre_repo=https://github.com/Cray/lustre.git
 lustre_branch=cray-2.12-int
@@ -121,9 +123,9 @@ mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=testing-epel7&arch=x
 failovermethod=priority
 skip_if_unavailable=False
 
-[mlnx_ofed_4.7]
+[mlnx_ofed_4.9]
 name=Mellanox Technologies rhel7.7-$basearch mlnx_ofed 4.7
-baseurl=https://linux.mellanox.com/public/repo/mlnx_ofed/4.7-3.2.9.0/rhel7.7/x86_64/UPSTREAM_LIBS/
+baseurl=https://linux.mellanox.com/public/repo/mlnx_ofed/4.9-0.1.7.0/rhel7.8/x86_64/UPSTREAM_LIBS/
 enabled=1
 gpgkey=http://www.mellanox.com/downloads/ofed/RPM-GPG-KEY-Mellanox
 gpgcheck=0
