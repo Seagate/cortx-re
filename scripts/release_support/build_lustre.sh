@@ -83,22 +83,32 @@ mdpolicy=group:primary
 best=1
 
 # repos
-[base]
-name=BaseOS
-baseurl=http://vault.centos.org/7.7.1908/os/x86_64/
-failovermethod=priority
-gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-7
-gpgcheck=0
-skip_if_unavailable=False
 
+[base]
+name=CentOS-$releasever - Base
+mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=os&infra=$infra
+#baseurl=http://mirror.centos.org/centos/$releasever/os/$basearch/
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+enabled = 0
+
+#released updates
 [updates]
-name=updates
-baseurl=http://vault.centos.org/7.7.1908/updates/x86_64/
-enabled=0
-failovermethod=priority
-gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-7
-gpgcheck=0
-skip_if_unavailable=False
+name=CentOS-$releasever - Updates
+mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=updates&infra=$infra
+#baseurl=http://mirror.centos.org/centos/$releasever/updates/$basearch/
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+enabled = 0
+
+#additional packages that may be useful
+[extras]
+name=CentOS-$releasever - Extras
+mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=extras&infra=$infra
+#baseurl=http://mirror.centos.org/centos/$releasever/extras/$basearch/
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+enabled = 0
 
 [epel]
 name=epel
@@ -106,14 +116,6 @@ mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=epel-7&arch=x86_64
 failovermethod=priority
 gpgkey=file:///usr/share/distribution-gpg-keys/epel/RPM-GPG-KEY-EPEL-7
 gpgcheck=0
-skip_if_unavailable=False
-
-[extras]
-name=extras
-baseurl=http://vault.centos.org/7.7.1908/extras/x86_64/
-failovermethod=priority
-gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-7
-gpgcheck=1
 skip_if_unavailable=False
 
 [testing]
@@ -208,8 +210,8 @@ make srpm
 log 'Preparing mock environment'
 mock -r ${mock_cfg} clean
 mock -r ${mock_cfg} install \
-    kernel-3.10.0-1062.el7.x86_64 \
-    kernel-devel-3.10.0-1062.el7.x86_64 \
+    kernel-3.10.0-1127.el7.x86_64 \
+    kernel-devel-3.10.0-1127.el7.x86_64 \
     ${use_o2ib:+mlnx-ofa_kernel-devel}
 
 _KERNEL='3.10.0-1062.el7'
