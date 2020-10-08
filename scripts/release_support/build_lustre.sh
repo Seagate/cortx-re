@@ -90,7 +90,7 @@ mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo
 #baseurl=http://mirror.centos.org/centos/$releasever/os/$basearch/
 gpgcheck=1
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
-enabled = 0
+enabled = 1
 
 #released updates
 [updates]
@@ -108,7 +108,7 @@ mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo
 #baseurl=http://mirror.centos.org/centos/$releasever/extras/$basearch/
 gpgcheck=1
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
-enabled = 0
+enabled = 1
 
 [epel]
 name=epel
