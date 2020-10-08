@@ -214,7 +214,7 @@ mock -r ${mock_cfg} install \
     kernel-devel-3.10.0-1127.el7.x86_64 \
     ${use_o2ib:+mlnx-ofa_kernel-devel}
 
-_KERNEL='3.10.0-1062.el7'
+_KERNEL='3.10.0-1127.el7'
 K_ARCH='x86_64'
 
 log "Building Lustre rpms ${use_o2ib:+with o2ib support}"
