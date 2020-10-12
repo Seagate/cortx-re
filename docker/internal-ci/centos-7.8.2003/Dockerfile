@@ -142,14 +142,14 @@ RUN yum install -y https://downloads.whamcloud.com/public/lustre/lustre-${LUSTRE
 		 && rm -rf /var/cache/yum
 		 
 		 
-RUN curl -k https://raw.githubusercontent.com/Seagate/cortx-motr/main/cortx-motr.spec.in -o cortx-motr.spec \
+RUN curl -k https://raw.githubusercontent.com/Seagate/cortx-motr/stable/cortx-motr.spec.in -o cortx-motr.spec \
 	&& sed -i 's/@.*@/111/g' cortx-motr.spec \
 	&& kernel_src=$(ls -1rd /lib/modules/*/build | head -n1) \
         && yum-builddep -y cortx-motr.spec \
 	&& yum clean all \
         && rm -rf /var/cache/yum
 
-RUN curl -k https://raw.githubusercontent.com/Seagate/cortx-s3server/main/rpms/s3/s3rpm.spec -o s3rpm.spec \
+RUN curl -k https://raw.githubusercontent.com/Seagate/cortx-s3server/stable/rpms/s3/s3rpm.spec -o s3rpm.spec \
      && yum install -y http://cortx-storage.colo.seagate.com/releases/cortx/components/github/motr-base/cortx-motr-1.0.0-0_git588b298_3.10.0_1062.el7.x86_64.rpm \
      http://cortx-storage.colo.seagate.com/releases/cortx/components/github/motr-base/cortx-motr-devel-1.0.0-0_git588b298_3.10.0_1062.el7.x86_64.rpm \
     && yum install -y git-clang-format \
