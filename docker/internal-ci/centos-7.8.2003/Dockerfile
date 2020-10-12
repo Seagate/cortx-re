@@ -168,4 +168,4 @@ RUN source $HARE_VENV_DIR/bin/activate \
 ADD https://github.com/dhall-lang/dhall-haskell/releases/download/1.26.1/dhall-1.26.1-x86_64-linux.tar.bz2      /var/cache
 ADD https://github.com/dhall-lang/dhall-haskell/releases/download/1.26.1/dhall-json-1.4.1-x86_64-linux.tar.bz2  /var/cache
 
-RUN for f in /var/cache/dhall*.tar*; do tar -C /usr/local -xf $f; done
+RUN for f in /var/cache/dhall*.tar*; do tar -C /usr/local -xf "$f"; done
