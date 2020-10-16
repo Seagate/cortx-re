@@ -4,12 +4,12 @@
 REMOVE_BUILD_OLDER_THEN=30
 KEEP_BUILD=5
 ENV=""
-MODE="dryrun"
+CLEANUP_MODE="dry-run"
 
 helpFunction()
 {
    echo ""
-   echo "Usage: $0 -e dev -k 5 -r 30"
+   echo "Usage: $0 -e dev -k 5 -r 30 -m dryrun"
    echo -e "\t-a Environment where we need to execute the cleanup eg dev"
    echo -e "\t-k Number of builds to keep. eg - 5"
    echo -e "\t-r Remove builds older than x days. eg - 30"
@@ -17,14 +17,14 @@ helpFunction()
    exit 1 
 }
 
-while getopts "e:k:r:m" opt
+while getopts ":e:m:k:r:" opt
 do
    case "$opt" in
-      e ) ENV="$OPTARG" ;;
-      k ) KEEP_BUILD="$OPTARG" ;;
-      r ) REMOVE_BUILD_OLDER_THEN="$OPTARG" ;;
-      m ) MODE="$OPTARG" ;;
-      ? ) helpFunction ;; # Print helpFunction in case parameter is non-existent
+        e ) ENV="$OPTARG" ;;
+        m ) CLEANUP_MODE="$OPTARG" ;;
+        k ) KEEP_BUILD="$OPTARG" ;;
+        r ) REMOVE_BUILD_OLDER_THEN="$OPTARG" ;;
+        ? ) helpFunction ;; # Print helpFunction in case parameter is non-existent
    esac
 done
 
@@ -58,6 +58,7 @@ DO_NOT_REMOVE_DIR=()
 OLD_BUILDS=()
 BUILDS_FOR_REMOVAL=()
 
+# Validate input argument
 _validate_arguments(){
 
     # Validate the Environment attribute
@@ -66,7 +67,6 @@ _validate_arguments(){
         exit 1
     fi
 }
-
 
 # Find symlink original folder to exclude from cleanup (those symlinks are sprint builds)
 _find_protected_builds(){
@@ -94,14 +94,27 @@ _find_old_builds(){
     # Cleanup Directory
     echo -e "\t Searching for old builds in given Dir"
 
+    OLD_BUILDS_TEMP=()
     for cleanup_dir in "${CLEANUP_DIR[@]}"; do
         if [ -d "$cleanup_dir" ]; then
             echo -e "\t\t Searching for old builds in $cleanup_dir"
             old_build_in_given_dir=($( { find "$cleanup_dir" -type d -mtime "+${REMOVE_BUILD_OLDER_THEN}" -not -path "*/repodata"; echo; }  | awk 'index($0,prev"/")!=1 && NR!=1 {print prev} 1 {sub(/\/$/,""); prev=$0}'))
-            OLD_BUILDS+=( "${old_build_in_given_dir[@]}")
+            OLD_BUILDS_TEMP+=( "${old_build_in_given_dir[@]}")
         fi
-    done 
-    
+    done
+
+    DEV_SUFFIX="dev"
+    PROD_SUFFIX="prod"
+    for old_build_tmp in "${OLD_BUILDS_TEMP[@]}"; do
+
+        if [[ "${old_build_tmp}" == *"/${DEV_SUFFIX}" ]];then  
+            old_build_tmp=${old_build_tmp%"$DEV_SUFFIX"}
+        elif [[ "${old_build_tmp}" == *"/${PROD_SUFFIX}" ]];then
+            old_build_tmp=${old_build_tmp%"$PROD_SUFFIX"}
+        fi
+        OLD_BUILDS+=( "${old_build_tmp}")
+    done
+
     echo -e "\t Total old builds found in the given locations = ${#OLD_BUILDS[@]}"
 }
 
@@ -109,24 +122,33 @@ _find_old_builds(){
 _get_builds_for_removal(){
     echo "[ ${ENV} ] | 3. Calculating Builds for removal [ Exclude protected builds from cleanup process ]"
 
-    OLD_BUILDS_PROTECTED_BUILDS_SKIPED=("${OLD_BUILDS[@]}")
-    for protected_build in "${DO_NOT_REMOVE_DIR[@]}"; do
-        OLD_BUILDS_PROTECTED_BUILDS_SKIPED=(${OLD_BUILDS_PROTECTED_BUILDS_SKIPED[@]/$protected_build})
+    BUILDS_FOR_REMOVAL=()
+    for cleanup_build_path in "${OLD_BUILDS[@]}"; do
+        ADD_TO_CLEANUP=true
+        for protected_build_path in "${DO_NOT_REMOVE_DIR[@]}"; do
+            if [[ "${cleanup_build_path}" == "${protected_build_path}"* ]] && [[ "${protected_build_path}" == "${cleanup_build_path}"* ]]; then
+                ADD_TO_CLEANUP=false
+                break
+            fi
+        done
+        if $ADD_TO_CLEANUP; then
+            BUILDS_FOR_REMOVAL+=( "${cleanup_build_path}" )
+        fi
+
     done
 
-    BUILDS_FOR_REMOVAL=("${OLD_BUILDS_PROTECTED_BUILDS_SKIPED[@]}")
-    
     echo -e "\t Builds Going to be deleted  = ${#BUILDS_FOR_REMOVAL[@]}"
     echo -e "\t Total File Size = $(du -csh ${BUILDS_FOR_REMOVAL[@]//} | tail -n 1 | cut -f1)"
 }
+
 
 # Remove builds
 _remove_builds(){
 
     printf '%s\n' "${BUILDS_FOR_REMOVAL[@]}" > "cleanup_$(date +"%Y_%m_%d_%I_%M_%p").txt"
     printf '%s\n' "${DO_NOT_REMOVE_DIR[@]}" > "cleanup_protected_builds_$(date +"%Y_%m_%d_%I_%M_%p").txt"
-
-    if [[ "${MODE}" == "cleanup" ]]; then
+    
+    if [[ "${CLEANUP_MODE}" == "cleanup" ]]; then
         for BUILD in "${BUILDS_FOR_REMOVAL[@]}"; do
 
             for cleanup_root_path in "${CLEANUP_DIR[@]}"; do
@@ -140,9 +162,7 @@ _remove_builds(){
         echo "[ ${ENV} ] | 4. Build Cleanup Success"
     else
         echo "[ ${ENV} ] | 4. Build Not Cleanedup - Dry-RUN Mode"
-    fi
-
-    
+    fi 
 }
 
 _validate_arguments
