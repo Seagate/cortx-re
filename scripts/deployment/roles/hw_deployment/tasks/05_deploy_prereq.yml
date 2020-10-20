@@ -1,0 +1,65 @@
+---
+
+- name: "[prov-prereq] : Download cortx-prereqs.sh script" 
+  get_url:
+    url: "{{ PREREQ_URL }}"
+    dest: /root/cortx-prereqs.sh
+    mode: '0755'
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['nodes'] }}"
+
+- name: "[prov-prereq] : Get cortx prereqs arg" 
+  script: files/cortx_prereq_arg.sh
+  register: cortx_prereqs_arg
+  delegate_to: "srvnode-1"
+
+- name: "[prov-prereq] : Run cortx-prereqs.sh on primary node" 
+  command: ./cortx-prereqs.sh {{ cortx_prereqs_arg.stdout }}
+  async: 1800
+  poll: 0
+  ignore_errors: true
+  become: true
+  delegate_to: "srvnode-1"
+
+- name: "[prov-prereq] : Run cortx-prereqs.sh on secondary node" 
+  command: ./cortx-prereqs.sh --disable-sub-mgr
+  ignore_errors: true
+  become: true
+  delegate_to: "srvnode-2"
+
+
+- name: "[prov-prereq] : Wait for nodes to reboot"
+  wait_for:
+      host={{ hostvars[item]['ansible_host'] }}
+      port=22
+      delay=30
+      timeout=1800
+  become: false
+  ignore_errors: true
+  with_items: "{{ groups['nodes'] }}"
+
+
+- name: "[prov-prereq] : Install git, python3 on primary node"
+  yum:
+    name: ['git', 'python3', 'expect']
+    state: latest
+    update_cache: yes   
+  delegate_to: "srvnode-1"
+
+
+- name: "[prov-prereq] : Install provisioner CLI on primary node"
+  shell: pip3 install -U git+{{ PRVSNR_CLI_REPO }}
+  delegate_to: "srvnode-1"
+
+
+- name: "[prov-prereq] : Verfiy provisioner CLI on primary node"
+  shell: provisioner --version
+  delegate_to: "srvnode-1"  
+
+
+- name: "[deploy-config] : Download config file on primary node"
+  get_url:
+    url: "{{ CONFIG_URL }}"
+    dest: /root/config.ini
+    mode: '0754'
+  delegate_to: "srvnode-1"

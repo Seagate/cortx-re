@@ -1,0 +1,12 @@
+---
+ - hosts: localhost
+   gather_facts: yes
+   become: yes
+   vars_files:
+     - roles/vm_deployment/vars/config.yml 
+   roles:
+      - vm_deployment
+
+
+
+     
