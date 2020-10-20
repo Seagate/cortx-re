@@ -1,0 +1,7 @@
+---
+
+- include: deploy_iso.yml
+  when: "'.iso' in BUILD_URL"
+
+- include: deploy_rpm.yml
+  when: "'.iso' not in BUILD_URL"
