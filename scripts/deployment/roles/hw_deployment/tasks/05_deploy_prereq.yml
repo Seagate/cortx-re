@@ -46,16 +46,9 @@
     update_cache: yes   
   delegate_to: "srvnode-1"
 
-
-- name: "[prov-prereq] : Install provisioner CLI on primary node"
-  shell: pip3 install -U git+{{ PRVSNR_CLI_REPO }}
+- name: "[prov-prereq] : Install Provisioner CLI on Primary Node"
+  script: files/install_provisioner_cli.sh
   delegate_to: "srvnode-1"
-
-
-- name: "[prov-prereq] : Verfiy provisioner CLI on primary node"
-  shell: provisioner --version
-  delegate_to: "srvnode-1"  
-
 
 - name: "[deploy-config] : Download config file on primary node"
   get_url:
