@@ -1,5 +1,0 @@
----
-
-- name: "[deploy] : Deploy CORTX cluster"
-  script: files/deploy.sh {{ NODE1 }}  {{ NODE2 }}  {{ CLUSTER_PASS }} {{ BUILD_URL }}
-  delegate_to: "srvnode-1"

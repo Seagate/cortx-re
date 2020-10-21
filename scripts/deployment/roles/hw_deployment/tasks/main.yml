@@ -4,15 +4,15 @@
 - include: 02_system_reimage.yml
   when: REIMAGE == "yes"
   tags: ['02_REIMAGE']
+
+- include: 03_deploy_prereq.yml 
+  tags: ['03_DEPLOY_PREREQ']
   
-- include: 03_inband_setup.yml
-  tags: ['03_INBAND']
+- include: 04_inband_setup.yml
+  tags: ['04_INBAND']
 
-- include: 04_cross_connect_disable.yml
-  tags: ['04_CC_DISABLE']
-
-- include: 05_deploy_prereq.yml 
-  tags: ['05_DEPLOY_PREREQ']
+- include: 05_cross_connect_disable.yml
+  tags: ['05_CC_DISABLE']
 
 - include: 06_deploy.yml
   tags: ['06_DEPLOY']

@@ -3,21 +3,6 @@
 - name: "[reimage] : Re-Image nodes {{ NODE1 }} , {{ NODE2 }} using satellite API" 
   command: python3 -u {{ role_path }}/files/autoreimage.py -p {{ NODE1 }} -s {{ NODE2 }} -un {{ SATELLITE_UN }} -pw {{ SATELLITE_PW }}
 
-# - name: Re-image node {{ NODE1 }} using satellite API
-#   shell: "curl --user {{ SATELLITE_UN }}:{{ SATELLITE_PW }} -k -H \"Content-Type:application/json\" -H \"Accept:application/json\" -X PUT -d '{\"host\":{\"build\": \"true\"}}' https://ssc-satellite1.colo.seagate.com/api/v2/hosts/{{ NODE1 }} | jq -r '.build'"
-
-# - name: power reset node {{ NODE1 }} using satellite API
-#   shell: "curl --user {{ SATELLITE_UN }}:{{ SATELLITE_PW }} -k -H \"Content-Type:application/json\" -H \"Accept:application/json\" -X PUT -d '{\"power_action\": \"reset\"}' https://ssc-satellite1.colo.seagate.com/api/v2/hosts/{{ NODE1 }}/power | jq"
-
-# - name: Re-image node {{ NODE2 }} using satellite API
-#   shell: "curl --user {{ SATELLITE_UN }}:{{ SATELLITE_PW }} -k -H \"Content-Type:application/json\" -H \"Accept:application/json\" -X PUT -d '{\"host\":{\"build\": \"true\"}}' https://ssc-satellite1.colo.seagate.com/api/v2/hosts/{{ NODE2 }} | jq -r '.build'"
-
-# - name: power reset node {{ NODE2 }} using satellite API
-#   shell: "curl --user {{ SATELLITE_UN }}:{{ SATELLITE_PW }} -k -H \"Content-Type:application/json\" -H \"Accept:application/json\" -X PUT -d '{\"power_action\": \"reset\"}' https://ssc-satellite1.colo.seagate.com/api/v2/hosts/{{ NODE2 }}/power | jq"
-
-# - name: check re-image status
-#   script: files/check_re-image_status.sh {{ NODE1 }} {{ NODE2 }}
-
 - name: "[reimage] : Wait for server to restart"
   wait_for:
       host={{ hostvars[item]['ansible_host'] }}
@@ -28,12 +13,9 @@
   ignore_errors: true
   with_items: "{{ groups['nodes'] }}"
 
-
 - include: change_password.yml
   when: CHANGE_PASS == "yes"
-
   
 - meta: refresh_inventory
-
 
 - include: passwordless_authentication.yml

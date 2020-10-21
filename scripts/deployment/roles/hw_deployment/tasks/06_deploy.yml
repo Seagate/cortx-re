@@ -1,7 +1,14 @@
 ---
 
-- include: deploy_iso.yml
-  when: "'.iso' in BUILD_URL"
+- name: "[deploy] : Copy deploy script to primary node"
+  copy:
+      src: "{{ 'files/cortx_deploy_iso.sh' if '.iso' in BUILD_URL else 'files/cortx_deploy_rpm.sh' }}"
+      dest: cortx_deploy.sh
+      owner: root
+      group: root
+      mode: '0754'
+  delegate_to: "srvnode-1"
 
-- include: deploy_rpm.yml
-  when: "'.iso' not in BUILD_URL"
+- name: "[deploy] : Deploy Cluster on Primary Node"
+  script: files/cortx_deploy_wrapper.sh {{ BUILD_URL }} {{ NODE1 }} {{ NODE2 }} {{ CLUSTER_PASS }}
+  delegate_to: "srvnode-1"

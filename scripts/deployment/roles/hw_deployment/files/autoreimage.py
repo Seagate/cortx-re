@@ -65,9 +65,6 @@ def send_build_request(node):
     }
     data = '{"host":{"build": "true"}}'
     response = requests.put(endpoint_host + node, headers=headers, data=data, verify=False, auth=(username, password))
-    print("----------- Build Request Response ----------------")
-    print(response.content)
-    print("-----------------------------------------------------")
     if response.status_code == requests.codes.ok:
         if response.json()['build']:
             print('Build host request on {0} successfully completed'.format(node))
@@ -128,9 +125,7 @@ def check_reimage_status(node):
         print('Reimage is already in progress on node {0}'.format(node))
         print('Please wait for it to complete or cancel this from https://ssc-satellite1.colo.seagate.com/hosts/{0}'.format(node))
         print('Then restart this script')
-        return False
-    else:
-        return True
+        exit(1)
 
 
 if __name__ == "__main__":
@@ -139,19 +134,24 @@ if __name__ == "__main__":
     for host in hosts:
         if not check_ping(host):
             print("Unable to connect to {0}".format(host))
-            
-    # send build request for both nodes
-    for host in hosts:
-        if check_reimage_status(host):
-            print('* Sending reimage request to both the nodes')
-            send_build_request(host)
-            print('* Power cycling both the nodes')
-            reboot_host(host)
-            time.sleep(120)
-        else:
-            print('Skipping Reimage')
+            #exit(1)
 
-    print('* Polling for reimge started')
+    # Check previous reimage status before starting new reimage
+    print('* Checking if reimage already in progress')
+    for host in hosts:
+        check_reimage_status(host)
+
+    # send build request for both nodes
+    print('* Sending reimage request to both the nodes')
+    for host in hosts:
+        send_build_request(host)
+
+    # send power cycle for both nodes
+    print('* Power cycling both the nodes')
+    for host in hosts:
+        reboot_host(host)
+
+    print('* Polling for reimge completion')
     # 3. for 60 minutes for each 5 minutes
     #     send check build status
     #     if response build is true:
@@ -182,13 +182,13 @@ if __name__ == "__main__":
 
         if ((len(hosts) == 1) and (not reimg_in_progress0)) or \
            ((len(hosts) == 2) and (not reimg_in_progress0) and (not reimg_in_progress1)):
-            # wait for 15 minutes to let server reboot
+            # wait for 30 minutes to let server reboot
             print('Checking if host is reachable by ping')
             ping0 = False
             ping1 = False
-            t_end = time.time() + 60 * 15
+            t_end = time.time() + 60 * 30
             while time.time() < t_end:
-                # try pinging both the setups for 10 minutes, 1 minute interval
+                # try pinging both the setups for 30 minutes, 1 minute interval
                 time.sleep(60)
                 ping0 = check_ping(hosts[0])
                 if len(hosts) == 2:
