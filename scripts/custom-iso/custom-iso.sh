@@ -12,6 +12,8 @@ CORTX_DEPS_PATH="/mnt/bigstorage/releases/cortx/third-party-deps/"
 OS="centos"
 OS_VERSION="centos-7.8.2003"
 
+rm -rf /root/iso-test/custom-packages/ && mkdir -p /root/iso-test/custom-packages/
+
 #Mount ISO locally
 mkdir -p $ISO_MOUNT_PATH && mount -o loop $ISO_PATH/$ISO_VERSION $ISO_MOUNT_PATH
 
@@ -33,11 +35,15 @@ cp $KICKSTART_FILE $LOCAL_BOOT_PATH/isolinux/ks.cfg
 sed -i 's/append\ initrd\=initrd.img/append initrd=initrd.img\ ks\=cdrom:\/ks.cfg/' $LOCAL_BOOT_PATH/isolinux/isolinux.cfg
 
 #copy CORTX packages 
-find $CORTX_DEPS_PATH/$OS/$OS_VERSION/ -name '*.rpm' ! -path "$CORTX_DEPS_PATH/$OS/$OS_VERSION/lustre/custom/tcp/*" -exec cp -n {} $LOCAL_BOOT_PATH/Packages/. \;
-cd $LOCAL_BOOT_PATH/Packages/ && createrepo -dpo .. .
+find -L $CORTX_DEPS_PATH/$OS/$OS_VERSION/ -name '*.rpm' ! -path "$CORTX_DEPS_PATH/$OS/$OS_VERSION/lustre/custom/tcp/*" -exec cp -n {} $LOCAL_BOOT_PATH/Packages/. \;
+
+#Downloading additional packages. Need to optimize
+while read -r line; do yum reinstall --downloadonly --downloaddir=/root/iso-test/custom-packages $line ; done < custom-packages.txt
+cp -n /root/iso-test/custom-packages/* $LOCAL_BOOT_PATH/Packages/.
+cd $LOCAL_BOOT_PATH/Packages/ && createrepo -p -g ../repodata/*-c7-minimal-x86_64-comps.xml -o .. .
 
 #generate custom iso file
-cd $LOCAL_BOOT_PATH && mkisofs -o $ISO_PATH/$CUSTOM_ISO_VERSION -b isolinux.bin -c boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -V "CORTX CentOS 7.8.2003 x86_64" -R -J -v -T isolinux/. .
+cd $LOCAL_BOOT_PATH && mkisofs -o $ISO_PATH/$CUSTOM_ISO_VERSION -b isolinux.bin -c boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -V "CentOS 7 x86_64" -R -J -v -T isolinux/. .
 
 #Add md5sum for custom iso
 implantisomd5 $ISO_PATH/$CUSTOM_ISO_VERSION
