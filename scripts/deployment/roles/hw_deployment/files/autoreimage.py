@@ -139,27 +139,19 @@ if __name__ == "__main__":
     for host in hosts:
         if not check_ping(host):
             print("Unable to connect to {0}".format(host))
-            #exit(1)
-
-    # Check previous reimage status before starting new reimage
-    print('* Checking if reimage already in progress')
-    for host in hosts:
-        check_reimage_status(host)
-
+            
     # send build request for both nodes
     for host in hosts:
         if check_reimage_status(host):
             print('* Sending reimage request to both the nodes')
             send_build_request(host)
-            time.sleep(60)
             print('* Power cycling both the nodes')
             reboot_host(host)
-            time.sleep(60)
+            time.sleep(120)
         else:
             print('Skipping Reimage')
 
-
-    print('* Polling for reimge completion')
+    print('* Polling for reimge started')
     # 3. for 60 minutes for each 5 minutes
     #     send check build status
     #     if response build is true:
