@@ -35,12 +35,23 @@ cp $KICKSTART_FILE $LOCAL_BOOT_PATH/isolinux/ks.cfg
 sed -i 's/append\ initrd\=initrd.img/append initrd=initrd.img\ ks\=cdrom:\/ks.cfg/' $LOCAL_BOOT_PATH/isolinux/isolinux.cfg
 
 #copy CORTX packages 
-find -L $CORTX_DEPS_PATH/$OS/$OS_VERSION/ -name '*.rpm' ! -path "$CORTX_DEPS_PATH/$OS/$OS_VERSION/lustre/custom/tcp/*" -exec cp -n {} $LOCAL_BOOT_PATH/Packages/. \;
+#find -L $CORTX_DEPS_PATH/$OS/$OS_VERSION/ -name '*.rpm' ! -path "$CORTX_DEPS_PATH/$OS/$OS_VERSION/lustre/custom/tcp/*" -exec cp -n {} $LOCAL_BOOT_PATH/Packages/. \;
 
 #Downloading additional packages. Need to optimize
-while read -r line; do yum reinstall --downloadonly --downloaddir=/root/iso-test/custom-packages $line ; done < custom-packages.txt
+while read -r line
+do
+echo "Downloading $line package along with dependencies" 
+yumdownloader --installroot=/root/iso-test/$line-install-root  --destdir=/root/iso-test/custom-packages --resolve $line
+done < custom-packages.txt
 cp -n /root/iso-test/custom-packages/* $LOCAL_BOOT_PATH/Packages/.
-cd $LOCAL_BOOT_PATH/Packages/ && createrepo -p -g ../repodata/*-c7-minimal-x86_64-comps.xml -o .. .
+
+pushd $LOCAL_BOOT_PATH
+mv repodata/*-c7-minimal-x86_64-comps.xml.gz .
+rm -rf repodata/
+gunzip *-c7-minimal-x86_64-comps.xml.gz 
+mv *-c7-minimal-x86_64-comps.xml comps.xml
+createrepo -g comps.xml .
+popd
 
 #generate custom iso file
 cd $LOCAL_BOOT_PATH && mkisofs -o $ISO_PATH/$CUSTOM_ISO_VERSION -b isolinux.bin -c boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -V "CentOS 7 x86_64" -R -J -v -T isolinux/. .
