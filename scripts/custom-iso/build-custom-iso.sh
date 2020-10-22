@@ -41,7 +41,7 @@ sed -i 's/append\ initrd\=initrd.img/append initrd=initrd.img\ ks\=cdrom:\/ks.cf
 while read -r line
 do
 echo "Downloading $line package along with dependencies" 
-yumdownloader --installroot=/root/iso-test/$line-install-root  --destdir=/root/iso-test/custom-packages --resolve $line
+yumdownloader  --disablerepo=EOS_CentOS-7_CentOS-7-Updates --installroot=/root/iso-test/$line-install-root  --destdir=/root/iso-test/custom-packages --resolve $line
 done < custom-packages.txt
 cp -n /root/iso-test/custom-packages/* $LOCAL_BOOT_PATH/Packages/.
 
