@@ -2,7 +2,7 @@ pipeline {
 	 	 
     agent {
 		node {
-			label 'docker-rpm-sign-node'
+			label 'docker-rpm-sign-node-rhel-cortex'
 		}
 	}
 	
