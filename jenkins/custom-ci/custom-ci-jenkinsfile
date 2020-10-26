@@ -334,14 +334,17 @@ pipeline {
                     pushd $release_dir/github/integration-custom-ci/release
 					test -d $release_dir/github/integration-custom-ci/$release_tag && rm -f $release_tag
 					mkdir $release_tag && pushd $release_tag
-                            ln -s $integration_dir/$release_tag/dev cortx_iso
+                            mv $integration_dir/$release_tag/dev cortx_iso
                             ln -s $thrid_party_dir 3rd_party
 							ln -s $python_deps python_deps
+							mkdir -p iso && pushd iso
+								genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -publisher Seagate -o $release_tag.iso $release_dir/github/integration-custom-ci/release/$release_tag/cortx_iso
+							popd
                         popd
                     popd
                     echo "Custom Release Build and ISO is available at,"
 					echo "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/release/$release_tag"
-					echo "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/release/iso/$release_tag.iso"
+					echo "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/release/$release_tag/$release_tag.iso"
 					
                 '''
 			}
