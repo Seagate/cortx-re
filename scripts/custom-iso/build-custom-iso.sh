@@ -12,7 +12,7 @@ CORTX_DEPS_PATH="/mnt/bigstorage/releases/cortx/third-party-deps/"
 OS="centos"
 OS_VERSION="centos-7.8.2003"
 
-rm -rf /root/iso-test/custom-packages/ && mkdir -p /root/iso-test/custom-packages/
+rm -rf /mnt/custom-iso/custom-packages/ && mkdir -p /mnt/custom-iso/custom-packages/
 
 #Mount ISO locally
 mkdir -p $ISO_MOUNT_PATH && mount -o loop $ISO_PATH/$ISO_VERSION $ISO_MOUNT_PATH
@@ -38,12 +38,25 @@ sed -i 's/append\ initrd\=initrd.img/append initrd=initrd.img\ ks\=cdrom:\/ks.cf
 #find -L $CORTX_DEPS_PATH/$OS/$OS_VERSION/ -name '*.rpm' ! -path "$CORTX_DEPS_PATH/$OS/$OS_VERSION/lustre/custom/tcp/*" -exec cp -n {} $LOCAL_BOOT_PATH/Packages/. \;
 
 #Downloading additional packages. Need to optimize
+#while read -r line
+#do
+#echo "Downloading $line package along with dependencies" 
+#yumdownloader --installroot=/mnt/custom-iso/$line-install-root  --destdir=/mnt/custom-iso/custom-packages --resolve $line
+#rm -rf /mnt/custom-iso/$line-install-root
+#done < custom-packages.txt
+#cp -n /mnt/custom-iso/custom-packages/* $LOCAL_BOOT_PATH/Packages/.
+
+#Copy files. 
 while read -r line
 do
-echo "Downloading $line package along with dependencies" 
-yumdownloader  --disablerepo=EOS_CentOS-7_CentOS-7-Updates --installroot=/root/iso-test/$line-install-root  --destdir=/root/iso-test/custom-packages --resolve $line
+echo "Copying $line package along with dependencies"
+find  /mnt/bigstorage/releases/cortx/third-party-deps/os -name $line* -exec cp "{}" $LOCAL_BOOT_PATH/Packages/ \;
+ls -ltr $LOCAL_BOOT_PATH/Packages/$line*
 done < custom-packages.txt
-cp -n /root/iso-test/custom-packages/* $LOCAL_BOOT_PATH/Packages/.
+
+#Copy Mellanox Packages
+
+cp /mnt/bigstorage/releases/cortx/third-party-deps/centos/centos-7.8.2003/performance/linux.mellanox.com/public/repo/mlnx_ofed/4.9-0.1.7.0/rhel7.8/x86_64/MLNX_LIBS/*.rpm $LOCAL_BOOT_PATH/Packages/
 
 pushd $LOCAL_BOOT_PATH
 mv repodata/*-c7-minimal-x86_64-comps.xml.gz .
