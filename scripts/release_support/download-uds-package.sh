@@ -3,7 +3,7 @@
 set -euf -o pipefail
 
 UDS_DOWNLOAD_URL="$2"
-UDS_DOWNLOAD_DIR="/root/uds"
+UDS_DOWNLOAD_DIR="/mnt/bigstorage/releases/cortx/uds_uploads/"
 ARTIFACTORY_PASSWORD="$1"
 COMPONNET_DIR="$3"
 ls -ltr $UDS_DOWNLOAD_DIR
