@@ -17,6 +17,11 @@ rm -rf /mnt/custom-iso/custom-packages/ && mkdir -p /mnt/custom-iso/custom-packa
 #Mount ISO locally
 mkdir -p $ISO_MOUNT_PATH && mount -o loop $ISO_PATH/$ISO_VERSION $ISO_MOUNT_PATH
 
+
+#Install required packages 
+
+yum install pykickstart createrepo genisoimage isomd5sum -y
+
 #create local folder and copy ISO folders
 rm -rf $LOCAL_BOOT_PATH && mkdir -p $LOCAL_BOOT_PATH
 cp -r "$ISO_MOUNT_PATH"/* $LOCAL_BOOT_PATH
@@ -50,13 +55,13 @@ sed -i 's/append\ initrd\=initrd.img/append initrd=initrd.img\ ks\=cdrom:\/ks.cf
 while read -r line
 do
 echo "Copying $line package along with dependencies"
-find  /mnt/bigstorage/releases/cortx/third-party-deps/os -name $line* -exec cp "{}" $LOCAL_BOOT_PATH/Packages/ \;
+find  $CORTX_DEPS_PATH/os -name "$line*" -exec cp "{}" $LOCAL_BOOT_PATH/Packages/ \;
 ls -ltr $LOCAL_BOOT_PATH/Packages/$line*
 done < custom-packages.txt
 
 #Copy Mellanox Packages
 
-cp /mnt/bigstorage/releases/cortx/third-party-deps/centos/centos-7.8.2003/performance/linux.mellanox.com/public/repo/mlnx_ofed/4.9-0.1.7.0/rhel7.8/x86_64/MLNX_LIBS/*.rpm $LOCAL_BOOT_PATH/Packages/
+cp $CORTX_DEPS_PATH/$OS/$OS_VERSION/performance/linux.mellanox.com/public/repo/mlnx_ofed/4.9-0.1.7.0/rhel7.8/x86_64/MLNX_LIBS/*.rpm $LOCAL_BOOT_PATH/Packages/
 
 pushd $LOCAL_BOOT_PATH
 mv repodata/*-c7-minimal-x86_64-comps.xml.gz .
