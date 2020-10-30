@@ -43,13 +43,14 @@ sed -i 's/append\ initrd\=initrd.img/append initrd=initrd.img\ ks\=cdrom:\/ks.cf
 #find -L $CORTX_DEPS_PATH/$OS/$OS_VERSION/ -name '*.rpm' ! -path "$CORTX_DEPS_PATH/$OS/$OS_VERSION/lustre/custom/tcp/*" -exec cp -n {} $LOCAL_BOOT_PATH/Packages/. \;
 
 #Downloading additional packages. Need to optimize
-#while read -r line
-#do
-#echo "Downloading $line package along with dependencies" 
-#yumdownloader --installroot=/mnt/custom-iso/$line-install-root  --destdir=/mnt/custom-iso/custom-packages --resolve $line
-#rm -rf /mnt/custom-iso/$line-install-root
-#done < custom-packages.txt
-#cp -n /mnt/custom-iso/custom-packages/* $LOCAL_BOOT_PATH/Packages/.
+while read -r line
+do
+echo "Downloading $line package along with dependencies" 
+yumdownloader --installroot=/mnt/custom-iso/$line-install-root  --destdir=/mnt/custom-iso/custom-packages --resolve $line
+rm -rf /mnt/custom-iso/$line-install-root
+cp -n /mnt/custom-iso/custom-packages/* $LOCAL_BOOT_PATH/Packages/.
+ls -ltr $LOCAL_BOOT_PATH/Packages/$line-*
+done < aditional-packages.txt
 
 #Copy files. 
 while read -r line

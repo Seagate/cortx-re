@@ -1,0 +1,14 @@
+yum
+dhclient
+ntp
+wget
+vim
+ipmitool
+screen
+python3
+tmux
+sg3_utils
+sysfsutils
+bind-utils
+net-tools
+biosdevname
