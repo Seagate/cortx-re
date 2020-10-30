@@ -13,7 +13,7 @@ spawn provisioner auto_deploy \
     --config-path /root/config.ini \
     --ha \
     --source iso \
-    --pypi-repo \ 
+    --pypi-repo \
     --iso-cortx $BUILD \
     srvnode-1:$SRV_NODE1 \
     srvnode-2:$SRV_NODE2
