@@ -12,3 +12,5 @@ sysfsutils
 bind-utils
 net-tools
 biosdevname
+vim-enhanced
+bc

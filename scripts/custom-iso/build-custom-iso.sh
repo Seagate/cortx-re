@@ -50,7 +50,7 @@ yumdownloader --installroot=/mnt/custom-iso/$line-install-root  --destdir=/mnt/c
 rm -rf /mnt/custom-iso/$line-install-root
 cp -n /mnt/custom-iso/custom-packages/* $LOCAL_BOOT_PATH/Packages/.
 ls -ltr $LOCAL_BOOT_PATH/Packages/$line-*
-done < aditional-packages.txt
+done < additional-packages.txt
 
 #Copy files. 
 while read -r line
