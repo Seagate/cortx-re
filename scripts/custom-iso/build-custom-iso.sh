@@ -37,7 +37,7 @@ echo -e "-------------------------[ Validate kickstart file ]-------------------
 ksvalidator $KICKSTART_FILE
 
 #copy kickstart file and update isolinux.cfg
-echo -e "-------------------------[ update isolinux.cfg ]------------------------------------------------------------" 
+echo -e "-------------------------[ Update isolinux.cfg ]------------------------------------------------------------" 
 cp $KICKSTART_FILE $LOCAL_BOOT_PATH/isolinux/ks.cfg
 sed -i 's/append\ initrd\=initrd.img/append initrd=initrd.img\ ks\=cdrom:\/ks.cfg/' $LOCAL_BOOT_PATH/isolinux/isolinux.cfg
 
@@ -48,10 +48,10 @@ sed -i 's/append\ initrd\=initrd.img/append initrd=initrd.img\ ks\=cdrom:\/ks.cf
 while read -r line
 do
 echo -e "-------------------------[ Downloading $line package along with dependencies ]--------------------------------" 
-yumdownloader --installroot=/mnt/custom-iso/$line-install-root  --destdir=/mnt/custom-iso/custom-packages --resolve $line
-rm -rf /mnt/custom-iso/$line-install-root
+yumdownloader --installroot=/mnt/custom-iso/"$line"-install-root  --destdir=/mnt/custom-iso/custom-packages --resolve "$line"
+rm -rf /mnt/custom-iso/"$line"-install-root
 cp -n /mnt/custom-iso/custom-packages/* $LOCAL_BOOT_PATH/Packages/.
-ls -ltr $LOCAL_BOOT_PATH/Packages/$line-*
+ls -ltr $LOCAL_BOOT_PATH/Packages/"$line"-*
 echo -e "----------------------------------------------[ Done ]---------------------------------------------------------" 
 done < additional-packages.txt
 
@@ -60,7 +60,7 @@ while read -r line
 do
 echo "Copying $line package along with dependencies"
 find  $CORTX_DEPS_PATH/os -name "$line*" -exec cp "{}" $LOCAL_BOOT_PATH/Packages/ \;
-ls -ltr $LOCAL_BOOT_PATH/Packages/$line*
+ls -ltr $LOCAL_BOOT_PATH/Packages/"$line"*
 done < custom-packages.txt
 
 #Copy Mellanox Packages
@@ -69,8 +69,8 @@ cp $CORTX_DEPS_PATH/$OS/$OS_VERSION/performance/linux.mellanox.com/public/repo/m
 pushd $LOCAL_BOOT_PATH
 mv repodata/*-c7-minimal-x86_64-comps.xml.gz .
 rm -rf repodata/
-gunzip *-c7-minimal-x86_64-comps.xml.gz 
-mv *-c7-minimal-x86_64-comps.xml comps.xml
+gunzip ./*-c7-minimal-x86_64-comps.xml.gz 
+mv ./*-c7-minimal-x86_64-comps.xml comps.xml
 createrepo -g comps.xml .
 popd
 
