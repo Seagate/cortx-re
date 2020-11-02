@@ -15,7 +15,6 @@ spawn provisioner auto_deploy \
     --source rpm  \
     --dist-type bundle  \
     --target-build $BUILD  \
-    --pypi-repo \
     srvnode-1:$SRV_NODE1 \
     srvnode-2:$SRV_NODE2 
 
