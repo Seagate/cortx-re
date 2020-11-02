@@ -33,3 +33,4 @@ nmap-ncat
 ipsec-tools
 python-dateutil
 python-magic
+device-mapper
