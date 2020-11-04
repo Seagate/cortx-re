@@ -28,9 +28,9 @@ services:
       - "50000:50000"
       - "443:8083"
     volumes:
-      - /mnt/jenkins-dev/jenkins.jks:/var/lib/jenkins/jenkins.jks
-      - /mnt/jenkins-dev:/var/jenkins_home
+      - ./jenkins.jks:/var/lib/jenkins/jenkins.jks
+      - /mnt/workspace/backup/dev-jenkins:/var/jenkins_home
       - /mnt/bigstorage/:/mnt/bigstorage
     environment:
-      - JAVA_OPTS=-Xmx3072m
+      - JAVA_OPTS=-Xmx4096m
       - JENKINS_OPTS= --httpPort=-1 --httpsPort=8083 --httpsKeyStore=/var/lib/jenkins/jenkins.jks --httpsKeyStorePassword=admin123
