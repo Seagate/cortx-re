@@ -27,8 +27,8 @@ services:
       - "80:8080"
       - "50000:50000"
     volumes:
-      - /mnt/bigstorage/jenkins-dev/jenkins/jenkins-home:/var/jenkins_home
+      - /mnt/data1/releases/jenkins/jenkins-prod:/var/jenkins_home
       - /mnt/bigstorage/:/mnt/bigstorage
     environment:
       - JAVA_OPTS=-Xmx4096m
-
+      
