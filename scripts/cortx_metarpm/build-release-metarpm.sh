@@ -5,7 +5,7 @@ OS_version=$2
 build_num=$3
 release_type="CORTX-1.0.0"
 
-if [ -z $release_folder ] && [ -z $OS_version ] && [ -z $build_num ]; then
+if [ -z "$release_folder" ] && [ -z "$OS_version" ] && [ -z "$build_num" ]; then
    echo "Usage: build-release-metarpm.sh <release folder> <OS name> <release build number>"
    echo "e.g. build-release-metarpm.sh cortx-1.0 centos-7.7.1908 3"
    exit 1
