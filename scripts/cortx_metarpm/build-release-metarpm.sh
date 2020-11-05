@@ -28,4 +28,3 @@ sed -i "s/builddep/$builddep/g" cortx.spec
 relversion=$build_num
 sed -i "s/release-version/$relversion/" cortx.spec
 rpmbuild -bb cortx.spec
-rpm_location=/root/rpmbuild/RPMS/x86_64/$release_type-$relversion-1.x86_64.rpm
