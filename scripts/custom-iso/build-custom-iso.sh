@@ -8,6 +8,7 @@ CUSTOM_ISO_VERSION="cortx-custom.iso"
 ISO_MOUNT_PATH="/mnt/custom-iso/local-mount"
 LOCAL_BOOT_PATH="/mnt/custom-iso/bootisoks/"
 KICKSTART_FILE="./kickstart_centos-7.8.2003.cfg"
+#KICKSTART_FILE="./local-kicstart_centos-7.8.2003.cfg"
 CORTX_DEPS_PATH="/mnt/bigstorage/releases/cortx/third-party-deps/"
 OS="centos"
 OS_VERSION="centos-7.8.2003"
@@ -39,25 +40,25 @@ ksvalidator $KICKSTART_FILE
 
 #copy kickstart file and update isolinux.cfg
 echo -e "-------------------------[ Update isolinux.cfg ]------------------------------------------------------------" 
-cp $KICKSTART_FILE $LOCAL_BOOT_PATH/isolinux/ks.cfg
+cp $KICKSTART_FILE $LOCAL_BOOT_PATH/ks.cfg
 
 #sed -i 's/append\ initrd\=initrd.img/append initrd=initrd.img\ ks\=cdrom:\/ks.cfg/' $LOCAL_BOOT_PATH/isolinux/isolinux.cfg
-cp grub.conf $LOCAL_BOOT_PATH/isolinux/grub.conf
+cp grub.conf $LOCAL_BOOT_PATH/EFI/BOOT/grub.cfg
 cp isolinux.cfg $LOCAL_BOOT_PATH/isolinux/isolinux.cfg
 
 #copy CORTX packages 
 #find -L $CORTX_DEPS_PATH/$OS/$OS_VERSION/ -name '*.rpm' ! -path "$CORTX_DEPS_PATH/$OS/$OS_VERSION/lustre/custom/tcp/*" -exec cp -n {} $LOCAL_BOOT_PATH/Packages/. \;
 
 #Downloading additional packages. Need to optimize
-#while read -r line
-#do
-#echo -e "-------------------------[ Downloading $line package along with dependencies ]--------------------------------" 
-#yumdownloader --disablerepo=EOS_CentOS-7_CentOS-7-Updates --installroot=/mnt/custom-iso/"$line"-install-root  --destdir=/mnt/custom-iso/custom-packages --resolve "$line"
-#rm -rf /mnt/custom-iso/"$line"-install-root
-#cp -n /mnt/custom-iso/custom-packages/* $LOCAL_BOOT_PATH/Packages/.
-#ls -ltr $LOCAL_BOOT_PATH/Packages/"$line"-*
-#echo -e "----------------------------------------------[ Done ]---------------------------------------------------------" 
-#done < additional-packages.txt
+while read -r line
+do
+echo -e "-------------------------[ Downloading $line package along with dependencies ]--------------------------------" 
+yumdownloader --disablerepo=EOS_CentOS-7_CentOS-7-Updates --installroot=/mnt/custom-iso/"$line"-install-root  --destdir=/mnt/custom-iso/custom-packages --resolve "$line"
+rm -rf /mnt/custom-iso/"$line"-install-root
+cp -n /mnt/custom-iso/custom-packages/* $LOCAL_BOOT_PATH/Packages/.
+ls -ltr $LOCAL_BOOT_PATH/Packages/"$line"-*
+echo -e "----------------------------------------------[ Done ]---------------------------------------------------------" 
+done < additional-packages.txt
 
 #Copy files. 
 while read -r line
