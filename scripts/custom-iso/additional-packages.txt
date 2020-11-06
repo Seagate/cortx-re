@@ -34,3 +34,4 @@ ipsec-tools
 python-dateutil
 python-magic
 device-mapper
+scsi-network-relay

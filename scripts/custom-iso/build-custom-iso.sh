@@ -8,7 +8,6 @@ CUSTOM_ISO_VERSION="cortx-custom.iso"
 ISO_MOUNT_PATH="/mnt/custom-iso/local-mount"
 LOCAL_BOOT_PATH="/mnt/custom-iso/bootisoks/"
 KICKSTART_FILE="./kickstart_centos-7.8.2003.cfg"
-#KICKSTART_FILE="./local-kicstart_centos-7.8.2003.cfg"
 CORTX_DEPS_PATH="/mnt/bigstorage/releases/cortx/third-party-deps/"
 OS="centos"
 OS_VERSION="centos-7.8.2003"
@@ -29,7 +28,7 @@ rm -rf $LOCAL_BOOT_PATH
 cp -pRf "$ISO_MOUNT_PATH" $LOCAL_BOOT_PATH
 
 #umount ISO and remove folder
-#umount $ISO_MOUNT_PATH && rm $ISO_MOUNT_PATH -rf
+umount $ISO_MOUNT_PATH && rm $ISO_MOUNT_PATH -rf
 
 #set permissions for local folder
 chmod -R u+w $LOCAL_BOOT_PATH
