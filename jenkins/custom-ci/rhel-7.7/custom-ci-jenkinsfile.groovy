@@ -201,7 +201,7 @@ pipeline {
 						do
 							echo -e "Copying RPM's for $component"
 							if ls $component/last_successful/*.rpm 1> /dev/null 2>&1; then
-								mv $component/last_successful/*.rpm $integration_dir/$release_tag/cortx_iso/
+								cp $component/last_successful/*.rpm $integration_dir/$release_tag/cortx_iso/
 							else
 								echo "Packages not available for $component. Exiting"
 							exit 1	
