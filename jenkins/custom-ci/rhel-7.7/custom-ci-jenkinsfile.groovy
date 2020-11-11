@@ -301,6 +301,19 @@ pipeline {
                 """
 			}
 		}
+
+		stage ('Repo Creation') {
+			steps {
+                script { build_stage=env.STAGE_NAME }
+                sh label: 'Repo Creation', script: '''
+                    pushd $integration_dir/$release_tag/cortx_iso/
+                    rpm -qi createrepo || yum install -y createrepo
+                    createrepo .
+                    popd
+                '''
+			}
+		}
+
 		
 		stage ('Link 3rd_party and python_deps') {
 			steps {
