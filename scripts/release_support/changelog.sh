@@ -1,4 +1,22 @@
 #!/bin/bash
+#
+# Copyright (c) 2020 Seagate Technology LLC and/or its Affiliates
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# For any questions about this software or licensing,
+# please email opensource@seagate.com or cortx-questions@seagate.com.
+#
 
 START_BUILD=$1
 TARGET_BUILD=$2
@@ -23,11 +41,12 @@ if [ -z $TARGET_BUILD ]; then echo "No TARGET_BUILD provided.."; exit 1; fi
 declare -A COMPONENT_LIST=( 
 [cortx-s3server]="https://$GIT_CRED@github.com/Seagate/cortx-s3server.git"
 [cortx-motr]="https://$GIT_CRED@github.com/Seagate/cortx-motr.git"
-[cortx-hare]="http://gitlab.mero.colo.seagate.com/mero/hare.git"
-[cortx-ha]="http://gitlab.mero.colo.seagate.com/eos/cortx-ha.git"
+[cortx-hare]="https://$GIT_CRED@github.com/Seagate/cortx-hare.git"
+[cortx-ha]="https://$GIT_CRED@github.com/Seagate/cortx-ha.git"
 [cortx-prvsnr]="https://$GIT_CRED@github.com/Seagate/cortx-prvsnr.git"
 [cortx-sspl]="https://$GIT_CRED@github.com/Seagate/cortx-sspl.git"
-[cortx-csm_agent]="https://$GIT_CRED@github.com/Seagate/cortx-csm.git"
+[cortx-csm_agent]="https://$GIT_CRED@github.com/Seagate/cortx-manager.git"
+[cortx-csm-web]="https://$GIT_CRED@github.com/Seagate/cortx-management-portal.git"
 [cortx-fs]="https://$GIT_CRED@github.com/Seagate/cortx-posix.git"
 )
 
@@ -49,7 +68,7 @@ do
         echo "Component:$component"
         echo "Repo:${COMPONENT_LIST[$component]}"
          dir=$(echo ${COMPONENT_LIST[$component]} |  awk -F'/' '{print $NF}')
-         git clone --branch master ${COMPONENT_LIST[$component]} $dir
+         git clone --branch dev ${COMPONENT_LIST[$component]} $dir
       	 rc=$?
           if [ $rc -ne 0 ]; then 
           echo "ERROR:git clone failed for $component"
@@ -59,7 +78,7 @@ do
                 if [ $component == cortx-hare ] || [ $component == cortx-sspl ] || [ $component == cortx-ha ] || [ $component == cortx-fs ]; then
                         start_hash=$(grep $component start_build_manifest.txt | head -1 | awk -F['_'] '{print $2}' | cut -d. -f1 |  sed 's/git//g'); echo $start_hash
                         target_hash=$(grep $component target_build_manifest.txt | head -1 | awk -F['_'] '{print $2}' | cut -d. -f1 |  sed 's/git//g'); echo $target_hash
-                elif [ $component == cortx-csm_agent ]; then
+                elif [ "$component" == "cortx-csm_agent" ] || [ "$component" == "cortx-csm-web" ]; then
                         start_hash=$(grep $component start_build_manifest.txt | head -1 | awk -F['_'] '{print $3}' |  cut -d. -f1); echo $start_hash
                         target_hash=$(grep $component target_build_manifest.txt | head -1 | awk -F['_'] '{print $3}' |  cut -d. -f1); echo $target_hash
                 else
