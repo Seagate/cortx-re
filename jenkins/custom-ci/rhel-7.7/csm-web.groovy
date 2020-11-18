@@ -32,10 +32,10 @@ pipeline {
 		stage('Checkout') {
 			steps {
 				script { build_stage = env.STAGE_NAME }
-				dir('cortx-management-web'){
+				dir('cortx-management-web') {
 				    checkout([$class: 'GitSCM', branches: [[name: "${CSM_WEB_BRANCH}"]], doGenerateSubmoduleConfigurations: false,  extensions: [[$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-management-portal']]])
 				}
-				dir('seagate-ldr'){
+				dir('seagate-ldr') {
 				    checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/seagate-ldr.git']]])
 				}
 			}
