@@ -13,7 +13,7 @@ if [ -z "$release_folder" ] && [ -z "$OS_version" ] && [ -z "$build_num" ]; then
 fi
 
 pushd  scripts/cortx_metarpm/
-metainfo=$(curl $build_location/ | sed -n "/rpm/p" | cut -d'"' -f 2 | tr ' ' '\n')
+metainfo=$(curl "$build_location/" | sed -n "/rpm/p" | cut -d'"' -f 2 | tr ' ' '\n')
 rpm --import "$build_location/RPM-GPG-KEY-Seagate"
 rm -rf dependencies.txt
 
