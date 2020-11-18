@@ -1,8 +1,8 @@
 Name:       release-name
 Version:    release-version
-Release:    1
+Release:    1.0.0
 Summary:    CORTX Meta-RPM package
-License:    Seagate LLC
+License:    Seagate
 
 Requires:   builddep
 %description

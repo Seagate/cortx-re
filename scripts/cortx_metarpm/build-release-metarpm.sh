@@ -4,6 +4,7 @@ release_folder=$1
 OS_version=$2
 build_num=$3
 release_type="CORTX-1.0.0"
+build_location="http://cortx-storage.colo.seagate.com/releases/cortx/github/$release_folder/$OS_version/$build_num/prod"
 
 if [ -z "$release_folder" ] && [ -z "$OS_version" ] && [ -z "$build_num" ]; then
    echo "Usage: build-release-metarpm.sh <release folder> <OS name> <release build number>"
@@ -12,15 +13,15 @@ if [ -z "$release_folder" ] && [ -z "$OS_version" ] && [ -z "$build_num" ]; then
 fi
 
 pushd  scripts/cortx_metarpm/
-metainfo=$(curl "http://cortx-storage.colo.seagate.com/releases/eos/github/$release_folder/$OS_version/$build_num/prod/" | sed -n "/rpm/p" | cut -d'"' -f 2 | tr ' ' '\n')
-rpm --import "http://cortx-storage.colo.seagate.com/releases/eos/github/$release_folder/$OS_version/$build_num/prod/RPM-GPG-KEY-Seagate"
+metainfo=$(curl $build_location/ | sed -n "/rpm/p" | cut -d'"' -f 2 | tr ' ' '\n')
+rpm --import "$build_location/RPM-GPG-KEY-Seagate"
 rm -rf dependencies.txt
 
 for i in $metainfo
 do
-rpm_name=$(rpm -qp "http://cortx-storage.colo.seagate.com/releases/eos/github/$release_folder/$OS_version/$build_num/prod/$i" --qf '%{NAME}')
-rpm_version=$(rpm -qp "http://cortx-storage.colo.seagate.com/releases/eos/github/$release_folder/$OS_version/$build_num/prod/$i" --qf '%{VERSION}')
-rpm_release=$(rpm -qp "http://cortx-storage.colo.seagate.com/releases/eos/github/$release_folder/$OS_version/$build_num/prod/$i" --qf '%{RELEASE}')
+rpm_name=$(rpm -qp "$build_location/$i" --qf '%{NAME}')
+rpm_version=$(rpm -qp "$build_location/$i" --qf '%{VERSION}')
+rpm_release=$(rpm -qp "$build_location/$i" --qf '%{RELEASE}')
 echo "$rpm_name" = "$rpm_version"-"$rpm_release" >> dependencies.txt
 done
 
