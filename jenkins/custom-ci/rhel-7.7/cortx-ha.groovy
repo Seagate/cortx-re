@@ -6,12 +6,12 @@ pipeline {
 	}
     
     environment {
-        env="dev"
-		component="cortx-ha"
-        branch="release"
-        os_version="rhel-7.7.1908"
-        release_dir="/mnt/bigstorage/releases/eos"
-        component_dir="$release_dir/components/github/custom-ci/$branch/$os_version/$env/$component/"
+        env = "dev"
+		component = "cortx-ha"
+        branch = "release"
+        os_version = "rhel-7.7.1908"
+        release_dir = "/mnt/bigstorage/releases/eos"
+        component_dir = "$release_dir/components/github/custom-ci/$branch/$os_version/$env/$component/"
     }
 	
 	parameters {
