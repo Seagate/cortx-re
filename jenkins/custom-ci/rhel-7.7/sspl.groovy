@@ -32,7 +32,7 @@ pipeline {
 			steps {
 				script { build_stage = env.STAGE_NAME }
 				dir ('cortx-sspl') {
-					checkout([$class: 'GitSCM', branches: [[name: '${SSPL_BRANCH}']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: '${SSPL_URL}']]])
+					checkout([$class: 'GitSCM', branches: [[name: "${SSPL_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${SSPL_URL}"]]])
 				}
 			}
 		}

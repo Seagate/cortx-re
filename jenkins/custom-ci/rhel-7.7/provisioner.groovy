@@ -30,7 +30,7 @@ pipeline {
         stage('Checkout') {
             steps {
 				script { build_stage = env.STAGE_NAME }
-					checkout([$class: 'GitSCM', branches: [[name: '${PRVSNR_BRANCH}']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: '${PRVSNR_URL}']]])
+					checkout([$class: 'GitSCM', branches: [[name: "${PRVSNR_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${PRVSNR_URL}"]]])
             }
         }
 
