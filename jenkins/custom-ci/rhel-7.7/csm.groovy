@@ -40,7 +40,7 @@ pipeline {
 		stage('Install Dependencies') {
 			steps {
 				script { build_stage = env.STAGE_NAME }
-				sh label: '', script: '''
+				sh label: 'Install Dependencies', script: '''
 					if [ "${CSM_BRANCH}" == "Cortx-v1.0.0_Beta" ]; then
 						yum install -y eos-py-utils
 						pip3.6 install  pyinstaller==3.5
@@ -55,7 +55,7 @@ pipeline {
 		stage('Build') {
 			steps {
 				script { build_stage = env.STAGE_NAME }
-				sh label: 'Build', returnStatus: true, script: '''
+				sh label: 'Build', script: '''
 					BUILD=$(git rev-parse --short HEAD)
 					VERSION=$(cat $WORKSPACE/VERSION)
 					echo "Executing build script"
