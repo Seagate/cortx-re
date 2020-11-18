@@ -7,15 +7,15 @@ pipeline {
 	}
 	
 	environment {
-		branch="main"
-		os_version="rhel-7.7.1908"
-		release_dir="/mnt/bigstorage/releases/cortx"
-        integration_dir="$release_dir/github/integration-custom-ci/release/$os_version"
-        components_dir="$release_dir/components/github/custom-ci/release/$os_version"
-        release_tag="custom-build-$BUILD_ID"
+		branch = "main"
+		os_version = "rhel-7.7.1908"
+		release_dir = "/mnt/bigstorage/releases/cortx"
+        integration_dir = "$release_dir/github/integration-custom-ci/release/$os_version"
+        components_dir = "$release_dir/components/github/custom-ci/release/$os_version"
+        release_tag = "custom-build-$BUILD_ID"
         passphrase = credentials('rpm-sign-passphrase')
-	    	thrid_party_dir="/mnt/bigstorage/releases/cortx/third-party-deps/rhel/rhel-7.7.1908/"
-		    python_deps="/mnt/bigstorage/releases/cortx/third-party-deps/python-packages"
+		thrid_party_dir = "/mnt/bigstorage/releases/cortx/third-party-deps/rhel/rhel-7.7.1908/"
+		python_deps = "/mnt/bigstorage/releases/cortx/third-party-deps/python-packages"
     }
 	
 	options {

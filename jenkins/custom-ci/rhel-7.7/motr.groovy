@@ -21,12 +21,12 @@ pipeline {
 	}	
 
 	environment {
-     	release_dir="/mnt/bigstorage/releases/eos"
-		os_version="rhel-7.7.1908"
-		branch="release"
-		component="motr"
-		env="dev"
-		component_dir="$release_dir/components/github/custom-ci/$branch/$os_version/$env/$component"
+     	release_dir = "/mnt/bigstorage/releases/eos"
+		os_version = "rhel-7.7.1908"
+		branch = "release"
+		component = "motr"
+		env = "dev"
+		component_dir = "$release_dir/components/github/custom-ci/$branch/$os_version/$env/$component"
     }
 
 	stages {	

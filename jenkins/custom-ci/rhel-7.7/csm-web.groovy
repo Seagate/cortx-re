@@ -6,12 +6,12 @@ pipeline {
 	}
 	
 	environment {      
-        env="dev"
-		component="csm-web"
-        branch="release"
-        os_version="rhel-7.7.1908"
-        release_dir="/mnt/bigstorage/releases/eos"
-        build_upload_dir="$release_dir/components/github/custom-ci/$branch/$os_version/$env/$component/"
+        env = "dev"
+		component = "csm-web"
+        branch = "release"
+        os_version = "rhel-7.7.1908"
+        release_dir = "/mnt/bigstorage/releases/eos"
+        build_upload_dir = "$release_dir/components/github/custom-ci/$branch/$os_version/$env/$component/"
     }
 
 	options {
