@@ -24,7 +24,7 @@
 - include: passwordless_authentication.yml
 
 - name: "[prepare] : Remove storage and multipath from cluster if exists"
-  shell: salt '*' state.apply components.system.storage.multipath.teardown; salt '*' state.apply components.system.teardown || true
+  shell: salt '*' state.apply components.system.storage.teardown || true; salt '*' state.apply components.system.storage.multipath.teardown || true; salt '*' state.apply components.system.teardown || true
   ignore_errors: True
   ignore_unreachable: True
   delegate_to: "srvnode-1"

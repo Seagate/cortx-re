@@ -5,8 +5,8 @@
   when: REIMAGE == "yes"
   tags: ['02_REIMAGE']
 
-- include: 03_deploy_prereq.yml 
-  tags: ['03_DEPLOY_PREREQ']
+- include: 03_deploy_prep.yml 
+  tags: ['03_DEPLOY_PREP']
   
 - include: 04_inband_setup.yml
   tags: ['04_INBAND']

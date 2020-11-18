@@ -1,14 +1,20 @@
 ---
 
-- name: "[deploy] : Copy deploy script to primary node"
+- name: "[deploy] : Copy 'expect' RPM on primary Node"
   copy:
-      src: "{{ 'files/cortx_deploy_iso.sh' if '.iso' in BUILD_URL else 'files/cortx_deploy_rpm.sh' }}"
-      dest: cortx_deploy.sh
+      src: files/expect-5.45-14.el7_1.x86_64.rpm
+      dest: /root/
       owner: root
       group: root
       mode: '0754'
   delegate_to: "srvnode-1"
 
+- name: "[deploy] : Install 'expect' RPM on primary Node"
+  yum: 
+    name: /root/expect-5.45-14.el7_1.x86_64.rpm
+    state: present
+  delegate_to: "srvnode-1"
+
 - name: "[deploy] : Deploy Cluster on Primary Node"
-  script: files/cortx_deploy_wrapper.sh {{ BUILD_URL }} {{ NODE1 }} {{ NODE2 }} {{ CLUSTER_PASS }}
+  script: files/cortx_deploy.sh "/opt/isos/{{ CORTX_BUILD_ISO_URL | basename }}" "/opt/isos/{{ CORTX_OS_ISO_URL | basename }}" {{ NODE1 }} {{ NODE2 }} {{ CLUSTER_PASS }}
   delegate_to: "srvnode-1"

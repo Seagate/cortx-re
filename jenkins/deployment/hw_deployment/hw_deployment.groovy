@@ -7,27 +7,38 @@ pipeline {
     }
 	
     parameters {
-        string(name: 'CORTX_BUILD', defaultValue: 'http://cortx-storage.colo.seagate.com/releases/cortx_builds/211/', description: 'Build URL')
-        choice(name: 'HOST', choices: [ 'T1_sm21-r2_sm20-r2', 'T2_sm28-r5_sm27-r5', 'T3_sm27-r22_sm28-r22', 'T4_sm14-r24_sm13-r24', 'T5_sm13-r4_sm6-r4', 'T6_sm35-r5_sm34-r5', 'T7_sm10-r20_sm11-r20', 'T8_sm28-r20_sm29-r20', 'T9_smc5-m11_smc6-m11', 'T10_sm8-r19_sm7-r19', 'T11_sm26-r19_sm27-r19', 'T12_sm10-r21_sm11-r21', 'T13_sm17-r18_sm18-r18', 'T14_sm27-r23_sm28-r23', 'T15_smc33-m09_smc34-m09', 'T16_sm20-r22_sm21-r22', 'T17_smc65-m01_smc66-m01', 'T18_smc7-m11_smc8-m11', 'T19_smc39-m09_smc40-m09' ], description: 'HW Deploy Host')
+        string(name: 'CORTX_BUILD', defaultValue: 'http://cortx-storage.colo.seagate.com/releases/cortx_builds/centos-7.8.2003/469/iso/cortx-1.0.0-469-single.iso', description: 'Build URL')
+        choice(name: 'HOST', choices: [ 'T1_sm21-r2_sm20-r2', 'T2_sm28-r5_sm27-r5', 'T3_sm27-r22_sm28-r22', 'T4_sm14-r24_sm13-r24', 'T5_sm13-r4_sm6-r4', 'T6_sm35-r5_sm34-r5', 'T7_sm10-r20_sm11-r20', 'T8_sm28-r20_sm29-r20', 'T9_smc5-m11_smc6-m11', 'T10_sm8-r19_sm7-r19', 'T11_sm26-r19_sm27-r19', 'T12_sm10-r21_sm11-r21', 'T13_sm17-r18_sm18-r18', 'T14_sm27-r23_sm28-r23', 'T15_smc33-m09_smc34-m09', 'T16_sm20-r22_sm21-r22', 'T17_smc65-m01_smc66-m01', 'T18_smc7-m11_smc8-m11', 'T19_smc39-m09_smc40-m09', 'T20_iu17-r21_iu24-r21', 'T21_sm19-r20_sm18-r20', 'T22_sm6-r23_sm7-r23', 'T23_inteln9-m07_inteln10-m07', 'T24_smc57-m10_smc58-m10', 'T25_smc1-m11_smc2-m11', 'T26_smc37-m09_smc38-m09', 'T27_inteln11-m07_inteln12-m07', 'T28_smc51-m08_smc52-m08', 'T29_smc17-m10_smc18-m10', 'T30_sm7-r18_sm8-r18', 'T31_smc59-m11_smc60-m11' ], description: 'HW Deploy Host')
         choice(name: 'REIMAGE', choices: [ "yes", "no" ], description: 'Re-Image option')
+        choice(name: 'SANITY', choices: [ "no", "yes" ], description: 'Run Sanity option')
     }
 
 	environment {
 
-        // CONFIG, NODE_USER, NODE_PASS - Env variables added in the node configurations
-        NODE1_HOST=getHostName("${CONFIG}", "1" )
-        NODE2_HOST=getHostName("${CONFIG}", "2")
-        build_id=sh(script: "echo ${CORTX_BUILD} | rev | cut -d '/' -f2,3 | rev", returnStdout: true).trim()
-        NODE_UN_PASS_CRED_ID="736373_manageiq_up"
-        CLUSTER_PASS="seagate1"  
+        // CONFIG - Env variables added in the node configurations
+        NODE1_HOST = getHostName("${CONFIG}", "1" )
+        NODE2_HOST = getHostName("${CONFIG}", "2")
+        build_id = sh(script: "echo ${CORTX_BUILD} | rev | cut -d '/' -f2,3 | rev", returnStdout: true).trim()
 
-        STAGE_01_PREPARE="yes"
-        STAGE_02_REIMAGE="${REIMAGE}"
-        STAGE_03_DEPLOY_PREREQ="yes"
-        STAGE_04_INBAND="yes"
-        STAGE_05_CC_DISABLE="yes"
-        STAGE_06_DEPLOY="yes"
-        STAGE_07_CC_ENABLE="yes"
+        ISO_PARENT_DIR = sh(script: "set +x; echo \$(dirname ${CORTX_BUILD})", returnStdout: true).trim()
+        CORTX_PREP_NAME = getBuildArtifcatName("${ISO_PARENT_DIR}/", 'cortx-prep')
+        CORTX_OS_ISO_NAME = getBuildArtifcatName("${ISO_PARENT_DIR}/", 'cortx-os')
+        CORTX_PREP_URL = "${ISO_PARENT_DIR}/${CORTX_PREP_NAME}"
+        CORTX_OS_ISO_URL = "${ISO_PARENT_DIR}/${CORTX_OS_ISO_NAME}"
+
+        NODE_UN_PASS_CRED_ID = "736373_manageiq_up"
+        NODE_USER = "root"
+        NODE_PASS = "seagate1"
+        CLUSTER_PASS = "seagate1"  
+
+        STAGE_01_PREPARE = "yes"
+        STAGE_02_REIMAGE = "${REIMAGE}"
+        STAGE_03_DEPLOY_PREP = "yes"
+        STAGE_04_INBAND = "yes"
+        STAGE_05_CC_DISABLE = "yes"
+        STAGE_06_DEPLOY = "yes"
+        STAGE_07_CC_ENABLE = "yes"
+        STAGE_09_SANITY = "${SANITY}"
 
     }
 
@@ -53,28 +64,28 @@ pipeline {
                     sh """
                         set +x
                         echo "--------------HW DEPLOYMENT PARAMETERS -------------------"
-                        echo "REIMAGE       = ${REIMAGE}"
-                        echo "NODE1         = ${NODE1_HOST}"
-                        echo "NODE2         = ${NODE2_HOST}"
-                        echo "CONFIG_URL    = ${CONFIG}"
-                        echo "CORTX_BUILD   = ${CORTX_BUILD}"
-                        echo "CHANGE_PASS   = ${CHANGE_PASS}"
+                        echo "REIMAGE           = ${REIMAGE}"
+                        echo "NODE1             = ${NODE1_HOST}"
+                        echo "NODE2             = ${NODE2_HOST}"
+                        echo "CONFIG_URL        = ${CONFIG}"
+                        echo "CORTX_BUILD       = ${CORTX_BUILD}"
+                        echo "CORTX_PREP_URL    = ${CORTX_PREP_URL}"
+                        echo "CORTX_OS_ISO_URL  = ${CORTX_OS_ISO_URL}"
+                        echo "CHANGE_PASS       = ${CHANGE_PASS}"
                         echo "-----------------------------------------------------------"
                     """
-
                     dir('cortx-re'){
-                        checkout([$class: 'GitSCM', branches: [[name: '*/EOS-14267']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/gowthamchinna/cortx-re/']]])                
+                        checkout([$class: 'GitSCM', branches: [[name: '*/EOS-13798']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/gowthamchinna/cortx-re']]])                
                     }
                 }
             }
         }
-
         stage('01. Prepare Environment'){
             when { expression { env.STAGE_01_PREPARE == "yes" } }
             steps{
                 script{
                     
-                    info("Running '01. Prepare Environment' Stage  [ validates input param, passwordless ssh, installs required tools ]")  
+                    info("Running '01. Prepare Environment' Stage")  
 
                     runAnsible("01_PREPARE")
                 }
@@ -82,7 +93,7 @@ pipeline {
         }
         stage('02. Re-Image System'){
             when { expression { env.STAGE_02_REIMAGE == "yes"  } }
-            steps{s
+            steps{
                 script{
                     
                     info("Running '02. Re-Image System' Stage")
@@ -93,13 +104,13 @@ pipeline {
             }      
         }
         stage('03. Deploy Prereq'){
-            when { expression { env.STAGE_03_DEPLOY_PREREQ == "yes" } }
+            when { expression { env.STAGE_03_DEPLOY_PREP == "yes" } }
             steps{
                 script{
                     
-                    info("Running '03. Deploy Prereq' Stage [ multipath fix, cortx-prereq install, config download ]")
+                    info("Running '03. Deploy Prereq' Stage")
 
-                    runAnsible("03_DEPLOY_PREREQ")
+                    runAnsible("03_DEPLOY_PREP")
 
                 }
             } 
@@ -153,7 +164,7 @@ pipeline {
                 }
             } 
         }
-        stage('08. Check PCS Status'){
+        stage('08. Check Deployment Status'){
             when { expression { true } }
             steps{
                 script{
@@ -188,21 +199,40 @@ pipeline {
                 }
             } 
         }
-        stage('09. Check Service Status'){
-            when { expression { true } }
+        stage('09. Run Sanity'){
+            when { expression { env.STAGE_09_SANITY == "yes" } }
             steps{
                 script{
+                    info("Running '09. Run Sanity' Stage")
 
-                    info("Running '09. Check Service Status' Stage")
+                    try {
 
-                }
-            } 
-        }
-        stage('10. Run Sanity'){
-            when { expression { true } }
-            steps{
-                script{
-                    info("Running '10. Run Sanity' Stage")
+                        def remoteHost = getTestMachine("${NODE1_HOST}","${NODE_USER}","${NODE_PASS}")
+
+                        def csm_sanity = sshCommand remote: remoteHost, command: """
+                            sleep 300
+                            csm_test -f /opt/seagate/cortx/csm/test/test_data/args.yaml -t /opt/seagate/cortx/csm/test/plans/self_test.pln || true
+                        """
+                        
+                        def s3_sanity = sshCommand remote: remoteHost, command: """
+                            sleep 300
+                            salt 'srvnode-1' state.apply components.s3clients || true
+                            sleep 300
+                            /opt/seagate/cortx/s3/scripts/s3-sanity-test.sh -e 127.0.0.1 || true
+                        """
+                        
+                        def sspl_sanity = sshCommand remote: remoteHost, command: """
+                            sleep 300
+                            sh /opt/seagate/cortx/sspl/sspl_test/run_tests.sh || true
+                        """
+
+                        writeFile(file: 'csm_sanity.log', text: csm_sanity)
+                        writeFile(file: 's3_sanity.log', text: s3_sanity)
+                        writeFile(file: 'sspl_sanity.log', text: sspl_sanity)
+
+                    } catch (err) {
+                        echo err.getMessage()
+                    } 
 
                 }
             } 
@@ -224,7 +254,11 @@ pipeline {
                 // Add Summary
                 if (fileExists('pcs_status.log')) {
                     pcs_status=readFile(file: 'pcs_status.log')
-                    if(pcs_status.contains("Failed Resource") || pcs_status.contains("Stopped")){
+                    if(pcs_status.contains("Failed Resource") && pcs_status.contains("30000")){
+                        MESSAGE="Cortx Stack Deployment Success"
+                        ICON="accept.gif"
+                        STATUS="SUCCESS"
+                    }else if(pcs_status.contains("Failed Resource") || pcs_status.contains("Stopped")){
                         manager.buildFailure()
                         MESSAGE="Cortx Stack Deployment Failed"
                         ICON="error.gif"
@@ -234,10 +268,10 @@ pipeline {
                         ICON="accept.gif"
                         STATUS="SUCCESS"
                     }else{
-                        manager.buildUnstable()
-                        MESSAGE="Cortx Stack Deployment Status Unknown"
-                        ICON="warning.gif"
-                        STATUS="UNKNOWN" 
+                        manager.buildFailure()
+                        MESSAGE="Cortx Stack Deployment Failed"
+                        ICON="error.gif"
+                        STATUS="FAILURE"
                     }
 
                     pcs_status_html="<textarea rows=20 cols=200 readonly style='margin: 0px; height: 392px; width: 843px;'>${pcs_status}</textarea>"
@@ -285,6 +319,12 @@ def getHostName(configPath, hostSearch){
             """, returnStdout: true).trim()
 }
 
+// Method returns host Name from confi
+def getBuildArtifcatName(path, artifcat){
+
+    return sh(script: '''set +x ; echo $(curl -s '''+path+''' | sed -n 's/.*href="\\([^"]*\\).*/\\1/p' | grep '''+artifcat+''')''', returnStdout: true).trim()
+}
+
 // Method returns VM Host Information ( host, ssh cred)
 def getTestMachine(host, user, pass){
 
@@ -308,17 +348,19 @@ def runAnsible(tags){
                 inventory: 'inventories/hw_deployment/hosts',
                 tags: "${tags}",
                 extraVars: [
-                    "REIMAGE"       : [value: "${REIMAGE}", hidden: false],
-                    "NODE1"         : [value: "${NODE1_HOST}", hidden: false],
-                    "NODE2"         : [value: "${NODE2_HOST}", hidden: false] ,
-                    "CONFIG_URL"    : [value: "${CONFIG}", hidden: false],
-                    "BUILD_URL"     : [value: "${CORTX_BUILD}", hidden: false],
-                    "CLUSTER_PASS"  : [value: "${CLUSTER_PASS}", hidden: true],
-                    "SATELLITE_UN"  : [value: "${SATELLITE_UN}", hidden: true],
-                    "SATELLITE_PW"  : [value: "${SATELLITE_PW}", hidden: true],
-                    "SERVICE_USER"  : [value: "${SERVICE_USER}", hidden: true],
-                    "SERVICE_PASS"  : [value: "${SERVICE_PASS}", hidden: true],
-                    "CHANGE_PASS"   : [value: "${CHANGE_PASS}", hidden: false]
+                    "REIMAGE"               : [value: "${REIMAGE}", hidden: false],
+                    "NODE1"                 : [value: "${NODE1_HOST}", hidden: false],
+                    "NODE2"                 : [value: "${NODE2_HOST}", hidden: false] ,
+                    "CONFIG_URL"            : [value: "${CONFIG}", hidden: false],
+                    "CORTX_BUILD_ISO_URL"   : [value: "${CORTX_BUILD}", hidden: false],
+                    "CORTX_OS_ISO_URL"      : [value: "${CORTX_OS_ISO_URL}", hidden: false],
+                    "CORTX_PREP_URL"        : [value: "${CORTX_PREP_URL}", hidden: false],
+                    "CLUSTER_PASS"          : [value: "${CLUSTER_PASS}", hidden: true],
+                    "SATELLITE_UN"          : [value: "${SATELLITE_UN}", hidden: true],
+                    "SATELLITE_PW"          : [value: "${SATELLITE_PW}", hidden: true],
+                    "SERVICE_USER"          : [value: "${SERVICE_USER}", hidden: true],
+                    "SERVICE_PASS"          : [value: "${SERVICE_PASS}", hidden: true],
+                    "CHANGE_PASS"           : [value: "${CHANGE_PASS}", hidden: false]
                 ],
                 //extras: '-v',
                 colorized: true
