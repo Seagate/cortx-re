@@ -39,7 +39,7 @@ pipeline {
 	
 		stage('Install Dependencies') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh label: '', script: '''
 					pushd $component
 					yum clean all;rm -rf /var/cache/yum
@@ -53,7 +53,7 @@ pipeline {
 
 		stage('Build') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh label: 'Build', script: '''
 					set -xe
 					pushd $component
@@ -66,7 +66,7 @@ pipeline {
 		
 		stage('Test') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh label: 'Test', script: '''
 					set -xe
 					pushd $component
@@ -79,7 +79,7 @@ pipeline {
 
         stage ('Upload') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh label: 'Copy RPMS', script: '''
 					mkdir -p $component_dir/$BUILD_NUMBER
 					cp $WORKSPACE/cortx-ha/dist/rpmbuild/RPMS/x86_64/*.rpm $component_dir/$BUILD_NUMBER
@@ -94,7 +94,7 @@ pipeline {
 	
 		stage ('Tag last_successful') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh label: 'Tag last_successful', script: '''pushd $component_dir/
 					test -L $component_dir/last_successful && rm -f last_successful
 					ln -s $component_dir/$BUILD_NUMBER last_successful

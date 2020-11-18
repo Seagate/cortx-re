@@ -38,7 +38,7 @@ pipeline {
 	
 		stage('Checkout hare') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh 'mkdir -p hare'
 				dir ('hare') {
 					checkout([$class: 'GitSCM', branches: [[name: '${HARE_BRANCH}']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 0, noTags: false, reference: '', shallow: false, timeout: 15], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false, timeout: 15]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: '${HARE_URL}']]])
@@ -48,7 +48,7 @@ pipeline {
 	
 		stage('Install Dependencies') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh label: '', script: '''
 				    sed '/baseurl/d' /etc/yum.repos.d/mero_current_build.repo
 					if [ $MERO_BRANCH == "release" ]; then
@@ -73,7 +73,7 @@ pipeline {
 
 		stage('Build') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh label: 'Build', returnStatus: true, script: '''
 					set -xe
 					pushd $component
@@ -87,7 +87,7 @@ pipeline {
 
         stage ('Copy RPMS') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh label: 'Copy RPMS', script: '''
 					test -d /$BUILD_NUMBER && rm -rf $component_dir/$BUILD_NUMBER
 					mkdir -p $component_dir/$BUILD_NUMBER
@@ -98,7 +98,7 @@ pipeline {
 
 		stage ('Repo Creation') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh label: 'Repo Creation', script: '''pushd $component_dir/$BUILD_NUMBER
 					rpm -qi createrepo || yum install -y createrepo
 					createrepo .
@@ -110,7 +110,7 @@ pipeline {
 	
 		stage ('Tag last_successful') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh label: 'Tag last_successful', script: '''pushd $component_dir
 					test -L $component_dir/last_successful && rm -f last_successful
 					ln -s $component_dir/$BUILD_NUMBER last_successful

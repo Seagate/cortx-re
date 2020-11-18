@@ -59,7 +59,7 @@ pipeline {
 			
 				stage ("Build Mero, Hare and S3Server") {
 					steps {
-						script { build_stage=env.STAGE_NAME }
+						script { build_stage = env.STAGE_NAME }
 						build job: 'motr-custom-build', wait: true,
 						parameters: [
 									string(name: 'MOTR_URL', value: "${MOTR_URL}"),
@@ -74,7 +74,7 @@ pipeline {
 				
 				stage ("Build Provisioner") {
 					steps {
-						script { build_stage=env.STAGE_NAME }
+						script { build_stage = env.STAGE_NAME }
 						build job: 'prvsnr-custom-build', wait: true,
 						parameters: [
 									string(name: 'PRVSNR_URL', value: "${PRVSNR_URL}"),
@@ -85,7 +85,7 @@ pipeline {
 				
 				stage ("Build HA") {
 					steps {
-						script { build_stage=env.STAGE_NAME }
+						script { build_stage = env.STAGE_NAME }
 						sh label: 'Copy RPMS', script:'''
 						  if [ "$HA_BRANCH" == "Cortx-v1.0.0_Beta"  ]; then
 							echo "cortx-ha does not have Cortx-v1.0.0_Beta branch."
@@ -102,7 +102,7 @@ pipeline {
 
 				stage ("Build CSM") {
 					steps {
-						script { build_stage=env.STAGE_NAME }
+						script { build_stage = env.STAGE_NAME }
 						script {
 							if( env.CSM_BRANCH == 'Cortx-v1.0.0_Beta' ) {
                             echo "Using Cortx-v1.0.0_Beta branch"    
@@ -131,7 +131,7 @@ pipeline {
 
 				stage ("Build SSPL") {
 					steps {
-						script { build_stage=env.STAGE_NAME }
+						script { build_stage = env.STAGE_NAME }
 						build job: 'sspl-custom-build', wait: true,
 						parameters: [
 									string(name: 'SSPL_URL', value: "${SSPL_URL}"),
@@ -144,7 +144,7 @@ pipeline {
 
 		stage('Install Dependecies') {
 			steps {
-                script { build_stage=env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
                 sh label: 'Installed Dependecies', script: '''
                     yum install -y expect rpm-sign rng-tools genisoimage
                     systemctl start rngd
@@ -154,7 +154,7 @@ pipeline {
 			
 		stage ('Collect Component RPMS') {
 			steps {
-                script { build_stage=env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
                 sh label: 'Copy RPMS', script:'''
 				  if [ "$OTHER_COMPONENT_BRANCH" == "stable"  ]; then
 					RPM_COPY_PATH="/mnt/bigstorage/releases/cortx/components/github/stable/$os_version/dev/"
@@ -214,7 +214,7 @@ pipeline {
 
         stage('RPM Validation') {
 			steps {
-                script { build_stage=env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
 				sh label: 'Validate RPMS for Mero Dependency', script:'''
                 for env in "dev" ;
                 do
@@ -256,7 +256,7 @@ pipeline {
 		
 		stage ('Sign rpm') {
 			steps {
-                script { build_stage=env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
                 
 			 checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
                 
@@ -288,7 +288,7 @@ pipeline {
 		
 		stage ('Build MANIFEST') {
 			steps {
-                script { build_stage=env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
 
                 sh label: 'Build MANIFEST', script: """
 					pushd scripts/release_support
@@ -304,7 +304,7 @@ pipeline {
 
 		stage ('Repo Creation') {
 			steps {
-                script { build_stage=env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
                 sh label: 'Repo Creation', script: '''
                     pushd $integration_dir/$release_tag/cortx_iso/
                     rpm -qi createrepo || yum install -y createrepo
@@ -317,7 +317,7 @@ pipeline {
 		
 		stage ('Link 3rd_party and python_deps') {
 			steps {
-                script { build_stage=env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
                 sh label: 'Tag Release', script: '''
                     pushd $release_dir/github/integration-custom-ci/release/$os_version/$release_tag
 							ln -s $thrid_party_dir 3rd_party

@@ -31,7 +31,7 @@ pipeline {
 
 		stage('Checkout') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 
 				checkout([$class: 'GitSCM', branches: [[name: '${CSM_BRANCH}']], doGenerateSubmoduleConfigurations: false,  extensions: [[$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: '${CSM_URL}']]])
 			}
@@ -39,7 +39,7 @@ pipeline {
 		
 		stage('Install Dependencies') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh label: '', script: '''
 					if [ "${CSM_BRANCH}" == "Cortx-v1.0.0_Beta" ]; then
 						yum install -y eos-py-utils
@@ -54,7 +54,7 @@ pipeline {
 		
 		stage('Build') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh label: 'Build', returnStatus: true, script: '''
 					BUILD=$(git rev-parse --short HEAD)
 					VERSION=$(cat $WORKSPACE/VERSION)
@@ -68,7 +68,7 @@ pipeline {
 		
 		stage ('Upload') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh label: 'Copy RPMS', script: '''
 					mkdir -p $build_upload_dir/$BUILD_NUMBER
 					cp ./dist/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir/$BUILD_NUMBER
@@ -88,7 +88,7 @@ pipeline {
 
 		stage ('Tag last_successful') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh label: 'Tag last_successful', script: '''pushd $build_upload_dir/
 					test -L $build_upload_dir/last_successful && rm -f last_successful
 					ln -s $build_upload_dir/$BUILD_NUMBER last_successful

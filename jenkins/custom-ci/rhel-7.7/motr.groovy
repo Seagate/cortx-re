@@ -41,7 +41,7 @@ pipeline {
 	
 	stage('Install Dependencies') {
 		    steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh label: '', script: '''
 						export build_number=${BUILD_ID}
 						kernel_src=$(ls -1rd /lib/modules/*/build | head -n1)
@@ -62,7 +62,7 @@ pipeline {
 
 		stage('Build') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 						sh label: '', script: '''
 						rm -rf /root/rpmbuild/RPMS/x86_64/*.rpm
 						KERNEL=/lib/modules/$(yum list installed kernel | tail -n1 | awk '{ print $2 }').x86_64/build
@@ -76,7 +76,7 @@ pipeline {
 		
 		stage ('Copy RPMS') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh label: 'Copy RPMS', script: '''
 					test -d /$BUILD_NUMBER && rm -rf $component_dir/$BUILD_NUMBER
 					mkdir -p $component_dir/$BUILD_NUMBER
@@ -87,7 +87,7 @@ pipeline {
 		
 		stage ('Repo Creation') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh label: 'Repo Creation', script: '''pushd $component_dir/$BUILD_NUMBER
 					rpm -qi createrepo || yum install -y createrepo
 					createrepo .
@@ -98,7 +98,7 @@ pipeline {
 		
 		stage ('Set Current Build') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh label: 'Tag last_successful', script: '''
 					pushd $component_dir
 					test -L $component_dir/current_build && rm -f current_build
@@ -113,7 +113,7 @@ pipeline {
 			parallel {
 				stage ("build S3Server") {
 					steps {
-						script { build_stage=env.STAGE_NAME }
+						script { build_stage = env.STAGE_NAME }
 						build job: 's3-custom-build', wait: true,
 						parameters: [
 									string(name: 'S3_BRANCH', value: "${S3_BRANCH}"),
@@ -125,7 +125,7 @@ pipeline {
 
 				stage ("build Hare") {
 					steps {
-						script { build_stage=env.STAGE_NAME }
+						script { build_stage = env.STAGE_NAME }
 						build job: 'hare-custom-build', wait: true,
 						parameters: [
 									string(name: 'HARE_BRANCH', value: "${HARE_BRANCH}"),
@@ -139,7 +139,7 @@ pipeline {
 	
 		stage ('Tag last_successful') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh label: 'Tag last_successful', script: '''pushd $component_dir
 					test -d $component_dir/last_successful && rm -f last_successful
 					ln -s $component_dir/$BUILD_NUMBER last_successful

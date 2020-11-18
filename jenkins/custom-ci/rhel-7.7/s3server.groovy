@@ -53,7 +53,7 @@ pipeline {
 				
 				stage('Build s3server RPM') {
 					steps {
-						script { build_stage=env.STAGE_NAME }
+						script { build_stage = env.STAGE_NAME }
 								sh label: '', script: '''
 								sed '/baseurl/d' /etc/yum.repos.d/mero_current_build.repo
 								if [ $MERO_BRANCH == "release" ]; then
@@ -82,7 +82,7 @@ pipeline {
 				
 				stage('Build s3iamcli RPM') {
 					steps {
-						script { build_stage=env.STAGE_NAME }
+						script { build_stage = env.STAGE_NAME }
 								sh label: '', script: '''
 								export build_number=${BUILD_ID}
 								./rpms/s3iamcli/buildrpm.sh -P $PWD
@@ -92,7 +92,7 @@ pipeline {
 
 				stage ('Copy RPMS') {
 					steps {
-						script { build_stage=env.STAGE_NAME }
+						script { build_stage = env.STAGE_NAME }
 						sh label: 'Copy RPMS', script: '''	
 							test -d $component_dir/$BUILD_NUMBER && rm -rf $component_dir/$BUILD_NUMBER
 							mkdir -p $component_dir/$BUILD_NUMBER
@@ -105,7 +105,7 @@ pipeline {
 				
 				stage ('Repo Creation') {
 					steps {
-						script { build_stage=env.STAGE_NAME }
+						script { build_stage = env.STAGE_NAME }
 						sh label: 'Repo Creation', script: '''pushd $component_dir/$BUILD_NUMBER
 							rpm -qi createrepo || yum install -y createrepo
 							createrepo .
@@ -116,7 +116,7 @@ pipeline {
 				
 				stage ('Tag last_successful') {
 					steps {
-						script { build_stage=env.STAGE_NAME }
+						script { build_stage = env.STAGE_NAME }
 						sh label: 'Tag last_successful', script: '''pushd  $component_dir
 							test -L  $component_dir/last_successful && rm -f last_successful
 							ln -s $component_dir/$BUILD_NUMBER last_successful

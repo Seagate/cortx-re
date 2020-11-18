@@ -31,7 +31,7 @@ pipeline {
 
 		stage('Checkout') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				dir('cortx-management-web'){
 				    checkout([$class: 'GitSCM', branches: [[name: "${CSM_WEB_BRANCH}"]], doGenerateSubmoduleConfigurations: false,  extensions: [[$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-management-portal']]])
 				}
@@ -43,7 +43,7 @@ pipeline {
 		
 		stage('Install Dependencies') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh label: '', script: '''
 					yum install -y eos-py-utils cortx-prvsnr
 					pip3.6 install  pyinstaller==3.5
@@ -53,7 +53,7 @@ pipeline {
 		
 		stage('Build') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh label: 'Build', returnStatus: true, script: '''
 					pushd cortx-management-web
 						ls -ltr
@@ -70,7 +70,7 @@ pipeline {
 		
 		stage ('Upload') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh label: 'Copy RPMS', script: '''
 					mkdir -p $build_upload_dir/$BUILD_NUMBER
 					pushd cortx-management-web
@@ -92,7 +92,7 @@ pipeline {
 
 		stage ('Tag last_successful') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh label: 'Tag last_successful', script: '''pushd $build_upload_dir/
 					test -L $build_upload_dir/last_successful && rm -f last_successful
 					ln -s $build_upload_dir/$BUILD_NUMBER last_successful
