@@ -56,7 +56,7 @@ pipeline {
 					elif [ $MERO_BRANCH == "Cortx-v1.0.0_Beta" ]; then 	
 						echo "baseurl=http://cortx-storage.colo.seagate.com/releases/cortx/components/github/Cortx-v1.0.0_Beta/rhel-7.7.1908/dev/mero/current_build/" >> /etc/yum.repos.d/mero_current_build.repo
 				    else
-						echo "baseurl=http://cortx-storage.colo.seagate.com/releases/cortx/components/github/custom-ci/release/rhel-7.7.1908/dev/motr/current_build/"  >> /etc/yum.repos.d/mero_current_build.repo
+						echo "baseurl=http://cortx-storage.colo.seagate.com/releases/cortx/components/github/custom-ci/rhel-7.7.1908/dev/motr/current_build/"  >> /etc/yum.repos.d/mero_current_build.repo
 					fi	
 				    rm -f /etc/yum.repos.d/eos_7.7.1908.repo
 					yum clean all
