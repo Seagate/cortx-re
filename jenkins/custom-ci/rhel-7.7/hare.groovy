@@ -12,7 +12,7 @@ pipeline {
 		
 		choice(
             name: 'MERO_BRANCH', 
-            choices: ['custom-ci', 'release', 'Cortx-v1.0.0_Beta'],
+            choices: ['custom-ci', 'stable', 'Cortx-v1.0.0_Beta'],
             description: 'Branch name to pick-up other components rpms'
         )
 	}

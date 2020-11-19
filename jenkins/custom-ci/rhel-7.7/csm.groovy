@@ -10,7 +10,7 @@ pipeline {
 		component = "csm"
         branch = "custom-ci"
         os_version = "rhel-7.7.1908"
-        release_dir = "/mnt/bigstorage/releases/eos"
+        release_dir = "/mnt/bigstorage/releases/cortx"
         build_upload_dir = "$release_dir/components/github/$branch/$os_version/$env/$component/"
     }
 

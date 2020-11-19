@@ -26,7 +26,7 @@ pipeline {
 	}
 	
 	parameters {
-		string(name: 'CSM_BRANCH', defaultValue: 'release', description: 'This will be ignored by default.Set this to Cortx-v1.0.0_Beta for custom Beta build.For other builds CSM Agent and CSM Web will be used')
+		string(name: 'CSM_BRANCH', defaultValue: 'Cortx-v1.0.0_Beta', description: 'This will be ignored by default.Set this to Cortx-v1.0.0_Beta for custom Beta build.For other builds CSM Agent and CSM Web will be used')
 		string(name: 'CSM_URL', defaultValue: 'https://github.com/Seagate/cortx-csm.git', description: 'CSM URL')
 		string(name: 'CSM_AGENT_BRANCH', defaultValue: 'main', description: 'Branch for CSM Agent')
 		string(name: 'CSM_AGENT_URL', defaultValue: 'https://github.com/Seagate/cortx-manager', description: 'CSM_AGENT URL')

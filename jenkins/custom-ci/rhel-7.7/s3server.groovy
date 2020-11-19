@@ -11,7 +11,7 @@ pipeline {
 	}
 
 	environment {
-     	release_dir = "/mnt/bigstorage/releases/eos"
+     	release_dir = "/mnt/bigstorage/releases/cortx"
 		branch = "custom-ci" 
 		os_version = "rhel-7.7.1908"
 		component = "s3server"
@@ -24,8 +24,8 @@ pipeline {
         string(name: 'S3_BRANCH', defaultValue: 'custom-ci', description: 'Branch for S3Server')
 		
 		choice(
-            name: 'MERO_BRANCH', 
-            choices: ['custom-ci', 'release', 'Cortx-v1.0.0_Beta'],
+            name: 'MOTR_BRANCH', 
+            choices: ['custom-ci', 'stable', 'Cortx-v1.0.0_Beta'],
             description: 'Branch name to pick-up Motr components rpms'
         )
 
@@ -57,9 +57,9 @@ pipeline {
 						script { build_stage = env.STAGE_NAME }
 								sh label: '', script: '''
 								sed '/baseurl/d' /etc/yum.repos.d/mero_current_build.repo
-								if [ $MERO_BRANCH == "release" ]; then
+								if [ $MOTR_BRANCH == "release" ]; then
 									echo "baseurl=http://cortx-storage.colo.seagate.com/releases/cortx/components/github/release/rhel-7.7.1908/dev/motr/current_build/"  >> /etc/yum.repos.d/mero_current_build.repo
-								elif [ $MERO_BRANCH == "Cortx-v1.0.0_Beta" ]; then 	
+								elif [ $MOTR_BRANCH == "Cortx-v1.0.0_Beta" ]; then 	
 									echo "baseurl=http://cortx-storage.colo.seagate.com/releases/cortx/components/github/Cortx-v1.0.0_Beta/rhel-7.7.1908/dev/mero/current_build/" >> /etc/yum.repos.d/mero_current_build.repo	
 								else
 									echo "baseurl=http://cortx-storage.colo.seagate.com/releases/cortx/components/github/custom-ci/rhel-7.7.1908/dev/motr/current_build/"  >> /etc/yum.repos.d/mero_current_build.repo
