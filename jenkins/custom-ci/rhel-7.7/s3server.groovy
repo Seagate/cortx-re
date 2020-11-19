@@ -12,15 +12,16 @@ pipeline {
 
 	environment {
      	release_dir = "/mnt/bigstorage/releases/eos"
+		branch = "custom-ci" 
 		os_version = "rhel-7.7.1908"
 		component = "s3server"
 		env = "dev"
-		component_dir = "$release_dir/components/github/custom-ci/release/$os_version/$env/$component"
+		component_dir = "$release_dir/components/github/$branch/$os_version/$env/$component"
     }
 
 	parameters {  
-	    string(name: 'S3_URL', defaultValue: 'https://github.com/Seagate/cortx-s3server', description: 'Branch for S3Server')
-        string(name: 'S3_BRANCH', defaultValue: 'release', description: 'Branch for S3Server')
+	    string(name: 'S3_URL', defaultValue: 'https://github.com/Seagate/cortx-s3server', description: 'Repository URL for S3Server')
+        string(name: 'S3_BRANCH', defaultValue: 'custom-ci', description: 'Branch for S3Server')
 		
 		choice(
             name: 'MERO_BRANCH', 

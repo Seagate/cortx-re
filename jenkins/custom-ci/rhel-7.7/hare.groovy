@@ -7,8 +7,8 @@ pipeline {
 	}
 
 	parameters {  
-	    string(name: 'HARE_URL', defaultValue: 'https://github.com/Seagate/cortx-hare/', description: 'Branch for Hare')
-        string(name: 'HARE_BRANCH', defaultValue: 'dev', description: 'Branch for Hare')
+	    string(name: 'HARE_URL', defaultValue: 'https://github.com/Seagate/cortx-hare/', description: 'Repository URL for Hare build')
+        string(name: 'HARE_BRANCH', defaultValue: 'custom-ci', description: 'Branch for Hare build')
 		
 		choice(
             name: 'MERO_BRANCH', 
@@ -19,12 +19,12 @@ pipeline {
 	
 
    	environment {
-     	release_dir = "/mnt/bigstorage/releases/eos"
-		branch = "release"
+     	release_dir = "/mnt/bigstorage/releases/cortx"
+		branch = "custom-ci"
 		os_version = "rhel-7.7.1908"
 		component = "hare"
 		env = "dev"
-		component_dir = "$release_dir/components/github/custom-ci/$branch/$os_version/$env/$component"
+		component_dir = "$release_dir/components/github/$branch/$os_version/$env/$component"
     }
 	
 	

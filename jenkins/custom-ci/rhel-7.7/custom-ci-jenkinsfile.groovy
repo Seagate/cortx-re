@@ -7,11 +7,11 @@ pipeline {
 	}
 	
 	environment {
-		branch = "main"
+		branch = "custom-ci"
 		os_version = "rhel-7.7.1908"
 		release_dir = "/mnt/bigstorage/releases/cortx"
         integration_dir = "$release_dir/github/integration-custom-ci/release/$os_version"
-        components_dir = "$release_dir/components/github/custom-ci/release/$os_version"
+        components_dir = "$release_dir/components/github/$branch/$os_version"
         release_tag = "custom-build-$BUILD_ID"
         passphrase = credentials('rpm-sign-passphrase')
 		thrid_party_dir = "/mnt/bigstorage/releases/cortx/third-party-deps/rhel/rhel-7.7.1908/"

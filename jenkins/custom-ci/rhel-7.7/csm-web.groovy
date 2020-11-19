@@ -8,10 +8,10 @@ pipeline {
 	environment {      
         env = "dev"
 		component = "csm-web"
-        branch = "release"
+        branch = "custom-ci" 
         os_version = "rhel-7.7.1908"
-        release_dir = "/mnt/bigstorage/releases/eos"
-        build_upload_dir = "$release_dir/components/github/custom-ci/$branch/$os_version/$env/$component/"
+        release_dir = "/mnt/bigstorage/releases/cortx"
+        build_upload_dir = "$release_dir/components/github/$branch/$os_version/$env/$component/"
     }
 
 	options {
@@ -22,8 +22,8 @@ pipeline {
 	}
 	
 	parameters {  
-        string(name: 'CSM_WEB_URL', defaultValue: 'https://github.com/Seagate/cortx-management-web.git', description: 'Branch for Provisioner.')
-		string(name: 'CSM_WEB_BRANCH', defaultValue: 'release', description: 'Branch for Provisioner.')
+        string(name: 'CSM_WEB_URL', defaultValue: 'https://github.com/Seagate/cortx-management-web.git', description: 'Branch for cortx-management-web build.')
+		string(name: 'CSM_WEB_BRANCH', defaultValue: 'custom-ci', description: 'Branch for cortx-management-web build.')
 	}	
 
 
@@ -45,7 +45,7 @@ pipeline {
 			steps {
 				script { build_stage = env.STAGE_NAME }
 				sh label: '', script: '''
-					yum install -y eos-py-utils cortx-prvsnr
+					yum install -y cortx-py-utils cortx-prvsnr
 					pip3.6 install  pyinstaller==3.5
 				'''
 			}

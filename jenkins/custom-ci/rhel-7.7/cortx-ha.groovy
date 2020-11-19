@@ -8,15 +8,15 @@ pipeline {
     environment {
         env = "dev"
 		component = "cortx-ha"
-        branch = "release"
+        branch = "custom-ci" 
         os_version = "rhel-7.7.1908"
-        release_dir = "/mnt/bigstorage/releases/eos"
-        component_dir = "$release_dir/components/github/custom-ci/$branch/$os_version/$env/$component/"
+        release_dir = "/mnt/bigstorage/releases/cortx"
+        component_dir = "$release_dir/components/github/$branch/$os_version/$env/$component/"
     }
 	
 	parameters {
-		string(name: 'HA_URL', defaultValue: 'https://github.com/Seagate/cortx-ha', description: 'Branch to be used for Hare build.')
-		string(name: 'HA_BRANCH', defaultValue: 'release', description: 'Branch to be used for Hare build.')
+		string(name: 'HA_URL', defaultValue: 'https://github.com/Seagate/cortx-ha', description: 'Repository URL to be used for cortx-ha build.')
+		string(name: 'HA_BRANCH', defaultValue: 'custom-ci', description: 'Branch to be used for cortx-ha build.')
 	}
 	
 	
@@ -43,7 +43,7 @@ pipeline {
 				sh label: '', script: '''
 					pushd $component
 					yum clean all;rm -rf /var/cache/yum
-					yum -q erase eos-py-utils -y;yum install eos-py-utils -y
+					yum install cortx-py-utils -y
 					bash jenkins/cicd/cortx-ha-dep.sh
 					pip3 install numpy
 					popd

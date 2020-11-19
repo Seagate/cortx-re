@@ -12,21 +12,21 @@ pipeline {
 
 	parameters {  
         string(name: 'MOTR_URL', defaultValue: 'https://github.com/Seagate/cortx-motr', description: 'Branch for Motr.')
-		string(name: 'MOTR_BRANCH', defaultValue: 'release', description: 'Branch for Motr.')
+		string(name: 'MOTR_BRANCH', defaultValue: 'custom-ci', description: 'Branch for Motr.')
 		string(name: 'S3_URL', defaultValue: 'https://github.com/Seagate/cortx-s3server', description: 'Branch for S3Server')
-		string(name: 'S3_BRANCH', defaultValue: 'release', description: 'Branch for S3Server')
+		string(name: 'S3_BRANCH', defaultValue: 'custom-ci', description: 'Branch for S3Server')
 		string(name: 'HARE_URL', defaultValue: 'https://github.com/Seagate/cortx-hare', description: 'Branch to be used for Hare build.')
-		string(name: 'HARE_BRANCH', defaultValue: 'release', description: 'Branch to be used for Hare build.')
+		string(name: 'HARE_BRANCH', defaultValue: 'custom-ci', description: 'Branch to be used for Hare build.')
 
 	}	
 
 	environment {
-     	release_dir = "/mnt/bigstorage/releases/eos"
+     	release_dir = "/mnt/bigstorage/releases/cortx"
 		os_version = "rhel-7.7.1908"
-		branch = "release"
+		branch = "custom-ci"
 		component = "motr"
 		env = "dev"
-		component_dir = "$release_dir/components/github/custom-ci/$branch/$os_version/$env/$component"
+		component_dir = "$release_dir/components/github/$branch/$os_version/$env/$component"
     }
 
 	stages {	

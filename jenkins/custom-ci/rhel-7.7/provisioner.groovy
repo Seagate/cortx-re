@@ -6,17 +6,17 @@ pipeline {
     }
     
 	parameters {  
-        string(name: 'PRVSNR_URL', defaultValue: 'https://github.com/Seagate/cortx-prvsnr', description: 'Branch for Provisioner.')
-		string(name: 'PRVSNR_BRANCH', defaultValue: 'release', description: 'Branch for Provisioner.')
+        string(name: 'PRVSNR_URL', defaultValue: 'https://github.com/Seagate/cortx-prvsnr', description: 'Repository URL for Provisioner.')
+		string(name: 'PRVSNR_BRANCH', defaultValue: 'custom-ci', description: 'Branch for Provisioner.')
 	}	
 
 	environment {
         env = "dev"
 		component = "provisioner"
-        branch = "release"
+        branch = "custom-ci"
         os_version = "rhel-7.7.1908"
-        release_dir = "/mnt/bigstorage/releases/eos"
-        build_upload_dir = "$release_dir/components/github/custom-ci/$branch/$os_version/$env/$component/"
+        release_dir = "/mnt/bigstorage/releases/cortx"
+        build_upload_dir = "$release_dir/components/github/$branch/$os_version/$env/$component/"
     }
 
     options {

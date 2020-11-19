@@ -8,10 +8,10 @@ pipeline {
 	environment {      
         env = "dev"
 		component = "csm-agent"
-        branch = "release"
+        branch = "custom-ci" 
         os_version = "rhel-7.7.1908"
-        release_dir = "/mnt/bigstorage/releases/eos"
-        build_upload_dir = "$release_dir/components/github/custom-ci/$branch/$os_version/$env/$component/"
+        release_dir = "/mnt/bigstorage/releases/cortx"
+        build_upload_dir = "$release_dir/components/github/$branch/$os_version/$env/$component/"
     }
 
 	options {
@@ -22,8 +22,8 @@ pipeline {
 	}
 	
 	parameters {  
-        string(name: 'CSM_AGENT_URL', defaultValue: 'https://github.com/Seagate/cortx-management.git', description: 'Branch for Provisioner.')
-		string(name: 'CSM_AGENT_BRANCH', defaultValue: 'release', description: 'Branch for Provisioner.')
+        string(name: 'CSM_AGENT_URL', defaultValue: 'https://github.com/Seagate/cortx-management.git', description: 'Repository URL for cortx-management build.')
+		string(name: 'CSM_AGENT_BRANCH', defaultValue: 'custom-ci', description: 'Branch for cortx-management build.')
 	}	
 
 
