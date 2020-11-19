@@ -215,7 +215,7 @@ pipeline {
         stage('RPM Validation') {
 			steps {
                 script { build_stage = env.STAGE_NAME }
-				sh label: 'Validate RPMS for Mero Dependency', script:'''
+				sh label: 'Validate RPMS for Motr Dependency', script:'''
                 for env in "dev" ;
                 do
                     set +x

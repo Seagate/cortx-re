@@ -16,7 +16,7 @@ pipeline {
 	
 	parameters {
 		string(name: 'HA_URL', defaultValue: 'https://github.com/Seagate/cortx-ha', description: 'Repository URL to be used for cortx-ha build.')
-		string(name: 'HA_BRANCH', defaultValue: 'custom-ci', description: 'Branch to be used for cortx-ha build.')
+		string(name: 'HA_BRANCH', defaultValue: 'stable', description: 'Branch to be used for cortx-ha build.')
 	}
 	
 	

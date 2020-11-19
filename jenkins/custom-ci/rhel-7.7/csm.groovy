@@ -23,7 +23,7 @@ pipeline {
 	
 	parameters {  
         string(name: 'CSM_URL', defaultValue: 'https://github.com/Seagate/cortx-csm.git', description: 'Branch for cortx-csm build.')
-		string(name: 'CSM_BRANCH', defaultValue: 'custom-ci', description: 'Branch for cortx-csm build.')
+		string(name: 'CSM_BRANCH', defaultValue: 'stable', description: 'Branch for cortx-csm build.')
 	}	
 
 

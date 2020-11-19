@@ -7,7 +7,7 @@ pipeline {
     
 	parameters {  
         string(name: 'PRVSNR_URL', defaultValue: 'https://github.com/Seagate/cortx-prvsnr', description: 'Repository URL for Provisioner.')
-		string(name: 'PRVSNR_BRANCH', defaultValue: 'custom-ci', description: 'Branch for Provisioner.')
+		string(name: 'PRVSNR_BRANCH', defaultValue: 'stable', description: 'Branch for Provisioner.')
 	}	
 
 	environment {

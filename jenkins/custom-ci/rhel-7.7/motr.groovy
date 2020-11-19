@@ -12,11 +12,11 @@ pipeline {
 
 	parameters {  
         string(name: 'MOTR_URL', defaultValue: 'https://github.com/Seagate/cortx-motr', description: 'Branch for Motr.')
-		string(name: 'MOTR_BRANCH', defaultValue: 'custom-ci', description: 'Branch for Motr.')
+		string(name: 'MOTR_BRANCH', defaultValue: 'stable', description: 'Branch for Motr.')
 		string(name: 'S3_URL', defaultValue: 'https://github.com/Seagate/cortx-s3server', description: 'Branch for S3Server')
-		string(name: 'S3_BRANCH', defaultValue: 'custom-ci', description: 'Branch for S3Server')
+		string(name: 'S3_BRANCH', defaultValue: 'stable', description: 'Branch for S3Server')
 		string(name: 'HARE_URL', defaultValue: 'https://github.com/Seagate/cortx-hare', description: 'Branch to be used for Hare build.')
-		string(name: 'HARE_BRANCH', defaultValue: 'custom-ci', description: 'Branch to be used for Hare build.')
+		string(name: 'HARE_BRANCH', defaultValue: 'stable', description: 'Branch to be used for Hare build.')
 
 	}	
 

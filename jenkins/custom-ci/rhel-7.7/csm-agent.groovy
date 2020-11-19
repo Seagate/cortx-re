@@ -23,7 +23,7 @@ pipeline {
 	
 	parameters {  
         string(name: 'CSM_AGENT_URL', defaultValue: 'https://github.com/Seagate/cortx-management.git', description: 'Repository URL for cortx-management build.')
-		string(name: 'CSM_AGENT_BRANCH', defaultValue: 'custom-ci', description: 'Branch for cortx-management build.')
+		string(name: 'CSM_AGENT_BRANCH', defaultValue: 'stable', description: 'Branch for cortx-management build.')
 	}	
 
 
