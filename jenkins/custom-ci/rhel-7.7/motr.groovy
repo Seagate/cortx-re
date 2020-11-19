@@ -117,7 +117,7 @@ pipeline {
 						build job: 's3-custom-build', wait: true,
 						parameters: [
 									string(name: 'S3_BRANCH', value: "${S3_BRANCH}"),
-									string(name: 'MERO_BRANCH', value: "custom-ci"),
+									string(name: 'MOTR_BRANCH', value: "custom-ci"),
 									string(name: 'S3_URL', value: "${S3_URL}")
 								]
 					}
@@ -129,7 +129,7 @@ pipeline {
 						build job: 'hare-custom-build', wait: true,
 						parameters: [
 									string(name: 'HARE_BRANCH', value: "${HARE_BRANCH}"),
-									string(name: 'MERO_BRANCH', value: "custom-ci"),
+									string(name: 'MOTR_BRANCH', value: "custom-ci"),
 									string(name: 'HARE_URL', value: "${HARE_URL}")
 								]
 					}
