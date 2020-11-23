@@ -1,5 +1,5 @@
 #!/bin/bash
-CURRENT=$(df -h / | grep /mnt/ | awk '{ print $5}' | sed 's/%//g')
+CURRENT=$(df -h | grep /mnt/ | awk '{ print $5}' | sed 's/%//g')
 THRESHOLD=75
 if [ "$CURRENT" -gt "$THRESHOLD" ] ; then
     mailx -s 'Disk Space Alert' balaji.ramachandran@seagate.com << EOF
