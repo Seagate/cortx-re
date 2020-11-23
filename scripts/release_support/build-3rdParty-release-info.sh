@@ -8,7 +8,7 @@ fi
 
 echo -e "Generating RELEASE.INFO file"
 SCRIPTPATH="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
-pushd $BUILD_LOCATION
+pushd "$BUILD_LOCATION"
 #find . -type f -name *.rpm | awk -F '/' '{print $NF}' | awk '{ print "    - \""$1"\""}'
 
 cat <<EOF > THIRD_PARTY_RELEASE.INFO
@@ -27,8 +27,8 @@ for dir in $(ls -1 | grep -E -v "repodata|THIRD_PARTY_RELEASE.INFO")
 do
 echo "Adding rpms from $dir"
 cat <<EOF >> THIRD_PARTY_RELEASE.INFO
-    $dir
-$(find -L ./$dir -type f -name "*.rpm" -or -name "*.tar.xz" ! -path "./lustre/custom/tcp/*" | awk -F '/' '{print $NF}' | awk '{ print "       - \""$1"\""}')
+    "$dir"
+$(find -L ./"$dir" -type f -name "*.rpm" -or -name "*.tar.xz" ! -path "./lustre/custom/tcp/*" | awk -F '/' '{print $NF}' | awk '{ print "       - \""$1"\""}')
 EOF
 done
 popd
