@@ -1,7 +1,7 @@
 #!/bin/bash
 BUILD_LOCATION=$1
 
-if [ -z $BUILD_LOCATION ]; then
+if [ -z "$BUILD_LOCATION" ]; then
 echo "Build location is empty. exiting.."
 exit 1
 fi
@@ -22,17 +22,17 @@ EOF
 popd
 
 
-pushd $BUILD_LOCATION
+pushd "$BUILD_LOCATION"
 for i in $(ls -1 | grep -E -v "repodata|THIRD_PARTY_RELEASE.INFO")
 do
 echo "Adding rpms from $i"
 cat <<EOF >> THIRD_PARTY_RELEASE.INFO
     $i
-$(find ./$i -type f -name "*.rpm" -or -name "*.tar.xz" ! -path "./lustre/custom/tcp/*" | awk -F '/' '{print $NF}' | awk '{ print "       - \""$1"\""}')
+$(find -L ./$i -type f -name "*.rpm" -or -name "*.tar.xz" ! -path "./lustre/custom/tcp/*" | awk -F '/' '{print $NF}' | awk '{ print "       - \""$1"\""}')
 EOF
 done
 popd
 
 pushd $BUILD_LOCATION
-mv THIRD_PARTY_RELEASE.INFO $SCRIPTPATH
+mv THIRD_PARTY_RELEASE.INFO "$SCRIPTPATH"
 popd
