@@ -2,22 +2,22 @@ pipeline {
 	 	 
     agent {
 		node {
-			label 'docker-rpm-sign-node'
+			label 'docker-rpm-sign-node-rhel-cortex'
 		}
 	}
 	
 	environment {
-		branch="main"
-		os_version="rhel-7.7.1908"
-		release_dir="/mnt/bigstorage/releases/cortx"
-        integration_dir="$release_dir/github/integration-custom-ci/release/$os_version"
-        components_dir="$release_dir/components/github/custom-ci/release/$os_version"
-        release_tag="custom-build-$BUILD_ID"
+		branch = "custom-ci"
+		os_version = "rhel-7.7.1908"
+		release_dir = "/mnt/bigstorage/releases/cortx"
+        integration_dir = "$release_dir/github/integration-custom-ci/release/$os_version"
+        components_dir = "$release_dir/components/github/$branch/$os_version"
+        release_tag = "custom-build-$BUILD_ID"
         passphrase = credentials('rpm-sign-passphrase')
+		thrid_party_dir = "/mnt/bigstorage/releases/cortx/third-party-deps/rhel/rhel-7.7.1908/"
+		python_deps = "/mnt/bigstorage/releases/cortx/third-party-deps/python-packages"
     }
 	
-	
-
 	options {
 		timeout(time: 120, unit: 'MINUTES')
 		timestamps()
@@ -26,31 +26,30 @@ pipeline {
 	}
 	
 	parameters {
-		string(name: 'CSM_BRANCH', defaultValue: 'release', description: 'This will be ignored by default.Set this to Cortx-v1.0.0_Beta for custom Beta build.For other builds CSM Agent and CSM Web will be used')
+		string(name: 'CSM_BRANCH', defaultValue: 'Cortx-v1.0.0_Beta', description: 'This will be ignored by default.Set this to Cortx-v1.0.0_Beta for custom Beta build.For other builds CSM Agent and CSM Web will be used')
 		string(name: 'CSM_URL', defaultValue: 'https://github.com/Seagate/cortx-csm.git', description: 'CSM URL')
-		string(name: 'CSM_AGENT_BRANCH', defaultValue: 'dev', description: 'Branch for CSM Agent')
+		string(name: 'CSM_AGENT_BRANCH', defaultValue: 'main', description: 'Branch for CSM Agent')
 		string(name: 'CSM_AGENT_URL', defaultValue: 'https://github.com/Seagate/cortx-manager', description: 'CSM_AGENT URL')
-		string(name: 'CSM_WEB_BRANCH', defaultValue: 'dev', description: 'Branch for CSM Web')
+		string(name: 'CSM_WEB_BRANCH', defaultValue: 'main', description: 'Branch for CSM Web')
 		string(name: 'CSM_WEB_URL', defaultValue: 'https://github.com/Seagate/cortx-management-portal', description: 'CSM WEB URL')
-		string(name: 'HARE_BRANCH', defaultValue: 'dev', description: 'Branch for Hare')
+		string(name: 'HARE_BRANCH', defaultValue: 'main', description: 'Branch for Hare')
 		string(name: 'HARE_URL', defaultValue: 'https://github.com/Seagate/cortx-hare', description: 'Hare URL')
-		string(name: 'HA_BRANCH', defaultValue: 'dev', description: 'Branch for Cortx-HA')
+		string(name: 'HA_BRANCH', defaultValue: 'main', description: 'Branch for Cortx-HA')
 		string(name: 'HA_URL', defaultValue: 'https://github.com/Seagate/cortx-ha.git', description: 'Cortx-HA URL')
-		string(name: 'MOTR_BRANCH', defaultValue: 'dev', description: 'Branch for Motr')
+		string(name: 'MOTR_BRANCH', defaultValue: 'main', description: 'Branch for Motr')
 		string(name: 'MOTR_URL', defaultValue: 'https://github.com/Seagate/cortx-motr.git', description: 'Motr URL')
-		string(name: 'PRVSNR_BRANCH', defaultValue: 'dev', description: 'Branch for Provisioner')
+		string(name: 'PRVSNR_BRANCH', defaultValue: 'main', description: 'Branch for Provisioner')
 		string(name: 'PRVSNR_URL', defaultValue: 'https://github.com/Seagate/cortx-prvsnr.git', description: 'Provisioner URL')
-		string(name: 'S3_BRANCH', defaultValue: 'dev', description: 'Branch for S3Server')
+		string(name: 'S3_BRANCH', defaultValue: 'main', description: 'Branch for S3Server')
 		string(name: 'S3_URL', defaultValue: 'https://github.com/Seagate/cortx-s3server.git', description: 'S3Server URL')
-		string(name: 'SSPL_BRANCH', defaultValue: 'dev', description: 'Branch for SSPL')
+		string(name: 'SSPL_BRANCH', defaultValue: 'main', description: 'Branch for SSPL')
 		string(name: 'SSPL_URL', defaultValue: 'https://github.com/Seagate/cortx-monitor.git', description: 'SSPL URL')
 		
 		choice(
             name: 'OTHER_COMPONENT_BRANCH', 
-            choices: ['dev', 'release', 'Cortx-v1.0.0_Beta', 'cortx-1.0'],
+            choices: ['main', 'stable', 'Cortx-v1.0.0_Beta', 'cortx-1.0'],
             description: 'Branch name to pick-up other components rpms'
-        )  
-
+        )
     }	
 		
 	stages {	
@@ -60,7 +59,7 @@ pipeline {
 			
 				stage ("Build Mero, Hare and S3Server") {
 					steps {
-						script { build_stage=env.STAGE_NAME }
+						script { build_stage = env.STAGE_NAME }
 						build job: 'motr-custom-build', wait: true,
 						parameters: [
 									string(name: 'MOTR_URL', value: "${MOTR_URL}"),
@@ -75,7 +74,7 @@ pipeline {
 				
 				stage ("Build Provisioner") {
 					steps {
-						script { build_stage=env.STAGE_NAME }
+						script { build_stage = env.STAGE_NAME }
 						build job: 'prvsnr-custom-build', wait: true,
 						parameters: [
 									string(name: 'PRVSNR_URL', value: "${PRVSNR_URL}"),
@@ -86,7 +85,7 @@ pipeline {
 				
 				stage ("Build HA") {
 					steps {
-						script { build_stage=env.STAGE_NAME }
+						script { build_stage = env.STAGE_NAME }
 						sh label: 'Copy RPMS', script:'''
 						  if [ "$HA_BRANCH" == "Cortx-v1.0.0_Beta"  ]; then
 							echo "cortx-ha does not have Cortx-v1.0.0_Beta branch."
@@ -103,9 +102,9 @@ pipeline {
 
 				stage ("Build CSM") {
 					steps {
-						script { build_stage=env.STAGE_NAME }
+						script { build_stage = env.STAGE_NAME }
 						script {
-							if( env.CSM_BRANCH == 'Cortx-v1.0.0_Beta' ) {
+							if ( env.CSM_BRANCH == 'Cortx-v1.0.0_Beta' ) {
                             echo "Using Cortx-v1.0.0_Beta branch"    
                             build job: 'csm-custom-build', wait: true,
                             parameters: [
@@ -132,7 +131,7 @@ pipeline {
 
 				stage ("Build SSPL") {
 					steps {
-						script { build_stage=env.STAGE_NAME }
+						script { build_stage = env.STAGE_NAME }
 						build job: 'sspl-custom-build', wait: true,
 						parameters: [
 									string(name: 'SSPL_URL', value: "${SSPL_URL}"),
@@ -145,9 +144,9 @@ pipeline {
 
 		stage('Install Dependecies') {
 			steps {
-                script { build_stage=env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
                 sh label: 'Installed Dependecies', script: '''
-                    yum install -y expect rpm-sign rng-tools
+                    yum install -y expect rpm-sign rng-tools genisoimage
                     systemctl start rngd
                 '''	
 			}
@@ -155,12 +154,12 @@ pipeline {
 			
 		stage ('Collect Component RPMS') {
 			steps {
-                script { build_stage=env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
                 sh label: 'Copy RPMS', script:'''
-				  if [ "$OTHER_COMPONENT_BRANCH" == "release"  ]; then
-					RPM_COPY_PATH="/mnt/bigstorage/releases/cortx/components/github/release/$os_version/dev/"
-				  elif [ "$OTHER_COMPONENT_BRANCH" == "dev"  ]; then
-						RPM_COPY_PATH="/mnt/bigstorage/releases/cortx/components/github/release/$os_version/dev/"
+				  if [ "$OTHER_COMPONENT_BRANCH" == "stable"  ]; then
+					RPM_COPY_PATH="/mnt/bigstorage/releases/cortx/components/github/stable/$os_version/dev/"
+				  elif [ "$OTHER_COMPONENT_BRANCH" == "main"  ]; then
+						RPM_COPY_PATH="/mnt/bigstorage/releases/cortx/components/github/main/$os_version/dev/"
 				  elif [ "$OTHER_COMPONENT_BRANCH" == "Cortx-v1.0.0_Beta"  ]; then
 						RPM_COPY_PATH="/mnt/bigstorage/releases/cortx/components/github/Cortx-v1.0.0_Beta/$os_version/dev/"
 				  elif [ "$OTHER_COMPONENT_BRANCH" == "cortx-1.0"  ]; then
@@ -177,8 +176,8 @@ pipeline {
 					
                     for env in "dev" ;
                     do
-						test -d $integration_dir/$release_tag/ && rm -rf $integration_dir/$release_tag
-						mkdir -p $integration_dir/$release_tag/$env
+						test -d $integration_dir/$release_tag/cortx_iso/ && rm -rf $integration_dir/$release_tag/cortx_iso/
+						mkdir -p $integration_dir/$release_tag/cortx_iso/
 						pushd $components_dir/$env
 							echo $CUSTOM_COMPONENT_NAME
 							echo $CUSTOM_COMPONENT_NAME | tr "|" "\n"
@@ -186,7 +185,9 @@ pipeline {
 								do
 								echo -e "Copying RPM's for $component"
 								if ls $component/last_successful/*.rpm 1> /dev/null 2>&1; then
-									cp $component/last_successful/*.rpm $integration_dir/$release_tag/$env
+									mv $component/last_successful/*.rpm $integration_dir/$release_tag/cortx_iso/
+									rm -rf $(readlink $component/last_successful)
+									rm -f $component/last_successful
 								else
 									echo "Packages not available for $component. Exiting"
 								exit 1							   
@@ -196,11 +197,11 @@ pipeline {
 
 
 						pushd $RPM_COPY_PATH
-						for component in `ls -1 | grep -E -v "$CUSTOM_COMPONENT_NAME" | grep -E -v 'luster|halon|mero|motr|csm'`
+						for component in `ls -1 | grep -E -v "$CUSTOM_COMPONENT_NAME" | grep -E -v 'luster|halon|mero|motr|csm|cortx-extension'`
 						do
 							echo -e "Copying RPM's for $component"
 							if ls $component/last_successful/*.rpm 1> /dev/null 2>&1; then
-								cp $component/last_successful/*.rpm $integration_dir/$release_tag/$env
+								cp $component/last_successful/*.rpm $integration_dir/$release_tag/cortx_iso/
 							else
 								echo "Packages not available for $component. Exiting"
 							exit 1	
@@ -213,14 +214,14 @@ pipeline {
 
         stage('RPM Validation') {
 			steps {
-                script { build_stage=env.STAGE_NAME }
-				sh label: 'Validate RPMS for Mero Dependency', script:'''
+                script { build_stage = env.STAGE_NAME }
+				sh label: 'Validate RPMS for Motr Dependency', script:'''
                 for env in "dev" ;
                 do
                     set +x
                     echo "VALIDATING $env RPM'S................"
                     echo "-------------------------------------"
-                    pushd $integration_dir/$release_tag/$env
+                    pushd $integration_dir/$release_tag/cortx_iso/
 					if [ "${CSM_BRANCH}" == "Cortx-v1.0.0_Beta" ] || [ "${HARE_BRANCH}" == "Cortx-v1.0.0_Beta" ] || [ "${MOTR_BRANCH}" == "Cortx-v1.0.0_Beta" ] || [ "${PRVSNR_BRANCH}" == "Cortx-v1.0.0_Beta" ] || [ "${S3_BRANCH}" == "Cortx-v1.0.0_Beta" ] || [ "${SSPL_BRANCH}" == "Cortx-v1.0.0_Beta" ]; then
 						mero_rpm=$(ls -1 | grep "eos-core" | grep -E -v "eos-core-debuginfo|eos-core-devel|eos-core-tests")
 					else
@@ -255,7 +256,7 @@ pipeline {
 		
 		stage ('Sign rpm') {
 			steps {
-                script { build_stage=env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
                 
 			 checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
                 
@@ -273,9 +274,9 @@ pipeline {
                     set +x
 					pushd scripts/rpm-signing
                     chmod +x rpm-sign.sh
-                    cp RPM-GPG-KEY-Seagate $integration_dir/$release_tag/dev
+                    cp RPM-GPG-KEY-Seagate $integration_dir/$release_tag/cortx_iso/
                     
-                    for rpm in `ls -1 $integration_dir/$release_tag/dev/*.rpm`
+                    for rpm in `ls -1 $integration_dir/$release_tag/cortx_iso/*.rpm`
                     do
                     ./rpm-sign.sh ${passphrase} $rpm
                     done
@@ -287,58 +288,66 @@ pipeline {
 		
 		stage ('Build MANIFEST') {
 			steps {
-                script { build_stage=env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
 
                 sh label: 'Build MANIFEST', script: """
 					pushd scripts/release_support
-                    sh build_release_info.sh $integration_dir/$release_tag/dev
+                    sh build_release_info.sh $integration_dir/$release_tag/cortx_iso/
 					sh build_readme.sh $integration_dir/$release_tag
 					popd
 					
                     cp $integration_dir/$release_tag/README.txt .
-                    cp $integration_dir/$release_tag/dev/RELEASE.INFO .
+                    cp $integration_dir/$release_tag/cortx_iso/RELEASE.INFO .
                 """
 			}
 		}
-		
 
 		stage ('Repo Creation') {
 			steps {
-                script { build_stage=env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
                 sh label: 'Repo Creation', script: '''
-                    pushd $integration_dir/$release_tag/dev
+                    pushd $integration_dir/$release_tag/cortx_iso/
                     rpm -qi createrepo || yum install -y createrepo
                     createrepo .
                     popd
                 '''
 			}
 		}
+
 		
-		stage ('Generate ISO Image') {
-		    steps {
-		        sh label: 'Generate ISO Image',script:'''
-		        rpm -q genisoimage || yum install genisoimage -y
-		        pushd $release_dir/github/integration-custom-ci/release/iso
-		        genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -publisher Seagate -o $release_tag.iso $integration_dir/$release_tag/dev
-				popd
-		        '''
-		    }
-		}
-		
-		stage ('Tag Release') {
+		stage ('Link 3rd_party and python_deps') {
 			steps {
-                script { build_stage=env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
                 sh label: 'Tag Release', script: '''
-                    pushd $release_dir/github/integration-custom-ci/release
-                    test -d $release_dir/github/integration-custom-ci/$release_tag && rm -f $release_tag
-                    ln -s $integration_dir/$release_tag/dev $release_tag
+                    pushd $release_dir/github/integration-custom-ci/release/$os_version/$release_tag
+							ln -s $thrid_party_dir 3rd_party
+							ln -s $python_deps python_deps
                     popd
-                    echo "Custom Release Build and ISO is available at,"
-					echo "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/release/$release_tag"
-					echo "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/release/iso/$release_tag.iso"
-					
                 '''
 			}
+		}
+
+		stage ('Generate ISO Image') {
+		    steps {
+				
+				sh label: 'Generate Single ISO Image', script:'''
+		        mkdir $integration_dir/$release_tag/iso && pushd $integration_dir/$release_tag/iso
+					genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -publisher Seagate -o $release_tag-single.iso $integration_dir/$release_tag/
+				popd
+				'''
+				sh label: 'Generate ISO Image', script:'''
+		         pushd $integration_dir/$release_tag/iso
+					genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -publisher Seagate -o $release_tag.iso $integration_dir/$release_tag/cortx_iso/
+				popd
+				'''			
+
+				sh label: 'Print Release Build and ISO location', script:'''
+				echo "Custom Release Build and ISO is available at,"
+					echo "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/release/$os_version/$release_tag/"
+					echo "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/release/$os_version/$release_tag/iso/$release_tag.iso"
+					echo "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/release/$os_version/$release_tag/iso/$release_tag-single.iso"
+		        '''
+		    }
 		}
 	}
 	
@@ -347,7 +356,7 @@ pipeline {
 		always {
             script {
 			
-                env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/release/${env.release_tag}"
+                env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/release/${env.os_version}/${env.release_tag}"
                 env.release_build = "${env.release_tag}"
 				def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
                 
