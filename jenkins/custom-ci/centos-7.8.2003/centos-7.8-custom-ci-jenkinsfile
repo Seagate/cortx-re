@@ -246,7 +246,7 @@ pipeline {
 			steps {
                 script { build_stage=env.STAGE_NAME }
                 
-			 checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
+				checkout([$class: 'GitSCM', branches: [[name: 'third-party-release-changes']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/shailesh-vaidya/cortx-re']]])
                 
                 sh label: 'Generate Key', script: '''
                     set +x
@@ -274,22 +274,6 @@ pipeline {
 			}
 		}
 		
-		stage ('Build MANIFEST') {
-			steps {
-                script { build_stage=env.STAGE_NAME }
-
-                sh label: 'Build MANIFEST', script: """
-					pushd scripts/release_support
-                    sh build_release_info.sh $integration_dir/$release_tag/cortx_iso/
-					sh build_readme.sh $integration_dir/$release_tag
-					popd
-					
-                    cp $integration_dir/$release_tag/README.txt .
-                    cp $integration_dir/$release_tag/cortx_iso/RELEASE.INFO .
-                """
-			}
-		}
-		
 		stage ('Repo Creation') {
 			steps {
                 script { build_stage=env.STAGE_NAME }
@@ -301,7 +285,7 @@ pipeline {
                 '''
 			}
 		}
-		
+
 		stage ('Link 3rd_party and python_deps') {
 			steps {
                 script { build_stage=env.STAGE_NAME }
@@ -314,6 +298,25 @@ pipeline {
 			}
 		}
 
+		stage ('Build MANIFEST') {
+			steps {
+                script { build_stage=env.STAGE_NAME }
+
+                sh label: 'Build MANIFEST', script: """
+					pushd scripts/release_support
+                    sh build_release_info.sh $integration_dir/$release_tag/cortx_iso/
+					sh build-3rdParty-release-info.sh $integration_dir/$release_tag/3rd_party
+					sh build_readme.sh $integration_dir/$release_tag
+					popd
+					
+                    cp $integration_dir/$release_tag/README.txt .
+                    cp $integration_dir/$release_tag/cortx_iso/RELEASE.INFO .
+					cp ./scripts/release_support/THIRD_PARTY_RELEASE.INFO $integration_dir/$release_tag
+					cp $integration_dir/$release_tag/cortx_iso/RELEASE.INFO $integration_dir/$release_tag
+                """
+			}
+		}
+		
 		stage ('Generate ISO Image') {
 		    steps {
 				
