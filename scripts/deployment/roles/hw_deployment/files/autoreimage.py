@@ -182,13 +182,13 @@ if __name__ == "__main__":
 
         if ((len(hosts) == 1) and (not reimg_in_progress0)) or \
            ((len(hosts) == 2) and (not reimg_in_progress0) and (not reimg_in_progress1)):
-            # wait for 30 minutes to let server reboot
+            # wait for 60 minutes to let server reboot
             print('Checking if host is reachable by ping')
             ping0 = False
             ping1 = False
-            t_end = time.time() + 60 * 30
+            t_end = time.time() + 60 * 60
             while time.time() < t_end:
-                # try pinging both the setups for 30 minutes, 1 minute interval
+                # try pinging both the setups for 60 minutes, 1 minute interval
                 time.sleep(60)
                 ping0 = check_ping(hosts[0])
                 if len(hosts) == 2:

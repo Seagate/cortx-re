@@ -17,7 +17,7 @@
       host={{ hostvars[item]['ansible_host'] }}
       port=22
       delay=30
-      timeout=1800
+      timeout=5400
   become: false
   ignore_errors: true
   with_items: "{{ groups['nodes'] }}"
@@ -103,7 +103,7 @@
       host={{ hostvars[item]['ansible_host'] }}
       port=22
       delay=30
-      timeout=1800
+      timeout=5400
   become: false
   ignore_errors: true
   with_items: "{{ groups['nodes'] }}"
