@@ -1,5 +1,9 @@
 ---
 
+NODE_ACCESS_WAIT_TIME: 5400
+CORTX_ISO_FOLDER: '/opt/isos/' 
+
+
 required_vars:
   - REIMAGE
   - NODE1
