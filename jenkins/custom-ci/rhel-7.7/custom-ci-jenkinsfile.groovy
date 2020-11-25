@@ -9,7 +9,7 @@ pipeline {
 	environment {
 		branch = "custom-ci"
 		os_version = "rhel-7.7.1908"
-		thrid_party_version = "1.0.0-1"
+		thrid_party_version = "1.0.0-0"
 		release_dir = "/mnt/bigstorage/releases/cortx"
         integration_dir = "$release_dir/github/integration-custom-ci/release/$os_version"
         components_dir = "$release_dir/components/github/$branch/$os_version"
@@ -325,7 +325,7 @@ pipeline {
 					
                     cp $integration_dir/$release_tag/README.txt .
                     cp $integration_dir/$release_tag/cortx_iso/RELEASE.INFO .
-					cp ./scripts/release_support/THIRD_PARTY_RELEASE.INFO $integration_dir/$release_tag
+					cp $integration_dir/$release_tag/3rd_party/THIRD_PARTY_RELEASE.INFO $integration_dir/$release_tag
 					cp $integration_dir/$release_tag/cortx_iso/RELEASE.INFO $integration_dir/$release_tag
                 """
 			}
@@ -337,6 +337,7 @@ pipeline {
 				sh label: 'Generate Single ISO Image', script:'''
 		        mkdir $integration_dir/$release_tag/iso && pushd $integration_dir/$release_tag/iso
 					genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -publisher Seagate -o $release_tag-single.iso $integration_dir/$release_tag/
+					sed -i '/BULD/d' THIRD_PARTY_RELEASE.INFO
 				popd
 				'''
 				sh label: 'Generate ISO Image', script:'''
