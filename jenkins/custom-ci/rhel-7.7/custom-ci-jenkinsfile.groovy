@@ -337,7 +337,7 @@ pipeline {
 				sh label: 'Generate Single ISO Image', script:'''
 		        mkdir $integration_dir/$release_tag/iso && pushd $integration_dir/$release_tag/iso
 					genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -publisher Seagate -o $release_tag-single.iso $integration_dir/$release_tag/
-					sed -i '/BULD/d' $integration_dir/$release_tag/3rd_party/THIRD_PARTY_RELEASE.INFO
+					sed -i '/BUILD/d' $integration_dir/$release_tag/3rd_party/THIRD_PARTY_RELEASE.INFO
 				popd
 				'''
 				sh label: 'Generate ISO Image', script:'''
