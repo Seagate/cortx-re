@@ -26,7 +26,6 @@ exit 1
 fi
 
 echo -e "Generating RELEASE.INFO file"
-SCRIPTPATH="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 pushd "$BUILD_LOCATION"
 #find . -type f -name *.rpm | awk -F '/' '{print $NF}' | awk '{ print "    - \""$1"\""}'
 
