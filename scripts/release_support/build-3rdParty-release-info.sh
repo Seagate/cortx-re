@@ -48,7 +48,7 @@ for dir in $(ls -1 | grep -E -v "repodata|THIRD_PARTY_RELEASE.INFO")
 do
 echo "Adding rpms from $dir"
 cat <<EOF >> THIRD_PARTY_RELEASE.INFO
-    "$dir"
+    "$dir":
 $(find -L ./"$dir" -type f -not -path "./lustre/custom/tcp/*" -name '*.rpm' -or -name '*.tar.xz' | awk -F '/' '{print $NF}' | awk '{ print "       - \""$1"\""}')
 EOF
 done
