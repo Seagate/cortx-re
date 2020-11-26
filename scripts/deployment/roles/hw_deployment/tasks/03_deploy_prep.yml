@@ -1,5 +1,21 @@
 ---
 
+- meta: refresh_inventory
+
+- name: "[deploy-prep] : Wait for server to restart"
+  wait_for:
+      host={{ hostvars[item]['ansible_host'] }}
+      port=22
+      delay=60
+      timeout=1800
+  become: false
+  with_items: "{{ groups['nodes'] }}"
+
+- include: passwordless_authentication.yml
+
+- include: change_password.yml
+  when: CHANGE_PASS == "yes"
+
 - name: "[deploy-prep] : Remove volume_groups and reboot - primary node" 
   script: files/storage_fix.sh
   ignore_errors: true
@@ -21,15 +37,17 @@
       delay=30
       timeout={{ NODE_ACCESS_WAIT_TIME }}
   become: false
-  ignore_errors: true
   with_items: "{{ groups['nodes'] }}"
+
+- name: "[deploy-prep] : Wait for SSH Connection"
+  pause:
+    minutes: 5
 
 - name: "[deploy-prep] : Create dir {{ CORTX_ISO_FOLDER }}"
   file: path={{ CORTX_ISO_FOLDER }} state=directory
   become: true
   delegate_to: "{{ item }}"
   with_items: "{{ groups['nodes'] }}"
-
 
 - name: "[deploy-prep] : Download single ISO on secondary node [async]"
   shell: wget "{{ CORTX_BUILD_ISO_URL }}" -O {{ CORTX_ISO_FOLDER }}{{ CORTX_BUILD_ISO_URL | basename }}

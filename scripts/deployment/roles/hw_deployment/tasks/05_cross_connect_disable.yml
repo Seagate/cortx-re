@@ -13,13 +13,13 @@
 
 - name: "[validate-cross-connect] : Ping '10.0.0.2'"
   shell: ping -c 1 '10.0.0.2'
-  ignore_errors: True
+  ignore_errors: true
   register: ping1_result
   delegate_to: "srvnode-1"
 
 - name: "[validate-cross-connect] : Ping '10.0.0.3'"
   shell: ping -c 1 '10.0.0.3'
-  ignore_errors: True
+  ignore_errors: true
   register: ping2_result
   delegate_to: "srvnode-1"
 

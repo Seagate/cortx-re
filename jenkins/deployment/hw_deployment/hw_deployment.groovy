@@ -7,8 +7,8 @@ pipeline {
     }
 	
     parameters {
-        string(name: 'CORTX_BUILD', defaultValue: 'http://cortx-storage.colo.seagate.com/releases/cortx_builds/centos-7.8.2003/469/iso/cortx-1.0.0-469-single.iso', description: 'Build URL')
-        choice(name: 'HOST', choices: [ 'T1_sm21-r2_sm20-r2', 'T2_sm28-r5_sm27-r5', 'T3_sm27-r22_sm28-r22', 'T4_sm14-r24_sm13-r24', 'T5_sm13-r4_sm6-r4', 'T6_sm35-r5_sm34-r5', 'T7_sm10-r20_sm11-r20', 'T8_sm28-r20_sm29-r20', 'T9_smc5-m11_smc6-m11', 'T10_sm8-r19_sm7-r19', 'T11_sm26-r19_sm27-r19', 'T12_sm10-r21_sm11-r21', 'T13_sm17-r18_sm18-r18', 'T14_sm27-r23_sm28-r23', 'T15_smc33-m09_smc34-m09', 'T16_sm20-r22_sm21-r22', 'T17_smc65-m01_smc66-m01', 'T18_smc7-m11_smc8-m11', 'T19_smc39-m09_smc40-m09', 'T20_iu17-r21_iu24-r21', 'T21_sm19-r20_sm18-r20', 'T22_sm6-r23_sm7-r23', 'T23_inteln9-m07_inteln10-m07', 'T24_smc57-m10_smc58-m10', 'T25_smc1-m11_smc2-m11', 'T26_smc37-m09_smc38-m09', 'T27_inteln11-m07_inteln12-m07', 'T28_smc51-m08_smc52-m08', 'T29_smc17-m10_smc18-m10', 'T30_sm7-r18_sm8-r18', 'T31_smc59-m11_smc60-m11' ], description: 'HW Deploy Host')
+        string(name: 'CORTX_BUILD', defaultValue: 'http://cortx-storage.colo.seagate.com/releases/cortx_builds/centos-7.8.2003/531/iso/cortx-1.0.0-531-single.iso', description: 'Build URL')
+        choice(name: 'HOST', choices: [ 'T1_sm21-r2_sm20-r2', 'T2_sm28-r5_sm27-r5', 'T3_sm27-r22_sm28-r22', 'T4_sm14-r24_sm13-r24', 'T5_sm13-r4_sm6-r4', 'T6_sm35-r5_sm34-r5', 'T7_sm10-r20_sm11-r20', 'T8_sm28-r20_sm29-r20', 'T9_smc5-m11_smc6-m11', 'T10_sm8-r19_sm7-r19', 'T11_sm26-r19_sm27-r19', 'T12_sm10-r21_sm11-r21', 'T13_sm17-r18_sm18-r18', 'T14_sm27-r23_sm28-r23', 'T15_smc33-m09_smc34-m09', 'T16_sm20-r22_sm21-r22', 'T17_smc65-m01_smc66-m01', 'T18_smc7-m11_smc8-m11', 'T19_smc39-m09_smc40-m09', 'T20_iu17-r21_iu24-r21', 'T21_sm19-r20_sm18-r20', 'T22_sm6-r23_sm7-r23', 'T23_inteln9-m07_inteln10-m07', 'T24_smc57-m10_smc58-m10', 'T25_smc1-m11_smc2-m11', 'T26_smc37-m09_smc38-m09', 'T27_inteln11-m07_inteln12-m07', 'T28_smc51-m08_smc52-m08', 'T29_smc17-m10_smc18-m10', 'T30_sm7-r18_sm8-r18', 'T31_smc59-m11_smc60-m11', 'T32_smc67-m01_smc68-m01', 'T33_i1u07-m07_i1u06-m07', 'T34_smc69-m01_smc70-m01', 'T35_inteln13-m07_inteln14-m07', 'T36_inteln3-m08_inteln4-m08', 'T37_inteln5-m08_inteln6-m08' ], description: 'HW Deploy Host')
         choice(name: 'REIMAGE', choices: [ "yes", "no" ], description: 'Re-Image option')
         choice(name: 'SANITY', choices: [ "no", "yes" ], description: 'Run Sanity option')
     }
@@ -43,7 +43,7 @@ pipeline {
     }
 
     options {
-        timeout(time: 180, unit: 'MINUTES')
+        timeout(time: 300, unit: 'MINUTES')
         timestamps()
         ansiColor('xterm') 
         buildDiscarder(logRotator(numToKeepStr: "30"))
@@ -51,15 +51,13 @@ pipeline {
 
     stages {
 
-        stage ('Prerequisite'){
-            steps{
-                script{
+        stage ('Prerequisite') {
+            steps {
+                script {
                     
                     manager.addHtmlBadge("&emsp;<b>Build :</b> <a href=\"${CORTX_BUILD}\"><b>${build_id}</b></a> <br /> <b>Host :</b> <a href=\"${CONFIG}\"><b>${HOST}</b></a>")
 
-                    if(!env.CHANGE_PASS){
-                        env.CHANGE_PASS = "no"
-                    }
+                    env.CHANGE_PASS = env.CHANGE_PASS ?: 'no'              
 
                     sh """
                         set +x
@@ -74,16 +72,17 @@ pipeline {
                         echo "CHANGE_PASS       = ${CHANGE_PASS}"
                         echo "-----------------------------------------------------------"
                     """
-                    dir('cortx-re'){
-                        checkout([$class: 'GitSCM', branches: [[name: '*/EOS-13798']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/gowthamchinna/cortx-re']]])                
+                    dir('cortx-re') {
+                        checkout([$class: 'GitSCM', branches: [[name: '*/EOS-13798_v2']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/gowthamchinna/cortx-re']]])                
                     }
                 }
             }
         }
-        stage('01. Prepare Environment'){
+
+        stage('01. Prepare Environment') {
             when { expression { env.STAGE_01_PREPARE == "yes" } }
-            steps{
-                script{
+            steps {
+                script {
                     
                     info("Running '01. Prepare Environment' Stage")  
 
@@ -91,10 +90,11 @@ pipeline {
                 }
             }
         }
-        stage('02. Re-Image System'){
+
+        stage('02. Re-Image System') {
             when { expression { env.STAGE_02_REIMAGE == "yes"  } }
-            steps{
-                script{
+            steps {
+                script {
                     
                     info("Running '02. Re-Image System' Stage")
 
@@ -103,10 +103,11 @@ pipeline {
                 }
             }      
         }
-        stage('03. Deploy Prereq'){
+
+        stage('03. Deploy Prereq') {
             when { expression { env.STAGE_03_DEPLOY_PREP == "yes" } }
-            steps{
-                script{
+            steps {
+                script {
                     
                     info("Running '03. Deploy Prereq' Stage")
 
@@ -115,10 +116,11 @@ pipeline {
                 }
             } 
         }
-        stage('04. Inband Setup'){
+
+        stage('04. Inband Setup') {
             when { expression { env.STAGE_04_INBAND == "yes" } }
-            steps{
-                script{
+            steps {
+                script {
                     
                     info("Running '04. Inband Setup' Stage")
 
@@ -128,10 +130,11 @@ pipeline {
             } 
             
         }
-        stage('05. Disable Cross Connect'){
+
+        stage('05. Disable Cross Connect') {
             when { expression { env.STAGE_05_CC_DISABLE == "yes" } }
-            steps{
-                script{
+            steps {
+                script {
                     
                     info("Running '05. Disable Cross Connect' Stage")
 
@@ -140,10 +143,11 @@ pipeline {
                 }
             } 
         }
-        stage('06. Deploy Cortx Stack'){
+
+        stage('06. Deploy Cortx Stack') {
             when { expression { env.STAGE_06_DEPLOY == "yes" } }
-            steps{
-                script{
+            steps {
+                script {
                     
                     info("Running '06. Deploy Cortx Stack' Stage")
 
@@ -152,10 +156,11 @@ pipeline {
                 }
             } 
         }
-        stage('07. Enable Cross Connect'){
+
+        stage('07. Enable Cross Connect') {
             when { expression { env.STAGE_07_CC_ENABLE == "yes" } }
-            steps{
-                script{
+            steps {
+                script {
                     
                     info("Running '07. Enable Cross Connect' Stage")
 
@@ -164,22 +169,23 @@ pipeline {
                 }
             } 
         }
-        stage('08. Check Deployment Status'){
+
+        stage('08. Check Deployment Status') {
             when { expression { true } }
-            steps{
-                script{
+            steps {
+                script {
                     
                     info("Running '08. Check PCS Status' Stage")
 
                     try {
 
-                        def remoteHost = getTestMachine("${NODE1_HOST}","${NODE_USER}","${NODE_PASS}")
+                        def remoteHost = getTestMachine("${NODE1_HOST}", "${NODE_USER}", "${NODE_PASS}")
 
-                        def pcs_status = sshCommand remote: remoteHost, command: """
+                        def pcsStatus = sshCommand remote: remoteHost, command: """
                             pcs status
                         """
 
-                        def service_status = sshCommand remote: remoteHost, command: '''
+                        def serviceStatus = sshCommand remote: remoteHost, command: '''
                             for service in hare-consul-agent-* hare-hax-* chronyd firewalld slapd haproxy kibana elasticsearch statsd rabbitmq-server rsyslog corosync pacemaker  pcsd s3authserver csm_agent csm_web sspl-ll lnet;do
                                 echo "-----------";
                                 echo "$service";
@@ -189,8 +195,8 @@ pipeline {
                             done
                         '''
 
-                        writeFile(file: 'pcs_status.log', text: pcs_status)
-                        writeFile(file: 'service_status.log', text: service_status)
+                        writeFile(file: 'pcs_status.log', text: pcsStatus)
+                        writeFile(file: 'service_status.log', text: serviceStatus)
 
                     } catch (err) {
                         echo err.getMessage()
@@ -199,36 +205,37 @@ pipeline {
                 }
             } 
         }
-        stage('09. Run Sanity'){
+
+        stage('09. Run Sanity') {
             when { expression { env.STAGE_09_SANITY == "yes" } }
-            steps{
-                script{
+            steps {
+                script {
                     info("Running '09. Run Sanity' Stage")
 
                     try {
 
-                        def remoteHost = getTestMachine("${NODE1_HOST}","${NODE_USER}","${NODE_PASS}")
+                        def remoteHost = getTestMachine("${NODE1_HOST}", "${NODE_USER}", "${NODE_PASS}")
 
-                        def csm_sanity = sshCommand remote: remoteHost, command: """
+                        def csmSanity = sshCommand remote: remoteHost, command: """
                             sleep 300
                             csm_test -f /opt/seagate/cortx/csm/test/test_data/args.yaml -t /opt/seagate/cortx/csm/test/plans/self_test.pln || true
                         """
                         
-                        def s3_sanity = sshCommand remote: remoteHost, command: """
+                        def s3Sanity = sshCommand remote: remoteHost, command: """
                             sleep 300
                             salt 'srvnode-1' state.apply components.s3clients || true
                             sleep 300
                             /opt/seagate/cortx/s3/scripts/s3-sanity-test.sh -e 127.0.0.1 || true
                         """
                         
-                        def sspl_sanity = sshCommand remote: remoteHost, command: """
+                        def ssplSanity = sshCommand remote: remoteHost, command: """
                             sleep 300
                             sh /opt/seagate/cortx/sspl/sspl_test/run_tests.sh || true
                         """
 
-                        writeFile(file: 'csm_sanity.log', text: csm_sanity)
-                        writeFile(file: 's3_sanity.log', text: s3_sanity)
-                        writeFile(file: 'sspl_sanity.log', text: sspl_sanity)
+                        writeFile(file: 'csm_sanity.log', text: csmSanity)
+                        writeFile(file: 's3_sanity.log', text: s3Sanity)
+                        writeFile(file: 'sspl_sanity.log', text: ssplSanity)
 
                     } catch (err) {
                         echo err.getMessage()
@@ -241,7 +248,7 @@ pipeline {
 
     post { 
         always {
-            script{
+            script {
                 
                 try {
                     sh label: 'download_log_files', returnStdout: true, script: """ 
@@ -254,38 +261,38 @@ pipeline {
                 // Add Summary
                 if (fileExists('pcs_status.log')) {
                     pcs_status=readFile(file: 'pcs_status.log')
-                    if(pcs_status.contains("Failed Resource") && pcs_status.contains("30000")){
-                        MESSAGE="Cortx Stack Deployment Success"
-                        ICON="accept.gif"
-                        STATUS="SUCCESS"
-                    }else if(pcs_status.contains("Failed Resource") || pcs_status.contains("Stopped")){
+                    if (pcs_status.contains("Failed Resource") && pcs_status.contains("30000")) {
+                        MESSAGE = "Cortx Stack Deployment Success"
+                        ICON = "accept.gif"
+                        STATUS = "SUCCESS"
+                    }else if (pcs_status.contains("Failed Resource") || pcs_status.contains("Stopped")) {
                         manager.buildFailure()
-                        MESSAGE="Cortx Stack Deployment Failed"
-                        ICON="error.gif"
-                        STATUS="FAILURE"
-                    }else if(pcs_status.contains("71 resources configured") && pcs_status.contains("2 nodes configured")){
-                        MESSAGE="Cortx Stack Deployment Success"
-                        ICON="accept.gif"
-                        STATUS="SUCCESS"
-                    }else{
+                        MESSAGE = "Cortx Stack Deployment Failed"
+                        ICON = "error.gif"
+                        STATUS = "FAILURE"
+                    }else if (pcs_status.contains("71 resources configured") && pcs_status.contains("2 nodes configured")) {
+                        MESSAGE = "Cortx Stack Deployment Success"
+                        ICON = "accept.gif"
+                        STATUS = "SUCCESS"
+                    }else {
                         manager.buildFailure()
-                        MESSAGE="Cortx Stack Deployment Failed"
-                        ICON="error.gif"
-                        STATUS="FAILURE"
+                        MESSAGE = "Cortx Stack Deployment Failed"
+                        ICON = "error.gif"
+                        STATUS = "FAILURE"
                     }
 
-                    pcs_status_html="<textarea rows=20 cols=200 readonly style='margin: 0px; height: 392px; width: 843px;'>${pcs_status}</textarea>"
-                    table_summary="<table border='1' cellspacing='0' cellpadding='0' width='400' align='left'> <tr> <td align='center'>Build</td><td align='center'><a href=${CORTX_BUILD}>${build_id}</a></td></tr><tr> <td align='center'>Test HW</td><td align='center'>${NODE1_HOST} ( primary )<br />${NODE2_HOST} ( secondary )</td></tr></table>"
+                    pcs_status_html = "<textarea rows=20 cols=200 readonly style='margin: 0px; height: 392px; width: 843px;'>${pcs_status}</textarea>"
+                    table_summary = "<table border='1' cellspacing='0' cellpadding='0' width='400' align='left'> <tr> <td align='center'>Build</td><td align='center'><a href=${CORTX_BUILD}>${build_id}</a></td></tr><tr> <td align='center'>Test HW</td><td align='center'>${NODE1_HOST} ( primary )<br />${NODE2_HOST} ( secondary )</td></tr></table>"
                     manager.createSummary("${ICON}").appendText("<h3>${MESSAGE} for the build <a href=\"${CORTX_BUILD}\">${build_id}.</a></h3><p>Please check <a href=\"${CORTX_BUILD}/artifact/setup.log\">setup.log</a> for more info <br /><br /><h4>Test Details:</h4> ${table_summary} <br /><br /><br /><h4>PCS Status:${pcs_status_html}</h4> ", false, false, false, "red")
                    
-                    env.build_id=build_id
-                    env.status=STATUS
-                    env.build_location="${CORTX_BUILD}"
-                    env.host1="${NODE1_HOST}"
-                    env.host2="${NODE2_HOST}"
-                    env.pcs_log="${CORTX_BUILD}/artifact/pcs_status.log"
-                    env.service_log="${CORTX_BUILD}/artifact/service_status.log"
-                    env.setup_log="${CORTX_BUILD}/artifact/setup.log"
+                    env.build_id = build_id
+                    env.status = STATUS
+                    env.build_location = "${CORTX_BUILD}"
+                    env.host1 = "${NODE1_HOST}"
+                    env.host2 = "${NODE2_HOST}"
+                    env.pcs_log = "${BUILD_URL}/artifact/pcs_status.log"
+                    env.service_log = "${BUILD_URL}/artifact/service_status.log"
+                    env.setup_log = "${BUILD_URL}/artifact/setup.log"
                     
                     emailext (
                         body: '''${SCRIPT, template="deployment-email.template"}''',
@@ -310,7 +317,7 @@ pipeline {
 
 
 // Method returns host Name from confi
-def getHostName(configPath, hostSearch){
+def getHostName(configPath, hostSearch) {
 
     return sh(script: """
                 set +x
@@ -320,13 +327,13 @@ def getHostName(configPath, hostSearch){
 }
 
 // Method returns host Name from confi
-def getBuildArtifcatName(path, artifcat){
+def getBuildArtifcatName(path, artifcat) {
 
     return sh(script: '''set +x ; echo $(curl -s '''+path+''' | sed -n 's/.*href="\\([^"]*\\).*/\\1/p' | grep '''+artifcat+''')''', returnStdout: true).trim()
 }
 
 // Method returns VM Host Information ( host, ssh cred)
-def getTestMachine(host, user, pass){
+def getTestMachine(host, user, pass) {
 
     def remote = [:]
     remote.name = 'cortx'
@@ -339,10 +346,10 @@ def getTestMachine(host, user, pass){
 }
 
 
-def runAnsible(tags){
-    withCredentials([usernamePassword(credentialsId: "${NODE_UN_PASS_CRED_ID}", passwordVariable: 'SERVICE_PASS', usernameVariable: 'SERVICE_USER'),usernamePassword(credentialsId: "RE-SAT-CRED", passwordVariable: 'SATELLITE_PW', usernameVariable: 'SATELLITE_UN')]) {
+def runAnsible(tags) {
+    withCredentials([usernamePassword(credentialsId: "${NODE_UN_PASS_CRED_ID}", passwordVariable: 'SERVICE_PASS', usernameVariable: 'SERVICE_USER'), usernamePassword(credentialsId: "RE-SAT-CRED", passwordVariable: 'SATELLITE_PW', usernameVariable: 'SATELLITE_UN')]) {
         
-        dir("cortx-re/scripts/deployment"){
+        dir("cortx-re/scripts/deployment") {
             ansiblePlaybook(
                 playbook: 'cortx_deploy_hw.yml',
                 inventory: 'inventories/hw_deployment/hosts',

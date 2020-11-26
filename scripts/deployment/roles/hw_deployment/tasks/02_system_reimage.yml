@@ -7,15 +7,19 @@
   wait_for:
       host={{ hostvars[item]['ansible_host'] }}
       port=22
-      delay=15
+      delay=60
       timeout=1800
   become: false
-  ignore_errors: true
   with_items: "{{ groups['nodes'] }}"
+
+- meta: refresh_inventory
+
+- name: "[reimage] : Wait for SSH Connection"
+  pause:
+    minutes: 15
 
 - include: change_password.yml
   when: CHANGE_PASS == "yes"
   
 - meta: refresh_inventory
 
-- include: passwordless_authentication.yml

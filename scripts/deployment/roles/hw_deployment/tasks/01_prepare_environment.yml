@@ -25,6 +25,6 @@
 
 - name: "[prepare] : Remove storage and multipath from cluster if exists"
   shell: salt '*' state.apply components.system.storage.teardown || true; salt '*' state.apply components.system.storage.multipath.teardown || true; salt '*' state.apply components.system.teardown || true
-  ignore_errors: True
-  ignore_unreachable: True
+  ignore_errors: true
+  ignore_unreachable: true
   delegate_to: "srvnode-1"

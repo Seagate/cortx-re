@@ -34,10 +34,17 @@
   delegate_to: "{{ item }}"
   with_items: "{{ groups['nodes'] }}"
 
-- name: "[inband] : Start and enable scsi-network-relay service"
+- name: "[inband] : Start scsi-network-relay service"
   service:
-      name: scsi-network-relay
-      state: started
+    name: scsi-network-relay
+    state: started
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['nodes'] }}"
+
+- name: "[inband] : Enable scsi-network-relay service"
+  service:
+    name: scsi-network-relay
+    enabled: yes
   delegate_to: "{{ item }}"
   with_items: "{{ groups['nodes'] }}"
 
