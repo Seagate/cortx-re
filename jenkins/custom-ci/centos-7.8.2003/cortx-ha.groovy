@@ -43,7 +43,7 @@ pipeline {
 				sh label: '', script: '''
 					pushd $component
 					yum clean all;rm -rf /var/cache/yum
-					yum install cortx-py-utils -y
+					yum erase python36-PyYAML -y
 					bash jenkins/cicd/cortx-ha-dep.sh
 					pip3 install numpy
 					popd
