@@ -64,7 +64,7 @@ pipeline {
 		stage('Build') {
 			steps {
 				script { build_stage = env.STAGE_NAME }
-				sh label: 'Build', returnStatus: true, script: '''
+				sh label: 'Build', script: '''
 				pushd cortx-manager
 					BUILD=$(git rev-parse --short HEAD)
 					VERSION=$(cat VERSION)
