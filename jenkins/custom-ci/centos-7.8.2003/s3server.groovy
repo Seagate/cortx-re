@@ -58,13 +58,13 @@ pipeline {
 								sh label: '', script: '''
 								sed '/baseurl/d' /etc/yum.repos.d/motr_current_build.repo
 								if [ $MOTR_BRANCH == "stable" ]; then
-									echo "baseurl=http://cortx-storage.colo.seagate.com/releases/cortx/components/github/stable/rhel-7.7.1908/dev/motr/current_build/"  >> /etc/yum.repos.d/motr_current_build.repo
+									echo "baseurl=http://cortx-storage.colo.seagate.com/releases/cortx/components/github/stable/$os_version/dev/motr/current_build/"  >> /etc/yum.repos.d/motr_current_build.repo
 								elif [ $MOTR_BRANCH == "Cortx-v1.0.0_Beta" ]; then 	
-									echo "baseurl=http://cortx-storage.colo.seagate.com/releases/cortx/components/github/Cortx-v1.0.0_Beta/rhel-7.7.1908/dev/mero/current_build/" >> /etc/yum.repos.d/motr_current_build.repo	
+									echo "baseurl=http://cortx-storage.colo.seagate.com/releases/cortx/components/github/Cortx-v1.0.0_Beta/$os_version/dev/mero/current_build/" >> /etc/yum.repos.d/motr_current_build.repo	
 								else
-									echo "baseurl=http://cortx-storage.colo.seagate.com/releases/cortx/components/github/custom-ci/rhel-7.7.1908/dev/motr/current_build/"  >> /etc/yum.repos.d/motr_current_build.repo
+									echo "baseurl=http://cortx-storage.colo.seagate.com/releases/cortx/components/github/custom-ci/$os_version/dev/motr/current_build/"  >> /etc/yum.repos.d/motr_current_build.repo
 								fi	
-							    rm -f /etc/yum.repos.d/eos_7.7.1908.repo
+							    yum-config-manager --disable cortx-C7.7.1908
 								yum clean all;rm -rf /var/cache/yum
 								export build_number=${BUILD_ID}
 								
