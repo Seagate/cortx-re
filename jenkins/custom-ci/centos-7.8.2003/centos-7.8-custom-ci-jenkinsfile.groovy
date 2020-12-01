@@ -9,12 +9,12 @@ pipeline {
 	environment {
 		branch = "main"
 		os_version = "centos-7.8.2003"
-		thrid_party_version  =  "1.0.0-2"
+		thrid_party_version = "1.0.0-2"
 		release_dir = "/mnt/bigstorage/releases/cortx"
 		integration_dir = "$release_dir/github/integration-custom-ci/release/$os_version"
 		components_dir = "$release_dir/components/github/$branch/$os_version"
 		release_tag = "custom-build-$BUILD_ID"
-		passphrase  =  credentials('rpm-sign-passphrase')
+		passphrase = credentials('rpm-sign-passphrase')
 		thrid_party_dir = "$release_dir/third-party-deps/centos/centos-7.8.2003-$thrid_party_version/"
 		python_deps = "$release_dir/third-party-deps/python-packages"
 	}
@@ -46,7 +46,7 @@ pipeline {
 
 		choice(
 			name: 'OTHER_COMPONENT_BRANCH',
-			choices: ['main', 'stable', 'Cortx-v1.0.0_Beta', 'cortx-1.0'],
+			choices: ['main', 'stable', 'cortx-1.0'],
 			description: 'Branch name to pick-up other components rpms'
 		)
 	}
