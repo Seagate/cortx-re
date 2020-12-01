@@ -1,0 +1,24 @@
+#!/bin/bash
+CURRENT=$(df -h | grep /home/746051 | awk '{ print $5}' | sed 's/%//g')
+THRESHOLD=75
+
+if [ "$CURRENT" -gt "$THRESHOLD" ] ; then
+        prev_count=0
+        fpath=/home/746051
+        find $fpath -type f -mtime +50  -exec ls -ltrd {} \; > /home/746051/file.out
+        find $fpath -type f -mtime +50  -exec rm -rf {} \;
+        count=$(cat /home/746051/file.out | wc -l)
+
+        if [ "$prev_count" -lt "$count" ] ; then
+                MESSAGE="/home/746051/file1.out"
+                TO="balaji.ramachandran@seagate.com"
+                echo "Apache Access log files are deleted older than 50 days"  >> $MESSAGE
+                echo "+--------------------------------------------- +" >> $MESSAGE
+                echo "" >> $MESSAGE
+                cat /home/746051/file.out | awk '{print $6,$7,$9}' >> $MESSAGE
+                echo "" >> $MESSAGE
+                SUBJECT="WARNING: Your /home/746051 partition remaining free space is critically low. Used: $CURRENT%.  So, 50 days older files have been deleted $(date)"
+                mail -s "$SUBJECT" "$TO" < $MESSAGE
+                rm $MESSAGE /home/746051/file.out
+        fi
+fi
