@@ -7,7 +7,7 @@ pipeline {
 	}
 
 	environment {
-		branch = "main"
+		branch = "custom-ci"
 		os_version = "centos-7.8.2003"
 		thrid_party_version = "1.0.0-2"
 		release_dir = "/mnt/bigstorage/releases/cortx"
