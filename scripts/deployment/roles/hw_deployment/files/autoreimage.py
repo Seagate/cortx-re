@@ -42,9 +42,9 @@ curl --user 509589 -k -H "Content-Type:application/json" -H "Accept:application/
 Note: User is the service account username/GID. GID is applicable only for the Lab team members.
 curl --user 509589 -k -H "Content-Type:application/json" -H "Accept:application/json" -X PUT -d '{"power_action": "reset"}' https://ssc-satellite1.colo.seagate.com/api/v2/hosts/smc14-test-m11.colo.seagate.com/power | jq
 
-3. Check the status of the build. (Same as first command but without the PUT). This will return "true" if the server is 
+3. Check the status of the build. (Same as first command but without the PUT). This will return "true" if the server is
 actively being imaged, and "false" if the server is done imaging.
-Note: There is a delay from when the server is done being imaged and accessible from SSH. This is because the server is 
+Note: There is a delay from when the server is done being imaged and accessible from SSH. This is because the server is
 booting for the first time.
 curl --user 509589 -k -H "Content-Type:application/json" -H "Accept:application/json" https://ssc-satellite1.colo.seagate.com/api/v2/hosts/smc15-m11.colo.seagate.com | jq -r '.build'
 """

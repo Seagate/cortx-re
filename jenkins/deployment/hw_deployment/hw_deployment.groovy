@@ -260,7 +260,7 @@ pipeline {
                 
                 // Add Summary
                 if (fileExists('pcs_status.log')) {
-                    pcs_status=readFile(file: 'pcs_status.log')
+                    pcs_status = readFile(file: 'pcs_status.log')
                     if (pcs_status.contains("Failed Resource") && pcs_status.contains("30000")) {
                         MESSAGE = "Cortx Stack Deployment Success"
                         ICON = "accept.gif"
