@@ -148,22 +148,22 @@ pipeline {
 			steps {
 				script { build_stage = env.STAGE_NAME }
 				sh label: 'Copy RPMS', script:'''
-					if [ "$OTHER_COMPONENT_BRANCH" = "stable"  ]; then
-					RPM_COPY_PATH = "/mnt/bigstorage/releases/cortx/components/github/stable/$os_version/dev/"
-					elif [ "$OTHER_COMPONENT_BRANCH" = "main"  ]; then
-					RPM_COPY_PATH = "/mnt/bigstorage/releases/cortx/components/github/main/$os_version/dev/"
-					elif [ "$OTHER_COMPONENT_BRANCH" = "Cortx-v1.0.0_Beta"  ]; then
-					RPM_COPY_PATH = "/mnt/bigstorage/releases/cortx/components/github/Cortx-v1.0.0_Beta/$os_version/dev/"
-					elif [ "$OTHER_COMPONENT_BRANCH" = "cortx-1.0"  ]; then
-					RPM_COPY_PATH = "/mnt/bigstorage/releases/cortx/components/github/cortx-1.0/$os_version/dev/"
+					if [ "$OTHER_COMPONENT_BRANCH" == "stable"  ]; then
+					RPM_COPY_PATH="/mnt/bigstorage/releases/cortx/components/github/stable/$os_version/dev/"
+					elif [ "$OTHER_COMPONENT_BRANCH" == "main"  ]; then
+					RPM_COPY_PATH="/mnt/bigstorage/releases/cortx/components/github/main/$os_version/dev/"
+					elif [ "$OTHER_COMPONENT_BRANCH" == "Cortx-v1.0.0_Beta"  ]; then
+					RPM_COPY_PATH="/mnt/bigstorage/releases/cortx/components/github/Cortx-v1.0.0_Beta/$os_version/dev/"
+					elif [ "$OTHER_COMPONENT_BRANCH" == "cortx-1.0"  ]; then
+					RPM_COPY_PATH="/mnt/bigstorage/releases/cortx/components/github/cortx-1.0/$os_version/dev/"
 					else
-					RPM_COPY_PATH = "/mnt/bigstorage/releases/cortx/components/github/custom-ci/release/$os_version/dev"
+					RPM_COPY_PATH="/mnt/bigstorage/releases/cortx/components/github/custom-ci/release/$os_version/dev"
 					fi
 
-					if [ "$CSM_BRANCH" = ""Cortx-v1.0.0_Beta"" ]; then
-					CUSTOM_COMPONENT_NAME = "motr|s3server|hare|cortx-ha|provisioner|csm|sspl"
+					if [ "$CSM_BRANCH" == ""Cortx-v1.0.0_Beta"" ]; then
+					CUSTOM_COMPONENT_NAME="motr|s3server|hare|cortx-ha|provisioner|csm|sspl"
 					else
-					CUSTOM_COMPONENT_NAME = "motr|s3server|hare|cortx-ha|provisioner|csm-agent|csm-web|sspl"
+					CUSTOM_COMPONENT_NAME="motr|s3server|hare|cortx-ha|provisioner|csm-agent|csm-web|sspl"
 					fi
 
 					for env in "dev" ;
@@ -204,30 +204,30 @@ pipeline {
 			}
 		}
 
-        stage('RPM Validation') {
+		stage('RPM Validation') {
 			steps {
                 script { build_stage = env.STAGE_NAME }
-				sh label: 'Validate RPMS for Mero Dependency', script:'''
+				sh label: 'Validate RPMS for Motr Dependency', script:'''
                 for env in "dev" ;
                 do
                     set +x
                     echo "VALIDATING $env RPM'S................"
                     echo "-------------------------------------"
                     pushd $integration_dir/$release_tag/cortx_iso/
-					if [ "${CSM_BRANCH}" = "Cortx-v1.0.0_Beta" ] || [ "${HARE_BRANCH}" = "Cortx-v1.0.0_Beta" ] || [ "${MOTR_BRANCH}" = "Cortx-v1.0.0_Beta" ] || [ "${PRVSNR_BRANCH}" = "Cortx-v1.0.0_Beta" ] || [ "${S3_BRANCH}" = "Cortx-v1.0.0_Beta" ] || [ "${SSPL_BRANCH}" = "Cortx-v1.0.0_Beta" ]; then
-						mero_rpm = $(ls -1 | grep "eos-core" | grep -E -v "eos-core-debuginfo|eos-core-devel|eos-core-tests")
+					if [ "${CSM_BRANCH}" == "Cortx-v1.0.0_Beta" ] || [ "${HARE_BRANCH}" == "Cortx-v1.0.0_Beta" ] || [ "${MOTR_BRANCH}" == "Cortx-v1.0.0_Beta" ] || [ "${PRVSNR_BRANCH}" == "Cortx-v1.0.0_Beta" ] || [ "${S3_BRANCH}" == "Cortx-v1.0.0_Beta" ] || [ "${SSPL_BRANCH}" == "Cortx-v1.0.0_Beta" ]; then
+						mero_rpm=$(ls -1 | grep "eos-core" | grep -E -v "eos-core-debuginfo|eos-core-devel|eos-core-tests")
 					else
-						mero_rpm = $(ls -1 | grep "cortx-motr" | grep -E -v "cortx-motr-debuginfo|cortx-motr-devel|cortx-motr-tests")
+						mero_rpm=$(ls -1 | grep "cortx-motr" | grep -E -v "cortx-motr-debuginfo|cortx-motr-devel|cortx-motr-tests")
 					fi
-                    mero_rpm_release = `rpm -qp ${mero_rpm} --qf '%{RELEASE}' | tr -d '\040\011\012\015'`
-                    mero_rpm_version = `rpm -qp ${mero_rpm} --qf '%{VERSION}' | tr -d '\040\011\012\015'`
-                    mero_rpm_release_version = "${mero_rpm_version}-${mero_rpm_release}"
+                    mero_rpm_release=`rpm -qp ${mero_rpm} --qf '%{RELEASE}' | tr -d '\040\011\012\015'`
+                    mero_rpm_version=`rpm -qp ${mero_rpm} --qf '%{VERSION}' | tr -d '\040\011\012\015'`
+                    mero_rpm_release_version="${mero_rpm_version}-${mero_rpm_release}"
                     for component in `ls -1`
                     do
-						if [ "${CSM_BRANCH}" = "Cortx-v1.0.0_Beta" ] || [ "${HARE_BRANCH}" = "Cortx-v1.0.0_Beta" ] || [ "${MOTR_BRANCH}" = "Cortx-v1.0.0_Beta" ] || [ "${PRVSNR_BRANCH}" = "Cortx-v1.0.0_Beta" ] || [ "${S3_BRANCH}" = "Cortx-v1.0.0_Beta" ] || [ "${SSPL_BRANCH}" = "Cortx-v1.0.0_Beta" ]; then
-							 mero_dep = `echo $(rpm -qpR ${component} | grep -E "eos-core = |mero  = ") | cut -d =  -f2 | tr -d '\040\011\012\015'`
+						if [ "${CSM_BRANCH}" == "Cortx-v1.0.0_Beta" ] || [ "${HARE_BRANCH}" == "Cortx-v1.0.0_Beta" ] || [ "${MOTR_BRANCH}" == "Cortx-v1.0.0_Beta" ] || [ "${PRVSNR_BRANCH}" == "Cortx-v1.0.0_Beta" ] || [ "${S3_BRANCH}" == "Cortx-v1.0.0_Beta" ] || [ "${SSPL_BRANCH}" == "Cortx-v1.0.0_Beta" ]; then
+							 mero_dep=`echo $(rpm -qpR ${component} | grep -E "eos-core = |mero =") | cut -d= -f2 | tr -d '\040\011\012\015'`
 						else	 
-							mero_dep = `echo $(rpm -qpR ${component} | grep -E "cortx-motr = |mero  = ") | cut -d =  -f2 | tr -d '\040\011\012\015'`
+							mero_dep=`echo $(rpm -qpR ${component} | grep -E "cortx-motr = |mero =") | cut -d= -f2 | tr -d '\040\011\012\015'`
 						fi
                         if [ -z "$mero_dep" ]
                         then
@@ -352,22 +352,24 @@ pipeline {
 	}
 
 	post {
+	
 		always {
-			script {
-				env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/release/${env.os_version}/${env.release_tag}"
-				env.release_build = "${env.release_tag}"
+            script {
+			
+                env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/release/${env.os_version}/${env.release_tag}"
+                env.release_build = "${env.release_tag}"
 				def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
-
-				def mailRecipients = "shailesh.vaidya@seagate.com"
-					emailext (
-					body: '''${SCRIPT, template = "release-email.template"}''',
-					mimeType: 'text/html',
-					subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
-					attachLog: true,
-					to: "${mailRecipients}",
+                
+                def mailRecipients = "shailesh.vaidya@seagate.com"
+                emailext ( 
+                    body: '''${SCRIPT, template="release-email.template"}''',
+                    mimeType: 'text/html',
+                    subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
+                    attachLog: true,
+                    to: "${mailRecipients}",
 					recipientProviders: recipientProvidersClass
-				)
-			}
-		}
-	}
+                )
+            }
+        }
+    }
 }
