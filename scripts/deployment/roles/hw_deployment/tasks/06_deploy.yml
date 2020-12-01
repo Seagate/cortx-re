@@ -1,17 +1,8 @@
 ---
 
-- name: "[deploy] : Copy 'expect' RPM on primary Node"
-  copy:
-      src: files/expect-5.45-14.el7_1.x86_64.rpm
-      dest: /root/
-      owner: root
-      group: root
-      mode: '0754'
-  delegate_to: "srvnode-1"
-
 - name: "[deploy] : Install 'expect' RPM on primary Node"
   yum: 
-    name: /root/expect-5.45-14.el7_1.x86_64.rpm
+    name: "{{ EXPECT_RPM }}"
     state: present
   delegate_to: "srvnode-1"
 

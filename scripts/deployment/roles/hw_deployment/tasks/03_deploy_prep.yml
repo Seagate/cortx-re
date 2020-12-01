@@ -41,7 +41,7 @@
 
 - name: "[deploy-prep] : Wait for SSH Connection"
   pause:
-    minutes: 5
+    minutes: 15
 
 - name: "[deploy-prep] : Create dir {{ CORTX_ISO_FOLDER }}"
   file: path={{ CORTX_ISO_FOLDER }} state=directory

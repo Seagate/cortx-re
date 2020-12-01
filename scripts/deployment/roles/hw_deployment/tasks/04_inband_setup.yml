@@ -1,13 +1,4 @@
 ---
-- name: "[inband] : Copy scsi RPM package"
-  copy:
-      src: files/scsi-network-relay-1.1.0-47.x86_64.rpm
-      dest: /root/
-      owner: root
-      group: root
-      mode: '0754'
-  delegate_to: "{{ item }}"
-  with_items: "{{ groups['nodes'] }}"
 
 - name: "[inband] : Create /etc/scsi-network-relay.conf"
   copy:
@@ -27,9 +18,9 @@
       mode: '0754'
   delegate_to: "srvnode-2"
 
-- name: "[inband] : Install scsi RPM package"
+- name: "[inband] : Install SCSI RPM package"
   yum: 
-    name: /root/scsi-network-relay-1.1.0-47.x86_64.rpm
+    name: "{{ SCSI_NETWORK_RELAY_RPM }}"
     state: present
   delegate_to: "{{ item }}"
   with_items: "{{ groups['nodes'] }}"

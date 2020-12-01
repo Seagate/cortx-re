@@ -36,17 +36,17 @@ endpoint_host = hostname + api_ver + 'hosts/'
 From https://seagatetechnology.sharepoint.com/sites/EOS.Lab/SitePages/Satellite-API-Rebuild-Bare-Metal-Host.aspx
 
 1 . Mark host for rebuild (Notice you call the specific hostname that you want to rebuild) This should return "true"
-curl --user 509589 -k -H "Content-Type:application/json" -H "Accept:application/json" -X PUT -d '{"host":{"build": "true"}}' https://ssc-satellite1.colo.seagate.com/api/v2/hosts/smc-test-14-m11.colo.seagate.com | jq -r '.build'
+curl --user <USER> -k -H "Content-Type:application/json" -H "Accept:application/json" -X PUT -d '{"host":{"build": "true"}}' https://ssc-satellite1.colo.seagate.com/api/v2/hosts/smc-test-14-m11.colo.seagate.com | jq -r '.build'
 
 2 . Reboot Host (Notice you call the specific host plus /power at the end of the URL) This should return "power": true
 Note: User is the service account username/GID. GID is applicable only for the Lab team members.
-curl --user 509589 -k -H "Content-Type:application/json" -H "Accept:application/json" -X PUT -d '{"power_action": "reset"}' https://ssc-satellite1.colo.seagate.com/api/v2/hosts/smc14-test-m11.colo.seagate.com/power | jq
+curl --user <USER> -k -H "Content-Type:application/json" -H "Accept:application/json" -X PUT -d '{"power_action": "reset"}' https://ssc-satellite1.colo.seagate.com/api/v2/hosts/smc14-test-m11.colo.seagate.com/power | jq
 
 3. Check the status of the build. (Same as first command but without the PUT). This will return "true" if the server is
 actively being imaged, and "false" if the server is done imaging.
 Note: There is a delay from when the server is done being imaged and accessible from SSH. This is because the server is
 booting for the first time.
-curl --user 509589 -k -H "Content-Type:application/json" -H "Accept:application/json" https://ssc-satellite1.colo.seagate.com/api/v2/hosts/smc15-m11.colo.seagate.com | jq -r '.build'
+curl --user <USER> -k -H "Content-Type:application/json" -H "Accept:application/json" https://ssc-satellite1.colo.seagate.com/api/v2/hosts/smc15-m11.colo.seagate.com | jq -r '.build'
 """
 
 
@@ -71,7 +71,7 @@ def send_build_request(node):
         else:
             print('Build host {0} received build False. Expected to receive True'.format(node))
             print('Will not proceed further')
-            exit(0)
+            exit(1)
     else:
         print('Build request for {0} host failed with status code {1}, expected 200'.format(node, response.status_code))
         print('Will not proceed further')

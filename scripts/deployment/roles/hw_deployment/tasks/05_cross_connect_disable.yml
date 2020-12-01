@@ -2,8 +2,12 @@
  
 - name: "[cross-connect] : Added lsiutil"
   unarchive:
-      src: files/lsiutil.tar
+      src: "{{ LSI_UTIL }}"
       dest: /root/
+      owner: root
+      group: root
+      mode: '0754'
+      remote_src: yes
   delegate_to: "{{ item }}"
   with_items: "{{ groups['nodes'] }}"
 
