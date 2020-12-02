@@ -1,0 +1,48 @@
+pipeline {
+
+	agent {
+		node {
+			label 'docker-cp-centos-7.8.2003-node'
+		}
+	}
+
+	stage ('Check Mount & Threshold') {
+		    steps {
+						sh label: 'Threshold alert',script:'''
+		        mount="cortx-storage.colo.seagate.com:/mnt/data1/releases/jenkins/jenkins-dev"
+				if grep -qs "$mount" /proc/mounts; then
+				echo "It's mounted."
+				else
+				echo "It's not mounted."
+				mount -t nfs4 "$mount" /mnt/data1/releases
+					if [ $? -eq 0 ]; then
+					echo "Mount success!"
+					else
+					echo "Something went wrong with the mount..."
+					fi
+				fi
+				CURRENT=$(df -h | grep /mnt/data1/releases | awk '{ print $5}' | sed 's/%//g')
+				THRESHOLD=75
+				if [ "$CURRENT" -gt "$THRESHOLD" ] ; then
+				prev_count=0
+				fpath=/mnt/data1/releases/jenkins/jenkins-dev
+				find $fpath -type f -mtime +50  -exec ls -ltrd {} \; > /mnt/data1/releases/jenkins/jenkins-dev/file.out
+				#find $fpath -type f -mtime +50  -exec rm -rf {} \;
+				count=$(cat /mnt/data1/releases/jenkins/jenkins-dev/file.out | wc -l)
+					if [ "$prev_count" -lt "$count" ] ; then
+					MESSAGE="/mnt/data1/releases/jenkins/jenkins-dev/file1.out"
+					TO="balaji.ramachandran@seagate.com"
+					echo "Apache Access log files are deleted older than 50 days"  >> $MESSAGE
+					echo "+--------------------------------------------- +" >> $MESSAGE
+					echo "" >> $MESSAGE
+					cat /mnt/data1/releases/file.out | awk '{print $6,$7,$9}' >> $MESSAGE
+					echo "" >> $MESSAGE
+					SUBJECT="WARNING: Your /mnt/data1/releases partition remaining free space is critically low. Used: $CURRENT%.  So, 50 days older files have been deleted $(date)"
+					mail -s "$SUBJECT" "$TO" < $MESSAGE
+					rm $MESSAGE /mnt/data1/releases/jenkins/jenkins-dev/file.out
+					fi
+				fi
+				
+			}
+		}
+}	
