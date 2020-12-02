@@ -69,6 +69,26 @@ pipeline {
 							string(name: 'HARE_BRANCH', value: "${HARE_BRANCH}")
 						]
 					}
+                                        post {
+                                                failure {
+                                                        script {
+                                                                env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/release/${env.os_version}/${env.release_tag}"
+                                                                env.release_build = "${env.release_tag}"
+                                                                env.build_stage = "${build_stage}"
+                                                                def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
+
+                                                                def mailRecipients = "shailesh.vaidya@seagate.com"
+                                                                        emailext (
+                                                                        body: '''${SCRIPT, template="test-release-email.template"}''',
+                                                                        mimeType: 'text/html',
+                                                                        subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
+                                                                        attachLog: true,
+                                                                        to: "${mailRecipients}",
+                                                                        recipientProviders: recipientProvidersClass
+                                                                )
+                                                        }
+                                                }
+                                        }
 				}
 
 				stage ("Build Provisioner") {
@@ -80,6 +100,26 @@ pipeline {
 							string(name: 'PRVSNR_BRANCH', value: "${PRVSNR_BRANCH}")
 						]
 					}
+                                        post {
+                                                failure {
+                                                        script {
+                                                                env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/release/${env.os_version}/${env.release_tag}"
+                                                                env.release_build = "${env.release_tag}"
+                                                                env.build_stage = "${build_stage}"
+                                                                def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
+
+                                                                def mailRecipients = "shailesh.vaidya@seagate.com"
+                                                                        emailext (
+                                                                        body: '''${SCRIPT, template="test-release-email.template"}''',
+                                                                        mimeType: 'text/html',
+                                                                        subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
+                                                                        attachLog: true,
+                                                                        to: "${mailRecipients}",
+                                                                        recipientProviders: recipientProvidersClass
+                                                                )
+                                                        }
+                                                }
+                                        }
 				}
 
 				stage ("Build HA") {
@@ -97,6 +137,26 @@ pipeline {
 											string(name: 'HA_BRANCH', value: "${HA_BRANCH}")
 									]
 					}
+                                        post {
+                                                failure {
+                                                        script {
+                                                                env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/release/${env.os_version}/${env.release_tag}"
+                                                                env.release_build = "${env.release_tag}"
+                                                                env.build_stage = "${build_stage}"
+                                                                def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
+
+                                                                def mailRecipients = "shailesh.vaidya@seagate.com"
+                                                                        emailext (
+                                                                        body: '''${SCRIPT, template="test-release-email.template"}''',
+                                                                        mimeType: 'text/html',
+                                                                        subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
+                                                                        attachLog: true,
+                                                                        to: "${mailRecipients}",
+                                                                        recipientProviders: recipientProvidersClass
+                                                                )
+                                                        }
+                                                }
+                                        }
 				}
 
 				stage ("Build CSM Agent") {
@@ -108,6 +168,26 @@ pipeline {
 						string(name: 'CSM_AGENT_BRANCH', value: "${CSM_AGENT_BRANCH}")
 						]
 					}
+                                        post {
+                                                failure {
+                                                        script {
+                                                                env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/release/${env.os_version}/${env.release_tag}"
+                                                                env.release_build = "${env.release_tag}"
+                                                                env.build_stage = "${build_stage}"
+                                                                def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
+
+                                                                def mailRecipients = "shailesh.vaidya@seagate.com"
+                                                                        emailext (
+                                                                        body: '''${SCRIPT, template="test-release-email.template"}''',
+                                                                        mimeType: 'text/html',
+                                                                        subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
+                                                                        attachLog: true,
+                                                                        to: "${mailRecipients}",
+                                                                        recipientProviders: recipientProvidersClass
+                                                                )
+                                                        }
+                                                }
+                                        }
 				}	
 					
 				stage ("Build CSM Web") {
@@ -119,6 +199,26 @@ pipeline {
 						string(name: 'CSM_WEB_BRANCH', value: "${CSM_WEB_BRANCH}")
 						]
 					}
+                                        post {
+                                                failure {
+                                                        script {
+                                                                env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/release/${env.os_version}/${env.release_tag}"
+                                                                env.release_build = "${env.release_tag}"
+                                                                env.build_stage = "${build_stage}"
+                                                                def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
+
+                                                                def mailRecipients = "shailesh.vaidya@seagate.com"
+                                                                        emailext (
+                                                                        body: '''${SCRIPT, template="test-release-email.template"}''',
+                                                                        mimeType: 'text/html',
+                                                                        subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
+                                                                        attachLog: true,
+                                                                        to: "${mailRecipients}",
+                                                                        recipientProviders: recipientProvidersClass
+                                                                )
+                                                        }
+                                                }
+                                        }
 				}
 
 				stage ("Build SSPL") {
@@ -130,6 +230,26 @@ pipeline {
 								string(name: 'SSPL_BRANCH', value: "${SSPL_BRANCH}")
 							]
 					}
+                                        post {
+                                                failure {
+                                                        script {
+                                                                env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/release/${env.os_version}/${env.release_tag}"
+                                                                env.release_build = "${env.release_tag}"
+                                                                env.build_stage = "${build_stage}"
+                                                                def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
+
+                                                                def mailRecipients = "shailesh.vaidya@seagate.com"
+                                                                        emailext (
+                                                                        body: '''${SCRIPT, template="test-release-email.template"}''',
+                                                                        mimeType: 'text/html',
+                                                                        subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
+                                                                        attachLog: true,
+                                                                        to: "${mailRecipients}",
+                                                                        recipientProviders: recipientProvidersClass
+                                                                )
+                                                        }
+                                                }
+                                        }
 				}
 			}
 		}
@@ -142,6 +262,26 @@ pipeline {
 					systemctl start rngd
 					'''
 				}
+                        post {
+                                failure {
+                                        script {
+                                                env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/release/${env.os_version}/${env.release_tag}"
+                                                env.release_build = "${env.release_tag}"
+                                                env.build_stage = "${build_stage}"
+                                                def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
+
+                                                def mailRecipients = "shailesh.vaidya@seagate.com"
+                                                        emailext (
+                                                        body: '''${SCRIPT, template="test-release-email.template"}''',
+                                                        mimeType: 'text/html',
+                                                        subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
+                                                        attachLog: true,
+                                                        to: "${mailRecipients}",
+                                                        recipientProviders: recipientProvidersClass
+                                                )
+                                        }
+                                }
+                        }
 		}
 
 		stage ('Collect Component RPMS') {
@@ -200,6 +340,26 @@ pipeline {
                     done
 				'''
 			}
+                        post {
+                                failure {
+                                        script {
+                                                env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/release/${env.os_version}/${env.release_tag}"
+                                                env.release_build = "${env.release_tag}"
+                                                env.build_stage = "${build_stage}"
+                                                def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
+
+                                                def mailRecipients = "shailesh.vaidya@seagate.com"
+                                                        emailext (
+                                                        body: '''${SCRIPT, template="test-release-email.template"}''',
+                                                        mimeType: 'text/html',
+                                                        subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
+                                                        attachLog: true,
+                                                        to: "${mailRecipients}",
+                                                        recipientProviders: recipientProvidersClass
+                                                )
+                                        }
+                                }
+                        }
 		}
 
         stage('RPM Validation') {
@@ -242,6 +402,26 @@ pipeline {
                 done
                 '''
 			}
+                        post {
+                                failure {
+                                        script {
+                                                env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/release/${env.os_version}/${env.release_tag}"
+                                                env.release_build = "${env.release_tag}"
+                                                env.build_stage = "${build_stage}"
+                                                def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
+
+                                                def mailRecipients = "shailesh.vaidya@seagate.com"
+                                                        emailext (
+                                                        body: '''${SCRIPT, template="test-release-email.template"}''',
+                                                        mimeType: 'text/html',
+                                                        subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
+                                                        attachLog: true,
+                                                        to: "${mailRecipients}",
+                                                        recipientProviders: recipientProvidersClass
+                                                )
+                                        }
+                                }
+                        }
 		}
 
 		stage ('Sign rpm') {
@@ -274,6 +454,26 @@ pipeline {
 
                 '''
 			}
+                        post {
+                                failure {
+                                        script {
+                                                env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/release/${env.os_version}/${env.release_tag}"
+                                                env.release_build = "${env.release_tag}"
+                                                env.build_stage = "${build_stage}"
+                                                def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
+
+                                                def mailRecipients = "shailesh.vaidya@seagate.com"
+                                                        emailext (
+                                                        body: '''${SCRIPT, template="test-release-email.template"}''',
+                                                        mimeType: 'text/html',
+                                                        subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
+                                                        attachLog: true,
+                                                        to: "${mailRecipients}",
+                                                        recipientProviders: recipientProvidersClass
+                                                )
+                                        }
+                                }
+                        }
 		}
 		
 		stage ('Repo Creation') {
@@ -286,6 +486,26 @@ pipeline {
                     popd
                 '''
 			}
+                        post {
+                                failure {
+                                        script {
+                                                env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/release/${env.os_version}/${env.release_tag}"
+                                                env.release_build = "${env.release_tag}"
+                                                env.build_stage = "${build_stage}"
+                                                def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
+
+                                                def mailRecipients = "shailesh.vaidya@seagate.com"
+                                                        emailext (
+                                                        body: '''${SCRIPT, template="test-release-email.template"}''',
+                                                        mimeType: 'text/html',
+                                                        subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
+                                                        attachLog: true,
+                                                        to: "${mailRecipients}",
+                                                        recipientProviders: recipientProvidersClass
+                                                )
+                                        }
+                                }
+                        }
 		}
 
 		stage ('Link 3rd_party and python_deps') {
@@ -298,6 +518,26 @@ pipeline {
                     popd
                 '''
 			}
+                        post {
+                                failure {
+                                        script {
+                                                env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/release/${env.os_version}/${env.release_tag}"
+                                                env.release_build = "${env.release_tag}"
+                                                env.build_stage = "${build_stage}"
+                                                def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
+
+                                                def mailRecipients = "shailesh.vaidya@seagate.com"
+                                                        emailext (
+                                                        body: '''${SCRIPT, template="test-release-email.template"}''',
+                                                        mimeType: 'text/html',
+                                                        subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
+                                                        attachLog: true,
+                                                        to: "${mailRecipients}",
+                                                        recipientProviders: recipientProvidersClass
+                                                )
+                                        }
+                                }
+                        }
 		}
 
 		stage ('Build MANIFEST') {
@@ -317,6 +557,26 @@ pipeline {
 					cp $integration_dir/$release_tag/cortx_iso/RELEASE.INFO $integration_dir/$release_tag
                 """
 			}
+                        post {
+                                failure {
+                                        script {
+                                                env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/release/${env.os_version}/${env.release_tag}"
+                                                env.release_build = "${env.release_tag}"
+                                                env.build_stage = "${build_stage}"
+                                                def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
+
+                                                def mailRecipients = "shailesh.vaidya@seagate.com"
+                                                        emailext (
+                                                        body: '''${SCRIPT, template="test-release-email.template"}''',
+                                                        mimeType: 'text/html',
+                                                        subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
+                                                        attachLog: true,
+                                                        to: "${mailRecipients}",
+                                                        recipientProviders: recipientProvidersClass
+                                                )
+                                        }
+                                }
+                        }
 		}
 		
 		stage ('Generate ISO Image') {
@@ -346,11 +606,31 @@ pipeline {
 					echo "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/release/$os_version/$release_tag/iso/$release_tag-single.iso"
 		        '''
 		    }
+                    post {
+                   	 failure {
+                         	script {
+                                	env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/release/${env.os_version}/${env.release_tag}"
+                                	env.release_build = "${env.release_tag}"
+                                        env.build_stage = "${build_stage}"
+                                        def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
+
+                                        def mailRecipients = "shailesh.vaidya@seagate.com"
+                                        	emailext (
+                                                body: '''${SCRIPT, template="test-release-email.template"}''',
+                                                mimeType: 'text/html',
+                                                subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
+                                                attachLog: true,
+                                                to: "${mailRecipients}",
+                                                recipientProviders: recipientProvidersClass
+                                        )
+                                }
+                         }
+                    }
 		}
 	}
 
 	post {
-		always {
+		success {
 			script {
 				env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/release/${env.os_version}/${env.release_tag}"
 				env.release_build = "${env.release_tag}"
