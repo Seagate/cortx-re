@@ -168,7 +168,7 @@ pipeline {
 										]
 							}catch (err){
 								build_stage=env.STAGE_NAME
-								 error "Failed to Build SSPL"
+								error "Failed to Build SSPL"
 							}
 						}
 					}
