@@ -200,7 +200,7 @@ pipeline {
 					popd
 					
 					cp $integration_dir/$release_tag/README.txt .
-                    $integration_dir/$release_tag/cortx_build_temp/dev/RELEASE.INFO .
+                    cp $integration_dir/$release_tag/cortx_build_temp/dev/RELEASE.INFO .
 					
                 """
                 withCredentials([string(credentialsId: 'shailesh-github-token', variable: 'ACCESS_TOKEN')]) {
