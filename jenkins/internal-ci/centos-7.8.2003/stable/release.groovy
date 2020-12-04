@@ -225,10 +225,8 @@ pipeline {
 		    steps {
 		        sh label: 'Generate ISO Image',script:'''
 		        rpm -q genisoimage || yum install genisoimage -y
-                mkdir -p $iso_location
-		        pushd $iso_location
-					genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -publisher Seagate -o $branch-$BUILD_NUMBER.iso $integration_dir/$release_tag/prod
-				popd
+               
+				genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -publisher Seagate -o cortx-$version-$BUILD_NUMBER.iso $integration_dir/$release_tag/prod
 				
 				genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -publisher Seagate -o cortx-$version-$BUILD_NUMBER-single.iso $cortx_build_dir/$release_tag
 				
@@ -239,6 +237,8 @@ pipeline {
                 wget -O $cortx_build_dir/$release_tag/iso/cortx-prep-$version-$BUILD_NUMBER.sh https://raw.githubusercontent.com/Seagate/cortx-prvsnr/$cortx_prvsnr_preq/cli/src/cortx_prep.sh
             
 				cp cortx-$version-$BUILD_NUMBER-single.iso $cortx_build_dir/$release_tag/iso
+				cp cortx-$version-$BUILD_NUMBER.iso $cortx_build_dir/$release_tag/iso
+
 				
 				ls $cortx_build_dir/$release_tag/3rd_party/THIRD_PARTY_RELEASE.INFO
 				ls $cortx_build_dir/$release_tag/cortx_iso/RELEASE.INFO
