@@ -234,7 +234,8 @@ pipeline {
                 ln -s $cortx_os_iso $cortx_build_dir/$release_tag/iso/$(basename $cortx_os_iso)
 
                 cortx_prvsnr_preq=$(ls "$cortx_build_dir/$release_tag/cortx_iso" | grep "python36-cortx-prvsnr" | cut -d- -f5 | cut -d_ -f2 | cut -d. -f1 | sed s/"git"//)
-                wget -O $cortx_build_dir/$release_tag/iso/cortx-prep-$version-$BUILD_NUMBER.sh https://raw.githubusercontent.com/Seagate/cortx-prvsnr/$cortx_prvsnr_preq/cli/src/cortx_prep.sh
+                # cortx_prep.sh is not available in stable branch yet
+                #wget -O $cortx_build_dir/$release_tag/iso/cortx-prep-$version-$BUILD_NUMBER.sh https://raw.githubusercontent.com/Seagate/cortx-prvsnr/$cortx_prvsnr_preq/cli/src/cortx_prep.sh
             
 				cp cortx-$version-$BUILD_NUMBER-single.iso $cortx_build_dir/$release_tag/iso
 				cp cortx-$version-$BUILD_NUMBER.iso $cortx_build_dir/$release_tag/iso
