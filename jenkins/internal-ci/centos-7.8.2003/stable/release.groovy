@@ -237,16 +237,19 @@ pipeline {
                 # cortx_prep.sh is not available in stable branch yet
                 #wget -O $cortx_build_dir/$release_tag/iso/cortx-prep-$version-$BUILD_NUMBER.sh https://raw.githubusercontent.com/Seagate/cortx-prvsnr/$cortx_prvsnr_preq/cli/src/cortx_prep.sh
             
-				cp cortx-$version-$BUILD_NUMBER-single.iso $cortx_build_dir/$release_tag/iso
-				cp cortx-$version-$BUILD_NUMBER.iso $cortx_build_dir/$release_tag/iso
+                mkdir -p $integration_dir/$release_tag/iso
+				cp cortx-$version-$BUILD_NUMBER-single.iso $integration_dir/$release_tag/iso
+				cp cortx-$version-$BUILD_NUMBER.iso $integration_dir/$release_tag/$release_tag/iso
 
 				
 				ls $cortx_build_dir/$release_tag/3rd_party/THIRD_PARTY_RELEASE.INFO
 				ls $cortx_build_dir/$release_tag/cortx_iso/RELEASE.INFO
 				
-				cp $cortx_build_dir/$release_tag/3rd_party/THIRD_PARTY_RELEASE.INFO $cortx_build_dir/$release_tag
-				cp $cortx_build_dir/$release_tag/cortx_iso/RELEASE.INFO $cortx_build_dir/$release_tag
+				cp $cortx_build_dir/$release_tag/3rd_party/THIRD_PARTY_RELEASE.INFO $integration_dir/$release_tag
+				cp $cortx_build_dir/$release_tag/cortx_iso/RELEASE.INFO $integration_dir/$release_tag
 				sed -i '/BUILD/d' $cortx_build_dir/$release_tag/3rd_party/THIRD_PARTY_RELEASE.INFO
+
+                mv $cortx_build_dir/$release_tag/ $cortx_build_dir/$release_tag-to-be-deleted
 		        '''
 		    }
 		}
