@@ -57,7 +57,7 @@ pipeline {
                         do
                             echo -e "Copying RPM's for $component"
                             if ls $component/last_successful/*.rpm 1> /dev/null 2>&1; then
-                                cp $component/last_successful/*.rpm $integration_dir/$release_tag/$env
+                                cp $component/last_successful/*.rpm $integration_dir/$release_tag/cortx_build_temp/$env
                             fi
                         done
                         popd
