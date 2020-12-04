@@ -51,7 +51,7 @@ pipeline {
                 sh label: 'Copy RPMS', script:'''
                     for env in "dev" "prod";
                     do
-                        mkdir -p $integration_dir/$release_tag/$env
+                        mkdir -p $integration_dir/$release_tag/cortx_build_temp/$env
                         pushd $components_dir/$env
                         for component in  `ls -1 | grep -Evx 'cortx-extension'`
                         do
@@ -80,7 +80,7 @@ pipeline {
                     set +x
                     echo "VALIDATING $env RPM'S................"
                     echo "-------------------------------------"
-                    pushd $integration_dir/$release_tag/$env
+                    pushd $integration_dir/$release_tag/cortx_build_temp/$env
                     motr_rpm=$(ls -1 | grep "cortx-motr" | grep -E -v "cortx-motr-debuginfo|cortx-motr-devel|cortx-motr-tests")
                     motr_rpm_release=`rpm -qp ${motr_rpm} --qf '%{RELEASE}' | tr -d '\040\011\012\015'`
                     motr_rpm_version=`rpm -qp ${motr_rpm} --qf '%{VERSION}' | tr -d '\040\011\012\015'`
@@ -124,20 +124,16 @@ pipeline {
 
                 sh label: 'Sign RPM', script: '''
                     set +x
+                    for env in "dev" "prod";
+                    do
 					pushd scripts/rpm-signing
-                    chmod +x rpm-sign.sh
-                    cp RPM-GPG-KEY-Seagate $integration_dir/$release_tag/dev
-                    cp RPM-GPG-KEY-Seagate $integration_dir/$release_tag/prod
-
-                    for rpm in `ls -1 $integration_dir/$release_tag/dev/*.rpm`
-                    do
-                    ./rpm-sign.sh ${passphrase} $rpm
-                    done
-
-                    for rpm in `ls -1 $integration_dir/$release_tag/prod/*.rpm`
-                    do
-                    ./rpm-sign.sh ${passphrase} $rpm
-                    done
+                        chmod +x rpm-sign.sh
+                        cp RPM-GPG-KEY-Seagate $integration_dir/$release_tag/cortx_build_temp/$env/
+                        
+                        for rpm in `ls -1 $integration_dir/$release_tag/$env/*.rpm`
+                        do
+                        ./rpm-sign.sh ${passphrase} $rpm
+                        done
 					popd
                 '''
 			}
@@ -149,15 +145,15 @@ pipeline {
                 script { build_stage=env.STAGE_NAME }
         
                 sh label: 'Repo Creation', script: '''
-                    pushd $integration_dir/$release_tag/dev
-                    rpm -qi createrepo || yum install -y createrepo
-                    createrepo .
-                    popd
 
-                    pushd $integration_dir/$release_tag/prod
-                    rpm -qi createrepo || yum install -y createrepo
-                    createrepo .
-                    popd
+                    for env in "dev" "prod";
+                    do
+                        pushd $integration_dir/$release_tag/cortx_build_temp/$env/
+                            rpm -qi createrepo || yum install -y createrepo
+                            createrepo .
+                        popd
+                    done
+                    
                 '''
 			}
 		}	
@@ -169,7 +165,7 @@ pipeline {
                 sh label: 'Tag last_successful', script: '''
                     pushd $integration_dir
                     test -d last_successful && rm -f last_successful
-                    ln -s $integration_dir/$release_tag/dev last_successful
+                    ln -s $integration_dir/$release_tag/cortx_build_temp/dev last_successful
                     popd
                 '''
 			}
@@ -183,7 +179,7 @@ pipeline {
 					pushd $cortx_build_dir
                         test -d $release_tag && rm -f $release_tag
                         mkdir $release_tag && pushd $release_tag
-                            mv $integration_dir/$release_tag/prod cortx_iso
+                            ln -s $integration_dir/$release_tag/cortx_build_temp/prod cortx_iso
                             ln -s $thrid_party_dir 3rd_party
 							ln -s $python_deps python_deps
                         popd
@@ -197,14 +193,14 @@ pipeline {
                 script { build_stage=env.STAGE_NAME }
                 sh label: 'Build Release Info', script: """
 				    pushd scripts/release_support
-                        sh build_release_info.sh $integration_dir/$release_tag/dev
-                        sh build_release_info.sh $integration_dir/$release_tag/prod
+                        sh build_release_info.sh $integration_dir/$release_tag/cortx_build_temp/dev
+                        sh build_release_info.sh $integration_dir/$release_tag/cortx_build_temp/prod
 						sh build-3rdParty-release-info.sh $cortx_build_dir/$release_tag/3rd_party
     					sh build_readme.sh $integration_dir/$release_tag
 					popd
 					
 					cp $integration_dir/$release_tag/README.txt .
-                    cp $integration_dir/$release_tag/dev/RELEASE.INFO .
+                    $integration_dir/$release_tag/cortx_build_temp/dev/RELEASE.INFO .
 					
                 """
                 withCredentials([string(credentialsId: 'shailesh-github-token', variable: 'ACCESS_TOKEN')]) {
@@ -213,8 +209,8 @@ pipeline {
                             sh +x changelog.sh ${currentBuild.previousBuild.getNumber()} ${currentBuild.number} ${ARTIFACT_LOCATION} ${ACCESS_TOKEN}
 						popd
 						cp /root/git_build_checkin_stats/clone/git-build-checkin-report.txt CHANGESET.txt 
-                        cp CHANGESET.txt $integration_dir/$release_tag/dev
-                        cp CHANGESET.txt $integration_dir/$release_tag/prod
+                        cp CHANGESET.txt $integration_dir/$release_tag/cortx_build_temp/dev
+                        cp CHANGESET.txt $integration_dir/$release_tag/cortx_build_temp/prod
                     """
                 } 
 			}
@@ -226,16 +222,18 @@ pipeline {
 		        sh label: 'Generate ISO Image',script:'''
 		        rpm -q genisoimage || yum install genisoimage -y
                
-				genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -publisher Seagate -o cortx-$version-$BUILD_NUMBER.iso $integration_dir/$release_tag/prod
+				genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -publisher Seagate -o cortx-$version-$BUILD_NUMBER.iso $integration_dir/$release_tag/cortx_build_temp/prod
 				
 				genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -publisher Seagate -o cortx-$version-$BUILD_NUMBER-single.iso $cortx_build_dir/$release_tag
 				
-                mkdir $cortx_build_dir/$release_tag/iso
+                mkdir $cortx_os_iso $integration_dir/$release_tag/prod
                 ln -s $cortx_os_iso $integration_dir/$release_tag/prod/$(basename $cortx_os_iso)
 
                 cortx_prvsnr_preq=$(ls "$cortx_build_dir/$release_tag/cortx_iso" | grep "python36-cortx-prvsnr" | cut -d- -f5 | cut -d_ -f2 | cut -d. -f1 | sed s/"git"//)
                 # cortx_prep.sh is not available in stable branch yet
                 #wget -O $cortx_build_dir/$release_tag/iso/cortx-prep-$version-$BUILD_NUMBER.sh https://raw.githubusercontent.com/Seagate/cortx-prvsnr/$cortx_prvsnr_preq/cli/src/cortx_prep.sh
+
+
             
                 mkdir -p $integration_dir/$release_tag/prod/
 				cp cortx-$version-$BUILD_NUMBER-single.iso $integration_dir/$release_tag/prod/
