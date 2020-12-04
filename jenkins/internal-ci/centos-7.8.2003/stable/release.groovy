@@ -183,7 +183,7 @@ pipeline {
 					pushd $cortx_build_dir
                         test -d $release_tag && rm -f $release_tag
                         mkdir $release_tag && pushd $release_tag
-                            ln -s $integration_dir/$release_tag/prod cortx_iso
+                            mv $integration_dir/$release_tag/prod cortx_iso
                             ln -s $thrid_party_dir 3rd_party
 							ln -s $python_deps python_deps
                         popd
@@ -231,22 +231,22 @@ pipeline {
 				genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -publisher Seagate -o cortx-$version-$BUILD_NUMBER-single.iso $cortx_build_dir/$release_tag
 				
                 mkdir $cortx_build_dir/$release_tag/iso
-                ln -s $cortx_os_iso $cortx_build_dir/$release_tag/iso/$(basename $cortx_os_iso)
+                ln -s $cortx_os_iso $integration_dir/$release_tag/prod/$(basename $cortx_os_iso)
 
                 cortx_prvsnr_preq=$(ls "$cortx_build_dir/$release_tag/cortx_iso" | grep "python36-cortx-prvsnr" | cut -d- -f5 | cut -d_ -f2 | cut -d. -f1 | sed s/"git"//)
                 # cortx_prep.sh is not available in stable branch yet
                 #wget -O $cortx_build_dir/$release_tag/iso/cortx-prep-$version-$BUILD_NUMBER.sh https://raw.githubusercontent.com/Seagate/cortx-prvsnr/$cortx_prvsnr_preq/cli/src/cortx_prep.sh
             
-                mkdir -p $integration_dir/$release_tag/iso
-				cp cortx-$version-$BUILD_NUMBER-single.iso $integration_dir/$release_tag/iso
-				cp cortx-$version-$BUILD_NUMBER.iso $integration_dir/$release_tag/$release_tag/iso
+                mkdir -p $integration_dir/$release_tag/prod/
+				cp cortx-$version-$BUILD_NUMBER-single.iso $integration_dir/$release_tag/prod/
+				cp cortx-$version-$BUILD_NUMBER.iso $integration_dir/$release_tag/prod/
 
 				
 				ls $cortx_build_dir/$release_tag/3rd_party/THIRD_PARTY_RELEASE.INFO
 				ls $cortx_build_dir/$release_tag/cortx_iso/RELEASE.INFO
 				
-				cp $cortx_build_dir/$release_tag/3rd_party/THIRD_PARTY_RELEASE.INFO $integration_dir/$release_tag
-				cp $cortx_build_dir/$release_tag/cortx_iso/RELEASE.INFO $integration_dir/$release_tag
+				cp $cortx_build_dir/$release_tag/3rd_party/THIRD_PARTY_RELEASE.INFO $integration_dir/$release_tag/prod/
+				cp $cortx_build_dir/$release_tag/cortx_iso/RELEASE.INFO $integration_dir/$release_tag/prod
 				sed -i '/BUILD/d' $cortx_build_dir/$release_tag/3rd_party/THIRD_PARTY_RELEASE.INFO
 
                 mv $cortx_build_dir/$release_tag/ $cortx_build_dir/$release_tag-to-be-deleted
