@@ -13,7 +13,7 @@ pipeline {
 		    steps {
 				
 				sh label: 'Check Mount',script:'''#!/bin/bash
-		        mount="cortx-storage.colo.seagate.com:/mnt/data1/releases"
+		        	mount="cortx-storage.colo.seagate.com:/mnt/data1/releases"
 				if grep -qs "$mount" /proc/mounts; then
 				echo "cortx-storage.colo.seagate.com:/mnt/data1/releases is mounted."
 				else
@@ -40,7 +40,6 @@ pipeline {
 						prev_count=0
 						fpath=/mnt/data1/releases
 						find $fpath -type f -mtime +30  -exec ls -ltr {} + > /mnt/data1/releases/file.out
-						###find $fpath -type f -mtime +30  -exec rm -rf {} \\;
 						count=$(cat /mnt/data1/releases/file.out | wc -l)
 						
 							if [ "$prev_count" -lt "$count" ] ; then
@@ -48,7 +47,7 @@ pipeline {
 							TO="balaji.ramachandran@seagate.com"
 							echo "Files older than 30 days are listed" >> $MESSAGE
 							echo "+--------------------------------------------- +" >> $MESSAGE
-					    	echo "" >> $MESSAGE
+					    		echo "" >> $MESSAGE
 							cat /mnt/data1/releases/file.out | awk '{print $6,$7,$9}' >> $MESSAGE
 							echo "" >> $MESSAGE
 							#SUBJECT="WARNING: Your /mnt/data1/releases partition remaining free space is critically low. Used: $CURRENT%.  So, 50 days older files have been deleted $(date)"
