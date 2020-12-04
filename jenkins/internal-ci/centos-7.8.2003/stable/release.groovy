@@ -126,15 +126,14 @@ pipeline {
                     set +x
                     for env in "dev" "prod";
                     do
-					pushd scripts/rpm-signing
-                        chmod +x rpm-sign.sh
-                        cp RPM-GPG-KEY-Seagate $integration_dir/$release_tag/cortx_build_temp/$env/
-                        
-                        for rpm in `ls -1 $integration_dir/$release_tag/$env/*.rpm`
-                        do
-                        ./rpm-sign.sh ${passphrase} $rpm
-                        done
-					popd
+                        pushd scripts/rpm-signing
+                            chmod +x rpm-sign.sh
+                            cp RPM-GPG-KEY-Seagate $integration_dir/$release_tag/cortx_build_temp/$env/
+                            for rpm in `ls -1 $integration_dir/$release_tag/cortx_build_temp/$env/*.rpm`
+                            do
+                            ./rpm-sign.sh ${passphrase} $rpm
+					    popd
+                    done    
                 '''
 			}
 		}
