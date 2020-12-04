@@ -132,6 +132,7 @@ pipeline {
                             for rpm in `ls -1 $integration_dir/$release_tag/cortx_build_temp/$env/*.rpm`
                             do
                             ./rpm-sign.sh ${passphrase} $rpm
+                            done
 					    popd
                     done    
                 '''
