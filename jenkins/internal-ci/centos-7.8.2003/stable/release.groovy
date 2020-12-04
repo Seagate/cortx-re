@@ -158,19 +158,6 @@ pipeline {
 			}
 		}	
 
-		
-		stage ('Tag last_successful') {
-			steps {
-                script { build_stage=env.STAGE_NAME }
-                sh label: 'Tag last_successful', script: '''
-                    pushd $integration_dir
-                    test -d last_successful && rm -f last_successful
-                    ln -s $integration_dir/$release_tag/cortx_build_temp/dev last_successful
-                    popd
-                '''
-			}
-		}
-
         stage('Release cortx_build'){
             steps {
                 script { build_stage=env.STAGE_NAME }
@@ -238,16 +225,28 @@ pipeline {
 				cp cortx-$version-$BUILD_NUMBER-single.iso $integration_dir/$release_tag/prod/
 				cp cortx-$version-$BUILD_NUMBER.iso $integration_dir/$release_tag/prod/
 				
-				cp $cortx_build_dir/$release_tag/3rd_party/THIRD_PARTY_RELEASE.INFO $integration_dir/$release_tag/prod/
-				cp $cortx_build_dir/$release_tag/cortx_iso/RELEASE.INFO $integration_dir/$release_tag/prod
+				cp $cortx_build_dir/$release_tag/3rd_party/THIRD_PARTY_RELEASE.INFO $integration_dir/$release_tag/
+				cp $cortx_build_dir/$release_tag/cortx_iso/RELEASE.INFO $integration_dir/$release_tag/
 				sed -i '/BUILD/d' $cortx_build_dir/$release_tag/3rd_party/THIRD_PARTY_RELEASE.INFO
 
                 mv $cortx_build_dir/$release_tag/ $cortx_build_dir/$release_tag-to-be-deleted
-                mv $integration_dir/$release_tag/cortx_build_temp $integration_dir/$release_tag/cortx_build_temp-to-be-deleted
+                rm -rf $integration_dir/$release_tag/cortx_build_temp
 		        '''
 		    }
 		}
 
+        		
+		stage ('Tag last_successful') {
+			steps {
+                script { build_stage=env.STAGE_NAME }
+                sh label: 'Tag last_successful', script: '''
+                    pushd $integration_dir
+                    test -L last_successful && rm -f last_successful
+                    ln -s $integration_dir/$release_tag/prod last_successful
+                    popd
+                '''
+			}
+		}
 
 	}
 	
