@@ -62,9 +62,9 @@ pipeline {
                         done
                         popd
                     done
-                    cp -n -r $integration_dir/$release_tag/dev/* $integration_dir/$release_tag/prod/
+                    cp -n -r $integration_dir/$release_tag/cortx_build_temp/dev/* $integration_dir/$release_tag/cortx_build_temp/prod/
 
-                    pushd $integration_dir/$release_tag/prod
+                    pushd $integration_dir/$release_tag/cortx_build_temp/prod
                         rm -f *-debuginfo-*.rpm
                     popd
                 '''
