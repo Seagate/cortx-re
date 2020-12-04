@@ -242,7 +242,7 @@ pipeline {
                 sh label: 'Tag last_successful', script: '''
                     pushd $integration_dir
                     test -L last_successful && rm -f last_successful
-                    ln -s $integration_dir/$release_tag/prod last_successful
+                    ln -s $integration_dir/$release_tag/dev last_successful
                     popd
                 '''
 			}
