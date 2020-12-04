@@ -225,26 +225,25 @@ pipeline {
 				genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -publisher Seagate -o cortx-$version-$BUILD_NUMBER.iso $integration_dir/$release_tag/cortx_build_temp/prod
 				
 				genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -publisher Seagate -o cortx-$version-$BUILD_NUMBER-single.iso $cortx_build_dir/$release_tag
-				
-                mkdir $integration_dir/$release_tag/prod
-                ln -s $cortx_os_iso $integration_dir/$release_tag/prod/$(basename $cortx_os_iso)
-
+				                
                 cortx_prvsnr_preq=$(ls "$cortx_build_dir/$release_tag/cortx_iso" | grep "python36-cortx-prvsnr" | cut -d- -f5 | cut -d_ -f2 | cut -d. -f1 | sed s/"git"//)
                 # cortx_prep.sh is not available in stable branch yet
                 #wget -O $cortx_build_dir/$release_tag/iso/cortx-prep-$version-$BUILD_NUMBER.sh https://raw.githubusercontent.com/Seagate/cortx-prvsnr/$cortx_prvsnr_preq/cli/src/cortx_prep.sh
            
-                mkdir -p $integration_dir/$release_tag/prod/
+                mkdir $integration_dir/$release_tag/prod 
+
+                cp -r $integration_dir/$release_tag/cortx_build_temp/dev $integration_dir/$release_tag/dev
+                ln -s $cortx_os_iso $integration_dir/$release_tag/prod/$(basename $cortx_os_iso)
+                
 				cp cortx-$version-$BUILD_NUMBER-single.iso $integration_dir/$release_tag/prod/
 				cp cortx-$version-$BUILD_NUMBER.iso $integration_dir/$release_tag/prod/
-				
-				ls $cortx_build_dir/$release_tag/3rd_party/THIRD_PARTY_RELEASE.INFO
-				ls $cortx_build_dir/$release_tag/cortx_iso/RELEASE.INFO
 				
 				cp $cortx_build_dir/$release_tag/3rd_party/THIRD_PARTY_RELEASE.INFO $integration_dir/$release_tag/prod/
 				cp $cortx_build_dir/$release_tag/cortx_iso/RELEASE.INFO $integration_dir/$release_tag/prod
 				sed -i '/BUILD/d' $cortx_build_dir/$release_tag/3rd_party/THIRD_PARTY_RELEASE.INFO
 
                 mv $cortx_build_dir/$release_tag/ $cortx_build_dir/$release_tag-to-be-deleted
+                mv $integration_dir/$release_tag/cortx_build_temp $integration_dir/$release_tag/cortx_build_temp-to-be-deleted
 		        '''
 		    }
 		}
