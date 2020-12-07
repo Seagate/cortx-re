@@ -158,7 +158,7 @@ pipeline {
 			}
 		}	
 
-        stage('Release cortx_build'){
+        stage('Release cortx_build') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Release cortx_build', script: '''
@@ -206,7 +206,7 @@ pipeline {
 				
 		stage ('Generate ISO Image') {
 		    steps {
-		        sh label: 'Generate ISO Image',script:'''
+		        sh label: 'Generate ISO Image', script:'''
 		        rpm -q genisoimage || yum install genisoimage -y
 
                 mkdir $integration_dir/$release_tag/prod && pushd $integration_dir/$release_tag/prod
