@@ -7,22 +7,22 @@ pipeline {
 	}
 	
     environment {
-		version="1.0.0"
+		version = "1.0.0"
 		thrid_party_version = "1.0.0-1"
-		os_version="centos-7.8.2003"
-		branch="stable"
-        release_dir="/mnt/bigstorage/releases/cortx"
-        integration_dir="$release_dir/github/$branch/$os_version"
-        components_dir="$release_dir/components/github/$branch/$os_version"
-        release_tag="$BUILD_NUMBER"
+		os_version = "centos-7.8.2003"
+		branch = "stable"
+        release_dir = "/mnt/bigstorage/releases/cortx"
+        integration_dir = "$release_dir/github/$branch/$os_version"
+        components_dir = "$release_dir/components/github/$branch/$os_version"
+        release_tag = "$BUILD_NUMBER"
         BUILD_TO_DELETE=""
         passphrase = credentials('rpm-sign-passphrase')
         token = credentials('shailesh-github-token')
-        ARTIFACT_LOCATION="http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version"
-		thrid_party_dir="$release_dir/third-party-deps/centos/centos-7.8.2003-$thrid_party_version/"
-		python_deps="/mnt/bigstorage/releases/cortx/third-party-deps/python-packages"
-        cortx_os_iso="/mnt/bigstorage/releases/cortx_builds/custom-os-iso/cortx-os-1.0.0-23.iso"
-		cortx_build_dir="$release_dir/github/$branch/$os_version/cortx_builds"
+        ARTIFACT_LOCATION = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version"
+		thrid_party_dir = "$release_dir/third-party-deps/centos/centos-7.8.2003-$thrid_party_version/"
+		python_deps = "/mnt/bigstorage/releases/cortx/third-party-deps/python-packages"
+        cortx_os_iso = "/mnt/bigstorage/releases/cortx_builds/custom-os-iso/cortx-os-1.0.0-23.iso"
+		cortx_build_dir = "$release_dir/github/$branch/$os_version/cortx_builds"
     }
 	
 	options {
@@ -36,7 +36,7 @@ pipeline {
 	
 		stage('Install Dependecies') {
 			steps {
-                script { build_stage=env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
                 sh label: 'Installed Dependecies', script: '''
                     yum install -y expect rpm-sign rng-tools genisoimage python3-pip
 					pip3 install githubrelease
@@ -47,7 +47,7 @@ pipeline {
 			
 		stage ('Collect Component RPMS') {
 			steps {
-                script { build_stage=env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
                 sh label: 'Copy RPMS', script:'''
                     for env in "dev" "prod";
                     do
@@ -73,7 +73,7 @@ pipeline {
 
         stage('RPM Validation') {
 			steps {
-                script { build_stage=env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
 				sh label: 'Validate RPMS for Motr Dependency', script:'''
                 for env in "dev" "prod";
                 do
@@ -107,7 +107,7 @@ pipeline {
 		
 		stage ('Sign rpm') {
 			steps {
-                script { build_stage=env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
                 
                 checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
                 
@@ -142,7 +142,7 @@ pipeline {
 		
 		stage ('Repo Creation') {
 			steps {
-                script { build_stage=env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
         
                 sh label: 'Repo Creation', script: '''
 
@@ -160,7 +160,7 @@ pipeline {
 
         stage('Release cortx_build'){
             steps {
-                script { build_stage=env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
                 sh label: 'Release cortx_build', script: '''
 					mkdir -p $cortx_build_dir
 					pushd $cortx_build_dir
@@ -177,7 +177,7 @@ pipeline {
 		
 		stage ('Build Release Info') {
 			steps {
-                script { build_stage=env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
                 sh label: 'Build Release Info', script: """
 				    pushd scripts/release_support
                         sh build_release_info.sh $integration_dir/$release_tag/cortx_build_temp/dev
@@ -215,7 +215,7 @@ pipeline {
 				                
                 cortx_prvsnr_preq=$(ls "$cortx_build_dir/$release_tag/cortx_iso" | grep "python36-cortx-prvsnr" | cut -d- -f5 | cut -d_ -f2 | cut -d. -f1 | sed s/"git"//)
                 
-                wget -O $cortx_build_dir/$release_tag/iso/cortx-prep-$version-$BUILD_NUMBER.sh https://raw.githubusercontent.com/Seagate/cortx-prvsnr/$cortx_prvsnr_preq/cli/src/cortx_prep.sh
+                wget -O $integration_dir/$release_tag/prod/cortx-prep-$version-$BUILD_NUMBER.sh https://raw.githubusercontent.com/Seagate/cortx-prvsnr/$cortx_prvsnr_preq/cli/src/cortx_prep.sh
            
                 mkdir $integration_dir/$release_tag/prod 
 
@@ -238,7 +238,7 @@ pipeline {
         		
 		stage ('Tag last_successful') {
 			steps {
-                script { build_stage=env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
                 sh label: 'Tag last_successful', script: '''
                     pushd $integration_dir
                     test -L last_successful && rm -f last_successful
