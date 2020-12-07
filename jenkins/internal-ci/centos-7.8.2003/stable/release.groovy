@@ -15,7 +15,7 @@ pipeline {
         integration_dir = "$release_dir/github/$branch/$os_version"
         components_dir = "$release_dir/components/github/$branch/$os_version"
         release_tag = "$BUILD_NUMBER"
-        BUILD_TO_DELETE=""
+        BUILD_TO_DELETE = ""
         passphrase = credentials('rpm-sign-passphrase')
         token = credentials('shailesh-github-token')
         ARTIFACT_LOCATION = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version"
@@ -208,23 +208,22 @@ pipeline {
 		    steps {
 		        sh label: 'Generate ISO Image',script:'''
 		        rpm -q genisoimage || yum install genisoimage -y
-               
-				genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -publisher Seagate -o cortx-$version-$BUILD_NUMBER.iso $integration_dir/$release_tag/cortx_build_temp/prod
-				
-				genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -publisher Seagate -o cortx-$version-$BUILD_NUMBER-single.iso $cortx_build_dir/$release_tag
-				                
-                cortx_prvsnr_preq=$(ls "$cortx_build_dir/$release_tag/cortx_iso" | grep "python36-cortx-prvsnr" | cut -d- -f5 | cut -d_ -f2 | cut -d. -f1 | sed s/"git"//)
-                
-                wget -O $integration_dir/$release_tag/prod/cortx-prep-$version-$BUILD_NUMBER.sh https://raw.githubusercontent.com/Seagate/cortx-prvsnr/$cortx_prvsnr_preq/cli/src/cortx_prep.sh
-           
-                mkdir $integration_dir/$release_tag/prod 
 
+                mkdir $integration_dir/$release_tag/prod && pushd $integration_dir/$release_tag/prod
+               
+                    genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -publisher Seagate -o cortx-$version-$BUILD_NUMBER.iso $integration_dir/$release_tag/cortx_build_temp/prod
+                    
+                    genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -publisher Seagate -o cortx-$version-$BUILD_NUMBER-single.iso $cortx_build_dir/$release_tag
+                                    
+                    cortx_prvsnr_preq=$(ls "$cortx_build_dir/$release_tag/cortx_iso" | grep "python36-cortx-prvsnr" | cut -d- -f5 | cut -d_ -f2 | cut -d. -f1 | sed s/"git"//)
+                    
+                    wget -O cortx-prep-$version-$BUILD_NUMBER.sh https://raw.githubusercontent.com/Seagate/cortx-prvsnr/$cortx_prvsnr_preq/cli/src/cortx_prep.sh
+
+                popd
+                           
                 cp -r $integration_dir/$release_tag/cortx_build_temp/dev $integration_dir/$release_tag/dev
                 ln -s $cortx_os_iso $integration_dir/$release_tag/prod/$(basename $cortx_os_iso)
-                
-				cp cortx-$version-$BUILD_NUMBER-single.iso $integration_dir/$release_tag/prod/
-				cp cortx-$version-$BUILD_NUMBER.iso $integration_dir/$release_tag/prod/
-				
+                				
 				cp $cortx_build_dir/$release_tag/3rd_party/THIRD_PARTY_RELEASE.INFO $integration_dir/$release_tag/
 				cp $cortx_build_dir/$release_tag/cortx_iso/RELEASE.INFO $integration_dir/$release_tag/
 				sed -i '/BUILD/d' $cortx_build_dir/$release_tag/3rd_party/THIRD_PARTY_RELEASE.INFO
