@@ -11,7 +11,7 @@ pipeline {
 	stages {
 		stage ('CheckMount') {
 		    steps {
-				sh label:'CheckMount',script:'''#!/bin/bash
+				sh label: 'CheckMount', script: '''#!/bin/bash
 		        	mount="cortx-storage.colo.seagate.com:/mnt/data1/releases"
 				if grep -qs "$mount" /proc/mounts;then
 				echo "cortx-storage.colo.seagate.com:/mnt/data1/releases is mounted."
@@ -30,7 +30,7 @@ pipeline {
 		
 		stage ('Threshold alert') {
 					steps {
-						sh label:'Threshold alert',script:'''#!/bin/bash
+						sh label: 'Threshold alert', script: '''#!/bin/bash
 						CURRENT=$(df -h | grep /mnt/data1/releases | awk '{print $5}' | sed 's/%//g')
 						THRESHOLD=75
 						if [ "$CURRENT" -gt "$THRESHOLD" ] ; then
