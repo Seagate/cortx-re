@@ -11,7 +11,6 @@ pipeline {
 	stages {
 		stage ('CheckMount') {
 		    steps {
-				
 				sh label:'CheckMount',script:'''#!/bin/bash
 		        	mount="cortx-storage.colo.seagate.com:/mnt/data1/releases"
 				if grep -qs "$mount" /proc/mounts;then
@@ -31,7 +30,6 @@ pipeline {
 		
 		stage ('Threshold alert') {
 					steps {
-				
 						sh label:'Threshold alert',script:'''#!/bin/bash
 						CURRENT=$(df -h | grep /mnt/data1/releases | awk '{print $5}' | sed 's/%//g')
 						THRESHOLD=75
@@ -41,7 +39,6 @@ pipeline {
 						fpath=/mnt/data1/releases
 						find $fpath -type f -mtime +30  -exec ls -ltr {} + > /mnt/data1/releases/file.out
 						count=$(cat /mnt/data1/releases/file.out | wc -l)
-						
 							if [ "$prev_count" -lt "$count" ] ; then
 							MESSAGE="/mnt/data1/releases/file1.out"
 							TO="balaji.ramachandran@seagate.com"
@@ -54,7 +51,6 @@ pipeline {
 							#mailx -s "$SUBJECT" "$TO" < $MESSAGE
 							cat $MESSAGE
 							rm $MESSAGE /mnt/data1/releases/file.out
-				
 							fi
 						fi
 					'''
@@ -74,6 +70,4 @@ pipeline {
 			}
 		}
 	}
-    
 }
-	
