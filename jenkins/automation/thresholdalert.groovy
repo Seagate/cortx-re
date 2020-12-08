@@ -9,12 +9,12 @@ pipeline {
         cron('H/5 * * * *')
     }
 	stages {
-		stage ('Check Mount') {
+		stage ('CheckMount') {
 		    steps {
 				
-				sh label:'Check Mount',script:'''#!/bin/bash
+				sh label:'CheckMount',script:'''#!/bin/bash
 		        	mount="cortx-storage.colo.seagate.com:/mnt/data1/releases"
-				if grep -qs "$mount" /proc/mounts; then
+				if grep -qs "$mount" /proc/mounts;then
 				echo "cortx-storage.colo.seagate.com:/mnt/data1/releases is mounted."
 				else
 				echo "cortx-storage.colo.seagate.com:/mnt/data1/releases is not mounted."
@@ -33,7 +33,7 @@ pipeline {
 					steps {
 				
 						sh label:'Threshold alert',script:'''#!/bin/bash
-						CURRENT=$(df -h | grep /mnt/data1/releases | awk '{ print $5}' | sed 's/%//g')
+						CURRENT=$(df -h | grep /mnt/data1/releases | awk '{print $5}' | sed 's/%//g')
 						THRESHOLD=75
 						if [ "$CURRENT" -gt "$THRESHOLD" ] ; then
 						echo Your /mnt/data1/releases partition remaining free space is critically low. Used: $CURRENT%. Threshold: $THRESHOLD%  So, 30 days older files will be deleted $(date)
