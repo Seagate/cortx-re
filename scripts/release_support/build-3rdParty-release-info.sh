@@ -19,19 +19,37 @@
 #
 
 BUILD_LOCATION=$1
-EXCLUDE_PACKAGES="cortx-motr-devel\|cortx-motr-tests-ut\|cortx-libsspl_sec-devel\|cortx-libsspl_sec-method_pki\|cortx-prvsnr-cli\|cortx-sspl-cli\|cortx-s3iamcli-devel"
+
+if [ -z "$BUILD_LOCATION" ]; then
+echo "Build location is empty. exiting.."
+exit 1
+fi
+
 echo -e "Generating RELEASE.INFO file"
-pushd "$BUILD_LOCATION" || exit
-cat <<EOF > RELEASE.INFO
+pushd "$BUILD_LOCATION"
+#find . -type f -name *.rpm | awk -F '/' '{print $NF}' | awk '{ print "    - \""$1"\""}'
+
+cat <<EOF > THIRD_PARTY_RELEASE.INFO
 ---
 NAME: "CORTX"
 VERSION: "1.0.0"
 BUILD: $(echo "$BUILD_NUMBER" | sed -e 's/^/\"/g' -e 's/$/\"/g')
 OS: $(cat /etc/redhat-release | sed -e 's/ $//g' -e 's/^/\"/g' -e 's/$/\"/g')
 DATETIME: $(date +"%d-%b-%Y %H:%M %Z" | sed -e 's/^/\"/g' -e 's/$/\"/g')
-KERNEL: $(ls cortx-motr-[0-9]*.rpm | sed -e  's/.*3/3/g' -e 's/.x86_64.rpm//g' -e 's/^/\"/g' -e 's/$/\"/g')
-COMPONENTS:
-$(ls -1 ./*.rpm | sed 's/\.\///g' | grep -v "$EXCLUDE_PACKAGES" |  awk '{ print "    - \""$1"\""}')
+THIRD_PARTY_VERSION: $(readlink -f "$BUILD_LOCATION" | awk -F '/' '{print $NF}' | sed -e 's/^/\"/g' -e 's/$/\"/g')
+THIRD_PARTY_COMPONENTS:
 EOF
-popd || exit
+popd
+
+
+pushd "$BUILD_LOCATION"
+for dir in $(ls -1 | grep -E -v "repodata|THIRD_PARTY_RELEASE.INFO")
+do
+echo "Adding rpms from $dir"
+cat <<EOF >> THIRD_PARTY_RELEASE.INFO
+    "$dir":
+$(find -L ./"$dir" -type f -not -path "./lustre/custom/tcp/*" -name '*.rpm' -or -name '*.tar.xz' | awk -F '/' '{print $NF}' | awk '{ print "       - \""$1"\""}')
+EOF
+done
+popd
 
