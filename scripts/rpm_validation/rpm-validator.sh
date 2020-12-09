@@ -19,7 +19,7 @@
 #
 
 # Constants
-RPM_LOCATION="http://cortx-storage.colo.seagate.com/releases/cortx/github/cortx-1.0/rhel-7.7.1908"
+RPM_LOCATION="http://cortx-storage.colo.seagate.com/releases/cortx/github/cortx-1.0/centos-7.8.2003"
 
 # Validation Params
 RPM_VERSION_EXPECTED="1.0.0"
