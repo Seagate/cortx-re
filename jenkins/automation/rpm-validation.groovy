@@ -1,7 +1,7 @@
 pipeline {
     agent {
         node {
-            label 'docker-rhel7.7-mero-github-node'
+            label 'docker-cp-centos-7.8.2003-node '
         }
     }
     
