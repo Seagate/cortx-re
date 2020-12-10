@@ -14,12 +14,12 @@ pipeline {
     }
 	
 	environment {      
-        env="dev"
-		component="cortx-utils"
-        os_version="centos-7.8.2003"
-        pipeline_group="main"
-        release_dir="/mnt/bigstorage/releases/cortx"
-        build_upload_dir="${release_dir}/components/github/${pipeline_group}/${os_version}/${env}/${component}"
+        env = "dev"
+		component = "cortx-utils"
+        os_version = "centos-7.8.2003"
+        pipeline_group = "main"
+        release_dir = "/mnt/bigstorage/releases/cortx"
+        build_upload_dir = "${release_dir}/components/github/${pipeline_group}/${os_version}/${env}/${component}"
 
         // Param hack for initial config
         branch="${branch != null ? branch : 'main'}"
@@ -59,18 +59,20 @@ pipeline {
         
         stage ('Upload') {
             steps {
-                script { build_stage=env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
                 sh label: 'Copy RPMS', script: '''
                     mkdir -p $build_upload_dir/$BUILD_NUMBER
 					cp ./py-utils/dist/*.rpm $build_upload_dir/$BUILD_NUMBER
 					cp ./statsd-utils/dist/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir/$BUILD_NUMBER
                 '''
-                sh label: 'Repo Creation', script: '''pushd $build_upload_dir/$BUILD_NUMBER
+                sh label: 'Repo Creation', script: '''
+                    pushd $build_upload_dir/$BUILD_NUMBER
                     rpm -qi createrepo || yum install -y createrepo
                     createrepo .
                     popd
                 '''
-                 sh label: 'Tag last_successful', script: '''pushd $build_upload_dir/
+                 sh label: 'Tag last_successful', script: '''
+                    pushd $build_upload_dir/
                     test -L $build_upload_dir/last_successful && rm -f last_successful
                     ln -s $build_upload_dir/$BUILD_NUMBER last_successful
                     popd
@@ -80,7 +82,7 @@ pipeline {
 
         stage ('Tag last_successful') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh label: 'Tag last_successful', script: '''pushd $build_upload_dir/
                     test -L $build_upload_dir/last_successful && rm -f last_successful
                     ln -s $build_upload_dir/$BUILD_NUMBER last_successful
