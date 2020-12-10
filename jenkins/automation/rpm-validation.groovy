@@ -1,7 +1,7 @@
 pipeline {
     agent {
         node {
-            label 'docker-motr-centos-7.8.2003-node'
+            label 'automation-node-centos'
         }
     }
     
