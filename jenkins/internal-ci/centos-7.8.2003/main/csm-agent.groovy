@@ -83,13 +83,7 @@ pipeline {
                     createrepo .
                     popd
                 '''
-                 sh label: 'Tag last_successful', script: '''
-                    pushd $build_upload_dir/
-                    test -d $build_upload_dir/last_successful && rm -f last_successful
-                    ln -s $build_upload_dir/$BUILD_NUMBER last_successful
-                    popd
-                '''
-            }
+             }
         }
 
         stage ('Tag last_successful') {
@@ -97,7 +91,7 @@ pipeline {
 				script { build_stage = env.STAGE_NAME }
 				sh label: 'Tag last_successful', script: '''
                     pushd $build_upload_dir/
-                    test -d $build_upload_dir/last_successful && rm -f last_successful
+                    test -L $build_upload_dir/last_successful && rm -f last_successful
                     ln -s $build_upload_dir/$BUILD_NUMBER last_successful
                     popd
                 '''
@@ -111,7 +105,7 @@ pipeline {
 				script {
                 	def releaseBuild = build job: 'Main Release', propagate: true, parameters: [string(name: 'release_component', value: "${component}"), string(name: 'release_build', value: "${BUILD_NUMBER}")]
 				 	env.release_build = "${BUILD_NUMBER}"
-                    env.release_build_location =" http://cortx-storage.colo.seagate.com/releases/cortx/github/$pipeline_group/$os_version/${component}_${BUILD_NUMBER}"
+                    env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$pipeline_group/$os_version/${component}_${BUILD_NUMBER}"
 				}
             }
         } 
@@ -119,7 +113,7 @@ pipeline {
 
 	post {
 		always {
-			script{
+			script {
             	
 				echo 'Cleanup Workspace.'
 				deleteDir() /* clean up our workspace */
