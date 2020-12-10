@@ -9,7 +9,6 @@ pipeline {
         pollSCM 'H/5 * * * *'
     }
 
-    
 	environment {      
         env="dev"
 		component="cortx-utils"
