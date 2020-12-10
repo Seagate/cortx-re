@@ -4,6 +4,11 @@ pipeline {
 			label 'docker-cp-centos-7.8.2003-node'
 		}
 	}
+
+    triggers {
+        pollSCM 'H/5 * * * *'
+    }
+
     
 	environment {      
         env="dev"

@@ -5,6 +5,10 @@ pipeline {
 		}
 	}
     
+    triggers {
+        pollSCM '*/5 * * * *'
+    }
+
     parameters {
         string(name: 'branch', defaultValue: 'main', description: 'Branch Name')
     }
