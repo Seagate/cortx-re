@@ -11,7 +11,7 @@ pipeline {
 	
 	environment {      
         env="dev"
-		component="csm-agent"
+		component="cortx-utils"
         os_version="centos-7.8.2003"
         pipeline_group="main"
         release_dir="/mnt/bigstorage/releases/cortx"
@@ -43,8 +43,6 @@ pipeline {
 			steps {
 				sh label: 'Build', script: '''
 				yum install python36-devel -y
-				[[ $(readlink /usr/bin/python) == *python2* ]] && $(rm -rf /usr/bin/python; ln -s /usr/bin/python3 /usr/bin/python) || echo "Python version is $(python --version)"
-				
 				pushd py-utils
 				python3 setup.py bdist_rpm --post-install utils-post-install --pre-uninstall utils-pre-uninstall --release="${BUILD_NUMBER}_$(git rev-parse --short HEAD)"
 				popd
