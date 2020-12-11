@@ -24,7 +24,6 @@ pipeline {
 	        integration_dir = "$release_dir/github/$pipeline_group/$os_version"
 	        components_dir = "$release_dir/components/github/$pipeline_group/$os_version"
 	        release_tag = "$BUILD_NUMBER"
-		pipeline_group_iso = "cortx-1.0"
         	BUILD_TO_DELETE = ""
 	        premerge_component_dir = "$release_dir/components/github/$pipeline_group/$os_version/$env"
         	master_component_dir = "$release_dir/components/github/stable/centos-7.8.2003/$env"
@@ -255,7 +254,7 @@ pipeline {
 		        sh label: 'Generate ISO Image', script:'''
 		        rpm -q genisoimage || yum install genisoimage -y
         	        mkdir $integration_dir/$release_name/prod && pushd $integration_dir/$release_name/prod
-				genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -publisher Seagate -o $pipeline_group_iso-$BUILD_NUMBER.iso $integration_dir/$release_name/cortx_build_temp/prod
+				genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -publisher Seagate -o cortx-$version-$BUILD_NUMBER.iso $integration_dir/$release_name/cortx_build_temp/prod
 				
 				genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -publisher Seagate -o cortx-$version-$BUILD_NUMBER-single.iso $cortx_build_dir/$release_name
 				
