@@ -13,32 +13,33 @@ pipeline {
 	
 	environment {
 
-        	version="1.0.0"
+        	version = "1.0.0"
 		thrid_party_version = "1.0.0-1"
-	        release_component="${release_component != null ? release_component : 'dry_run'}"
-        	release_build="${release_build != null ? release_build : BUILD_NUMBER}"
-	        env="dev"
-        	pipeline_group="main"
-	        os_version="centos-7.8.2003"
-        	release_dir="/mnt/bigstorage/releases/cortx"
-	        integration_dir="$release_dir/github/$pipeline_group/$os_version"
-	        components_dir="$release_dir/components/github/$pipeline_group/$os_version"
-	        release_tag="$BUILD_NUMBER"
-        	BUILD_TO_DELETE=""
-	        premerge_component_dir="$release_dir/components/github/$pipeline_group/$os_version/$env"
-        	master_component_dir="$release_dir/components/github/stable/centos-7.8.2003/$env"
+	        release_component = "${release_component != null ? release_component : 'dry_run'}"
+        	release_build = "${release_build != null ? release_build : BUILD_NUMBER}"
+	        env = "dev"
+        	pipeline_group = "main"
+	        os_version = "centos-7.8.2003"
+        	release_dir = "/mnt/bigstorage/releases/cortx"
+	        integration_dir = "$release_dir/github/$pipeline_group/$os_version"
+	        components_dir = "$release_dir/components/github/$pipeline_group/$os_version"
+	        release_tag = "$BUILD_NUMBER"
+		pipeline_group_iso = "cortx-1.0"
+        	BUILD_TO_DELETE = ""
+	        premerge_component_dir = "$release_dir/components/github/$pipeline_group/$os_version/$env"
+        	master_component_dir = "$release_dir/components/github/stable/centos-7.8.2003/$env"
         
-	        release_name="${release_component}_${release_build}"
+	        release_name = "${release_component}_${release_build}"
         	passphrase = credentials('rpm-sign-passphrase')
         
 	        token = credentials('shailesh-github-token')
         	// Used in Changelog generation
-	        ARTIFACT_LOCATION="http://cortx-storage.colo.seagate.com/releases/cortx/github/$pipeline_group/centos-7.8.2003"
-		githubrelease_repo="Seagate/cortx"
-        	thrid_party_dir="$release_dir/third-party-deps/centos/centos-7.8.2003-$thrid_party_version/"
-		python_deps="/mnt/bigstorage/releases/cortx/third-party-deps/python-packages"
-	        cortx_os_iso="/mnt/bigstorage/releases/cortx_builds/custom-os-iso/cortx-os-1.0.0-23.iso"
-		iso_location="$release_dir/github/$pipeline_group/iso/$os_version"
+	        ARTIFACT_LOCATION = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$pipeline_group/centos-7.8.2003"
+		githubrelease_repo = "Seagate/cortx"
+        	thrid_party_dir = "$release_dir/third-party-deps/centos/centos-7.8.2003-$thrid_party_version/"
+		python_deps = "/mnt/bigstorage/releases/cortx/third-party-deps/python-packages"
+	        cortx_os_iso = "/mnt/bigstorage/releases/cortx_builds/custom-os-iso/cortx-os-1.0.0-23.iso"
+		iso_location = "$release_dir/github/$pipeline_group/iso/$os_version"
 		cortx_build_dir = "$release_dir/github/$pipeline_group/$os_version/cortx_builds"
     	}
 	
@@ -52,7 +53,7 @@ pipeline {
 
         	stage('Install Dependecies') {
 			steps {
-                	script { build_stage=env.STAGE_NAME }
+                	script { build_stage = env.STAGE_NAME }
 	                sh label: 'Installed Dependecies', script: '''
         	            yum install -y expect rpm-sign rng-tools genisoimage python3-pip
 			    pip3 install githubrelease
@@ -63,14 +64,14 @@ pipeline {
         
 	        stage('Checkout Release scripts') {
 			steps {
-        	        script { build_stage=env.STAGE_NAME }
+        	        script { build_stage = env.STAGE_NAME }
                 		checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
 			}
 		}
 
 	        stage ('Integrate Component RPM') {
 			steps {
-        	        script { build_stage=env.STAGE_NAME }
+        	        script { build_stage = env.STAGE_NAME }
                 	sh label: 'Copy RPMS', script:'''
 	                    # Create Release Dir
         	            test -d $integration_dir/$release_name && rm -rf $integration_dir/$release_name   
@@ -118,7 +119,7 @@ pipeline {
 
 	        stage('RPM Validation') {
 			steps {
-        	        script { build_stage=env.STAGE_NAME }
+        	        script { build_stage = env.STAGE_NAME }
 				sh label: 'Validate RPMS for Motr Dependency', script:''' 
                 		    for env in "dev" "prod";
 		                    do
@@ -154,7 +155,7 @@ pipeline {
 
 		stage ('Sign rpm') {
 			steps {
-                	script { build_stage=env.STAGE_NAME }
+                	script { build_stage = env.STAGE_NAME }
 
 	                sh label: 'Preparation', script: '''
         	            pushd scripts/rpm-signing
@@ -187,7 +188,7 @@ pipeline {
 
 	        stage ('Host RRPM (Create Repo)') {
 			steps {
-        	        script { build_stage=env.STAGE_NAME }
+        	        script { build_stage = env.STAGE_NAME }
                 	sh label: 'Repo Creation', script: '''
 	                    pushd $integration_dir/$release_name/cortx_build_temp/dev
         	            rpm -qi createrepo || yum install -y createrepo
@@ -202,9 +203,9 @@ pipeline {
 		}
 
         
-	        stage('Release cortx_build'){
+	        stage ('Release cortx_build') {
         	    steps {
-                	script { build_stage=env.STAGE_NAME }
+                	script { build_stage = env.STAGE_NAME }
 	                sh label: 'Release cortx_build', script: '''
 				mkdir -p $cortx_build_dir
 	                        pushd $cortx_build_dir
@@ -221,7 +222,7 @@ pipeline {
 
 		stage ('Build RELEASE.INFO') {
 			steps {
-                	script { build_stage=env.STAGE_NAME }
+                	script { build_stage = env.STAGE_NAME }
 	                sh label: 'Build MANIFEST', script: """
                     
         	            pushd scripts/release_support
@@ -251,10 +252,10 @@ pipeline {
 		
 	        stage ('Generate ISO Image') {
 		    steps {
-		        sh label: 'Generate ISO Image',script:'''
+		        sh label: 'Generate ISO Image', script:'''
 		        rpm -q genisoimage || yum install genisoimage -y
         	        mkdir $integration_dir/$release_name/prod && pushd $integration_dir/$release_name/prod
-				genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -publisher Seagate -o $pipeline_group-$BUILD_NUMBER.iso $integration_dir/$release_name/cortx_build_temp/prod
+				genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -publisher Seagate -o $pipeline_group_iso-$BUILD_NUMBER.iso $integration_dir/$release_name/cortx_build_temp/prod
 				
 				genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -publisher Seagate -o cortx-$version-$BUILD_NUMBER-single.iso $cortx_build_dir/$release_name
 				
@@ -278,7 +279,7 @@ pipeline {
 		}
 		stage ('Tag last_successful') {
 			steps {
-                	script { build_stage=env.STAGE_NAME }
+                	script { build_stage = env.STAGE_NAME }
 	                sh label: 'Tag last_successful', script: '''
 	                    pushd $integration_dir/
 	                    test -d $integration_dir/${release_component}_last_successful && rm -f ${release_component}_last_successful
@@ -293,7 +294,7 @@ pipeline {
         	stage ("Deploy") {
 	            when { expression { false } }
         	    steps {
-                	script { build_stage=env.STAGE_NAME }
+                	script { build_stage = env.STAGE_NAME }
 				script {
                 			build job: 'Release_Engineering/automated-vm-deployment', wait: false, propagate: false, parameters: [string(name: 'build', value: "${release_name}")]
              		}
