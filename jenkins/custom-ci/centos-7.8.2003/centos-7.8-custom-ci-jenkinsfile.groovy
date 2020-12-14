@@ -58,19 +58,19 @@ pipeline {
 			parallel {
 				stage ("Build Mero, Hare and S3Server") {
 					steps {
-						script { build_stage=env.STAGE_NAME }
+						script { build_stage = env.STAGE_NAME }
 						script {
 							try {
 								def motrbuild = build job: 'motr-custom-build', wait: true,
 										parameters: [
-                                                        				string(name: 'MOTR_URL', value: "${MOTR_URL}"),
-                                                        				string(name: 'MOTR_BRANCH', value: "${MOTR_BRANCH}"),
-                                                        				string(name: 'S3_URL', value: "${S3_URL}"),
-                                                        				string(name: 'S3_BRANCH', value: "${S3_BRANCH}"),
-                                                        				string(name: 'HARE_URL', value: "${HARE_URL}"),
-                                                        				string(name: 'HARE_BRANCH', value: "${HARE_BRANCH}")
-                                                				]
-							}catch (err){
+														string(name: 'MOTR_URL', value: "${MOTR_URL}"),
+														string(name: 'MOTR_BRANCH', value: "${MOTR_BRANCH}"),
+														string(name: 'S3_URL', value: "${S3_URL}"),
+														string(name: 'S3_BRANCH', value: "${S3_BRANCH}"),
+														string(name: 'HARE_URL', value: "${HARE_URL}"),
+														string(name: 'HARE_BRANCH', value: "${HARE_BRANCH}")
+                                            		]
+							} catch (err) {
 								build_stage=env.STAGE_NAME 			
 								error "Failed to Build Motr, Hare and S3Server"
 							}
@@ -80,7 +80,7 @@ pipeline {
 
 				stage ("Build Provisioner") {
 					steps {
-						script { build_stage=env.STAGE_NAME }
+						script { build_stage = env.STAGE_NAME }
                                                 script {
                                                         try {
 								def prvsnrbuild = build job: 'prvsnr-custom-build', wait: true,
@@ -88,7 +88,7 @@ pipeline {
 									          	string(name: 'PRVSNR_URL', value: "${PRVSNR_URL}"),
 											string(name: 'PRVSNR_BRANCH', value: "${PRVSNR_BRANCH}")
 							        	          ]
-							}catch (err){
+							} catch (err) {
 								build_stage=env.STAGE_NAME
 								error "Failed to Build Provisioner"
 							}
@@ -98,7 +98,7 @@ pipeline {
 
 				stage ("Build HA") {
 					steps {
-						script { build_stage=env.STAGE_NAME }
+						script { build_stage = env.STAGE_NAME }
 						script {
 							try {					
 								sh label: 'Copy RPMS', script:'''
@@ -112,8 +112,8 @@ pipeline {
 									      	  string(name: 'HA_URL', value: "${HA_URL}"),
 									      	  string(name: 'HA_BRANCH', value: "${HA_BRANCH}")
 									      ]
-							}catch (err){
-								build_stage=env.STAGE_NAME
+							} catch (err) {
+								build_stage = env.STAGE_NAME
 								error "Failed to Build HA"
 							}
 						}
@@ -122,16 +122,16 @@ pipeline {
 
 				stage ("Build CSM Agent") {
 					steps {
-						script { build_stage=env.STAGE_NAME }
+						script { build_stage = env.STAGE_NAME }
 						script {
 							try {
 								def csm_agent_build = build job: 'custom-csm-agent-build', wait: true,
 										      parameters: [
-										      	  string(name: 'CSM_AGENT_URL', value: "${CSM_AGENT_URL}"),
-						                                          string(name: 'CSM_AGENT_BRANCH', value: "${CSM_AGENT_BRANCH}")
+										      	  	string(name: 'CSM_AGENT_URL', value: "${CSM_AGENT_URL}"),
+						                        	string(name: 'CSM_AGENT_BRANCH', value: "${CSM_AGENT_BRANCH}")
 										      ]
-							}catch (err){
-								build_stage=env.STAGE_NAME
+							} catch (err) {
+								build_stage = env.STAGE_NAME
 								error "Failed to Build CSM Agent"
 							}
 						}                        
@@ -140,16 +140,16 @@ pipeline {
 					
 				stage ("Build CSM Web") {
 					steps {
-						script { build_stage=env.STAGE_NAME }	
+						script { build_stage = env.STAGE_NAME }	
 						script {
 							try {	
 								def csm_web_build = build job: 'custom-csm-web-build', wait: true,
 										    parameters: [
 										        string(name: 'CSM_WEB_URL', value: "${CSM_WEB_URL}"),
-											string(name: 'CSM_WEB_BRANCH', value: "${CSM_WEB_BRANCH}")
+												string(name: 'CSM_WEB_BRANCH', value: "${CSM_WEB_BRANCH}")
 										    ]
-							}catch (err){
-								build_stage=env.STAGE_NAME
+							} catch (err) {
+								build_stage = env.STAGE_NAME
 								error "Failed to Build CSM Web"
 							}
 						}
@@ -158,7 +158,7 @@ pipeline {
 
 				stage ("Build SSPL") {
 					steps {
-						script { build_stage=env.STAGE_NAME }
+						script { build_stage = env.STAGE_NAME }
 						script {
 							try {	
 								def ssplbuild = build job: 'sspl-custom-build', wait: true,
@@ -166,8 +166,8 @@ pipeline {
 											string(name: 'SSPL_URL', value: "${SSPL_URL}"),
 											string(name: 'SSPL_BRANCH', value: "${SSPL_BRANCH}")
 										]
-							}catch (err){
-								build_stage=env.STAGE_NAME
+							} catch (err) {
+								build_stage = env.STAGE_NAME
 								 error "Failed to Build SSPL"
 							}
 						}
@@ -191,21 +191,21 @@ pipeline {
 				script { build_stage = env.STAGE_NAME }
 				sh label: 'Copy RPMS', script:'''
 					if [ "$OTHER_COMPONENT_BRANCH" == "stable"  ]; then
-					RPM_COPY_PATH="/mnt/bigstorage/releases/cortx/components/github/stable/$os_version/dev/"
+						RPM_COPY_PATH="/mnt/bigstorage/releases/cortx/components/github/stable/$os_version/dev/"
 					elif [ "$OTHER_COMPONENT_BRANCH" == "main"  ]; then
-					RPM_COPY_PATH="/mnt/bigstorage/releases/cortx/components/github/main/$os_version/dev/"
+						RPM_COPY_PATH="/mnt/bigstorage/releases/cortx/components/github/main/$os_version/dev/"
 					elif [ "$OTHER_COMPONENT_BRANCH" == "Cortx-v1.0.0_Beta"  ]; then
-					RPM_COPY_PATH="/mnt/bigstorage/releases/cortx/components/github/Cortx-v1.0.0_Beta/$os_version/dev/"
+						RPM_COPY_PATH="/mnt/bigstorage/releases/cortx/components/github/Cortx-v1.0.0_Beta/$os_version/dev/"
 					elif [ "$OTHER_COMPONENT_BRANCH" == "cortx-1.0"  ]; then
-					RPM_COPY_PATH="/mnt/bigstorage/releases/cortx/components/github/cortx-1.0/$os_version/dev/"
+						RPM_COPY_PATH="/mnt/bigstorage/releases/cortx/components/github/cortx-1.0/$os_version/dev/"
 					else
-					RPM_COPY_PATH="/mnt/bigstorage/releases/cortx/components/github/custom-ci/release/$os_version/dev"
+						RPM_COPY_PATH="/mnt/bigstorage/releases/cortx/components/github/custom-ci/release/$os_version/dev"
 					fi
 
 					if [ "$CSM_BRANCH" == ""Cortx-v1.0.0_Beta"" ]; then
-					CUSTOM_COMPONENT_NAME="motr|s3server|hare|cortx-ha|provisioner|csm|sspl"
+						CUSTOM_COMPONENT_NAME="motr|s3server|hare|cortx-ha|provisioner|csm|sspl"
 					else
-					CUSTOM_COMPONENT_NAME="motr|s3server|hare|cortx-ha|provisioner|csm-agent|csm-web|sspl"
+						CUSTOM_COMPONENT_NAME="motr|s3server|hare|cortx-ha|provisioner|csm-agent|csm-web|sspl"
 					fi
 
 					for env in "dev" ;
