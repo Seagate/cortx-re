@@ -396,7 +396,10 @@ pipeline {
 	post {
 
 		success {
-				sh label: 'Delete Old Builds', script: 'find /mnt/bigstorage/releases/cortx/github/integration-custom-ci/release/centos-7.8.2003/* -maxdepth 0 -mtime +30 -type d -exec rm -rf {} \\;'
+				sh label: 'Delete Old Builds', script: '''
+				set +x
+				find /mnt/bigstorage/releases/cortx/github/integration-custom-ci/release/centos-7.8.2003/* -maxdepth 0 -mtime +30 -type d -exec rm -rf {} \\;
+				'''
 		}
 	
 		always {
