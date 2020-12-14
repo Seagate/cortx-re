@@ -89,7 +89,7 @@ pipeline {
 											string(name: 'PRVSNR_BRANCH', value: "${PRVSNR_BRANCH}")
 							        	          ]
 							} catch (err) {
-								build_stage=env.STAGE_NAME
+								build_stage = env.STAGE_NAME
 								error "Failed to Build Provisioner"
 							}
 						}
