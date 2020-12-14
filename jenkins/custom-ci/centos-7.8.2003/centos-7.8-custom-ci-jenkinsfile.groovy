@@ -71,7 +71,7 @@ pipeline {
 														string(name: 'HARE_BRANCH', value: "${HARE_BRANCH}")
                                             		]
 							} catch (err) {
-								build_stage=env.STAGE_NAME 			
+								build_stage = env.STAGE_NAME 			
 								error "Failed to Build Motr, Hare and S3Server"
 							}
 						}										
