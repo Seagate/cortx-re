@@ -31,7 +31,7 @@ ENV LANG=en_US.UTF-8 \
 #Disable default repositories. 
 RUN yum-config-manager --disable base,extras,updates
 
-#Add centos-7.7.1908 repository
+#Add centos-7.8.2003 repository
 COPY ./docker/opensource-ci/centos-7.8.2003/C7.8.2003.repo /etc/yum.repos.d/
 
 # enable EPEL and SCL repos
@@ -84,6 +84,7 @@ doxygen \
 dbus-devel \
 expect \
 rpm-sign \
+genisoimage \
 redhat-ls && yum clean all \
 && rm -rf /var/cache/yum
 
@@ -101,7 +102,7 @@ RUN localedef -i en_US -f UTF-8 en_US.UTF-8
 RUN rpmdev-setuptree
 
 # Copy scripts
-COPY ./docker/opensource-ci/centos-7.7.1908/*.sh /opt/
+COPY ./docker/opensource-ci/centos-7.8.2003/*.sh /opt/
 
 # install node
 RUN bash /opt/install-node.sh v12.13.0 \
@@ -131,7 +132,7 @@ RUN  cat /opt/rpm-signing/gpgoptions >>  ~/.rpmmacros && \
      rpm --import /opt/rpm-signing/RPM-GPG-KEY-Seagate
 
 # Makefile for build
-COPY ./docker/opensource-ci/centos-7.7.1908/Makefile . 
+COPY ./docker/opensource-ci/centos-7.8.2003/Makefile . 
 
 FROM base as lustre-rpm-builder
 
@@ -140,7 +141,7 @@ ARG LUSTRE_VERSION
 ADD  https://downloads.whamcloud.com/public/lustre/lustre-${LUSTRE_VERSION}/el7/client/SRPMS/lustre-${LUSTRE_VERSION}-1.src.rpm . 
 RUN rpm -i lustre-${LUSTRE_VERSION}-1.src.rpm 
 
-COPY ./docker/opensource-ci/centos-7.7.1908/lustre-2.9.0.spec.patch .
+COPY ./docker/opensource-ci/centos-7.8.2003/lustre-2.9.0.spec.patch .
 RUN patch -p1 -i lustre-2.9.0.spec.patch /root/rpmbuild/SPECS/lustre.spec
 
 RUN yum -y install kernel kernel-devel \

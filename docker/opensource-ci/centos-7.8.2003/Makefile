@@ -1,12 +1,14 @@
 SHELL := /bin/bash
 BUILD_ID = 0
-RPM_DIR = "/var/artifacts/${BUILD_ID}"
+RELASE_BUILD = "/var/artifacts/${BUILD_ID}"
+RPM_DIR = "/var/artifacts/${BUILD_ID}/cortx_iso"
+THIRD_PARTY_VERSION = "third-party-deps-1.0.0-2"
 
-build: io-path control-path _devops_build
+build: io-path control-path _release_build _iso_generation
 
-control-path: cortx-prvsnr cortx-monitor cortx-manager cortx-management-portal cortx-ha _devops_build
+control-path: cortx-prvsnr cortx-monitor cortx-manager cortx-management-portal cortx-ha _release_build _iso_generation
 
-io-path: cortx-motr cortx-s3server cortx-hare cortx-posix _devops_build
+io-path: cortx-motr cortx-s3server cortx-hare _release_build _iso_generation
 
 cortx-motr: _cortx-motr_prereq _cortx-motr_build
 
@@ -28,7 +30,7 @@ cortx-prvsnr: _prvsnr_prereq _prvsnr_build
 
 clean:
 	rm -rf "/root/rpmbuild/"
-	rm -rf ${RPM_DIR}
+	rm -rf ${RELASE_BUILD}
 	mkdir -p ${RPM_DIR}
 
 #***********************************************************************************
@@ -297,14 +299,23 @@ _ha_build:
 #		_devops_build - Setup yum repo, Generate RELEASE.INFO, gpg key sigining.
 #
 #***********************************************************************************
-_devops_build:
+_release_build:
 	@echo "***************  Generating Release Build *********************"
 
 	pushd ${RPM_DIR} && \
 		cp /opt/rpm-signing/RPM-GPG-KEY-Seagate . && \
 		for rpm in `ls -1 *.rpm`; do expect /opt/rpm-signing/rpm-sign.sh $$rpm; done && \
-		yum clean all;rm -rf /var/cache/yum && \
-		yum install createrepo -y && \
 		createrepo -v . && \
 	popd
+
+_iso_generation:
+	@echo "***************  Generating ISO file *********************"
+	
+	pushd ${RELASE_BUILD} && \
+		githubrelease --github-token $$GITHUB_TOKEN asset seagate/cortx-re download ${THIRD_PARTY_VERSION} && \
+		mkdir -p 3rd_party && tar -xvzf *.tar.gz -C 3rd_party  --strip-components=1 && 	rm -rf *.tar.gz && \
+		mkdir -p ${RELASE_BUILD}/iso && \
+		genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -publisher Seagate -o ${RELASE_BUILD}/iso/cortx-${BUILD_ID}-single.iso ${RELASE_BUILD} && \
+	popd
+
 
