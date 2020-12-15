@@ -41,6 +41,19 @@ pipeline {
 		
 	stages {	
 
+       stage ("Trigger CSM Web job") {
+            steps {
+				script {
+				        def CSM_WEB_HASH = sh(script: '''wget http://cortx-storage.colo.seagate.com/releases/cortx_builds/centos-7.8.2003/531/RELEASE.INFO && grep cortx-csm_web RELEASE.INFO | awk -F['_'] '{print $3}' |  cut -d. -f1''', returnStdout: true).trim()
+					
+						def csm_web_build = build job: 'csm-web-ova', wait: true,
+									parameters: [
+										string(name: 'CSM_WEB_BRANCH', value: "${CSM_WEB_HASH}")
+									]
+				}
+            }
+        }
+
         stage('Install Dependecies') {
 			steps {
                 script { build_stage=env.STAGE_NAME }
