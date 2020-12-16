@@ -37,7 +37,7 @@ pipeline {
 						echo Your /mnt/data1/releases partition remaining free space is critically low. Used: $CURRENT%. Threshold: $THRESHOLD%  So, 30 days older files will be deleted $(date)
 						prev_count=0
 						fpath=/mnt/data1/releases
-						find $fpath -type f -mtime +30  -exec ls -ltr {} + > /mnt/data1/releases/file.out
+						find $fpath -name '*.INFO*' -type f -mtime +30  -exec ls -ltr {} + > /mnt/data1/releases/file.out
 						count=$(cat /mnt/data1/releases/file.out | wc -l)
 							if [ "$prev_count" -lt "$count" ] ; then
 							MESSAGE="/mnt/data1/releases/file1.out"
@@ -65,7 +65,7 @@ pipeline {
 					mimeType: 'text/html',
 					subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
 					attachLog: true,
-					to: ('priyank.p.dalal@seagate.com,balaji.ramachandran@seagate.com,shailesh.vaidya@seagate.com,mukul.malhotra@seagate.com'),
+					to: 'balaji.ramachandran@seagate.com',
 					)
 			}
 		}
