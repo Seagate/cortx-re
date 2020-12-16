@@ -7,7 +7,7 @@ pipeline {
 	}
 	
     parameters {  
-		string(name: 'LDR_RELEASE_BUILD', defaultValue: 'stable', description: 'LDR Relase build.')
+		string(name: 'LDR_RELEASE_BUILD', defaultValue: 'http://cortx-storage.colo.seagate.com/releases/cortx_builds/centos-7.8.2003/531/', description: 'LDR Relase build URL.')
 	}	
 
     environment {
