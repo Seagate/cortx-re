@@ -40,7 +40,7 @@ pipeline {
 			steps {
 				script { build_stage=env.STAGE_NAME }
 				sh label: '', script: '''
-					yum install -y eos-py-utils cortx-prvsnr
+					yum install -y cortx-py-utils cortx-prvsnr
 					pip3.6 install  pyinstaller==3.5
 				'''
 			}

@@ -243,7 +243,7 @@ pipeline {
             script {
                 	
                 currentBuild.upstreamBuilds?.each { b -> env.upstream_project = "${b.getProjectName()}";env.upstream_build = "${b.getId()}" }
-                env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/${branch}/${os_version}/${env.release_tag}"
+                env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/opensource_builds/ova_builds/${os_version}/${env.release_tag}"
                 env.release_build = "${env.release_tag}"
                 env.build_stage = "${build_stage}"
 
