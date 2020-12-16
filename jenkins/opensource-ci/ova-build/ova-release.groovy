@@ -3,7 +3,6 @@ pipeline {
     agent {
 		node {
 			label 'docker-cp-centos-7.8.2003-node'
-			//label 'docker-rpm-sign-node-dev-rhel'
 		}
 	}
 	
@@ -22,8 +21,7 @@ pipeline {
         BUILD_TO_DELETE=""
         passphrase = credentials('rpm-sign-passphrase')
         token = credentials('shailesh-github-token')
-        // Used in Changelog generation
-        ARTIFACT_LOCATION="http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/centos-7.8.2003"
+        ARTIFACT_LOCATION="http://cortx-storage.colo.seagate.com/releases/opensource_builds/ova_builds/$os_version"
 		githubrelease_repo="Seagate/cortx"
         thrid_party_dir="$release_dir/third-party-deps/centos/centos-7.8.2003-$thrid_party_version/"
 		python_deps="/mnt/bigstorage/releases/cortx/third-party-deps/python-packages"
@@ -44,12 +42,12 @@ pipeline {
        stage ("Trigger CSM Web job") {
             steps {
 				script {
-				        def CSM_WEB_HASH = sh(script: '''wget $LDR_RELEASE_BUILD/RELEASE.INFO && grep cortx-csm_web RELEASE.INFO | awk -F['_'] '{print $3}' |  cut -d. -f1''', returnStdout: true).trim()
-					
-						def csm_web_build = build job: 'csm-web-ova', wait: true,
-									parameters: [
-										string(name: 'CSM_WEB_BRANCH', value: "${CSM_WEB_HASH}")
-									]
+                    def CSM_WEB_HASH = sh(script: '''wget $LDR_RELEASE_BUILD/RELEASE.INFO && grep cortx-csm_web RELEASE.INFO | awk -F['_'] '{print $3}' |  cut -d. -f1''', returnStdout: true).trim()
+                
+                    def csm_web_build = build job: 'csm-web-ova', wait: true,
+                    parameters: [
+                        string(name: 'CSM_WEB_BRANCH', value: "${CSM_WEB_HASH}")
+                    ]
 				}
             }
         }
@@ -70,14 +68,11 @@ pipeline {
 			steps {
                 script { build_stage=env.STAGE_NAME }
                 sh label: 'Copy RPMS', script:'''
-
                     LDR_BUID_PATH=$(sed \'s/http\\:\\/\\/cortx-storage.colo.seagate.com/\\/mnt\\/bigstorage/g\' <<< $LDR_RELEASE_BUILD)
-
                     mkdir -p $integration_dir/$release_tag/cortx_iso
                     shopt -s extglob
                     cp $LDR_BUID_PATH/cortx_iso/!(cortx-csm_web*).rpm $integration_dir/$release_tag/cortx_iso
                     cp $csm_web_dir/last_successful/*.rpm $integration_dir/$release_tag/cortx_iso
-                   
                 '''
 			}
 		}
