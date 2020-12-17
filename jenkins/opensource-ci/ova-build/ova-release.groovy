@@ -3,30 +3,31 @@ pipeline {
     agent {
 		node {
 			label 'docker-cp-centos-7.8.2003-node'
-			//label 'docker-rpm-sign-node-dev-rhel'
 		}
 	}
 	
+    parameters {  
+		string(name: 'LDR_RELEASE_BUILD', defaultValue: 'http://cortx-storage.colo.seagate.com/releases/cortx_builds/centos-7.8.2003/531/', description: 'LDR Relase build URL.')
+	}	
+
     environment {
 		version="1.0.0"
 		thrid_party_version = "1.0.0-1"
 		os_version="centos-7.8.2003"
 		branch="cortx-1.0"
         release_dir="/mnt/bigstorage/releases/cortx"
-        integration_dir="$release_dir/github/$branch/$os_version"
-        components_dir="$release_dir/components/github/$branch/$os_version"
-        release_tag="$BUILD_NUMBER"
+        integration_dir="/mnt/bigstorage/releases/opensource_builds/ova_builds/$os_version"
+        release_tag="ova-build-$BUILD_NUMBER"
         BUILD_TO_DELETE=""
         passphrase = credentials('rpm-sign-passphrase')
         token = credentials('shailesh-github-token')
-        // Used in Changelog generation
-        ARTIFACT_LOCATION="http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version"
+        ARTIFACT_LOCATION="http://cortx-storage.colo.seagate.com/releases/opensource_builds/ova_builds/$os_version"
 		githubrelease_repo="Seagate/cortx"
-        cortx_build_dir="/mnt/bigstorage/releases/cortx_builds/$os_version"
         thrid_party_dir="$release_dir/third-party-deps/centos/centos-7.8.2003-$thrid_party_version/"
 		python_deps="/mnt/bigstorage/releases/cortx/third-party-deps/python-packages"
         cortx_os_iso="/mnt/bigstorage/releases/cortx_builds/custom-os-iso/cortx-os-1.0.0-23.iso"
 		iso_location="$release_dir/github/$branch/iso/$os_version"
+        csm_web_dir="$release_dir/components/github/ova/$os_version/dev/csm-web/"
     }
 	
 	options {
@@ -37,8 +38,21 @@ pipeline {
 	}
 		
 	stages {	
-	
-		stage('Install Dependecies') {
+
+       stage ("Trigger CSM Web job") {
+            steps {
+				script {
+                    def CSM_WEB_HASH = sh(script: '''wget $LDR_RELEASE_BUILD/RELEASE.INFO && grep cortx-csm_web RELEASE.INFO | awk -F['_'] '{print $3}' |  cut -d. -f1''', returnStdout: true).trim()
+                
+                    def csm_web_build = build job: 'csm-web-ova', wait: true,
+                    parameters: [
+                        string(name: 'CSM_WEB_BRANCH', value: "${CSM_WEB_HASH}")
+                    ]
+				}
+            }
+        }
+
+        stage('Install Dependecies') {
 			steps {
                 script { build_stage=env.STAGE_NAME }
                 sh label: 'Installed Dependecies', script: '''
@@ -48,29 +62,17 @@ pipeline {
                 '''	
 			}
 		}
+
 			
 		stage ('Collect Component RPMS') {
 			steps {
                 script { build_stage=env.STAGE_NAME }
                 sh label: 'Copy RPMS', script:'''
-                    for env in "dev" "prod";
-                    do
-                        mkdir -p $integration_dir/$release_tag/$env
-                        pushd $components_dir/$env
-                        for component in  `ls -1 | grep -Evx 'cortx-extension'`
-                        do
-                            echo -e "Copying RPM's for $component"
-                            if ls $component/last_successful/*.rpm 1> /dev/null 2>&1; then
-                                cp $component/last_successful/*.rpm $integration_dir/$release_tag/$env
-                            fi
-                        done
-                        popd
-                    done
-                    cp -n -r $integration_dir/$release_tag/dev/* $integration_dir/$release_tag/prod/
-
-                    pushd $integration_dir/$release_tag/prod
-                        rm -f *-debuginfo-*.rpm
-                    popd
+                    LDR_BUID_PATH=$(sed \'s/http\\:\\/\\/cortx-storage.colo.seagate.com/\\/mnt\\/bigstorage/g\' <<< $LDR_RELEASE_BUILD)
+                    mkdir -p $integration_dir/$release_tag/cortx_iso
+                    shopt -s extglob
+                    cp $LDR_BUID_PATH/cortx_iso/!(cortx-csm_web*).rpm $integration_dir/$release_tag/cortx_iso
+                    cp $csm_web_dir/last_successful/*.rpm $integration_dir/$release_tag/cortx_iso
                 '''
 			}
 		}
@@ -79,12 +81,10 @@ pipeline {
 			steps {
                 script { build_stage=env.STAGE_NAME }
 				sh label: 'Validate RPMS for Motr Dependency', script:'''
-                for env in "dev" "prod";
-                do
                     set +x
                     echo "VALIDATING $env RPM'S................"
                     echo "-------------------------------------"
-                    pushd $integration_dir/$release_tag/$env
+                    pushd $integration_dir/$release_tag/cortx_iso
                     motr_rpm=$(ls -1 | grep "cortx-motr" | grep -E -v "cortx-motr-debuginfo|cortx-motr-devel|cortx-motr-tests")
                     motr_rpm_release=`rpm -qp ${motr_rpm} --qf '%{RELEASE}' | tr -d '\040\011\012\015'`
                     motr_rpm_version=`rpm -qp ${motr_rpm} --qf '%{VERSION}' | tr -d '\040\011\012\015'`
@@ -104,7 +104,6 @@ pipeline {
                             fi
                         fi
                     done
-                done
                 '''
 			}
 		}
@@ -113,7 +112,7 @@ pipeline {
 			steps {
                 script { build_stage=env.STAGE_NAME }
                 
-                checkout([$class: 'GitSCM', branches: [[name: 'cortx-1.0']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
+                checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
                 
                 sh label: 'Generate Key', script: '''
                     set +x
@@ -129,20 +128,13 @@ pipeline {
                 sh label: 'Sign RPM', script: '''
                     set +x
 					pushd scripts/rpm-signing
-                    chmod +x rpm-sign.sh
-                    cp RPM-GPG-KEY-Seagate $integration_dir/$release_tag/dev
-                    cp RPM-GPG-KEY-Seagate $integration_dir/$release_tag/prod
-
-                    for rpm in `ls -1 $integration_dir/$release_tag/dev/*.rpm`
-                    do
-                    ./rpm-sign.sh ${passphrase} $rpm
-                    done
-
-                    for rpm in `ls -1 $integration_dir/$release_tag/prod/*.rpm`
-                    do
-                    ./rpm-sign.sh ${passphrase} $rpm
-                    done
-					popd
+                        chmod +x rpm-sign.sh
+                        cp RPM-GPG-KEY-Seagate $integration_dir/$release_tag/cortx_iso
+                        for rpm in `ls -1 $integration_dir/$release_tag/cortx_iso/*.rpm`
+                        do
+                        ./rpm-sign.sh ${passphrase} $rpm
+                        done
+                	popd
                 '''
 			}
 		}
@@ -153,12 +145,7 @@ pipeline {
                 script { build_stage=env.STAGE_NAME }
         
                 sh label: 'Repo Creation', script: '''
-                    pushd $integration_dir/$release_tag/dev
-                    rpm -qi createrepo || yum install -y createrepo
-                    createrepo .
-                    popd
-
-                    pushd $integration_dir/$release_tag/prod
+                    pushd $integration_dir/$release_tag/cortx_iso
                     rpm -qi createrepo || yum install -y createrepo
                     createrepo .
                     popd
@@ -173,7 +160,7 @@ pipeline {
                 sh label: 'Tag last_successful', script: '''
                     pushd $integration_dir
                     test -d last_successful && rm -f last_successful
-                    ln -s $integration_dir/$release_tag/dev last_successful
+                    ln -s $integration_dir/$release_tag/ last_successful
                     popd
                 '''
 			}
@@ -183,13 +170,9 @@ pipeline {
             steps {
                 script { build_stage=env.STAGE_NAME }
                 sh label: 'Release cortx_build', script: '''
-					pushd $cortx_build_dir
-                        test -d $release_tag && rm -f $release_tag
-                        mkdir $release_tag && pushd $release_tag
-                            ln -s $integration_dir/$release_tag/prod cortx_iso
+					pushd $integration_dir/$release_tag
                             ln -s $thrid_party_dir 3rd_party
 							ln -s $python_deps python_deps
-                        popd
                     popd
                 '''
 			}
@@ -200,14 +183,13 @@ pipeline {
                 script { build_stage=env.STAGE_NAME }
                 sh label: 'Build Release Info', script: """
 				    pushd scripts/release_support
-                        sh build_release_info.sh $integration_dir/$release_tag/dev
-                        sh build_release_info.sh $integration_dir/$release_tag/prod
-						sh build-3rdParty-release-info.sh $cortx_build_dir/$release_tag/3rd_party
+                        sh build_release_info.sh $integration_dir/$release_tag/cortx_iso
+						sh build-3rdParty-release-info.sh $integration_dir/$release_tag/3rd_party
     					sh build_readme.sh $integration_dir/$release_tag
 					popd
 					
 					cp $integration_dir/$release_tag/README.txt .
-                    cp $integration_dir/$release_tag/dev/RELEASE.INFO .
+                    cp $integration_dir/$release_tag/cortx_iso/RELEASE.INFO .
 					
                 """
                 withCredentials([string(credentialsId: 'shailesh-github-token', variable: 'ACCESS_TOKEN')]) {
@@ -216,8 +198,7 @@ pipeline {
                             sh +x changelog.sh ${currentBuild.previousBuild.getNumber()} ${currentBuild.number} ${ARTIFACT_LOCATION} ${ACCESS_TOKEN}
 						popd
 						cp /root/git_build_checkin_stats/clone/git-build-checkin-report.txt CHANGESET.txt 
-                        cp CHANGESET.txt $integration_dir/$release_tag/dev
-                        cp CHANGESET.txt $integration_dir/$release_tag/prod
+                        cp CHANGESET.txt $integration_dir/$release_tag/cortx_iso
                     """
                 } 
 			}
@@ -230,25 +211,25 @@ pipeline {
 		        rpm -q genisoimage || yum install genisoimage -y
                 mkdir -p $iso_location
 		        pushd $iso_location
-					genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -publisher Seagate -o $branch-$BUILD_NUMBER.iso $integration_dir/$release_tag/prod
+					genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -publisher Seagate -o $branch-$BUILD_NUMBER.iso $integration_dir/$release_tag/cortx_iso
 				popd
 				
-				genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -publisher Seagate -o cortx-$version-$BUILD_NUMBER-single.iso $cortx_build_dir/$release_tag
+				genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -publisher Seagate -o cortx-$version-$BUILD_NUMBER-single.iso $integration_dir/$release_tag
 				
-                mkdir $cortx_build_dir/$release_tag/iso
-                ln -s $cortx_os_iso $cortx_build_dir/$release_tag/iso/$(basename $cortx_os_iso)
+                mkdir $integration_dir/$release_tag/iso
+                ln -s $cortx_os_iso $integration_dir/$release_tag/iso/$(basename $cortx_os_iso)
 
-                cortx_prvsnr_preq=$(ls "$cortx_build_dir/$release_tag/cortx_iso" | grep "python36-cortx-prvsnr" | cut -d- -f5 | cut -d_ -f2 | cut -d. -f1 | sed s/"git"//)
-                wget -O $cortx_build_dir/$release_tag/iso/cortx-prep-$version-$BUILD_NUMBER.sh https://raw.githubusercontent.com/Seagate/cortx-prvsnr/$cortx_prvsnr_preq/cli/src/cortx_prep.sh
+                cortx_prvsnr_preq=$(ls "$integration_dir/$release_tag/cortx_iso" | grep "python36-cortx-prvsnr" | cut -d- -f5 | cut -d_ -f2 | cut -d. -f1 | sed s/"git"//)
+                wget -O $integration_dir/$release_tag/iso/cortx-prep-$version-$BUILD_NUMBER.sh https://raw.githubusercontent.com/Seagate/cortx-prvsnr/$cortx_prvsnr_preq/cli/src/cortx_prep.sh
             
-				cp cortx-$version-$BUILD_NUMBER-single.iso $cortx_build_dir/$release_tag/iso
+				cp cortx-$version-$BUILD_NUMBER-single.iso $integration_dir/$release_tag/iso
 				
-				ls $cortx_build_dir/$release_tag/3rd_party/THIRD_PARTY_RELEASE.INFO
-				ls $cortx_build_dir/$release_tag/cortx_iso/RELEASE.INFO
+				ls $integration_dir/$release_tag/3rd_party/THIRD_PARTY_RELEASE.INFO
+				ls $integration_dir/$release_tag/cortx_iso/RELEASE.INFO
 				
-				cp $cortx_build_dir/$release_tag/3rd_party/THIRD_PARTY_RELEASE.INFO $cortx_build_dir/$release_tag
-				cp $cortx_build_dir/$release_tag/cortx_iso/RELEASE.INFO $cortx_build_dir/$release_tag
-				sed -i '/BUILD/d' $cortx_build_dir/$release_tag/3rd_party/THIRD_PARTY_RELEASE.INFO
+				cp $integration_dir/$release_tag/3rd_party/THIRD_PARTY_RELEASE.INFO $integration_dir/$release_tag
+				cp $integration_dir/$release_tag/cortx_iso/RELEASE.INFO $integration_dir/$release_tag
+				sed -i '/BUILD/d' $integration_dir/$release_tag/3rd_party/THIRD_PARTY_RELEASE.INFO
 		        '''
 		    }
 		}
@@ -262,11 +243,11 @@ pipeline {
             script {
                 	
                 currentBuild.upstreamBuilds?.each { b -> env.upstream_project = "${b.getProjectName()}";env.upstream_build = "${b.getId()}" }
-                env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/${branch}/${os_version}/${env.release_tag}"
+                env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/opensource_builds/ova_builds/${os_version}/${env.release_tag}"
                 env.release_build = "${env.release_tag}"
                 env.build_stage = "${build_stage}"
 
-                def toEmail = "shailesh.vaidya@seagate.com, swati.magar@seagate.com, gowthaman.chinnathambi@seagate.com"
+                def toEmail = "shailesh.vaidya@seagate.com"
                 emailext ( 
                     body: '''${SCRIPT, template="release-email.template"}''',
                     mimeType: 'text/html',
