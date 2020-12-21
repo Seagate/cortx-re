@@ -34,8 +34,8 @@ if [ $# -eq 0 ]; then
 usage
 fi
 
-if [ -z $BRANCH ]; then echo "No BRANCH provided.."; exit 1 ; fi
-if [ -z $OS_VERSION ]; then echo "No OS_VERSION provided.."; exit 1; fi
+if [ -z "$BRANCH" ]; then echo "No BRANCH provided.."; exit 1 ; fi
+if [ -z "$OS_VERSION" ]; then echo "No OS_VERSION provided.."; exit 1; fi
 
 
 RPM_LOCATION="http://cortx-storage.colo.seagate.com/releases/cortx/github/$BRANCH/$OS_VERSION"
