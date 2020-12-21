@@ -24,10 +24,10 @@ BRANCH=$1
 OS_VERSION=$2
 
 function usage() {
-echo "No inputs provided exiting..."
-echo "Please provide Branch and OS detail.Script should be executed as.."
-echo "$0 BRANCH OS_VERSION"
-exit 1
+    echo "No inputs provided exiting..."
+    echo "Please provide Branch and OS detail.Script should be executed as.."
+    echo "$0 BRANCH OS_VERSION"
+    exit 1
 }
 
 if [ $# -eq 0 ]; then
@@ -95,7 +95,7 @@ HTML_TD_STYLE="style='border: 1px solid #AAAAAA;padding: 3px 2px;font-size: 13px
 
 # Validation Logic
 build_number=$(wget "${RPM_LOCATION}/last_successful/RELEASE.INFO" -q -O - | grep BUILD |  sed 's/"//g' | cut -d: -f2 | xargs )
-release_rpms_array=$(wget "${RPM_LOCATION}/${build_number}/dev" -q -O - | grep -Po '(?<=href=")[^"]*' | grep ".rpm")
+release_rpms_array=$(wget "${RPM_LOCATION}/${build_number}/dev" -q -O - | grep -Po '(?<=href=")[^"]*' | grep -v debuginfo | grep ".rpm")
 
 echo "RPM Validation Initiated for Build = $build_number"
 BUILD_URL="${RPM_LOCATION}/${build_number}/dev"
