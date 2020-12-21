@@ -10,15 +10,14 @@ pipeline {
 	
 	environment {
 		RPM_LOCATION = sh(script: 'date +"%m-%d-%Y"', returnStdout: true).trim()
-                version="1.0.0"
+                version = "1.0.0"
 	        thrid_party_version = "1.0.0-1"
-                os_version="centos-7.8.2003"
-                integration_dir="/mnt/bigstorage/releases/cortx/github/stable"
-                nightly_dir="/mnt/bigstorage/releases/cortx/nightly/"
+                integration_dir = "/mnt/bigstorage/releases/cortx/github/stable"
+                nightly_dir = "/mnt/bigstorage/releases/cortx/nightly/"
                 cortx_build_dir = "/mnt/bigstorage/releases/cortx/cortx_builds_nightly"
-                thrid_party_dir="/mnt/bigstorage/releases/cortx/third-party-deps/centos/centos-7.8.2003-$thrid_party_version/"
-	        python_deps="/mnt/bigstorage/releases/cortx/third-party-deps/python-packages"
-                cortx_os_iso="/mnt/bigstorage/releases/cortx_builds/custom-os-iso/cortx-os-1.0.0-23.iso"
+                thrid_party_dir = "/mnt/bigstorage/releases/cortx/third-party-deps/centos/centos-7.8.2003-$thrid_party_version/"
+	        python_deps = "/mnt/bigstorage/releases/cortx/third-party-deps/python-packages"
+                cortx_os_iso = "/mnt/bigstorage/releases/cortx_builds/custom-os-iso/cortx-os-1.0.0-23.iso"
 		
 	}
 	
@@ -26,7 +25,7 @@ pipeline {
 		timeout(time: 60, unit: 'MINUTES') 
 	}
 		
-	triggers{ cron('30 19 * * *') }
+	triggers { cron('30 19 * * *') }
 		
 		stages {	
 
@@ -40,7 +39,7 @@ pipeline {
 
 	       		stage('Checkout Release scripts') {
 				steps {
-		                    script { build_stage=env.STAGE_NAME }
+		                    script { build_stage = env.STAGE_NAME }
                 		    checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
 				    }
 		    	}
@@ -78,7 +77,7 @@ pipeline {
 				}	
 			}
 
-	            stage('Release cortx_build'){
+	            stage ('Release cortx_build'){
         	        steps {
                 	    script { build_stage=env.STAGE_NAME }
 	                    sh label: 'Release cortx_build', script: '''
@@ -97,7 +96,7 @@ pipeline {
 
         	    stage ('Generate ISO Image') {
 		        steps {
-		            sh label: 'Generate ISO Image',script:'''
+		            sh label: 'Generate ISO Image', script:'''
 		            rpm -q genisoimage || yum install genisoimage -y
                 	    mkdir $nightly_dir/B$BUILD_NUMBER-$(date +"%m-%d-%Y")/prod && pushd $nightly_dir/B$BUILD_NUMBER-$(date +"%m-%d-%Y")/prod
 	                    genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -publisher Seagate -o cortx-$version-$BUILD_NUMBER.iso $nightly_dir/B$BUILD_NUMBER-$(date +"%m-%d-%Y")/cortx_build_temp/prod
@@ -109,9 +108,8 @@ pipeline {
 	                    cp -r $nightly_dir/B$BUILD_NUMBER-$(date +"%m-%d-%Y")/cortx_build_temp/dev $nightly_dir/B$BUILD_NUMBER-$(date +"%m-%d-%Y")/dev
         	            ln -s $cortx_os_iso $nightly_dir/B$BUILD_NUMBER-$(date +"%m-%d-%Y")/prod/$(basename $cortx_os_iso)
 
-                	    cp $cortx_build_dir/B$BUILD_NUMBER-$(date +"%m-%d-%Y")/3rd_party/THIRD_PARTY_RELEASE.INFO $nightly_dir/B$BUILD_NUMBER-$(date +"%m-%d-%Y")
+
 			    cp $nightly_dir/B$BUILD_NUMBER-$(date +"%m-%d-%Y")/dev/RELEASE.INFO $nightly_dir/B$BUILD_NUMBER-$(date +"%m-%d-%Y")
-			    sed -i '/BUILD/d' $cortx_build_dir/B$BUILD_NUMBER-$(date +"%m-%d-%Y")/3rd_party/THIRD_PARTY_RELEASE.INFO
 				
 	
 			    mv $cortx_build_dir/B$BUILD_NUMBER-$(date +"%m-%d-%Y")/ $cortx_build_dir/$release_tag-to-be-deleted
@@ -122,16 +120,7 @@ pipeline {
 
             
 			
-		   stage('Trigger downstream') {
-		        when { expression { false } }
-				steps {
-                		build job: 'eos-prvsnr-qa-bvt', parameters: [
-	                        string(name: 'eosRelease', value: "nightly/B${env.BUILD_NUMBER}-${env.RPM_LOCATION}"),
-        	                string(name: 'eosTestRepoVersion', value: "b15b5e9a")
-                		], wait: false
-        	     	   }
-	            }	
-        
+	       
 	            stage ("Deploy Cortx Stack") {
         	        when { expression { false } }
                 	steps {
@@ -157,7 +146,7 @@ pipeline {
 			<p>RPM's are located at http://cortx-storage.colo.seagate.com/releases/eos/nightly/B${env.BUILD_NUMBER}-${env.RPM_LOCATION}</p>
 			""",
 			to: 'eos.nightlybuild@seagate.com',
-			recipientProviders: [[$class: 'DevelopersRecipientProvider'],[$class: 'RequesterRecipientProvider']]
+			recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
 			)
 			
         	}
@@ -170,7 +159,7 @@ pipeline {
 			<p>Check console output at "<a href="${env.BUILD_URL}">${env.JOB_NAME} [${env.BUILD_NUMBER}]</a>"</p>
 			""",
 			to: 'shailesh.vaidya@seagate.com',
-			recipientProviders: [[$class: 'DevelopersRecipientProvider'],[$class: 'RequesterRecipientProvider']]
+		
 			)
 			
  	       }	
