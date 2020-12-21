@@ -77,9 +77,9 @@ pipeline {
 				}	
 			}
 
-	            stage ('Release cortx_build'){
+	            stage ('Release cortx_build') {
         	        steps {
-                	    script { build_stage=env.STAGE_NAME }
+                	    script { build_stage = env.STAGE_NAME }
 	                    sh label: 'Release cortx_build', script: '''
     					mkdir -p $cortx_build_dir
         		                pushd $cortx_build_dir
@@ -165,4 +165,4 @@ pipeline {
  	       }	
     	}
 		
-}	
+}
