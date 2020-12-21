@@ -10,6 +10,22 @@ pipeline {
         timestamps() 
     }
 
+    parameters {
+				
+        choice(
+            name: 'branch', 
+            choices: ['main', 'stable', 'cortx-1.0'],
+            description: 'Branch Name'
+        )
+        
+         choice(
+            name: 'os_version', 
+            choices: ['rhel-7.7.1908', 'centos-7.8.2003'],
+            description: 'OS Version'
+        )
+	}	
+	
+
     stages {
 
         stage('Checkout Script') {
@@ -23,7 +39,7 @@ pipeline {
         stage('Generate Report') {
             steps {             
                 script {    
-                    sh "bash scripts/rpm_validation/rpm-validator.sh"
+                    sh "bash scripts/release_support/rpm-validator.sh $branch $os_version"
                     publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: '', reportFiles: 'rpm_validation.html', reportName: 'RMP Check', reportTitles: ''])
                 }
             }
@@ -36,7 +52,7 @@ pipeline {
                     emailext mimeType: 'text/html',
                     body: '${FILE, path="rpm_validation.html"}',
                     subject: 'RPM Validation Result - [ Date :' +new Date().format("dd-MMM-yyyy") + ' ]',
-                    to: 'cortx.sme@seagate.com, shailesh.vaidya@seagate.com, gowthaman.chinnathambi@seagate.com, priyank.p.dalal@seagate.com, amol.j.kongre@seagate.com, mukul.malhotra@seagate.com'
+                    to: 'shailesh.vaidya@seagate.com'
                 }
             } 
         }
