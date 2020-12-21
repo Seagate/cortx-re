@@ -14,13 +14,13 @@ pipeline {
 				
         choice(
             name: 'branch', 
-            choices: ['main', 'stable', 'cortx-1.0'],
+            choices: ['stable', 'main', 'cortx-1.0'],
             description: 'Branch Name'
         )
         
          choice(
             name: 'os_version', 
-            choices: ['rhel-7.7.1908', 'centos-7.8.2003'],
+            choices: ['centos-7.8.2003', 'rhel-7.7.1908'],
             description: 'OS Version'
         )
 	}	
@@ -31,7 +31,7 @@ pipeline {
         stage('Checkout Script') {
             steps {             
                 script {
-                    checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re/']]])                
+                    checkout([$class: 'GitSCM', branches: [[name: 'rpm-validation-fix']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re/']]])                
                 }
             }
         }
