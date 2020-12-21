@@ -131,6 +131,9 @@ RUN  cat /opt/rpm-signing/gpgoptions >>  ~/.rpmmacros && \
      /usr/bin/gpg --export -a 'Seagate'  > /opt/rpm-signing/RPM-GPG-KEY-Seagate && \
      rpm --import /opt/rpm-signing/RPM-GPG-KEY-Seagate
 
+# release helper scripts
+COPY ./scripts/release_support/build_release_info.sh /opt/release_support/
+
 # Makefile for build
 COPY ./docker/opensource-ci/centos-7.8.2003/Makefile . 
 

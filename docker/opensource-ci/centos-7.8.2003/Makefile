@@ -4,29 +4,41 @@ RELASE_BUILD = "/var/artifacts/${BUILD_ID}"
 RPM_DIR = "/var/artifacts/${BUILD_ID}/cortx_iso"
 THIRD_PARTY_VERSION = "third-party-deps-1.0.0-2"
 
-build: io-path control-path _release_build _iso_generation
+build:
+	$(MAKE)	io-path control-path release_build
 
-control-path: cortx-prvsnr cortx-monitor cortx-manager cortx-management-portal cortx-ha _release_build _iso_generation
+control-path:
+	$(MAKE) cortx-prvsnr cortx-monitor cortx-manager cortx-management-portal cortx-ha
 
-io-path: cortx-motr cortx-s3server cortx-hare _release_build _iso_generation
+io-path:
+	$(MAKE) cortx-motr cortx-s3server cortx-hare
 
-cortx-motr: _cortx-motr_prereq _cortx-motr_build
+cortx-motr:
+	$(MAKE) _cortx-motr_prereq _cortx-motr_build
 
-cortx-s3server: _s3_prereq _s3_build
+cortx-s3server:
+	$(MAKE) _s3_prereq _s3_build
 
-cortx-hare: _cortx-hare_prereq _cortx-hare_build
+cortx-hare:
+	$(MAKE) _cortx-hare_prereq _cortx-hare_build
 
-cortx-ha: _ha_prereq _ha_build
+cortx-ha:
+	$(MAKE) _ha_prereq _ha_build
 
-cortx-management-portal: _cortx-py-utils_build cortx-prvsnr _cortx-management-portal_prereq _cortx-management-portal_build
+cortx-management-portal:
+	$(MAKE) _cortx-py-utils_build cortx-prvsnr _cortx-management-portal_prereq _cortx-management-portal_build
 
-cortx-manager: _cortx-py-utils_build cortx-prvsnr _cortx-manager_prereq _cortx-manager_build
+cortx-manager:
+	$(MAKE) _cortx-py-utils_build cortx-prvsnr _cortx-manager_prereq _cortx-manager_build
 
-cortx-monitor:  _cortx-monitor_prereq _cortx-monitor_build
+cortx-monitor:
+	$(MAKE) _cortx-monitor_prereq _cortx-monitor_build
 
-cortx-posix: _cortx-posix_prereq _cortx-posix_build
+cortx-posix:
+	$(MAKE) _cortx-posix_prereq _cortx-posix_build
 
-cortx-prvsnr: _prvsnr_prereq _prvsnr_build
+cortx-prvsnr:
+	$(MAKE) _prvsnr_prereq _prvsnr_build
 
 clean:
 	rm -rf "/root/rpmbuild/"
@@ -62,6 +74,7 @@ _cortx-motr_build:
 		export build_number=${BUILD_ID} && \
 		make rpms && \
 		cp /root/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
+		createrepo -v ${RPM_DIR} && \
 	popd
 
 #***********************************************************************************
@@ -90,6 +103,7 @@ _s3_build:
 	    ./rpms/s3iamcli/buildrpm.sh -G $$(git rev-parse --short HEAD) && \
 		cp /root/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
        	cp /root/rpmbuild/RPMS/noarch/*.rpm ${RPM_DIR} && \
+		createrepo -v ${RPM_DIR} && \
 	popd
 
 #***********************************************************************************
@@ -114,6 +128,7 @@ _cortx-hare_build:
 		export build_number=${BUILD_ID} && \
 		make rpm && \
 		cp /root/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
+		createrepo -v ${RPM_DIR} && \
 	popd
 
 
@@ -142,6 +157,7 @@ _cortx-posix_build:
 			echo "VERSION:$$VERSION" && \
 			./jenkins/build.sh -v $$VERSION -b ${BUILD_ID} -p ../../nfs-ganesha/src/  && \
 			cp /root/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
+			createrepo -v ${RPM_DIR} && \
 	popd
 	
 
@@ -158,6 +174,7 @@ _cortx-py-utils_build:
 		yum install python36-devel -y && \
 		python3 setup.py bdist_rpm --post-install utils-post-install --pre-uninstall utils-pre-uninstall --release="${BUILD_ID}_$$(git rev-parse --short HEAD)" && \
 		mv /cortx-workspace/cortx-utils/py-utils/dist/*.rpm ${RPM_DIR} && \
+		createrepo -v ${RPM_DIR} && \
 	popd
 
 #***********************************************************************************
@@ -185,6 +202,7 @@ _cortx-management-portal_build:
 		echo "Python:$$(python --version)" && \
 		./cicd/build.sh -v $$VERSION -b "${BUILD_ID}" -t -i && \
 		cp ./dist/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
+		createrepo -v ${RPM_DIR} && \
 	popd
 
 
@@ -214,6 +232,7 @@ _cortx-manager_build:
 		echo "Python:$(python --version)" && \
 		./cicd/build.sh -v $$VERSION -b "${BUILD_ID}" -t -i && \
 		cp ./dist/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
+		createrepo -v ${RPM_DIR} && \
 	popd
 
 #***********************************************************************************
@@ -238,6 +257,7 @@ _prvsnr_build:
 		sh ./cli/buildrpm.sh -g "$$(git rev-parse --short HEAD)" -e 1.0.0 -b "${BUILD_ID}" && \
 		bash ./devops/rpms/api/build_python_api.sh -vv --out-dir /root/rpmbuild/RPMS/x86_64/ --pkg-ver 1.0.0 && \
 		cp /root/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
+		createrepo -v ${RPM_DIR} && \
 	popd
 
 #***********************************************************************************
@@ -265,6 +285,7 @@ _cortx-monitor_build:
 		./jenkins/build.sh -l DEBUG && \
 		cp /root/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
         cp /root/rpmbuild/RPMS/noarch/*.rpm ${RPM_DIR} && \
+		createrepo -v ${RPM_DIR} && \
 	popd
 
 #***********************************************************************************
@@ -291,6 +312,7 @@ _ha_build:
 	pushd "cortx-workspace/cortx-ha" && \
 		./jenkins/build.sh -b ${BUILD_ID} && \
 		cp dist/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
+		createrepo -v ${RPM_DIR} && \
 	popd
 
 #***********************************************************************************
@@ -299,23 +321,27 @@ _ha_build:
 #		_devops_build - Setup yum repo, Generate RELEASE.INFO, gpg key sigining.
 #
 #***********************************************************************************
-_release_build:
+release_build:
 	@echo "***************  Generating Release Build *********************"
 
 	pushd ${RPM_DIR} && \
 		cp /opt/rpm-signing/RPM-GPG-KEY-Seagate . && \
 		for rpm in `ls -1 *.rpm`; do expect /opt/rpm-signing/rpm-sign.sh $$rpm; done && \
 		createrepo -v . && \
+	popd && \
+	pushd ${RELASE_BUILD} && \
+		sh /opt/release_support/build_release_info.sh ${RPM_DIR} && \
+		githubrelease --github-token $$GITHUB_TOKEN asset seagate/cortx-re download ${THIRD_PARTY_VERSION} && \
+		mkdir -p 3rd_party && tar -xvzf *.tar.gz -C 3rd_party --strip-components=1 && \
 	popd
 
-_iso_generation:
+
+iso_generation:
 	@echo "***************  Generating ISO file *********************"
 	
 	pushd ${RELASE_BUILD} && \
-		githubrelease --github-token $$GITHUB_TOKEN asset seagate/cortx-re download ${THIRD_PARTY_VERSION} && \
-		mkdir -p 3rd_party && tar -xvzf *.tar.gz -C 3rd_party  --strip-components=1 && 	rm -rf *.tar.gz && \
 		mkdir -p ${RELASE_BUILD}/iso && \
-		genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -publisher Seagate -o ${RELASE_BUILD}/iso/cortx-${BUILD_ID}-single.iso ${RELASE_BUILD} && \
+		genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -publisher Seagate -o ${RELASE_BUILD}/iso/cortx-1.0.0-${BUILD_ID}-single.iso ${RELASE_BUILD} && \
 	popd
 
 
