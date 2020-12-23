@@ -19,6 +19,9 @@ ARG CENTOS_RELEASE
 
 FROM centos:${CENTOS_RELEASE} AS base
 
+ARG CENTOS_RELEASE
+ARG ENVIRONMENT
+
 ENV BASH_ENV "/etc/profile"
 ENV PATH="/root/.nvm/versions/node/v12.13.0/bin:${PATH}"
 ENV LANG=en_US.UTF-8 \
@@ -28,7 +31,7 @@ ENV LANG=en_US.UTF-8 \
 RUN yum-config-manager --disable base,extras,updates && mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.bkp
 
 #Add centos-7.7.1908 repository
-COPY *.repo /etc/yum.repos.d/
+COPY ./docker/${ENVIRONMENT}/centos-${CENTOS_RELEASE}/*.repo /etc/yum.repos.d/
 
 # enable EPEL and SCL repos
 RUN yum install centos-release-scl -y && yum clean all \
@@ -96,7 +99,7 @@ RUN localedef -i en_US -f UTF-8 en_US.UTF-8
 RUN rpmdev-setuptree
 
 # Copy scripts
-COPY *.sh /opt/
+COPY ./docker/${ENVIRONMENT}/centos-${CENTOS_RELEASE}/*.sh /opt/
 
 # install node
 RUN bash /opt/install-node.sh v12.13.0

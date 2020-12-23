@@ -27,13 +27,10 @@ ENV PATH="/root/.nvm/versions/node/v12.13.0/bin:${PATH}"
 ENV LANG=en_US.UTF-8 \
     LC_ALL=en_US.UTF-8
 
-WORKDIR .
-
 #Disable default repositories. 
 RUN yum-config-manager --disable base,extras,updates && mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.bkp
 
-#Add centos-7.7.1908 repository
-#COPY ./docker/${ENVIRONMENT}/centos-${CENTOS_RELEASE}/{C${CENTOS_RELEASE}.repo,CORTX_7.9.2009.repo} /etc/yum.repos.d/
+#Add OS specific repositories
 COPY ./docker/internal-ci/centos-7.9.2009/*${CENTOS_RELEASE}*.repo /etc/yum.repos.d/
 
 # enable EPEL and SCL repos

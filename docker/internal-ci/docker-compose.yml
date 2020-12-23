@@ -16,9 +16,7 @@
 # For any questions about this software or licensing,
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
-
 version: "3"
-
 services:
   cortx-build-centos-7.8.2003:
     image: cortx-build:centos-7.8.2003
@@ -34,20 +32,27 @@ services:
 
 
 
-  cortx-build-centos-7.7.1908:
-    image: cortx-build:centos-7.7.1908
+  cortx-build-cp-centos-7.8.2003:
+    image: cortx-build-cp:centos-7.8.2003
     build:
       context: ../../
-      dockerfile: ./docker/opensource-ci/centos-7.7.1908/Dockerfile
+      target: base
+      dockerfile: ./docker/internal-ci/centos-7.7.1908/Dockerfile
       args:
-       CENTOS_RELEASE: 7.7.1908
-       LUSTRE_VERSION: 2.12.3
-    volumes:
-     - /var/artifacts:/var/artifacts
-     - /root/cortx:/cortx-workspace
+       CENTOS_RELEASE: 7.8.2003
+       LUSTRE_VERSION: 2.12.5
 
-  cortx-build-centos-7.9.2009:
-    image: cortx-build:centos-7.9.2009
+  cortx-build-io-centos-7.8.2003:
+    image: cortx-build-io:centos-7.8.2003
+    build:
+      context: ../../
+      dockerfile: ./docker/internal-ci/centos-7.8.2003/Dockerfile
+      args:
+       CENTOS_RELEASE: 7.8.2003
+       LUSTRE_VERSION: 2.12.5
+
+  cortx-build-io-centos-7.9.2009:
+    image: cortx-build-io:centos-7.9.2009
     build:
       context: ../../
       dockerfile: ./docker/internal-ci/centos-7.9.2009/Dockerfile
