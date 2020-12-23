@@ -116,14 +116,16 @@ RUN bash /opt/setup_fpm.sh \
 FROM base as lustre-rpm-builder
 
 ARG LUSTRE_VERSION 
+ARG CENTOS_RELEASE
+ARG ENVIRONMENT
 
 ADD  https://downloads.whamcloud.com/public/lustre/lustre-${LUSTRE_VERSION}/el7/client/SRPMS/lustre-${LUSTRE_VERSION}-1.src.rpm . 
 RUN rpm -i lustre-${LUSTRE_VERSION}-1.src.rpm 
 
-COPY lustre-2.9.0.spec.patch .
+COPY ./docker/${ENVIRONMENT}/centos-${CENTOS_RELEASE}/lustre-2.9.0.spec.patch .
 RUN patch -p1 -i lustre-2.9.0.spec.patch /root/rpmbuild/SPECS/lustre.spec
 
-RUN yum -y install kernel kernel-devel \
+RUN yum -y install kernel{,-devel}-3.10.0-1127.el7  \
 	&& yum-builddep -y /root/rpmbuild/SPECS/lustre.spec
 	
 RUN QA_RPATHS=255 rpmbuild -bb --without servers --without lustre-tests \

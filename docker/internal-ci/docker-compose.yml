@@ -37,10 +37,11 @@ services:
     build:
       context: ../../
       target: base
-      dockerfile: ./docker/internal-ci/centos-7.7.1908/Dockerfile
+      dockerfile: ./docker/internal-ci/centos-7.8.2003/Dockerfile
       args:
        CENTOS_RELEASE: 7.8.2003
        LUSTRE_VERSION: 2.12.5
+       ENVIRONMENT: internal-ci
 
   cortx-build-io-centos-7.8.2003:
     image: cortx-build-io:centos-7.8.2003
@@ -50,6 +51,7 @@ services:
       args:
        CENTOS_RELEASE: 7.8.2003
        LUSTRE_VERSION: 2.12.5
+       ENVIRONMENT: internal-ci
 
   cortx-build-io-centos-7.9.2009:
     image: cortx-build-io:centos-7.9.2009

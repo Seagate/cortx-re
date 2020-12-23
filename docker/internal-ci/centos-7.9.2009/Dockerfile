@@ -125,7 +125,7 @@ RUN rpm -i lustre-${LUSTRE_VERSION}-1.src.rpm
 COPY ./docker/${ENVIRONMENT}/centos-${CENTOS_RELEASE}/lustre-2.9.0.spec.patch .
 RUN patch -p1 -i lustre-2.9.0.spec.patch /root/rpmbuild/SPECS/lustre.spec
 
-RUN yum -y install kernel kernel-devel \
+RUN yum -y install kernel{,-devel}-3.10.0-1160.el7 \
 	&& yum-builddep -y /root/rpmbuild/SPECS/lustre.spec
 	
 RUN QA_RPATHS=255 rpmbuild -bb --without servers --without lustre-tests \
