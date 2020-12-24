@@ -22,6 +22,9 @@ FROM centos:${CENTOS_RELEASE} AS base
 ARG CENTOS_RELEASE
 ARG ENVIRONMENT
 
+LABEL maintainer="CORTX.opensource@seagate.com"
+LABEL Description="This image is used to build CORTX components"
+
 ENV BASH_ENV "/etc/profile"
 ENV PATH="/root/.nvm/versions/node/v12.13.0/bin:${PATH}"
 ENV LANG=en_US.UTF-8 \
@@ -102,16 +105,20 @@ RUN rpmdev-setuptree
 COPY ./docker/${ENVIRONMENT}/centos-${CENTOS_RELEASE}/*.sh /opt/
 
 # install node
-RUN bash /opt/install-node.sh v12.13.0
+RUN bash /opt/install-node.sh v12.13.0 \
+&& rm -rf /opt/install-node.sh \
+&& rm -rf install.sh
 
 # docker-systemctl-replacement
 RUN sh /opt/systemctl-replacement.sh \
-&& rm -f /opt/systemctl-replacement.sh
+&& rm -f /opt/systemctl-replacement.sh \
+&& rm -f systemctl.py
 
 # For Provisioner
 RUN bash /opt/setup_fpm.sh \
 && rm -f /opt/setup_fpm.sh && yum clean all \
-&& rm -rf /var/cache/yum
+&& rm -rf /var/cache/yum \
+&& rm -rf rh-ruby23.sh
 
 FROM base as lustre-rpm-builder
 
@@ -152,7 +159,8 @@ RUN curl -k https://raw.githubusercontent.com/Seagate/cortx-motr/stable/cortx-mo
 	&& kernel_src=$(ls -1rd /lib/modules/*/build | head -n1) \
         && yum-builddep -y cortx-motr.spec \
 	&& yum clean all \
-        && rm -rf /var/cache/yum
+        && rm -rf /var/cache/yum \
+	&& rm -rf cortx-motr.spec
 
 RUN curl -k https://raw.githubusercontent.com/Seagate/cortx-s3server/stable/rpms/s3/s3rpm.spec -o s3rpm.spec \
      && yum install -y http://cortx-storage.colo.seagate.com/releases/cortx/components/github/motr-base/cortx-motr-1.0.0-0_git588b298_3.10.0_1062.el7.x86_64.rpm \

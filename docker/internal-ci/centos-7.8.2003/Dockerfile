@@ -22,6 +22,9 @@ FROM centos:${CENTOS_RELEASE} AS base
 ARG CENTOS_RELEASE
 ARG ENVIRONMENT
 
+LABEL maintainer="CORTX.opensource@seagate.com"
+LABEL Description="This image is used to build CORTX components"
+
 ENV BASH_ENV "/etc/profile"
 ENV PATH="/root/.nvm/versions/node/v12.13.0/bin:${PATH}"
 ENV LANG=en_US.UTF-8 \
