@@ -34,7 +34,7 @@ ENV LANG=en_US.UTF-8 \
 RUN yum-config-manager --disable base,extras,updates && mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.bkp
 
 #Add OS specific repositories
-COPY ./docker/internal-ci/centos-7.9.2009/*${CENTOS_RELEASE}*.repo /etc/yum.repos.d/
+COPY ./docker/${ENVIRONMENT}/centos-${CENTOS_RELEASE}/*${CENTOS_RELEASE}*.repo /etc/yum.repos.d/
 
 # enable EPEL and SCL repos
 RUN yum install centos-release-scl -y && yum clean all \
