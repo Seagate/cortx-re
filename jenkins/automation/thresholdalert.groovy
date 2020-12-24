@@ -6,7 +6,7 @@ pipeline {
 		}
 	}
 	 triggers {
-         cron('H/5 * * * *')
+         cron('0 */6 * * *')
     }
 	stages {
 		stage ('CheckMount') {
