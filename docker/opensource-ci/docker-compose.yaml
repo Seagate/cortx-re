@@ -24,7 +24,7 @@ services:
     image: cortx-build:centos-7.8.2003
     build:
       context: ../../
-      dockerfile: ./docker/opensource-ci/centos-7.8.2003/Dockerfile
+      dockerfile: ./docker/opensource-ci/Dockerfile
       args:
        CENTOS_RELEASE: 7.8.2003
        LUSTRE_VERSION: 2.12.5
@@ -38,7 +38,7 @@ services:
     image: cortx-build:centos-7.7.1908
     build:
       context: ../../
-      dockerfile: ./docker/opensource-ci/centos-7.7.1908/Dockerfile
+      dockerfile: ./docker/opensource-ci/Dockerfile
       args:
        CENTOS_RELEASE: 7.7.1908
        LUSTRE_VERSION: 2.12.3

@@ -21,7 +21,10 @@ ARG CENTOS_RELEASE
 
 FROM centos:${CENTOS_RELEASE} AS base
 
-LABEL Description="This image is used to build CORTX stack on CentOS" Vendor="Seagate" Version="1.0.0" Maintainer="CORTX DevOps Team"
+ARG CENTOS_RELEASE
+
+LABEL maintainer="CORTX.opensource@seagate.com"
+LABEL Description="This image is used to build CORTX stack on CentOS"
 
 ENV BASH_ENV "/etc/profile"
 ENV PATH="/root/.nvm/versions/node/v12.13.0/bin:${PATH}"
@@ -31,8 +34,8 @@ ENV LANG=en_US.UTF-8 \
 #Disable default repositories. 
 RUN yum-config-manager --disable base,extras,updates
 
-#Add centos-7.8.2003 repository
-COPY ./docker/opensource-ci/centos-7.8.2003/C7.8.2003.repo /etc/yum.repos.d/
+#Add OS specific repository
+COPY ./docker/opensource-ci/C${CENTOS_RELEASE}.repo /etc/yum.repos.d/
 
 # enable EPEL and SCL repos
 RUN yum install epel-release centos-release-scl -y && yum clean all \
@@ -102,20 +105,23 @@ RUN localedef -i en_US -f UTF-8 en_US.UTF-8
 RUN rpmdev-setuptree
 
 # Copy scripts
-COPY ./docker/opensource-ci/centos-7.8.2003/*.sh /opt/
+COPY ./docker/opensource-ci/*.sh /opt/
 
 # install node
 RUN bash /opt/install-node.sh v12.13.0 \
-&& rm -rf /opt/install-node.sh
+&& rm -rf /opt/install-node.sh \
+&& rm -rf install.sh
 
 # docker-systemctl-replacement
 RUN sh /opt/systemctl-replacement.sh \
-&& rm -f /opt/systemctl-replacement.sh
+&& rm -f /opt/systemctl-replacement.sh \
+&& rm -f systemctl.py
 
 # For Provisioner
 RUN bash /opt/setup_fpm.sh \
 && rm -f /opt/setup_fpm.sh && yum clean all \
-&& rm -rf /var/cache/yum
+&& rm -rf /var/cache/yum \
+&& rm -rf rh-ruby23.sh
 
 RUN sh /opt/set-githubrelease-repo.sh && yum clean all \
 && rm -rf /var/cache/yum \
@@ -135,7 +141,7 @@ RUN  cat /opt/rpm-signing/gpgoptions >>  ~/.rpmmacros && \
 COPY ./scripts/release_support/build_release_info.sh /opt/release_support/
 
 # Makefile for build
-COPY ./docker/opensource-ci/centos-7.8.2003/Makefile . 
+COPY ./docker/opensource-ci/Makefile . 
 
 FROM base as lustre-rpm-builder
 
@@ -144,7 +150,7 @@ ARG LUSTRE_VERSION
 ADD  https://downloads.whamcloud.com/public/lustre/lustre-${LUSTRE_VERSION}/el7/client/SRPMS/lustre-${LUSTRE_VERSION}-1.src.rpm . 
 RUN rpm -i lustre-${LUSTRE_VERSION}-1.src.rpm 
 
-COPY ./docker/opensource-ci/centos-7.8.2003/lustre-2.9.0.spec.patch .
+COPY ./docker/opensource-ci/lustre-2.9.0.spec.patch .
 RUN patch -p1 -i lustre-2.9.0.spec.patch /root/rpmbuild/SPECS/lustre.spec
 
 RUN yum -y install kernel kernel-devel \
