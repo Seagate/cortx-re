@@ -18,19 +18,6 @@
 #
 version: "3"
 services:
-  cortx-build-centos-7.8.2003:
-    image: cortx-build:centos-7.8.2003
-    build:
-      context: ../../
-      dockerfile: ./docker/opensource-ci/centos-7.8.2003/Dockerfile
-      args:
-       CENTOS_RELEASE: 7.8.2003
-       LUSTRE_VERSION: 2.12.5
-    volumes:
-     - /var/artifacts:/var/artifacts
-     - /root/cortx:/cortx-workspace
-
-
 
   cortx-build-cp-centos-7.8.2003:
     image: cortx-build-cp:centos-7.8.2003
