@@ -276,6 +276,17 @@ pipeline {
 		        '''
 		    }
 		}
+                stage ('Tag last_successful') {
+			steps {
+                	script { build_stage = env.STAGE_NAME }
+	                sh label: 'Tag last_successful', script: '''
+	                    pushd $integration_dir/
+	                    test -d $integration_dir/${release_component}_last_successful && rm -f ${release_component}_last_successful
+        	            ln -s $integration_dir/$release_name ${release_component}_last_successful
+                	    popd
+	                '''
+			}
+		}
 		
         	stage ("Deploy") {
 	            when { expression { false } }
