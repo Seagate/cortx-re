@@ -4,46 +4,69 @@ RELASE_BUILD = "/var/artifacts/${BUILD_ID}"
 RPM_DIR = "/var/artifacts/${BUILD_ID}/cortx_iso"
 THIRD_PARTY_VERSION = "third-party-deps-1.0.0-2"
 
-build:
-	$(MAKE)	io-path control-path release_build
+.PHONY: help
+## help: print this help message.
+help : Makefile
+	@echo usage: make \"target\"
+	@echo 
+	@echo targets:
+	@sed -n 's/^##/   /p' $<
 
-control-path:
-	$(MAKE) cortx-prvsnr cortx-monitor cortx-manager cortx-management-portal cortx-ha
-
-io-path:
-	$(MAKE) cortx-motr cortx-s3server cortx-hare
-
-cortx-motr:
-	$(MAKE) _cortx-motr_prereq _cortx-motr_build
-
-cortx-s3server:
-	$(MAKE) _s3_prereq _s3_build
-
-cortx-hare:
-	$(MAKE) _cortx-hare_prereq _cortx-hare_build
-
-cortx-ha:
-	$(MAKE) _ha_prereq _ha_build
-
-cortx-management-portal:
-	$(MAKE) _cortx-py-utils_build cortx-prvsnr _cortx-management-portal_prereq _cortx-management-portal_build
-
-cortx-manager:
-	$(MAKE) _cortx-py-utils_build cortx-prvsnr _cortx-manager_prereq _cortx-manager_build
-
-cortx-monitor:
-	$(MAKE) _cortx-monitor_prereq _cortx-monitor_build
-
-cortx-posix:
-	$(MAKE) _cortx-posix_prereq _cortx-posix_build
-
-cortx-prvsnr:
-	$(MAKE) _prvsnr_prereq _prvsnr_build
-
+## clean: remove existing /var/artifacts/0 directory. 
 clean:
 	rm -rf "/root/rpmbuild/"
 	rm -rf ${RELASE_BUILD}
 	mkdir -p ${RPM_DIR}
+
+## build: generate complete CORTX build including third-party-deps at "/var/artifacts/0"
+build:
+	$(MAKE)	io-path control-path release_build
+
+## control-path: generate control-path packages. provisioner, monitor, manager, management-portal and ha.
+control-path:
+	$(MAKE) cortx-prvsnr cortx-monitor cortx-manager cortx-management-portal cortx-ha
+
+## io-path: generate io-path packages. motr, s3server and hare.
+io-path:
+	$(MAKE) cortx-motr cortx-s3server cortx-hare
+
+## cortx-motr: generate cortx-motr packages.
+cortx-motr:
+	$(MAKE) _cortx-motr_prereq _cortx-motr_build
+
+## cortx-s3server: generate cortx-s3server packages.
+cortx-s3server:
+	$(MAKE) cortx-motr _s3_prereq _s3_build
+
+## cortx-hare: generate cortx-hare packages.
+cortx-hare:
+	$(MAKE) cortx-motr _cortx-hare_prereq _cortx-hare_build
+
+## cortx-ha: generate cortx-ha packages.
+cortx-ha:
+	$(MAKE) _ha_prereq _ha_build
+
+## cortx-management-portal: generate cortx-management-portal packages.
+cortx-management-portal:
+	$(MAKE) _cortx-py-utils_build cortx-prvsnr _cortx-management-portal_prereq _cortx-management-portal_build
+
+## cortx-manager: generate cortx-manager packages.
+cortx-manager:
+	$(MAKE) _cortx-py-utils_build cortx-prvsnr _cortx-manager_prereq _cortx-manager_build
+
+## cortx-monitor: generate cortx-monitor packages.
+cortx-monitor:
+	$(MAKE) _cortx-py-utils_build _cortx-monitor_prereq _cortx-monitor_build
+
+## cortx-posix: generate cortx-posix (NFS) packages.
+cortx-posix:
+	$(MAKE) _cortx-posix_prereq _cortx-posix_build
+
+## cortx-prvsnr: generate cortx-prvsnr packages.
+cortx-prvsnr:
+	$(MAKE) _prvsnr_prereq _prvsnr_build
+
+
 
 #***********************************************************************************
 #   Component:  cortx-motr

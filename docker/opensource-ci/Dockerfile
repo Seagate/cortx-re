@@ -123,7 +123,8 @@ RUN bash /opt/setup_fpm.sh \
 && rm -rf /var/cache/yum \
 && rm -rf rh-ruby23.sh
 
-RUN sh /opt/set-githubrelease-repo.sh && yum clean all \
+RUN sh /opt/set-githubrelease-repo.sh \
+&& yum clean all \
 && rm -rf /var/cache/yum \
 && rm -f  /opt/set-githubrelease-repo.sh
 
