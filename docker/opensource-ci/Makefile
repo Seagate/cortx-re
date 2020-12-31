@@ -8,7 +8,9 @@ THIRD_PARTY_VERSION = "third-party-deps-1.0.0-2"
 ## help: print this help message.
 help : Makefile
 	@echo usage: make \"target\"
-	@echo 
+	@echo
+	@echo Please clone required component repositories in cortx-workspace directory before executing respective targets.
+	@echo
 	@echo targets:
 	@sed -n 's/^##/   /p' $<
 
@@ -19,54 +21,40 @@ clean:
 	mkdir -p ${RPM_DIR}
 
 ## build: generate complete CORTX build including third-party-deps at "/var/artifacts/0"
-build:
-	$(MAKE)	io-path control-path release_build
+build: io-path control-path release_build
 
-## control-path: generate control-path packages. provisioner, monitor, manager, management-portal and ha.
-control-path:
-	$(MAKE) cortx-prvsnr cortx-monitor cortx-manager cortx-management-portal cortx-ha
+## control-path: generate control-path packages. cortx-provisioner, cortx-monitor, cortx-manager, cortx-management-portal and cortx-ha.
+control-path: cortx-prvsnr cortx-monitor cortx-manager cortx-management-portal cortx-ha
 
-## io-path: generate io-path packages. motr, s3server and hare.
-io-path:
-	$(MAKE) cortx-motr cortx-s3server cortx-hare
+## io-path: generate io-path packages. cortx-motr, cortx-s3server and cortx-hare.
+io-path: cortx-motr cortx-s3server cortx-hare
 
 ## cortx-motr: generate cortx-motr packages.
-cortx-motr:
-	$(MAKE) _cortx-motr_prereq _cortx-motr_build
+cortx-motr: _cortx-motr_prereq _cortx-motr_build
 
 ## cortx-s3server: generate cortx-s3server packages.
-cortx-s3server:
-	$(MAKE) cortx-motr _s3_prereq _s3_build
+cortx-s3server: cortx-motr _s3_prereq _s3_build
 
 ## cortx-hare: generate cortx-hare packages.
-cortx-hare:
-	$(MAKE) cortx-motr _cortx-hare_prereq _cortx-hare_build
+cortx-hare: cortx-motr _cortx-hare_prereq _cortx-hare_build
 
 ## cortx-ha: generate cortx-ha packages.
-cortx-ha:
-	$(MAKE) _ha_prereq _ha_build
+cortx-ha: _ha_prereq _ha_build
 
 ## cortx-management-portal: generate cortx-management-portal packages.
-cortx-management-portal:
-	$(MAKE) _cortx-py-utils_build cortx-prvsnr _cortx-management-portal_prereq _cortx-management-portal_build
+cortx-management-portal: _cortx-py-utils_build cortx-prvsnr _cortx-management-portal_prereq _cortx-management-portal_build
 
 ## cortx-manager: generate cortx-manager packages.
-cortx-manager:
-	$(MAKE) _cortx-py-utils_build cortx-prvsnr _cortx-manager_prereq _cortx-manager_build
+cortx-manager: _cortx-py-utils_build cortx-prvsnr _cortx-manager_prereq _cortx-manager_build
 
 ## cortx-monitor: generate cortx-monitor packages.
-cortx-monitor:
-	$(MAKE) _cortx-py-utils_build _cortx-monitor_prereq _cortx-monitor_build
+cortx-monitor: _cortx-py-utils_build _cortx-monitor_prereq _cortx-monitor_build
 
 ## cortx-posix: generate cortx-posix (NFS) packages.
-cortx-posix:
-	$(MAKE) _cortx-posix_prereq _cortx-posix_build
+cortx-posix: _cortx-posix_prereq _cortx-posix_build
 
 ## cortx-prvsnr: generate cortx-prvsnr packages.
-cortx-prvsnr:
-	$(MAKE) _prvsnr_prereq _prvsnr_build
-
-
+cortx-prvsnr: _prvsnr_prereq _prvsnr_build
 
 #***********************************************************************************
 #   Component:  cortx-motr
@@ -341,7 +329,7 @@ _ha_build:
 #***********************************************************************************
 #   Component:  DevOps
 #	Steps:
-#		_devops_build - Setup yum repo, Generate RELEASE.INFO, gpg key sigining.
+#		release_build - Setup yum repo, Generate RELEASE.INFO, gpg key sigining.
 #
 #***********************************************************************************
 release_build:
@@ -358,7 +346,7 @@ release_build:
 		mkdir -p 3rd_party && tar -xvzf *.tar.gz -C 3rd_party --strip-components=1 && \
 	popd
 
-
+## iso_generation: generate ISO file from release build.
 iso_generation:
 	@echo "***************  Generating ISO file *********************"
 	
@@ -366,5 +354,3 @@ iso_generation:
 		mkdir -p ${RELASE_BUILD}/iso && \
 		genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -publisher Seagate -o ${RELASE_BUILD}/iso/cortx-1.0.0-${BUILD_ID}-single.iso ${RELASE_BUILD} && \
 	popd
-
-
