@@ -184,6 +184,8 @@ _cortx-py-utils_build:
 	pushd cortx-workspace/cortx-utils/py-utils && \
 		yum install python36-devel -y && \
 		python3 setup.py bdist_rpm --post-install utils-post-install --pre-uninstall utils-pre-uninstall --release="${BUILD_ID}_$$(git rev-parse --short HEAD)" && \
+		../statsd-utils/jenkins/build.sh -b ${BUILD_ID} && \
+		mv /cortx-workspace/cortx-utils/statsd-utils/dist/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
 		mv /cortx-workspace/cortx-utils/py-utils/dist/*.rpm ${RPM_DIR} && \
 		createrepo -v ${RPM_DIR} && \
 	popd
@@ -282,6 +284,7 @@ _cortx-monitor_prereq:
 	@echo "***************  Installing sspl Prereqsites *********************"
 
 	pushd cortx-workspace/cortx-monitor && \
+		yum localinstall -y ${RPM_DIR}/cortx-py-utils*noarch.rpm && \
 		yum install sudo python-Levenshtein libtool doxygen python-pep8 openssl-devel graphviz check-devel -y && \
 	popd
 
