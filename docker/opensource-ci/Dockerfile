@@ -126,7 +126,7 @@ RUN bash /opt/setup_fpm.sh \
 RUN sh /opt/set-githubrelease-repo.sh \
 && yum clean all \
 && rm -rf /var/cache/yum \
-&& rm -f  /opt/set-githubrelease-repo.sh
+&& rm -f /opt/set-githubrelease-repo.sh
 
 # rpm signing
 COPY ./scripts/rpm-signing/* /opt/rpm-signing/
