@@ -69,7 +69,7 @@ RPM_INSTALL_PATH_EXPECTED=(
                     "cortx-csm_agent:bin,lib,conf,log" "cortx-csm_web:bin,lib,conf,log"     # CSM
                     "cortx-prvsnr:bin,lib,conf,log"                                         # Prvsnr
                     "cortx-sspl:bin,lib,conf,log"                                           # SSPL
-                    "CORTX-utils:cortx-py-utils,stats_utils"                                # CORTX Utils
+                    "cortx-py-utils:bin,lib,conf,log" "stats_utils:bin,lib,conf,log"        # CORTX Utils
                 )
 
 VALIDATION_ENVIRONMENT="OS : $(cat /etc/redhat-release | sed -e 's/ $//g') , Kernel : $(uname -r)"
