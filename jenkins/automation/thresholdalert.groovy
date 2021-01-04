@@ -15,7 +15,6 @@ pipeline {
 		        	mount="cortx-storage.colo.seagate.com:/mnt/data1/releases"
 				if grep -qs "$mount" /proc/mounts;then
 				echo "cortx-storage.colo.seagate.com:/mnt/data1/releases is mounted."
-				currentBuild.result = 'ABORTED'
 				else
 				echo "cortx-storage.colo.seagate.com:/mnt/data1/releases is not mounted."
 				mount -t nfs4 "$mount" /mnt/data1/releases
@@ -23,6 +22,7 @@ pipeline {
 					echo "Mount success!"
 					else
 					echo "Something went wrong with the mount..."
+					currentBuild.result = 'ABORTED'
 					fi
 				fi
 			'''	
