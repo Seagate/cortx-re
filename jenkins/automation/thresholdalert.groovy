@@ -20,6 +20,7 @@ pipeline {
 				mount -t nfs4 "$mount" /mnt/data1/releases
 					if [ $? -eq 0 ]; then
 					echo "Mount success!"
+					currentBuild.result = 'ABORTED'
 					else
 					echo "Something went wrong with the mount..."
 					fi
