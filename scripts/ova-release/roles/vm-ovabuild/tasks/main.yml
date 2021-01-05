@@ -1,0 +1,23 @@
+---
+- name: Poweroff the VM
+  vmware_guest_powerstate:
+    hostname: "{{ hostname }}"
+    username: "{{ username }}"
+    password: "{{ password }}"
+    folder: "{{ vm_path }}"
+    name: "{{ vm_name }}"
+    validate_certs: no
+    state: powered-off
+
+- name: Unmount ISO from VM
+  vmware_guest:
+    hostname: "{{ hostname }}"
+    username: "{{ username }}"
+    password: "{{ password }}"
+    name: "{{ vm_name }}"
+    validate_certs: no
+    cdrom:
+      type: none
+
+- name: Build ova file
+  shell: ovftool vi://{{ username }}:{{ password }}@{{ vm_path }}/{{ vm_name }} {{ ova_file_path }}

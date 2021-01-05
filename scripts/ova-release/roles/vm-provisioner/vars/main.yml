@@ -1,0 +1,4 @@
+ova_hostname: "ova-builder.seagate.com"
+mgmt_itf: "ens32"
+pbdata_itf: "ens33"
+pvdata_itf: "ens34"
