@@ -64,7 +64,6 @@ pipeline {
 			script {
 			        emailext (
 					body: '''echo $CURRENT'''
-					mimeType: 'text/html',
 					subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
 					attachLog: true,
 					to: 'balaji.ramachandran@seagate.com',
