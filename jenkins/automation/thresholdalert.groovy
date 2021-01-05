@@ -63,7 +63,6 @@ pipeline {
 		always {
 			script {
 			        emailext (
-					#body: '''${SCRIPT, template="release-email.template"}''',
 					body: '''echo $CURRENT'''
 					mimeType: 'text/html',
 					subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
