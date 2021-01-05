@@ -6,7 +6,7 @@ pipeline {
 		}
 	}
 	environment {
-		CURRENT=sh(script: 'df -h | grep /mnt/data1/releases | awk '{print $5}' | sed 's/%//g'', , returnStdout: true).trim()
+		CURRENT=sh(script: "df -h | grep /mnt/data1/releases | awk '{print $5}' | sed 's/%//g'", , returnStdout: true).trim()
 	}
 	 triggers {
          cron('0 */6 * * *')
