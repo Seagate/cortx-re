@@ -5,6 +5,12 @@ pipeline {
 			label 'Test-node-ssc-vm-c-456'
 		}
 	}
+<<<<<<< HEAD
+=======
+	environment {
+		SPACE=sh(script: "df -h | grep /mnt/data1/releases", , returnStdout: true).trim()
+	}
+>>>>>>> f344d8eb4b9f9085655c1a12ab29049278df5078
 	 triggers {
          cron('0 */6 * * *')
     }
@@ -22,6 +28,10 @@ pipeline {
 					echo "Mount success!"
 					else
 					echo "Something went wrong with the mount..."
+<<<<<<< HEAD
+=======
+					currentBuild.result = 'ABORTED'
+>>>>>>> f344d8eb4b9f9085655c1a12ab29049278df5078
 					fi
 				fi
 			'''	
@@ -32,7 +42,12 @@ pipeline {
 					steps {
 						sh label: 'Threshold alert', script: '''#!/bin/bash
 						CURRENT=$(df -h | grep /mnt/data1/releases | awk '{print $5}' | sed 's/%//g')
+<<<<<<< HEAD
 						THRESHOLD=94
+=======
+						THRESHOLD=95
+						echo "The Current disk space is $CURRENT "
+>>>>>>> f344d8eb4b9f9085655c1a12ab29049278df5078
 						if [ "$CURRENT" -gt "$THRESHOLD" ] ; then
 						echo Your /mnt/data1/releases partition remaining free space is critically low. Used: $CURRENT%. Threshold: $THRESHOLD%  So, 30 days older files will be deleted $(date)
 						prev_count=0
@@ -61,8 +76,12 @@ pipeline {
 		always {
 			script {
 			        emailext (
+<<<<<<< HEAD
 					body: '''${SCRIPT, template="release-email.template"}''',
 					mimeType: 'text/html',
+=======
+					body: "Current Disk Space is ${env.SPACE}",
+>>>>>>> f344d8eb4b9f9085655c1a12ab29049278df5078
 					subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
 					attachLog: true,
 					to: ('priyank.p.dalal@seagate.com,balaji.ramachandran@seagate.com,shailesh.vaidya@seagate.com,mukul.malhotra@seagate.com'),
@@ -71,4 +90,7 @@ pipeline {
 		}
 	}
 }
+<<<<<<< HEAD
 
+=======
+>>>>>>> f344d8eb4b9f9085655c1a12ab29049278df5078
