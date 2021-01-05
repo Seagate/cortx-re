@@ -34,6 +34,7 @@ pipeline {
 						sh label: 'Threshold alert', script: '''#!/bin/bash
 						CURRENT=$(df -h | grep /mnt/data1/releases | awk '{print $5}' | sed 's/%//g')
 						THRESHOLD=95
+						echo "The Current disk space is $CURRENT "
 						if [ "$CURRENT" -gt "$THRESHOLD" ] ; then
 						echo Your /mnt/data1/releases partition remaining free space is critically low. Used: $CURRENT%. Threshold: $THRESHOLD%  So, 30 days older files will be deleted $(date)
 						prev_count=0
@@ -62,11 +63,12 @@ pipeline {
 		always {
 			script {
 			        emailext (
-					body: '''${SCRIPT, template="release-email.template"}''',
+					#body: '''${SCRIPT, template="release-email.template"}''',
+					body: '''echo $CURRENT'''
 					mimeType: 'text/html',
 					subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
 					attachLog: true,
-					to: ('priyank.p.dalal@seagate.com,balaji.ramachandran@seagate.com,shailesh.vaidya@seagate.com,mukul.malhotra@seagate.com'),
+					to: 'balaji.ramachandran@seagate.com',
 					)
 			}
 		}
