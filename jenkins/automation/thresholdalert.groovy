@@ -6,7 +6,7 @@ pipeline {
 		}
 	}
 	environment {
-		TEST="Successfull"
+		CURRENT=sh(script: 'df -h | grep /mnt/data1/releases | awk '{print $5}' | sed 's/%//g'', , returnStdout: true).trim()
 	}
 	 triggers {
          cron('0 */6 * * *')
@@ -66,7 +66,7 @@ pipeline {
 		always {
 			script {
 			        emailext (
-					body: "Disk Space is ${env.TEST}",
+					body: "Disk Space is ${env.CURRENT}",
 					subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
 					attachLog: true,
 					to: 'balaji.ramachandran@seagate.com',
