@@ -69,7 +69,7 @@ pipeline {
 					body: "Current Disk Space is ${env.SPACE}",
 					subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
 					attachLog: true,
-					to: 'balaji.ramachandran@seagate.com',
+					to: ('priyank.p.dalal@seagate.com,balaji.ramachandran@seagate.com,shailesh.vaidya@seagate.com,mukul.malhotra@seagate.com'),
 					)
 			}
 		}
