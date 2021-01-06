@@ -8,7 +8,7 @@ pipeline {
 <<<<<<< HEAD
 =======
 	environment {
-		SPACE=sh(script: "df -h | grep /mnt/data1/releases", , returnStdout: true).trim()
+		SPACE = sh(script: "df -h | grep /mnt/data1/releases", , returnStdout: true).trim()
 	}
 >>>>>>> f344d8eb4b9f9085655c1a12ab29049278df5078
 	 triggers {
@@ -43,7 +43,7 @@ pipeline {
 						sh label: 'Threshold alert', script: '''#!/bin/bash
 						CURRENT=$(df -h | grep /mnt/data1/releases | awk '{print $5}' | sed 's/%//g')
 <<<<<<< HEAD
-						THRESHOLD=94
+						THRESHOLD=95
 =======
 						THRESHOLD=95
 						echo "The Current disk space is $CURRENT "
