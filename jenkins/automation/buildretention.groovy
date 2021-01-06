@@ -63,7 +63,7 @@ pipeline {
 						prev_count=0
 						fpath=/mnt/data1/releases
 						#find $fpath -type f -mtime +30  -exec ls -ltr {} + > /mnt/data1/releases/file.out
-						find $fpath -maxdepth 1 -type l -print | cut -c3- | grep -v "\#" && find . -name '*.sh*' -type f -mtime +30  -exec ls -ltr {} + > /mnt/data1/releases/file.out
+						find $fpath -maxdepth 1 -type l -print | cut -c3- | grep -v "\\#" && find . -name '*.sh*' -type f -mtime +30  -exec ls -ltr {} + > /mnt/data1/releases/file.out
 						count=$(cat /mnt/data1/releases/file.out | wc -l)
 							if [ "$prev_count" -lt "$count" ] ; then
 							MESSAGE="/mnt/data1/releases/file1.out"
