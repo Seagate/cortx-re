@@ -32,7 +32,7 @@ pipeline {
 					steps {
 						sh label: 'Threshold alert', script: '''#!/bin/bash
 						CURRENT=$(df -h | grep /mnt/data1/releases | awk '{print $5}' | sed 's/%//g')
-						THRESHOLD=95
+						THRESHOLD=94
 						if [ "$CURRENT" -gt "$THRESHOLD" ] ; then
 						echo Your /mnt/data1/releases partition remaining free space is critically low. Used: $CURRENT%. Threshold: $THRESHOLD%  So, 30 days older files will be deleted $(date)
 						prev_count=0
