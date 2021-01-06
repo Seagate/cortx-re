@@ -25,7 +25,7 @@ pipeline {
 		string(name: 'S3_URL', defaultValue: 'https://github.com/Seagate/cortx-s3server.git', description: 'S3Server URL')
 		string(name: 'SSPL_BRANCH', defaultValue: 'main', description: 'Branch for SSPL')
 		string(name: 'SSPL_URL', defaultValue: 'https://github.com/Seagate/cortx-monitor.git', description: 'SSPL URL')
-    string(name: 'RELEASEINFO', defaultValue: 'http://cortx-storage.colo.seagate.com/releases/cortx_builds/centos-7.8.2003/552/RELEASE.INFO, description: 'RELEASE_INFO_INPUT')
+    		string(name: 'RELEASEINFO', defaultValue: 'http://cortx-storage.colo.seagate.com/releases/cortx_builds/centos-7.8.2003/552/RELEASE.INFO, description: 'RELEASE_INFO_INPUT')
 		
 		choice(
 			name: 'OTHER_COMPONENT_BRANCH',
@@ -141,7 +141,7 @@ pipeline {
 		stage ("Build custom-ci") {
 					steps {
 						script { build_stage=env.STAGE_NAME }
-						build job: 'BuildRetention', wait: true,
+						build job: 'custom-ci-build', wait: true,
 						parameters: [
 								string(name: 'CSM_AGENT_BRANCH', defaultValue: '${COMMIT_HASH}', description: 'Branch for CSM Agent')
 								string(name: 'CSM_AGENT_URL', defaultValue: 'https://github.com/Seagate/cortx-manager', description: 'CSM_AGENT URL')
