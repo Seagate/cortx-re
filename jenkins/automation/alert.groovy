@@ -65,7 +65,7 @@ pipeline {
 						script { build_stage=env.STAGE_NAME }
 						build job: 'buildretention', wait: true,
 						parameters: [
-								string(name: 'RELEASE_INFO_URL', defaultValue:http://cortx-storage.colo.seagate.com/releases/cortx_builds/centos-7.8.2003/552/RELEASE.INFO', description: 'RELEASE BUILD')
+								string(name: 'RELEASE_INFO_URL', defaultValue: 'http://cortx-storage.colo.seagate.com/releases/cortx_builds/centos-7.8.2003/552/RELEASE.INFO', description: 'RELEASE BUILD')
 								]
 					}
 				}	
