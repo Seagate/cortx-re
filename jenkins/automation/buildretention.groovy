@@ -87,7 +87,7 @@ pipeline {
 					steps {
 						sh label: 'commit hash', script: '''#!/bin/bash
 					RELEASE.INFO="http://cortx-storage.colo.seagate.com/releases/cortx_builds/centos-7.8.2003/552/RELEASE.INFO"	
-					GITHUB_ORG="Seagate"
+					GITHUB_ORG="balajiramachandran-seagate"
 					declare -A COMPONENT_LIST=( 
 					[cortx-s3server]="https://${GIT_CRED}@github.com/${GITHUB_ORG}/cortx-s3server.git"
 					[cortx-motr]="https://${GIT_CRED}@github.com/${GITHUB_ORG}/cortx-motr.git"
