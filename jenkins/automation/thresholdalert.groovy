@@ -6,7 +6,7 @@ pipeline {
 		}
 	}
 	environment {
-		SPACE=sh(script: "df -h | grep /mnt/data1/releases", , returnStdout: true).trim()
+		SPACE = sh(script: "df -h | grep /mnt/data1/releases", , returnStdout: true).trim()
 	}
 	 triggers {
          cron('0 */6 * * *')
