@@ -127,8 +127,9 @@ pipeline {
 						fi
 						echo "Component: $component , Repo:  ${COMPONENT_LIST[$component]}, Commit Hash: ${COMMIT_HASH}"
 					done
-				}
-			}	
+				'''	
+			}
+		}	
 					
 		stage ("Build custom-ci") {
 					steps {
