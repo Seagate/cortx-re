@@ -17,29 +17,10 @@
 # For any questions about this software or licensing,
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
-#!/bin/expect -f
-# ./create_s3_account.sh username email ldap_user ldap_pwd
 
-set USER_NAME [lindex $argv 0];
-set USER_EMAIL [lindex $argv 1];
-set LDAP_USER [lindex $argv 2];
-set LDAP_PWD [lindex $argv 3];
+wget https://raw.githubusercontent.com/gdraheim/docker-systemctl-replacement/master/files/docker/systemctl.py
+cp /usr/bin/systemctl /usr/bin/systemctl.bak    # Keep a backup of systemctl in case we mess up
+yes | cp -f systemctl.py /usr/bin/systemctl
+chmod a+x /usr/bin/systemctl
+#test -L /bin/systemctl || ln -sf /usr/bin/systemctl /bin/systemctl
 
-spawn s3iamcli CreateAccount -n $USER_NAME -e $USER_EMAIL
-set timeout 20
-expect {
-    timeout {
-        puts "Connection timed out"
-        exit 1
-    }
-
-    "Ldap User Id:" {
-        send "$LDAP_USER\r"
-        exp_continue
-    }
-
-    "Ldap password:" {
-        send -- "$LDAP_PWD\r"
-        exp_continue
-    }
-}

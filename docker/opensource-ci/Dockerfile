@@ -1,4 +1,6 @@
 #
+# Copyright (c) 2020 Seagate Technology LLC and/or its Affiliates
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -20,10 +22,9 @@ ARG CENTOS_RELEASE
 FROM centos:${CENTOS_RELEASE} AS base
 
 ARG CENTOS_RELEASE
-ARG ENVIRONMENT
 
 LABEL maintainer="CORTX.opensource@seagate.com"
-LABEL Description="This image is used to build CORTX components"
+LABEL Description="This image is used to build CORTX stack on CentOS"
 
 ENV BASH_ENV "/etc/profile"
 ENV PATH="/root/.nvm/versions/node/v12.13.0/bin:${PATH}"
@@ -31,13 +32,13 @@ ENV LANG=en_US.UTF-8 \
     LC_ALL=en_US.UTF-8
 
 #Disable default repositories. 
-RUN yum-config-manager --disable base,extras,updates && mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.bkp
+RUN yum-config-manager --disable base,extras,updates
 
-#Add centos-7.7.1908 repository
-COPY ./docker/${ENVIRONMENT}/centos-${CENTOS_RELEASE}/*.repo /etc/yum.repos.d/
+#Add OS specific repository
+COPY ./docker/opensource-ci/C${CENTOS_RELEASE}.repo /etc/yum.repos.d/
 
 # enable EPEL and SCL repos
-RUN yum install centos-release-scl -y && yum clean all \
+RUN yum install epel-release centos-release-scl -y && yum clean all \
 && rm -rf /var/cache/yum
 
 # install common tools
@@ -84,7 +85,9 @@ flex \
 openssl-devel \
 doxygen \
 dbus-devel \
-yum-priorities \
+expect \
+rpm-sign \
+genisoimage \
 redhat-ls && yum clean all \
 && rm -rf /var/cache/yum
 
@@ -102,33 +105,56 @@ RUN localedef -i en_US -f UTF-8 en_US.UTF-8
 RUN rpmdev-setuptree
 
 # Copy scripts
-COPY ./docker/${ENVIRONMENT}/centos-${CENTOS_RELEASE}/*.sh /opt/
+COPY ./docker/opensource-ci/*.sh /opt/
 
 # install node
-RUN bash /opt/install-node.sh v12.13.0
+RUN bash /opt/install-node.sh v12.13.0 \
+&& rm -rf /opt/install-node.sh \
+&& rm -rf install.sh
 
 # docker-systemctl-replacement
 RUN sh /opt/systemctl-replacement.sh \
-&& rm -f /opt/systemctl-replacement.sh
+&& rm -f /opt/systemctl-replacement.sh \
+&& rm -f systemctl.py
 
 # For Provisioner
 RUN bash /opt/setup_fpm.sh \
 && rm -f /opt/setup_fpm.sh && yum clean all \
-&& rm -rf /var/cache/yum
+&& rm -rf /var/cache/yum \
+&& rm -rf rh-ruby23.sh
+
+RUN sh /opt/set-githubrelease-repo.sh \
+&& yum clean all \
+&& rm -rf /var/cache/yum \
+&& rm -f /opt/set-githubrelease-repo.sh
+
+# rpm signing
+COPY ./scripts/rpm-signing/* /opt/rpm-signing/
+
+RUN  cat /opt/rpm-signing/gpgoptions >>  ~/.rpmmacros && \
+     sed -i '/passphrase/d' /opt/rpm-signing/genkey-batch && \
+     sed -i -e 's/$argv 1/$argv 0/g' -e 's/${PASSPHRASE}/ /g' -e '/PASSPHRASE/d' /opt/rpm-signing/rpm-sign.sh && \
+     /usr/bin/gpg --batch --gen-key /opt/rpm-signing/genkey-batch && \
+     /usr/bin/gpg --export -a 'Seagate'  > /opt/rpm-signing/RPM-GPG-KEY-Seagate && \
+     rpm --import /opt/rpm-signing/RPM-GPG-KEY-Seagate
+
+# release helper scripts
+COPY ./scripts/release_support/build_release_info.sh /opt/release_support/
+
+# Makefile for build
+COPY ./docker/opensource-ci/Makefile . 
 
 FROM base as lustre-rpm-builder
 
 ARG LUSTRE_VERSION 
-ARG CENTOS_RELEASE
-ARG ENVIRONMENT
 
 ADD  https://downloads.whamcloud.com/public/lustre/lustre-${LUSTRE_VERSION}/el7/client/SRPMS/lustre-${LUSTRE_VERSION}-1.src.rpm . 
 RUN rpm -i lustre-${LUSTRE_VERSION}-1.src.rpm 
 
-COPY ./docker/${ENVIRONMENT}/centos-${CENTOS_RELEASE}/lustre-2.9.0.spec.patch .
+COPY ./docker/opensource-ci/lustre-2.9.0.spec.patch .
 RUN patch -p1 -i lustre-2.9.0.spec.patch /root/rpmbuild/SPECS/lustre.spec
 
-RUN yum -y install kernel{,-devel}-3.10.0-1127.el7  \
+RUN yum -y install kernel kernel-devel \
 	&& yum-builddep -y /root/rpmbuild/SPECS/lustre.spec
 	
 RUN QA_RPATHS=255 rpmbuild -bb --without servers --without lustre-tests \
@@ -150,30 +176,10 @@ RUN yum install -y https://downloads.whamcloud.com/public/lustre/lustre-${LUSTRE
 		 && rm -rf /var/cache/yum
 		 
 		 
-RUN curl -k https://raw.githubusercontent.com/Seagate/cortx-motr/stable/cortx-motr.spec.in -o cortx-motr.spec \
+RUN curl -k https://raw.githubusercontent.com/Seagate/cortx-motr/main/cortx-motr.spec.in -o cortx-motr.spec \
 	&& sed -i 's/@.*@/111/g' cortx-motr.spec \
 	&& kernel_src=$(ls -1rd /lib/modules/*/build | head -n1) \
-        && yum-builddep -y cortx-motr.spec \
+    && yum-builddep -y cortx-motr.spec \
 	&& yum clean all \
-        && rm -rf /var/cache/yum
-
-RUN curl -k https://raw.githubusercontent.com/Seagate/cortx-s3server/stable/rpms/s3/s3rpm.spec -o s3rpm.spec \
-     && yum install -y http://cortx-storage.colo.seagate.com/releases/cortx/components/github/motr-base/cortx-motr-1.0.0-0_git588b298_3.10.0_1062.el7.x86_64.rpm \
-     http://cortx-storage.colo.seagate.com/releases/cortx/components/github/motr-base/cortx-motr-devel-1.0.0-0_git588b298_3.10.0_1062.el7.x86_64.rpm \
-    && yum install -y git-clang-format \
-    && yum-builddep -y s3rpm.spec \
-    && rm -f s3rpm.spec \
-    && yum remove -y cortx-motr cortx-motr-devel
-
-ENV HARE_VENV_DIR=$HOME/.hare-venv
-
-RUN mkdir $HARE_VENV_DIR \
-    && python3 -m venv $HARE_VENV_DIR
-
-RUN source $HARE_VENV_DIR/bin/activate \
-    && pip3 install PyYAML flake8 mypy ply wheel
-
-ADD https://github.com/dhall-lang/dhall-haskell/releases/download/1.26.1/dhall-1.26.1-x86_64-linux.tar.bz2      /var/cache
-ADD https://github.com/dhall-lang/dhall-haskell/releases/download/1.26.1/dhall-json-1.4.1-x86_64-linux.tar.bz2  /var/cache
-
-RUN for f in /var/cache/dhall*.tar*; do tar -C /usr/local -xf "$f"; done
+    && rm -rf /var/cache/yum \
+    && rm -rf cortx-motr.spec

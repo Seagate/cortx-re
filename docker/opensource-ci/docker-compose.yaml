@@ -1,4 +1,3 @@
-#!/bin/bash
 #
 # Copyright (c) 2020 Seagate Technology LLC and/or its Affiliates
 #
@@ -17,29 +16,33 @@
 # For any questions about this software or licensing,
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
-#!/bin/expect -f
-# ./create_s3_account.sh username email ldap_user ldap_pwd
 
-set USER_NAME [lindex $argv 0];
-set USER_EMAIL [lindex $argv 1];
-set LDAP_USER [lindex $argv 2];
-set LDAP_PWD [lindex $argv 3];
+version: "3"
 
-spawn s3iamcli CreateAccount -n $USER_NAME -e $USER_EMAIL
-set timeout 20
-expect {
-    timeout {
-        puts "Connection timed out"
-        exit 1
-    }
+services:
+  cortx-build-centos-7.8.2003:
+    image: cortx-build:centos-7.8.2003
+    build:
+      context: ../../
+      dockerfile: ./docker/opensource-ci/Dockerfile
+      args:
+       CENTOS_RELEASE: 7.8.2003
+       LUSTRE_VERSION: 2.12.5
+    volumes:
+     - /var/artifacts:/var/artifacts
+     - /root/cortx:/cortx-workspace
 
-    "Ldap User Id:" {
-        send "$LDAP_USER\r"
-        exp_continue
-    }
 
-    "Ldap password:" {
-        send -- "$LDAP_PWD\r"
-        exp_continue
-    }
-}
+
+  cortx-build-centos-7.7.1908:
+    image: cortx-build:centos-7.7.1908
+    build:
+      context: ../../
+      dockerfile: ./docker/opensource-ci/Dockerfile
+      args:
+       CENTOS_RELEASE: 7.7.1908
+       LUSTRE_VERSION: 2.12.3
+    volumes:
+     - /var/artifacts:/var/artifacts
+     - /root/cortx:/cortx-workspace
+

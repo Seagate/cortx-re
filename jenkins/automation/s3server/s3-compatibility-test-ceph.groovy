@@ -23,6 +23,7 @@ pipeline {
 	    string(name: 'S3_URL', defaultValue: 'https://github.com/Seagate/cortx-s3server', description: 'Repo for s3server', trim: true)
         string(name: 'S3_BRANCH', defaultValue: 'main', description: 'Branch for S3Server', trim: true)
         string(name: 'S3_TEST_REPO', defaultValue: 'https://github.com/ceph/s3-tests', description: 's3-test ceph repo', trim: true)
+        // we are using specific revision of 'https://github.com/ceph/s3-tests' for our tests  - default
         string(name: 'S3_TEST_REPO_REV', defaultValue: '6d8c0059db0ec0f3a523fbc4093a1fcb0213ac3d', description: 's3-test repo revision', trim: true)
         choice(name: 'UPLOAD_TEST_CONF', choices: [ "no", 'yes'], description: 'S3 Integration Type')
         choice(name: 'INTEGRATION_TYPE', choices: [ "ceph"], description: 'S3 Integration Type') 

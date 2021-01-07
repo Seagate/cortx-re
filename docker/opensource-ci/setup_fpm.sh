@@ -17,29 +17,27 @@
 # For any questions about this software or licensing,
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
-#!/bin/expect -f
-# ./create_s3_account.sh username email ldap_user ldap_pwd
 
-set USER_NAME [lindex $argv 0];
-set USER_EMAIL [lindex $argv 1];
-set LDAP_USER [lindex $argv 2];
-set LDAP_PWD [lindex $argv 3];
 
-spawn s3iamcli CreateAccount -n $USER_NAME -e $USER_EMAIL
-set timeout 20
-expect {
-    timeout {
-        puts "Connection timed out"
-        exit 1
-    }
+set -ex
 
-    "Ldap User Id:" {
-        send "$LDAP_USER\r"
-        exp_continue
-    }
+#yum install -y ruby-devel gcc make rpm-build rubygems python36
+yum --enablerepo=centos-sclo-rh install rh-ruby23 rh-ruby23-ruby-devel gcc make rpm-build rubygems -y
+cat <<EOF >>rh-ruby23.sh
+#!/bin/bash
+source /opt/rh/rh-ruby23/enable
+export X_SCLS="$(scl enable rh-ruby23 "echo $X_SCLS")"
+EOF
 
-    "Ldap password:" {
-        send -- "$LDAP_PWD\r"
-        exp_continue
-    }
-}
+source rh-ruby23.sh
+cp rh-ruby23.sh /etc/profile.d/
+
+
+# issues with pip>=10:
+# https://github.com/pypa/pip/issues/5240
+# https://github.com/pypa/pip/issues/5221
+python3 -m pip install -U pip setuptools
+
+gem install --no-ri --no-rdoc rake fpm
+
+rm -rf /var/cache/yum
