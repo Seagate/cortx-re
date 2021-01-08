@@ -16,7 +16,7 @@ pipeline {
 		stage ('commit hash') {
 			steps {
 				sh label: 'commit hash', script: '''#!/bin/bash
-				RELEASE_INFO=${params.RELEASE_INFO_URL}
+				RELEASE_INFO=$RELEASE_INFO_URL
 				GITHUB_ORG="Seagate"
 				declare -A COMPONENT_LIST=( 
 				[cortx-s3server]="https://${GIT_CRED}@github.com/${GITHUB_ORG}/cortx-s3server.git"
