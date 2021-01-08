@@ -88,14 +88,14 @@ pipeline {
 						script { build_stage=env.STAGE_NAME }
 						build job: 'custom-ci-build', wait: true,
 						parameters: [
-							string(name: 'CSM_AGENT_BRANCH', defaultValue: '${COMMIT_HASH_CORTX_CSM_AGENT}')
-							string(name: 'CSM_WEB_BRANCH', defaultValue: '${COMMIT_HASH_CORTX_CSM_WEB}')
-							string(name: 'HARE_BRANCH', defaultValue: '${COMMIT_HASH_CORTX_HARE}')
-							string(name: 'HA_BRANCH', defaultValue: '${COMMIT_HASH_CORTX_HA}')
-							string(name: 'MOTR_BRANCH', defaultValue: '${COMMIT_HASH_CORTX_MOTR}')
-							string(name: 'PRVSNR_BRANCH', defaultValue: '${COMMIT_HASH_CORTX_PRVSNR}')
-							string(name: 'S3_BRANCH', defaultValue: '${COMMIT_HASH_CORTX_S3SERVER}')
-							string(name: 'SSPL_BRANCH', defaultValue: '${COMMIT_HASH_CORTX_SSPL}')
+							string(name: 'CSM_AGENT_BRANCH', defaultValue: '${env.COMMIT_HASH_CORTX_CSM_AGENT}')
+							string(name: 'CSM_WEB_BRANCH', defaultValue: '${env.COMMIT_HASH_CORTX_CSM_WEB}')
+							string(name: 'HARE_BRANCH', defaultValue: '${env.COMMIT_HASH_CORTX_HARE}')
+							string(name: 'HA_BRANCH', defaultValue: '${env.COMMIT_HASH_CORTX_HA}')
+							string(name: 'MOTR_BRANCH', defaultValue: '${env.COMMIT_HASH_CORTX_MOTR}')
+							string(name: 'PRVSNR_BRANCH', defaultValue: '${env.COMMIT_HASH_CORTX_PRVSNR}')
+							string(name: 'S3_BRANCH', defaultValue: '${env.COMMIT_HASH_CORTX_S3SERVER}')
+							string(name: 'SSPL_BRANCH', defaultValue: '${env.COMMIT_HASH_CORTX_SSPL}')
 								
 						]
 					}
