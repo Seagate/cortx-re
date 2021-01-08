@@ -8,6 +8,17 @@ pipeline {
 	 triggers {
          cron('0 */6 * * *')
     }
+	environment {
+		COMMIT_HASH_CORTX-CSM_AGENT=""
+		COMMIT_HASH_CORTX-CSM_WEB=""
+		COMMIT_HASH_CORTX-HARE=""
+		COMMIT_HASH_CORTX-HA=""
+		COMMIT_HASH_CORTX-MOTR=""
+		COMMIT_HASH_CORTX-PRVSNR=""
+		COMMIT_HASH_CORTX-S3SERVER=""
+		COMMIT_HASH_CORTX-SSPL=""
+	}	
+	
 	parameters {
 		string(name: 'RELEASE_INFO_URL', defaultValue: 'http://cortx-storage.colo.seagate.com/releases/cortx_builds/centos-7.8.2003/552/RELEASE.INFO', description: 'RELEASE BUILD')
 	}
