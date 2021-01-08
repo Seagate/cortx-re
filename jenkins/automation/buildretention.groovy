@@ -86,7 +86,7 @@ pipeline {
 		stage ("Build custom-ci") {
 					steps {
 						sh label: 'commit hash', script: '''#!/bin/bash
-						echo ${COMMIT_HASH_CORTX_CSM_AGENT}
+						echo "${COMMIT_HASH_CORTX_CSM_AGENT}"
 					'''
 				}
 		}	
