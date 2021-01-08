@@ -71,6 +71,7 @@ pipeline {
 						else
 							COMMIT_HASH=echo "Component Not Matching"
 						fi
+					done	
 						echo "Component: $component , Repo:  ${COMPONENT_LIST[$component]}, Commit Hash: ${COMMIT_HASH_CORTX_HARE}"
 						echo "Component: $component , Repo:  ${COMPONENT_LIST[$component]}, Commit Hash: ${COMMIT_HASH_CORTX_SSPL}"
 						echo "Component: $component , Repo:  ${COMPONENT_LIST[$component]}, Commit Hash: ${COMMIT_HASH_CORTX_HA}"
@@ -79,7 +80,6 @@ pipeline {
 						echo "Component: $component , Repo:  ${COMPONENT_LIST[$component]}, Commit Hash: ${COMMIT_HASH_CORTX_S3SERVER}"
 						echo "Component: $component , Repo:  ${COMPONENT_LIST[$component]}, Commit Hash: ${COMMIT_HASH_CORTX_MOTR}"
 						echo "Component: $component , Repo:  ${COMPONENT_LIST[$component]}, Commit Hash: ${COMMIT_HASH_CORTX_PRVSNR}"
-					done
 				'''	
 			}		
 		}	
