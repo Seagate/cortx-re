@@ -11,7 +11,9 @@ pipeline {
 	parameters {
 		string(name: 'RELEASE_INFO_URL', defaultValue: 'http://cortx-storage.colo.seagate.com/releases/cortx_builds/centos-7.8.2003/552/RELEASE.INFO', description: 'RELEASE BUILD')
 	}
-	stage ('commit hash') {
+	stages {
+		
+		stage ('commit hash') {
 			steps {
 				sh label: 'commit hash', script: '''#!/bin/bash
 				RELEASE_INFO=${params.RELEASE_INFO_URL}
@@ -52,3 +54,4 @@ pipeline {
 			}		
 		}	
 	}		
+}	
