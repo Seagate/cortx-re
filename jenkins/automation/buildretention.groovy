@@ -52,7 +52,6 @@ pipeline {
 							echo "ERROR:git clone failed for $component"
 							exit 1
 						fi
-					done	
 						if [ "$component" == cortx-hare ]; then
 							COMMIT_HASH_CORTX_HARE=$(grep "$component" RELEASE.INFO | head -1 | awk -F['_'] '{print $2}' | cut -d. -f1 |  sed 's/git//g');
 						elif [ "$component" == cortx-sspl ]; then
@@ -80,6 +79,7 @@ pipeline {
 						echo "Component: $component , Repo:  ${COMPONENT_LIST[$component]}, Commit Hash: ${COMMIT_HASH_CORTX_S3SERVER}"
 						echo "Component: $component , Repo:  ${COMPONENT_LIST[$component]}, Commit Hash: ${COMMIT_HASH_CORTX_MOTR}"
 						echo "Component: $component , Repo:  ${COMPONENT_LIST[$component]}, Commit Hash: ${COMMIT_HASH_CORTX_PRVSNR}"
+					done
 				'''	
 			}		
 		}	
