@@ -89,7 +89,7 @@ pipeline {
 						build job: 'custom-ci-build', wait: true,
 						parameters: [
 							string(name: "CSM_AGENT_BRANCH", defaultValue: "${env.COMMIT_HASH_CORTX_CSM_AGENT}"),
-							string(name: "CSM_WEB_BRANCH", defaultValue: :${env.COMMIT_HASH_CORTX_CSM_WEB}"),
+							string(name: "CSM_WEB_BRANCH", defaultValue: "${env.COMMIT_HASH_CORTX_CSM_WEB}"),
 							string(name: "HARE_BRANCH", defaultValue: "${env.COMMIT_HASH_CORTX_HARE}"),
 							string(name: "HA_BRANCH", defaultValue: "${env.COMMIT_HASH_CORTX_HA}"),
 							string(name: "MOTR_BRANCH", defaultValue: "${env.COMMIT_HASH_CORTX_MOTR}"),
