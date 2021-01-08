@@ -28,21 +28,21 @@ pipeline {
 	}
 
 	parameters {
-		string(name: 'CSM_AGENT_BRANCH', defaultValue: 'main', description: 'Branch for CSM Agent')
+		string(name: 'CSM_AGENT_BRANCH', defaultValue: '${COMMIT_HASH_CORTX_CSM_AGENT}', description: 'Branch for CSM Agent')
 		string(name: 'CSM_AGENT_URL', defaultValue: 'https://github.com/Seagate/cortx-manager', description: 'CSM_AGENT URL')
-		string(name: 'CSM_WEB_BRANCH', defaultValue: 'main', description: 'Branch for CSM Web')
+		string(name: 'CSM_WEB_BRANCH', defaultValue: '${COMMIT_HASH_CORTX_CSM_WEB}', description: 'Branch for CSM Web')
 		string(name: 'CSM_WEB_URL', defaultValue: 'https://github.com/Seagate/cortx-management-portal', description: 'CSM WEB URL')
-		string(name: 'HARE_BRANCH', defaultValue: 'main', description: 'Branch for Hare')
+		string(name: 'HARE_BRANCH', defaultValue: '${COMMIT_HASH_CORTX_HARE}', description: 'Branch for Hare')
 		string(name: 'HARE_URL', defaultValue: 'https://github.com/Seagate/cortx-hare', description: 'Hare URL')
-		string(name: 'HA_BRANCH', defaultValue: 'main', description: 'Branch for Cortx-HA')
+		string(name: 'HA_BRANCH', defaultValue: '${COMMIT_HASH_CORTX_HA}', description: 'Branch for Cortx-HA')
 		string(name: 'HA_URL', defaultValue: 'https://github.com/Seagate/cortx-ha.git', description: 'Cortx-HA URL')
-		string(name: 'MOTR_BRANCH', defaultValue: 'main', description: 'Branch for Motr')
+		string(name: 'MOTR_BRANCH', defaultValue: '${COMMIT_HASH_CORTX_MOTR}', description: 'Branch for Motr')
 		string(name: 'MOTR_URL', defaultValue: 'https://github.com/Seagate/cortx-motr.git', description: 'Motr URL')
-		string(name: 'PRVSNR_BRANCH', defaultValue: 'main', description: 'Branch for Provisioner')
+		string(name: 'PRVSNR_BRANCH', defaultValue: '${COMMIT_HASH_CORTX_PRVSNR}', description: 'Branch for Provisioner')
 		string(name: 'PRVSNR_URL', defaultValue: 'https://github.com/Seagate/cortx-prvsnr.git', description: 'Provisioner URL')
-		string(name: 'S3_BRANCH', defaultValue: 'main', description: 'Branch for S3Server')
+		string(name: 'S3_BRANCH', defaultValue: '${COMMIT_HASH_CORTX_S3SERVER}', description: 'Branch for S3Server')
 		string(name: 'S3_URL', defaultValue: 'https://github.com/Seagate/cortx-s3server.git', description: 'S3Server URL')
-		string(name: 'SSPL_BRANCH', defaultValue: 'main', description: 'Branch for SSPL')
+		string(name: 'SSPL_BRANCH', defaultValue: '${COMMIT_HASH_CORTX_SSPL}', description: 'Branch for SSPL')
 		string(name: 'SSPL_URL', defaultValue: 'https://github.com/Seagate/cortx-monitor.git', description: 'SSPL URL')
 
 		choice(
