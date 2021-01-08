@@ -88,14 +88,14 @@ pipeline {
 						script { build_stage=env.STAGE_NAME }
 						build job: 'custom-ci-build', wait: true,
 						parameters: [
-							[$class: 'StringParameterValue', name: 'CSM_AGENT_BRANCH', value: "${env.COMMIT_HASH_CORTX_CSM_AGENT}"]
-							[$class: 'StringParameterValue', name: 'CSM_WEB_BRANCH', value: "${env.COMMIT_HASH_CORTX_CSM_WEB}"]
-							[$class: 'StringParameterValue', name: 'HARE_BRANCH', value: "${env.COMMIT_HASH_CORTX_HARE}"]
-							[$class: 'StringParameterValue', name: 'HA_BRANCH', value: "${env.COMMIT_HASH_CORTX_HA}"]
-							[$class: 'StringParameterValue', name: 'MOTR_BRANCH', value: "${env.COMMIT_HASH_CORTX_MOTR}"]
-							[$class: 'StringParameterValue', name: 'PRVSNR_BRANCH', value: "${env.COMMIT_HASH_CORTX_PRVSNR}"]
-							[$class: 'StringParameterValue', name: 'S3_BRANCH', value: "${env.COMMIT_HASH_CORTX_S3SERVER}"]
-							[$class: 'StringParameterValue', name: 'SSPL_BRANCH', value: "${env.COMMIT_HASH_CORTX_SSPL}"]
+							string(name: 'CSM_AGENT_BRANCH', defaultValue: '${COMMIT_HASH_CORTX-CSM_AGENT}')
+							string(name: 'CSM_WEB_BRANCH', defaultValue: '${COMMIT_HASH_CORTX-CSM_WEB}')
+							string(name: 'HARE_BRANCH', defaultValue: '${COMMIT_HASH_CORTX-HARE}')
+							string(name: 'HA_BRANCH', defaultValue: '${COMMIT_HASH_CORTX-HA}')
+							string(name: 'MOTR_BRANCH', defaultValue: '${COMMIT_HASH_CORTX-MOTR}')
+							string(name: 'PRVSNR_BRANCH', defaultValue: '${COMMIT_HASH_CORTX-PRVSNR}')
+							string(name: 'S3_BRANCH', defaultValue: '${COMMIT_HASH_CORTX-S3SERVER}')
+							string(name: 'SSPL_BRANCH', defaultValue: '${COMMIT_HASH_CORTX-SSPL}')
 								
 						]
 					}
