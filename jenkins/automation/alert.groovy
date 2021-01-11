@@ -57,7 +57,7 @@ pipeline {
 							#SUBJECT="WARNING: Your /mnt/data1/releases partition remaining free space is critically low. Used: $CURRENT%.  So, 50 days older files have been deleted $(date)"
 							#mailx -s "$SUBJECT" "$TO" < $MESSAGE
 							cat $MESSAGE
-							rm $MESSAGE /mnt/data1/releases/file.out
+							#rm $MESSAGE /mnt/data1/releases/file.out
 							fi
 						fi
 					'''
