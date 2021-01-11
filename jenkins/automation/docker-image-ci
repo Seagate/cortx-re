@@ -1,0 +1,44 @@
+pipeline {
+    agent {
+        node {
+            label 'docker-image-$os_version-node'
+        }
+    }
+    
+    options {
+        timeout(time: 15, unit: 'MINUTES')
+        timestamps() 
+    }
+
+    parameters {
+				
+         choice(
+            name: 'os_version', 
+            choices: ['centos-7.8.2003'],
+            description: 'OS Version'
+        )
+	}	
+	
+
+    stages {
+
+        stage('Checkout Script') {
+            steps {             
+                script {
+                    checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re/']]])                
+                }
+            }
+        }
+
+        stage ('Build Docker image') {
+			steps {
+				script { build_stage = env.STAGE_NAME }
+				sh label: 'Build Docker image', script: '''
+                docker-compose -f internal-ci/docker-compose.yaml build cortx-build-cp-$os_version --compress
+                docker-compose -f internal-ci/docker-compose.yaml build cortx-build-io-$os_version --compress
+                '''
+			}
+		}
+
+    }
+}
