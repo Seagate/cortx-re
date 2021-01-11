@@ -41,7 +41,7 @@ pipeline {
 		
 		
 		stage ("Build custom-ci") {
-             when { expression { false } }
+             when { expression { true } }
             steps {
                 script { build_stage=env.STAGE_NAME }
                 build job: 'custom-ci-build', wait: true,
