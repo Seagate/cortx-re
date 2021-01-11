@@ -1,11 +1,11 @@
 ---
 - name: Poweron the VM
   vmware_guest_powerstate:
-    hostname: "{{ hostname }}"
-    username: "{{ username }}"
-    password: "{{ password }}"
-    folder: "{{ vm_path }}"
-    name: "{{ vm_name }}"
+    hostname: "{{ VSPHERE_HOSTNAME }}"
+    username: "{{ VSPHERE_USERNAME }}"
+    password: "{{ VSPHERE_PASSWORD }}"
+    folder: "{{ VSPHERE_VM_PATH }}"
+    name: "{{ VSPHERE_VM_NAME }}"
     validate_certs: no
     state: powered-on
 
@@ -17,12 +17,12 @@
 
 - name: Revert VM to snapshot
   vmware_guest_snapshot:
-    hostname: "{{ hostname }}"
-    username: "{{ username }}"
-    password: "{{ password }}"
-    datacenter: "{{ vsphere_datacenter }}"
-    folder: "{{ vm_path }}"
-    name: "{{ vm_name }}"
+    hostname: "{{ VSPHERE_HOSTNAME }}"
+    username: "{{ VSPHERE_USERNAME }}"
+    password: "{{ VSPHERE_PASSWORD }}"
+    datacenter: "{{ VSPHERE_DATACENTER }}"
+    folder: "{{ VSPHERE_VM_PATH }}"
+    name: "{{ VSPHERE_VM_NAME }}"
     validate_certs: no
     state: revert
-    snapshot_name: "{{ vm_snapshot_name }}"
+    snapshot_name: "{{ VSPHERE_VM_SNAPSHOT_NAME }}"

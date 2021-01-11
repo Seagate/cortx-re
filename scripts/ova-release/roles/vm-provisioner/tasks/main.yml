@@ -4,7 +4,7 @@
 
 - name: Download cortx-prereqs script
   get_url:
-    url: https://raw.githubusercontent.com/Seagate/cortx-prvsnr/cortx-1.0/cli/src/cortx-prereqs.sh
+    url: "{{ PREREQ_SCRIPT }}"
     dest: /root/
     mode: '0751' 
 
@@ -49,6 +49,12 @@
   shell: ./provisioner.sh
   register: command_result
   failed_when: "'ERROR' in command_result.stdout"
+
+- name: Edit config file
+  shell: "sed 's/host:.*/host: 127.0.0.1/g' /etc/csm/database.yaml"
+
+- name: Restart csm_sgent
+  shell: systemctl restart csm_agent
 
 - name: Verify cortx cluster status
   shell: hctl status

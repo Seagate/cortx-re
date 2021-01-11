@@ -1,31 +1,31 @@
 ---
-- name: Validate {{ mgmt_itf }} interface
+- name: Validate {{ MGMT_ITF }} interface
   lineinfile:
-    path: /etc/sysconfig/network-scripts/ifcfg-{{ mgmt_itf }}
+    path: /etc/sysconfig/network-scripts/ifcfg-{{ MGMT_ITF }}
     state: present
     regexp: '^ONBOOT='
     line: 'ONBOOT=yes'
-  when: ansible_{{ mgmt_itf }}.ipv4.address is not defined
+  when: ansible_{{ MGMT_ITF }}.ipv4.address is not defined
   notify:
     - Restart network
 
-- name: Validate {{ pbdata_itf }} interface
+- name: Validate {{ PBDATA_ITF }} interface
   lineinfile:
-    path: /etc/sysconfig/network-scripts/ifcfg-{{ pbdata_itf }}
+    path: /etc/sysconfig/network-scripts/ifcfg-{{ PBDATA_ITF }}
     state: present
     regexp: '^ONBOOT='
     line: 'ONBOOT=yes'
-  when: ansible_{{ pbdata_itf }}.ipv4.address is not defined
+  when: ansible_{{ PBDATA_ITF }}.ipv4.address is not defined
   notify:
     - Restart network
 
-- name: Validate {{ pvdata_itf }} interface
+- name: Validate {{ PVDATA_ITF }} interface
   lineinfile:
-    path: /etc/sysconfig/network-scripts/ifcfg-{{ pvdata_itf }}
+    path: /etc/sysconfig/network-scripts/ifcfg-{{ PVDATA_ITF }}
     state: present
     regexp: '^ONBOOT='
     line: 'ONBOOT=yes'
-  when: ansible_{{ pvdata_itf }}.ipv4.address is not defined
+  when: ansible_{{ PVDATA_ITF }}.ipv4.address is not defined
   notify:
     - Restart network
 
@@ -42,17 +42,17 @@
     - host.stdout is defined and 'localhost' not in "{{ host.stdout }}"
 
 - name: Set hostname
-  shell: hostnamectl --static --transient set-hostname "{{ ova_hostname }}"
+  shell: hostnamectl --static --transient set-hostname "{{ OVA_HOSTNAME }}"
   when: "{{ 'localhost' in host.stdout }}"
 
 - name: Add a new host in hosts file
   lineinfile:
     path: /etc/hosts
-    line: "{{ ansible_default_ipv4.address }} {{ ova_hostname }}"
+    line: "{{ ansible_default_ipv4.address }} {{ OVA_HOSTNAME }}"
     create: yes
   when: "{{ 'localhost' in host.stdout }}"
 
 - name: set hostname fact
   set_fact: 
-    ansible_nodename: "{{ ova_hostname }}"
+    ansible_nodename: "{{ OVA_HOSTNAME }}"
   when: "{{ 'localhost' in host.stdout }}"

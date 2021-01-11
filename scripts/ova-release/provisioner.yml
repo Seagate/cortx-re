@@ -1,7 +1,0 @@
-- hosts: vmware-hosts
-  user: root
-  gather_facts: true
-  vars_files:
-    - group_vars/secrets.yml
-  roles:
-    - vm-provisioner

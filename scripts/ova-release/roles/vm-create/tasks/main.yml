@@ -6,12 +6,12 @@
     state: present
 
 - vmware_deploy_ovf:
-    hostname: "{{ hostname }}"
-    username: "{{ username }}"
-    password: "{{ password }}"
+    hostname: "{{ VSPHERE_HOSTNAME }}"
+    username: "{{ VSPHERE_USERNAME }}"
+    password: "{{ VSPHERE_PASSWORD }}"
     validate_certs: false
-    datacenter: "{{ vsphere_datacenter }}"
-    cluster: "{{ vsphere_cluster }}"
-    datastore: "{{ vsphere_datastore }}"
-    name: "{{ ova_vm_name }}"
-    ovf: "{{ ova_file_path }}"
+    datacenter: "{{ VSPHERE_DATACENTER }}"
+    cluster: "{{ VSPHERE_CLUSTER }}"
+    datastore: "{{ VSPHERE_DATASTORE }}"
+    name: "{{ OVA_VM_NAME }}"
+    ovf: "{{ OVA_FILE_PATH }}"

@@ -1,5 +1,5 @@
 ---
 - name: Restart network
-  ansible.builtin.service:
+  service:
     name: network
     state: restarted
