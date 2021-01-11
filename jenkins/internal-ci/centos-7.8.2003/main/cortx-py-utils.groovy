@@ -35,12 +35,14 @@ pipeline {
 	stages {
 		stage('Checkout py-utils') {
 			steps {
+                script { build_stage = env.STAGE_NAME }
                 checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-utils']]])
 			}
 		}
         
 		stage('Build') {
 			steps {
+                script { build_stage = env.STAGE_NAME }
 				sh label: 'Build', script: '''
 				yum install python36-devel -y
 				pushd py-utils
@@ -64,7 +66,7 @@ pipeline {
                 '''
                 sh label: 'Repo Creation', script: '''
                     pushd $build_upload_dir/$BUILD_NUMBER
-                    rpm -qi createrepo || yum install -y createrepo
+                    yum install -y createrepo
                     createrepo .
                     popd
                 '''
@@ -88,4 +90,35 @@ pipeline {
 			}
 		}
 	}
+
+    post {
+		always {
+			script{
+            	
+				echo 'Cleanup Workspace.'
+				deleteDir() /* clean up our workspace */
+
+				env.release_build = (env.release_build != null) ? env.release_build : "" 
+				env.release_build_location = (env.release_build_location != null) ? env.release_build_location : ""
+				env.component = (env.component).toUpperCase()
+				env.build_stage = "${build_stage}"
+
+				def toEmail = ""
+				def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
+				if( manager.build.result.toString() == "FAILURE"){
+					toEmail = "shailesh.vaidya@seagate.com"
+					recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'],[$class: 'RequesterRecipientProvider']]
+				}
+				emailext (
+					body: '''${SCRIPT, template="component-email.template"}''',
+					mimeType: 'text/html',
+				    subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
+					attachLog: true,
+					to: toEmail,
+					recipientProviders: recipientProvidersClass
+				)
+			}
+		}
+    }
+
 }
