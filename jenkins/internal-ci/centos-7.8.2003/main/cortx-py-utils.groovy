@@ -93,7 +93,7 @@ pipeline {
 
     post {
 		always {
-			script{
+			script {
             	
 				echo 'Cleanup Workspace.'
 				deleteDir() /* clean up our workspace */
@@ -105,9 +105,9 @@ pipeline {
 
 				def toEmail = ""
 				def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
-				if( manager.build.result.toString() == "FAILURE"){
+				if ( manager.build.result.toString() == "FAILURE") {
 					toEmail = "shailesh.vaidya@seagate.com,CORTX.Foundation@seagate.com"
-					recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'],[$class: 'RequesterRecipientProvider']]
+					recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
 				}
 				emailext (
 					body: '''${SCRIPT, template="component-email.template"}''',

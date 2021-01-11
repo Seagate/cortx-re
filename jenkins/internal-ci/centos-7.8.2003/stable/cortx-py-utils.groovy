@@ -86,11 +86,11 @@ pipeline {
         stage ("Release") {
             when { triggeredBy 'SCMTrigger' }
             steps {
-                script { build_stage=env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
 				script {
                 	def releaseBuild = build job: 'Release', propagate: true
 				 	env.release_build = releaseBuild.number
-                    env.release_build_location="http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/"+releaseBuild.number
+                    env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/"+releaseBuild.number
 				}
             }
         }
@@ -99,7 +99,7 @@ pipeline {
 
 	post {
 		always {
-			script{
+			script {
             	
 				echo 'Cleanup Workspace.'
 				deleteDir() /* clean up our workspace */
@@ -111,9 +111,9 @@ pipeline {
 
 				def toEmail = ""
 				def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
-				if( manager.build.result.toString() == "FAILURE"){
+				if ( manager.build.result.toString() == "FAILURE") {
 					toEmail = "shailesh.vaidya@seagate.com,CORTX.Foundation@seagate.com"
-					recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'],[$class: 'RequesterRecipientProvider']]
+					recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
 				}
 				emailext (
 					body: '''${SCRIPT, template="component-email.template"}''',
