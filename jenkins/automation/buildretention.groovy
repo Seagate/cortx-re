@@ -53,28 +53,28 @@ pipeline {
 							exit 1
 						fi
 						if [ "$component" == cortx-hare ]; then
-							COMMIT_HASH_CORTX_HARE=$(grep "$component" RELEASE.INFO | head -1 | awk -F['_'] '{print $2}' | cut -d. -f1 |  sed 's/git//g');
+							env.COMMIT_HASH_CORTX_HARE=$(grep "$component" RELEASE.INFO | head -1 | awk -F['_'] '{print $2}' | cut -d. -f1 |  sed 's/git//g');
 							echo "Component: $component , Repo:  ${COMPONENT_LIST[$component]}, Commit Hash: ${COMMIT_HASH_CORTX_HARE}"
 						elif [ "$component" == cortx-sspl ]; then
-							COMMIT_HASH_CORTX_SSPL=$(grep "$component" RELEASE.INFO | head -1 | awk -F['_'] '{print $2}' | cut -d. -f1 |  sed 's/git//g');
+							env.COMMIT_HASH_CORTX_SSPL=$(grep "$component" RELEASE.INFO | head -1 | awk -F['_'] '{print $2}' | cut -d. -f1 |  sed 's/git//g');
 							echo "Component: $component , Repo:  ${COMPONENT_LIST[$component]}, Commit Hash: ${COMMIT_HASH_CORTX_SSPL}"
 						elif [ "$component" == cortx-ha ]; then
-							COMMIT_HASH_CORTX_HA=$(grep "$component" RELEASE.INFO | head -1 | awk -F['_'] '{print $2}' | cut -d. -f1 |  sed 's/git//g');
+							env.COMMIT_HASH_CORTX_HA=$(grep "$component" RELEASE.INFO | head -1 | awk -F['_'] '{print $2}' | cut -d. -f1 |  sed 's/git//g');
 							echo "Component: $component , Repo:  ${COMPONENT_LIST[$component]}, Commit Hash: ${COMMIT_HASH_CORTX_HA}"
 						elif [ "$component" == "cortx-csm_agent" ]; then
-							COMMIT_HASH_CORTX_CSM_AGENT=$(grep "$component" RELEASE.INFO | head -1 | awk -F['_'] '{print $3}' |  cut -d. -f1);
+							env.COMMIT_HASH_CORTX_CSM_AGENT=$(grep "$component" RELEASE.INFO | head -1 | awk -F['_'] '{print $3}' |  cut -d. -f1);
 							echo "Component: $component , Repo:  ${COMPONENT_LIST[$component]}, Commit Hash: ${COMMIT_HASH_CORTX_CSM_AGENT}"
 						elif [ "$component" == "cortx-csm_web" ]; then
-							COMMIT_HASH_CORTX_CSM_WEB=$(grep "$component" RELEASE.INFO | head -1 | awk -F['_'] '{print $3}' |  cut -d. -f1);
+							env.COMMIT_HASH_CORTX_CSM_WEB=$(grep "$component" RELEASE.INFO | head -1 | awk -F['_'] '{print $3}' |  cut -d. -f1);
 							echo "Component: $component , Repo:  ${COMPONENT_LIST[$component]}, Commit Hash: ${COMMIT_HASH_CORTX_CSM_WEB}"
 						elif [ "$component" == "cortx-s3server" ]; then
-							COMMIT_HASH_CORTX_S3SERVER=$(grep "$component" RELEASE.INFO | head -1 | awk -F['_'] '{print $2}' | sed 's/git//g');
+							env.COMMIT_HASH_CORTX_S3SERVER=$(grep "$component" RELEASE.INFO | head -1 | awk -F['_'] '{print $2}' | sed 's/git//g');
 							echo "Component: $component , Repo:  ${COMPONENT_LIST[$component]}, Commit Hash: ${COMMIT_HASH_CORTX_S3SERVER}"
 						elif [ "$component" == "cortx-motr" ]; then
-							COMMIT_HASH_CORTX_MOTR=$(grep "$component" RELEASE.INFO | head -1 | awk -F['_'] '{print $2}' | sed 's/git//g');
+							env.COMMIT_HASH_CORTX_MOTR=$(grep "$component" RELEASE.INFO | head -1 | awk -F['_'] '{print $2}' | sed 's/git//g');
 							echo "Component: $component , Repo:  ${COMPONENT_LIST[$component]}, Commit Hash: ${COMMIT_HASH_CORTX_MOTR}"
 						elif [ "$component" == "cortx-prvsnr" ]; then 
-							COMMIT_HASH_CORTX_PRVSNR=$(grep "$component" RELEASE.INFO | head -1 | awk -F['_'] '{print $2}' | sed 's/git//g');
+							env.COMMIT_HASH_CORTX_PRVSNR=$(grep "$component" RELEASE.INFO | head -1 | awk -F['_'] '{print $2}' | sed 's/git//g');
 							echo "Component: $component , Repo:  ${COMPONENT_LIST[$component]}, Commit Hash: ${COMMIT_HASH_CORTX_PRVSNR}"
 						else
 							COMMIT_HASH=echo "Component Not Matching"
@@ -89,14 +89,14 @@ pipeline {
 						script { build_stage=env.STAGE_NAME }
 						build job: 'custom-ci-build', wait: true,
 						parameters: [
-							string(name: 'CSM_AGENT_BRANCH', defaultValue: '{COMMIT_HASH_CORTX_CSM_AGENT}'),
-							string(name: 'CSM_WEB_BRANCH', defaultValue: '{COMMIT_HASH_CORTX_CSM_WEB}'),
-							string(name: 'HARE_BRANCH', defaultValue: '{COMMIT_HASH_CORTX_HARE}'),
-							string(name: 'HA_BRANCH', defaultValue: '{COMMIT_HASH_CORTX_HA}'),
-							string(name: 'MOTR_BRANCH', defaultValue: '{COMMIT_HASH_CORTX_MOTR}'),
-							string(name: 'PRVSNR_BRANCH', defaultValue: '{COMMIT_HASH_CORTX_PRVSNR}'),
-							string(name: 'S3_BRANCH', defaultValue: '{COMMIT_HASH_CORTX_S3SERVER}'),
-							string(name: 'SSPL_BRANCH', defaultValue: '{COMMIT_HASH_CORTX_SSPL}')
+							string(name: 'CSM_AGENT_BRANCH', defaultValue: '${COMMIT_HASH_CORTX_CSM_AGENT}'),
+							string(name: 'CSM_WEB_BRANCH', defaultValue: '${COMMIT_HASH_CORTX_CSM_WEB}'),
+							string(name: 'HARE_BRANCH', defaultValue: '${COMMIT_HASH_CORTX_HARE}'),
+							string(name: 'HA_BRANCH', defaultValue: '${COMMIT_HASH_CORTX_HA}'),
+							string(name: 'MOTR_BRANCH', defaultValue: '${COMMIT_HASH_CORTX_MOTR}'),
+							string(name: 'PRVSNR_BRANCH', defaultValue: '${COMMIT_HASH_CORTX_PRVSNR}'),
+							string(name: 'S3_BRANCH', defaultValue: '${COMMIT_HASH_CORTX_S3SERVER}'),
+							string(name: 'SSPL_BRANCH', defaultValue: '${COMMIT_HASH_CORTX_SSPL}')
 								
 						]
 				}
