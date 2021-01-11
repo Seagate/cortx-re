@@ -53,29 +53,29 @@ pipeline {
 							exit 1
 						fi
 						if [ "$component" == cortx-hare ]; then
-							COMMITT_HASH_CORTX_HARE=$(grep "$component" RELEASE.INFO | head -1 | awk -F['_'] '{print $2}' | cut -d. -f1 |  sed 's/git//g');
-							COMMIT_HASH_CORTX_HARE=sh(script: 'echo ${COMMITT_HASH_CORTX_HARE}', returnStdout: true).trim()
+							COMMIT_HASH_CORTX_HARE=$(grep "$component" RELEASE.INFO | head -1 | awk -F['_'] '{print $2}' | cut -d. -f1 |  sed 's/git//g');
+							
 						elif [ "$component" == cortx-sspl ]; then
-							COMMITT_HASH_CORTX_SSPL=$(grep "$component" RELEASE.INFO | head -1 | awk -F['_'] '{print $2}' | cut -d. -f1 |  sed 's/git//g');
-							COMMIT_HASH_CORTX_SSPL=sh(script: 'echo ${COMMITT_HASH_CORTX_HARE}', returnStdout: true).trim()
+							COMMIT_HASH_CORTX_SSPL=$(grep "$component" RELEASE.INFO | head -1 | awk -F['_'] '{print $2}' | cut -d. -f1 |  sed 's/git//g');
+							
 						elif [ "$component" == cortx-ha ]; then
-							COMMITT_HASH_CORTX_HA=$(grep "$component" RELEASE.INFO | head -1 | awk -F['_'] '{print $2}' | cut -d. -f1 |  sed 's/git//g');
-							COMMIT_HASH_CORTX_HA=sh(script: 'echo ${COMMITT_HASH_CORTX_HA}', returnStdout: true).trim()
+							COMMIT_HASH_CORTX_HA=$(grep "$component" RELEASE.INFO | head -1 | awk -F['_'] '{print $2}' | cut -d. -f1 |  sed 's/git//g');
+							
 						elif [ "$component" == "cortx-csm_agent" ]; then
-							COMMITT_HASH_CORTX_CSM_AGENT=$(grep "$component" RELEASE.INFO | head -1 | awk -F['_'] '{print $3}' |  cut -d. -f1);
-							COMMIT_HASH_CORTX_CSM_AGENT=sh(script: 'echo ${COMMITT_HASH_CORTX_CSM_AGENT}', returnStdout: true).trim()
+							COMMIT_HASH_CORTX_CSM_AGENT=$(grep "$component" RELEASE.INFO | head -1 | awk -F['_'] '{print $3}' |  cut -d. -f1);
+							
 						elif [ "$component" == "cortx-csm_web" ]; then
-							COMMITT_HASH_CORTX_CSM_WEB=$(grep "$component" RELEASE.INFO | head -1 | awk -F['_'] '{print $3}' |  cut -d. -f1);
-							COMMIT_HASH_CORTX_CSM_WEB=sh(script: 'echo ${COMMITT_HASH_CORTX_CSM_WEB}', returnStdout: true).trim()
+							COMMIT_HASH_CORTX_CSM_WEB=$(grep "$component" RELEASE.INFO | head -1 | awk -F['_'] '{print $3}' |  cut -d. -f1);
+							
 						elif [ "$component" == "cortx-s3server" ]; then
-							COMMITT_HASH_CORTX_S3SERVER=$(grep "$component" RELEASE.INFO | head -1 | awk -F['_'] '{print $2}' | sed 's/git//g');
-							COMMIT_HASH_CORTX_S3SERVER=sh(script: 'echo ${COMMITT_HASH_CORTX_S3SERVER}', returnStdout: true).trim()
+							COMMIT_HASH_CORTX_S3SERVER=$(grep "$component" RELEASE.INFO | head -1 | awk -F['_'] '{print $2}' | sed 's/git//g');
+							
 						elif [ "$component" == "cortx-motr" ]; then
-							COMMITT_HASH_CORTX_MOTR=$(grep "$component" RELEASE.INFO | head -1 | awk -F['_'] '{print $2}' | sed 's/git//g');
-							COMMIT_HASH_CORTX_MOTR=sh(script: 'echo ${COMMITT_HASH_CORTX_MOTR}', returnStdout: true).trim()
+							COMMIT_HASH_CORTX_MOTR=$(grep "$component" RELEASE.INFO | head -1 | awk -F['_'] '{print $2}' | sed 's/git//g');
+							
 						elif [ "$component" == "cortx-prvsnr" ]; then 
-							COMMITT_HASH_CORTX_PRVSNR=$(grep "$component" RELEASE.INFO | head -1 | awk -F['_'] '{print $2}' | sed 's/git//g');
-							COMMIT_HASH_CORTX_PRVSNR=sh(script: 'echo ${COMMITT_HASH_CORTX_PRVSNR}', returnStdout: true).trim()
+							COMMIT_HASH_CORTX_PRVSNR=$(grep "$component" RELEASE.INFO | head -1 | awk -F['_'] '{print $2}' | sed 's/git//g');
+							
 						else
 							COMMIT_HASH=echo "Component Not Matching"
 						fi
