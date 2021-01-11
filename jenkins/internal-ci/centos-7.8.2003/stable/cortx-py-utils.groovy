@@ -28,12 +28,14 @@ pipeline {
 	stages {
 		stage('Checkout py-utils') {
 			steps {
+                script { build_stage = env.STAGE_NAME }
                 checkout([$class: 'GitSCM', branches: [[name: "$branch"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-utils']]])
 			}
 		}
         
 		stage('Build') {
 			steps {
+                script { build_stage = env.STAGE_NAME }
 				sh label: 'Build', script: '''
 				yum install python36-devel -y
 				pushd py-utils
