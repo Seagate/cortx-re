@@ -34,8 +34,8 @@ pipeline {
 			steps {
 				script { build_stage = env.STAGE_NAME }
 				sh label: 'Build Docker image', script: '''
-                docker-compose -f internal-ci/docker-compose.yaml build cortx-build-cp-$os_version --compress
-                docker-compose -f internal-ci/docker-compose.yaml build cortx-build-io-$os_version --compress
+                docker-compose -f docker/internal-ci/docker-compose.yaml build cortx-build-cp-$os_version --compress
+                docker-compose -f docker/internal-ci/docker-compose.yaml build cortx-build-io-$os_version --compress
                 '''
 			}
 		}
