@@ -2,7 +2,7 @@ pipeline {
 
 	agent {
 		node {
-			label 'Test-node-ssc-vm-c-456'
+			label 'docker-cp-centos-7.8.2003-node'
 		}
 	}
 	 triggers {
@@ -44,7 +44,7 @@ pipeline {
              when { expression { true } }
             steps {
                 script { build_stage=env.STAGE_NAME }
-                build job: 'custom-ci-build', wait: true,
+                build job: 'cortx-custom-ci', wait: true,
                 parameters: [
                     string(name: 'CSM_AGENT_BRANCH', value: "${COMMIT_HASH_CORTX_CSM_AGENT}"),
                     string(name: 'CSM_WEB_BRANCH', value: "${COMMIT_HASH_CORTX_CSM_WEB}"),
