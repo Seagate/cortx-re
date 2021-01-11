@@ -42,6 +42,7 @@ pipeline {
 						echo Your /mnt/data1/releases partition remaining free space is critically low. Used: $CURRENT%. Threshold: $THRESHOLD%  So, 30 days older files will be deleted $(date)
 						prev_count=0
 						fpath=/mnt/data1/releases
+						touch /mnt/data1/releases/file.out
 						#find $fpath -type f -mtime +30  -exec ls -ltr {} + > /mnt/data1/releases/file.out
 						find $fpath -maxdepth 1 -type l -print | cut -c3- | grep -v "\\#" && find . -name '*.sh*' -type f -mtime +30  -exec ls -ltr {} + > /mnt/data1/releases/file.out
 						count=$(cat /mnt/data1/releases/file.out | wc -l)
