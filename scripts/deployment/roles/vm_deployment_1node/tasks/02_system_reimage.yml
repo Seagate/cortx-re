@@ -1,0 +1,29 @@
+---
+
+- name: "[reimage] : Copy reimage script"
+  copy:
+      src: files/reimage.sh
+      dest: reimage.sh
+      owner: root
+      group: root
+      mode: '0755'
+
+- name: "[reimage] : Re-Image nodes {{ NODE1 }} using satellite API" 
+  command: ./reimage.sh -h {{ NODE1 }} -x '{{ CLOUDFORM_API_CRED }}'
+
+- name: "[reimage] : Wait for server to restart"
+  wait_for:
+      host={{ hostvars[item]['ansible_host'] }}
+      port=22
+      delay=15
+      timeout=1800
+  become: false
+  ignore_errors: true
+  with_items: "{{ groups['nodes'] }}"
+
+- include: change_password.yml
+  when: CHANGE_PASS == "yes"
+  
+- meta: refresh_inventory
+
+- include: passwordless_authentication.yml

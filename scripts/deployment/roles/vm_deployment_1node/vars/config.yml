@@ -1,0 +1,13 @@
+---
+
+PRVSNR_CLI_REPO: https://github.com/Seagate/cortx-prvsnr@cortx-1.0#subdirectory=api/python
+PREREQ_URL: https://raw.githubusercontent.com/Seagate/cortx-prvsnr/cortx-1.0/cli/src/cortx-prereqs.sh
+
+
+required_vars:
+  - REIMAGE
+  - NODE1
+  - BUILD_URL
+  - CLUSTER_PASS
+  - CLOUDFORM_API_CRED
+  - CHANGE_PASS

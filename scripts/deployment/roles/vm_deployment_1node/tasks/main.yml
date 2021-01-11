@@ -1,0 +1,12 @@
+- include: 01_prepare_environment.yml
+  tags: ['01_PREPARE']
+
+- include: 02_system_reimage.yml
+  when: REIMAGE == "yes"
+  tags: ['02_REIMAGE']
+
+- include: 03_deploy_prereq.yml 
+  tags: ['03_DEPLOY_PREREQ']
+
+- include: 06_deploy.yml
+  tags: ['06_DEPLOY']

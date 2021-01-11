@@ -1,0 +1,14 @@
+---
+
+- name: "[deploy] : Copy deploy script to primary node"
+  copy:
+      src: files/cortx_deploy.sh
+      dest: cortx_deploy.sh
+      owner: root
+      group: root
+      mode: '0754'
+  delegate_to: "srvnode-1"
+
+- name: "[deploy] : Deploy Cluster on Primary Node"
+  script: files/cortx_deploy_wrapper.sh {{ BUILD_URL }} {{ NODE1 }} '{{ CLUSTER_PASS }}'
+  delegate_to: "srvnode-1"
