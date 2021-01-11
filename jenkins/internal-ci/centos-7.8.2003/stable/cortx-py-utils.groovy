@@ -28,7 +28,7 @@ pipeline {
 	stages {
 		stage('Checkout py-utils') {
 			steps {
-                checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-utils']]])
+                checkout([$class: 'GitSCM', branches: [[name: '$branch']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-utils']]])
 			}
 		}
         
@@ -80,5 +80,18 @@ pipeline {
                 '''
 			}
 		}
+
+        stage ("Release") {
+            when { triggeredBy 'SCMTrigger' }
+            steps {
+                script { build_stage=env.STAGE_NAME }
+				script {
+                	def releaseBuild = build job: 'Release', propagate: true
+				 	env.release_build = releaseBuild.number
+                    env.release_build_location="http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/"+releaseBuild.number
+				}
+            }
+        }
+
 	}
 }
