@@ -25,4 +25,4 @@ jobs:
 
       # Runs a single command using the runners shell
       - name: Run a one-line script
-        run: docker-compose -f docker/internal-ci/docker-compose.yml build
+        run: docker-compose -f opensource-ci/docker-compose.yaml build --compress
