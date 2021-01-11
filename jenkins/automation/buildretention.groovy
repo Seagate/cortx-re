@@ -55,27 +55,35 @@ pipeline {
 						if [ "$component" == cortx-hare ]; then
 							COMMIT_HASH_CORTX_HARE=$(grep "$component" RELEASE.INFO | head -1 | awk -F['_'] '{print $2}' | cut -d. -f1 |  sed 's/git//g');
 							echo "Component: $component , Repo:  ${COMPONENT_LIST[$component]}, Commit Hash: ${COMMIT_HASH_CORTX_HARE}"
+							env.COMMIT_HASH_CORTX_HARE = COMMIT_HASH_CORTX_HARE
 						elif [ "$component" == cortx-sspl ]; then
 							COMMIT_HASH_CORTX_SSPL=$(grep "$component" RELEASE.INFO | head -1 | awk -F['_'] '{print $2}' | cut -d. -f1 |  sed 's/git//g');
 							echo "Component: $component , Repo:  ${COMPONENT_LIST[$component]}, Commit Hash: ${COMMIT_HASH_CORTX_SSPL}"
+							env.COMMIT_HASH_CORTX_SSPL = COMMIT_HASH_CORTX_SSPL
 						elif [ "$component" == cortx-ha ]; then
 							COMMIT_HASH_CORTX_HA=$(grep "$component" RELEASE.INFO | head -1 | awk -F['_'] '{print $2}' | cut -d. -f1 |  sed 's/git//g');
 							echo "Component: $component , Repo:  ${COMPONENT_LIST[$component]}, Commit Hash: ${COMMIT_HASH_CORTX_HA}"
+							env.COMMIT_HASH_CORTX_HA = COMMIT_HASH_CORTX_HA
 						elif [ "$component" == "cortx-csm_agent" ]; then
 							COMMIT_HASH_CORTX_CSM_AGENT=$(grep "$component" RELEASE.INFO | head -1 | awk -F['_'] '{print $3}' |  cut -d. -f1);
 							echo "Component: $component , Repo:  ${COMPONENT_LIST[$component]}, Commit Hash: ${COMMIT_HASH_CORTX_CSM_AGENT}"
+							env.COMMIT_HASH_CORTX_CSM_AGENT = COMMIT_HASH_CORTX_CSM_AGENT
 						elif [ "$component" == "cortx-csm_web" ]; then
 							COMMIT_HASH_CORTX_CSM_WEB=$(grep "$component" RELEASE.INFO | head -1 | awk -F['_'] '{print $3}' |  cut -d. -f1);
 							echo "Component: $component , Repo:  ${COMPONENT_LIST[$component]}, Commit Hash: ${COMMIT_HASH_CORTX_CSM_WEB}"
+							env.COMMIT_HASH_CORTX_CSM_WEB = COMMIT_HASH_CORTX_CSM_WEB
 						elif [ "$component" == "cortx-s3server" ]; then
 							COMMIT_HASH_CORTX_S3SERVER=$(grep "$component" RELEASE.INFO | head -1 | awk -F['_'] '{print $2}' | sed 's/git//g');
 							echo "Component: $component , Repo:  ${COMPONENT_LIST[$component]}, Commit Hash: ${COMMIT_HASH_CORTX_S3SERVER}"
+							env.COMMIT_HASH_CORTX_S3SERVER = COMMIT_HASH_CORTX_S3SERVER
 						elif [ "$component" == "cortx-motr" ]; then
 							COMMIT_HASH_CORTX_MOTR=$(grep "$component" RELEASE.INFO | head -1 | awk -F['_'] '{print $2}' | sed 's/git//g');
 							echo "Component: $component , Repo:  ${COMPONENT_LIST[$component]}, Commit Hash: ${COMMIT_HASH_CORTX_MOTR}"
+							env.COMMIT_HASH_CORTX_MOTR = COMMIT_HASH_CORTX_MOTR
 						elif [ "$component" == "cortx-prvsnr" ]; then 
 							COMMIT_HASH_CORTX_PRVSNR=$(grep "$component" RELEASE.INFO | head -1 | awk -F['_'] '{print $2}' | sed 's/git//g');
 							echo "Component: $component , Repo:  ${COMPONENT_LIST[$component]}, Commit Hash: ${COMMIT_HASH_CORTX_PRVSNR}"
+							env.COMMIT_HASH_CORTX_PRVSNR = COMMIT_HASH_CORTX_PRVSNR
 						else
 							COMMIT_HASH=echo "Component Not Matching"
 						fi
