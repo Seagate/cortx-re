@@ -44,7 +44,7 @@ pipeline {
 						fpath=/mnt/data1/releases
 						touch /mnt/data1/releases/file.out
 						#find $fpath -type f -mtime +30  -exec ls -ltr {} + > /mnt/data1/releases/file.out
-						find $fpath -maxdepth 1 -type l -print | cut -c3- | grep -v "\\#" && find . -name '*.INFO*' -type f -mtime +30  -exec ls -ltr {} + > /mnt/data1/releases/file.out
+						find $fpath -maxdepth 1 -type l -print | cut -c3- | grep -v "\\#" && find $fpath -name '*.xml*' -type f -mtime +30  -exec ls -ltr {} + > /mnt/data1/releases/file.out
 						count=$(cat /mnt/data1/releases/file.out | wc -l)
 							if [ "$prev_count" -lt "$count" ] ; then
 							MESSAGE="/mnt/data1/releases/file1.out"
