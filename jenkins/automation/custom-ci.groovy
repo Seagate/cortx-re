@@ -18,14 +18,6 @@ pipeline {
 		thrid_party_dir="$release_dir/third-party-deps/centos/centos-7.8.2003-$thrid_party_version/"
 		python_deps="$release_dir/third-party-deps/python-packages"
 		cortx_os_iso="/mnt/bigstorage/releases/cortx_builds/custom-os-iso/cortx-os-1.0.0-23.iso"
-		CSM_AGENT_COMMIT_HASH = "${params.CSM_AGENT_BRANCH}"
-		CSM_WEB_COMMIT_HASH = "${params.CSM_WEB_BRANCH}"
-    	        HARE_COMMIT_HASH = "${params.HARE_BRANCH}"
-                HA_COMMIT_HASH = "${params.HA_BRANCH}"
-                MOTR_COMMIT_HASH = "${params.MOTR_BRANCH}"
-                PRVSNR_COMMIT_HASH = "${params.PRVSNR_BRANCH}"
-                S3_COMMIT_HASH = "${params.S3_BRANCH}"
-                SSPL_COMMIT_HASH = "${params.SSPL_BRANCH}"
 	}
 
 	options {
@@ -36,21 +28,21 @@ pipeline {
 	}
 
 	parameters {
-		string(name: 'CSM_AGENT_BRANCH', defaultValue: '${CSM_AGENT_COMMIT_HASH}', description: 'Branch for CSM Agent')
+		string(name: 'CSM_AGENT_BRANCH', defaultValue: 'main', description: 'Branch for CSM Agent')
 		string(name: 'CSM_AGENT_URL', defaultValue: 'https://github.com/Seagate/cortx-manager', description: 'CSM_AGENT URL')
-		string(name: 'CSM_WEB_BRANCH', defaultValue: '${CSM_WEB_COMMIT_HASH}', description: 'Branch for CSM Web')
+		string(name: 'CSM_WEB_BRANCH', defaultValue: 'main', description: 'Branch for CSM Web')
 		string(name: 'CSM_WEB_URL', defaultValue: 'https://github.com/Seagate/cortx-management-portal', description: 'CSM WEB URL')
-		string(name: 'HARE_BRANCH', defaultValue: '${HARE_COMMIT_HASH}', description: 'Branch for Hare')
+		string(name: 'HARE_BRANCH', defaultValue: 'main', description: 'Branch for Hare')
 		string(name: 'HARE_URL', defaultValue: 'https://github.com/Seagate/cortx-hare', description: 'Hare URL')
-		string(name: 'HA_BRANCH', defaultValue: '${HA_COMMIT_HASH}', description: 'Branch for Cortx-HA')
+		string(name: 'HA_BRANCH', defaultValue: 'main', description: 'Branch for Cortx-HA')
 		string(name: 'HA_URL', defaultValue: 'https://github.com/Seagate/cortx-ha.git', description: 'Cortx-HA URL')
-		string(name: 'MOTR_BRANCH', defaultValue: '${MOTR_COMMIT_HASH}', description: 'Branch for Motr')
+		string(name: 'MOTR_BRANCH', defaultValue: 'main', description: 'Branch for Motr')
 		string(name: 'MOTR_URL', defaultValue: 'https://github.com/Seagate/cortx-motr.git', description: 'Motr URL')
-		string(name: 'PRVSNR_BRANCH', defaultValue: '${PRVSNR_COMMIT_HASH}', description: 'Branch for Provisioner')
+		string(name: 'PRVSNR_BRANCH', defaultValue: 'main', description: 'Branch for Provisioner')
 		string(name: 'PRVSNR_URL', defaultValue: 'https://github.com/Seagate/cortx-prvsnr.git', description: 'Provisioner URL')
-		string(name: 'S3_BRANCH', defaultValue: '${S3_COMMIT_HASH}', description: 'Branch for S3Server')
+		string(name: 'S3_BRANCH', defaultValue: 'main', description: 'Branch for S3Server')
 		string(name: 'S3_URL', defaultValue: 'https://github.com/Seagate/cortx-s3server.git', description: 'S3Server URL')
-		string(name: 'SSPL_BRANCH', defaultValue: '${SSPL_COMMIT_HASH}', description: 'Branch for SSPL')
+		string(name: 'SSPL_BRANCH', defaultValue: 'main', description: 'Branch for SSPL')
 		string(name: 'SSPL_URL', defaultValue: 'https://github.com/Seagate/cortx-monitor.git', description: 'SSPL URL')
 
 		choice(
