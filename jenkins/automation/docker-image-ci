@@ -34,8 +34,10 @@ pipeline {
 			steps {
 				script { build_stage = env.STAGE_NAME }
 				sh label: 'Build Docker image', script: '''
+                echo 'y' | docker image prune
                 docker-compose -f docker/internal-ci/docker-compose.yml build --compress cortx-build-cp-$OS_VERSION 
-                docker-compose -f docker/internal-ci/docker-compose.yml build --compress cortx-build-io-$OS_VERSION 
+                docker-compose -f docker/internal-ci/docker-compose.yml build --compress cortx-build-io-$OS_VERSION
+                echo 'y' | docker image prune
                 '''
 			}
 		}
