@@ -5,7 +5,7 @@
 - name: Download cortx-prereqs script
   get_url:
     url: "{{ PREREQ_SCRIPT }}"
-    dest: /root/
+    dest: /root/cortx-prereqs.sh
     mode: '0751' 
 
 - name: Execute cortx-prereqs script
