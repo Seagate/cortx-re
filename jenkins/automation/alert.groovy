@@ -48,7 +48,7 @@ pipeline {
 						#find $fpath -maxdepth 1 -type l -print | cut -c3- | grep -v "\\#" &&  find /mnt/data1/releases/cortx/github/release/rhel-7.7.1908/2750 -path /mnt/data1/releases/cortx/github/release/rhel-7.7.1908 -prune -false -o -name '*' && find $fpath -name '*.INFO*' && find $fpath -type f -mtime +30  -exec cp {} /mnt/data1/releases/backups/cortx_build_backup/custom_build_backup \\;
 						#find $fpath -maxdepth 1 -type l -print | cut -c3- | grep -v "\\#" && find $fpath -name '*.INFO*' && find $fpath -type f -mtime +30  -exec ls -ltr {} + > /mnt/data1/releases/file1.out
 						#find $fpath -maxdepth 1 ! -type l -print | cut -c3- | grep -v "\\#" && find $fpath ! -name '*.INFO*' && find $fpath -type f -mtime +30  -exec rm -rf {} \\;
-						count=$(cat /mnt/data1/releases/file.out | wc -l)
+						count=$(cat /mnt/data1/releases/file1.out | wc -l)
 							if [ "$prev_count" -lt "$count" ] ; then
 							MESSAGE="/mnt/data1/releases/file1.out"
 							TO="balaji.ramachandran@seagate.com"
