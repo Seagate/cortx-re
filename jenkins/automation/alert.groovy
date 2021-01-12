@@ -5,7 +5,9 @@ pipeline {
 			label 'Test-node-ssc-vm-c-456'
 		}
 	}
-	
+	environment {
+		SPACE = sh(script: "df -h | grep /mnt/data1/releases", , returnStdout: true).trim()
+	}	
 	 triggers {
          cron('0 */6 * * *')
     }
@@ -34,8 +36,7 @@ pipeline {
 					steps {
 						sh label: 'Threshold alert', script: '''#!/bin/bash
 						CURRENT=$(df -h | grep /mnt/data1/releases | awk '{print $5}' | sed 's/%//g')
-					        SPACE = sh(script: "df -h | grep /mnt/data1/releases", , returnStdout: true).trim()
-						THRESHOLD=94
+					        THRESHOLD=94
 						echo "The Current disk space is $CURRENT "
 						if [ "$CURRENT" -gt "$THRESHOLD" ] ; then
 						echo Your /mnt/data1/releases partition remaining free space is critically low. Used: $CURRENT%. Threshold: $THRESHOLD%  So, 30 days older files will be deleted $(date)
