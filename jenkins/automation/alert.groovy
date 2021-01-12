@@ -72,7 +72,7 @@ pipeline {
 		always {
 			script {
 			        emailext (
-					attachmentsPattern: file1.out
+					attachmentsPattern: file1.out,
 					body: "Current Disk Space is ${env.SPACE}",
 					subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
 					to: 'balaji.ramachandran@seagate.com',
