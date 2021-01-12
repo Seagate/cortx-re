@@ -163,7 +163,7 @@ RUN curl -k https://raw.githubusercontent.com/Seagate/cortx-s3server/stable/rpms
     && yum install -y git-clang-format \
     && yum-builddep -y s3rpm.spec \
     && rm -f s3rpm.spec \
-    && yum remove -y cortx-motr cortx-motr-devel
+    && yum remove -y cortx-motr cortx-motr-devel kernel-3.10.0-1160.el7
 
 ENV HARE_VENV_DIR=$HOME/.hare-venv
 
