@@ -47,7 +47,7 @@ class CSM_boarding(unittest.TestCase):
             ele.click()
             ele = self.get_element(By.ID, loc.Preboarding.userlogin_ip)
             print("Admin user is created")
-        except :
+        except:
             self.assertTrue(False,"ERROR: Failed to create Admin User")
 
     def test_onboarding(self):
@@ -104,7 +104,7 @@ class CSM_boarding(unittest.TestCase):
 
     def is_element_present(self, how, what):
         try: self.driver.find_element(by=how, value=what)
-        except NoSuchElementException as e: return False
+        except NoSuchElementException: return False
         return True
     
 

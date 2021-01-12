@@ -1,4 +1,4 @@
-""" This File contains web element locators for all pages. """
+""" This File contains web element locators for all pages."""
 
 
 class CommonLocators:
@@ -65,8 +65,7 @@ class s3config:
     success_message_deleted_s3_account = ""
     confirm_delete_s3_account_button = "//*[@class= 'v-card v-sheet theme--light']//button[contains(text(),'Yes')]"
     cancel_delete_s3_accpint = "//*[@class= 'v-card v-sheet theme--light']//button[contains(text(),'No')]"
-    duplicate_account_error_message = "//*[@class='eos-msg-dialog-container']//label[text()='Bad Request']"
-    
+    duplicate_account_error_message = "//*[@class='eos-msg-dialog-container']//label[text()='Bad Request']"    
 class iamconfig:
     """Locators for IAM config feature"""
     iam_tab = "//*[@class='eos-tabs-container']/div[2]"
