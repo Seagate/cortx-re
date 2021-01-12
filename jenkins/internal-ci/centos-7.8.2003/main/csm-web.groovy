@@ -58,7 +58,7 @@ pipeline {
         
         stage('Build') {
             steps {
-                script { build_stage=env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
                 sh label: 'Build', script: '''
                     BUILD=$(git rev-parse --short HEAD)
                     VERSION=$(cat $WORKSPACE/VERSION)
@@ -72,7 +72,7 @@ pipeline {
         
         stage ('Upload') {
             steps {
-                script { build_stage=env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
                 sh label: 'Copy RPMS', script: '''
                     mkdir -p $build_upload_dir/$BUILD_NUMBER
                     cp ./dist/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir/$BUILD_NUMBER
@@ -87,7 +87,7 @@ pipeline {
 
         stage ('Tag last_successful') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh label: 'Tag last_successful', script: '''pushd $build_upload_dir/
                     test --L $build_upload_dir/last_successful && rm -f last_successful
                     ln -s $build_upload_dir/$BUILD_NUMBER last_successful
@@ -99,7 +99,7 @@ pipeline {
         stage ("Release") {
             //when { triggeredBy 'SCMTrigger' }
             steps {
-                script { build_stage=env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
 				script {
                 	def releaseBuild = build job: 'Main Release', propagate: true, parameters: [string(name: 'release_component', value: "${component}"), string(name: 'release_build', value: "${BUILD_NUMBER}")]
 				 	env.release_build = "${BUILD_NUMBER}"
