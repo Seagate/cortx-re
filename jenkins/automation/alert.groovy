@@ -44,7 +44,8 @@ pipeline {
 						fpath=/mnt/data1/releases
 						#touch /mnt/data1/releases/file.out
 						#find $fpath -type f -mtime +30  -exec ls -ltr {} + > /mnt/data1/releases/file.out
-						find $fpath -maxdepth 1 ! -type l -print | cut -c3- | grep -v "\\#" &&  find /mnt/data1/releases/cortx/github/release/rhel-7.7.1908/2750 -path /mnt/data1/releases/cortx/github/release/rhel-7.7.1908 -prune -false -o -name '*' && find $fpath ! -name '*.INFO*' && find $fpath -type f -mtime +30  -exec ls -ltr {} + > /mnt/data1/releases/file1.out
+						find $fpath -maxdepth 1 ! -type l -print | cut -c3- | grep -v "\\#" -exec ls -ltr {} + > /mnt/data1/releases/file1.out
+						#find $fpath -maxdepth 1 ! -type l -print | cut -c3- | grep -v "\\#" &&  find /mnt/data1/releases/cortx/github/release/rhel-7.7.1908/2750 -path /mnt/data1/releases/cortx/github/release/rhel-7.7.1908 -prune -false -o -name '*' && find $fpath ! -name '*.INFO*' && find $fpath -type f -mtime +30  -exec ls -ltr {} + > /mnt/data1/releases/file1.out
 						#find $fpath -maxdepth 1 -type l -print | cut -c3- | grep -v "\\#" &&  find /mnt/data1/releases/cortx/github/release/rhel-7.7.1908/2750 -path /mnt/data1/releases/cortx/github/release/rhel-7.7.1908 -prune -false -o -name '*' && find $fpath -name '*.INFO*' && find $fpath -type f -mtime +30  -exec cp {} /mnt/data1/releases/backups/cortx_build_backup/custom_build_backup \\;
 						#find $fpath -maxdepth 1 -type l -print | cut -c3- | grep -v "\\#" && find $fpath -name '*.INFO*' && find $fpath -type f -mtime +30  -exec ls -ltr {} + > /mnt/data1/releases/file1.out
 						#find $fpath -maxdepth 1 ! -type l -print | cut -c3- | grep -v "\\#" && find $fpath ! -name '*.INFO*' && find $fpath -type f -mtime +30  -exec rm -rf {} \\;
@@ -59,7 +60,7 @@ pipeline {
 							echo "" >> $MESSAGE
 							#SUBJECT="WARNING: Your /mnt/data1/releases partition remaining free space is critically low. Used: $CURRENT%.  So, 50 days older files have been deleted $(date)"
 							#mailx -s "$SUBJECT" "$TO" < $MESSAGE
-							cat $MESSAGE
+							#cat $MESSAGE
 							#rm $MESSAGE /mnt/data1/releases/file1.out
 							fi
 						fi
@@ -71,10 +72,11 @@ pipeline {
 		always {
 			script {
 			        emailext (
+					attachmentsPattern: /mnt/data1/releases/file1.out
 					body: "Current Disk Space is ${env.SPACE}",
 					subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
 					attachLog: true,
-					to: ('priyank.p.dalal@seagate.com,balaji.ramachandran@seagate.com,shailesh.vaidya@seagate.com,mukul.malhotra@seagate.com'),
+					to: 'balaji.ramachandran@seagate.com',
 					)
 			}
 		}
