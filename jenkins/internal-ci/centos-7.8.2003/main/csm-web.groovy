@@ -10,12 +10,12 @@ pipeline {
     }
 	
 	environment {      
-        env = "dev"
-		component = "csm-agent"
-        os_version = "centos-7.8.2003"
-        pipeline_group = "main"
-        release_dir = "/mnt/bigstorage/releases/cortx"
-        build_upload_dir = "${release_dir}/components/github/${pipeline_group}/${os_version}/${env}/${component}"
+        env="dev"
+		component="csm-web"
+        os_version="centos-7.8.2003"
+        pipeline_group="main"
+        release_dir="/mnt/bigstorage/releases/cortx"
+        build_upload_dir="${release_dir}/components/github/${pipeline_group}/${os_version}/${env}/${component}"
 
         // Param hack for initial config
         branch="${branch != null ? branch : 'main'}"
@@ -35,31 +35,31 @@ pipeline {
 	stages {
         stage('Checkout') {
             steps {
-                script { build_stage = env.STAGE_NAME }
-                checkout([$class: 'GitSCM', branches: [[name: "${branch}"]], doGenerateSubmoduleConfigurations: false,  extensions: [[$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-manager']]])
+                script { build_stage=env.STAGE_NAME }
+                
+                checkout([$class: 'GitSCM', branches: [[name: "*/${branch}"]], doGenerateSubmoduleConfigurations: false,  extensions: [[$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-management-portal']]])
                 
             }
         }
         
         stage('Install Dependencies') {
             steps {
-                script { build_stage = env.STAGE_NAME }
+                script { build_stage=env.STAGE_NAME }
                 sh label: '', script: '''
-				sed -i 's/gpgcheck=1/gpgcheck=0/' /etc/yum.conf
-                yum-config-manager --disable cortx-C7.7.1908,cortx-uploads
-				yum-config-manager --add http://cortx-storage.colo.seagate.com/releases/cortx/github/stable/$os_version/last_successful/
-				yum-config-manager --add http://cortx-storage.colo.seagate.com/releases/cortx/components/github/main/$os_version/dev/cortx-utils/last_successful/
-				yum clean all && rm -rf /var/cache/yum
-				yum install -y cortx-prvsnr
-				pip3.6 install  pyinstaller==3.5
+					sed -i 's/gpgcheck=1/gpgcheck=0/' /etc/yum.conf
+					yum-config-manager --disable cortx-C7.7.1908,cortx-uploads
+					yum-config-manager --add http://cortx-storage.colo.seagate.com/releases/cortx/github/stable/$os_version/last_successful/
+					yum-config-manager --add http://cortx-storage.colo.seagate.com/releases/cortx/components/github/main/$os_version/dev/cortx-utils/last_successful/
+					yum clean all && rm -rf /var/cache/yum
+                    pip3.6 install  pyinstaller==3.5
                 '''
             }
         }	
         
         stage('Build') {
             steps {
-                script { build_stage = env.STAGE_NAME }
-                sh label: 'Build', returnStatus: true, script: '''
+                script { build_stage=env.STAGE_NAME }
+                sh label: 'Build', script: '''
                     BUILD=$(git rev-parse --short HEAD)
                     VERSION=$(cat $WORKSPACE/VERSION)
                     echo "Executing build script"
@@ -72,26 +72,29 @@ pipeline {
         
         stage ('Upload') {
             steps {
-                script { build_stage = env.STAGE_NAME }
+                script { build_stage=env.STAGE_NAME }
                 sh label: 'Copy RPMS', script: '''
                     mkdir -p $build_upload_dir/$BUILD_NUMBER
                     cp ./dist/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir/$BUILD_NUMBER
                 '''
-                sh label: 'Repo Creation', script: '''
-                    pushd $build_upload_dir/$BUILD_NUMBER
+                sh label: 'Repo Creation', script: '''pushd $build_upload_dir/$BUILD_NUMBER
                     rpm -qi createrepo || yum install -y createrepo
                     createrepo .
                     popd
                 '''
-             }
+                 sh label: 'Tag last_successful', script: '''pushd $build_upload_dir/
+                    test -d $build_upload_dir/last_successful && rm -f last_successful
+                    ln -s $build_upload_dir/$BUILD_NUMBER last_successful
+                    popd
+                '''
+            }
         }
 
         stage ('Tag last_successful') {
 			steps {
-				script { build_stage = env.STAGE_NAME }
-				sh label: 'Tag last_successful', script: '''
-                    pushd $build_upload_dir/
-                    test -L $build_upload_dir/last_successful && rm -f last_successful
+				script { build_stage=env.STAGE_NAME }
+				sh label: 'Tag last_successful', script: '''pushd $build_upload_dir/
+                    test -d $build_upload_dir/last_successful && rm -f last_successful
                     ln -s $build_upload_dir/$BUILD_NUMBER last_successful
                     popd
                 '''
@@ -101,11 +104,11 @@ pipeline {
         stage ("Release") {
             //when { triggeredBy 'SCMTrigger' }
             steps {
-                script { build_stage = env.STAGE_NAME }
+                script { build_stage=env.STAGE_NAME }
 				script {
                 	def releaseBuild = build job: 'Main Release', propagate: true, parameters: [string(name: 'release_component', value: "${component}"), string(name: 'release_build', value: "${BUILD_NUMBER}")]
 				 	env.release_build = "${BUILD_NUMBER}"
-                    env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$pipeline_group/$os_version/${component}_${BUILD_NUMBER}"
+                    env.release_build_location="http://cortx-storage.colo.seagate.com/releases/cortx/github/$pipeline_group/$os_version/${component}_${BUILD_NUMBER}"
 				}
             }
         } 
@@ -113,7 +116,7 @@ pipeline {
 
 	post {
 		always {
-			script {
+			script{
             	
 				echo 'Cleanup Workspace.'
 				deleteDir() /* clean up our workspace */
@@ -125,8 +128,8 @@ pipeline {
 
 				def toEmail = ""
 				def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
-				if ( manager.build.result.toString() == "FAILURE") {
-					toEmail = ""
+				if( manager.build.result.toString() == "FAILURE"){
+					toEmail = "CORTX.CSM@seagate.com"
 					recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'],[$class: 'RequesterRecipientProvider']]
 				}
 				emailext (

@@ -50,7 +50,7 @@ pipeline {
 		stage('Build') {
 			steps {
 				script { build_stage=env.STAGE_NAME }
-				sh label: 'Build', script: '''
+				sh label: 'Build', returnStatus: true, script: '''
 					BUILD=$(git rev-parse --short HEAD)
 					VERSION=$(cat $WORKSPACE/VERSION)
 					echo "Executing build script"
