@@ -44,7 +44,7 @@ pipeline {
         
         stage('Install Dependencies') {
             steps {
-                script { build_stage=env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
                 sh label: '', script: '''
 					sed -i 's/gpgcheck=1/gpgcheck=0/' /etc/yum.conf
 					yum-config-manager --disable cortx-C7.7.1908,cortx-uploads
