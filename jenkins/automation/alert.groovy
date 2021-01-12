@@ -75,7 +75,6 @@ pipeline {
 					attachmentsPattern: /mnt/data1/releases/file1.out
 					body: "Current Disk Space is ${env.SPACE}",
 					subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
-					attachLog: true,
 					to: 'balaji.ramachandran@seagate.com',
 					)
 			}
