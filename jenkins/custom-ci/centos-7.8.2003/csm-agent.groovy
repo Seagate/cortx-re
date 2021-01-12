@@ -46,9 +46,10 @@ pipeline {
 			steps {
 				script { build_stage = env.STAGE_NAME }
 				sh label: '', script: """
-				yum-config-manager --disable cortx-C7.7.1908
-				yum-config-manager --add http://cortx-storage.colo.seagate.com/releases/cortx/github/cortx-1.0/$os_version/last_successful/
+				yum-config-manager --disable cortx-C7.7.1908,cortx-uploads
+				yum-config-manager --add http://cortx-storage.colo.seagate.com/releases/cortx/github/stable/$os_version/last_successful/
 				echo "gpgcheck=0" >> \$(ls /etc/yum.repos.d/cortx-storage*.repo)
+				sed -i -e '1,/centos-7.8.2003/{s/centos-7.8.2003/centos-7.7.1908/;}' /etc/yum.repos.d/cortx.repo
 				yum clean all && rm -rf /var/cache/yum
 					if [ "${CSM_AGENT_BRANCH}" == "Cortx-v1.0.0_Beta" ]; then
 						yum install -y eos-py-utils
@@ -64,7 +65,7 @@ pipeline {
 		stage('Build') {
 			steps {
 				script { build_stage = env.STAGE_NAME }
-				sh label: 'Build', script: '''
+				sh label: 'Build', returnStatus: true, script: '''
 				pushd cortx-manager
 					BUILD=$(git rev-parse --short HEAD)
 					VERSION=$(cat VERSION)
@@ -108,4 +109,4 @@ pipeline {
 			}
 		}
 	}
-}	
+}
