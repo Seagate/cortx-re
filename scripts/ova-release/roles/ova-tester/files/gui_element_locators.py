@@ -82,8 +82,7 @@ class iamconfig:
     iam_account_created_text = "//span[contains(text(),'User created')]"
     iam_account_table = "//*[@id='app']/div[1]/div/div/table"
     iam_account_created_ok_btn = "//button[@class='ma-5 eos-btn-primary']"
-    existing_iam_user_account_field = "//table[@class='mx-7 mb-7']"
-    
+    existing_iam_user_account_field = "//table[@class='mx-7 mb-7']" 
     
 class UserSettings:
     """Locators for User settings page"""
