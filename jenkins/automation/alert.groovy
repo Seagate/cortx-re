@@ -44,9 +44,10 @@ pipeline {
 						fpath=/mnt/data1/releases
 						#touch /mnt/data1/releases/file.out
 						#find $fpath -type f -mtime +30  -exec ls -ltr {} + > /mnt/data1/releases/file.out
-						find $fpath -maxdepth 1 ! -type l -print | cut -c3- && find $fpath ! -name '*.INFO*' && find $fpath -type f -mtime +30  -exec ls -ltr {} + > /mnt/data1/releases/file1.out
+						find $fpath -maxdepth 1 ! -type l -print | cut -c3- | grep -v "\\#" &&  find /mnt/data1/releases/cortx/github/release/rhel-7.7.1908/2750 -path /mnt/data1/releases/cortx/github/release/rhel-7.7.1908 -prune -false -o -name '*' && find $fpath ! -name '*.INFO*' && find $fpath -type f -mtime +30  -exec ls -ltr {} + > /mnt/data1/releases/file1.out
+						find $fpath -maxdepth 1 -type l -print | cut -c3- | grep -v "\\#" &&  find /mnt/data1/releases/cortx/github/release/rhel-7.7.1908/2750 -path /mnt/data1/releases/cortx/github/release/rhel-7.7.1908 -prune -false -o -name '*' && find $fpath -name '*.INFO*' && find $fpath -type f -mtime +30  -exec cp {} /mnt/data1/releases/ \;
 						#find $fpath -maxdepth 1 -type l -print | cut -c3- | grep -v "\\#" && find $fpath -name '*.INFO*' && find $fpath -type f -mtime +30  -exec ls -ltr {} + > /mnt/data1/releases/file1.out
-						#find $fpath -maxdepth 1 ! -type l -print | cut -c3- && find $fpath ! -name '*.INFO*' && find $fpath -type f -mtime +30  -exec rm -rf {} \\;
+						#find $fpath -maxdepth 1 ! -type l -print | cut -c3- | grep -v "\\#" && find $fpath ! -name '*.INFO*' && find $fpath -type f -mtime +30  -exec rm -rf {} \\;
 						count=$(cat /mnt/data1/releases/file.out | wc -l)
 							if [ "$prev_count" -lt "$count" ] ; then
 							MESSAGE="/mnt/data1/releases/file1.out"
@@ -54,7 +55,7 @@ pipeline {
 							echo "Files older than 30 days are listed" >> $MESSAGE
 							echo "+--------------------------------------------- +" >> $MESSAGE
 					    		echo "" >> $MESSAGE
-							cat /mnt/data1/releases/file.out | awk '{print $6,$7,$9}' >> $MESSAGE
+							cat /mnt/data1/releases/file1.out | awk '{print $6,$7,$9}' >> $MESSAGE
 							echo "" >> $MESSAGE
 							#SUBJECT="WARNING: Your /mnt/data1/releases partition remaining free space is critically low. Used: $CURRENT%.  So, 50 days older files have been deleted $(date)"
 							#mailx -s "$SUBJECT" "$TO" < $MESSAGE
