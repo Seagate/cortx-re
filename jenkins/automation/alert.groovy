@@ -43,7 +43,7 @@ pipeline {
 						prev_count=0
 						fpath=/mnt/data1/releases
 						source /mnt/data1/releases/exclude_build.txt
-						find $build -path $path -prune -false -o -name '*' -exec ls -ltr {} + > /mnt/data1/releases/file1.out
+						find $build -path $path1 -path $path2 -prune -false -o -name '*' -exec ls -ltr {} + > /mnt/data1/releases/file1.out
 						#touch /mnt/data1/releases/file.out
 						#find $fpath -type f -mtime +30  -exec ls -ltr {} + > /mnt/data1/releases/file.out
 						#find $fpath -maxdepth 1 ! -type l -print | cut -c1- | grep -v "\\#" -exec ls -ltr {} + > /mnt/data1/releases/file1.out
