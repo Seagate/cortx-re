@@ -79,11 +79,6 @@ pipeline {
                         export build_number=$dev_build_number
                         yum install cortx-motr{,-devel} -y
                         ./rpms/s3/buildrpm.sh -P $PWD
-                        
-                    '''
-                     sh label: 'Build s3iamcli RPM', script: '''
-                        export build_number=$dev_build_number
-                        ./rpms/s3iamcli/buildrpm.sh -P $PWD
                     '''
                 }			
             }
