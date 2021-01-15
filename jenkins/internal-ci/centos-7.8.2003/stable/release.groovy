@@ -75,6 +75,7 @@ pipeline {
 
                     pushd $integration_dir/$release_tag/prod
                         rm -f *-debuginfo-*.rpm
+                        rm -f cortx-s3iamcli*.rpm
                     popd
                 '''
 			}
@@ -270,7 +271,7 @@ pipeline {
                     body: '''${SCRIPT, template="release-email.template"}''',
                     mimeType: 'text/html',
                     subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
-                    //attachLog: true,
+                    attachLog: true,
                     to: toEmail,
                     attachmentsPattern: 'CHANGESET.txt'
                 )
