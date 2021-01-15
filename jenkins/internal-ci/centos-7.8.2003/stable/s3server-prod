@@ -91,7 +91,6 @@ pipeline {
                     rm -rf $build_upload_dir/$dev_build_number
                     mkdir -p $build_upload_dir/$dev_build_number
                     cp /root/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir/$dev_build_number
-                    cp /root/rpmbuild/RPMS/noarch/*.rpm $build_upload_dir/$dev_build_number
                 '''
                 sh label: 'Repo Creation', script: '''pushd $build_upload_dir/$dev_build_number
                     rpm -qi createrepo || yum install -y createrepo
