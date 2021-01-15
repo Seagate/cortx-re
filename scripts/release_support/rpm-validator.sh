@@ -19,7 +19,26 @@
 #
 
 # Constants
-RPM_LOCATION="http://cortx-storage.colo.seagate.com/releases/cortx/github/cortx-1.0/centos-7.8.2003"
+
+BRANCH=$1
+OS_VERSION=$2
+
+function usage() {
+    echo "No inputs provided exiting..."
+    echo "Please provide Branch and OS detail.Script should be executed as.."
+    echo "$0 BRANCH OS_VERSION"
+    exit 1
+}
+
+if [ $# -eq 0 ]; then
+usage
+fi
+
+if [ -z "$BRANCH" ]; then echo "No BRANCH provided.."; exit 1 ; fi
+if [ -z "$OS_VERSION" ]; then echo "No OS_VERSION provided.."; exit 1; fi
+
+
+RPM_LOCATION="http://cortx-storage.colo.seagate.com/releases/cortx/github/$BRANCH/$OS_VERSION"
 
 # Validation Params
 RPM_VERSION_EXPECTED="1.0.0"
@@ -35,7 +54,8 @@ COMPONENT_RPM_PATTERN_ARRAY=(
                     "CSM:cortx-csm_agent,csm_web"
                     "Provisioner:cortx-prvsnr"
                     "SSPL:cortx-sspl"
-                    "NFS:cortx-fs,cortx-dsal,cortx-nsal,cortx-utils" 
+                    "NFS:cortx-fs,cortx-dsal,cortx-nsal,cortx-utils"
+                    "CORTX-utils:cortx-py-utils,stats_utils"
                 )
 
 RPM_INSTALL_ROOT_PATH="/opt/seagate/cortx"
@@ -49,6 +69,7 @@ RPM_INSTALL_PATH_EXPECTED=(
                     "cortx-csm_agent:bin,lib,conf,log" "cortx-csm_web:bin,lib,conf,log"     # CSM
                     "cortx-prvsnr:bin,lib,conf,log"                                         # Prvsnr
                     "cortx-sspl:bin,lib,conf,log"                                           # SSPL
+                    "cortx-py-utils:bin,lib,conf,log" "stats_utils:bin,lib,conf,log"        # CORTX Utils
                 )
 
 VALIDATION_ENVIRONMENT="OS : $(cat /etc/redhat-release | sed -e 's/ $//g') , Kernel : $(uname -r)"
@@ -76,10 +97,10 @@ HTML_TD_STYLE="style='border: 1px solid #AAAAAA;padding: 3px 2px;font-size: 13px
 
 # Validation Logic
 build_number=$(wget "${RPM_LOCATION}/last_successful/RELEASE.INFO" -q -O - | grep BUILD |  sed 's/"//g' | cut -d: -f2 | xargs )
-release_rpms_array=$(wget "${RPM_LOCATION}/${build_number}/prod" -q -O - | grep -Po '(?<=href=")[^"]*' | grep ".rpm")
+release_rpms_array=$(wget "${RPM_LOCATION}/${build_number}/dev" -q -O - | grep -Po '(?<=href=")[^"]*' | grep -v debuginfo | grep ".rpm")
 
 echo "RPM Validation Initiated for Build = $build_number"
-BUILD_URL="${RPM_LOCATION}/${build_number}/prod"
+BUILD_URL="${RPM_LOCATION}/${build_number}/dev"
 
 components_rpm_array=()
 

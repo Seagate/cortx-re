@@ -59,7 +59,8 @@ pipeline {
         stage('Build') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Build', script: '''
+                // Exclude return code check for csm_setup and csm_test
+                sh label: 'Build', returnStatus: true, script: '''
                     BUILD=$(git rev-parse --short HEAD)
                     VERSION=$(cat $WORKSPACE/VERSION)
                     echo "Executing build script"
@@ -124,9 +125,9 @@ pipeline {
 				env.build_stage = "${build_stage}"
 
 				def toEmail = ""
-				def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
+				def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
 				if ( manager.build.result.toString() == "FAILURE") {
-					toEmail = ""
+					toEmail = "CORTX.CSM@seagate.com"
 					recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'],[$class: 'RequesterRecipientProvider']]
 				}
 				emailext (

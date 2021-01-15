@@ -19,6 +19,12 @@ ARG CENTOS_RELEASE
 
 FROM centos:${CENTOS_RELEASE} AS base
 
+ARG CENTOS_RELEASE
+ARG ENVIRONMENT
+
+LABEL maintainer="CORTX.opensource@seagate.com"
+LABEL Description="This image is used to build CORTX components"
+
 ENV BASH_ENV "/etc/profile"
 ENV PATH="/root/.nvm/versions/node/v12.13.0/bin:${PATH}"
 ENV LANG=en_US.UTF-8 \
@@ -28,7 +34,7 @@ ENV LANG=en_US.UTF-8 \
 RUN yum-config-manager --disable base,extras,updates && mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.bkp
 
 #Add centos-7.7.1908 repository
-COPY *.repo /etc/yum.repos.d/
+COPY ./docker/${ENVIRONMENT}/centos-${CENTOS_RELEASE}/*.repo /etc/yum.repos.d/
 
 # enable EPEL and SCL repos
 RUN yum install centos-release-scl -y && yum clean all \
@@ -96,7 +102,7 @@ RUN localedef -i en_US -f UTF-8 en_US.UTF-8
 RUN rpmdev-setuptree
 
 # Copy scripts
-COPY *.sh /opt/
+COPY ./docker/${ENVIRONMENT}/centos-${CENTOS_RELEASE}/*.sh /opt/
 
 # install node
 RUN bash /opt/install-node.sh v12.13.0
@@ -113,14 +119,16 @@ RUN bash /opt/setup_fpm.sh \
 FROM base as lustre-rpm-builder
 
 ARG LUSTRE_VERSION 
+ARG CENTOS_RELEASE
+ARG ENVIRONMENT
 
 ADD  https://downloads.whamcloud.com/public/lustre/lustre-${LUSTRE_VERSION}/el7/client/SRPMS/lustre-${LUSTRE_VERSION}-1.src.rpm . 
 RUN rpm -i lustre-${LUSTRE_VERSION}-1.src.rpm 
 
-COPY lustre-2.9.0.spec.patch .
+COPY ./docker/${ENVIRONMENT}/centos-${CENTOS_RELEASE}/lustre-2.9.0.spec.patch .
 RUN patch -p1 -i lustre-2.9.0.spec.patch /root/rpmbuild/SPECS/lustre.spec
 
-RUN yum -y install kernel kernel-devel \
+RUN yum -y install kernel{,-devel}-3.10.0-1127.el7  \
 	&& yum-builddep -y /root/rpmbuild/SPECS/lustre.spec
 	
 RUN QA_RPATHS=255 rpmbuild -bb --without servers --without lustre-tests \

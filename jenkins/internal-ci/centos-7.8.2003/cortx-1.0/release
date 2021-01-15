@@ -20,7 +20,7 @@ pipeline {
         passphrase = credentials('rpm-sign-passphrase')
         token = credentials('shailesh-github-token')
         // Used in Changelog generation
-        ARTIFACT_LOCATION="http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/rhel-7.7.1908"
+        ARTIFACT_LOCATION="http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version"
 		githubrelease_repo="Seagate/cortx"
         cortx_build_dir="/mnt/bigstorage/releases/cortx_builds/$os_version"
         thrid_party_dir="$release_dir/third-party-deps/centos/centos-7.8.2003-$thrid_party_version/"
@@ -113,7 +113,7 @@ pipeline {
 			steps {
                 script { build_stage=env.STAGE_NAME }
                 
-                checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
+                checkout([$class: 'GitSCM', branches: [[name: 'cortx-1.0']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
                 
                 sh label: 'Generate Key', script: '''
                     set +x
@@ -266,13 +266,14 @@ pipeline {
                 env.release_build = "${env.release_tag}"
                 env.build_stage = "${build_stage}"
 
-                def toEmail = "shailesh.vaidya@seagate.com, swati.magar@seagate.com, gowthaman.chinnathambi@seagate.com"
+                def toEmail = "shailesh.vaidya@seagate.com, priyank.p.dalal@seagate.com, gowthaman.chinnathambi@seagate.com"
                 emailext ( 
                     body: '''${SCRIPT, template="release-email.template"}''',
                     mimeType: 'text/html',
                     subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
                     attachLog: true,
                     to: toEmail,
+                    attachmentsPattern: 'CHANGESET.txt'
                 )
 
 				archiveArtifacts artifacts: "README.txt, RELEASE.INFO, CHANGESET.txt", onlyIfSuccessful: false, allowEmptyArchive: true
