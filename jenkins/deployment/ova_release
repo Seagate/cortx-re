@@ -8,15 +8,14 @@ pipeline {
     parameters {
         string(name: 'BUILD_URL', defaultValue: 'http://cortx-storage.colo.seagate.com/releases/opensource_builds/ova_builds/centos-7.8.2003/ova-build-21/', description: 'CORTX release build url.')
         string(name: 'HOST', defaultValue: '10.230.240.242', description: 'IP address of VM deploy host')
-        string(name: 'VSPHERE_VM_NAME', defaultValue: 'ova-test-3', description: 'Name of VM deploy host')
-        string(name: 'VSPHERE_VM_SNAPSHOT_NAME', defaultValue: 'ova-test-3-snap', description: 'Snapshot name of VM deploy host')
     }
     environment {
-        DEPLOYMENT_HOST_SSH_KEY = credentials('gaurav_dev_vm_sshkey')
+        DEPLOYMENT_HOST_SSH_KEY = credentials('cortx_deployment_vm_sshkey')
         NODE_SSH_PASS = credentials('cortx_test_root')
         VSPHERE_HOSTNAME = "10.230.240.78"
     }
     options {
+        timeout(time: 30, unit: 'MINUTES')
         timestamps()
         ansiColor('xterm')
         buildDiscarder(logRotator(numToKeepStr: "30"))
@@ -70,7 +69,7 @@ pipeline {
 }
 
 def executeAnsiblePlaybook(tags) {
-    withCredentials([usernamePassword(credentialsId: 'gaurav_vsphere_creds', passwordVariable: 'VSPHERE_PASSWORD', usernameVariable: 'VSPHERE_USERNAME'), usernamePassword(credentialsId: 'cortx_test_setup_creds', passwordVariable: 'TEST_PASS', usernameVariable: 'TEST_USER')]) {
+    withCredentials([usernamePassword(credentialsId: 'cortx_vsphere_creds', passwordVariable: 'VSPHERE_PASSWORD', usernameVariable: 'VSPHERE_USERNAME'), usernamePassword(credentialsId: 'cortx_test_setup_creds', passwordVariable: 'TEST_PASS', usernameVariable: 'TEST_USER')]) {
 
         dir('cortx-re/scripts/ova-release') {
             ansiblePlaybook(
@@ -82,8 +81,6 @@ def executeAnsiblePlaybook(tags) {
                         "ansible_host"              : [value: "${HOST}", hidden: false],
                         "DEPLOYMENT_HOST_SSH_KEY"   : [value: "${DEPLOYMENT_HOST_SSH_KEY}", hidden: true],
                         "NODE_SSH_PASS"             : [value: "${NODE_SSH_PASS}", hidden: true],
-                        "VSPHERE_VM_NAME"           : [value: "${VSPHERE_VM_NAME}", hidden: false],
-                        "VSPHERE_VM_SNAPSHOT_NAME"  : [value: "${VSPHERE_VM_SNAPSHOT_NAME}", hidden: false],
                         "VSPHERE_HOSTNAME"          : [value: "${VSPHERE_HOSTNAME}", hidden: true],
                         "VSPHERE_PASSWORD"          : [value: "${VSPHERE_PASSWORD}", hidden: true],
                         "VSPHERE_USERNAME"          : [value: "${VSPHERE_USERNAME}", hidden: true],
