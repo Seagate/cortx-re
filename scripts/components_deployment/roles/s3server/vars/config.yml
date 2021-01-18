@@ -1,0 +1,22 @@
+# S3 Deployment configs
+S3_UPDATE_HOST_SCRIPT: https://raw.githubusercontent.com/Seagate/cortx-s3server/main/update-hosts.sh
+
+# 3rd Party tools installation references
+EARLANG_RPM: https://bintray.com/rabbitmq-erlang/rpm/download_file?file_path=erlang%2F23%2Fel%2F7%2Fx86_64%2Ferlang-23.1.5-1.el7.x86_64.rpm
+RABITMQ_SCRIPT: https://packagecloud.io/install/repositories/rabbitmq/rabbitmq-server/script.rpm.sh
+CONSUL_REPO: https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
+
+
+DATA_DEVICE: /dev/sdb
+METADATA_DEVICE: /dev/sdc
+
+REQUIRED_VARS:
+  - LDAP_ROOT_USER
+  - LDAP_ROOT_PWD
+  - LDAP_SGIAM_USER
+  - LDAP_SGIAM_PWD
+  - BMC_USER
+  - BMC_SECRET
+  - NODE1
+  - CORTX_BUILD
+

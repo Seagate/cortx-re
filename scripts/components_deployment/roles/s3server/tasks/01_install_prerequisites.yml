@@ -1,0 +1,62 @@
+# #######################################################################################
+# Description:
+#-------------
+#         This tasks performs all prerequisites steps required for s3server mini provisioning
+# Reference:
+#----------- 
+#         https://github.com/Seagate/cortx-s3server/wiki/S3server-provisioning-on-single-node-cluster:-Manual#pre-requisites
+# Steps:
+#--------
+#      1. Install cortx-pyutils      
+#      2. Install and start rabbitmq-server
+#      3. Install haproxy
+#      4. Install openldap server and client
+##########################################################################################
+
+- name: "[install_prereq] : Validate the required input arguments for this playbook"
+  fail: msg="Variable '{{ item }}' is not defined"
+  when: item not in vars
+  with_items: "{{ REQUIRED_VARS }}"
+  
+# Add yum repositories
+- name: "[install_prereq] : Copy yum repo"
+  template:
+    src: cortx.repo.j2
+    dest: /etc/yum.repos.d/cortx.repo
+
+# Update Host
+- name: "[install_prereq] : Update s3server host " 
+  shell: curl -s {{ S3_UPDATE_HOST_SCRIPT }} | sudo bash
+
+# Install cortx-py-utils
+- name: "[install-prereq] : Install cortx-py-utils"
+  yum: 
+    name: cortx-py-utils
+    state: present
+
+# Install Erlang
+- name: "[install_prereq] : Install Erlang"
+  yum: 
+    name: "{{ EARLANG_RPM }}"
+    state: present
+
+# Install Rabitmq Server
+- name: "[install_prereq] : Execute rabitmq config script " 
+  shell: curl -sL {{ RABITMQ_SCRIPT }} | bash -
+
+- name: "[install_prereq] : Install rabbitmq-server"
+  yum: 
+    name: rabbitmq-server
+    state: present
+
+- name: "[install_prereq] : Start/Enable rabitmq server"
+  service:
+    name: rabbitmq-server
+    state: started
+    enabled: yes
+
+# Install haproxy
+- name: "[install_prereq] : Install haproxy"
+  yum: 
+    name: haproxy
+    state: present
