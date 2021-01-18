@@ -34,15 +34,16 @@ releasenotes = "## Features\n\n"
 for issue in data['issues']:
    if issue['fields']['issuetype']['name'] in ['Task','Story']:
       if not any(word in issue['fields']['summary'].lower() for word in issue_exclude_filter):
-         releasenotes+=str("- "+issue['fields']['summary']+"\n")
+         releasenotes+=str("- {} [[{}]]({})\n".format(issue['fields']['summary'],issue['key'],"https://jts.seagate.com/browse/"+issue['key']))
 
 releasenotes+="\n"
 releasenotes+="## Bugfixes\n\n"
 for issue in data['issues']:
    if issue['fields']['issuetype']['name'] in ['Bug']:
       if not any(word in issue['fields']['summary'].lower() for word in issue_exclude_filter):
-          releasenotes+=str("- "+issue['fields']['summary']+"\n")   
+          releasenotes+=str("- {} [[{}]]({})\n".format(issue['fields']['summary'],issue['key'],"https://jts.seagate.com/browse/"+issue['key'])) 
 
+print(releasenotes)
 #publish ova release with release-notes if required ova file is present
 if os.path.isfile(old_ova_path):
    shutil.copyfile(old_ova_path,new_ova_path)
