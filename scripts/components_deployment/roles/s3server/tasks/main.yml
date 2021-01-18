@@ -1,0 +1,30 @@
+- include: 01_install_prerequisites.yml
+  tags: ['01_PREREQ']
+
+
+# #######################################################################################
+# Description:
+#-------------
+#         This tasks starts s3server deployment
+# Reference:
+#----------- 
+#         https://github.com/Seagate/cortx-s3server/wiki/S3server-provisioning-on-single-node-cluster:-Manual
+# Steps:
+#--------
+#      1. Install HS3server
+#      2. Execute Mini Provisioning
+#      3. Start S3 Server
+#      4. Validate Deployment
+##########################################################################################
+
+- include: 02_install_s3server.yml
+  tags: ['02_INSTALL_S3SERVER']
+
+- include: 03_mini_provisioning.yml
+  tags: ['03_MINI_PROV']
+
+- include: 04_start_s3server.yml
+  tags: ['04_START_S3SERVER']
+
+- include: 05_validate.yml
+  tags: ['05_VALIDATE']
