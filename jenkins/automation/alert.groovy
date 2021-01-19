@@ -5,7 +5,9 @@ pipeline {
 			label 'Test-node-ssc-vm-c-456'
 		}
 	}
-
+	environment {
+		SPACE = sh(script: "df -h | grep /mnt/data1/releases", , returnStdout: true).trim()
+	}
 	 triggers {
          cron('0 */6 * * *')
     }
@@ -72,7 +74,7 @@ pipeline {
 		always {
 			script {
 			        emailext (
-					body: "Current Disk Space is CURRENT : Job ${env.JOB_NAME} : Build URL ${env.BUILD_URL}",
+					body: "Current Disk Space is ${env.CURRENT} : Job ${env.JOB_NAME} : Build URL ${env.BUILD_URL}",
 					subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME} : build ${env.BUILD_NUMBER}",
 					to: 'balaji.ramachandran@seagate.com',
 					)
