@@ -43,7 +43,8 @@ pipeline {
 						prev_count=0
 						fpath=/mnt/data1/releases
 						source /mnt/data1/releases/exclude_build.txt
-						find $build -path $path1 -path $path2 -prune -false -o -name '*' -exec ls -ltr {} + > /mnt/data1/releases/file1.out
+						find /mnt/data1/releases/cortx/github/integration-custom-ci/release/centos-7.8.2003/custom-build-394_bkp -path /mnt/data1/releases/cortx/github/integration-custom-ci/release/centos-7.8.2003 -prune -false -o -name '*' -exec rm -rf {} \\;
+						#find $build -path $path1 -path $path2 -prune -false -o -name '*' -exec ls -ltr {} + > /mnt/data1/releases/file1.out
 						#touch /mnt/data1/releases/file.out
 						#find $fpath -type f -mtime +30  -exec ls -ltr {} + > /mnt/data1/releases/file.out
 						#find $fpath -maxdepth 1 ! -type l -print | cut -c1- | grep -v "\\#" -exec ls -ltr {} + > /mnt/data1/releases/file1.out
