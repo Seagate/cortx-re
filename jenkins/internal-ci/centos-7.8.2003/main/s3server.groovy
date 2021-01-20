@@ -16,7 +16,7 @@ pipeline {
 		component = "s3server"
         os_version = "centos-7.8.2003"
         pipeline_grou p = "main"
-        release_dir ="/mnt/bigstorage/releases/cortx"
+        release_dir = "/mnt/bigstorage/releases/cortx"
         build_upload_dir = "${release_dir}/components/github/${pipeline_group}/${os_version}/${env}/${component}"
 
         // Param hack for initial config
@@ -45,7 +45,7 @@ pipeline {
             }
         }
 
-		stage("Set Motr Build"){
+		stage("Set Motr Build") {
 			stages {			
 				stage("Motr Build - Last Successfull") {
 					when { not { triggeredBy 'UpstreamCause' } }
@@ -138,7 +138,7 @@ pipeline {
 				script {
                 	def releaseBuild = build job: 'Main Release', propagate: true, parameters: [string(name: 'release_component', value: "${component}"), string(name: 'release_build', value: "${BUILD_NUMBER}")]
 				 	env.release_build = "${BUILD_NUMBER}"
-                    env.release_build_location="http://cortx-storage.colo.seagate.com/releases/cortx/github/$pipeline_group/$os_version/${component}_${BUILD_NUMBER}"
+                    env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$pipeline_group/$os_version/${component}_${BUILD_NUMBER}"
 				}
             }
         }  
@@ -146,7 +146,7 @@ pipeline {
 
 	post {
 		always {
-			script{    	
+			script {    	
 				echo 'Cleanup Workspace.'
 				deleteDir() /* clean up our workspace */
 
@@ -160,10 +160,10 @@ pipeline {
 				env.component = (env.component).toUpperCase()
 				env.build_stage = "${build_stage}"
 
-                if(currentBuild.rawBuild.getCause(hudson.triggers.SCMTrigger$SCMTriggerCause)){
+                if (currentBuild.rawBuild.getCause(hudson.triggers.SCMTrigger$SCMTriggerCause)) {
                     def toEmail = "shailesh.vaidya@seagate.com"
                     def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
-                    if( manager.build.result.toString() == "FAILURE"){
+                    if ( manager.build.result.toString() == "FAILURE") {
                         toEmail = "CORTX.s3@seagate.com"
                         recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'],[$class: 'RequesterRecipientProvider']]
                     }

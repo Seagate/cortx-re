@@ -101,7 +101,7 @@ pipeline {
 				script {
                 	def releaseBuild = build job: 'Main Release', propagate: true, parameters: [string(name: 'release_component', value: "${component}"), string(name: 'release_build', value: "${BUILD_NUMBER}")]
 				 	env.release_build = "${BUILD_NUMBER}"
-                    env.release_build_location="http://cortx-storage.colo.seagate.com/releases/cortx/github/$pipeline_group/$os_version/${component}_${BUILD_NUMBER}"
+                    env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$pipeline_group/$os_version/${component}_${BUILD_NUMBER}"
 				}
             }
         }
@@ -137,7 +137,7 @@ pipeline {
 				env.build_stage = "${build_stage}"
 				env.vm_deployment = (env.deployVMURL != null) ? env.deployVMURL : "" 
 
-                if (env.deployVMStatus != "SUCCESS" && manager.build.result.toString() != "FAILURE"){
+                if (env.deployVMStatus != "SUCCESS" && manager.build.result.toString() != "FAILURE") {
                     manager.buildUnstable()
                 }
                 

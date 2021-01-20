@@ -44,7 +44,7 @@ pipeline {
             				dir ('hare') {
             					checkout([$class: 'GitSCM', branches: [[name: "*/${branch}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 0, noTags: false, reference: '', shallow: false,  timeout: 5], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-hare.git']]])
             				}
-                        } catch (err){
+                        } catch (err) {
                             error "Checkout Timeout.....${err}"
                         }
     			    }
@@ -52,7 +52,7 @@ pipeline {
 			}
 		}
 
-        stage("Set Motr Build"){
+        stage("Set Motr Build") {
 			stages {			
 				stage("Motr Build - Stable Build") {
 					when { not { triggeredBy 'UpstreamCause' } }
@@ -147,7 +147,7 @@ pipeline {
 				script {
                 	def releaseBuild = build job: 'Main Release', propagate: true, parameters: [string(name: 'release_component', value: "${component}"), string(name: 'release_build', value: "${BUILD_NUMBER}")]
 				 	env.release_build = "${BUILD_NUMBER}"
-                    env.release_build_location="http://cortx-storage.colo.seagate.com/releases/cortx/github/$pipeline_group/$os_version/${component}_${BUILD_NUMBER}"
+                    env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$pipeline_group/$os_version/${component}_${BUILD_NUMBER}"
 				}
             }
         } 

@@ -127,7 +127,7 @@ pipeline {
 
 	post {
 		always {
-			script{
+			script {
             	
 				echo 'Cleanup Workspace.'
 				deleteDir() /* clean up our workspace */

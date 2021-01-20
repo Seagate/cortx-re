@@ -111,7 +111,7 @@ pipeline {
 				stage ("build S3Server") {
 					steps {
 						script { build_stage = env.STAGE_NAME }
-                        script{
+                        script {
                                 try {
                                     def s3Build = build job: 'S3server', wait: true, parameters: [string(name: 'branch', value: "stable")]
 							        env.S3_BUILD_NUMBER = s3Build.number
@@ -127,10 +127,10 @@ pipeline {
 					steps {
 						script { build_stage = env.STAGE_NAME }
                         script{
-                            try{
+                            try {
 							    def hareBuild = build job: 'Hare', wait: true, parameters: [string(name: 'branch', value: "stable")]
 							    env.HARE_BUILD_NUMBER = hareBuild.number
-                            }catch (err){
+                            } catch (err) {
                                 build_stage = env.STAGE_NAME
                                 error "Failed to Build Hare"
                             }
