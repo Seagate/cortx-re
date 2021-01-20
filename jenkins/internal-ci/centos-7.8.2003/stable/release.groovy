@@ -50,7 +50,7 @@ pipeline {
         stage('Checkout Release scripts') {
 			steps {
         	    script { build_stage = env.STAGE_NAME }
-                checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
+                checkout([$class: 'GitSCM', branches: [[name: 'version-2.0.0']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
 			}
 		}
 			
@@ -186,8 +186,8 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Build Release Info', script: """
 				    pushd scripts/release_support
-                        sh build_release_info.sh $integration_dir/$release_tag/dev
-                        sh build_release_info.sh $integration_dir/$release_tag/prod
+                        sh build_release_info.sh -v $version -b $integration_dir/$release_tag/dev
+                        sh build_release_info.sh -v $version -b $integration_dir/$release_tag/prod
 						sh build-3rdParty-release-info.sh $cortx_build_dir/$release_tag/3rd_party
     					sh build_readme.sh $integration_dir/$release_tag
 					popd
