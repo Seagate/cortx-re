@@ -51,8 +51,7 @@
   
 - name: print data
   debug:
-    var: firstresult
-    verbosity: 2
+    msg: "{{ firstresult }}"
     
 - name: Execute provisioner script
   shell: ./provisioner.sh
@@ -66,13 +65,12 @@
   shell: systemctl restart csm_agent
 
 - name: Check database.yml file data
-  shell: "cat /etc/csm/database.yml"
+  shell: "cat /etc/csm/database.yaml"
   register: firstdbresult
 
 - name: print db data
   debug:
-    var: firstdbresult
-    verbosity: 2
+    msg: "{{ firstdbresult }}"
   
 - name: Verify cortx cluster status
   shell: hctl status
@@ -117,16 +115,14 @@
   register: secresult
 
 - name: Check database.yml file data
-  shell: "cat /etc/csm/database.yml"
+  shell: "cat /etc/csm/database.yaml"
   register: secdbresult
   
 - name: print data
   debug:
-    var: secresult
-    verbosity: 2
+    msg: "{{ secresult }}"
     
 - name: print db data
   debug:
-    var: secdbresult
-    verbosity: 2    
+    msg: "{{ secdbresult }}"
   
