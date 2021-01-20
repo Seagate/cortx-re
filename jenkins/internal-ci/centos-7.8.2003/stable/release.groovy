@@ -8,7 +8,7 @@ pipeline {
 	}
 	
     environment {
-		version = "1.0.0"
+		version = "2.0.0"
 		thrid_party_version = "1.0.0-3"
 		os_version = "centos-7.8.2003"
 		branch = "stable"
