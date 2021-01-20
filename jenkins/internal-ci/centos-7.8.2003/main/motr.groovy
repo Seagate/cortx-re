@@ -11,20 +11,20 @@ pipeline {
     }
 		
 	environment {
-        version="2.0.0"    
-        env="dev"
-		component="motr"
-        os_version="centos-7.8.2003"
-		pipeline_group="main"
-        release_dir="/mnt/bigstorage/releases/cortx"
-        build_upload_dir="${release_dir}/components/github/${pipeline_group}/${os_version}/${env}/${component}"
+        version = "2.0.0"    
+        env = "dev"
+		component = "motr"
+        os_version = "centos-7.8.2003"
+		pipeline_group = "main"
+        release_dir = "/mnt/bigstorage/releases/cortx"
+        build_upload_dir = "${release_dir}/components/github/${pipeline_group}/${os_version}/${env}/${component}"
 
         // Dependent component job build
-        build_upload_dir_s3="$release_dir/components/github/${pipeline_group}/${os_version}/${env}/s3server"
-        build_upload_dir_hare="$release_dir/components/github/${pipeline_group}/${os_version}/${env}/hare"
+        build_upload_dir_s3 = "$release_dir/components/github/${pipeline_group}/${os_version}/${env}/s3server"
+        build_upload_dir_hare = "$release_dir/components/github/${pipeline_group}/${os_version}/${env}/hare"
 
 		// Param hack for initial config
-        branch="${branch != null ? branch : 'main'}"
+        branch = "${branch != null ? branch : 'main'}"
     }
 	
 	options {
@@ -41,7 +41,7 @@ pipeline {
 	stages {
 		stage('Checkout') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				dir ('motr') {
 			        checkout([$class: 'GitSCM', branches: [[name: "*/${branch}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog'], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-motr']]])
                 }
@@ -50,7 +50,7 @@ pipeline {
 	
     	stage('Install Dependencies') {
 		    steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				dir ('motr') {	
 					sh label: '', script: '''
                         export build_number=${BUILD_ID}
@@ -65,7 +65,7 @@ pipeline {
 
 		stage('Build') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				dir ('motr') {	
 					sh label: '', script: '''
 						rm -rf /root/rpmbuild/RPMS/x86_64/*.rpm
@@ -81,7 +81,7 @@ pipeline {
 		
 		stage ('Upload') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh label: 'Copy RPMS', script: '''
 					mkdir -p $build_upload_dir/$BUILD_NUMBER
 					cp /root/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir/$BUILD_NUMBER
@@ -96,7 +96,7 @@ pipeline {
 		
 		stage ('Set Current Build') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh label: 'Tag last_successful', script: '''
 					pushd $build_upload_dir/
 					test -d $build_upload_dir/current_build && rm -f current_build
@@ -110,13 +110,13 @@ pipeline {
 			parallel {
 				stage ("build S3Server") {
 					steps {
-						script { build_stage=env.STAGE_NAME }
+						script { build_stage = env.STAGE_NAME }
                         script{
                                 try{
                                     def s3Build = build job: 'S3server', wait: true, parameters: [string(name: 'branch', value: "stable")]
 							        env.S3_BUILD_NUMBER = s3Build.number
                                 }catch (err){
-                                    build_stage=env.STAGE_NAME
+                                    build_stage = env.STAGE_NAME
                                     error "Failed to Build S3Server"
                                 }
 						}
@@ -125,13 +125,13 @@ pipeline {
 					        
 		        stage ("build Hare") {
 					steps {
-						script { build_stage=env.STAGE_NAME }
+						script { build_stage = env.STAGE_NAME }
                         script{
                             try{
 							    def hareBuild = build job: 'Hare', wait: true, parameters: [string(name: 'branch', value: "stable")]
 							    env.HARE_BUILD_NUMBER = hareBuild.number
                             }catch (err){
-                                build_stage=env.STAGE_NAME
+                                build_stage = env.STAGE_NAME
                                 error "Failed to Build Hare"
                             }
 						}
@@ -142,7 +142,7 @@ pipeline {
 	
 		stage ('Tag last_successful') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh label: 'Tag last_successful', script: '''pushd $build_upload_dir/
 					test -d $build_upload_dir/last_successful && rm -f last_successful
 					ln -s $build_upload_dir/$BUILD_NUMBER last_successful
@@ -163,7 +163,7 @@ pipeline {
 		stage ("Release") {
 		    //when { triggeredBy 'SCMTrigger' }
             steps {
-                script { build_stage=env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
 				script {
                 	def releaseBuild = build job: 'Main Release', propagate: true, parameters: [string(name: 'release_component', value: "${component}"), string(name: 'release_build', value: "${BUILD_NUMBER}")]
 				 	env.release_build = "${BUILD_NUMBER}"

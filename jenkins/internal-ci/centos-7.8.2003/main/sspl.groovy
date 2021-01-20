@@ -11,13 +11,13 @@ pipeline {
     }
 
 	environment {
-        version="2.0.0"   
-        env="dev"
-		component="sspl"
-        os_version="centos-7.8.2003"
-        pipeline_group="main"
-        release_dir="/mnt/bigstorage/releases/cortx"
-        build_upload_dir="${release_dir}/components/github/${pipeline_group}/${os_version}/${env}/${component}"
+        version = "2.0.0"   
+        env = "dev"
+		component = "sspl"
+        os_version = "centos-7.8.2003"
+        pipeline_group = "main"
+        release_dir = "/mnt/bigstorage/releases/cortx"
+        build_upload_dir = "${release_dir}/components/github/${pipeline_group}/${os_version}/${env}/${component}"
 
         // Param hack for initial config
         branch="${branch != null ? branch : 'main'}"
@@ -38,7 +38,7 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                script { build_stage=env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
                 dir ('cortx-sspl') {
                     checkout([$class: 'GitSCM', branches: [[name: "*/${branch}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-monitor']]])
                 }
@@ -47,7 +47,7 @@ pipeline {
         
         stage('Install Dependencies') {
             steps {
-                script { build_stage=env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
                 sh label: '', script: '''
 					sed -i 's/gpgcheck=1/gpgcheck=0/' /etc/yum.conf
 					yum-config-manager --disable cortx-C7.7.1908
@@ -60,7 +60,7 @@ pipeline {
 
         stage('Build') {
             steps {
-                script { build_stage=env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
                 sh label: 'Build', script: '''
                     set -xe
                     pushd cortx-sspl
@@ -77,7 +77,7 @@ pipeline {
         
         stage ('Upload') {
             steps {
-                script { build_stage=env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
                 sh label: 'Copy RPMS', script: '''
                     mkdir -p $build_upload_dir/$BUILD_NUMBER
                     cp /root/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir/$BUILD_NUMBER
@@ -93,7 +93,7 @@ pipeline {
         
         stage ('Tag last_successful') {
             steps {
-                script { build_stage=env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
                 sh label: 'Tag last_successful', script: '''pushd $build_upload_dir/
                     test -d $build_upload_dir/last_successful && rm -f last_successful
                     ln -s $build_upload_dir/$BUILD_NUMBER last_successful
@@ -105,7 +105,7 @@ pipeline {
         stage ("Release") {
             //when { triggeredBy 'SCMTrigger' }
             steps {
-                script { build_stage=env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
 				script {
                 	def releaseBuild = build job: 'Main Release', propagate: true, parameters: [string(name: 'release_component', value: "${component}"), string(name: 'release_build', value: "${BUILD_NUMBER}")]
 				 	env.release_build = "${BUILD_NUMBER}"
@@ -117,7 +117,7 @@ pipeline {
         stage ("Test") {
             when { expression { false } }
             steps {
-                script { build_stage=env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
 				script {
                 	build job: '../SSPL/SSPL_Build_Sanity', propagate: false, wait: false,  parameters: [string(name: 'TARGET_BUILD', value: "main:${component}_${BUILD_NUMBER}")]
 				}

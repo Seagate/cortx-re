@@ -11,13 +11,13 @@ pipeline {
     }
     
     environment {
-        version="2.0.0"
-        env="dev"
-		component="hare"
-        os_version="centos-7.8.2003"
-		pipeline_group="main"
-        release_dir="/mnt/bigstorage/releases/cortx"
-        build_upload_dir="${release_dir}/components/github/${pipeline_group}/${os_version}/${env}/${component}"
+		version = "2.0.0"
+        env = "dev"
+		component = "hare"
+        os_version = "centos-7.8.2003"
+		pipeline_group = "main"
+        release_dir = "/mnt/bigstorage/releases/cortx"
+        build_upload_dir = "${release_dir}/components/github/${pipeline_group}/${os_version}/${env}/${component}"
 
 		// Param hack for initial config
         branch="${branch != null ? branch : 'main'}"
@@ -40,7 +40,7 @@ pipeline {
 			    script{
     			    retry(2) {
                         try{
-            				script { build_stage=env.STAGE_NAME }
+            				script { build_stage = env.STAGE_NAME }
             				dir ('hare') {
             					checkout([$class: 'GitSCM', branches: [[name: "*/${branch}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 0, noTags: false, reference: '', shallow: false,  timeout: 5], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-hare.git']]])
             				}
@@ -57,7 +57,7 @@ pipeline {
 				stage("Motr Build - Stable Build") {
 					when { not { triggeredBy 'UpstreamCause' } }
 					steps {
-						script { build_stage=env.STAGE_NAME }
+						script { build_stage = env.STAGE_NAME }
 						script {
 							sh label: '', script: '''
 								sed '/baseurl/d' /etc/yum.repos.d/motr_current_build.repo
@@ -71,7 +71,7 @@ pipeline {
 				stage("Motr Build - Main Build") {
 					when { triggeredBy 'UpstreamCause' }
 					steps {
-						script { build_stage=env.STAGE_NAME }
+						script { build_stage = env.STAGE_NAME }
 						script {
 							sh label: '', script: '''
 								sed '/baseurl/d' /etc/yum.repos.d/motr_current_build.repo
@@ -87,7 +87,7 @@ pipeline {
 	
 		stage('Install Dependencies') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh label: '', script: '''
 					rm -f /etc/yum.repos.d/eos_7.7.1908.repo
 					yum clean all
@@ -99,13 +99,13 @@ pipeline {
 
 		stage('Build') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh label: 'Build', returnStatus: true, script: '''
 					set -xe
 					pushd $component
 					echo "Executing build script"
 					export build_number=${BUILD_ID}
-					make VERSION=$version rpm
+					make rpm
 					popd
 				'''	
 			}
@@ -113,7 +113,7 @@ pipeline {
 
         stage ('Upload') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh label: 'Copy RPMS', script: '''
 					mkdir -p $build_upload_dir/$BUILD_NUMBER
 					cp /root/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir/$BUILD_NUMBER
@@ -130,7 +130,7 @@ pipeline {
 		stage ('Tag last_successful') {
             when { not { triggeredBy 'UpstreamCause' } }
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh label: 'Tag last_successful', script: '''pushd $build_upload_dir/
 					test -d $build_upload_dir/last_successful && rm -f last_successful
 					ln -s $build_upload_dir/$BUILD_NUMBER last_successful
@@ -143,7 +143,7 @@ pipeline {
             when { not { triggeredBy 'UpstreamCause' } }
 		    //when { triggeredBy 'SCMTrigger' }
             steps {
-                script { build_stage=env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
 				script {
                 	def releaseBuild = build job: 'Main Release', propagate: true, parameters: [string(name: 'release_component', value: "${component}"), string(name: 'release_build', value: "${BUILD_NUMBER}")]
 				 	env.release_build = "${BUILD_NUMBER}"
@@ -159,11 +159,11 @@ pipeline {
             	
 				echo 'Cleanup Workspace.'
 				deleteDir() /* clean up our workspace */
-				try{
+				try {
 				   dir('hare') {
     					checkout([$class: 'GitSCM', branches: [[name: "*/main"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 0, noTags: false, reference: '', shallow: false], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: false, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-hare.git']]])
     				}
-                }catch (err){
+                } catch (err){
                     echo "Checkout Timeout"
                 }
                 
@@ -175,7 +175,7 @@ pipeline {
 			
 				def toEmail = ""
 				def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
-				if( manager.build.result.toString() == "FAILURE"){
+				if ( manager.build.result.toString() == "FAILURE"){
 					toEmail = ""
 					recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'],[$class: 'RequesterRecipientProvider']]
 				}
