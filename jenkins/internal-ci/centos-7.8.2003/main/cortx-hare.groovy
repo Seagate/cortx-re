@@ -11,6 +11,7 @@ pipeline {
     }
     
     environment {
+		version="2.0.0"
         env="dev"
 		component="hare"
         os_version="centos-7.8.2003"
