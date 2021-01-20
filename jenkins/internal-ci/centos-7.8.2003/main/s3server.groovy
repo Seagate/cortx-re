@@ -160,7 +160,7 @@ pipeline {
 				env.component = (env.component).toUpperCase()
 				env.build_stage = "${build_stage}"
 
-                if (currentBuild.rawBuild.getCause(hudson.triggers.SCMTrigger$SCMTriggerCause)) {
+                if (currentBuild.rawBuild.getCause (hudson.triggers.SCMTrigger$SCMTriggerCause) ) {
                     def toEmail = "shailesh.vaidya@seagate.com"
                     def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
                     if ( manager.build.result.toString() == "FAILURE") {
@@ -176,7 +176,7 @@ pipeline {
                         to: toEmail,
                         recipientProviders: recipientProvidersClass
                     )
-                }else {
+                } else {
                    echo 'Skipping Notification....' 
                 }
 			}
