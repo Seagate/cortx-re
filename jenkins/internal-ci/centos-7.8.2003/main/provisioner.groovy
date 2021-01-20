@@ -11,16 +11,16 @@ pipeline {
     }
 
 	environment {
-        version="2.0.0"
-        env="dev"
-		component="provisioner"
-        os_version="centos-7.8.2003"
-        pipeline_group="main"
-        release_dir="/mnt/bigstorage/releases/cortx"
-        build_upload_dir="${release_dir}/components/github/${pipeline_group}/${os_version}/${env}/${component}"
+        version = "2.0.0"
+        env = "dev"
+		component = "provisioner"
+        os_version = "centos-7.8.2003"
+        pipeline_group = "main"
+        release_dir = "/mnt/bigstorage/releases/cortx"
+        build_upload_dir = "${release_dir}/components/github/${pipeline_group}/${os_version}/${env}/${component}"
 
         // Param hack for initial config
-        branch="${branch != null ? branch : 'main'}"
+        branch = "${branch != null ? branch : 'main'}"
     }
 
     options {
@@ -38,14 +38,14 @@ pipeline {
 
         stage('Checkout') {
             steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 					checkout([$class: 'GitSCM', branches: [[name: "*/${branch}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-prvsnr.git']]])
             }
         }
 
         stage('Install Dependencies') {
             steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
                 sh encoding: 'utf-8', label: 'Install Python', returnStdout: true, script: 'yum install -y python'
                 sh encoding: 'utf-8', label: 'Cleanup', returnStdout: true, script: 'test -d /root/rpmbuild && rm -rf /root/rpmbuild || echo "/root/rpmbuild absent. Skipping cleanup..."'
             }
@@ -53,7 +53,7 @@ pipeline {
 
         stage('Build') {
             steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
                 sh encoding: 'utf-8', label: 'Provisioner RPMS', returnStdout: true, script: """
                     sh ./devops/rpms/buildrpm.sh -g \$(git rev-parse --short HEAD) -e $version -b ${BUILD_NUMBER}
                 """
@@ -70,7 +70,7 @@ pipeline {
 
 		stage ('Upload') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh label: 'Copy RPMS', script: '''
                     mkdir -p $build_upload_dir/$BUILD_NUMBER
                     cp /root/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir/$BUILD_NUMBER
@@ -86,7 +86,7 @@ pipeline {
 			
 		stage ('Tag last_successful') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh label: 'Tag last_successful', script: '''pushd $build_upload_dir/
                     test -d $build_upload_dir/last_successful && rm -f last_successful
                     ln -s $build_upload_dir/$BUILD_NUMBER last_successful
@@ -97,7 +97,7 @@ pipeline {
 
         stage ("Release") {
             steps {
-                script { build_stage=env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
 				script {
                 	def releaseBuild = build job: 'Main Release', propagate: true, parameters: [string(name: 'release_component', value: "${component}"), string(name: 'release_build', value: "${BUILD_NUMBER}")]
 				 	env.release_build = "${BUILD_NUMBER}"
@@ -109,7 +109,7 @@ pipeline {
         stage ("Deploy VM") {
             when { expression { false  } }
             steps {
-                script { build_stage=env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
 				script {
 				    
                     try {
@@ -126,7 +126,7 @@ pipeline {
 
 	post {
 		always {
-			script{
+			script {
             	
 				echo 'Cleanup Workspace.'
 				deleteDir() /* clean up our workspace */
@@ -143,7 +143,7 @@ pipeline {
                 
 				def toEmail = ""
 				def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
-				if( manager.build.result.toString() != "SUCCESS"){
+				if ( manager.build.result.toString() != "SUCCESS") {
 					toEmail = ""
 					recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'],[$class: 'RequesterRecipientProvider']]
 				}

@@ -20,7 +20,7 @@ pipeline {
         build_upload_dir = "${release_dir}/components/github/${pipeline_group}/${os_version}/${env}/${component}"
 
 		// Param hack for initial config
-        branch="${branch != null ? branch : 'main'}"
+        branch = "${branch != null ? branch : 'main'}"
     }
 	
 	options {
@@ -37,14 +37,14 @@ pipeline {
 	stages {
 		stage('Checkout') {
 			steps {
-			    script{
+			    script {
     			    retry(2) {
-                        try{
+                        try {
             				script { build_stage = env.STAGE_NAME }
             				dir ('hare') {
             					checkout([$class: 'GitSCM', branches: [[name: "*/${branch}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 0, noTags: false, reference: '', shallow: false,  timeout: 5], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-hare.git']]])
             				}
-                        }catch (err){
+                        } catch (err){
                             error "Checkout Timeout.....${err}"
                         }
     			    }
@@ -175,7 +175,7 @@ pipeline {
 			
 				def toEmail = ""
 				def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
-				if ( manager.build.result.toString() == "FAILURE"){
+				if ( manager.build.result.toString() == "FAILURE") {
 					toEmail = ""
 					recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'],[$class: 'RequesterRecipientProvider']]
 				}

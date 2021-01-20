@@ -112,10 +112,10 @@ pipeline {
 					steps {
 						script { build_stage = env.STAGE_NAME }
                         script{
-                                try{
+                                try {
                                     def s3Build = build job: 'S3server', wait: true, parameters: [string(name: 'branch', value: "stable")]
 							        env.S3_BUILD_NUMBER = s3Build.number
-                                }catch (err){
+                                } catch (err) {
                                     build_stage = env.STAGE_NAME
                                     error "Failed to Build S3Server"
                                 }
@@ -187,7 +187,7 @@ pipeline {
 
 				def toEmail = ""
 				def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
-				if( manager.build.result.toString() == "FAILURE"){
+				if ( manager.build.result.toString() == "FAILURE") {
 					toEmail = ""
 					recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'],[$class: 'RequesterRecipientProvider']]
 				}
