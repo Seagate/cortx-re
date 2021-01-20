@@ -126,7 +126,7 @@ pipeline {
 		        stage ("build Hare") {
 					steps {
 						script { build_stage = env.STAGE_NAME }
-                        script{
+                        script {
                             try {
 							    def hareBuild = build job: 'Hare', wait: true, parameters: [string(name: 'branch', value: "stable")]
 							    env.HARE_BUILD_NUMBER = hareBuild.number
@@ -167,7 +167,7 @@ pipeline {
 				script {
                 	def releaseBuild = build job: 'Main Release', propagate: true, parameters: [string(name: 'release_component', value: "${component}"), string(name: 'release_build', value: "${BUILD_NUMBER}")]
 				 	env.release_build = "${BUILD_NUMBER}"
-                    env.release_build_location="http://cortx-storage.colo.seagate.com/releases/cortx/github/$pipeline_group/$os_version/${component}_${BUILD_NUMBER}"
+                    env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$pipeline_group/$os_version/${component}_${BUILD_NUMBER}"
 				}
             }
         } 
