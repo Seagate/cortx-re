@@ -44,7 +44,16 @@
       owner: root
       group: root
       mode: '0754'
-
+      
+- name: Check /etc/hosts file data
+  shell: "cat /etc/hosts"
+  register: firstresult
+  
+- name: print data
+  debug:
+    var: firstresult
+    verbosity: 2
+    
 - name: Execute provisioner script
   shell: ./provisioner.sh
   register: command_result
@@ -56,6 +65,15 @@
 - name: Restart csm_sgent
   shell: systemctl restart csm_agent
 
+- name: Check database.yml file data
+  shell: "cat /etc/csm/database.yml"
+  register: firstdbresult
+
+- name: print db data
+  debug:
+    var: firstdbresult
+    verbosity: 2
+  
 - name: Verify cortx cluster status
   shell: hctl status
   register: cluster_status
@@ -93,3 +111,22 @@
 
 - name: Clean bash history
   shell: cat /dev/null > /root/.bash_history
+
+- name: Check /etc/hosts file data
+  shell: "cat /etc/hosts"
+  register: secresult
+
+- name: Check database.yml file data
+  shell: "cat /etc/csm/database.yml"
+  register: secdbresult
+  
+- name: print data
+  debug:
+    var: secresult
+    verbosity: 2
+    
+- name: print db data
+  debug:
+    var: secdbresult
+    verbosity: 2    
+  
