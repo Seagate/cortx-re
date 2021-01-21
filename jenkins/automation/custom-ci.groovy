@@ -2,7 +2,7 @@ pipeline {
 
 	agent {
 		node {
-			label 'docker-cp-centos-7.8.2003-node'
+			label 'Test-node-ssc-vm-c-456'
 		}
 	}
 
