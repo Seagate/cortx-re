@@ -22,7 +22,16 @@ pipeline {
 		COMMIT_HASH_CORTX_SSPL=get_commit_hash("cortx-sspl", "${RELEASE_INFO_URL}")
 	}
 	stages {
-
+		
+	stage ("THIRD PARTY RELEASE VERSION") {
+			steps {	
+				sh label: 'commit hash', script: '''#!/bin/bash
+				RELEASE_VERSION=$THIRD_PARTY_RELEASE_INFO_URL
+				env.THIRD_PARTY_VERSION=cat third.info | grep THIRD_PARTY_VERSION | awk '{print $2}' | cut -b 18-24
+				echo "THIRD_PARTY_VERSION = $THIRD_PARTY_VERSION"
+			'''
+			}
+	}
         stage ("Display") {
             steps {
                 script { build_stage=env.STAGE_NAME }
