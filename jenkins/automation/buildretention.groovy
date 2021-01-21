@@ -5,12 +5,10 @@ pipeline {
 			label 'docker-cp-centos-7.8.2003-node'
 		}
 	}
-	 triggers {
-         cron('0 */6 * * *')
-    }
-	
+		
 	parameters {
 		string(name: 'RELEASE_INFO_URL', defaultValue: 'http://cortx-storage.colo.seagate.com/releases/cortx_builds/centos-7.8.2003/552/RELEASE.INFO', description: 'RELEASE BUILD')
+		string(name: 'THIRD_PARTY_RELEASE_INFO_URL', defaultValue: 'http://cortx-storage.colo.seagate.com/releases/cortx_builds/centos-7.8.2003/552/THIRD_PARTY_RELEASE.INFO', description: 'THIRD PARTY RELEASE BUILD')
 	}
     
     environment {
