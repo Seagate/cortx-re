@@ -51,7 +51,7 @@ pipeline {
              when { expression { true } }
             steps {
                 script { build_stage=env.STAGE_NAME }
-                build job: custom-ci', wait: true,
+                build job: 'custom-ci', wait: true,
                 parameters: [
                     string(name: 'CSM_AGENT_BRANCH', value: "${COMMIT_HASH_CORTX_CSM_AGENT}"),
                     string(name: 'CSM_WEB_BRANCH', value: "${COMMIT_HASH_CORTX_CSM_WEB}"),
