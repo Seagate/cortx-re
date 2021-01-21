@@ -2,7 +2,7 @@ pipeline {
 
 	agent {
 		node {
-			label 'docker-cp-centos-7.8.2003-node'
+			label 'Test-node-ssc-vm-c-456'
 		}
 	}
 		
@@ -27,7 +27,7 @@ pipeline {
 			steps {	
 				sh label: 'commit hash', script: '''#!/bin/bash
 				RELEASE_VERSION=$THIRD_PARTY_RELEASE_INFO_URL
-				env.THIRD_PARTY_VERSION=cat third.info | grep THIRD_PARTY_VERSION | awk '{print $2}' | cut -b 18-24
+				env.THIRD_PARTY_VERSION=cat $RELEASE_VERSION | grep THIRD_PARTY_VERSION | awk '{print $2}' | cut -b 18-24
 				echo "THIRD_PARTY_VERSION = $THIRD_PARTY_VERSION"
 			'''
 			}
