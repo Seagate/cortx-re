@@ -15,7 +15,7 @@ pipeline {
         env = "dev"
 		component = "s3server"
         os_version = "centos-7.8.2003"
-        pipeline_grou p = "main"
+        pipeline_group = "main"
         release_dir = "/mnt/bigstorage/releases/cortx"
         build_upload_dir = "${release_dir}/components/github/${pipeline_group}/${os_version}/${env}/${component}"
 
