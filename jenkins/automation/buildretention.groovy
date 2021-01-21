@@ -27,6 +27,7 @@ pipeline {
 	stage ("THIRD PARTY RELEASE VERSION") {
 			steps {	
 				sh label: 'commit hash', script: '''#!/bin/bash
+				wget $THIRD_PARTY_RELEASE_INFO_URL
 				RELEASE_VERSION=$THIRD_PARTY_RELEASE_INFO_URL
 				THIRD_PARTY_VERSION=$(cat $RELEASE_VERSION | grep THIRD_PARTY_VERSION | awk '{print $2}' | cut -b 18-24)
 				echo "THIRD_PARTY_VERSION = $THIRD_PARTY_VERSION"
