@@ -79,7 +79,7 @@ def get_commit_hash(String component, String release_info){
 
 def get_version(String THIRD_PARTY_VERSION){
    return sh(script: """
-       THIRD_PARTY_RELEASE_INFO=wget $THIRD_PARTY_RELEASE_INFO_URL -O THIRD_PARTY_RELEASE_INFO 
+       THIRD_PARTY_RELEASE_INFO=wget $THIRD_PARTY_RELEASE_INFO_URL -O THIRD_PARTY_RELEASE.INFO 
        echo \$(cat $THIRD_PARTY_RELEASE_INFO | grep THIRD_PARTY_VERSION | awk print "${2}" | cut -b 18-24)
    """, returnStdout:trim).trim()
 }
