@@ -20,7 +20,7 @@ pipeline {
 		COMMIT_HASH_CORTX_PRVSNR=get_commit_hash("cortx-prvsnr", "${RELEASE_INFO_URL}")
 		COMMIT_HASH_CORTX_S3SERVER=get_commit_hash("cortx-s3server", "${RELEASE_INFO_URL}")
 		COMMIT_HASH_CORTX_SSPL=get_commit_hash("cortx-sspl", "${RELEASE_INFO_URL}")
-	    THIRD_PARTY_RELEASE_VERSION=get_version("${THIRD_PARTY_VERSION}")	
+	    	THIRD_PARTY_RELEASE_VERSION=get_version("${THIRD_PARTY_VERSION}")	
 	    }
 	
 	stages {
@@ -79,7 +79,7 @@ def get_commit_hash(String component, String release_info){
 
 def get_version(String THIRD_PARTY_VERSION){
 	return sh(script: """
-			THIRD_PARTY_RELEASE_INFO=$(wget $THIRD_PARTY_RELEASE_INFO_URL)
+			THIRD_PARTY_RELEASE_INFO=wget $THIRD_PARTY_RELEASE_INFO_URL
 			echo "Third Party File is $THIRD_PARTY_RELEASE_INFO"
 			THIRD_PARTY_VERSION=cat $THIRD_PARTY_RELEASE_INFO | grep THIRD_PARTY_VERSION | awk '{print $2}' | cut -b 18-24
 			echo "THIRD_PARTY_VERSION = $THIRD_PARTY_VERSION"
