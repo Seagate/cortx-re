@@ -28,6 +28,7 @@ pipeline {
 	}
 
 	parameters {
+		string(name: 'THIRD_PARTY_RELEASE_VERSION', defaultValue: '10.0-1', description: 'THIRD PARTY RELEASE VERSION')
 		string(name: 'CSM_AGENT_BRANCH', defaultValue: 'main', description: 'Branch for CSM Agent')
 		string(name: 'CSM_AGENT_URL', defaultValue: 'https://github.com/Seagate/cortx-manager', description: 'CSM_AGENT URL')
 		string(name: 'CSM_WEB_BRANCH', defaultValue: 'main', description: 'Branch for CSM Web')
