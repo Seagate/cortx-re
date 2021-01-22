@@ -29,6 +29,7 @@ pipeline {
 			steps {	
 				sh label: 'commit hash', script: '''#!/bin/bash
 				THIRD_PARTY_RELEASE_INFO=$(wget $THIRD_PARTY_RELEASE_INFO_URL)
+				echo "$THIRD_PARTY_RELEASE_INFO"
 				THIRD_PARTY_VERSION=cat $THIRD_PARTY_RELEASE_INFO | grep THIRD_PARTY_VERSION | awk '{print $2}' | cut -b 18-24
 				echo "THIRD_PARTY_VERSION = $THIRD_PARTY_VERSION"
 			'''
