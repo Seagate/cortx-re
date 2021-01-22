@@ -21,7 +21,6 @@ pipeline {
 		COMMIT_HASH_CORTX_S3SERVER=get_commit_hash("cortx-s3server", "${RELEASE_INFO_URL}")
 		COMMIT_HASH_CORTX_SSPL=get_commit_hash("cortx-sspl", "${RELEASE_INFO_URL}")
 	    	THIRD_PARTY_RELEASE_VERSION=get_version("${THIRD_PARTY_VERSION}")
-	    	THIRD_PARTY_RELEASE_INFO=""
 	    }
 	
 	stages {
