@@ -20,22 +20,12 @@ pipeline {
 		COMMIT_HASH_CORTX_PRVSNR=get_commit_hash("cortx-prvsnr", "${RELEASE_INFO_URL}")
 		COMMIT_HASH_CORTX_S3SERVER=get_commit_hash("cortx-s3server", "${RELEASE_INFO_URL}")
 		COMMIT_HASH_CORTX_SSPL=get_commit_hash("cortx-sspl", "${RELEASE_INFO_URL}")
-	    	
+	    THIRD_PARTY_RELEASE_VERSION=get_version("${THIRD_PARTY_VERSION}")	
 	    }
 	
 	stages {
 		
-	stage ("THIRD PARTY RELEASE VERSION") {
-			steps {	
-				sh label: 'commit hash', script: '''#!/bin/bash
-				THIRD_PARTY_RELEASE_INFO=$(wget $THIRD_PARTY_RELEASE_INFO_URL)
-				echo "Third Party File is $THIRD_PARTY_RELEASE_INFO"
-				THIRD_PARTY_VERSION=cat $THIRD_PARTY_RELEASE_INFO | grep THIRD_PARTY_VERSION | awk '{print $2}' | cut -b 18-24
-				echo "THIRD_PARTY_VERSION = $THIRD_PARTY_VERSION"
-			'''
-			}
-	}
-        stage ("Display") {
+	stage ("Display") {
             steps {
                 script { build_stage=env.STAGE_NAME }
                 echo "COMMIT_HASH_CORTX_CSM_AGENT = $COMMIT_HASH_CORTX_CSM_AGENT"
@@ -50,12 +40,13 @@ pipeline {
         }
 		
 		
-		stage ("Build custom-ci") {
+	stage ("Build custom-ci") {
              when { expression { true } }
             steps {
                 script { build_stage=env.STAGE_NAME }
                 build job: 'custom-ci', wait: true,
                 parameters: [
+					string(name: 'THIRD_PARTY_RELEASE_VERSION', value: "${THIRD_PARTY_VERSION}"),
                     string(name: 'CSM_AGENT_BRANCH', value: "${COMMIT_HASH_CORTX_CSM_AGENT}"),
                     string(name: 'CSM_WEB_BRANCH', value: "${COMMIT_HASH_CORTX_CSM_WEB}"),
                     string(name: 'HARE_BRANCH', value: "${COMMIT_HASH_CORTX_HARE}"),
@@ -85,3 +76,12 @@ def get_commit_hash(String component, String release_info){
             fi
             """, returnStdout: true).trim()
 }
+
+def get_version(String THIRD_PARTY_VERSION){
+	return sh(script: """
+			THIRD_PARTY_RELEASE_INFO=$(wget $THIRD_PARTY_RELEASE_INFO_URL)
+			echo "Third Party File is $THIRD_PARTY_RELEASE_INFO"
+			THIRD_PARTY_VERSION=cat $THIRD_PARTY_RELEASE_INFO | grep THIRD_PARTY_VERSION | awk '{print $2}' | cut -b 18-24
+			echo "THIRD_PARTY_VERSION = $THIRD_PARTY_VERSION"
+			""", returnStdout:trim).trim()
+)			
