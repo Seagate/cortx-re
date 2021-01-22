@@ -2,15 +2,13 @@ pipeline {
 
 	agent {
 		node {
-			label 'Test-node-ssc-vm-c-456'
+			label 'docker-cp-centos-7.8.2003-node'
 		}
 	}
-	 triggers {
-         cron('0 */6 * * *')
-    }
-	
+		
 	parameters {
 		string(name: 'RELEASE_INFO_URL', defaultValue: 'http://cortx-storage.colo.seagate.com/releases/cortx_builds/centos-7.8.2003/552/RELEASE.INFO', description: 'RELEASE BUILD')
+		string(name: 'THIRD_PARTY_RELEASE_INFO_URL', defaultValue: 'http://cortx-storage.colo.seagate.com/releases/cortx_builds/centos-7.8.2003/552/THIRD_PARTY_RELEASE.INFO', description: 'THIRD PARTY RELEASE BUILD')
 	}
     
     environment {
@@ -22,10 +20,12 @@ pipeline {
 		COMMIT_HASH_CORTX_PRVSNR=get_commit_hash("cortx-prvsnr", "${RELEASE_INFO_URL}")
 		COMMIT_HASH_CORTX_S3SERVER=get_commit_hash("cortx-s3server", "${RELEASE_INFO_URL}")
 		COMMIT_HASH_CORTX_SSPL=get_commit_hash("cortx-sspl", "${RELEASE_INFO_URL}")
-	}
+	    THIRD_PARTY_RELEASE_VERSION=get_version("${THIRD_PARTY_RELEASE_INFO_URL}")
+	    }
+	
 	stages {
-
-        stage ("Display") {
+		
+	stage ("Display") {
             steps {
                 script { build_stage=env.STAGE_NAME }
                 echo "COMMIT_HASH_CORTX_CSM_AGENT = $COMMIT_HASH_CORTX_CSM_AGENT"
@@ -40,20 +40,21 @@ pipeline {
         }
 		
 		
-		stage ("Build custom-ci") {
+	stage ("Build custom-ci") {
              when { expression { true } }
             steps {
                 script { build_stage=env.STAGE_NAME }
                 build job: 'cortx-custom-ci', wait: true,
                 parameters: [
-                    string(name: 'CSM_AGENT_BRANCH', defaultValue: '${COMMIT_HASH_CORTX_CSM_AGENT}'),
-                    string(name: 'CSM_WEB_BRANCH', defaultValue: '${COMMIT_HASH_CORTX_CSM_WEB}'),
-                    string(name: 'HARE_BRANCH', defaultValue: '${COMMIT_HASH_CORTX_HARE}'),
-                    string(name: 'HA_BRANCH', defaultValue: '${COMMIT_HASH_CORTX_HA}'),
-                    string(name: 'MOTR_BRANCH', defaultValue: '${COMMIT_HASH_CORTX_MOTR}'),
-                    string(name: 'PRVSNR_BRANCH', defaultValue: '${COMMIT_HASH_CORTX_PRVSNR}'),
-                    string(name: 'S3_BRANCH', defaultValue: '${COMMIT_HASH_CORTX_S3SERVER}'),
-                    string(name: 'SSPL_BRANCH', defaultValue: '${COMMIT_HASH_CORTX_SSPL}')
+		    string(name: 'THIRD_PARTY_RELEASE_VERSION', value: "${THIRD_PARTY_RELEASE_VERSION}"),
+                    string(name: 'CSM_AGENT_BRANCH', value: "${COMMIT_HASH_CORTX_CSM_AGENT}"),
+                    string(name: 'CSM_WEB_BRANCH', value: "${COMMIT_HASH_CORTX_CSM_WEB}"),
+                    string(name: 'HARE_BRANCH', value: "${COMMIT_HASH_CORTX_HARE}"),
+                    string(name: 'HA_BRANCH', value: "${COMMIT_HASH_CORTX_HA}"),
+                    string(name: 'MOTR_BRANCH', value: "${COMMIT_HASH_CORTX_MOTR}"),
+                    string(name: 'PRVSNR_BRANCH', value: "${COMMIT_HASH_CORTX_PRVSNR}"),
+                    string(name: 'S3_BRANCH', value: "${COMMIT_HASH_CORTX_S3SERVER}"),
+                    string(name: 'SSPL_BRANCH', value: "${COMMIT_HASH_CORTX_SSPL}")
                         
                 ]
             }
@@ -74,4 +75,11 @@ def get_commit_hash(String component, String release_info){
                     echo \$(curl -s $release_info | grep $component | head -1 | awk -F['_'] '{print \$2}' | sed 's/git//g');
             fi
             """, returnStdout: true).trim()
+}
+
+def get_version(String THIRD_PARTY_RELEASE_INFO_URL){
+   return sh(script: """
+       wget $THIRD_PARTY_RELEASE_INFO_URL -O THIRD_PARTY_RELEASE_INFO ;
+       echo \$(grep THIRD_PARTY_VERSION THIRD_PARTY_RELEASE_INFO  | awk '{print \$2}' | cut -b 18-24);
+   """, returnStdout:true).trim()
 }
