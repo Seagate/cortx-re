@@ -84,4 +84,4 @@ def get_version(String THIRD_PARTY_VERSION){
 			THIRD_PARTY_VERSION=cat $THIRD_PARTY_RELEASE_INFO | grep THIRD_PARTY_VERSION | awk print "${2}" | cut -b 18-24
 			echo "THIRD_PARTY_VERSION = $THIRD_PARTY_VERSION"
 			""", returnStdout:trim).trim()
-)			
+}			
