@@ -20,7 +20,7 @@ pipeline {
 		COMMIT_HASH_CORTX_PRVSNR=get_commit_hash("cortx-prvsnr", "${RELEASE_INFO_URL}")
 		COMMIT_HASH_CORTX_S3SERVER=get_commit_hash("cortx-s3server", "${RELEASE_INFO_URL}")
 		COMMIT_HASH_CORTX_SSPL=get_commit_hash("cortx-sspl", "${RELEASE_INFO_URL}")
-	    	THIRD_PARTY_RELEASE_VERSION=get_version("${THIRD_PARTY_VERSION}")
+	    THIRD_PARTY_RELEASE_VERSION=get_version("${THIRD_PARTY_RELEASE_INFO_URL}")
 	    }
 	
 	stages {
@@ -46,7 +46,7 @@ pipeline {
                 script { build_stage=env.STAGE_NAME }
                 build job: 'custom-ci', wait: true,
                 parameters: [
-					string(name: 'THIRD_PARTY_RELEASE_VERSION', value: "${THIRD_PARTY_VERSION}"),
+					string(name: 'THIRD_PARTY_RELEASE_VERSION', value: "${THIRD_PARTY_RELEASE_VERSION}"),
                     string(name: 'CSM_AGENT_BRANCH', value: "${COMMIT_HASH_CORTX_CSM_AGENT}"),
                     string(name: 'CSM_WEB_BRANCH', value: "${COMMIT_HASH_CORTX_CSM_WEB}"),
                     string(name: 'HARE_BRANCH', value: "${COMMIT_HASH_CORTX_HARE}"),
@@ -77,10 +77,9 @@ def get_commit_hash(String component, String release_info){
             """, returnStdout: true).trim()
 }
 
-def get_version(String THIRD_PARTY_VERSION){
+def get_version(String THIRD_PARTY_RELEASE_INFO_URL){
    return sh(script: """
-       THIRD_PARTY_RELEASE_INFO=wget $THIRD_PARTY_RELEASE_INFO_URL -O THIRD_PARTY_RELEASE.INFO 
-       echo \$(cat $THIRD_PARTY_RELEASE_INFO | grep THIRD_PARTY_VERSION | awk print "${2}" | cut -b 18-24)
-   """, returnStdout:trim).trim()
+       wget $THIRD_PARTY_RELEASE_INFO_URL -O THIRD_PARTY_RELEASE_INFO ;
+       echo \$(grep THIRD_PARTY_VERSION THIRD_PARTY_RELEASE_INFO  | awk '{print \$2}' | cut -b 18-24);
+   """, returnStdout:true).trim()
 }
-			
