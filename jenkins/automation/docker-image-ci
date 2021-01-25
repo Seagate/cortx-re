@@ -36,7 +36,7 @@ pipeline {
 				script { build_stage = env.STAGE_NAME }
 				sh label: 'Build Docker image', script: '''
                 echo 'y' | docker image prune
-                docker-compose -f docker/internal-ci/docker-compose.yml build --force-rm  --compress --build-arg GIT_HASH="$(git rev-parse --short HEAD)" cortx-build-internal-centos-7.8.2003
+                docker-compose -f docker/internal-ci/docker-compose.yml build --force-rm  --compress --build-arg GIT_HASH="$(git rev-parse --short HEAD)" cortx-build-internal-$OS_VERSION
                 echo 'y' | docker image prune
                 '''
 			}
