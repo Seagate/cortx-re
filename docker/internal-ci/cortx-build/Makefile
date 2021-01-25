@@ -1,5 +1,6 @@
 SHELL := /bin/bash
 BUILD_ID = 0
+RELEASE_VERSION = "2.0.0"
 RELASE_BUILD = "/var/artifacts/${BUILD_ID}"
 RPM_DIR = "/var/artifacts/${BUILD_ID}/cortx_iso"
 THIRD_PARTY_VERSION = "third-party-deps-1.0.0-2"
@@ -344,7 +345,7 @@ release_build:
 		createrepo -v . && \
 	popd && \
 	pushd ${RELASE_BUILD} && \
-		sh /opt/release_support/build_release_info.sh ${RPM_DIR} && \
+		sh /opt/release_support/build_release_info.sh -v ${RELEASE_VERSION} -b ${RPM_DIR} && \
                 wget http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/centos/zip/third-party-centos-7.8.2003-1.0.0-2.tar.gz && \
 		mkdir -p 3rd_party && tar -xvzf *.tar.gz -C 3rd_party --strip-components=1 && \
 	popd
