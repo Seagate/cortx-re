@@ -11,14 +11,20 @@ pipeline {
     }
 
     parameters {
-				
-         choice(
+        choice(
             name: 'OS_VERSION', 
             choices: ['centos-7.8.2003'],
             description: 'OS Version'
         )
 	}	
-	
+
+    options {
+		timeout(time: 120, unit: 'MINUTES')
+		timestamps()
+		disableConcurrentBuilds()
+        buildDiscarder(logRotator(daysToKeepStr: '30', numToKeepStr: '30'))
+		ansiColor('xterm')
+	}
 
     stages {
 
