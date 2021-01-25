@@ -26,7 +26,7 @@ pipeline {
         stage('Checkout Script') {
             steps {             
                 script {
-                    checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re/']]])                
+                    checkout([$class: 'GitSCM', branches: [[name: 'auto-docker-image']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/shailesh-vaidya/cortx-re/']]])                
                 }
             }
         }
@@ -37,6 +37,7 @@ pipeline {
 				sh label: 'Build Docker image', script: '''
                 echo 'y' | docker image prune
                 docker-compose -f docker/internal-ci/docker-compose.yml build --force-rm  --compress --build-arg GIT_HASH="$(git rev-parse --short HEAD)" cortx-build-internal-$OS_VERSION
+                                         cortx-build-internal-centos-7.8.2003
                 echo 'y' | docker image prune
                 '''
 			}
