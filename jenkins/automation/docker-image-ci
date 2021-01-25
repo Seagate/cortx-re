@@ -6,19 +6,20 @@ pipeline {
     }
     
     options {
-        timeout(time: 120, unit: 'MINUTES')
-        timestamps() 
-    }
+		timeout(time: 120, unit: 'MINUTES')
+		timestamps()
+		disableConcurrentBuilds()
+        buildDiscarder(logRotator(daysToKeepStr: '30', numToKeepStr: '30'))
+		ansiColor('xterm')
+	}
 
     parameters {
-				
-         choice(
+        choice(
             name: 'OS_VERSION', 
             choices: ['centos-7.8.2003'],
             description: 'OS Version'
         )
 	}	
-	
 
     stages {
 
@@ -35,8 +36,7 @@ pipeline {
 				script { build_stage = env.STAGE_NAME }
 				sh label: 'Build Docker image', script: '''
                 echo 'y' | docker image prune
-                docker-compose -f docker/internal-ci/docker-compose.yml build --compress cortx-build-cp-$OS_VERSION 
-                docker-compose -f docker/internal-ci/docker-compose.yml build --compress cortx-build-io-$OS_VERSION
+                docker-compose -f docker/internal-ci/docker-compose.yml build --force-rm  --compress --build-arg GIT_HASH="$(git rev-parse --short HEAD)" cortx-build-internal-$OS_VERSION
                 echo 'y' | docker image prune
                 '''
 			}
