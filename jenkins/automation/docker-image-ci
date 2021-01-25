@@ -50,6 +50,7 @@ pipeline {
 
                 sh label: 'Validate Docker image', script: '''
                 docker run --rm -v /mnt/docker/tmp/cortx-workspace:/cortx-workspace -v /mnt/docker/tmp/artifacts:/var/artifacts cortx-build-internal:centos-7.8.2003 make clean build -i
+                rm -rf /mnt/docker/tmp/
                 '''
 			}
 		}
