@@ -42,5 +42,17 @@ pipeline {
 			}
 		}
 
+        stage ('Validation') {
+			steps {
+				script { build_stage = env.STAGE_NAME }
+				sh label: 'Validate Docker image', script: '''
+                
+                checkout changelog: false, poll: false, scm: [$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'cortx-workspace'], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: false, recursiveSubmodules: true, reference: '', shallow: true, trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/Seagate/cortx']]]
+
+                docker run --rm cortx-build-internal:centos-7.8.2003 make clean build -i
+                '''
+			}
+		}
+
     }
 }
