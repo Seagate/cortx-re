@@ -64,6 +64,9 @@
 - name: Restart csm_sgent
   shell: systemctl restart csm_agent
 
+- name: Install vmware-tools
+  yum: name=open-vm-tools state=present
+
 - name: Check database.yml file data
   shell: "cat /etc/csm/database.yaml"
   register: firstdbresult
@@ -71,25 +74,10 @@
 - name: print db data
   debug:
     msg: "{{ firstdbresult }}"
-  
-- name: Verify cortx cluster status
-  shell: hctl status
-  register: cluster_status
-
-- name: Print cortx cluster status
-  debug: 
-    msg: "{{ cluster_status.stdout }}"
-
-- name: Verify salt master setup
-  shell: "{{ item }}"
-  loop:
-    - "salt '*' test.ping"  
-    - "salt '*' service.disable puppet"
-    - "salt '*' pillar.get release"  
-    - "salt '*' grains.get node_id"  
-    - "salt '*' grains.get cluster_id"  
-    - "salt '*' grains.get roles"
-  
+ 
+- include_role:
+    name: vm-service-checker 
+ 
 - name: Add srvnode1 in hosts
   lineinfile:
     dest: /etc/hosts
@@ -125,4 +113,5 @@
 - name: print db data
   debug:
     msg: "{{ secdbresult }}"
-  
+- name: Reset hostname
+  shell: hostnamectl --static --transient set-hostname "localhost" 

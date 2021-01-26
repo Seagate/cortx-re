@@ -1,7 +1,16 @@
 - hosts: localhost
   gather_facts: true
-  user: root
-  vars_files:
-    - group_vars/secrets.yml
+  become_user: root
+  become: true
   roles:
     - ova-tester
+
+#- name: SSH Setup on VM
+#  hosts: ova_vm
+#  gather_facts: true
+#  become: true
+#  become_user: root
+#  tasks:
+#    - include_role: 
+#        name: vm-ssh-setup
+

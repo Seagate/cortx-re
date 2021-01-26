@@ -1,8 +1,8 @@
 ---
 - hosts: localhost
-  user: root
-  vars_files:
-    - group_vars/secrets.yml
+  gather_facts: true
+  become: true
+  become_user: root
   roles:
     - vm-create
 
