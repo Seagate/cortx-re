@@ -113,5 +113,3 @@
 - name: print db data
   debug:
     msg: "{{ secdbresult }}"
-- name: Reset hostname
-  shell: hostnamectl --static --transient set-hostname "localhost" 
