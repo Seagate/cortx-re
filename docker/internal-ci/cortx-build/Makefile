@@ -110,9 +110,9 @@ _s3_build:
 	pushd cortx-workspace/cortx-s3server && \
 		yum clean all;rm -rf /var/cache/yum && \
 		export build_number=${BUILD_ID} && \
-		./rpms/s3/buildrpm.sh -G $$(git rev-parse --short HEAD) && \
+		./rpms/s3/buildrpm.sh -S ${RELEASE_VERSION} -G $$(git rev-parse --short HEAD) && \
 		export build_number=${BUILD_ID} && \
-	    ./rpms/s3iamcli/buildrpm.sh -G $$(git rev-parse --short HEAD) && \
+	    ./rpms/s3iamcli/buildrpm.sh -S ${RELEASE_VERSION} -G $$(git rev-parse --short HEAD) && \
 		cp /root/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
        	cp /root/rpmbuild/RPMS/noarch/*.rpm ${RPM_DIR} && \
 		createrepo -v ${RPM_DIR} && \
@@ -138,7 +138,7 @@ _cortx-hare_build:
 	pushd cortx-workspace/cortx-hare && \
 		echo "Executing build script" && \
 		export build_number=${BUILD_ID} && \
-		make rpm && \
+		make VERSION=${RELEASE_VERSION} rpm && \
 		cp /root/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
 		createrepo -v ${RPM_DIR} && \
 	popd
@@ -210,11 +210,7 @@ _cortx-management-portal_build:
 	
 	pushd cortx-workspace/cortx-management-portal && \
 		BUILD=$$(git rev-parse --short HEAD) && \
-		VERSION=$$(cat VERSION) && \
-		echo "Executing build script" && \
-		echo "VERSION:$$VERSION" && \
-		echo "Python:$$(python --version)" && \
-		./cicd/build.sh -v $$VERSION -b "${BUILD_ID}" -t -i && \
+		./cicd/build.sh -v ${RELEASE_VERSION} -b "${BUILD_ID}" -t -i && \
 		cp ./dist/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
 		createrepo -v ${RPM_DIR} && \
 	popd
@@ -240,11 +236,7 @@ _cortx-manager_build:
 	
 	pushd cortx-workspace/cortx-manager && \
 		BUILD=$$(git rev-parse --short HEAD) && \
-		VERSION=$$(cat VERSION) && \
-		echo "Executing build script" && \
-		echo "VERSION:$$VERSION" && \
-		echo "Python:$(python --version)" && \
-		./cicd/build.sh -v $$VERSION -b "${BUILD_ID}" -t -i && \
+		./cicd/build.sh -v ${RELEASE_VERSION} -b "${BUILD_ID}" -t -i && \
 		cp ./dist/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
 		createrepo -v ${RPM_DIR} && \
 	popd
@@ -267,9 +259,9 @@ _prvsnr_build:
 	@echo "***************  Building cortx-prvsnr RPMS *********************"
 	
 	pushd cortx-workspace/cortx-prvsnr/ && \
-		sh ./devops/rpms/buildrpm.sh -g "$$(git rev-parse --short HEAD)" -e 1.0.0 -b "${BUILD_ID}" && \
-		sh ./cli/buildrpm.sh -g "$$(git rev-parse --short HEAD)" -e 1.0.0 -b "${BUILD_ID}" && \
-		bash ./devops/rpms/api/build_python_api.sh -vv --out-dir /root/rpmbuild/RPMS/x86_64/ --pkg-ver 1.0.0 && \
+		sh ./devops/rpms/buildrpm.sh -g "$$(git rev-parse --short HEAD)" -e ${RELEASE_VERSION} -b "${BUILD_ID}" && \
+		sh ./cli/buildrpm.sh -g "$$(git rev-parse --short HEAD)" -e ${RELEASE_VERSION} -b "${BUILD_ID}" && \
+		bash ./devops/rpms/api/build_python_api.sh -vv --out-dir /root/rpmbuild/RPMS/x86_64/ --pkg-ver ${RELEASE_VERSION} && \
 		cp /root/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
 		createrepo -v ${RPM_DIR} && \
 	popd
@@ -297,7 +289,7 @@ _cortx-monitor_build:
 		export build_number=${BUILD_ID} && \
 		echo "Executing build script" && \
 		echo "VERSION:$$VERSION" && \
-		./jenkins/build.sh -l DEBUG && \
+		./jenkins/build.sh -v ${RELEASE_VERSION} -l DEBUG && \
 		cp /root/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
         cp /root/rpmbuild/RPMS/noarch/*.rpm ${RPM_DIR} && \
 		createrepo -v ${RPM_DIR} && \
@@ -325,7 +317,7 @@ _ha_build:
 	@echo "***************  Building HA RPMS *********************"
 	
 	pushd "cortx-workspace/cortx-ha" && \
-		./jenkins/build.sh -b ${BUILD_ID} && \
+		./jenkins/build.sh -v ${RELEASE_VERSION} -b ${BUILD_ID} && \
 		cp dist/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
 		createrepo -v ${RPM_DIR} && \
 	popd
