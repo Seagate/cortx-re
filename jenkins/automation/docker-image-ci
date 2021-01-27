@@ -19,6 +19,9 @@ pipeline {
 	}
 
     parameters {
+
+        string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash to build docker image', trim: true)
+
         choice (
             name: 'OS_VERSION', 
             choices: ['centos-7.8.2003'],
@@ -26,10 +29,11 @@ pipeline {
         )
 
         choice (
-            choices: ['yes' , 'no'],
+            choices: ['no' , 'yes'],
             description: 'Push newly built Docker image to GitHub ',
             name: 'GITHUB_PUSH'
         )
+
 	}	
 
     stages {
@@ -37,7 +41,7 @@ pipeline {
         stage('Checkout Script') {
             steps {             
                 script {
-                    checkout([$class: 'GitSCM', branches: [[name: 'auto-docker-image']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/shailesh-vaidya/cortx-re/']]])                
+                    checkout([$class: 'GitSCM', branches: [[name: '${CORTX_RE_BRANCH}']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/shailesh-vaidya/cortx-re/']]])                
                 }
             }
         }
