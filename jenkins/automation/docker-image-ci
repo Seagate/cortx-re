@@ -19,10 +19,16 @@ pipeline {
 	}
 
     parameters {
-        choice(
+        choice (
             name: 'OS_VERSION', 
             choices: ['centos-7.8.2003'],
             description: 'OS Version'
+        )
+
+        choice (
+            choices: ['yes' , 'no'],
+            description: 'Push newly built Docker image to GitHub ',
+            name: 'GITHUB_PUSH'
         )
 	}	
 
@@ -61,6 +67,9 @@ pipeline {
 		}
 
         stage ('Push  Docker image') {
+            when {
+                expression { params.GITHUB_PUSH == 'yes' }
+            }
 			steps {
 				script { build_stage = env.STAGE_NAME }
 				sh label: 'Build Docker image', script: '''
