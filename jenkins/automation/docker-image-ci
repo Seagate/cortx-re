@@ -5,6 +5,11 @@ pipeline {
         }
     }
     
+   	environment {
+	    GITHUB_CRED = credentials('shailesh-github')
+	}
+
+
     options {
 		timeout(time: 120, unit: 'MINUTES')
 		timestamps()
@@ -59,6 +64,7 @@ pipeline {
 			steps {
 				script { build_stage = env.STAGE_NAME }
 				sh label: 'Build Docker image', script: '''
+                docker login ghcr.io -u ${GITHUB_CRED_USR} -p ${GITHUB_CRED_PSW}
                 docker-compose -f docker/internal-ci/docker-compose.yml push cortx-build-internal-$OS_VERSION
                 '''
 			}
