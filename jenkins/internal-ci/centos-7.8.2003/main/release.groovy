@@ -304,7 +304,7 @@ pipeline {
 				def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
 				if ( manager.build.result.toString() != "SUCCESS") {
 					toEmail = "shailesh.vaidya@seagate.com"
-					recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'],[$class: 'RequesterRecipientProvider']]
+					recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
 				}
 				emailext ( 
 					body: '''${SCRIPT, template="release-email.template"}''',
