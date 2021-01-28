@@ -2,6 +2,7 @@
 pipeline { 
     agent {
         node {
+            // Run deployment on mini_provisioner nodes (vm deployment nodes)
             label "mini_provisioner"
         }
     }
@@ -19,15 +20,23 @@ pipeline {
         // GID/pwd used to update root password 
         NODE_UN_PASS_CRED_ID = "736373_manageiq_up"
 
-        LDAP_ROOT_USER = "admin"
-        LDAP_ROOT_PWD = "seaagate"
-        LDAP_SGIAM_USER = "sgiamadmin"
-        LDAP_SGIAM_PWD = "ldapadmin"
-        BMC_USER = "root"
-        BMC_SECRET = "bmcadmin"
+        // Test LDAP credential 
+        LDAP_ROOT_CRED  = credentials("mini-prov-ldap-root-cred")
+        LDAP_ROOT_USER = "${LDAP_ROOT_CRED_USR}"
+        LDAP_ROOT_PWD = "${LDAP_ROOT_CRED_PSW}"
+
+        // Test LDAP credential 
+        LDAP_SG_CRED  = credentials("mini-prov-ldap-sg-cred")
+        LDAP_SGIAM_USER = "${LDAP_SG_CRED_USR}"
+        LDAP_SGIAM_PWD = "${LDAP_SG_CRED_PSW}"
+
+        // BMC credential 
+        BMC_CRED  = credentials("mini-prov-bmc-cred")
+        BMC_USER = "${BMC_CRED_USR}"
+        BMC_SECRET = "${BMC_CRED_PSW}"
 
         // Credentials used to SSH node
-        NODE_DEFAULT_SSH_CRED  = credentials("hw-deployment-ssh-cred")
+        NODE_DEFAULT_SSH_CRED  = credentials("vm-deployment-ssh-cred")
         NODE_USER = "${NODE_DEFAULT_SSH_CRED_USR}"
         NODE_PASS = "${NODE_DEFAULT_SSH_CRED_PSW}"
         CLUSTER_PASS = "${NODE_DEFAULT_SSH_CRED_PSW}"
@@ -92,8 +101,8 @@ pipeline {
         // Re-image vm for cleaner deployment using cloudform api
         stage('00. Re-Image System') {
             when { expression { env.STAGE_00_REIMAGE == "yes"  } }
-            steps{
-                script{
+            steps {
+                script {
                     
                     info("Running '00. Re-Image System' Stage")
 
@@ -107,8 +116,8 @@ pipeline {
         // Ref - https://github.com/Seagate/cortx-s3server/wiki/S3server-provisioning-on-single-node-cluster:-Manual#pre-requisites
         stage('01. Prereq') {
             when { expression { env.STAGE_01_PREREQ == "yes" } }
-            steps{
-                script{
+            steps {
+                script {
                     
                     info("Running '01. Prereq' Stage")
 
@@ -122,8 +131,8 @@ pipeline {
         // Ref - https://github.com/Seagate/cortx-s3server/wiki/S3server-provisioning-on-single-node-cluster:-Manual#install-cortx-s3server-and-cortx-motr-packages
         stage('02. Install S3server') {
             when { expression { env.STAGE_02_INSTALL_S3SERVER == "yes" } }
-            steps{
-                script{
+            steps {
+                script {
                     
                     info("Running '02. Deploy Cortx Stack' Stage")
 
@@ -137,8 +146,8 @@ pipeline {
         // Ref - https://github.com/Seagate/cortx-s3server/wiki/S3server-provisioning-on-single-node-cluster:-Manual#s3server-mini-provisioning 
         stage('03. Mini Provisioning') {
             when { expression { env.STAGE_03_MINI_PROV == "yes" } }
-            steps{
-                script{
+            steps {
+                script {
                     
                     info("Running '03. Mini Provisioning' Stage")
 
@@ -152,8 +161,8 @@ pipeline {
         // Ref - https://github.com/Seagate/cortx-s3server/wiki/S3server-provisioning-on-single-node-cluster:-Manual#start-s3server-and-motr-for-io
         stage('04. Start S3server') {
             when { expression { env.STAGE_04_START_S3SERVER == "yes" } }
-            steps{
-                script{
+            steps {
+                script {
                     
                     info("Running '04. Start S3server' Stage")
 
@@ -166,8 +175,8 @@ pipeline {
         // Validate the deployment by performing basic i/o using s3cli command
         stage('05. Validate Deployment') {
             when { expression { env.STAGE_05_VALIDATE_DEPLOYMENT == "yes" } }
-            steps{
-                script{
+            steps {
+                script {
                     
                     info("Running '05. Validate Deployment' Stage")
 
@@ -180,7 +189,7 @@ pipeline {
 
     post { 
         always {
-            script{
+            script {
 
                 // Download deployment log files from deployment node
                 try {
@@ -191,7 +200,8 @@ pipeline {
                     echo err.getMessage()
                 }
 
-                build job: 'Cortx-Deployment/VM-Cleanup', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${env.NODE_NAME}")]
+                // Cleanup Deployment Node
+                build job: 'Cortx-Automation/Deployment/VM-Cleanup', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${env.NODE_NAME}")]
                                 
                 // Define build status based on hctl command
                 hctl_status = ""
@@ -235,7 +245,7 @@ def getTestMachine(host, user, pass) {
 def runAnsible(tags) {
     withCredentials([usernamePassword(credentialsId: "${NODE_UN_PASS_CRED_ID}", passwordVariable: 'SERVICE_PASS', usernameVariable: 'SERVICE_USER'), usernameColonPassword(credentialsId: "${CLOUDFORM_TOKEN_CRED_ID}", variable: 'CLOUDFORM_API_CRED')]) {
         
-        dir("cortx-re/scripts/components_deployment") {
+        dir("cortx-re/scripts/mini_provisioner") {
             ansiblePlaybook(
                 playbook: 's3server_deploy.yml',
                 inventory: 'inventories/hosts',
@@ -253,8 +263,7 @@ def runAnsible(tags) {
                     "LDAP_SGIAM_USER"       : [value: "${LDAP_SGIAM_USER}", hidden: false],
                     "LDAP_SGIAM_PWD"        : [value: "${LDAP_SGIAM_PWD}", hidden: true],
                     "BMC_USER"              : [value: "${BMC_USER}", hidden: false],
-                    "BMC_SECRET"            : [value: "${BMC_SECRET}", hidden: true],
-
+                    "BMC_SECRET"            : [value: "${BMC_SECRET}", hidden: true]
                 ],
                 extras: '-v',
                 colorized: true
