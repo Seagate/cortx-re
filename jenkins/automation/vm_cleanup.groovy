@@ -2,10 +2,12 @@
 pipeline { 
     agent {
         node {
+            // This job runs on vm deployment controller node to execute vm cleanup for the deployment configured host
             label "${NODE_LABEL}"
         }
     }
 	
+    // Accept node label as parameter
     parameters {
         string(name: 'NODE_LABEL', defaultValue: '', description: 'Node Label',  trim: true)
     }
@@ -15,10 +17,10 @@ pipeline {
         // NODE1_HOST - Env variables added in the node configurations
 
         // GID/pwd used to update root password 
-        NODE_UN_PASS_CRED_ID = "736373_manageiq_up"
+        NODE_UN_PASS_CRED_ID = "mini-prov-change-pass"
 
         // Credentials used to SSH node
-        NODE_DEFAULT_SSH_CRED  = credentials("hw-deployment-ssh-cred")
+        NODE_DEFAULT_SSH_CRED = credentials("vm-deployment-ssh-cred")
         NODE_USER = "${NODE_DEFAULT_SSH_CRED_USR}"
         NODE_PASS = "${NODE_DEFAULT_SSH_CRED_PSW}"
         CLUSTER_PASS = "${NODE_DEFAULT_SSH_CRED_PSW}"
@@ -51,16 +53,15 @@ pipeline {
             }
         }
 
-        // Prepare deployment environment - (passwordless ssh, installing requireed tools..etc)
+        // Cleanup previous deployment
         stage('Cleanup Node') {
-            when { expression { true } }
             steps {
                 retry(count: 3) {   
                     script {
                         
                         withCredentials([usernamePassword(credentialsId: "${NODE_UN_PASS_CRED_ID}", passwordVariable: 'SERVICE_PASS', usernameVariable: 'SERVICE_USER'), usernameColonPassword(credentialsId: "${CLOUDFORM_TOKEN_CRED_ID}", variable: 'CLOUDFORM_API_CRED')]) {
             
-                            dir("cortx-re/scripts/components_deployment") {
+                            dir("cortx-re/scripts/mini_provisioner") {
                                 ansiblePlaybook(
                                     playbook: 'prepare.yml',
                                     inventory: 'inventories/hosts',
@@ -79,6 +80,7 @@ pipeline {
 
                         def remoteHost = getTestMachine("${NODE1_HOST}", "${NODE_USER}", "${NODE_PASS}")
 
+                        // Validate Cleanup
                         sshCommand remote: remoteHost, command: '''
                             set +x
                             if [[ ! $(ls -1 '/root') ]]; then
@@ -114,6 +116,7 @@ pipeline {
     post {
         failure {
             script {
+                // On cleanup failure take node offline
                 markNodeOffline(" VM Re-Image Issue  - Automated offline")
             }
         }
@@ -122,7 +125,7 @@ pipeline {
 
 
 // Method returns VM Host Information ( host, ssh cred)
-def getTestMachine(host, user, pass){
+def getTestMachine(host, user, pass) {
 
     def remote = [:]
     remote.name = 'cortx'
@@ -134,6 +137,7 @@ def getTestMachine(host, user, pass){
     return remote
 }
 
+// Make failed node offline
 def markNodeOffline(message) {
     node = getCurrentNode(env.NODE_NAME)
     computer = node.toComputer()
@@ -143,6 +147,7 @@ def markNodeOffline(message) {
     node = null
 }
 
+// Get running node instance
 def getCurrentNode(nodeName) {
   for (node in Jenkins.instance.nodes) {
       if (node.getNodeName() == nodeName) {

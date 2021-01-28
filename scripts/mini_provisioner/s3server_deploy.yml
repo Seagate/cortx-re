@@ -1,10 +1,12 @@
 ---
+
 - name: Prepare Environment
   hosts: localhost
   become: true
+  gather_facts: True
   roles:
     - role: 00_prepare_environment
-
+    
 - name: Deploy S3Server
   hosts: srvnode-1
   become: true
