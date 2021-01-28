@@ -47,11 +47,11 @@
       
 - name: Check /etc/hosts file data
   shell: "cat /etc/hosts"
-  register: firstresult
+  register: hostsdata
   
-- name: print data
+- name: Display /etc/hosts file data
   debug:
-    msg: "{{ firstresult }}"
+    msg: "{{ hostsdata }}"
     
 - name: Execute provisioner script
   shell: ./provisioner.sh
@@ -78,6 +78,9 @@
 - include_role:
     name: vm-service-checker 
  
+- name: change hostname
+  shell: "hostnamectl set-hostname --static --transient --pretty localhost"
+
 - name: Add srvnode1 in hosts
   lineinfile:
     dest: /etc/hosts
@@ -100,16 +103,20 @@
 
 - name: Check /etc/hosts file data
   shell: "cat /etc/hosts"
-  register: secresult
+  register: sechostsdata
 
 - name: Check database.yml file data
   shell: "cat /etc/csm/database.yaml"
-  register: secdbresult
+  register: dbconfig
   
-- name: print data
+- name: Check ip addresses
+  shell: "ip a"
+  register: ipaddrinfo
+
+- name: Display hosts file contents, db config and ip information
   debug:
-    msg: "{{ secresult }}"
-    
-- name: print db data
-  debug:
-    msg: "{{ secdbresult }}"
+    msg: "{{ item }}"
+  with_items:
+    - "{{ sechostsdata }}"
+    - "{{ dbconfig }}"
+    - "{{ ipaddrinfo }}"
