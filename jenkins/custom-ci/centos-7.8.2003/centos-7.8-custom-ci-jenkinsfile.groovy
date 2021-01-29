@@ -9,11 +9,11 @@ pipeline {
 	environment {
 		branch = "custom-ci"
 		os_version = "centos-7.8.2003"
-		thrid_party_version = "1.0.0-1"
+		thrid_party_version = "$THIRD_PARTY_RELEASE_VERSION"
 		release_dir = "/mnt/bigstorage/releases/cortx"
 		integration_dir = "$release_dir/github/integration-custom-ci/release/$os_version"
 		components_dir = "$release_dir/components/github/$branch/$os_version"
-		release_tag = "custom-build-$BUILD_ID"
+		release_tag = "custom-build-$THIRD_PARTY_RELEASE_BUILD_NUMBER"
 		passphrase = credentials('rpm-sign-passphrase')
 		thrid_party_dir = "$release_dir/third-party-deps/centos/centos-7.8.2003-$thrid_party_version/"
 		python_deps = "$release_dir/third-party-deps/python-packages"
