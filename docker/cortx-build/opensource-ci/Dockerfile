@@ -23,8 +23,12 @@ FROM centos:${CENTOS_RELEASE} AS base
 
 ARG CENTOS_RELEASE
 
-LABEL maintainer="CORTX.opensource@seagate.com"
-LABEL Description="This image is used to build CORTX stack on CentOS"
+ARG GIT_HASH
+
+LABEL maintainer="cortx.opensource@seagate.com" \
+      Description="This image is used to build CORTX components" \
+      org.opencontainers.image.revision=$GIT_HASH \
+      org.opencontainers.image.source="https://github.com/Seagate/cortx-re"
 
 ENV BASH_ENV "/etc/profile"
 ENV PATH="/root/.nvm/versions/node/v12.13.0/bin:${PATH}"
