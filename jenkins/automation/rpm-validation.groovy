@@ -31,7 +31,7 @@ pipeline {
         stage('Checkout Script') {
             steps {             
                 script {
-                    checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])                
+                    checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re/']]])                
                 }
             }
         }
@@ -52,7 +52,7 @@ pipeline {
                     emailext mimeType: 'text/html',
                     body: '${FILE, path="rpm_validation.html"}',
                     subject: 'RPM Validation Result - [ Date :' +new Date().format("dd-MMM-yyyy") + ' ]',
-                    to: 'shailesh.vaidya@seagate.com'
+                    to: 'cortx.sme@seagate.com, shailesh.vaidya@seagate.com, gowthaman.chinnathambi@seagate.com, priyank.p.dalal@seagate.com, amol.j.kongre@seagate.com, mukul.malhotra@seagate.com'
                 }
             } 
         }
