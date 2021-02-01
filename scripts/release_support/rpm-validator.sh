@@ -163,9 +163,12 @@ _validate_rpm_install_path(){
                     if [[ "$folder_name" == "log" ]]; then
                         PATH="$RPM_LOG_ROOT_PATH/$rpm_module_name_input" 
                     fi
-                    echo "[$component_name] : $PATH" >> rpm_path_validate.log
+                    
                     if [[ "$rpm_install_path_data" != *"$PATH"* ]]; then
                         result="$folder_name, $result"
+                        echo "[$rpm_name] : $PATH : Absent" >> rpm_path_validate.log
+					else
+						echo "[$rpm_name] : $PATH : Present" >> rpm_path_validate.log
                     fi
                 done
                 break
@@ -259,7 +262,7 @@ _generate_rpm_validation_report(){
             else
 					install_path_check="<td $HTML_TD_STYLE><B>Path Check excluded : </b>${install_path_check%??}</td>"
 			fi
-            
+
             dependency_check=$({ yum install "$BUILD_URL/$rpm" --assumeno; } 2>&1 >/dev/null)
             if [ ! -z "$dependency_check" ]; then
                 dependency_check="<td><details><summary>Error Log</summary><p>$dependency_check</p></details></td>"
