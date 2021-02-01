@@ -52,30 +52,30 @@ pipeline {
 			}
 		}
 
-        stage("Set Motr Build") {
+        stage("Set Motr Build"){
 			stages {			
-				stage("Motr Build - Stable Build") {
+				stage("Motr Build - Last Successfull") {
 					when { not { triggeredBy 'UpstreamCause' } }
 					steps {
 						script { build_stage = env.STAGE_NAME }
 						script {
 							sh label: '', script: '''
 								sed '/baseurl/d' /etc/yum.repos.d/motr_current_build.repo
-								echo "baseurl=http://cortx-storage.colo.seagate.com/releases/cortx/components/github/stable/$os_version/$env/motr/last_successful/"  >> /etc/yum.repos.d/motr_current_build.repo
+								echo "baseurl=http://cortx-storage.colo.seagate.com/releases/cortx/components/github/$pipeline_group/$os_version/dev/motr/last_successful/"  >> /etc/yum.repos.d/motr_current_build.repo
 								yum-config-manager --disable cortx-C7.7.1908
 								yum clean all;rm -rf /var/cache/yum
 							'''
 						}
 					}
 				}				
-				stage("Motr Build - Main Build") {
+				stage("Motr Build - Current") {
 					when { triggeredBy 'UpstreamCause' }
 					steps {
 						script { build_stage = env.STAGE_NAME }
 						script {
 							sh label: '', script: '''
 								sed '/baseurl/d' /etc/yum.repos.d/motr_current_build.repo
-								echo "baseurl=http://cortx-storage.colo.seagate.com/releases/cortx/components/github/main/$os_version/$env/motr/current_build/"  >> /etc/yum.repos.d/motr_current_build.repo
+								echo "baseurl=http://cortx-storage.colo.seagate.com/releases/cortx/components/github/$pipeline_group/$os_version/dev/motr/current_build/"  >> /etc/yum.repos.d/motr_current_build.repo
 								yum-config-manager --disable cortx-C7.7.1908
 								yum clean all;rm -rf /var/cache/yum
 							'''
