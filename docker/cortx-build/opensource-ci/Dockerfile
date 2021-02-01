@@ -22,7 +22,7 @@ ARG CENTOS_RELEASE
 FROM centos:${CENTOS_RELEASE} AS base
 
 ARG CENTOS_RELEASE
-
+ARG ENVIRONMENT
 ARG GIT_HASH
 
 LABEL maintainer="cortx.opensource@seagate.com" \
