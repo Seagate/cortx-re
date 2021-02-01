@@ -252,7 +252,7 @@ _generate_rpm_validation_report(){
             fi
 
             if [ "$rpm_name" == "cortx-sspl-test" ] || [ "$rpm_name" == "cortx-sspl-cli" ]; then
-                install_path_check="<td $HTML_TD_STYLE><B>Path Check excluded : </b>
+                install_path_check="<td $HTML_TD_STYLE><B>Path Check excluded : </b></td>"
              else   
                 install_path_check=$(_validate_rpm_install_path "$rpm_files" "$rpm_name" "$component_name")
                 if [[ ! -z "$install_path_check" ]]
