@@ -248,14 +248,18 @@ _generate_rpm_validation_report(){
                 license_check="<td $HTML_TD_STYLE><b>Invalid License :</b> <br> - <b><i>Expected :</b></i> $RPM_LICENSE_EXPECTED<br> - <b><i>Actual :</b></i>$rpm_license</td>"
             fi
 
-            install_path_check=$(_validate_rpm_install_path "$rpm_files" "$rpm_name" "$component_name")
-            if [[ ! -z "$install_path_check" ]]
-            then
-                install_path_check="<td $HTML_TD_STYLE><B>Path Does Not Exists : </b>${install_path_check%??}</td>"
+            if [ "$rpm_name" != "cortx-sspl-test" ] || [ "$rpm_name" != "cortx-sspl-cli" ]; then
+                install_path_check=$(_validate_rpm_install_path "$rpm_files" "$rpm_name" "$component_name")
+                if [[ ! -z "$install_path_check" ]]
+                then
+                    install_path_check="<td $HTML_TD_STYLE><B>Path Does Not Exists : </b>${install_path_check%??}</td>"
+                else
+                    install_path_check="<td $HTML_TD_STYLE><span style='color:green; text-shadow: -2px 0 black, 0 2px black, 2px 0 black, 0 -2px black; font-size: 30px;'>&#10003;</span></td>"
+                fi
             else
-                install_path_check="<td $HTML_TD_STYLE><span style='color:green; text-shadow: -2px 0 black, 0 2px black, 2px 0 black, 0 -2px black; font-size: 30px;'>&#10003;</span></td>"
-            fi
-
+					install_path_check="<td $HTML_TD_STYLE><B>Path Check excluded : </b>${install_path_check%??}</td>"
+			fi
+            
             dependency_check=$({ yum install "$BUILD_URL/$rpm" --assumeno; } 2>&1 >/dev/null)
             if [ ! -z "$dependency_check" ]; then
                 dependency_check="<td><details><summary>Error Log</summary><p>$dependency_check</p></details></td>"
