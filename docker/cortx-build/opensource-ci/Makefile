@@ -344,7 +344,7 @@ release_build:
 		createrepo -v . && \
 	popd && \
 	pushd ${RELASE_BUILD} && \
-		sh /opt/release_support/build_release_info.sh ${RPM_DIR} && \
+		sh /opt/release_support/build_release_info.sh -v ${RELEASE_VERSION} -b ${RPM_DIR}  && \
 		githubrelease asset seagate/cortx download ${THIRD_PARTY_VERSION} && \
 		mkdir -p 3rd_party && tar -xvzf *.tar.gz -C 3rd_party --strip-components=1 && \
 	popd
