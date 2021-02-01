@@ -21,7 +21,7 @@ version: "3"
 
 services:
   cortx-build-centos-7.8.2003:
-    image: cortx-build:centos-7.8.2003
+    image: ghcr.io/seagate/cortx-build:centos-7.8.2003
     build:
       context: ../../
       dockerfile: ./docker/opensource-ci/Dockerfile
