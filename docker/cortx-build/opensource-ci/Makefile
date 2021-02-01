@@ -1,5 +1,6 @@
 SHELL := /bin/bash
 BUILD_ID = 0
+RELEASE_VERSION = "2.0.0"
 RELASE_BUILD = "/var/artifacts/${BUILD_ID}"
 RPM_DIR = "/var/artifacts/${BUILD_ID}/cortx_iso"
 THIRD_PARTY_VERSION = "third-party-deps-1.0.0-0"
