@@ -24,7 +24,7 @@ services:
     image: ghcr.io/seagate/cortx-build:centos-7.8.2003
     build:
       context: ../../
-      dockerfile: ./docker/cortx-build/opensource-ci/Dockerfile
+      dockerfile: ./docker/cortx-build/Dockerfile
       args:
        CENTOS_RELEASE: 7.8.2003
        LUSTRE_VERSION: 2.12.5
@@ -37,7 +37,7 @@ services:
     image: ghcr.io/seagate/cortx-re/cortx-build-internal:centos-7.8.2003
     build:
       context: ../../
-      dockerfile: ./docker/cortx-build/internal-ci/Dockerfile
+      dockerfile: ./docker/cortx-build//Dockerfile
       args:
        CENTOS_RELEASE: 7.8.2003
        LUSTRE_VERSION: 2.12.5

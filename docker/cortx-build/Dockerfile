@@ -1,6 +1,4 @@
 #
-# Copyright (c) 2020 Seagate Technology LLC and/or its Affiliates
-#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -36,13 +34,13 @@ ENV LANG=en_US.UTF-8 \
     LC_ALL=en_US.UTF-8
 
 #Disable default repositories. 
-RUN yum-config-manager --disable base,extras,updates
+RUN rm -rf /etc/yum.repos.d/CentOS-*
 
-#Add OS specific repository
+#Add Internal and CORTX uploads repository
 COPY ./docker/cortx-build/${ENVIRONMENT}/*.repo /etc/yum.repos.d/
 
 # enable EPEL and SCL repos
-RUN yum install epel-release centos-release-scl -y && yum clean all \
+RUN yum install centos-release-scl -y && yum clean all \
 && rm -rf /var/cache/yum
 
 # install common tools
@@ -89,6 +87,7 @@ flex \
 openssl-devel \
 doxygen \
 dbus-devel \
+yum-priorities \
 expect \
 rpm-sign \
 genisoimage \
@@ -127,11 +126,6 @@ RUN bash /opt/setup_fpm.sh \
 && rm -rf /var/cache/yum \
 && rm -rf rh-ruby23.sh
 
-RUN sh /opt/set-githubrelease-repo.sh \
-&& yum clean all \
-&& rm -rf /var/cache/yum \
-&& rm -f /opt/set-githubrelease-repo.sh
-
 # rpm signing
 COPY ./scripts/rpm-signing/* /opt/rpm-signing/
 
@@ -151,15 +145,19 @@ COPY ./docker/cortx-build/${ENVIRONMENT}/Makefile .
 FROM base as lustre-rpm-builder
 
 ARG LUSTRE_VERSION 
+ARG ENVIRONMENT
 
-ADD  https://downloads.whamcloud.com/public/lustre/lustre-${LUSTRE_VERSION}/el7/client/SRPMS/lustre-${LUSTRE_VERSION}-1.src.rpm . 
+ADD https://downloads.whamcloud.com/public/lustre/lustre-${LUSTRE_VERSION}/el7/client/SRPMS/lustre-${LUSTRE_VERSION}-1.src.rpm . 
 RUN rpm -i lustre-${LUSTRE_VERSION}-1.src.rpm 
 
-COPY ./docker/opensource-ci/lustre-2.9.0.spec.patch .
+COPY ./docker/cortx-build/lustre-2.9.0.spec.patch .
+
 RUN patch -p1 -i lustre-2.9.0.spec.patch /root/rpmbuild/SPECS/lustre.spec
 
-RUN yum -y install kernel kernel-devel \
-	&& yum-builddep -y /root/rpmbuild/SPECS/lustre.spec
+RUN yum -y install kernel{,-devel}-3.10.0-1127.el7  \
+	&& yum-builddep -y /root/rpmbuild/SPECS/lustre.spec \
+        && yum clean all \
+        && rm -rf /var/cache/yum
 	
 RUN QA_RPATHS=255 rpmbuild -bb --without servers --without lustre-tests \
         --define 'configure_args --disable-gss-keyring' \
@@ -180,10 +178,9 @@ RUN yum install -y https://downloads.whamcloud.com/public/lustre/lustre-${LUSTRE
 		 && rm -rf /var/cache/yum
 		 
 		 
-RUN curl -k https://raw.githubusercontent.com/Seagate/cortx-motr/main/cortx-motr.spec.in -o cortx-motr.spec \
+RUN curl -k https://raw.githubusercontent.com/Seagate/cortx-motr/stable/cortx-motr.spec.in -o cortx-motr.spec \
 	&& sed -i 's/@.*@/111/g' cortx-motr.spec \
 	&& kernel_src=$(ls -1rd /lib/modules/*/build | head -n1) \
-    && yum-builddep -y cortx-motr.spec \
+        && yum-builddep -y cortx-motr.spec \
 	&& yum clean all \
-    && rm -rf /var/cache/yum \
-    && rm -rf cortx-motr.spec
+        && rm -rf /var/cache/yum
