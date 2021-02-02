@@ -39,7 +39,11 @@ RUN rm -rf /etc/yum.repos.d/CentOS-*
 #Add Internal and CORTX uploads repository
 COPY ./docker/cortx-build/${ENVIRONMENT}/*.repo /etc/yum.repos.d/
 
-# enable EPEL and SCL repos
+# Install EPEL repo for opensource-ci
+RUN if [ "$ENVIRONMENT" = "opensource-ci" ] ; then yum install epel-release -y ; fi && yum clean all \
+&& rm -rf /var/cache/yum
+
+# Enable SCL repos
 RUN yum install centos-release-scl -y && yum clean all \
 && rm -rf /var/cache/yum
 
