@@ -1,29 +1,5 @@
 ---
 
-- name: "[deploy-prereq] : Download cortx-prereqs.sh script" 
-  get_url:
-    url: "{{ PREREQ_URL }}"
-    dest: /root/cortx-prereqs.sh
-    mode: '0755'
-  delegate_to: "{{ item }}"
-  with_items: "{{ groups['nodes'] }}"
-
-- name: "[deploy-prereq] : Run cortx-prereqs.sh on primary node" 
-  command: ./cortx-prereqs.sh --disable-sub-mgr -t {{ BUILD_URL }}
-  ignore_errors: true
-  become: true
-  delegate_to: "srvnode-1"
-
-- name: "[deploy-prereq] : Wait for nodes to reboot"
-  wait_for:
-      host={{ hostvars[item]['ansible_host'] }}
-      port=22
-      delay=30
-      timeout=1800
-  become: false
-  ignore_errors: true
-  with_items: "{{ groups['nodes'] }}"
-
 - name: "[deploy-prereq] : Copy config file"
   template:
     src: config.ini.j2
@@ -36,4 +12,9 @@
     name: [ 'git', 'python3', 'expect' ]
     state: latest
     update_cache: yes   
+  delegate_to: "srvnode-1"
+
+# Install python pip package
+- name: "[deploy-prereq] : Install python pip package"
+  shell: pip3 install cryptography toml pyyaml
   delegate_to: "srvnode-1"
