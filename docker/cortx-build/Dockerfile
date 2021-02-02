@@ -146,7 +146,7 @@ RUN  cat /opt/rpm-signing/gpgoptions >>  ~/.rpmmacros && \
 COPY ./scripts/release_support/build_release_info.sh /opt/release_support/
 
 # Makefile for build
-COPY ./docker/cortx-build/${ENVIRONMENT}/Makefile . 
+COPY ./docker/cortx-build/Makefile . 
 
 FROM base as lustre-rpm-builder
 
