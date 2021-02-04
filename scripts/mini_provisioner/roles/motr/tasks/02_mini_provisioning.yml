@@ -1,0 +1,63 @@
+
+# #######################################################################################
+# Description:
+#-------------
+#         This tasks configure and initializes the motr 
+# Reference:
+#----------- 
+#         https://github.com/Seagate/cortx-motr/wiki/Motr-deployment-using-motr_setup-on-singlenode-VM
+# Steps:
+#--------
+#      1. Execute motr:post_install      
+#      2. Execute motr:config
+#      3. Execute motr:init  
+#      2. Execute motr:test  
+##########################################################################################
+
+# Get Hostname
+- name: "[mini_provisioning] : Get Hostname" 
+  shell: hostname
+  register: hostname_out
+
+# Get Machine ID
+- name: "[mini_provisioning] : Get Machine ID" 
+  shell: cat /etc/machine-id
+  register: machineid_out
+
+- set_fact:
+    HOSTNAME: "{{ hostname_out.stdout }}"
+    MACHINE_ID: "{{ machineid_out.stdout }}"
+
+# Create confstore.json in deployment node
+- name: "[mini_provisioning] : Copy confstore json file"
+  template:
+    src: confstore.json.j2
+    dest: /root/confstore.json
+
+# Execute Motr:Post_Install
+- name: "[mini_provisioning] : Post Install" 
+  shell: /opt/seagate/cortx/motr/bin/motr_setup post_install --config "json:///root/confstore.json"
+  register: mp_post_install_out
+  failed_when: '"SUCCESS" not in mp_post_install_out.stdout'
+
+# Execute Motr:Config
+- name: "[mini_provisioning] : Motr Config" 
+  shell: /opt/seagate/cortx/motr/bin/motr_setup config --config "json:///root/confstore.json"
+  register: mp_config_out
+  failed_when: '"SUCCESS" not in mp_config_out.stdout'
+
+# Execute Motr:Init
+- name: "[mini_provisioning] : Motr Init" 
+  shell: /opt/seagate/cortx/motr/bin/motr_setup init --config "json:///root/confstore.json"
+  register: mp_init_out
+  failed_when: '"SUCCESS" not in mp_init_out.stdout'
+
+# Execute Motr:Test
+- name: "[mini_provisioning] : Motr Test" 
+  shell: /opt/seagate/cortx/motr/bin/motr_setup test --config "json:///root/confstore.json"
+  register: mp_test_out
+  failed_when: '"SUCCESS" not in mp_test_out.stdout'
+
+- name: "[mini_provisioning] : Get Lnet conf" 
+  shell: cat /etc/modprobe.d/lnet.conf
+  ignore_errors: yes

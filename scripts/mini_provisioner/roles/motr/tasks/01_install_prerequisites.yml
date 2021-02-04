@@ -1,0 +1,38 @@
+# #######################################################################################
+# Description:
+#-------------
+#         This tasks performs all prerequisites steps required for motr mini provisioning
+# Reference:
+#----------- 
+#         https://github.com/Seagate/cortx-motr/wiki/Motr-deployment-using-motr_setup-on-singlenode-VM
+# Steps:
+#--------
+#      1. Add yum repos for motr and hare     
+#      2. Install dependent rpm, cortx-motr and cortx-hare
+#      3. Install required pip packages
+##########################################################################################
+
+- name: "[install_prereq] : Validate the required input arguments for this playbook"
+  fail: msg="Variable '{{ item }}' is not defined"
+  when: item not in vars
+  with_items: "{{ REQUIRED_VARS }}"
+  
+# Add yum repositories
+- name: "[install_prereq] : Copy yum repo"
+  template:
+    src: cortx.repo.j2
+    dest: /etc/yum.repos.d/cortx.repo
+
+# Install cortx-py-utils
+- name: "[install_prereq] : Install dependent rpm, cortx-py-utils, cortx-motr and cortx-hare"
+  yum: 
+    name: [ "consul-1.7.8", "cortx-motr", "cortx-hare", "cortx-py-utils"]
+    state: present
+
+# Install python pip package
+- name: "[install_prereq] : Install python pip package"
+  shell: pip3 install cryptography toml pyyaml
+
+# Create machine-id
+- name: "[install_prereq] : Create machine-id"
+  script: files/reset_machineid.sh
