@@ -1,0 +1,8 @@
+---
+    
+- name: Deploy SSPL
+  hosts: localhost
+  become: true
+  vars_files: roles/sspl/vars/config.yml 
+  roles:
+    - role: sspl
