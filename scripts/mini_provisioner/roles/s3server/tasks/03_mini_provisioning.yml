@@ -1,0 +1,27 @@
+
+# #######################################################################################
+# Description:
+#-------------
+#         This tasks configure and initializes the s3server 
+# Reference:
+#----------- 
+#         https://github.com/Seagate/cortx-s3server/wiki/S3server-provisioning-on-single-node-cluster:-Manual#s3server-mini-provisioning
+# Steps:
+#--------
+#      1. Execute s3:config     
+#      2. Execute s3:init
+##########################################################################################
+
+# Execute S3:Post_Install
+- name: "[mini_provisioning] : Post Install" 
+  shell: /opt/seagate/cortx/s3/bin/s3_setup post_install --config "json:///root/confstore.json"
+
+
+# Execute S3:Config
+- name: "[mini_provisioning] : S3 Config" 
+  shell: /opt/seagate/cortx/s3/bin/s3_setup config --config "json:///root/confstore.json"
+
+# Execute S3:Init
+- name: "[mini_provisioning] : S3 Init" 
+  shell: /opt/seagate/cortx/s3/bin/s3_setup init --config "json:///root/confstore.json"
+
