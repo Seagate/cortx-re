@@ -1,0 +1,63 @@
+
+# #######################################################################################
+# Description:
+#-------------
+#         This tasks validates the s3server deployment
+# Steps:
+#--------
+#      1. Validate all the deployment services are up and running
+#      2. Validate hctl status
+#      3. Validate deployment by performing basic i/o using s3cli
+##########################################################################################
+
+# Log all service facts using ansible module ( this will store service info in ansible_facts.services)
+- name: "[prepare] : Get service facts"
+  service_facts:
+  no_log: True
+
+# Validate Validate all the expected services [slapd, haproxy, s3authserver] are up & running
+- name: "[prepare] : Validate all the expected services [slapd, haproxy, s3authserver] are up & running"
+  fail: msg="Service '{{ item }}' not running"
+  when: ansible_facts.services['{{ item }}'].state != "running"
+  with_items:
+    - slapd.service
+    - haproxy.service
+    - s3authserver.service
+
+# Wait for services to start
+- name: "[validate] : Wait for service to start"
+  command: "hctl status"
+  register: hctl_status
+  until:
+    - "'[started]  hax' in hctl_status.stdout"
+    - "'[started]  confd' in hctl_status.stdout"
+    - "'[started]  ioservice' in hctl_status.stdout"
+    - "'[started]  s3server' in hctl_status.stdout"
+  retries: 20
+  delay: 30
+
+# Check hctl status
+- name: "[validate] : hctl status"
+  shell: hctl status 2>&1 | tee -a /root/hctl_status.log
+
+# Configure lnet
+- name: "[validate] : Copy create s3 account script to test node"
+  copy:
+      src: files/create_s3_account.sh
+      dest: /root/create_s3_account.sh
+      owner: root
+      group: root
+      mode: '0755'
+
+
+# Execute S3:test
+- name: "[mini_provisioning] : S3 Sanity Test" 
+  shell: /opt/seagate/cortx/s3/bin/s3_setup test --config "json:///root/confstore.json"
+  register: s3_sanity_test_out
+  failed_when: '"PASS: S3-Sanity test passed" not in s3_sanity_test_out.stdout'
+ 
+ # Validate S3server deployment
+- name: "[validate] : Validate S3server deployment" 
+  script: files/test_s3server.sh '{{ LDAP_SGIAM_USER }}' '{{ LDAP_SGIAM_PWD }}' 2>&1 | tee -a /root/test_s3.log
+  register: s3_test_out
+  failed_when: '"S3 Basic Testing Success" not in s3_test_out.stdout'
