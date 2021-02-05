@@ -1,0 +1,26 @@
+{
+  "cluster": {
+    "cluster_id": "e766bd52-c19c-45b6-9c91-663fd8203c2e",
+    "server_nodes": {
+      "{{ MACHINE_ID }}": "srvnode-1"
+    },
+    "srvnode-1": {
+      "node_type": "VM",
+      "roles": [
+        "primary",
+        "openldap_server",
+        "kafka_server"
+      ],
+      "network": {
+        "mgmt": {
+          "interfaces": [
+            "eth0"
+          ],
+          "public_ip": "{{ IP_ADDRESS }}",
+          "netmask": null,
+          "gateway": null
+        }
+      }
+    }
+  }
+}
