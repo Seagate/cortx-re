@@ -12,18 +12,18 @@ pipeline {
 
 		
 	environment {
-		version="2.0.0"    
-        env="dev"
-		component="motr"
-        branch="main"
-        os_version="centos-7.8.2003"
-        release_dir="/mnt/bigstorage/releases/cortx"
-        build_upload_dir="$release_dir/components/github/$branch/$os_version/$env/$component"
+		version = "2.0.0"    
+        env = "dev"
+		component = "motr"
+        branch = "main"
+        os_version = "centos-7.8.2003"
+        release_dir = "/mnt/bigstorage/releases/cortx"
+        build_upload_dir = "$release_dir/components/github/$branch/$os_version/$env/$component"
 
         // Dependent component job build
-        build_upload_dir_s3_dev="$release_dir/components/github/$branch/$os_version/dev/s3server"
-        build_upload_dir_s3_prod="$release_dir/components/github/$branch/$os_version/prod/s3server"
-        build_upload_dir_hare="$release_dir/components/github/$branch/$os_version/$env/hare"
+        build_upload_dir_s3_dev = "$release_dir/components/github/$branch/$os_version/dev/s3server"
+        build_upload_dir_s3_prod = "$release_dir/components/github/$branch/$os_version/prod/s3server"
+        build_upload_dir_hare = "$release_dir/components/github/$branch/$os_version/$env/hare"
     }
 	
 	options {

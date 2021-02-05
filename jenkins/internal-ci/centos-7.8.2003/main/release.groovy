@@ -8,10 +8,10 @@ pipeline {
 	}
 	
     environment {
-		version = "2.0.0"
-		thrid_party_version = "1.0.0-3"
-		os_version = "centos-7.8.2003"
-		branch = "stable"
+        version = "2.0.0"
+        thrid_party_version = "2.0.0-1"
+        os_version = "centos-7.8.2003"
+        branch = "main"
         release_dir = "/mnt/bigstorage/releases/cortx"
         integration_dir = "$release_dir/github/$branch/$os_version"
         components_dir = "$release_dir/components/github/$branch/$os_version"
@@ -20,7 +20,7 @@ pipeline {
         passphrase = credentials('rpm-sign-passphrase')
         token = credentials('shailesh-github-token')
         ARTIFACT_LOCATION = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version"
-		thrid_party_dir = "$release_dir/third-party-deps/centos/centos-7.8.2003-$thrid_party_version/"
+        thrid_party_dir = "$release_dir/third-party-deps/centos/centos-7.8.2003-$thrid_party_version/"
 		python_deps = "/mnt/bigstorage/releases/cortx/third-party-deps/python-packages"
         cortx_os_iso = "/mnt/bigstorage/releases/cortx_builds/custom-os-iso/cortx-os-1.0.0-23.iso"
         // WARNING : 'rm' command where used in this dir path, be conscious while changing the value  
@@ -267,7 +267,8 @@ pipeline {
                 env.build_stage = "${build_stage}"
 
                 def toEmail = "shailesh.vaidya@seagate.com, priyank.p.dalal@seagate.com, mukul.malhotra@seagate.com, amol.j.kongre@seagate.com, gowthaman.chinnathambi@seagate.com"
-                emailext ( 
+              toEmail= ""  
+              emailext ( 
                     body: '''${SCRIPT, template="release-email.template"}''',
                     mimeType: 'text/html',
                     subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",

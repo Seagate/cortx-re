@@ -11,13 +11,13 @@ pipeline {
     }
 	
 	environment { 
-		version="2.0.0"     
-        env="dev"
-		component="csm-agent"
-        branch="main"
-        os_version="centos-7.8.2003"
-        release_dir="/mnt/bigstorage/releases/cortx"
-        build_upload_dir="$release_dir/components/github/$branch/$os_version/$env/$component"
+		version = "2.0.0"     
+        env = "dev"
+		component = "csm-agent"
+        branch = "main"
+        os_version = "centos-7.8.2003"
+        release_dir = "/mnt/bigstorage/releases/cortx"
+        build_upload_dir = "$release_dir/components/github/$branch/$os_version/$env/$component"
     }
 
 	options {
