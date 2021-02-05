@@ -5,26 +5,25 @@ pipeline {
 			label 'docker-motr-centos-7.8.2003-node'
 		}
 	}
-
-	parameters {
-        string(name: 'branch', defaultValue: 'main', description: 'Branch Name')
+	
+	triggers {
+        pollSCM '*/5 * * * *'
     }
+
 		
 	environment {
-        version = "2.0.0"    
-        env = "dev"
-		component = "motr"
-        os_version = "centos-7.8.2003"
-		pipeline_group = "main"
-        release_dir = "/mnt/bigstorage/releases/cortx"
-        build_upload_dir = "${release_dir}/components/github/${pipeline_group}/${os_version}/${env}/${component}"
+		version="2.0.0"    
+        env="dev"
+		component="motr"
+        branch="main"
+        os_version="centos-7.8.2003"
+        release_dir="/mnt/bigstorage/releases/cortx"
+        build_upload_dir="$release_dir/components/github/$branch/$os_version/$env/$component"
 
         // Dependent component job build
-        build_upload_dir_s3 = "$release_dir/components/github/${pipeline_group}/${os_version}/${env}/s3server"
-        build_upload_dir_hare = "$release_dir/components/github/${pipeline_group}/${os_version}/${env}/hare"
-
-		// Param hack for initial config
-        branch = "${branch != null ? branch : 'main'}"
+        build_upload_dir_s3_dev="$release_dir/components/github/$branch/$os_version/dev/s3server"
+        build_upload_dir_s3_prod="$release_dir/components/github/$branch/$os_version/prod/s3server"
+        build_upload_dir_hare="$release_dir/components/github/$branch/$os_version/$env/hare"
     }
 	
 	options {
@@ -33,26 +32,23 @@ pipeline {
         ansiColor('xterm')
 		disableConcurrentBuilds()  
 	}
-	
-	triggers {
-        pollSCM 'H/5 * * * *'
-    }
 
 	stages {
 		stage('Checkout') {
 			steps {
-				script { build_stage = env.STAGE_NAME }
+				script { build_stage=env.STAGE_NAME }
 				dir ('motr') {
-			        checkout([$class: 'GitSCM', branches: [[name: "*/${branch}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog'], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-motr']]])
-                }
+			    	checkout([$class: 'GitSCM', branches: [[name: "*/${branch}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog'], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-motr']]])
+				}
 			}
 		}
 	
     	stage('Install Dependencies') {
 		    steps {
-				script { build_stage = env.STAGE_NAME }
+				script { build_stage=env.STAGE_NAME }
 				dir ('motr') {	
 					sh label: '', script: '''
+						yum install kernel-devel -y
                         export build_number=${BUILD_ID}
 						kernel_src=$(ls -1rd /lib/modules/*/build | head -n1)
 						cp cortx-motr.spec.in cortx-motr.spec
@@ -65,7 +61,7 @@ pipeline {
 
 		stage('Build') {
 			steps {
-				script { build_stage = env.STAGE_NAME }
+				script { build_stage=env.STAGE_NAME }
 				dir ('motr') {	
 					sh label: '', script: '''
 						rm -rf /root/rpmbuild/RPMS/x86_64/*.rpm
@@ -81,7 +77,7 @@ pipeline {
 		
 		stage ('Upload') {
 			steps {
-				script { build_stage = env.STAGE_NAME }
+				script { build_stage=env.STAGE_NAME }
 				sh label: 'Copy RPMS', script: '''
 					mkdir -p $build_upload_dir/$BUILD_NUMBER
 					cp /root/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir/$BUILD_NUMBER
@@ -96,7 +92,7 @@ pipeline {
 		
 		stage ('Set Current Build') {
 			steps {
-				script { build_stage = env.STAGE_NAME }
+				script { build_stage=env.STAGE_NAME }
 				sh label: 'Tag last_successful', script: '''
 					pushd $build_upload_dir/
 					test -d $build_upload_dir/current_build && rm -f current_build
@@ -110,28 +106,28 @@ pipeline {
 			parallel {
 				stage ("build S3Server") {
 					steps {
-						script { build_stage = env.STAGE_NAME }
-                        script {
-                                try {
-                                    def s3Build = build job: 'S3server', wait: true, parameters: [string(name: 'branch', value: "stable")]
-							        env.S3_BUILD_NUMBER = s3Build.number
-                                } catch (err) {
-                                    build_stage = env.STAGE_NAME
-                                    error "Failed to Build S3Server"
-                                }
+						script { build_stage=env.STAGE_NAME }
+                        script{
+                            try{
+							    def s3Build = build job: 'S3server', wait: true
+							    env.S3_BUILD_NUMBER = s3Build.number
+                            }catch (err){
+                                build_stage=env.STAGE_NAME
+                                error "Failed to Build S3Server"
+                            }
 						}
 					}
 				}
 					        
 		        stage ("build Hare") {
 					steps {
-						script { build_stage = env.STAGE_NAME }
-                        script {
-                            try {
-							    def hareBuild = build job: 'Hare', wait: true, parameters: [string(name: 'branch', value: "stable")]
+						script { build_stage=env.STAGE_NAME }
+                        script{
+                            try{
+							    def hareBuild = build job: 'Hare', wait: true
 							    env.HARE_BUILD_NUMBER = hareBuild.number
-                            } catch (err) {
-                                build_stage = env.STAGE_NAME
+                            }catch (err){
+                                build_stage=env.STAGE_NAME
                                 error "Failed to Build Hare"
                             }
 						}
@@ -142,7 +138,7 @@ pipeline {
 	
 		stage ('Tag last_successful') {
 			steps {
-				script { build_stage = env.STAGE_NAME }
+				script { build_stage=env.STAGE_NAME }
 				sh label: 'Tag last_successful', script: '''pushd $build_upload_dir/
 					test -d $build_upload_dir/last_successful && rm -f last_successful
 					ln -s $build_upload_dir/$BUILD_NUMBER last_successful
@@ -154,29 +150,32 @@ pipeline {
 					ln -s $build_upload_dir_hare/$HARE_BUILD_NUMBER $build_upload_dir_hare/last_successful
 
                     # S3Server Build
-                    test -d $build_upload_dir_s3/last_successful && rm -f $build_upload_dir_s3/last_successful
-					ln -s $build_upload_dir_s3/$S3_BUILD_NUMBER $build_upload_dir_s3/last_successful
+                    test -d $build_upload_dir_s3_dev/last_successful && rm -f $build_upload_dir_s3_dev/last_successful
+					ln -s $build_upload_dir_s3_dev/$S3_BUILD_NUMBER $build_upload_dir_s3_dev/last_successful
+					
+					# S3Server Build
+                    test -d $build_upload_dir_s3_prod/last_successful && rm -f $build_upload_dir_s3_prod/last_successful
+					ln -s $build_upload_dir_s3_prod/$S3_BUILD_NUMBER $build_upload_dir_s3_prod/last_successful
 				'''
 			}
 		}
 
 		stage ("Release") {
-		    //when { triggeredBy 'SCMTrigger' }
+		    when { triggeredBy 'SCMTrigger' }
             steps {
-                script { build_stage = env.STAGE_NAME }
+                script { build_stage=env.STAGE_NAME }
 				script {
-                	def releaseBuild = build job: 'Main Release', propagate: true, parameters: [string(name: 'release_component', value: "${component}"), string(name: 'release_build', value: "${BUILD_NUMBER}")]
-				 	env.release_build = "${BUILD_NUMBER}"
-                    env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$pipeline_group/$os_version/${component}_${BUILD_NUMBER}"
+                	def releaseBuild = build job: 'Main Release', propagate: true
+				 	env.release_build = releaseBuild.number
+                    env.release_build_location="http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/"+releaseBuild.number
 				}
             }
-        } 
+        }
 	}
 
 	post {
 		always {
-			script {
-            	
+			script{    	
 				echo 'Cleanup Workspace.'
 				deleteDir() /* clean up our workspace */
 
@@ -185,15 +184,22 @@ pipeline {
 				env.component = (env.component).toUpperCase()
 				env.build_stage = "${build_stage}"
 
+                env.vm_deployment = (env.deployVMURL != null) ? env.deployVMURL : "" 
+                if (env.deployVMStatus != null && env.deployVMStatus != "SUCCESS" && manager.build.result.toString() == "SUCCESS"){
+                    manager.buildUnstable()
+                }
+
 				def toEmail = ""
 				def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
-				if ( manager.build.result.toString() == "FAILURE") {
+				if( manager.build.result.toString() == "FAILURE"){
 					toEmail = "cortx.motr@seagate.com,shailesh.vaidya@seagate.com"
-					recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
+					recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'],[$class: 'RequesterRecipientProvider']]
 				}
-                toEmail = ""
+
+				toEmail = ""
+				recipientProvidersClass = ""
 				emailext (
-					body: '''${SCRIPT, template="component-email.template"}''',
+					body: '''${SCRIPT, template="component-email-dev.template"}''',
 					mimeType: 'text/html',
 					subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
 					attachLog: true,
@@ -201,6 +207,6 @@ pipeline {
 					recipientProviders: recipientProvidersClass
 				)
 			}
-		}
+		}	
     }
 }
