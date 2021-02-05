@@ -50,7 +50,7 @@ pipeline {
 		choice(
 			name: 'THIRD_PARTY_VERSION',
 			choices: ['cortx-2.0', 'cortx-1.0'],
-			description: 'Branch name to pick-up other components rpms'
+			description: 'Third Party Version to use.'
 		)
 	}
 
