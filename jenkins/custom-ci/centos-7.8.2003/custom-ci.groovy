@@ -16,7 +16,7 @@ pipeline {
 		components_dir = "$release_dir/components/github/$branch/$os_version"
 		release_tag = "custom-build-$BUILD_ID"
 		passphrase = credentials('rpm-sign-passphrase')
-		thrid_party_dir = "$release_dir/third-party-deps/centos/centos-7.8.2003-$thrid_party_version/"
+		// thrid_party_dir = "$release_dir/third-party-deps/centos/centos-7.8.2003-$thrid_party_version/"
 		python_deps = "$release_dir/third-party-deps/python-packages"
 		cortx_os_iso = "/mnt/bigstorage/releases/cortx_builds/custom-os-iso/cortx-os-1.0.0-23.iso"
 	}
@@ -48,8 +48,8 @@ pipeline {
 		string(name: 'SSPL_URL', defaultValue: 'https://github.com/Seagate/cortx-monitor.git', description: 'SSPL Repository URL', trim: true)
 
 		choice(
-			name: 'OTHER_COMPONENT_BRANCH',
-			choices: ['main', 'stable', 'cortx-1.0'],
+			name: 'THIRD_PARTY_VERSION',
+			choices: ['cortx-2.0', 'cortx-1.0'],
 			description: 'Branch name to pick-up other components rpms'
 		)
 	}
@@ -339,8 +339,15 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Tag Release', script: '''
                     pushd $release_dir/github/integration-custom-ci/release/$os_version/$release_tag
-							ln -s $thrid_party_dir 3rd_party
-							ln -s $python_deps python_deps
+						if [ "$THIRD_PARTY_VERSION" == "cortx-2.0" ]; then
+							thrid_party_dir = "$release_dir/third-party-deps/centos/centos-7.8.2003-2.0.0-1/"
+						else
+							thrid_party_dir = "$release_dir/third-party-deps/centos/centos-7.8.2003-1.0.0-4/"
+						fi
+
+					ln -s $thrid_party_dir 3rd_party
+					ln -s $python_deps python_deps
+					
                     popd
                 '''
 			}
