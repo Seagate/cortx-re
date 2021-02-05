@@ -340,9 +340,9 @@ pipeline {
                 sh label: 'Tag Release', script: '''
                     pushd $release_dir/github/integration-custom-ci/release/$os_version/$release_tag
 						if [ "$THIRD_PARTY_VERSION" == "cortx-2.0" ]; then
-							thrid_party_dir = "$release_dir/third-party-deps/centos/centos-7.8.2003-2.0.0-1/"
+							thrid_party_dir=$(find /mnt/bigstorage/releases/cortx/third-party-deps/centos/ -type d  -name "$os_version-1.*" | sort -r | head -1)
 						else
-							thrid_party_dir = "$release_dir/third-party-deps/centos/centos-7.8.2003-1.0.0-4/"
+							thrid_party_dir=$(find /mnt/bigstorage/releases/cortx/third-party-deps/centos/ -type d  -name "$os_version-2.*" | sort -r | head -1)
 						fi
 
 					ln -s $thrid_party_dir 3rd_party
