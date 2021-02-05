@@ -192,17 +192,7 @@ pipeline {
 			steps {
 				script { build_stage = env.STAGE_NAME }
 				sh label: 'Copy RPMS', script:'''
-					if [ "$OTHER_COMPONENT_BRANCH" == "stable"  ]; then
-						RPM_COPY_PATH="/mnt/bigstorage/releases/cortx/components/github/stable/$os_version/dev/"
-					elif [ "$OTHER_COMPONENT_BRANCH" == "main"  ]; then
-						RPM_COPY_PATH="/mnt/bigstorage/releases/cortx/components/github/main/$os_version/dev/"
-					elif [ "$OTHER_COMPONENT_BRANCH" == "Cortx-v1.0.0_Beta"  ]; then
-						RPM_COPY_PATH="/mnt/bigstorage/releases/cortx/components/github/Cortx-v1.0.0_Beta/$os_version/dev/"
-					elif [ "$OTHER_COMPONENT_BRANCH" == "cortx-1.0"  ]; then
-						RPM_COPY_PATH="/mnt/bigstorage/releases/cortx/components/github/cortx-1.0/$os_version/dev/"
-					else
-						RPM_COPY_PATH="/mnt/bigstorage/releases/cortx/components/github/custom-ci/release/$os_version/dev"
-					fi
+					RPM_COPY_PATH="/mnt/bigstorage/releases/cortx/components/github/stable/$os_version/dev/"
 
 					if [ "$CSM_BRANCH" == ""Cortx-v1.0.0_Beta"" ]; then
 						CUSTOM_COMPONENT_NAME="motr|s3server|hare|cortx-ha|provisioner|csm|sspl"
