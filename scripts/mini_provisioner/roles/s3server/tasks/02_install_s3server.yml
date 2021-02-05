@@ -18,10 +18,6 @@
     name: [ 'cortx-motr', 'cortx-s3server']
     state: present
 
-# Install python pip package
-- name: "[install_s3server] : Install python pip package"
-  shell: pip3 install cryptography toml
-
 # Get Cluster ID
 - name: "[install_s3server] : Get Ipaddress" 
   shell: uuidgen
@@ -84,11 +80,26 @@
     dest: /root/confstore.json
 
 # Remove ldap confs
-- name: "[install_prereq] : Remove ldap confs/files" 
+- name: "[install_s3server] : Remove ldap confs/files" 
   script: files/remove_ldap_installation.sh
 
 # Install openldap
-- name: "[install_prereq] : Install openldap"
+- name: "[install_s3server] : Install openldap"
   yum: 
     name: [ 'openldap-servers', 'openldap-clients']
     state: present
+
+# Create /etc/ssl/stx dir
+- name: "[install_s3server] : Ensures /etc/ssl/stx dir exists"
+  file: path=/etc/ssl/stx state=directory
+  
+# Download stx pem file 
+- name: "[install_s3server] : Download stx pem file"
+  get_url:
+    url: "{{ STX_PEM }}"
+    dest: /etc/ssl/stx/stx.pem
+    mode: '400'
+
+# Update HA Config
+- name: "[install_s3server] : Update HA Config"
+  shell: sed -e '/PROFILE=SYSTEM/ s/^#*/#/' -i /etc/haproxy/haproxy.cfg

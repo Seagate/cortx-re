@@ -86,21 +86,21 @@
   shell: journalctl --unit=csm_agent.service | tail -n 100
   when: csm_agent_out.rc != 0
 
-  # TMP FIX 
-- name: "[mini_provisioning] : Change /var/log/seagate permision"
-  shell: chmod 777 -R /var/log/seagate
-  when: csm_agent_out.rc != 0
+#   # TMP FIX 
+# - name: "[mini_provisioning] : Change /var/log/seagate permision"
+#   shell: chmod 777 -R /var/log/seagate
+#   when: csm_agent_out.rc != 0
 
-# Start CSM Agent
-- name: "[mini_provisioning] : Start csm_agent"
-  shell: systemctl start csm_agent
-  when: csm_agent_out.rc != 0
+# # Start CSM Agent
+# - name: "[mini_provisioning] : Start csm_agent"
+#   shell: systemctl start csm_agent
+#   when: csm_agent_out.rc != 0
 
-- name: "[mini_provisioning] : Get csm_agent Status"
-  shell: systemctl status csm_agent
+# - name: "[mini_provisioning] : Get csm_agent Status"
+#   shell: systemctl status csm_agent
 
 # Run CSM Sanity Test
 - name: "[mini_provisioning] : Run Sanity Test"
-  shell: csm_test -t /opt/seagate/cortx/csm/test/plans/cicd.pln -f /opt/seagate/cortx/csm/test/test_data/args.yaml -o /root/sanity_test.log
+  shell: csm_setup test -t /opt/seagate/cortx/csm/test/plans/self_test.pln -f /opt/seagate/cortx/csm/test/test_data/args.yaml -l /tmp/csm_test -o /root/sanity_test.log
   register: csm_test_out
-  failed_when: '"Failed:0" not in csm_test_out.stdout'
+  failed_when: '"PASS" not in csm_test_out.stdout'
