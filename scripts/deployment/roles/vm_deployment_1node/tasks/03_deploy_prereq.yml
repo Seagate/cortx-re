@@ -9,12 +9,7 @@
 
 - name: "[deploy-prereq] : Install Git, Python3 on Primary Node"
   yum:
-    name: [ 'git', 'python3', 'expect' ]
+    name: [ 'git', 'expect' ]
     state: latest
     update_cache: yes   
-  delegate_to: "srvnode-1"
-
-# Install python pip package
-- name: "[deploy-prereq] : Install python pip package"
-  shell: pip3 install cryptography toml pyyaml
   delegate_to: "srvnode-1"
