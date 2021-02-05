@@ -14,25 +14,26 @@ pipeline {
     }
 
     parameters {  
-	    string(name: 'CSM_URL', defaultValue: 'https://github.com/Seagate/cortx-manager', description: 'Repo for CSM Agent')
-        string(name: 'CSM_BRANCH', defaultValue: 'main', description: 'Branch for CSM Agent')     
+	    string(name: 'PY_UTILS_URL', defaultValue: 'https://github.com/Seagate/cortx-utils', description: 'Repo for Py-Utils Agent')
+        string(name: 'PY_UTILS_BRANCH', defaultValue: 'main', description: 'Branch for Py-Utils Agent')     
 	}
 
     environment {
 
         GPR_REPO = "https://github.com/${ghprbGhRepository}"
-        CSM_URL = "${ghprbGhRepository != null ? GPR_REPO : CSM_URL}"
-        CSM_BRANCH = "${sha1 != null ? sha1 : CSM_BRANCH}"
+        PY_UTILS_URL = "${ghprbGhRepository != null ? GPR_REPO : PY_UTILS_URL}"
+        PY_UTILS_BRANCH = "${sha1 != null ? sha1 : PY_UTILS_BRANCH}"
 
-        CSM_GPR_REFSEPEC = "+refs/pull/${ghprbPullId}/*:refs/remotes/origin/pr/${ghprbPullId}/*"
-        CSM_BRANCH_REFSEPEC = "+refs/heads/*:refs/remotes/origin/*"
-        CSM_PR_REFSEPEC = "${ghprbPullId != null ? CSM_GPR_REFSEPEC : CSM_BRANCH_REFSEPEC}"
+        PY_UTILS_REFSPEC = "+refs/pull/${ghprbPullId}/*:refs/remotes/origin/pr/${ghprbPullId}/*"
+        PY_UTILS_BRANCH_REFSEPEC = "+refs/heads/*:refs/remotes/origin/*"
+        PY_UTILS_PR_REFSPEC = "${ghprbPullId != null ? PY_UTILS_REFSPEC : PY_UTILS_BRANCH_REFSEPEC}"
 
         //////////////////////////////// BUILD VARS //////////////////////////////////////////////////
 
-        COMPONENT_NAME = "csm-agent".trim()
+        COMPONENT_NAME = "cortx-utils".trim()
         BRANCH = "main"
         OS_VERSION = "centos-7.8.2003"
+        version = "2.0.0" 
 
         // 'WARNING' - rm -rf command used on this path please careful when updating this value
         DESTINATION_RELEASE_LOCATION = "/mnt/bigstorage/releases/cortx/github/pr-build/${COMPONENT_NAME}/${BUILD_NUMBER}"
@@ -57,56 +58,44 @@ pipeline {
 
     stages {
 
-        // Build csm fromm PR source code
+        // Build py_utils fromm PR source code
         stage('Build') {
             steps {
 				script { build_stage = env.STAGE_NAME }
                  
-                dir("csm") {
+                dir("cortx_utils") {
 
-                    checkout([$class: 'GitSCM', branches: [[name: "${CSM_BRANCH}"]], doGenerateSubmoduleConfigurations: false,  extensions: [[$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${CSM_URL}",  name: 'origin', refspec: "${CSM_PR_REFSEPEC}"]]])
+                    checkout([$class: 'GitSCM', branches: [[name: "${PY_UTILS_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${PY_UTILS_URL}",  name: 'origin', refspec: "${PY_UTILS_PR_REFSPEC}"]]])
 
-                    sh label: '', script: '''
-                        sed -i 's/gpgcheck=1/gpgcheck=0/' /etc/yum.conf
-                        yum-config-manager --add http://cortx-storage.colo.seagate.com/releases/cortx/github/$BRANCH/$OS_VERSION/last_successful/
-                        yum-config-manager --add http://cortx-storage.colo.seagate.com/releases/cortx/components/github/$BRANCH/$OS_VERSION/dev/cortx-utils/last_successful/
-                        yum clean all && rm -rf /var/cache/yum
-                        pip3.6 install  pyinstaller==3.5
+                    sh label: 'Build', script: '''
+                        yum install python36-devel -y
+                        pushd py-utils
+                            python3.6 setup.py bdist_rpm --version=$version --post-install utils-post-install --post-uninstall utils-post-uninstall --post-uninstall utils-post-uninstall --release="${BUILD_NUMBER}_$(git rev-parse --short HEAD)"
+                        popd
+                        
+                        ./statsd-utils/jenkins/build.sh -v $version -b $BUILD_NUMBER
                     '''
 
-                    // Exclude return code check for csm_setup and csm_test
-                    sh label: 'Build', returnStatus: true, script: '''
-                        BUILD=$(git rev-parse --short HEAD)
-                        VERSION=$(cat VERSION)
-                        echo "Executing build script"
-                        echo "VERSION:$VERSION"
-                        echo "Python:$(python --version)"
-                        ./cicd/build.sh -v $VERSION -b $BUILD_NUMBER -t
-                    '''
+                    sh label: 'Copy RPMS', script: '''
 
-                    sh label: 'Collect Release Artifacts', script: '''
-                    
                         rm -rf "${DESTINATION_RELEASE_LOCATION}"
                         mkdir -p "${DESTINATION_RELEASE_LOCATION}"
-            
-                        if [[ ( ! -z `ls ./dist/rpmbuild/RPMS/x86_64/*.rpm `)]]; then
-                            cp ./dist/rpmbuild/RPMS/x86_64/*.rpm "${DESTINATION_RELEASE_LOCATION}"
-                        else
-                            echo "RPM not exists !!!"
-                            exit 1
-                        fi
+
+                        shopt -s extglob
+                        cp ./py-utils/dist/!(*.src.rpm|*.tar.gz) "${DESTINATION_RELEASE_LOCATION}"
+                        cp ./statsd-utils/dist/rpmbuild/RPMS/x86_64/*.rpm "${DESTINATION_RELEASE_LOCATION}"
 
                         pushd ${DESTINATION_RELEASE_LOCATION}
                             rpm -qi createrepo || yum install -y createrepo
                             createrepo .
                         popd
-                    '''	
+                    '''
                 }
             }
         }
 
 
-        // Deploy csm mini provisioner 
+        // Deploy py_utils mini provisioner 
         stage('Deploy') {
             agent { node { label "mini_provisioner && !cleanup_req" } }
             when { expression { env.STAGE_DEPLOY == "yes" } }
@@ -175,7 +164,7 @@ def runAnsible(tags) {
         
         dir("cortx-re/scripts/mini_provisioner") {
             ansiblePlaybook(
-                playbook: 'csm_deploy.yml',
+                playbook: 'pyutils_deploy.yml',
                 inventory: 'inventories/hosts',
                 tags: "${tags}",
                 extraVars: [
