@@ -1,43 +1,33 @@
 # #######################################################################################
 # Description:
 #-------------
-#         This tasks performs all prerequisites steps required for s3server mini provisioning
+#         This tasks performs all prerequisites steps required for hare mini provisioning
 # Reference:
 #----------- 
-#         https://github.com/Seagate/cortx-s3server/wiki/S3server-provisioning-on-single-node-cluster:-Manual#pre-requisites
+#         https://github.com/Seagate/cortx-hare/wiki/Hare-provisioning
 # Steps:
 #--------
-#      1. Install cortx-pyutils      
-#      2. Install and start rabbitmq-server
-#      3. Install haproxy
-#      4. Install openldap server and client
+#      1. Install cortx-py-utils    
+#      2. Install cortx-motr
+#      3. Install S3server (optional)
+#      4. Install cortx-prvsnr (optional)
+#      5. Install Hare
 ##########################################################################################
 
 - name: "[install_prereq] : Validate the required input arguments for this playbook"
   fail: msg="Variable '{{ item }}' is not defined"
   when: item not in vars
   with_items: "{{ REQUIRED_VARS }}"
+
+# Add consul repo
+- name: "[install_prereq] : Add consul repository"
+  shell: yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
   
 # Add yum repositories
 - name: "[install_prereq] : Copy yum repo"
   template:
     src: cortx.repo.j2
     dest: /etc/yum.repos.d/cortx.repo
-
-# Update Host
-- name: "[install_prereq] : Update s3server host " 
-  shell: curl -s {{ S3_UPDATE_HOST_SCRIPT }} | sudo bash
-
-# Create /etc/ssl/stx dir
-- name: "[install_prereq] : Ensures /etc/ssl/stx dir exists"
-  file: path=/etc/ssl/stx state=directory
-  
-# Download stx pem file 
-- name: "[install_prereq] : Download stx pem file"
-  get_url:
-    url: "{{ STX_PEM }}"
-    dest: /etc/ssl/stx/stx.pem
-    mode: '400'
   
 # Install py-utils req
 - name: "[mini_provisioning] : Install gcc & python3-devel"
@@ -47,27 +37,36 @@
 - name: "[install_prereq] : Install py-utils dependencies"
   shell:  pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/main/py-utils/requirements.txt
 
-# Install cortx-py-utils
-- name: "[install_prereq] : Install cortx-py-utils"
+# Install dependent coponents
+- name: "[install_prereq] : Install dependent rpm, cortx-py-utils, cortx-motr and cortx-hare"
   yum: 
-    name: cortx-py-utils
+    name: [  "consul-1.9.1", "cortx-py-utils", "cortx-motr", "cortx-motr-devel", "cortx-s3server", "cortx-prvsnr", "cortx-hare" ]
     state: present
 
-# Install Erlang
-- name: "[install_prereq] : Install Erlang"
-  yum: 
-    name: "{{ EARLANG_RPM }}"
-    state: present
+################### Motr Pre-req #################################
+# Configure lnet
+- name: "[install_prereq] : Copy lnet conf"
+  copy:
+      src: files/lnet.conf
+      dest: /etc/modprobe.d/lnet.conf
+      owner: root
+      group: root
+      mode: '0755'
 
-# Install Rabitmq Server
-- name: "[install_prereq] : Execute rabitmq config script " 
-  shell: curl -sL {{ RABITMQ_SCRIPT }} | bash -
+# Start Lnet
+- name: "[install_prereq] : Start lnet"
+  ansible.builtin.service:
+    name: lnet
+    state: restarted
 
+########################  S3server Pre-req ############################
+# Install rabitmq server
 - name: "[install_prereq] : Install rabbitmq-server"
   yum: 
     name: rabbitmq-server
     state: present
 
+# Start rabitmq server
 - name: "[install_prereq] : Start/Enable rabitmq server"
   service:
     name: rabbitmq-server

@@ -42,7 +42,7 @@ pipeline {
                 script {
                     
                     // Add badget to jenkins build
-                    manager.addHtmlBadge("&emsp;<b>Host :</b><a href='${JENKINS_URL}/computer/${NODE_LABEL}'> ${NODE1_HOST}</a>")
+                    manager.addHtmlBadge("&emsp;<b>Host :</b><a href='${JENKINS_URL}/computer/${env.NODE_NAME}'> ${env.NODE_NAME}</a>")
 
                     // Clone cortx-re repo
                     dir('cortx-re') {

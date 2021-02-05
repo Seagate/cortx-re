@@ -16,22 +16,30 @@
   fail: msg="Variable '{{ item }}' is not defined"
   when: item not in vars
   with_items: "{{ REQUIRED_VARS }}"
+
+# Add consul repo
+- name: "[install_prereq] : Add consul repository"
+  shell: yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
   
 # Add yum repositories
 - name: "[install_prereq] : Copy yum repo"
   template:
     src: cortx.repo.j2
     dest: /etc/yum.repos.d/cortx.repo
+  
+# Install py-utils req
+- name: "[mini_provisioning] : Install gcc & python3-devel"
+  shell: yum install -y gcc python3-devel
+
+# Install py-utils req
+- name: "[install_prereq] : Install py-utils dependencies"
+  shell:  pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/main/py-utils/requirements.txt
 
 # Install cortx-py-utils
 - name: "[install_prereq] : Install dependent rpm, cortx-py-utils, cortx-motr and cortx-hare"
   yum: 
-    name: [ "consul-1.7.8", "cortx-motr", "cortx-hare", "cortx-py-utils"]
+    name: [ "consul-1.9.1", "cortx-motr", "cortx-hare", "cortx-py-utils"]
     state: present
-
-# Install python pip package
-- name: "[install_prereq] : Install python pip package"
-  shell: pip3 install cryptography toml pyyaml
 
 # Create machine-id
 - name: "[install_prereq] : Create machine-id"
