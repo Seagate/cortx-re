@@ -6,7 +6,7 @@
     password: "{{ VSPHERE_PASSWORD }}"
     validate_certs: false
     datacenter: "{{ VSPHERE_DATACENTER }}"
-    name: "test-ova-vm"
+    name: "{{ OVA_VM_NAME }}"
   register: gather_vm_info
 
 - name: Set UUID variable
