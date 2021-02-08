@@ -12,3 +12,15 @@
 - name: "[deploy] : Deploy Cluster on Primary Node"
   script: files/cortx_deploy_wrapper.sh {{ BUILD_URL }} {{ NODE1 }} '{{ CLUSTER_PASS }}'
   delegate_to: "srvnode-1"
+
+# Wait for services to start
+- name: "[validate] : Wait for service to start"
+  command: "hctl status"
+  register: hctl_status
+  until:
+    - "'[started]  hax' in hctl_status.stdout"
+    - "'[started]  confd' in hctl_status.stdout"
+    - "'[started]  ioservice' in hctl_status.stdout"
+    - "'[started]  s3server' in hctl_status.stdout"
+  retries: 20
+  delay: 30
