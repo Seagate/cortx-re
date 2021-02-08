@@ -14,7 +14,7 @@ pipeline {
 	
 	environment {
 		version = "2.0.0"
-		thrid_party_version = "1.0.0-3"
+		thrid_party_version = "2.0.0-1"
 		release_component = "${release_component != null ? release_component : 'dry_run'}"
 		release_build = "${release_build != null ? release_build : BUILD_NUMBER}"
 		env = "dev"
@@ -283,8 +283,8 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Tag last_successful', script: '''
                     pushd $integration_dir
-                    test -L last_successful && rm -f last_successful
-                    ln -s $integration_dir/$release_tag/dev last_successful
+                    test -L "${release_component}_last_successful" && rm -f "${release_component}_last_successful"
+                    ln -s $integration_dir/$release_tag/dev "${release_component}_last_successful"
                     popd
                 '''
 			}
@@ -294,20 +294,28 @@ pipeline {
     post {
 		always {
 			script {
+
+				manager.addHtmlBadge("&emsp;<b>Build :</b><a href='http://cortx-storage.colo.seagate.com/releases/cortx/github/$pipeline_group/$os_version/$release_tag'> ${release_tag}</a>")
 					
 				currentBuild.upstreamBuilds?.each { b -> env.upstream_project = "${b.getProjectName()}";env.upstream_build = "${b.getId()}" }
 				env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$pipeline_group/$os_version/$release_tag"
 				env.release_build = "${env.release_tag}"
 				env.build_stage = "${build_stage}"
 
-				def mailRecipients = ""
+				def toEmail = ""
+				def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
+				if ( manager.build.result.toString() != "SUCCESS") {
+					toEmail = "shailesh.vaidya@seagate.com"
+					recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
+				}
 				emailext ( 
 					body: '''${SCRIPT, template="release-email.template"}''',
 					mimeType: 'text/html',
 					subject: "Main Release # ${env.release_tag} - ${currentBuild.currentResult}",
 					attachmentsPattern: 'CHANGESET.txt',
 					attachLog: true,
-					to: "${mailRecipients}",
+					to: toEmail,
+                    recipientProviders: recipientProvidersClass
 				)
 
 				archiveArtifacts artifacts: "README.txt, RELEASE.INFO", onlyIfSuccessful: false, allowEmptyArchive: true

@@ -90,7 +90,7 @@ pipeline {
 			steps {
 				script { build_stage = env.STAGE_NAME }
 				sh label: 'Tag last_successful', script: '''pushd $build_upload_dir/
-                    test --L $build_upload_dir/last_successful && rm -f last_successful
+                    test -L $build_upload_dir/last_successful && rm -f last_successful
                     ln -s $build_upload_dir/$BUILD_NUMBER last_successful
                     popd
                 '''
@@ -125,7 +125,7 @@ pipeline {
 				def toEmail = ""
 				def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
 				if ( manager.build.result.toString() == "FAILURE") {
-					toEmail = "CORTX.CSM@seagate.com"
+					toEmail = "CORTX.CSM@seagate.com,shailesh.vaidya@seagate.com"
 					recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'],[$class: 'RequesterRecipientProvider']]
 				}
 				emailext (
