@@ -110,7 +110,7 @@ pipeline {
 				script {
                 	def releaseBuild = build job: 'Main Release', propagate: true
 				 	env.release_build = releaseBuild.number
-                    env.release_build_location="http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/"+releaseBuild.number
+                    env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/"+releaseBuild.number
 				}
             }
         }
@@ -119,7 +119,7 @@ pipeline {
 	
 	post {
 		always {
-			script{    	
+			script {    	
 				echo 'Cleanup Workspace.'
 				deleteDir() /* clean up our workspace */
 
@@ -129,25 +129,24 @@ pipeline {
 				env.build_stage = "${build_stage}"
 
                 env.vm_deployment = (env.deployVMURL != null) ? env.deployVMURL : "" 
-                if (env.deployVMStatus != null && env.deployVMStatus != "SUCCESS" && manager.build.result.toString() == "SUCCESS"){
+                if (env.deployVMStatus != null && env.deployVMStatus != "SUCCESS" && manager.build.result.toString() == "SUCCESS") {
                     manager.buildUnstable()
                 }
                 
 				def toEmail = ""
 				def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
-				if( manager.build.result.toString() == "FAILURE"){
+				if( manager.build.result.toString() == "FAILURE") {
 					toEmail = "CORTX.HA@seagate.com,shailesh.vaidya@seagate.com"
 					
 				}
 				toEmail = ""
-				recipientProvidersClass = ""
 				emailext (
 					body: '''${SCRIPT, template="component-email-dev.template"}''',
 					mimeType: 'text/html',
 					subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
 					attachLog: true,
                     to: toEmail,
-					recipientProviders: recipientProvidersClass
+					//recipientProviders: recipientProvidersClass
 				)
 			}
 		}	

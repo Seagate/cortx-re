@@ -90,7 +90,7 @@ pipeline {
 				script {
                 	def releaseBuild = build job: 'Main Release', propagate: true
 				 	env.release_build = releaseBuild.number
-                    env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/"+releaseBuild.number
+                    env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/${env.release_build}"
 				}
             }
         }
@@ -116,14 +116,13 @@ pipeline {
 					recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
 				}
 				toEmail = ""
-				recipientProvidersClass = ""
 				emailext (
 					body: '''${SCRIPT, template="component-email.template"}''',
 					mimeType: 'text/html',
 				    subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
 					attachLog: true,
 					to: toEmail,
-					recipientProviders: recipientProvidersClass
+					//recipientProviders: recipientProvidersClass
 				)
 			}
 		}

@@ -36,7 +36,7 @@ pipeline {
 	stages {
 		stage('Checkout') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				dir ('motr') {
 			    	checkout([$class: 'GitSCM', branches: [[name: "*/${branch}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog'], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-motr']]])
 				}
@@ -45,7 +45,7 @@ pipeline {
 	
     	stage('Install Dependencies') {
 		    steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				dir ('motr') {	
 					sh label: '', script: '''
 						yum install kernel-devel -y
@@ -61,7 +61,7 @@ pipeline {
 
 		stage('Build') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				dir ('motr') {	
 					sh label: '', script: '''
 						rm -rf /root/rpmbuild/RPMS/x86_64/*.rpm
@@ -77,7 +77,7 @@ pipeline {
 		
 		stage ('Upload') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh label: 'Copy RPMS', script: '''
 					mkdir -p $build_upload_dir/$BUILD_NUMBER
 					cp /root/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir/$BUILD_NUMBER
@@ -92,7 +92,7 @@ pipeline {
 		
 		stage ('Set Current Build') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh label: 'Tag last_successful', script: '''
 					pushd $build_upload_dir/
 					test -d $build_upload_dir/current_build && rm -f current_build
@@ -106,13 +106,13 @@ pipeline {
 			parallel {
 				stage ("build S3Server") {
 					steps {
-						script { build_stage=env.STAGE_NAME }
-                        script{
-                            try{
+						script { build_stage = env.STAGE_NAME }
+                        script {
+                            try {
 							    def s3Build = build job: 'S3server', wait: true
 							    env.S3_BUILD_NUMBER = s3Build.number
-                            }catch (err){
-                                build_stage=env.STAGE_NAME
+                            }catch (err) {
+                                build_stage = env.STAGE_NAME
                                 error "Failed to Build S3Server"
                             }
 						}
@@ -121,13 +121,13 @@ pipeline {
 					        
 		        stage ("build Hare") {
 					steps {
-						script { build_stage=env.STAGE_NAME }
-                        script{
-                            try{
+						script { build_stage = env.STAGE_NAME }
+                        script {
+                            try {
 							    def hareBuild = build job: 'Hare', wait: true
 							    env.HARE_BUILD_NUMBER = hareBuild.number
                             }catch (err){
-                                build_stage=env.STAGE_NAME
+                                build_stage = env.STAGE_NAME
                                 error "Failed to Build Hare"
                             }
 						}
@@ -138,7 +138,7 @@ pipeline {
 	
 		stage ('Tag last_successful') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh label: 'Tag last_successful', script: '''pushd $build_upload_dir/
 					test -d $build_upload_dir/last_successful && rm -f last_successful
 					ln -s $build_upload_dir/$BUILD_NUMBER last_successful
@@ -163,11 +163,11 @@ pipeline {
 		stage ("Release") {
 		    when { triggeredBy 'SCMTrigger' }
             steps {
-                script { build_stage=env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
 				script {
                 	def releaseBuild = build job: 'Main Release', propagate: true
 				 	env.release_build = releaseBuild.number
-                    env.release_build_location="http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/"+releaseBuild.number
+                    env.release_build_location="http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/${env.release_build}"
 				}
             }
         }
@@ -185,26 +185,25 @@ pipeline {
 				env.build_stage = "${build_stage}"
 
                 env.vm_deployment = (env.deployVMURL != null) ? env.deployVMURL : "" 
-                if (env.deployVMStatus != null && env.deployVMStatus != "SUCCESS" && manager.build.result.toString() == "SUCCESS"){
+                if ( env.deployVMStatus != null && env.deployVMStatus != "SUCCESS" && manager.build.result.toString() == "SUCCESS" ) {
                     manager.buildUnstable()
                 }
 
 				def toEmail = ""
 				def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
-				if( manager.build.result.toString() == "FAILURE"){
+				if( manager.build.result.toString() == "FAILURE" ) {
 					toEmail = "cortx.motr@seagate.com,shailesh.vaidya@seagate.com"
-					recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'],[$class: 'RequesterRecipientProvider']]
+					recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
 				}
 
 				toEmail = ""
-				recipientProvidersClass = ""
 				emailext (
 					body: '''${SCRIPT, template="component-email-dev.template"}''',
 					mimeType: 'text/html',
 					subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
 					attachLog: true,
 					to: toEmail,
-					recipientProviders: recipientProvidersClass
+					//recipientProviders: recipientProvidersClass
 				)
 			}
 		}	

@@ -32,7 +32,7 @@ pipeline {
 
 		stage('Checkout') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 
 				checkout([$class: 'GitSCM', branches: [[name: "*/${branch}"]], doGenerateSubmoduleConfigurations: false,  extensions: [[$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-manager']]])
 			}
@@ -40,9 +40,9 @@ pipeline {
 		
 		stage('Install Dependencies') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh label: '', script: '''
-					yum install -y eos-py-utils cortx-prvsnr
+					yum install -y cortx-prvsnr
 					pip3.6 install  pyinstaller==3.5
 				'''
 			}
@@ -50,7 +50,7 @@ pipeline {
 		
 		stage('Build') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				// Exclude return code check for csm_setup and csm_test
 				sh label: 'Build', returnStatus: true, script: '''
 					BUILD=$(git rev-parse --short HEAD)
@@ -63,7 +63,7 @@ pipeline {
 		
 		stage ('Upload') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh label: 'Copy RPMS', script: '''
 					mkdir -p $build_upload_dir/$BUILD_NUMBER
 					cp ./dist/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir/$BUILD_NUMBER
@@ -73,17 +73,12 @@ pipeline {
 					createrepo .
 					popd
 				'''
-				sh label: 'Tag last_successful', script: '''pushd $build_upload_dir/
-					test -d $build_upload_dir/last_successful && rm -f last_successful
-					ln -s $build_upload_dir/$BUILD_NUMBER last_successful
-					popd
-				'''
 			}
 		}
 
 		stage ('Tag last_successful') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh label: 'Tag last_successful', script: '''pushd $build_upload_dir/
 					test -d $build_upload_dir/last_successful && rm -f last_successful
 					ln -s $build_upload_dir/$BUILD_NUMBER last_successful
@@ -95,11 +90,11 @@ pipeline {
 		stage ("Release") {
             when { triggeredBy 'SCMTrigger' }
             steps {
-                script { build_stage=env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
 				script {
                 	def releaseBuild = build job: 'Main Release', propagate: true
 				 	env.release_build = releaseBuild.number
-                    env.release_build_location="http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/"+releaseBuild.number
+                    env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/${env.release_build}"
 				}
             }
         }
@@ -108,7 +103,7 @@ pipeline {
 	
 	post {
 		always {
-			script{
+			script {
             	
 				echo 'Cleanup Workspace.'
 				deleteDir() /* clean up our workspace */
@@ -120,20 +115,19 @@ pipeline {
 
 				def toEmail = ""
 				def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
-				if( manager.build.result.toString() == "FAILURE"){
+				if( manager.build.result.toString() == "FAILURE" ) {
 					toEmail = "CORTX.CSM@seagate.com,shailesh.vaidya@seagate.com"
 					recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'],[$class: 'RequesterRecipientProvider']]
 				}
 
 				toEmail = ""
-				recipientProvidersClass = ""
 				emailext (
 					body: '''${SCRIPT, template="component-email.template"}''',
 					mimeType: 'text/html',
 				    subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
 					attachLog: true,
 					to: toEmail,
-					recipientProviders: recipientProvidersClass
+					//recipientProviders: recipientProvidersClass
 				)
 			}
 		}

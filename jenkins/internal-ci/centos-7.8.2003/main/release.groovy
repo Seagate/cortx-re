@@ -58,7 +58,7 @@ pipeline {
 			steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Copy RPMS', script:'''
-                    for env in "dev" "prod";
+                    for env in "dev";
                     do
                         mkdir -p $integration_dir/$release_tag/$env
                         pushd $components_dir/$env
@@ -71,6 +71,8 @@ pipeline {
                         done
                         popd
                     done
+
+                    mkdir -p $integration_dir/$release_tag/prod
                     cp -n -r $integration_dir/$release_tag/dev/* $integration_dir/$release_tag/prod/
 
                     pushd $integration_dir/$release_tag/prod
@@ -267,15 +269,16 @@ pipeline {
                 env.build_stage = "${build_stage}"
 
                 def toEmail = "shailesh.vaidya@seagate.com, priyank.p.dalal@seagate.com, mukul.malhotra@seagate.com, amol.j.kongre@seagate.com, gowthaman.chinnathambi@seagate.com"
-              toEmail= ""  
-              emailext ( 
-                    body: '''${SCRIPT, template="release-email.template"}''',
-                    mimeType: 'text/html',
-                    subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
-                    attachLog: true,
-                    to: toEmail,
-                    attachmentsPattern: 'CHANGESET.txt'
-                )
+                
+                toEmail = "gowthaman.chinnathambi@seagate.com"  
+                emailext ( 
+                        body: '''${SCRIPT, template="release-email.template"}''',
+                        mimeType: 'text/html',
+                        subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
+                        attachLog: true,
+                        to: toEmail,
+                        attachmentsPattern: 'CHANGESET.txt'
+                    )
 
 				archiveArtifacts artifacts: "README.txt, RELEASE.INFO, CHANGESET.txt", onlyIfSuccessful: false, allowEmptyArchive: true
             }
