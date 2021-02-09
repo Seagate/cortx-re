@@ -18,18 +18,40 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
-BUILD_LOCATION=$1
+usage() { echo "Usage: $0 [-b build location] [-v version]" 1>&2; exit 1; }
+
+while getopts ":b:v:" o; do
+    case "${o}" in
+        b)
+            BUILD_LOCATION=${OPTARG}
+            ;;
+        v)
+            VERSION=${OPTARG}
+            ;;
+        *)
+            usage
+            ;;
+    esac
+done
+shift $((OPTIND-1))
+
+if [ -z "${BUILD_LOCATION}" ] || [ -z "${VERSION}" ]; then
+    usage
+fi
+
+EXCLUDE_PACKAGES="cortx-motr-devel\|cortx-motr-tests-ut\|cortx-libsspl_sec-devel\|cortx-libsspl_sec-method_pki\|cortx-prvsnr-cli\|cortx-sspl-cli\|cortx-s3iamcli-devel\|cortx-sspl-test"
 echo -e "Generating RELEASE.INFO file"
-pushd $BUILD_LOCATION
+pushd "$BUILD_LOCATION" || exit
 cat <<EOF > RELEASE.INFO
 ---
-NAME: "Cortx"
-VERSION: "1.0.0"
-BUILD: $(echo $BUILD_NUMBER | sed -e 's/^/\"/g' -e 's/$/\"/g')
+NAME: "CORTX"
+VERSION: "$VERSION"
+BUILD: $(echo "$BUILD_NUMBER" | sed -e 's/^/\"/g' -e 's/$/\"/g')
 OS: $(cat /etc/redhat-release | sed -e 's/ $//g' -e 's/^/\"/g' -e 's/$/\"/g')
 DATETIME: $(date +"%d-%b-%Y %H:%M %Z" | sed -e 's/^/\"/g' -e 's/$/\"/g')
 KERNEL: $(ls cortx-motr-[0-9]*.rpm | sed -e  's/.*3/3/g' -e 's/.x86_64.rpm//g' -e 's/^/\"/g' -e 's/$/\"/g')
 COMPONENTS:
-$(ls -1 *.rpm | awk '{ print "    - \""$1"\""}')
+$(ls -1 ./*.rpm | sed 's/\.\///g' | grep -v "$EXCLUDE_PACKAGES" |  awk '{ print "    - \""$1"\""}')
 EOF
-popd
+popd || exit
+
