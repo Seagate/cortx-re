@@ -29,7 +29,7 @@ ARG GIT_HASH
 LABEL maintainer="cortx.opensource@seagate.com" \
       Description="This image is used to build CORTX components" \
       org.opencontainers.image.revision=$GIT_HASH \
-      org.opencontainers.image.source="https://github.com/Seagate/cortx-re"
+      org.opencontainers.image.source="https://github.com/Seagate/cortx/blob/main/doc/Release_Build_Creation.rst"
 
 ENV BASH_ENV "/etc/profile"
 ENV PATH="/root/.nvm/versions/node/v12.13.0/bin:${PATH}"
