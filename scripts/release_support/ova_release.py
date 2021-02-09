@@ -1,12 +1,10 @@
-from atlassian import Jira
+from jira import JIRA
 from github_release import gh_release_create
 import shutil
 import os
 import argparse
 import json
 import sys
-reload(sys)
-sys.setdefaultencoding('utf8')
 
 #parse command line arguments
 parser = argparse.ArgumentParser()
@@ -25,36 +23,56 @@ new_ova_path = '/root/cortx-'+sem_ver+'.ova'
 highlight_issues = args.highlight
 releasenotes = ""
 
-#collect sprint data and create release-notes
-jira = Jira(
-    url='https://jts.seagate.com/',
-    username=args.username,
-    password=args.password)
-data = jira.jql(args.query)
-data = json.loads(json.dumps(data))
+#collect jira issues data and create release-notes
+jira = JIRA(basic_auth=(args.username, args.password), options={'server':'https://jts.seagate.com'})
+
+jql = args.query
+block_num = 0
+block_size = 100
+#loop over issues
+while True:
+
+    start_idx = block_num * block_size
+    if block_num == 0:
+        issues = jira.search_issues(jql, start_idx, block_size)
+    else:
+        more_issue = jira.search_issues(jql, start_idx, block_size)
+        if len(more_issue)>0:
+            for x in more_issue:
+                issues.append(x)
+        else:
+            break
+    if len(issues) == 0:
+        # Retrieve issues until there are no more to come
+        break
+    block_num += 1
+
+print(len(issues))
+
 releasenotes = "## Features\n\n"
-for issue in data['issues']:
-   if issue['fields']['issuetype']['name'] in ['Task','Story'] and not any(word in issue['fields']['summary'].lower() for word in issue_exclude_filter) and issue['key'] not in highlight_issues:
-         releasenotes+=str("- {} : {}\n".format(issue['fields']['components'][0]['name'],issue['fields']['summary']))
+for issue in issues:
+   if issue.fields.issuetype.name in ['Task','Story'] and not any(word in issue.fields.summary.lower() for word in issue_exclude_filter) and issue.key not in highlight_issues and issue.fields.components:
+      print(issue.fields.components[0].name) 
+      releasenotes+=str("- {} : {} [[{}]]({})\n".format(issue.fields.components[0],issue.fields.summary,issue.key,"https://jts.seagate.com/browse/"+issue.key))
 
 releasenotes+="\n"
 releasenotes+="## Bugfixes\n\n"
-for issue in data['issues']:
-   if issue['fields']['issuetype']['name'] in ['Bug'] and not any(word in issue['fields']['summary'].lower() for word in issue_exclude_filter) and issue['key'] not in highlight_issues:
-          releasenotes+=str("- {} : {}\n".format(issue['fields']['components'][0]['name'],issue['fields']['summary']))
+for issue in issues:
+   if issue.fields.issuetype.name in ['Bug'] and not any(word in issue.fields.summary.lower() for word in issue_exclude_filter) and issue.key not in highlight_issues and issue.fields.components:
+      releasenotes+=str("- {} : {} [[{}]]({})\n".format(issue.fields.components[0].name,issue.fields.summary,issue.key,"https://jts.seagate.com/browse/"+issue.key))
 
 if highlight_issues:
    releasenotes+="\n"
    releasenotes+="## Highlights\n\n"
    for issue_id in highlight_issues:
-       for issue in data['issues']:
-          if issue_id == issue['key']:
-             releasenotes+=str("- {} : {}\n".format(issue['fields']['components'][0]['name'],issue['fields']['summary']))
+       for issue in issues:
+          if issue_id == issue.key and issue.fields.components:
+             releasenotes+=str("- {} : {} [[{}]]({})\n".format(issue.fields.components[0].name,issue.fields.summary,issue.key,"https://jts.seagate.com/browse/"+issue.key))
 
 print(releasenotes)
-publish ova release with release-notes if required ova file is present
+#publish ova release with release-notes if required ova file is present
 if os.path.isfile(old_ova_path):
    shutil.copyfile(old_ova_path,new_ova_path)
-   gh_release_create("gauravchaudhari02/cortx","VA-"+sem_ver,publish=True,body=releasenotes,name="Virtual Appliance "+sem_ver,asset_pattern=new_ova_path)
+   gh_release_create("Seagate/cortx","VA-"+sem_ver,publish=True,body=releasenotes,name="Virtual Appliance "+sem_ver,asset_pattern=new_ova_path)
 else:
    sys.exit("ERROR: Required OVA build is not available")
