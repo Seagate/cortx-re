@@ -4,7 +4,7 @@
     name:
       - unittest2
 
-- name: Template a config file
+- name: Copy a config file
   template:
     src: config.yaml.j2
     dest: ~/config.yaml
