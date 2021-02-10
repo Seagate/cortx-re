@@ -238,7 +238,7 @@ _cortx-manager_build:
 	pushd cortx-workspace/cortx-manager && \
 		BUILD=$$(git rev-parse --short HEAD) && \
 		echo "Python:$(python --version)" && \
-		./cicd/build.sh -v ${RELEASE_VERSION} -b "${BUILD_ID}" -t -i && \
+		./cicd/build.sh -v ${RELEASE_VERSION} -b "${BUILD_ID}" && \
 		cp ./dist/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
 		createrepo -v ${RPM_DIR} && \
 	popd
