@@ -21,6 +21,7 @@ pipeline {
     parameters {
 
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash to build docker image', trim: true)
+        string(name: 'CORTX_RE_URL', defaultValue: 'main', description: 'Repository to build docker image', trim: true)
 
         choice (
             name: 'OS_VERSION', 
@@ -47,7 +48,7 @@ pipeline {
         stage('Checkout Script') {
             steps {             
                 script {
-                    checkout([$class: 'GitSCM', branches: [[name: '${CORTX_RE_BRANCH}']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/shailesh-vaidya/cortx-re/']]])                
+                    checkout([$class: 'GitSCM', branches: [[name: '${CORTX_RE_BRANCH}']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: '${CORTX_RE_URL}']]])                
                 }
             }
         }
