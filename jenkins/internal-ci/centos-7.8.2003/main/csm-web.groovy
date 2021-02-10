@@ -96,6 +96,39 @@ pipeline {
 				}
             }
         }
+
+        stage('Update Jira') {
+		when { expression { return env.release_build != null } }
+                steps {
+		        script { build_stage=env.STAGE_NAME }
+			script {
+				def jiraIssues = jiraIssueSelector(issueSelector: [$class: 'DefaultIssueSelector'])
+				jiraIssues.each { issue ->
+					def author =  getAuthor(issue)
+					jiraAddComment(
+						idOrKey: issite: "SEAGATE_JIRA",
+						site: "SEAGATE_JIRA",
+						comment: "{panel:bgColor=#c1c7d0}"+
+							"h2. ${component} - ${branch} branch build pipeline SUCCESS\n"+
+							"h3. Build Info:  \n"+
+								author+
+									"* Component Build  :  ${BUILD_NUMBER} \n"+
+									"* Release Build    :  ${release_build}  \n\n  "+
+							"h3. Artifact Location  :  \n"+
+								"*  "+"${release_build_location} "+"\n"+
+								"{panel}",
+						failOnError: false,
+						auditLog: false
+					)
+					//def jiraFileds = jiraGetIssue idOrKey: issue, site: "SEAGATE_JIRA", failOnError: false
+					//if(jiraFileds.data != null){
+					//def labels_data =  jiraFileds.data.fields.labels + "cortx_stable_b${release_build}"
+					//jiraEditIssue idOrKey: issue, issue: [fields: [ labels: labels_data ]], site: "SEAGATE_JIRA", failOnError: false
+					// }
+				}
+			}
+		}
+	}
 	}
 	
 	post {
