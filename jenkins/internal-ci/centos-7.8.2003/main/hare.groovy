@@ -141,7 +141,7 @@ pipeline {
 					jiraIssues.each { issue ->
 						def author =  getAuthor(issue)
 						jiraAddComment(
-							idOrKey: issite: "SEAGATE_JIRA",
+							idOrKey: issue,
 							site: "SEAGATE_JIRA",
 							comment: "{panel:bgColor=#c1c7d0}"+
 								"h2. ${component} - ${branch} branch build pipeline SUCCESS\n"+
