@@ -21,7 +21,7 @@
       - expect
     state: present
 
-- name: Template a config file
+- name: Copy a config file
   template:
     src: config.ini.j2
     dest: ~/config.ini
@@ -29,7 +29,7 @@
     group: root
     mode: '0644'
 
-- name: Template a provisioner script
+- name: Copy a autodeploy execution script
   template:
     src: script.j2
     dest: ~/script
