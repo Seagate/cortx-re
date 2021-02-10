@@ -80,7 +80,9 @@ pipeline {
                     docker run --rm -v /mnt/docker/tmp/cortx-workspace:/cortx-workspace -v /mnt/docker/tmp/artifacts:/var/artifacts ghcr.io/seagate/cortx-re/cortx-build-internal:$OS_VERSION make clean build -i
                 else    
                     docker run --rm -v /mnt/docker/tmp/cortx-workspace:/cortx-workspace -v /mnt/docker/tmp/artifacts:/var/artifacts ghcr.io/seagate/cortx-build:$OS_VERSION make clean build -i
-                fi    
+                fi
+                echo "CORTX Packages generated..."
+                cat /mnt/docker/tmp/artifacts/0/cortx_iso/RELEASE.INFO
                 rm -rf /mnt/docker/tmp/
                 '''
 			}
