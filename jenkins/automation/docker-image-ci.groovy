@@ -60,7 +60,7 @@ pipeline {
 				echo -e "Running on $HOST_HOSTNAME"
                 		echo 'y' | docker image prune
 		                if [ $ENVIRONMENT == "internal-ci" ]; then
-                	    	    docker-compose -f docker/cortx-build/docker-compose.yml build --force-rm  --compress --build-arg GIT_HASH="$(git rev-parse --short HEAD)" cortx-build-internal-$OS_VERSION
+                	    	docker-compose -f docker/cortx-build/docker-compose.yml build --force-rm  --compress --build-arg GIT_HASH="$(git rev-parse --short HEAD)" cortx-build-internal-$OS_VERSION
 		                else
                 		    docker-compose -f docker/cortx-build/docker-compose.yml build --force-rm  --compress --build-arg GIT_HASH="$(git rev-parse --short HEAD)" cortx-build-$OS_VERSION
 		                fi
@@ -77,9 +77,9 @@ pipeline {
 
                 sh label: 'Validate Docker image', script: '''
                 if [ $ENVIRONMENT == "internal-ci" ]; then
-                    docker run --rm -v /mnt/docker/tmp/cortx-workspace:/cortx-workspace -v /mnt/docker/tmp/artifacts:/var/artifacts ghcr.io/seagate/cortx-re/cortx-build-internal:$OS_VERSION make clean build -i
+                    docker run --rm -v /mnt/docker/tmp/cortx-workspace:/cortx-workspace -v /mnt/docker/tmp/artifacts:/var/artifacts ghcr.io/seagate/cortx-re/cortx-build-internal:$OS_VERSION make clean build
                 else    
-                    docker run --rm -v /mnt/docker/tmp/cortx-workspace:/cortx-workspace -v /mnt/docker/tmp/artifacts:/var/artifacts ghcr.io/seagate/cortx-build:$OS_VERSION make clean build -i
+                    docker run --rm -v /mnt/docker/tmp/cortx-workspace:/cortx-workspace -v /mnt/docker/tmp/artifacts:/var/artifacts ghcr.io/seagate/cortx-build:$OS_VERSION make clean build
                 fi
                 echo "CORTX Packages generated..."
                 cat /mnt/docker/tmp/artifacts/0/cortx_iso/RELEASE.INFO
