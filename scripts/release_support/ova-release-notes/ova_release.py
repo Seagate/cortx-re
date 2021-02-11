@@ -99,6 +99,7 @@ if highlight_issues:
 releasenotes+="\n"
 releasenotes+="## General\n\n"
 subprocess.Popen(['../changelog.sh %s %s %s' %(args.source_build_number,args.target_build_number,releases_url)], shell = True)
+time.sleep(60)
 with open('/root/git_build_checkin_stats/clone/git-build-checkin-report.txt') as f:
     for line in f:
         if re.match(r'^\b[0-9a-f]{7,40}\b', line) and not re.search(r'eos', line, re.IGNORECASE):
