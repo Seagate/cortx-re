@@ -19,6 +19,9 @@
 
 from jira import JIRA
 from github_release import gh_release_create
+import subprocess
+import re
+import time
 import shutil
 import os
 import argparse
@@ -31,6 +34,8 @@ parser.add_argument('-u', dest='username', type=str, help='JIRA username')
 parser.add_argument('-p', dest='password', type=str, help='JIRA password')
 parser.add_argument('--query', dest='query', type=str, help='JIRA query')
 parser.add_argument('--build', dest='ova_build_number', type=str, help='OVA build number')
+parser.add_argument('--sourceBuild', dest='source_build_number', type=str, help='Source CORTX build number')
+parser.add_argument('--targetBuild', dest='target_build_number', type=str, help='Target CORTX build number')
 parser.add_argument('--release', dest='github_release', type=str, help='GitHub release number')
 parser.add_argument('--highlight', dest='highlight', nargs='+', default=[])
 args = parser.parse_args()
@@ -40,6 +45,7 @@ sem_ver = args.github_release
 release_repository = 'gauravchaudhari02/release-notes-testing'
 jira_base_url = 'https://jts.seagate.com'
 jira_issue_base_url = jira_base_url+'/browse/'
+releases_url="http://cortx-storage.colo.seagate.com/releases/cortx/github/cortx-1.0/centos-7.8.2003/"
 old_ova_path = '/root/cortx-ova-build-'+ args.ova_build_number +'.ova'
 new_ova_path = '/root/cortx-'+sem_ver+'.ova'
 highlight_issues = args.highlight
@@ -50,7 +56,7 @@ jira = JIRA(basic_auth=(args.username, args.password), options={'server':jira_ba
 
 jql = args.query
 block_num = 0
-block_size = 1000
+block_size = 500
 #loop over issues
 while True:
 
@@ -89,6 +95,14 @@ if highlight_issues:
        for issue in issues:
           if issue_id == issue.key and issue.fields.components:
              releasenotes+=str("- {} : {} [[{}]]({})\n".format(issue.fields.components[0].name,issue.fields.summary,issue.key,jira_issue_base_url+issue.key))
+
+releasenotes+="\n"
+releasenotes+="## General\n\n"
+subprocess.Popen(['../changelog.sh %s %s %s' %(args.source_build_number,args.target_build_number,releases_url)], shell = True)
+with open('/root/git_build_checkin_stats/clone/git-build-checkin-report.txt') as f:
+    for line in f:
+        if re.match(r'^\b[0-9a-f]{7,40}\b', line) and not re.search(r'eos', line, re.IGNORECASE):
+               releasenotes+=str("- {}\n".format(line.split('|')[2]))
 
 print(releasenotes)
 #publish ova release with release-notes if required ova file is present
