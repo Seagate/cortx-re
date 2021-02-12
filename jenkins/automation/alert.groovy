@@ -36,24 +36,24 @@ pipeline {
 					steps {
 						sh label: 'Threshold alert', script: '''#!/bin/bash
 						CURRENT=$(df -h | grep /mnt/data1/releases | awk '{print $5}' | sed 's/%//g')
-					        THRESHOLD=70
+					    THRESHOLD=70
 						echo "The Current disk space is $CURRENT "
 						if [ "$CURRENT" -gt "$THRESHOLD" ] ; then
 						echo Your /mnt/data1/releases partition remaining free space is critically low. Used: $CURRENT%. Threshold: $THRESHOLD%  So, 30 days older files will be deleted $(date)
 						prev_count=0
 						fpath=/mnt/data1/releases
 						source /mnt/data1/releases/exclude_build.txt
-						find /mnt/data1/releases/cortx/github/integration-custom-ci/release/centos-7.8.2003/custom-build-394_bkp -path /mnt/data1/releases/cortx/github/integration-custom-ci/release/centos-7.8.2003 -prune -false -o -name '*' -exec cp -R {} /mnt/data1/releases/backups/cortx_build_backup/394 \\;
-						find /mnt/data1/releases/cortx/github/integration-custom-ci/release/centos-7.8.2003/custom-build-394_bkp -path /mnt/data1/releases/cortx/github/integration-custom-ci/release/centos-7.8.2003 -prune -false -o -name '*' -exec rm -rf {} \\;
-						#find $build -path $path1 -path $path2 -prune -false -o -name '*' -exec ls -ltr {} + > /mnt/data1/releases/file1.out
-						#touch /mnt/data1/releases/file.out
-						#find $fpath -type f -mtime +30  -exec ls -ltr {} + > /mnt/data1/releases/file.out
-						#find $fpath -maxdepth 1 ! -type l -print | cut -c1- | grep -v "\\#" -exec ls -ltr {} + > /mnt/data1/releases/file1.out
-						##find $fpath -maxdepth 1 ! -type l -print | cut -c1- | grep -v "\\#" &&  find /mnt/data1/releases/cortx/github/release/rhel-7.7.1908/2750 -path /mnt/data1/releases/cortx/github/release/rhel-7.7.1908 -prune -false -o -name '*' && find $fpath ! -name '*.INFO*' && find $fpath -type f -mtime +30  -exec ls -ltr {} + > /mnt/data1/releases/file1.out
-						#find $fpath -maxdepth 1 -type l -print | cut -c1- | grep -v "\\#" &&  find /mnt/data1/releases/cortx/github/release/rhel-7.7.1908/2750 -path /mnt/data1/releases/cortx/github/release/rhel-7.7.1908 -prune -false -o -name '*' && find $fpath -name '*.INFO*' && find $fpath -type f -mtime -30  -exec cp {} /mnt/data1/releases/backups/cortx_build_backup/custom_build_backup \\;
-						#find $fpath -maxdepth 1 -type l -print | cut -c1- | grep -v "\\#" && find $fpath -name '*.INFO*' && find $fpath -type f -mtime +30  -exec ls -ltr {} + > /mnt/data1/releases/file1.out
-						#find $fpath -maxdepth 1 ! -type l -print | cut -c1- | grep -v "\\#" && find $fpath ! -name '*.INFO*' && find $fpath -type f -mtime +30  -exec rm -rf {} \\;
-						count=$(cat /mnt/data1/releases/file1.out | wc -l)
+						
+						#Backup of exclude build
+						find $build -path $path1 -path $path2 -prune -false -o -name '*' -exec cp {} /mnt/data1/releases/backups/cortx_build_backup/custom_build_backup \\;
+						
+						#Listing the files which will be deleted
+						find $fpath -maxdepth 1 ! -type l -print | cut -c1- | grep -v "\\#" &&  find $build -path $path1 -path $path2 -prune -false -o -name '*' && find $fpath ! -name '*.INFO*' && find $fpath -type f -mtime +30  -exec ls -ltr {} + > /mnt/data1/releases/file1.out
+						
+						#Deleting the files excluding symbolic files, files within 30 days, all .INFO files & few exclude builds.
+						find $fpath -maxdepth 1 ! -type l -print | cut -c1- | grep -v "\\#" &&  find $build -path $path1 -path $path2 -prune -false -o -name '*' && find $fpath ! -name '*.INFO*' && find $fpath -type f -mtime +30  -exec rm -rf {} \\;
+						
+							count=$(cat /mnt/data1/releases/file1.out | wc -l)
 							if [ "$prev_count" -lt "$count" ] ; then
 							MESSAGE="/mnt/data1/releases/file1.out"
 							TO="balaji.ramachandran@seagate.com"
@@ -78,7 +78,7 @@ pipeline {
 			        emailext (
 					body: "Current Disk Space is ${env.SPACE} : Job ${env.JOB_NAME} : Build URL ${env.BUILD_URL}",
 					subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME} : build ${env.BUILD_NUMBER}",
-					to: ('priyank.p.dalal@seagate.com,balaji.ramachandran@seagate.com,shailesh.vaidya@seagate.com,mukul.malhotra@seagate.com'),
+					to: 'CORTX.DevOps.RE@seagate.com',
 					)
 			}
 		}
