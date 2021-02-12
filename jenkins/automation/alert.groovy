@@ -52,15 +52,11 @@ pipeline {
 							count=$(cat /mnt/data1/releases/file1.out | wc -l)
 							if [ "$prev_count" -lt "$count" ] ; then
 							MESSAGE="/mnt/data1/releases/file1.out"
-							TO="balaji.ramachandran@seagate.com"
 							echo "Files older than 30 days are listed" >> $MESSAGE
 							echo "+--------------------------------------------- +" >> $MESSAGE
 					    		echo "" >> $MESSAGE
 							cat /mnt/data1/releases/file1.out | awk '{print $6,$7,$9}' >> $MESSAGE
 							echo "" >> $MESSAGE
-							#SUBJECT="WARNING: Your /mnt/data1/releases partition remaining free space is critically low. Used: $CURRENT%.  So, 50 days older files have been deleted $(date)"
-							#mailx -s "$SUBJECT" "$TO" < $MESSAGE
-							#cat $MESSAGE
 							rm -rf $MESSAGE /mnt/data1/releases/file1.out
 							fi
 						fi
