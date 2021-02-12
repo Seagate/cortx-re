@@ -36,11 +36,10 @@ pipeline {
 					steps {
 						sh label: 'Threshold alert', script: '''#!/bin/bash
 						CURRENT=$(df -h | grep /mnt/data1/releases | awk '{print $5}' | sed 's/%//g')
-					    THRESHOLD=70
+					        THRESHOLD=70
 						echo "The Current disk space is $CURRENT "
 						if [ "$CURRENT" -gt "$THRESHOLD" ] ; then
 						echo Your /mnt/data1/releases partition remaining free space is critically low. Used: $CURRENT%. Threshold: $THRESHOLD%  So, 30 days older files will be deleted $(date)
-						prev_count=0
 						fpath=/mnt/data1/releases
 						source /mnt/data1/releases/exclude_build.txt
 						
@@ -49,16 +48,6 @@ pipeline {
 						
 						find $fpath -maxdepth 1 ! -type l -print | cut -c1- | grep -v "\\#" &&  find $build -path $path1 -path $path2 -prune -false -o -name '*' && find $fpath ! -name '*.INFO*' && find $fpath -type f -mtime +30  -exec rm -rf {} \\;
 						
-							count=$(cat /mnt/data1/releases/file1.out | wc -l)
-							if [ "$prev_count" -lt "$count" ] ; then
-							MESSAGE="/mnt/data1/releases/file1.out"
-							echo "Files older than 30 days are listed" >> $MESSAGE
-							echo "+--------------------------------------------- +" >> $MESSAGE
-					    		echo "" >> $MESSAGE
-							cat /mnt/data1/releases/file1.out | awk '{print $6,$7,$9}' >> $MESSAGE
-							echo "" >> $MESSAGE
-							rm -rf $MESSAGE /mnt/data1/releases/file1.out
-							fi
 						fi
 					'''
 				}
