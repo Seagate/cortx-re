@@ -164,3 +164,23 @@ pipeline {
 		}
     }
 }	
+
+@NonCPS
+def getAuthor(issue) {
+
+    def changeLogSets = currentBuild.rawBuild.changeSets
+    def author= ""
+    def response = ""
+    // Grab build information
+    for (int i = 0; i < changeLogSets.size(); i++){
+        def entries = changeLogSets[i].items
+        for (int j = 0; j < entries.length; j++) {
+            def entry = entries[j]
+            if((entry.msg).contains(issue)){
+                author = entry.author
+            }
+        }
+    }
+    response = "* Author: "+author+"\n"
+    return response
+}
