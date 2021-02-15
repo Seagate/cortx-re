@@ -12,16 +12,16 @@ pipeline {
 	}
     
     environment {
-		COMMIT_HASH_CORTX_CSM_AGENT=get_commit_hash("cortx-csm_agent", "${RELEASE_INFO_URL}")
-		COMMIT_HASH_CORTX_CSM_WEB=get_commit_hash("cortx-csm_web", "${RELEASE_INFO_URL}")
-		COMMIT_HASH_CORTX_HARE=get_commit_hash("cortx-hare", "${RELEASE_INFO_URL}")
-		COMMIT_HASH_CORTX_HA=get_commit_hash("cortx-ha", "${RELEASE_INFO_URL}")
-		COMMIT_HASH_CORTX_MOTR=get_commit_hash("cortx-motr", "${RELEASE_INFO_URL}")
-		COMMIT_HASH_CORTX_PRVSNR=get_commit_hash("cortx-prvsnr", "${RELEASE_INFO_URL}")
-		COMMIT_HASH_CORTX_S3SERVER=get_commit_hash("cortx-s3server", "${RELEASE_INFO_URL}")
-		COMMIT_HASH_CORTX_SSPL=get_commit_hash("cortx-sspl", "${RELEASE_INFO_URL}")
-	    THIRD_PARTY_RELEASE_VERSION=get_version("${THIRD_PARTY_RELEASE_INFO_URL}")
-	    RELEASE_BUILD_NUMBER=get_build("${RELEASE_INFO_URL}")
+		COMMIT_HASH_CORTX_CSM_AGENT = get_commit_hash("cortx-csm_agent", "${RELEASE_INFO_URL}")
+		COMMIT_HASH_CORTX_CSM_WEB = get_commit_hash("cortx-csm_web", "${RELEASE_INFO_URL}")
+		COMMIT_HASH_CORTX_HARE = get_commit_hash("cortx-hare", "${RELEASE_INFO_URL}")
+		COMMIT_HASH_CORTX_HA = get_commit_hash("cortx-ha", "${RELEASE_INFO_URL}")
+		COMMIT_HASH_CORTX_MOTR = get_commit_hash("cortx-motr", "${RELEASE_INFO_URL}")
+		COMMIT_HASH_CORTX_PRVSNR = get_commit_hash("cortx-prvsnr", "${RELEASE_INFO_URL}")
+		COMMIT_HASH_CORTX_S3SERVER = get_commit_hash("cortx-s3server", "${RELEASE_INFO_URL}")
+		COMMIT_HASH_CORTX_SSPL = get_commit_hash("cortx-sspl", "${RELEASE_INFO_URL}")
+	    THIRD_PARTY_RELEASE_VERSION = get_version("${THIRD_PARTY_RELEASE_INFO_URL}")
+	    RELEASE_BUILD_NUMBER = get_build("${RELEASE_INFO_URL}")
 	    }
 	
 	stages {
@@ -64,7 +64,7 @@ pipeline {
 }
 
 
-def get_commit_hash(String component, String release_info){
+def get_commit_hash(String component, String release_info) {
 
     return sh(script: """
             set +x
@@ -78,14 +78,14 @@ def get_commit_hash(String component, String release_info){
             """, returnStdout: true).trim()
 }
 
-def get_version(String THIRD_PARTY_RELEASE_INFO_URL){
+def get_version(String THIRD_PARTY_RELEASE_INFO_URL) {
    return sh(script: """
        wget $THIRD_PARTY_RELEASE_INFO_URL -O THIRD_PARTY_RELEASE_INFO ;
        echo \$(grep THIRD_PARTY_VERSION THIRD_PARTY_RELEASE_INFO  | awk '{print \$2}' | cut -b 18-24);
     """, returnStdout:true).trim()
 }
 
-def get_build(String RELEASE_INFO_URL){
+def get_build(String RELEASE_INFO_URL) {
    return sh(script: """
        wget $RELEASE_INFO_URL -O RELEASE_INFO ;
        echo \$(grep BUILD RELEASE_INFO | awk -F "[a-z=&\\"]*" '{print \$2}');
