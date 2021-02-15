@@ -1,3 +1,16 @@
+#!/usr/bin/env groovy
+def get_custom_build_number() {
+
+  def upstreamCause = currentBuild.rawBuild.getCause(Cause.UpstreamCause)
+  if (upstreamCause) {
+	def upstreamBuildID = Jenkins.getInstance().getItemByFullName(upstreamCause.getUpstreamProject(), hudson.model.Job.class).getBuildByNumber(upstreamCause.getUpstreamBuild()).getId()
+	return upstreamBuildID
+  } else {
+    def buildNumber = currentBuild.number
+	return buildNumber
+	}
+}
+
 pipeline { 
     agent {
         node {
@@ -16,7 +29,8 @@ pipeline {
         branch = "custom-ci"
         os_version = "centos-7.8.2003"
         release_dir = "/mnt/bigstorage/releases/cortx"
-        build_upload_dir = "$release_dir/components/github/$branch/$os_version/$env/$component/"
+        custom_build_number = get_custom_build_number()
+		build_upload_dir = "$release_dir/components/github/$branch/$os_version/concurrent/$custom_build_number/$env/$component/"
     }
 
     options {

@@ -13,7 +13,7 @@ pipeline {
 		thrid_party_version = "2.0.0-1"
 		release_dir = "/mnt/bigstorage/releases/cortx"
 		integration_dir = "$release_dir/github/integration-custom-ci/release/$os_version"
-		components_dir = "$release_dir/components/github/$branch/$os_version"
+		components_dir = "$release_dir/components/github/$branch/$os_version/concurrent/$custom_build_number/$env/$component/"
 		release_tag = "custom-build-$BUILD_ID"
 		passphrase = credentials('rpm-sign-passphrase')
 		// thrid_party_dir = "$release_dir/third-party-deps/centos/centos-7.8.2003-$thrid_party_version/"
