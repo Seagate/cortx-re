@@ -1,4 +1,3 @@
-
 #!/usr/bin/env groovy
 def get_custom_build_number() {
 
