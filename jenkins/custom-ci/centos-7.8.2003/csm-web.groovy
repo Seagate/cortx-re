@@ -1,4 +1,17 @@
 
+#!/usr/bin/env groovy
+def get_custom_build_number() {
+
+  def upstreamCause = currentBuild.rawBuild.getCause(Cause.UpstreamCause)
+  if (upstreamCause) {
+	def upstreamBuildID = Jenkins.getInstance().getItemByFullName(upstreamCause.getUpstreamProject(), hudson.model.Job.class).getBuildByNumber(upstreamCause.getUpstreamBuild()).getId()
+	return upstreamBuildID
+  } else {
+    def buildNumber = currentBuild.number
+	return buildNumber
+	}
+}
+
 pipeline {
 	agent {
 		node {
