@@ -20,6 +20,8 @@
 from jira import JIRA
 from github_release import gh_release_create
 import subprocess
+import datetime
+import urllib.request
 import re
 import time
 import shutil
@@ -32,7 +34,7 @@ import sys
 parser = argparse.ArgumentParser()
 parser.add_argument('-u', dest='username', type=str, help='JIRA username')
 parser.add_argument('-p', dest='password', type=str, help='JIRA password')
-parser.add_argument('--query', dest='query', type=str, help='JIRA query')
+#parser.add_argument('--query', dest='query', type=str, help='JIRA query')
 parser.add_argument('--build', dest='ova_build_number', type=str, help='OVA build number')
 parser.add_argument('--sourceBuild', dest='source_build_number', type=str, help='Source CORTX build number')
 parser.add_argument('--targetBuild', dest='target_build_number', type=str, help='Target CORTX build number')
@@ -50,11 +52,28 @@ old_ova_path = '/root/cortx-ova-build-'+ args.ova_build_number +'.ova'
 new_ova_path = '/root/cortx-'+sem_ver+'.ova'
 highlight_issues = args.highlight
 releasenotes = ""
+startReleaseDate = ""
+endReleaseDate = ""
+
+#functions
+def getReleaseDates():
+   url = releases_url + str(args.source_build_number) + '/dev/RELEASE.INFO'
+   urllib.request.urlretrieve(url, 'start_build_file.txt')
+   url = releases_url + str(args.target_build_number) + '/dev/RELEASE.INFO'
+   urllib.request.urlretrieve(url, 'target_build_file.txt')
+   startDate = subprocess.getoutput('cat start_build_file.txt | grep DATETIME | awk -F\' \' \'{ print $2 }\' | tr -d \'"\'')
+   endDate = subprocess.getoutput('cat target_build_file.txt | grep DATETIME | awk -F\' \' \'{ print $2 }\' | tr -d \'"\'')
+   global startReleaseDate 
+   startReleaseDate = datetime.datetime.strptime(startDate, "%d-%b-%Y").strftime("%Y-%m-%d %H:%M")
+   global endReleaseDate 
+   endReleaseDate = datetime.datetime.strptime(endDate, "%d-%b-%Y").strftime("%Y-%m-%d %H:%M")
 
 #collect jira issues data and create release-notes
 jira = JIRA(basic_auth=(args.username, args.password), options={'server':jira_base_url})
 
-jql = args.query
+getReleaseDates()
+jql = "project = EOS AND (resolutiondate >= '{}' AND resolutiondate <= '{}') ORDER BY component".format(startReleaseDate,endReleaseDate)
+print(jql)
 block_num = 0
 block_size = 500
 #loop over issues
