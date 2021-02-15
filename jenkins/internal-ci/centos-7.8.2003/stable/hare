@@ -11,6 +11,7 @@ pipeline {
     }
     
     environment {
+		version="2.0.0"
         env="dev"
 		component="hare"
         branch="stable"
@@ -86,7 +87,7 @@ pipeline {
 					pushd $component
 					echo "Executing build script"
 					export build_number=${BUILD_ID}
-					make rpm
+					make VERSION=$version rpm
 					popd
 				'''	
 			}
@@ -187,7 +188,7 @@ pipeline {
 				def toEmail = ""
 				def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
 				if( manager.build.result.toString() == "FAILURE"){
-					toEmail = toEmail+""
+					toEmail = "CORTX.Hare@seagate.com,shailesh.vaidya@seagate.com"
 					recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'],[$class: 'RequesterRecipientProvider']]
 				}
 				emailext (

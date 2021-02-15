@@ -4,25 +4,19 @@ pipeline {
 			label 'docker-cp-centos-7.8.2003-node'
 		}
 	}
-    
+
     triggers {
         pollSCM 'H/5 * * * *'
     }
 
-    parameters {
-        string(name: 'branch', defaultValue: 'main', description: 'Branch Name')
-    }
-	
-	environment {      
+	environment {
+		version = "2.0.0"      
         env = "dev"
 		component = "cortx-utils"
+        branch = "main"
         os_version = "centos-7.8.2003"
-        pipeline_group = "main"
         release_dir = "/mnt/bigstorage/releases/cortx"
-        build_upload_dir = "${release_dir}/components/github/${pipeline_group}/${os_version}/${env}/${component}"
-
-        // Param hack for initial config
-        branch="${branch != null ? branch : 'main'}"
+        build_upload_dir = "$release_dir/components/github/$branch/$os_version/$env/$component"
     }
 
 	options {
@@ -36,7 +30,7 @@ pipeline {
 		stage('Checkout py-utils') {
 			steps {
                 script { build_stage = env.STAGE_NAME }
-                checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-utils']]])
+                checkout([$class: 'GitSCM', branches: [[name: "*/${branch}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-utils']]])
 			}
 		}
         
@@ -46,10 +40,10 @@ pipeline {
 				sh label: 'Build', script: '''
 				yum install python36-devel -y
 				pushd py-utils
-				python3 setup.py bdist_rpm --post-install utils-post-install --pre-uninstall utils-pre-uninstall --release="${BUILD_NUMBER}_$(git rev-parse --short HEAD)"
+				python3.6 setup.py bdist_rpm --version=$version --post-install utils-post-install --post-uninstall utils-post-uninstall --post-uninstall utils-post-uninstall --release="${BUILD_NUMBER}_$(git rev-parse --short HEAD)"
 				popd
 				
-				./statsd-utils/jenkins/build.sh -b $BUILD_NUMBER
+				./statsd-utils/jenkins/build.sh -v $version -b $BUILD_NUMBER
 	        '''	
 			}
 		}	
@@ -90,20 +84,21 @@ pipeline {
 			}
 		}
 
-		stage ("Release") {
+        stage ("Release") {
             when { triggeredBy 'SCMTrigger' }
             steps {
                 script { build_stage = env.STAGE_NAME }
 				script {
-                	def releaseBuild = build job: 'Main Release', propagate: true, parameters: [string(name: 'release_component', value: "${component}"), string(name: 'release_build', value: "${BUILD_NUMBER}")]
-				 	env.release_build = "${BUILD_NUMBER}"
-                    env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$pipeline_group/$os_version/${component}_${BUILD_NUMBER}"
+                	def releaseBuild = build job: 'Main Release', propagate: true
+				 	env.release_build = releaseBuild.number
+                    env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/${env.release_build}"
 				}
             }
-        } 
+        }
+
 	}
 
-    post {
+	post {
 		always {
 			script {
             	
