@@ -1,3 +1,4 @@
+#!/bin/bash
 #
 # Copyright (c) 2020 Seagate Technology LLC and/or its Affiliates
 #
@@ -22,9 +23,13 @@ ARG CENTOS_RELEASE
 FROM centos:${CENTOS_RELEASE} AS base
 
 ARG CENTOS_RELEASE
+ARG ENVIRONMENT
+ARG GIT_HASH
 
-LABEL maintainer="CORTX.opensource@seagate.com"
-LABEL Description="This image is used to build CORTX stack on CentOS"
+LABEL maintainer="cortx.opensource@seagate.com" \
+      Description="This image is used to build CORTX components" \
+      org.opencontainers.image.revision=$GIT_HASH \
+      org.opencontainers.image.source="https://github.com/Seagate/cortx/blob/main/doc/Release_Build_Creation.rst"
 
 ENV BASH_ENV "/etc/profile"
 ENV PATH="/root/.nvm/versions/node/v12.13.0/bin:${PATH}"
@@ -32,13 +37,17 @@ ENV LANG=en_US.UTF-8 \
     LC_ALL=en_US.UTF-8
 
 #Disable default repositories. 
-RUN yum-config-manager --disable base,extras,updates
+RUN rm -rf /etc/yum.repos.d/CentOS-*
 
-#Add OS specific repository
-COPY ./docker/opensource-ci/C${CENTOS_RELEASE}.repo /etc/yum.repos.d/
+#Add Internal and CORTX uploads repository
+COPY ./docker/cortx-build/${ENVIRONMENT}/*.repo /etc/yum.repos.d/
 
-# enable EPEL and SCL repos
-RUN yum install epel-release centos-release-scl -y && yum clean all \
+# Install EPEL repo for opensource-ci
+RUN if [ "$ENVIRONMENT" = "opensource-ci" ] ; then yum install epel-release -y ; fi && yum clean all \
+&& rm -rf /var/cache/yum
+
+# Enable SCL repos
+RUN yum install centos-release-scl -y && yum clean all \
 && rm -rf /var/cache/yum
 
 # install common tools
@@ -85,6 +94,7 @@ flex \
 openssl-devel \
 doxygen \
 dbus-devel \
+yum-priorities \
 expect \
 rpm-sign \
 genisoimage \
@@ -105,7 +115,7 @@ RUN localedef -i en_US -f UTF-8 en_US.UTF-8
 RUN rpmdev-setuptree
 
 # Copy scripts
-COPY ./docker/opensource-ci/*.sh /opt/
+COPY ./docker/cortx-build/*.sh /opt/
 
 # install node
 RUN bash /opt/install-node.sh v12.13.0 \
@@ -123,6 +133,7 @@ RUN bash /opt/setup_fpm.sh \
 && rm -rf /var/cache/yum \
 && rm -rf rh-ruby23.sh
 
+# yum repo from GitHub Release 
 RUN sh /opt/set-githubrelease-repo.sh \
 && yum clean all \
 && rm -rf /var/cache/yum \
@@ -142,20 +153,24 @@ RUN  cat /opt/rpm-signing/gpgoptions >>  ~/.rpmmacros && \
 COPY ./scripts/release_support/build_release_info.sh /opt/release_support/
 
 # Makefile for build
-COPY ./docker/opensource-ci/Makefile . 
+COPY ./docker/cortx-build/Makefile . 
 
 FROM base as lustre-rpm-builder
 
 ARG LUSTRE_VERSION 
+ARG ENVIRONMENT
 
-ADD  https://downloads.whamcloud.com/public/lustre/lustre-${LUSTRE_VERSION}/el7/client/SRPMS/lustre-${LUSTRE_VERSION}-1.src.rpm . 
+ADD https://downloads.whamcloud.com/public/lustre/lustre-${LUSTRE_VERSION}/el7/client/SRPMS/lustre-${LUSTRE_VERSION}-1.src.rpm . 
 RUN rpm -i lustre-${LUSTRE_VERSION}-1.src.rpm 
 
-COPY ./docker/opensource-ci/lustre-2.9.0.spec.patch .
+COPY ./docker/cortx-build/lustre-2.9.0.spec.patch .
+
 RUN patch -p1 -i lustre-2.9.0.spec.patch /root/rpmbuild/SPECS/lustre.spec
 
-RUN yum -y install kernel kernel-devel \
-	&& yum-builddep -y /root/rpmbuild/SPECS/lustre.spec
+RUN yum -y install kernel{,-devel}-3.10.0-1127.el7  \
+	&& yum-builddep -y /root/rpmbuild/SPECS/lustre.spec \
+        && yum clean all \
+        && rm -rf /var/cache/yum
 	
 RUN QA_RPATHS=255 rpmbuild -bb --without servers --without lustre-tests \
         --define 'configure_args --disable-gss-keyring' \
@@ -176,10 +191,9 @@ RUN yum install -y https://downloads.whamcloud.com/public/lustre/lustre-${LUSTRE
 		 && rm -rf /var/cache/yum
 		 
 		 
-RUN curl -k https://raw.githubusercontent.com/Seagate/cortx-motr/main/cortx-motr.spec.in -o cortx-motr.spec \
+RUN curl -k https://raw.githubusercontent.com/Seagate/cortx-motr/stable/cortx-motr.spec.in -o cortx-motr.spec \
 	&& sed -i 's/@.*@/111/g' cortx-motr.spec \
 	&& kernel_src=$(ls -1rd /lib/modules/*/build | head -n1) \
-    && yum-builddep -y cortx-motr.spec \
+        && yum-builddep -y cortx-motr.spec \
 	&& yum clean all \
-    && rm -rf /var/cache/yum \
-    && rm -rf cortx-motr.spec
+        && rm -rf /var/cache/yum

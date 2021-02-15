@@ -41,7 +41,7 @@ if [ -z "$OS_VERSION" ]; then echo "No OS_VERSION provided.."; exit 1; fi
 RPM_LOCATION="http://cortx-storage.colo.seagate.com/releases/cortx/github/$BRANCH/$OS_VERSION"
 
 # Validation Params
-RPM_VERSION_EXPECTED="1.0.0"
+RPM_VERSION_EXPECTED="2.0.0"
 RPM_LICENSE_EXPECTED="Seagate"
 
 RPM_NAMING_PATTERN="cortx-[component_name]-[version]-[bld]_[git_tag].[platform].rpm"
@@ -163,9 +163,12 @@ _validate_rpm_install_path(){
                     if [[ "$folder_name" == "log" ]]; then
                         PATH="$RPM_LOG_ROOT_PATH/$rpm_module_name_input" 
                     fi
-                    echo "[$component_name] : $PATH" >> rpm_path_validate.log
+                    
                     if [[ "$rpm_install_path_data" != *"$PATH"* ]]; then
                         result="$folder_name, $result"
+                        echo "[$rpm_name] : $PATH : Absent" >> rpm_path_validate.log
+					else
+						echo "[$rpm_name] : $PATH : Present" >> rpm_path_validate.log
                     fi
                 done
                 break
@@ -248,12 +251,16 @@ _generate_rpm_validation_report(){
                 license_check="<td $HTML_TD_STYLE><b>Invalid License :</b> <br> - <b><i>Expected :</b></i> $RPM_LICENSE_EXPECTED<br> - <b><i>Actual :</b></i>$rpm_license</td>"
             fi
 
-            install_path_check=$(_validate_rpm_install_path "$rpm_files" "$rpm_name" "$component_name")
-            if [[ ! -z "$install_path_check" ]]
-            then
-                install_path_check="<td $HTML_TD_STYLE><B>Path Does Not Exists : </b>${install_path_check%??}</td>"
-            else
-                install_path_check="<td $HTML_TD_STYLE><span style='color:green; text-shadow: -2px 0 black, 0 2px black, 2px 0 black, 0 -2px black; font-size: 30px;'>&#10003;</span></td>"
+            if [ "$rpm_name" == "cortx-sspl-test" ] || [ "$rpm_name" == "cortx-sspl-cli" ]; then
+                install_path_check="<td $HTML_TD_STYLE><B>Path Check excluded : </b></td>"
+             else   
+                install_path_check=$(_validate_rpm_install_path "$rpm_files" "$rpm_name" "$component_name")
+                if [[ ! -z "$install_path_check" ]]
+                then
+                    install_path_check="<td $HTML_TD_STYLE><B>Path Does Not Exists : </b>${install_path_check%??}</td>"
+                else
+                    install_path_check="<td $HTML_TD_STYLE><span style='color:green; text-shadow: -2px 0 black, 0 2px black, 2px 0 black, 0 -2px black; font-size: 30px;'>&#10003;</span></td>"
+                fi
             fi
 
             dependency_check=$({ yum install "$BUILD_URL/$rpm" --assumeno; } 2>&1 >/dev/null)

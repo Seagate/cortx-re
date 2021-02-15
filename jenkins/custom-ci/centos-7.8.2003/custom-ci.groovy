@@ -7,16 +7,17 @@ pipeline {
 	}
 
 	environment {
+		version = "2.0.0"
 		branch = "custom-ci"
 		os_version = "centos-7.8.2003"
-		thrid_party_version = "1.0.0-3"
+		thrid_party_version = "2.0.0-1"
 		release_dir = "/mnt/bigstorage/releases/cortx"
 		integration_dir = "$release_dir/github/integration-custom-ci/release/$os_version"
 		components_dir = "$release_dir/components/github/$branch/$os_version"
 		release_tag = "custom-build-$BUILD_ID"
 		passphrase = credentials('rpm-sign-passphrase')
-		thrid_party_dir = "$release_dir/third-party-deps/centos/centos-7.8.2003-$thrid_party_version/"
-		python_deps = "$release_dir/third-party-deps/python-packages"
+		// thrid_party_dir = "$release_dir/third-party-deps/centos/centos-7.8.2003-$thrid_party_version/"
+		python_deps = "$release_dir/third-party-deps/python-deps/python-packages-2.0.0-0"
 		cortx_os_iso = "/mnt/bigstorage/releases/cortx_builds/custom-os-iso/cortx-os-1.0.0-23.iso"
 	}
 
@@ -47,9 +48,9 @@ pipeline {
 		string(name: 'SSPL_URL', defaultValue: 'https://github.com/Seagate/cortx-monitor.git', description: 'SSPL Repository URL', trim: true)
 
 		choice(
-			name: 'OTHER_COMPONENT_BRANCH',
-			choices: ['main', 'stable', 'cortx-1.0'],
-			description: 'Branch name to pick-up other components rpms'
+			name: 'THIRD_PARTY_VERSION',
+			choices: ['cortx-2.0', 'cortx-1.0'],
+			description: 'Third Party Version to use.'
 		)
 	}
 
@@ -191,17 +192,11 @@ pipeline {
 			steps {
 				script { build_stage = env.STAGE_NAME }
 				sh label: 'Copy RPMS', script:'''
-					if [ "$OTHER_COMPONENT_BRANCH" == "stable"  ]; then
-						RPM_COPY_PATH="/mnt/bigstorage/releases/cortx/components/github/stable/$os_version/dev/"
-					elif [ "$OTHER_COMPONENT_BRANCH" == "main"  ]; then
+					if [ "$THIRD_PARTY_VERSION" == "cortx-2.0" ]; then
 						RPM_COPY_PATH="/mnt/bigstorage/releases/cortx/components/github/main/$os_version/dev/"
-					elif [ "$OTHER_COMPONENT_BRANCH" == "Cortx-v1.0.0_Beta"  ]; then
-						RPM_COPY_PATH="/mnt/bigstorage/releases/cortx/components/github/Cortx-v1.0.0_Beta/$os_version/dev/"
-					elif [ "$OTHER_COMPONENT_BRANCH" == "cortx-1.0"  ]; then
-						RPM_COPY_PATH="/mnt/bigstorage/releases/cortx/components/github/cortx-1.0/$os_version/dev/"
 					else
-						RPM_COPY_PATH="/mnt/bigstorage/releases/cortx/components/github/custom-ci/release/$os_version/dev"
-					fi
+						RPM_COPY_PATH="/mnt/bigstorage/releases/cortx/components/github/cortx-1.0/$os_version/dev/"
+					fi		
 
 					if [ "$CSM_BRANCH" == ""Cortx-v1.0.0_Beta"" ]; then
 						CUSTOM_COMPONENT_NAME="motr|s3server|hare|cortx-ha|provisioner|csm|sspl"
@@ -338,8 +333,15 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Tag Release', script: '''
                     pushd $release_dir/github/integration-custom-ci/release/$os_version/$release_tag
-							ln -s $thrid_party_dir 3rd_party
-							ln -s $python_deps python_deps
+						if [ "$THIRD_PARTY_VERSION" == "cortx-2.0" ]; then
+							thrid_party_dir=$(find /mnt/bigstorage/releases/cortx/third-party-deps/centos/ -type d  -name "$os_version-2.*" | sort -r | head -1)
+						else
+							thrid_party_dir=$(find /mnt/bigstorage/releases/cortx/third-party-deps/centos/ -type d  -name "$os_version-1.*" | sort -r | head -1)
+						fi
+
+					ln -s $thrid_party_dir 3rd_party
+					ln -s $python_deps python_deps
+					
                     popd
                 '''
 			}
@@ -351,7 +353,7 @@ pipeline {
 
                 sh label: 'Build MANIFEST', script: """
 					pushd scripts/release_support
-                    sh build_release_info.sh $integration_dir/$release_tag/cortx_iso/
+                    sh build_release_info.sh -v $version -b $integration_dir/$release_tag/cortx_iso/
 					sh build-3rdParty-release-info.sh $integration_dir/$release_tag/3rd_party
 					sh build_readme.sh $integration_dir/$release_tag
 					popd
