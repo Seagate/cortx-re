@@ -9,7 +9,7 @@ Create a OVA pre-release in [`Seagate/cortx`](https://github.com/Seagate/cortx) 
 2. Run `ova_release.py` script with required arguments as follow
   
 ```
-python3 ova_release.py -u <JIRA Username> -p <JIRA Password> --query <JIRA Query> --build <OVA Build Number> --release <GitHub Release Number> --sourceBuild <CORTX Build    Number> --targetBuild <CORTX Build Number>
+python3 ova_release.py -u <JIRA Username> -p <JIRA Password> --build <OVA Build Number> --release <GitHub Release Number> --sourceBuild <CORTX Build    Number> --targetBuild <CORTX Build Number>
 ```
   
   
@@ -18,8 +18,6 @@ python3 ova_release.py -u <JIRA Username> -p <JIRA Password> --query <JIRA Query
     -u : JIRA Username
     
     -p : JIRA Password
-    
-    --query : Query to fetch required issues using JIRA Query Language (JQL)
     
     --build : OVA Build number (Internally pre-fix build number with `cortx-ova-build` e.g. `cortx-ova-build-<Build Number>`)
     
