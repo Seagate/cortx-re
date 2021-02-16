@@ -12,7 +12,7 @@ pipeline {
 		os_version = "centos-7.8.2003"
 		thrid_party_version = "2.0.0-1"
 		release_dir = "/mnt/bigstorage/releases/cortx"
-		integration_dir = "$release_dir/github/integration-custom-ci/release/$os_version"
+		integration_dir = "$release_dir/github/integration-custom-ci/release/$os_version/concurrent"
 		components_dir = "$release_dir/components/github/$branch/$os_version/concurrent/$BUILD_NUMBER/"
 		release_tag = "custom-build-$BUILD_ID"
 		passphrase = credentials('rpm-sign-passphrase')
@@ -203,40 +203,38 @@ pipeline {
 						CUSTOM_COMPONENT_NAME="motr|s3server|hare|cortx-ha|provisioner|csm-agent|csm-web|sspl"
 					fi
 
-					for env in "dev" ;
-                    do
-						test -d $integration_dir/$release_tag/cortx_iso/ && rm -rf $integration_dir/$release_tag/cortx_iso/
-						mkdir -p $integration_dir/$release_tag/cortx_iso/
-						pushd $components_dir/$env
-							echo $CUSTOM_COMPONENT_NAME
-							echo $CUSTOM_COMPONENT_NAME | tr "|" "\n"
-							for component in $(echo $CUSTOM_COMPONENT_NAME | tr "|" "\n")
-								do
-								echo -e "Copying RPM's for $component"
-								if ls $component/last_successful/*.rpm 1> /dev/null 2>&1; then
-									mv $component/last_successful/*.rpm $integration_dir/$release_tag/cortx_iso/
-									rm -rf $(readlink $component/last_successful)
-									rm -f $component/last_successful
-								else
-									echo "Packages not available for $component. Exiting"
-								exit 1							   
-								fi
-							done
-						popd
-
-
-						pushd $RPM_COPY_PATH
-						for component in `ls -1 | grep -E -v "$CUSTOM_COMPONENT_NAME" | grep -E -v 'luster|halon|mero|motr|csm|cortx-extension'`
-						do
+					test -d $integration_dir/$release_tag/cortx_iso/ && rm -rf $integration_dir/$release_tag/cortx_iso/
+					mkdir -p $integration_dir/$release_tag/cortx_iso/
+					pushd $components_dir/$env
+						echo $CUSTOM_COMPONENT_NAME
+						echo $CUSTOM_COMPONENT_NAME | tr "|" "\n"
+						for component in $(echo $CUSTOM_COMPONENT_NAME | tr "|" "\n")
+							do
 							echo -e "Copying RPM's for $component"
 							if ls $component/last_successful/*.rpm 1> /dev/null 2>&1; then
-								cp $component/last_successful/*.rpm $integration_dir/$release_tag/cortx_iso/
+								mv $component/last_successful/*.rpm $integration_dir/$release_tag/cortx_iso/
+								rm -rf $(readlink $component/last_successful)
+								rm -f $component/last_successful
 							else
 								echo "Packages not available for $component. Exiting"
-							exit 1	
+							exit 1							   
 							fi
 						done
-                    done
+					popd
+
+
+					pushd $RPM_COPY_PATH
+					for component in `ls -1 | grep -E -v "$CUSTOM_COMPONENT_NAME" | grep -E -v 'luster|halon|mero|motr|csm|cortx-extension'`
+					do
+						echo -e "Copying RPM's for $component"
+						if ls $component/last_successful/*.rpm 1> /dev/null 2>&1; then
+							cp $component/last_successful/*.rpm $integration_dir/$release_tag/cortx_iso/
+						else
+							echo "Packages not available for $component. Exiting"
+						exit 1	
+						fi
+					done
+
 				'''
 			}
 		}

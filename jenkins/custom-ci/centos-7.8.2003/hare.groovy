@@ -44,9 +44,8 @@ pipeline {
 		branch = "custom-ci"
 		os_version = "centos-7.8.2003"
 		component = "hare"
-		env = "dev"
 		custom_build_number = get_custom_build_number()
-		build_upload_dir = "$release_dir/components/github/$branch/$os_version/concurrent/$custom_build_number/$env/$component/"
+		build_upload_dir = "$release_dir/components/github/$branch/$os_version/concurrent/$custom_build_number/$component/"
     }
 	
 	
