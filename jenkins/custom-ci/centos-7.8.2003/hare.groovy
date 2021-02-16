@@ -65,13 +65,7 @@ pipeline {
 				script { build_stage = env.STAGE_NAME }
 				sh label: '', script: '''
 				    sed '/baseurl/d' /etc/yum.repos.d/motr_current_build.repo
-					if [ $MOTR_BRANCH == "stable" ]; then
-						echo "baseurl=http://cortx-storage.colo.seagate.com/releases/cortx/components/github/stable/$os_version/dev/motr/current_build/"  >> /etc/yum.repos.d/motr_current_build.repo
-					elif [ $MOTR_BRANCH == "Cortx-v1.0.0_Beta" ]; then 	
-						echo "baseurl=http://cortx-storage.colo.seagate.com/releases/cortx/components/github/Cortx-v1.0.0_Beta/$os_version/dev/mero/current_build/" >> /etc/yum.repos.d/motr_current_build.repo
-				    else
-						echo "baseurl=http://cortx-storage.colo.seagate.com/releases/cortx/components/github/custom-ci/$os_version/dev/motr/current_build/"  >> /etc/yum.repos.d/motr_current_build.repo
-					fi	
+					echo "baseurl=http://cortx-storage.colo.seagate.com/releases/cortx/components/github/custom-ci/$os_version/concurrent/$custom_build_number/dev/motr/current_build/"  >> /etc/yum.repos.d/motr_current_build.repo
 				    yum-config-manager --disable cortx-C7.7.1908
 					yum clean all
 					rm -rf /var/cache/yum
