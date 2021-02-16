@@ -3,13 +3,17 @@ pipeline {
     agent {
         node {
             // Run deployment on mini_provisioner nodes (vm deployment nodes)
-            label "mini_provisioner && !cleanup_req"
+            label params.HOST == "-" ? "mini_provisioner_s3 && !cleanup_req" : "mini_provisioner_s3_user_host"
+            customWorkspace "/var/jenkins/mini_provisioner/${JOB_NAME}_${BUILD_NUMBER}"
         }
     }
 	
     parameters {
         string(name: 'CORTX_BUILD', defaultValue: 'http://cortx-storage.colo.seagate.com/releases/cortx/github/main/centos-7.8.2003/last_successful_prod/', description: 'Build URL',  trim: true)
-        choice(name: 'DEBUG', choices: ["no", "yes" ], description: 'Keep Host for Debuging')   
+        choice(name: 'MESSAGING_PLATFORM', choices: ["rabbit_mq", "message_bus"], description: 'MESSAGING_PLATFORM')
+        choice(name: 'DEBUG', choices: ["no", "yes" ], description: 'Keep Host for Debuging')
+        string(name: 'HOST', defaultValue: '-', description: 'Host FQDN',  trim: true)
+        password(name: 'HOST_PASS', defaultValue: '-', description: 'Host machine root user password')   
     }
 
 	environment {
@@ -17,30 +21,13 @@ pipeline {
         // NODE1_HOST - Env variables added in the node configurations
         build_id = sh(script: "echo ${CORTX_BUILD} | rev | cut -d '/' -f2,3 | rev", returnStdout: true).trim()
 
-        // GID/pwd used to update root password 
-        NODE_UN_PASS_CRED_ID = "mini-prov-change-pass"
-
-        // Test LDAP credential 
-        LDAP_ROOT_CRED  = credentials("mini-prov-ldap-root-cred")
-        LDAP_ROOT_USER = "${LDAP_ROOT_CRED_USR}"
-        LDAP_ROOT_PWD = "${LDAP_ROOT_CRED_PSW}"
-
-        // Test LDAP credential 
-        LDAP_SG_CRED  = credentials("mini-prov-ldap-sg-cred")
-        LDAP_SGIAM_USER = "${LDAP_SG_CRED_USR}"
-        LDAP_SGIAM_PWD = "${LDAP_SG_CRED_PSW}"
-
-        // BMC credential 
-        BMC_CRED  = credentials("mini-prov-bmc-cred")
-        BMC_USER = "${BMC_CRED_USR}"
-        BMC_SECRET = "${BMC_CRED_PSW}"
-
         // Credentials used to SSH node
-        NODE_DEFAULT_SSH_CRED  = credentials("vm-deployment-ssh-cred")
+        NODE_DEFAULT_SSH_CRED = credentials("${NODE_DEFAULT_SSH_CRED}")
         NODE_USER = "${NODE_DEFAULT_SSH_CRED_USR}"
-        NODE_PASS = "${NODE_DEFAULT_SSH_CRED_PSW}"
-        CLUSTER_PASS = "${NODE_DEFAULT_SSH_CRED_PSW}"
 
+        NODE1_HOST = "${HOST == '-' ? NODE1_HOST : HOST }"
+        NODE_PASS = "${HOST_PASS == '-' ? NODE_DEFAULT_SSH_CRED_PSW : HOST_PASS}"
+    
         // Control to skip/run stages - (used for trublshooting purpose)
         STAGE_00_PREPARE_ENV = "yes"
         STAGE_01_PREREQ = "yes"
@@ -48,6 +35,7 @@ pipeline {
         STAGE_03_MINI_PROV = "yes"
         STAGE_04_START_S3SERVER = "yes"
         STAGE_05_VALIDATE_DEPLOYMENT = "yes"
+
     }
 
     options {
@@ -186,15 +174,12 @@ pipeline {
                     echo err.getMessage()
                 }
 
-                if("${DEBUG}" == "yes"){
-                    
-                    markNodeOffline("S3 Debug Mode Enabled on This Host  - ${BUILD_URL}")
-
-                } else {
-
-                    // Trigger cleanup VM
-                    build job: 'Cortx-Automation/Deployment/VM-Cleanup', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${env.NODE_NAME}")]
-                
+                if( "${HOST}" == "-" ) {
+                    if( "${DEBUG}" == "yes" ) {  
+                        markNodeOffline("S3 Debug Mode Enabled on This Host  - ${BUILD_URL}")
+                    } else {
+                        build job: 'Cortx-Automation/Deployment/VM-Cleanup', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${env.NODE_NAME}")]                    
+                    }
                 }
                                      
                 // Define build status based on hctl command
@@ -237,32 +222,31 @@ def getTestMachine(host, user, pass) {
 
 // Used Jenkins ansible plugin to execute ansible command
 def runAnsible(tags) {
-    withCredentials([usernamePassword(credentialsId: "${NODE_UN_PASS_CRED_ID}", passwordVariable: 'SERVICE_PASS', usernameVariable: 'SERVICE_USER'), usernameColonPassword(credentialsId: "${CLOUDFORM_TOKEN_CRED_ID}", variable: 'CLOUDFORM_API_CRED')]) {
-        
-        dir("cortx-re/scripts/mini_provisioner") {
-            ansiblePlaybook(
-                playbook: 's3server_deploy.yml',
-                inventory: 'inventories/hosts',
-                tags: "${tags}",
-                extraVars: [
-                    "REIMAGE"               : [value: "no", hidden: false],
-                    "NODE1"                 : [value: "${NODE1_HOST}", hidden: false],
-                    "CORTX_BUILD"           : [value: "${CORTX_BUILD}", hidden: false] ,
-                    "CLUSTER_PASS"          : [value: "${CLUSTER_PASS}", hidden: false],
-                    "CLOUDFORM_API_CRED"    : [value: "${CLOUDFORM_API_CRED}", hidden: true],
-                    "SERVICE_USER"          : [value: "${SERVICE_USER}", hidden: true],
-                    "SERVICE_PASS"          : [value: "${SERVICE_PASS}", hidden: true],
-                    "LDAP_ROOT_USER"        : [value: "${LDAP_ROOT_USER}", hidden: false],
-                    "LDAP_ROOT_PWD"         : [value: "${LDAP_ROOT_PWD}", hidden: true],
-                    "LDAP_SGIAM_USER"       : [value: "${LDAP_SGIAM_USER}", hidden: false],
-                    "LDAP_SGIAM_PWD"        : [value: "${LDAP_SGIAM_PWD}", hidden: true],
-                    "BMC_USER"              : [value: "${BMC_USER}", hidden: false],
-                    "BMC_SECRET"            : [value: "${BMC_SECRET}", hidden: true]
-                ],
-                extras: '-v',
-                colorized: true
-            )
-        }
+
+    withCredentials([usernamePassword(credentialsId: "mini-prov-ldap-root-cred", passwordVariable: 'LDAP_ROOT_USER', usernameVariable: 'LDAP_ROOT_PWD'),
+        usernamePassword(credentialsId: "mini-prov-ldap-sg-cred", passwordVariable: 'LDAP_SGIAM_USER', usernameVariable: 'LDAP_SGIAM_PWD'),
+        usernamePassword(credentialsId: "mini-prov-bmc-cred", passwordVariable: 'BMC_USER', usernameVariable: 'BMC_SECRET')]) {
+            dir("cortx-re/scripts/mini_provisioner") {
+                ansiblePlaybook(
+                    playbook: 's3server_deploy.yml',
+                    inventory: 'inventories/hosts',
+                    tags: "${tags}",
+                    extraVars: [
+                        "NODE1"                 : [value: "${NODE1_HOST}", hidden: false],
+                        "CORTX_BUILD"           : [value: "${CORTX_BUILD}", hidden: false] ,
+                        "CLUSTER_PASS"          : [value: "${NODE_PASS}", hidden: false],
+                        "LDAP_ROOT_USER"        : [value: "${LDAP_ROOT_USER}", hidden: false],
+                        "LDAP_ROOT_PWD"         : [value: "${LDAP_ROOT_PWD}", hidden: true],
+                        "LDAP_SGIAM_USER"       : [value: "${LDAP_SGIAM_USER}", hidden: false],
+                        "LDAP_SGIAM_PWD"        : [value: "${LDAP_SGIAM_PWD}", hidden: true],
+                        "BMC_USER"              : [value: "${BMC_USER}", hidden: false],
+                        "BMC_SECRET"            : [value: "${BMC_SECRET}", hidden: true],
+                        "MESSAGING_PLATFORM"    : [value: "${MESSAGING_PLATFORM}", hidden: false]
+                    ],
+                    extras: '-v',
+                    colorized: true
+                )
+            }
     }
 }
 

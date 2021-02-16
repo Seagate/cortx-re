@@ -30,6 +30,11 @@
 - name: "[install_s3server] : Update Cluster ID" 
   shell: "sed -i 's/cluster_id:.*/cluster_id: {{ CLUSTER_ID }}/g' /opt/seagate/cortx/s3/s3backgrounddelete/s3_cluster.yaml"
 
+# Update Messaging Platform
+- name: "[install_s3server] : Update Messaging Platform" 
+  shell: "sed -i 's/messaging_platform:.*/messaging_platform: \"{{ MESSAGING_PLATFORM }}\"/g' /opt/seagate/cortx/s3/s3backgrounddelete/config.yaml"
+
+
 # Generate s3ciper
 - name: "[install_s3server] : Generate s3ciper key " 
   shell: s3cipher generate_key --const_key openldap

@@ -19,15 +19,13 @@
 #
 ##########################################################################################
 
-# Add consul repo
-- name: "[start_s3server] : Add consul repository"
-  shell: yum-config-manager --add-repo {{ CONSUL_REPO }}
+# # Add consul repo
+# - name: "[start_s3server] : Add consul repository"
+#   shell: yum-config-manager --add-repo {{ CONSUL_REPO }}
 
 # Install consul
-- name: "[start_s3server] : Install consul-1.7.8"
-  yum: 
-    name: consul-1.7.8
-    state: present
+- name: "[start_s3server] : Install consul-1.9.1"
+  shell: "yum install -y consul-1.9.1"
 
 # Install Hare
 - name: "[start_s3server] : Install hare"
@@ -96,7 +94,7 @@
     state: started
 
 # Install s3iamcli
-- name: "[start_s3server] : Install s3iamcli"
-  yum: 
-    name: cortx-s3iamcli
-    state: present
+# - name: "[start_s3server] : Install s3iamcli"
+#   yum: 
+#     name: cortx-s3iamcli
+#     state: present

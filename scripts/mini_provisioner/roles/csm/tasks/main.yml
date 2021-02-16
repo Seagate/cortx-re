@@ -30,7 +30,7 @@
 
 # Install elasticsearch and consul
 - name: "[mini_provisioning] : Install elasticsearch and consul"
-  shell: "yum install -y java consul-1.7.8 elasticsearch-oss-6.8.8"
+  shell: "yum install -y java consul-1.9.1 elasticsearch-oss-6.8.8"
 
 # Start consul
 - name: "[mini_provisioning] : Restart consul"
