@@ -16,7 +16,10 @@ pipeline {
     parameters {  
 	    string(name: 'S3_URL', defaultValue: 'https://github.com/Seagate/cortx-s3server', description: 'Repo for S3Server')
         string(name: 'S3_BRANCH', defaultValue: 'main', description: 'Branch for S3Server')
-        choice(name: 'DEBUG', choices: ["no", "yes" ], description: 'Keep Host for Debuging option')   
+        choice(name: 'MESSAGING_PLATFORM', choices: ["rabbit_mq", "message_bus"], description: 'MESSAGING_PLATFORM')
+        choice(name: 'DEBUG', choices: ["no", "yes" ], description: 'Keep Host for Debuging')
+        string(name: 'HOST', defaultValue: '-', description: 'Host FQDN',  trim: true)
+        password(name: 'HOST_PASS', defaultValue: '-', description: 'Host machine root user password')   
 	}
 
     environment {
@@ -58,30 +61,6 @@ pipeline {
 
         // NODE1_HOST - Env variables added in the node configurations
         build_id = sh(script: "echo ${CORTX_BUILD} | rev | cut -d '/' -f2,3 | rev", returnStdout: true).trim()
-
-        // GID/pwd used to update root password 
-        NODE_UN_PASS_CRED_ID = "mini-prov-change-pass"
-
-        // Credentials used to for node SSH
-        NODE_DEFAULT_SSH_CRED  = credentials("vm-deployment-ssh-cred")
-        NODE_USER = "${NODE_DEFAULT_SSH_CRED_USR}"
-        NODE_PASS = "${NODE_DEFAULT_SSH_CRED_PSW}"
-        CLUSTER_PASS = "${NODE_DEFAULT_SSH_CRED_PSW}"
-
-        // Test LDAP credential 
-        LDAP_ROOT_CRED  = credentials("mini-prov-ldap-root-cred")
-        LDAP_ROOT_USER = "${LDAP_ROOT_CRED_USR}"
-        LDAP_ROOT_PWD = "${LDAP_ROOT_CRED_PSW}"
-
-        // Test LDAP credential 
-        LDAP_SG_CRED  = credentials("mini-prov-ldap-sg-cred")
-        LDAP_SGIAM_USER = "${LDAP_SG_CRED_USR}"
-        LDAP_SGIAM_PWD = "${LDAP_SG_CRED_PSW}"
-
-        // BMC credential 
-        BMC_CRED  = credentials("mini-prov-bmc-cred")
-        BMC_USER = "${BMC_CRED_USR}"
-        BMC_SECRET = "${BMC_CRED_PSW}"
 
         STAGE_DEPLOY = "yes"
     }
@@ -216,8 +195,15 @@ pipeline {
         // 5. Validate the deployment by performing basic i/o using s3cli command
         // Ref - https://github.com/Seagate/cortx-s3server/wiki/S3server-provisioning-on-single-node-cluster:-Manual
         stage('Deploy') {
-            agent { node { label "mini_provisioner && !cleanup_req" } }
+            agent { node { label "mini_provisioner_s3 && !cleanup_req" } }
             when { expression { env.STAGE_DEPLOY == "yes" } }
+            environment {
+                // Credentials used to SSH node
+                NODE_DEFAULT_SSH_CRED =  credentials("${NODE_DEFAULT_SSH_CRED}")
+                NODE_USER = "${NODE_DEFAULT_SSH_CRED_USR}"
+                NODE1_HOST = "${HOST == '-' ? NODE1_HOST : HOST }"
+                NODE_PASS = "${HOST_PASS == '-' ? NODE_DEFAULT_SSH_CRED_PSW : HOST_PASS}"
+            }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
@@ -250,15 +236,13 @@ pipeline {
                         archiveArtifacts artifacts: "**/*.log", onlyIfSuccessful: false, allowEmptyArchive: true 
                     }
 
-                    if("${DEBUG}" == "yes"){
-                        
-                        markNodeOffline("S3 Debug Mode Enabled on This Host  - ${JOB_URL}")
-
-                    } else {
-
-                        // Trigger cleanup VM
-                        build job: 'Cortx-Automation/Deployment/VM-Cleanup', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${env.NODE_NAME}")]
-                   }
+                    if( "${HOST}" == "-" ) {
+                        if( "${DEBUG}" == "yes" ) {  
+                            markNodeOffline("S3 Debug Mode Enabled on This Host  - ${BUILD_URL}")
+                        } else {
+                            build job: 'Cortx-Automation/Deployment/VM-Cleanup', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${env.NODE_NAME}")]                    
+                        }
+                    }
                     
                     // Create Summary
                     createSummary()
@@ -299,9 +283,13 @@ def getTestMachine(host, user, pass) {
 
 // Used Jenkins ansible plugin to execute ansible command
 def runAnsible(tags) {
-    withCredentials([usernamePassword(credentialsId: "${NODE_UN_PASS_CRED_ID}", passwordVariable: 'SERVICE_PASS', usernameVariable: 'SERVICE_USER'), usernameColonPassword(credentialsId: "${CLOUDFORM_TOKEN_CRED_ID}", variable: 'CLOUDFORM_API_CRED')]) {
-        
+
+    withCredentials([usernamePassword(credentialsId: "mini-prov-ldap-root-cred", passwordVariable: 'LDAP_ROOT_USER', usernameVariable: 'LDAP_ROOT_PWD'),
+        usernamePassword(credentialsId: "mini-prov-ldap-sg-cred", passwordVariable: 'LDAP_SGIAM_USER', usernameVariable: 'LDAP_SGIAM_PWD'),
+        usernamePassword(credentialsId: "mini-prov-bmc-cred", passwordVariable: 'BMC_USER', usernameVariable: 'BMC_SECRET')]) {
+    
         dir("cortx-re/scripts/mini_provisioner") {
+
             ansiblePlaybook(
                 playbook: 's3server_deploy.yml',
                 inventory: 'inventories/hosts',
@@ -309,10 +297,7 @@ def runAnsible(tags) {
                 extraVars: [
                     "NODE1"                 : [value: "${NODE1_HOST}", hidden: false],
                     "CORTX_BUILD"           : [value: "${CORTX_BUILD}", hidden: false] ,
-                    "CLUSTER_PASS"          : [value: "${CLUSTER_PASS}", hidden: false],
-                    "CLOUDFORM_API_CRED"    : [value: "${CLOUDFORM_API_CRED}", hidden: true],
-                    "SERVICE_USER"          : [value: "${SERVICE_USER}", hidden: true],
-                    "SERVICE_PASS"          : [value: "${SERVICE_PASS}", hidden: true],
+                    "CLUSTER_PASS"          : [value: "${NODE_PASS}", hidden: false],
                     "LDAP_ROOT_USER"        : [value: "${LDAP_ROOT_USER}", hidden: false],
                     "LDAP_ROOT_PWD"         : [value: "${LDAP_ROOT_PWD}", hidden: true],
                     "LDAP_SGIAM_USER"       : [value: "${LDAP_SGIAM_USER}", hidden: false],

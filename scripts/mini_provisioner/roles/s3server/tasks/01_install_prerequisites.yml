@@ -53,15 +53,15 @@
     name: cortx-py-utils
     state: present
 
-# Install Erlang
-- name: "[install_prereq] : Install Erlang"
-  yum: 
-    name: "{{ EARLANG_RPM }}"
-    state: present
+# # Install Erlang
+# - name: "[install_prereq] : Install Erlang"
+#   yum: 
+#     name: "{{ EARLANG_RPM }}"
+#     state: present
 
-# Install Rabitmq Server
-- name: "[install_prereq] : Execute rabitmq config script " 
-  shell: curl -sL {{ RABITMQ_SCRIPT }} | bash -
+# # Install Rabitmq Server
+# - name: "[install_prereq] : Execute rabitmq config script " 
+#   shell: curl -sL {{ RABITMQ_SCRIPT }} | bash -
 
 - name: "[install_prereq] : Install rabbitmq-server"
   yum: 
