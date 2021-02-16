@@ -57,7 +57,7 @@
   failed_when: '"PASS: S3-Sanity test passed" not in s3_sanity_test_out.stdout'
  
  # Validate S3server deployment
-- name: "[validate] : Validate S3server deployment" 
-  script: files/test_s3server.sh '{{ LDAP_SGIAM_USER }}' '{{ LDAP_SGIAM_PWD }}' 2>&1 | tee -a /root/test_s3.log
-  register: s3_test_out
-  failed_when: '"S3 Basic Testing Success" not in s3_test_out.stdout'
+# - name: "[validate] : Validate S3server deployment" 
+#   script: files/test_s3server.sh '{{ LDAP_SGIAM_USER }}' '{{ LDAP_SGIAM_PWD }}' 2>&1 | tee -a /root/test_s3.log
+#   register: s3_test_out
+#   failed_when: '"S3 Basic Testing Success" not in s3_test_out.stdout'
