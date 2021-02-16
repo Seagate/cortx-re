@@ -4,7 +4,6 @@ def get_custom_build_number() {
   def upstreamCause = currentBuild.rawBuild.getCause(Cause.UpstreamCause)
   if (upstreamCause) {
 
-	def upstreamBuild =   
 	def upstreamBuildID = Jenkins.getInstance().getItemByFullName(upstreamCause.getUpstreamProject(), hudson.model.Job.class).getBuildByNumber(upstreamCause.getUpstreamBuild()).getId()
 	def mainupstreamCause = Jenkins.getInstance().getItemByFullName(upstreamCause.getUpstreamProject(), hudson.model.Job.class).getBuildByNumber(upstreamCause.getUpstreamBuild()).getCause(Cause.UpstreamCause)
 	
@@ -22,7 +21,6 @@ def get_custom_build_number() {
 }
 
 pipeline {
-	
     agent {
 		node {
 			label 'docker-io-centos-7.8.2003-node'
