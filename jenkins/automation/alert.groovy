@@ -45,8 +45,9 @@ pipeline {
 						
 						#Backup of exclude builds
 						find $build -path $path1 -path $path2 -prune -false -o -name '*' -exec cp {} /mnt/data1/releases/backups/cortx_build_backup/custom_build_backup \\;
-						
-						find $fpath -maxdepth 1 ! -type l -print | cut -c1- | grep -v "\\#" &&  find $build -path $path1 -path $path2 -prune -false -o -name '*' && find $fpath ! -name '*.INFO*' && find $fpath -type f -mtime +30  -exec rm -rf {} \\;
+						find $fpath -maxdepth 1 ! -type l -print | cut -c1- | grep -v "\\#" &&  find $build -path $path1 -path $path2 -prune -false -o -name '*' && find $fpath ! -name '*.INFO*' && find $fpath -type f -mtime +60 -exec ls -ltr {} + > /mnt/data1/releases/file1.out
+
+						#find $fpath -maxdepth 1 ! -type l -print | cut -c1- | grep -v "\\#" &&  find $build -path $path1 -path $path2 -prune -false -o -name '*' && find $fpath ! -name '*.INFO*' && find $fpath -type f -mtime +30  -exec rm -rf {} \\;
 						
 						fi
 					'''
