@@ -38,7 +38,8 @@ pipeline {
 		os_version = "centos-7.8.2003"
 		component = "s3server"
 		custom_build_number = get_custom_build_number()
-		build_upload_dir = "$release_dir/components/github/$branch/$os_version/concurrent/$custom_build_number/$component/"
+		release_tag = "custom-build-$custom_build_number"
+		build_upload_dir = "$release_dir/github/integration-custom-ci/$os_version/concurrent/$release_tag/cortx_iso"
     }
 
 	parameters {  
@@ -73,7 +74,7 @@ pipeline {
 						script { build_stage = env.STAGE_NAME }
 								sh label: '', script: '''
 								sed '/baseurl/d' /etc/yum.repos.d/motr_current_build.repo
-								echo "baseurl=http://cortx-storage.colo.seagate.com/releases/cortx/components/github/custom-ci/$os_version/concurrent/$custom_build_number/motr/current_build/"  >> /etc/yum.repos.d/motr_current_build.repo
+								echo "baseurl=http://cortx-storage.colo.seagate.com/releases/github/integration-custom-ci/$os_version/concurrent/$release_tag/cortx_iso"  >> /etc/yum.repos.d/motr_current_build.repo
 							    yum-config-manager --disable cortx-C7.7.1908
 								yum clean all;rm -rf /var/cache/yum
 								export build_number=${BUILD_ID}
@@ -105,36 +106,14 @@ pipeline {
 					steps {
 						script { build_stage = env.STAGE_NAME }
 						sh label: 'Copy RPMS', script: '''	
-							test -d $build_upload_dir/$BUILD_NUMBER && rm -rf $build_upload_dir/$BUILD_NUMBER
-							mkdir -p $build_upload_dir/$BUILD_NUMBER
-							cp /root/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir/$BUILD_NUMBER
-							cp /root/rpmbuild/RPMS/noarch/*.rpm $build_upload_dir/$BUILD_NUMBER
+							mkdir -p $build_upload_dir
+							cp /root/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir
+							cp /root/rpmbuild/RPMS/noarch/*.rpm $build_upload_dir
+							createrepo -v $build_upload_dir
 						'''
 					}
 				}
-				
-				
-				stage ('Repo Creation') {
-					steps {
-						script { build_stage = env.STAGE_NAME }
-						sh label: 'Repo Creation', script: '''pushd $build_upload_dir/$BUILD_NUMBER
-							rpm -qi createrepo || yum install -y createrepo
-							createrepo .
-							popd
-						'''
-					}
-				}
-				
-				stage ('Tag last_successful') {
-					steps {
-						script { build_stage = env.STAGE_NAME }
-						sh label: 'Tag last_successful', script: '''pushd  $build_upload_dir
-							test -L  $build_upload_dir/last_successful && rm -f last_successful
-							ln -s $build_upload_dir/$BUILD_NUMBER last_successful
-							popd
-						'''
-					}
-				}
+
 			}	
 		}
     }

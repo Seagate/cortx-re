@@ -39,7 +39,8 @@ pipeline {
 		branch = "custom-ci"
 		component = "motr"
 		custom_build_number = get_custom_build_number()
-		build_upload_dir = "$release_dir/components/github/$branch/$os_version/concurrent/$custom_build_number/$component/"
+		release_tag = "custom-build-$custom_build_number"
+		build_upload_dir = "$release_dir/github/integration-custom-ci/$os_version/concurrent/$release_tag/cortx_iso"
     }
 
 	stages {	
@@ -91,36 +92,11 @@ pipeline {
 			steps {
 				script { build_stage = env.STAGE_NAME }
 				sh label: 'Copy RPMS', script: '''
-					test -d /$BUILD_NUMBER && rm -rf $build_upload_dir/$BUILD_NUMBER
-					mkdir -p $build_upload_dir/$BUILD_NUMBER
-					cp /root/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir/$BUILD_NUMBER
+					cp /root/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir
+					createrepo -v $build_upload_dir
 				'''
 			}
 		}
-		
-		stage ('Repo Creation') {
-			steps {
-				script { build_stage = env.STAGE_NAME }
-				sh label: 'Repo Creation', script: '''pushd $build_upload_dir/$BUILD_NUMBER
-					rpm -qi createrepo || yum install -y createrepo
-					createrepo .
-					popd
-				'''
-			}
-		}
-		
-		stage ('Set Current Build') {
-			steps {
-				script { build_stage = env.STAGE_NAME }
-				sh label: 'Tag last_successful', script: '''
-					pushd $build_upload_dir
-					test -L $build_upload_dir/current_build && rm -f current_build
-					ln -s $build_upload_dir/$BUILD_NUMBER current_build
-					popd
-				'''
-			}
-		}
-	
 	
 		stage ("Trigger Downstream Jobs") {
 			parallel {
@@ -148,17 +124,6 @@ pipeline {
 					}
 				}
 			}	
-		}
-	
-		stage ('Tag last_successful') {
-			steps {
-				script { build_stage = env.STAGE_NAME }
-				sh label: 'Tag last_successful', script: '''pushd $build_upload_dir
-					test -d $build_upload_dir/last_successful && rm -f last_successful
-					ln -s $build_upload_dir/$BUILD_NUMBER last_successful
-					popd
-				'''
-			}
 		}
 	}	
 }
