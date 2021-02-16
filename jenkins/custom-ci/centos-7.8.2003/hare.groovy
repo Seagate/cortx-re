@@ -73,7 +73,7 @@ pipeline {
 				script { build_stage = env.STAGE_NAME }
 				sh label: '', script: '''
 					sed '/baseurl/d' /etc/yum.repos.d/motr_current_build.repo
-					echo "baseurl=http://cortx-storage.colo.seagate.com/releases/github/integration-custom-ci/$os_version/concurrent/$release_tag/cortx_iso"  >> /etc/yum.repos.d/motr_current_build.repo
+					echo "baseurl=http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/centos-7.8.2003/concurrent/custom-build-14/cortx_iso/"  >> /etc/yum.repos.d/motr_current_build.repo
 					yum-config-manager --disable cortx-C7.7.1908
 					yum clean all;rm -rf /var/cache/yum
 					rm -rf /var/cache/yum
