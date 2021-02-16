@@ -9,22 +9,21 @@ pipeline {
 	
     // Accept node label as parameter
     parameters {
-        string(name: 'NODE_LABEL', defaultValue: '', description: 'Node Label',  trim: true)
+        string(name: 'NODE_LABEL', defaultValue: 'cleanup_req', description: 'Node Label',  trim: true)
     }
 
 	environment {
 
         // NODE1_HOST - Env variables added in the node configurations
-
-        // GID/pwd used to update root password 
-        NODE_UN_PASS_CRED_ID = "mini-prov-change-pass"
-
+        
         // Credentials used to SSH node
-        NODE_DEFAULT_SSH_CRED = credentials("vm-deployment-ssh-cred")
+        NODE_DEFAULT_SSH_CRED = credentials("${NODE_DEFAULT_SSH_CRED}")
         NODE_USER = "${NODE_DEFAULT_SSH_CRED_USR}"
         NODE_PASS = "${NODE_DEFAULT_SSH_CRED_PSW}"
         CLUSTER_PASS = "${NODE_DEFAULT_SSH_CRED_PSW}"
-    
+
+        // GID/pwd used to update root password 
+        NODE_UN_PASS_CRED_ID = "mini-prov-change-pass"
     }
 
     options {
@@ -46,7 +45,7 @@ pipeline {
 
                     // Clone cortx-re repo
                     dir('cortx-re') {
-                        checkout([$class: 'GitSCM', branches: [[name: '*/mini-provisioner']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])                
+                        checkout([$class: 'GitSCM', branches: [[name: '*/mini-provisioner-dev']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])                
                     }
 
                 }
@@ -59,7 +58,7 @@ pipeline {
                 retry(count: 3) {   
                     script {
                         
-                        withCredentials([usernamePassword(credentialsId: "${NODE_UN_PASS_CRED_ID}", passwordVariable: 'SERVICE_PASS', usernameVariable: 'SERVICE_USER'), usernameColonPassword(credentialsId: "${CLOUDFORM_TOKEN_CRED_ID}", variable: 'CLOUDFORM_API_CRED')]) {
+                        withCredentials([usernamePassword(credentialsId: "${NODE_UN_PASS_CRED_ID}", passwordVariable: 'SERVICE_PASS', usernameVariable: 'SERVICE_USER'), string(credentialsId: "${CLOUDFORM_TOKEN_CRED_ID}", variable: 'CLOUDFORM_API_CRED')]) {
             
                             dir("cortx-re/scripts/mini_provisioner") {
                                 ansiblePlaybook(
