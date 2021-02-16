@@ -24,7 +24,8 @@ pipeline {
         os_version = "centos-7.8.2003"
         release_dir = "/mnt/bigstorage/releases/cortx"
         custom_build_number = get_custom_build_number()
-		build_upload_dir = "$release_dir/components/github/$branch/$os_version/concurrent/$custom_build_number/$component/"
+		release_tag = "custom-build-$custom_build_number"
+		build_upload_dir = "$release_dir/github/integration-custom-ci/$os_version/concurrent/$release_tag/cortx_iso"
     }
 
 	options {
@@ -69,13 +70,12 @@ pipeline {
 				script { build_stage = env.STAGE_NAME }
 				sh label: 'Build', script: '''
 					pushd cortx-management-web
-						ls -ltr
 						BUILD=$(git rev-parse --short HEAD)
 						VERSION=$(cat VERSION)
 						echo "Executing build script"
 						echo "VERSION:$VERSION"
 						echo "Python:$(python --version)"
-							./cicd/build.sh -v $VERSION -b $BUILD_NUMBER -t -i -n ldr -l $WORKSPACE/seagate-ldr/ldr-brand/
+						./cicd/build.sh -v $VERSION -b $BUILD_NUMBER -t -i -n ldr -l $WORKSPACE/seagate-ldr/ldr-brand/
 					popd	
 				'''	
 			}
@@ -85,33 +85,11 @@ pipeline {
 			steps {
 				script { build_stage = env.STAGE_NAME }
 				sh label: 'Copy RPMS', script: '''
-					mkdir -p $build_upload_dir/$BUILD_NUMBER
-					pushd cortx-management-web
-						cp ./dist/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir/$BUILD_NUMBER
-					popd
-				'''
-				sh label: 'Repo Creation', script: '''pushd $build_upload_dir/$BUILD_NUMBER
-					rpm -qi createrepo || yum install -y createrepo
-					createrepo .
-					popd
-				'''
-				sh label: 'Tag last_successful', script: '''pushd $build_upload_dir/
-					test -d $build_upload_dir/last_successful && rm -f last_successful
-					ln -s $build_upload_dir/$BUILD_NUMBER last_successful
-					popd
+					cp ./cortx-management-web/dist/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir
+					createrepo -v $build_upload_dir
 				'''
 			}
 		}	
 
-		stage ('Tag last_successful') {
-			steps {
-				script { build_stage = env.STAGE_NAME }
-				sh label: 'Tag last_successful', script: '''pushd $build_upload_dir/
-					test -L $build_upload_dir/last_successful && rm -f last_successful
-					ln -s $build_upload_dir/$BUILD_NUMBER last_successful
-					popd
-				'''
-			}
-		}
 	}
 }	
