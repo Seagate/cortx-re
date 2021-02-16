@@ -13,10 +13,9 @@ pipeline {
 		thrid_party_version = "2.0.0-1"
 		release_dir = "/mnt/bigstorage/releases/cortx"
 		integration_dir = "$release_dir/github/integration-custom-ci/release/$os_version"
-		components_dir = "$release_dir/components/github/$branch/$os_version/concurrent/$BUILD_NUMBER/$env/$component/"
+		components_dir = "$release_dir/components/github/$branch/$os_version/concurrent/$BUILD_NUMBER/"
 		release_tag = "custom-build-$BUILD_ID"
 		passphrase = credentials('rpm-sign-passphrase')
-		// thrid_party_dir = "$release_dir/third-party-deps/centos/centos-7.8.2003-$thrid_party_version/"
 		python_deps = "$release_dir/third-party-deps/python-deps/python-packages-2.0.0-0"
 		cortx_os_iso = "/mnt/bigstorage/releases/cortx_builds/custom-os-iso/cortx-os-1.0.0-23.iso"
 	}
