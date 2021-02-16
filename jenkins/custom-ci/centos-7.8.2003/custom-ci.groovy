@@ -12,7 +12,7 @@ pipeline {
 		os_version = "centos-7.8.2003"
 		thrid_party_version = "2.0.0-1"
 		release_dir = "/mnt/bigstorage/releases/cortx"
-		integration_dir = "$release_dir/github/integration-custom-ci/release/$os_version/concurrent"
+		integration_dir = "$release_dir/github/integration-custom-ci/$os_version/concurrent/"
 		components_dir = "$release_dir/components/github/$branch/$os_version/concurrent/$BUILD_NUMBER/"
 		release_tag = "custom-build-$BUILD_ID"
 		passphrase = credentials('rpm-sign-passphrase')
@@ -197,32 +197,6 @@ pipeline {
 						RPM_COPY_PATH="/mnt/bigstorage/releases/cortx/components/github/cortx-1.0/$os_version/dev/"
 					fi		
 
-					if [ "$CSM_BRANCH" == ""Cortx-v1.0.0_Beta"" ]; then
-						CUSTOM_COMPONENT_NAME="motr|s3server|hare|cortx-ha|provisioner|csm|sspl"
-					else
-						CUSTOM_COMPONENT_NAME="motr|s3server|hare|cortx-ha|provisioner|csm-agent|csm-web|sspl"
-					fi
-
-					test -d $integration_dir/$release_tag/cortx_iso/ && rm -rf $integration_dir/$release_tag/cortx_iso/
-					mkdir -p $integration_dir/$release_tag/cortx_iso/
-					pushd $components_dir/$env
-						echo $CUSTOM_COMPONENT_NAME
-						echo $CUSTOM_COMPONENT_NAME | tr "|" "\n"
-						for component in $(echo $CUSTOM_COMPONENT_NAME | tr "|" "\n")
-							do
-							echo -e "Copying RPM's for $component"
-							if ls $component/last_successful/*.rpm 1> /dev/null 2>&1; then
-								mv $component/last_successful/*.rpm $integration_dir/$release_tag/cortx_iso/
-								rm -rf $(readlink $component/last_successful)
-								rm -f $component/last_successful
-							else
-								echo "Packages not available for $component. Exiting"
-							exit 1							   
-							fi
-						done
-					popd
-
-
 					pushd $RPM_COPY_PATH
 					for component in `ls -1 | grep -E -v "$CUSTOM_COMPONENT_NAME" | grep -E -v 'luster|halon|mero|motr|csm|cortx-extension'`
 					do
@@ -329,7 +303,7 @@ pipeline {
 			steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Tag Release', script: '''
-                    pushd $release_dir/github/integration-custom-ci/release/$os_version/$release_tag
+                    pushd $integration_dir/$release_tag
 						if [ "$THIRD_PARTY_VERSION" == "cortx-2.0" ]; then
 							thrid_party_dir=$(find /mnt/bigstorage/releases/cortx/third-party-deps/centos/ -type d  -name "$os_version-2.*" | sort -r | head -1)
 						else
