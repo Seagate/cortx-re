@@ -21,7 +21,7 @@ pipeline {
         NODE_UN_PASS_CRED_ID = "mini-prov-change-pass"
         
         // Credentials used to SSH node
-        NODE_DEFAULT_SSH_CRED  = credentials("vm-deployment-ssh-cred")
+        NODE_DEFAULT_SSH_CRED = credentials("${NODE_DEFAULT_SSH_CRED}")
         NODE_USER = "${NODE_DEFAULT_SSH_CRED_USR}"
         NODE_PASS = "${NODE_DEFAULT_SSH_CRED_PSW}"
         CLUSTER_PASS = "${NODE_DEFAULT_SSH_CRED_PSW}"
@@ -144,7 +144,7 @@ def getTestMachine(host, user, pass) {
 
 // Used Jenkins ansible plugin to execute ansible command
 def runAnsible(tags) {
-    withCredentials([usernamePassword(credentialsId: "${NODE_UN_PASS_CRED_ID}", passwordVariable: 'SERVICE_PASS', usernameVariable: 'SERVICE_USER'), usernameColonPassword(credentialsId: "${CLOUDFORM_TOKEN_CRED_ID}", variable: 'CLOUDFORM_API_CRED')]) {
+    withCredentials([usernamePassword(credentialsId: "${NODE_UN_PASS_CRED_ID}", passwordVariable: 'SERVICE_PASS', usernameVariable: 'SERVICE_USER'), string(credentialsId: "${CLOUDFORM_TOKEN_CRED_ID}", variable: 'CLOUDFORM_API_CRED')]) {
         
         dir("cortx-re/scripts/mini_provisioner") {
             ansiblePlaybook(
