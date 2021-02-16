@@ -64,12 +64,6 @@ pipeline {
 					steps {
 						step([$class: 'WsCleanup'])
 						checkout([$class: 'GitSCM', branches: [[name: "${S3_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog'], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: '${S3_URL}']]])
-						sh label: 'Script', script: '''
-						set +x
-						echo "---------------------------------------------------------------------------"
-						echo "Building & Running S3 from '${S3_BRANCH}'"
-						echo "---------------------------------------------------------------------------"
-						'''
 						}
 					}
 				
@@ -79,7 +73,7 @@ pipeline {
 						script { build_stage = env.STAGE_NAME }
 								sh label: '', script: '''
 								sed '/baseurl/d' /etc/yum.repos.d/motr_current_build.repo
-								echo "baseurl=http://cortx-storage.colo.seagate.com/releases/cortx/components/github/custom-ci/$os_version/concurrent/$custom_build_number/dev/motr/current_build/"  >> /etc/yum.repos.d/motr_current_build.repo
+								echo "baseurl=http://cortx-storage.colo.seagate.com/releases/cortx/components/github/custom-ci/$os_version/concurrent/$custom_build_number/motr/current_build/"  >> /etc/yum.repos.d/motr_current_build.repo
 							    yum-config-manager --disable cortx-C7.7.1908
 								yum clean all;rm -rf /var/cache/yum
 								export build_number=${BUILD_ID}
