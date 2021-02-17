@@ -136,7 +136,7 @@ pipeline {
         
         stage("3rd Party Software Deployment") {
             steps {
-                sshCommand remote: remote, command: "provisioner deploy_vm --states prereq --setup-type single"
+                sshCommand remote: remote, command: "provisioner deploy_vm --states prereq --setup-type single || true"
                 echo "Successfully deployed prereq states!"
             }
         }
