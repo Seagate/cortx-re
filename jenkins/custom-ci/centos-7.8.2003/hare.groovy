@@ -94,7 +94,7 @@ pipeline {
 					set -xe
 					pushd $component
 					echo "Executing build script"
-					export build_number=${BUILD_ID}
+					export build_number=${custom_build_number}
 					make rpm
 					popd
 				'''	

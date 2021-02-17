@@ -83,7 +83,7 @@ pipeline {
 						KERNEL=/lib/modules/$(yum list installed kernel | tail -n1 | awk '{ print $2 }').x86_64/build
 						./autogen.sh
 						./configure --with-linux=$KERNEL
-						export build_number=${BUILD_ID}
+						export build_number=${custom_build_number}
 						make rpms
 					'''
 			}

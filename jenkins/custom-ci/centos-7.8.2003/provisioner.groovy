@@ -59,17 +59,17 @@ pipeline {
             steps {
 				script { build_stage = env.STAGE_NAME }
                 sh encoding: 'utf-8', label: 'Provisioner RPMS', returnStdout: true, script: """
-                    sh ./devops/rpms/buildrpm.sh -g \$(git rev-parse --short HEAD) -e 1.0.0 -b ${BUILD_NUMBER}
+                    sh ./devops/rpms/buildrpm.sh -g \$(git rev-parse --short HEAD) -e 1.0.0 -b ${custom_build_number}
                 """
                 sh encoding: 'utf-8', label: 'Provisioner CLI RPMS', returnStdout: true, script: """
-				    sh ./cli/buildrpm.sh -g \$(git rev-parse --short HEAD) -e 1.0.0 -b ${BUILD_NUMBER}
+				    sh ./cli/buildrpm.sh -g \$(git rev-parse --short HEAD) -e 1.0.0 -b ${custom_build_number}
                 """
 				
 				sh encoding: 'UTF-8', label: 'api', script: '''
 				if [ "${PRVSNR_BRANCH}" == "Cortx-v1.0.0_Beta" ]; then
 					echo "No Provisioner API RPMS in Beta Build hence skipping"
 				else
-					bash ./devops/rpms/api/build_python_api.sh -vv --out-dir /root/rpmbuild/RPMS/x86_64/ --pkg-ver ${BUILD_NUMBER}_git$(git rev-parse --short HEAD)
+					bash ./devops/rpms/api/build_python_api.sh -vv --out-dir /root/rpmbuild/RPMS/x86_64/ --pkg-ver ${custom_build_number}_git$(git rev-parse --short HEAD)
 				fi
 				   ls -ltr /root/rpmbuild/RPMS/x86_64/*.rpm
 				'''

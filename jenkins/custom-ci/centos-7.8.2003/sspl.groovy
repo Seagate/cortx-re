@@ -71,7 +71,7 @@ pipeline {
 						pushd cortx-sspl
 					fi	
 					VERSION=$(cat VERSION)
-					export build_number=${BUILD_ID}
+					export build_number=${custom_build_number}
 					#Execute build script
 					echo "Executing build script"
 					echo "VERSION:$VERSION"

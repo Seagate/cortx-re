@@ -96,7 +96,7 @@ pipeline {
 					steps {
 						script { build_stage = env.STAGE_NAME }
 								sh label: '', script: '''
-								export build_number=${BUILD_ID}
+								export build_number=${custom_build_number}
 								./rpms/s3iamcli/buildrpm.sh -P $PWD
 							'''
 					}

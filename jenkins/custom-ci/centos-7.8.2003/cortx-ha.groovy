@@ -72,7 +72,7 @@ pipeline {
 					set -xe
 					pushd $component
 					echo "Executing build script"
-   				   ./jenkins/build.sh -b $BUILD_NUMBER
+   				   ./jenkins/build.sh -b $custom_build_number
 					popd
 				'''	
 			}

@@ -74,7 +74,7 @@ pipeline {
 						echo "Executing build script"
 						echo "VERSION:$VERSION"
 						echo "Python:$(python --version)"
-						./cicd/build.sh -v $VERSION -b $BUILD_NUMBER -t -i -n ldr -l $WORKSPACE/seagate-ldr/ldr-brand/
+						./cicd/build.sh -v $VERSION -b $custom_build_number -t -i -n ldr -l $WORKSPACE/seagate-ldr/ldr-brand/
 					popd	
 				'''	
 			}
