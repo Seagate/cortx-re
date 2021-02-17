@@ -30,7 +30,7 @@ pipeline {
     stages {
 
         // Clone deploymemt scripts from cortx-re repo
-        stage ('Validate') {
+        stage ('Validate Deployment Environment ') {
             steps {
                 script {
 
@@ -101,12 +101,12 @@ pipeline {
             
         stage("Bootstrap Provisioner") {
             steps {
-                sshCommand remote: remote, command: """
+                sshCommand remote: remote, failOnError: false, command: """
                     yum install -y sshpass
                     sshpass -p $NODE_PASS provisioner setup_provisioner srvnode-1:\$(hostname -f) --logfile --logfile-filename /var/log/seagate/provisioner/setup.log --source rpm --config-path ~/config.ini --dist-type bundle --target-build ${CORTX_BUILD}
-                    provisioner configure_setup /root/config.ini 1
-                    salt-call state.apply components.system.config.pillar_encrypt
+                    provisioner configure_setup ./config.ini 1
                     provisioner pillar_export
+                    sleep 5
                 """
                 echo "Successfully bootstrapped provisioner!"
             }
@@ -114,13 +114,14 @@ pipeline {
         
         stage("Validate Bootstrap Provisioner") {
             steps {
-                sshCommand remote: remote, command: """
-                    salt '*' test.ping
+                sleep(5)
+                sshCommand remote: remote, failOnError: false, command: """
+                    salt '*' test.ping  
                     salt "*" service.stop puppet
                     salt "*" service.disable puppet
-                    salt '*' pillar.get release
-                    salt '*' grains.get node_id
-                    salt '*' grains.get cluster_id
+                    salt '*' pillar.get release  
+                    salt '*' grains.get node_id  
+                    salt '*' grains.get cluster_id  
                     salt '*' grains.get roles
                 """
                 echo "Successfully validated bootstrap!"
@@ -129,29 +130,46 @@ pipeline {
         
         stage("Platform Setup") {
             steps {
-                sshCommand remote: remote, command: "provisioner deploy_vm --states system --setup-type single"
+                sleep(10)
+                sshCommand remote: remote, failOnError: false, command: "provisioner deploy_vm --setup-type single --states system"
                 echo "Successfully deployed system states!"
             }
         }
         
         stage("3rd Party Software Deployment") {
             steps {
-                sshCommand remote: remote, command: "provisioner deploy_vm --states prereq --setup-type single || true"
+                sleep(10)
+                sshCommand remote: remote, command: "provisioner deploy_vm --setup-type single --states prereq", failOnError: false
+               
+                // sh label: 'ssh', returnStdout: true, script: """
+                //     sshpass -p '${NODE_PASS}' ssh ${NODE_USER}@${NODE1_HOST} "provisioner deploy_vm --states prereq --setup-type single"
+                // """
                 echo "Successfully deployed prereq states!"
+
+
             }
         }
         
         stage("Data Path States Deployment") {
             steps {
-                sshCommand remote: remote, command: "provisioner deploy_vm --states iopath --setup-type single"
+                sleep(10)
+                sshCommand remote: remote, failOnError: false, command: "provisioner deploy_vm --setup-type single --states iopath"
                 echo "Successfully deployed iopath states!"
             }
         }
         
         stage("Control Stack States Deployment") {
             steps {
-                sshCommand remote: remote, command: "provisioner deploy_vm --states controlpath --setup-type single"
+                sleep(10)
+                sshCommand remote: remote, failOnError: false, command: "provisioner deploy_vm --setup-type single --states controlpath"
                 echo "Successfully deployed controlpath states!"
+            }
+        }
+
+        stage("Validate Deployment") {
+            steps {
+                sshCommand remote: remote, failOnError: false, command: "hctl status"
+                echo "Validation success !!"
             }
         }
     }
@@ -171,6 +189,11 @@ pipeline {
         }
         failure {
             
+            addNodeLabel("cleanup_req")
+
+            build job: 'Cortx-Automation/Deployment/VM-Cleanup', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${env.NODE_NAME}")]
+        }
+         aborted {
             addNodeLabel("cleanup_req")
 
             build job: 'Cortx-Automation/Deployment/VM-Cleanup', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${env.NODE_NAME}")]
