@@ -9,7 +9,7 @@ pipeline {
 	
     environment {
 		version = "2.0.0"
-		thrid_party_version = "2.0.0-1"
+		thrid_party_version = "2.0.0-latest"
 		os_version = "centos-7.8.2003"
 		branch = "stable"
         release_dir = "/mnt/bigstorage/releases/cortx"
@@ -21,7 +21,7 @@ pipeline {
         token = credentials('shailesh-github-token')
         ARTIFACT_LOCATION = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version"
 		thrid_party_dir = "$release_dir/third-party-deps/centos/centos-7.8.2003-$thrid_party_version/"
-		python_deps = "$release_dir/third-party-deps/python-deps/python-packages-2.0.0-0"
+		python_deps = "$release_dir/third-party-deps/python-deps/python-packages-2.0.0-latest"
         cortx_os_iso = "/mnt/bigstorage/releases/cortx_builds/custom-os-iso/cortx-os-1.0.0-23.iso"
         // WARNING : 'rm' command where used in this dir path, be conscious while changing the value  
 		cortx_build_dir = "$release_dir/github/$branch/$os_version/cortx_builds" 
@@ -248,7 +248,9 @@ pipeline {
                 sh label: 'Tag last_successful', script: '''
                     pushd $integration_dir
                     test -L last_successful && rm -f last_successful
+                    test -L last_successful_prod && rm -f last_successful_prod
                     ln -s $integration_dir/$release_tag/dev last_successful
+                    ln -s $integration_dir/$release_tag/prod last_successful_prod
                     popd
                 '''
 			}
