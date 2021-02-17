@@ -91,7 +91,7 @@
 # Install openldap
 - name: "[install_s3server] : Install openldap"
   yum: 
-    name: [ 'openldap-servers', 'openldap-clients']
+    name: [ 'openldap-servers', 'openldap-clients', 'python36-ldap']
     state: present
 
 # Create /etc/ssl/stx dir
