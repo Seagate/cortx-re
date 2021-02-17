@@ -1,3 +1,5 @@
+properties([[$class: 'ThrottleJobProperty', categories: [], limitOneJobWithMatchingParams: false, maxConcurrentPerNode: 5, maxConcurrentTotal: 5, paramsToUseForLimit: '', throttleEnabled: true, throttleOption: 'project']])
+
 pipeline {
 
 	agent {
@@ -25,13 +27,6 @@ pipeline {
 		timestamps()
 		ansiColor('xterm')
 		parallelsAlwaysFailFast()
-		throttleJobProperty(
-			categories: [],
-			throttleEnabled: true,
-			throttleOption: 'project',
-			maxConcurrentTotal: 2,
-		)
-
 	}
 
 	parameters {
