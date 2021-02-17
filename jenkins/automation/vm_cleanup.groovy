@@ -157,8 +157,10 @@ def removeCleanupLabel() {
 	nodeLabel = "cleanup_req"
     node = getCurrentNode(env.NODE_NAME)
 	node.setLabelString(node.getLabelString().replaceAll(nodeLabel, ""))
+    echo "[ ${env.NODE_NAME} ] : Cleanup label removed. The current node labels are ( ${node.getLabelString()} )"
 	node.save()
     node = null
+    
 }
 
 // Get running node instance
