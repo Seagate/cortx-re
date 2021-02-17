@@ -23,9 +23,15 @@ pipeline {
 	options {
 		timeout(time: 120, unit: 'MINUTES')
 		timestamps()
-		disableConcurrentBuilds()
 		ansiColor('xterm')
 		parallelsAlwaysFailFast()
+		throttleJobProperty(
+			categories: [],
+			throttleEnabled: true,
+			throttleOption: 'project',
+			maxConcurrentTotal: 2,
+		)
+
 	}
 
 	parameters {
@@ -57,7 +63,7 @@ pipeline {
 
 		stage ("Trigger Component Jobs") {
 			parallel {
-				stage ("Build Mero, Hare and S3Server") {
+				stage ("Build Motr, Hare and S3Server") {
 					steps {
 						script { build_stage = env.STAGE_NAME }
 						script {
@@ -242,12 +248,12 @@ pipeline {
 						fi
                         if [ -z "$mero_dep" ]
                         then
-                            echo "\033[1;33m $component has no dependency to mero - Validation Success \033[0m "
+                            echo "\033[1;33m $component has no dependency to Motr - Validation Success \033[0m "
                         else
                             if [ "$mero_dep" = "$mero_rpm_release_version" ]; then
-                                echo "\033[1;32m $component mero version matches with integration mero rpm($mero_rpm_release_version) Good to Go - Validation Success \033[0m "
+                                echo "\033[1;32m $component Motr version matches with integration mero rpm($mero_rpm_release_version) Good to Go - Validation Success \033[0m "
                             else
-                                echo "\033[1;31m $component mero version mismatchs with integration mero rpm($mero_rpm_release_version) - Validation Failed \033[0m"
+                                echo "\033[1;31m $component Motr version mismatchs with integration mero rpm($mero_rpm_release_version) - Validation Failed \033[0m"
                                 exit 1
                             fi
                         fi
