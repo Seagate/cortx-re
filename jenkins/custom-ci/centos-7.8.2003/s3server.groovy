@@ -77,7 +77,7 @@ pipeline {
 								echo "baseurl=http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/centos-7.8.2003/concurrent/$release_tag/cortx_iso/"  >> /etc/yum.repos.d/motr_current_build.repo
 							    yum-config-manager --disable cortx-C7.7.1908
 								yum clean all;rm -rf /var/cache/yum
-								export build_number=${BUILD_ID}
+								export build_number=${custom_build_numbe}
 								
 								if [ "${S3_BRANCH}" == "Cortx-v1.0.0_Beta" ]; then
 									yum erase log4cxx_cortx-devel cortx-motr{,-devel} -y -q
