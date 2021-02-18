@@ -4,11 +4,10 @@ def get_custom_build_number() {
   def upstreamCause = currentBuild.rawBuild.getCause(Cause.UpstreamCause)
   if (upstreamCause) {
 
-	def upstreamBuildID = Jenkins.getInstance().getItemByFullName(upstreamCause.getUpstreamProject(), hudson.model.Job).getBuildByNumber(upstreamCause.getUpstreamBuild()).getId()
 	def mainupstreamCause = Jenkins.getInstance().getItemByFullName(upstreamCause.getUpstreamProject(), hudson.model.Job).getBuildByNumber(upstreamCause.getUpstreamBuild()).getCause(Cause.UpstreamCause)
 	
 	if (mainupstreamCause) {
-		def mainupstreamBuildID = Jenkins.getInstance().getItemByFullName(mainupstreamCause.getUpstreamProject(), hudson.model.Job.class).getBuildByNumber(mainupstreamCause.getUpstreamBuild()).getId()
+		def mainupstreamBuildID = Jenkins.getInstance().getItemByFullName(mainupstreamCause.getUpstreamProject(), hudson.model.Job).getBuildByNumber(mainupstreamCause.getUpstreamBuild()).getId()
 		return mainupstreamBuildID
 	} else {
 		def buildNumber = currentBuild.number
