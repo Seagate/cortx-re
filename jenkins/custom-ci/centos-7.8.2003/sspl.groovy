@@ -62,7 +62,7 @@ pipeline {
 					else
 						pushd cortx-sspl
 					fi
-						version=$(cat ./cortx-sspl/VERSION)
+						version=$(cat VERSION)
 						export build_number=${BUILD_ID}
 						./jenkins/build.sh -v $version -l DEBUG 
 					popd
