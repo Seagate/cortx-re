@@ -41,7 +41,7 @@ pipeline {
 		component = "motr"
 		custom_build_number = get_custom_build_number()
 		release_tag = "custom-build-$custom_build_number"
-		build_upload_dir = "$release_dir/github/integration-custom-ci/$os_version/concurrent/$release_tag/cortx_iso"
+		build_upload_dir = "$release_dir/github/integration-custom-ci/$os_version/$release_tag/cortx_iso"
     }
 
 	stages {	
