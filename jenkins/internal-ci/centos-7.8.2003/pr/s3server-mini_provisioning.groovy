@@ -1,4 +1,5 @@
 #!/usr/bin/env groovy
+// CLEANUP REQUIRED
 pipeline { 
     agent {
         node {
@@ -230,10 +231,11 @@ pipeline {
                     catchError {
 
                         sh label: 'download_log_files', returnStdout: true, script: """ 
+                            sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/root/*.json .
                             sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/root/*.log .
                         """
                         
-                        archiveArtifacts artifacts: "**/*.log", onlyIfSuccessful: false, allowEmptyArchive: true 
+                        archiveArtifacts artifacts: "*.json, *.log", onlyIfSuccessful: false, allowEmptyArchive: true 
                     }
 
                     if( "${HOST}" == "-" ) {
@@ -255,14 +257,24 @@ pipeline {
 	}
 
     post {
-        failure {
-            script {       
-                manager.addShortText("${build_stage} Failed")
+        always {
+            script  {
+                sh label: 'Remove artifacts', script: '''rm -rf "${DESTINATION_RELEASE_LOCATION}"'''
 
-                sh label: 'Remove artifacts', script: '''
-                    rm -rf "${DESTINATION_RELEASE_LOCATION}"
-                '''
+                def mailRecipients = "nilesh.govande@seagate.com, basavaraj.kirunge@seagate.com, rajesh.nambiar@seagate.com, ajinkya.dhumal@seagate.com, amit.kumar@seagate.com"
+                mailRecipients = "gowthaman.chinnathambi@seagate.com"
+
+                emailext body: '''${SCRIPT, template="component-email-dev.template"}''',
+                mimeType: 'text/html',
+                recipientProviders: [requestor()], 
+                subject: "[Jenkins] S3AutoMiniProvisioning : ${currentBuild.currentResult}, ${JOB_BASE_NAME}#${BUILD_NUMBER}",
+                to: "${mailRecipients}"
             }
+        }
+        failure {
+            script {
+                manager.addShortText("${build_stage} Failed")
+            }  
         }
     }
 }	
@@ -284,9 +296,9 @@ def getTestMachine(host, user, pass) {
 // Used Jenkins ansible plugin to execute ansible command
 def runAnsible(tags) {
 
-    withCredentials([usernamePassword(credentialsId: "mini-prov-ldap-root-cred", passwordVariable: 'LDAP_ROOT_USER', usernameVariable: 'LDAP_ROOT_PWD'),
-        usernamePassword(credentialsId: "mini-prov-ldap-sg-cred", passwordVariable: 'LDAP_SGIAM_USER', usernameVariable: 'LDAP_SGIAM_PWD'),
-        usernamePassword(credentialsId: "mini-prov-bmc-cred", passwordVariable: 'BMC_USER', usernameVariable: 'BMC_SECRET')]) {
+    withCredentials([usernamePassword(credentialsId: "mini-prov-ldap-root-cred", passwordVariable: 'LDAP_ROOT_PWD', usernameVariable: 'LDAP_ROOT_USER'),
+        usernamePassword(credentialsId: "mini-prov-ldap-sg-cred", passwordVariable: 'LDAP_SGIAM_PWD', usernameVariable: 'LDAP_SGIAM_USER'),
+        usernamePassword(credentialsId: "mini-prov-bmc-cred", passwordVariable: 'BMC_SECRET', usernameVariable: 'BMC_USER')]) {
     
         dir("cortx-re/scripts/mini_provisioner") {
 
@@ -327,7 +339,7 @@ def createSummary() {
     }
 
     hctl_status_html = "<textarea rows=20 cols=200 readonly style='margin: 0px; height: 392px; width: 843px;'>${hctl_status}</textarea>"
-    table_summary = "<table border='1' cellspacing='0' cellpadding='0' width='400' align='left'> <tr> <td align='center'>Build</td><td align='center'><a href=${CORTX_BUILD}>${build_id}</a></td></tr><tr> <td align='center'>Test HW</td><td align='center'>${NODE1_HOST}</td></tr></table>"
+    table_summary = "<table border='1' cellspacing='0' cellpadding='0' width='400' align='left'> <tr> <td align='center'>Build</td><td align='center'><a href=${CORTX_BUILD}>${build_id}</a></td></tr><tr> <td align='center'>Test VM</td><td align='center'>${NODE1_HOST}</td></tr></table>"
     manager.createSummary("${ICON}").appendText("<h3>${MESSAGE} for the build <a href=\"${CORTX_BUILD}\">${build_id}.</a></h3><br /><h4>Test Details:</h4> ${table_summary} <br /><br /><br /><h4>HCTL Status:${hctl_status_html}</h4> ", false, false, false, "red")
 
 }

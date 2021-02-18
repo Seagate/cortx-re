@@ -16,11 +16,9 @@
 #
 # For any questions about this software or licensing,
 # please email opensource@seagate.com or cortx-questions@seagate.com.
-#
-systemctl stop slapd 2>/dev/null || /bin/true
-yum remove -y openldap-servers openldap-clients 2>/dev/null || /bin/true
-rm -f /etc/openldap/slapd.d/cn\=config/cn\=schema/cn\=\{1\}s3user.ldif 2>/dev/null || /bin/true
-rm -rf /var/lib/ldap/* 2>/dev/null || /bin/true
-rm -f /etc/sysconfig/slapd* 2>/dev/null || /bin/true
-rm -f /etc/openldap/slapd* 2>/dev/null || /bin/true
-rm -rf /etc/openldap/slapd.d/* 2>/dev/null || /bin/true
+HOST_NAME=$1
+wget https://raw.githubusercontent.com/Seagate/cortx-s3server/main/scripts/kafka/install-kafka.sh
+wget https://raw.githubusercontent.com/Seagate/cortx-s3server/main/scripts/kafka/create-topic.sh
+
+sh install-kafka.sh -c 1 -i $HOST_NAME
+sh create-topic.sh -c 1 -i $HOST_NAME
