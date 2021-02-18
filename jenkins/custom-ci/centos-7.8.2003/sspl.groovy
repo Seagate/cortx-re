@@ -43,7 +43,7 @@ pipeline {
 				sh label: '', script: '''
 				version = $(cat ./cortx-sspl/VERSION)
 				env.version = version 
-				if [ "${version}" == "1.0.0" ]; then
+				if [ "$version" == "1.0.0" ]; then
 					yum-config-manager --disable cortx-C7.7.1908
 				fi	
 					yum clean all && rm -rf /var/chache/yum 
@@ -64,7 +64,7 @@ pipeline {
 						pushd cortx-sspl
 					fi
 						export build_number=${BUILD_ID}
-						./jenkins/build.sh -v ${version} -l DEBUG 
+						./jenkins/build.sh -v ${env.version} -l DEBUG 
 					popd
 				'''	
 			}
