@@ -3,7 +3,7 @@ def get_custom_build_number() {
 
   def upstreamCause = currentBuild.rawBuild.getCause(Cause.UpstreamCause)
   if (upstreamCause) {
-	def upstreamBuildID = Jenkins.getInstance().getItemByFullName(upstreamCause.getUpstreamProject(), hudson.model.Job.class).getBuildByNumber(upstreamCause.getUpstreamBuild()).getId()
+	def upstreamBuildID = Jenkins.getInstance().getItemByFullName(upstreamCause.getUpstreamProject(), hudson.model.Job).getBuildByNumber(upstreamCause.getUpstreamBuild()).getId()
 	return upstreamBuildID
   } else {
     def buildNumber = currentBuild.number
@@ -82,7 +82,7 @@ pipeline {
 					else
 						pushd cortx-sspl
 					fi
-						export build_number=${BUILD_ID}
+						export build_number=${custom_build_number}
 						./jenkins/build.sh -v $version -l DEBUG
 					popd
 				'''	
