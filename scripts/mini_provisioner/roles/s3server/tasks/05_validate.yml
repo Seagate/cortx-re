@@ -40,24 +40,8 @@
 - name: "[validate] : hctl status"
   shell: hctl status 2>&1 | tee -a /root/hctl_status.log
 
-# Configure lnet
-- name: "[validate] : Copy create s3 account script to test node"
-  copy:
-      src: files/create_s3_account.sh
-      dest: /root/create_s3_account.sh
-      owner: root
-      group: root
-      mode: '0755'
-
-
 # Execute S3:test
 - name: "[mini_provisioning] : S3 Sanity Test" 
   shell: /opt/seagate/cortx/s3/bin/s3_setup test --config "json:///root/confstore.json"
   register: s3_sanity_test_out
   failed_when: '"PASS: S3-Sanity test passed" not in s3_sanity_test_out.stdout'
- 
- # Validate S3server deployment
-# - name: "[validate] : Validate S3server deployment" 
-#   script: files/test_s3server.sh '{{ LDAP_SGIAM_USER }}' '{{ LDAP_SGIAM_PWD }}' 2>&1 | tee -a /root/test_s3.log
-#   register: s3_test_out
-#   failed_when: '"S3 Basic Testing Success" not in s3_test_out.stdout'

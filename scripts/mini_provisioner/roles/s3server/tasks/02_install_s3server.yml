@@ -12,13 +12,13 @@
 #      2. Create py-utils:confstore back-end
 ##########################################################################################
 
-# Install openldap
+# Install Install S3server & dependent components (motr)
 - name: "[install_s3server] : Install S3server & dependent components (motr)"
   yum: 
     name: [ 'cortx-motr', 'cortx-s3server']
     state: present
 
-# Get Cluster ID
+# Get Ipaddress
 - name: "[install_s3server] : Get Ipaddress" 
   shell: uuidgen
   register: clusterid_out
@@ -33,7 +33,6 @@
 # Update Messaging Platform
 - name: "[install_s3server] : Update Messaging Platform" 
   shell: "sed -i 's/messaging_platform:.*/messaging_platform: \"{{ MESSAGING_PLATFORM }}\"/g' /opt/seagate/cortx/s3/s3backgrounddelete/config.yaml"
-
 
 # Generate s3ciper
 - name: "[install_s3server] : Generate s3ciper key " 
@@ -83,16 +82,6 @@
   template:
     src: confstore.json.j2
     dest: /root/confstore.json
-
-# Remove ldap confs
-- name: "[install_s3server] : Remove ldap confs/files" 
-  script: files/remove_ldap_installation.sh
-
-# Install openldap
-- name: "[install_s3server] : Install openldap"
-  yum: 
-    name: [ 'openldap-servers', 'openldap-clients', 'python36-ldap']
-    state: present
 
 # Create /etc/ssl/stx dir
 - name: "[install_s3server] : Ensures /etc/ssl/stx dir exists"

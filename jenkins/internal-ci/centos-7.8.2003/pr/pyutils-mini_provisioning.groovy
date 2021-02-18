@@ -1,4 +1,5 @@
 #!/usr/bin/env groovy
+// CLEANUP REQUIRED
 pipeline { 
     agent {
         node {
@@ -132,14 +133,13 @@ pipeline {
 	}
 
     post {
+        always {
+            sh label: 'Remove artifacts', script: '''rm -rf "${DESTINATION_RELEASE_LOCATION}"'''
+        }
         failure {
-            script {       
+            script {
                 manager.addShortText("${build_stage} Failed")
-
-                sh label: 'Remove artifacts', script: '''
-                    rm -rf "${DESTINATION_RELEASE_LOCATION}"
-                '''
-            }
+            }  
         }
     }
 }	

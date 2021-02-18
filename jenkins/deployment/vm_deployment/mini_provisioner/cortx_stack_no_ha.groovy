@@ -75,7 +75,7 @@ pipeline {
             steps {
                 
                 sshCommand remote: remote, command: "wget -q https://raw.githubusercontent.com/Seagate/cortx-prvsnr/main/pillar/samples/config_vm.ini -O /root/config.ini"
-                sshCommand remote: remote, command: "sed -i '/srvnode-2/,\$d; s/hostname=.*/hostname='$NODE1_HOST'/g; s/enclosure/storage/g' /root/config.ini"
+                sshCommand remote: remote, command: "sed -i '/srvnode-2/,\$d; s/hostname=.*/hostname='$NODE1_HOST'/g; /roles=/d ; s/enclosure/storage/g' /root/config.ini"
                 echo "Successfully created config.ini file!"
             }
         }
@@ -92,8 +92,6 @@ pipeline {
                     rm -rf /etc/yum.repos.d/*cortx_iso*.repo
                     yum clean all
                     rm -rf /var/cache/yum/
-                    pip3 install jsonschema==3.0.2 requests
-                    provisioner --version
                 """
                 echo "Successfully installed Provisioner API!"
             }
@@ -102,11 +100,13 @@ pipeline {
         stage("Bootstrap Provisioner") {
             steps {
                 sshCommand remote: remote, failOnError: false, command: """
-                    yum install -y sshpass
-                    sshpass -p $NODE_PASS provisioner setup_provisioner srvnode-1:\$(hostname -f) --logfile --logfile-filename /var/log/seagate/provisioner/setup.log --source rpm --config-path ~/config.ini --dist-type bundle --target-build ${CORTX_BUILD}
+                    sshpass -p ${NODE_PASS} provisioner setup_provisioner srvnode-1:${NODE1_HOST} \
+                    --logfile --logfile-filename /var/log/seagate/provisioner/setup.log --source rpm --config-path ~/config.ini \
+                    --dist-type bundle --target-build ${CORTX_BUILD}
+
                     provisioner configure_setup ./config.ini 1
+                    
                     provisioner pillar_export
-                    sleep 5
                 """
                 echo "Successfully bootstrapped provisioner!"
             }
@@ -153,7 +153,7 @@ pipeline {
         stage("Data Path States Deployment") {
             steps {
                 sleep(10)
-                sshCommand remote: remote, failOnError: false, command: "provisioner deploy_vm --setup-type single --states iopath"
+                sshCommand remote: remote, failOnError: true, command: "provisioner deploy_vm --setup-type single --states iopath"
                 echo "Successfully deployed iopath states!"
             }
         }
@@ -161,14 +161,14 @@ pipeline {
         stage("Control Stack States Deployment") {
             steps {
                 sleep(10)
-                sshCommand remote: remote, failOnError: false, command: "provisioner deploy_vm --setup-type single --states controlpath"
+                sshCommand remote: remote, failOnError: true, command: "provisioner deploy_vm --setup-type single --states controlpath"
                 echo "Successfully deployed controlpath states!"
             }
         }
 
         stage("Validate Deployment") {
             steps {
-                sshCommand remote: remote, failOnError: false, command: "hctl status"
+                sshCommand remote: remote, failOnError: true, command: "hctl status"
                 echo "Validation success !!"
             }
         }
@@ -180,7 +180,8 @@ pipeline {
 
                 // sshGet remote: remote, from: '/opt/seagate/cortx_configs/provisioner_cluster.json', into: 'archives/provisioner_cluster.json', override: true
                 // sshGet remote: remote, from: '/var/log/seagate/provisioner/setup.log', into: 'archives/setup.log', override: true
-                // archiveArtifacts artifacts: 'archives/provisioner_cluster.json,archives/setup.log', followSymlinks: false, onlyIfSuccessful: false, allowEmptyArchive: true                       
+                sshGet remote: remote, from: '/root/config.ini', into: 'archives/config.ini', override: true
+                archiveArtifacts artifacts: 'archives/config.ini', followSymlinks: false, onlyIfSuccessful: false, allowEmptyArchive: true                       
                 cleanWs()
             }
         }

@@ -13,6 +13,7 @@
 #      4. Install openldap server and client
 ##########################################################################################
 
+# Validate input args
 - name: "[install_prereq] : Validate the required input arguments for this playbook"
   fail: msg="Variable '{{ item }}' is not defined"
   when: item not in vars
@@ -53,16 +54,6 @@
     name: cortx-py-utils
     state: present
 
-# # Install Erlang
-# - name: "[install_prereq] : Install Erlang"
-#   yum: 
-#     name: "{{ EARLANG_RPM }}"
-#     state: present
-
-# # Install Rabitmq Server
-# - name: "[install_prereq] : Execute rabitmq config script " 
-#   shell: curl -sL {{ RABITMQ_SCRIPT }} | bash -
-
 - name: "[install_prereq] : Install rabbitmq-server"
   yum: 
     name: rabbitmq-server
@@ -79,3 +70,13 @@
   yum: 
     name: haproxy
     state: present
+
+# Install openldap
+- name: "[install_s3server] : Install openldap"
+  yum: 
+    name: [ 'openldap-servers', 'openldap-clients', 'python36-ldap']
+    state: present
+
+# Install Rabitmq Server
+- name: "[install_prereq] : Install & Configure Kafka " 
+  script: files/install_configure_kafka.sh {{ NODE1 }}
