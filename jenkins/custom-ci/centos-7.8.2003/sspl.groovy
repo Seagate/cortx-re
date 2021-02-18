@@ -34,7 +34,6 @@ pipeline {
 				dir ('cortx-sspl') {
 					checkout([$class: 'GitSCM', branches: [[name: "${SSPL_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${SSPL_URL}"]]])
 				}
-				script { version = $(cat ./cortx-sspl/VERSION) }
 			}
 		}
 		
@@ -42,7 +41,8 @@ pipeline {
 			steps {
 				script { build_stage = env.STAGE_NAME }
 				sh label: '', script: '''
-				echo ${version}
+				version = $(cat ./cortx-sspl/VERSION)
+				env.version = version 
 				if [ "${version}" == "1.0.0" ]; then
 					yum-config-manager --disable cortx-C7.7.1908
 				fi	
