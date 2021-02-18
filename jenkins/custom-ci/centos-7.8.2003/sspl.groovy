@@ -41,7 +41,7 @@ pipeline {
 			steps {
 				script { build_stage = env.STAGE_NAME }
 				sh label: '', script: '''
-				version=$(cat VERSION)
+				version=$(cat ./cortx-sspl/VERSION)
 				if [ "$version" == "1.0.0" ]; then
 					yum-config-manager --disable cortx-C7.7.1908
 				fi	
