@@ -12,13 +12,13 @@ pipeline {
 		version = "2.0.0"
 		branch = "custom-ci"
 		os_version = "centos-7.8.2003"
-		thrid_party_version = "2.0.0-1"
+		thrid_party_version = "2.0.0-latest"
 		release_dir = "/mnt/bigstorage/releases/cortx"
 		integration_dir = "$release_dir/github/integration-custom-ci/$os_version/concurrent/"
 		components_dir = "$release_dir/components/github/$branch/$os_version/concurrent/$BUILD_NUMBER/"
 		release_tag = "custom-build-$BUILD_ID"
 		passphrase = credentials('rpm-sign-passphrase')
-		python_deps = "$release_dir/third-party-deps/python-deps/python-packages-2.0.0-0"
+		python_deps = "$release_dir/third-party-deps/python-deps/python-packages-2.0.0-latest"
 		cortx_os_iso = "/mnt/bigstorage/releases/cortx_builds/custom-os-iso/cortx-os-1.0.0-23.iso"
 	}
 
