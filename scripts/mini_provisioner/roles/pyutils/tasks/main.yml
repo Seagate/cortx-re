@@ -71,12 +71,12 @@
 
 # Update Py-Utils:Post_Install
 - name: "[mini_provisioning] : Py-Utils Post Install" 
-  shell: "/opt/seagate/cortx/utils/bin/utils_setup post_install json:///root/confstore.json"
+  shell: "/opt/seagate/cortx/utils/bin/utils_setup post_install --config json:///root/confstore.json"
 
 # Execute Py-Utils:Config
 - name: "[mini_provisioning] : Py-Utils Config" 
-  shell: "/opt/seagate/cortx/utils/bin/utils_setup config json:///root/confstore.json"
+  shell: "/opt/seagate/cortx/utils/bin/utils_setup config --config json:///root/confstore.json"
 
 # Execute Py-Utils:Test
 - name: "[mini_provisioning] : Py-Utils Test" 
-  shell: "/opt/seagate/cortx/utils/bin/utils_setup test json:///root/confstore.json"
+  shell: "/opt/seagate/cortx/utils/bin/utils_setup test --config json:///root/confstore.json"
