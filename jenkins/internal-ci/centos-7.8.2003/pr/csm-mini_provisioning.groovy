@@ -38,20 +38,6 @@ pipeline {
         DESTINATION_RELEASE_LOCATION = "/mnt/bigstorage/releases/cortx/github/pr-build/${COMPONENT_NAME}/${BUILD_NUMBER}"
         CORTX_BUILD = "http://cortx-storage.colo.seagate.com/releases/cortx/github/pr-build/${COMPONENT_NAME}/${BUILD_NUMBER}"
 
-        ////////////////////////////////// DEPLOYMENT VARS /////////////////////////////////////////////////////
-
-        // NODE1_HOST - Env variables added in the node configurations
-        build_id = sh(script: "echo ${CORTX_BUILD} | rev | cut -d '/' -f2,3 | rev", returnStdout: true).trim()
-
-        // GID/pwd used to update root password 
-        NODE_UN_PASS_CRED_ID = "mini-prov-change-pass"
-
-        // Credentials used to for node SSH
-        NODE_DEFAULT_SSH_CRED  = credentials("vm-deployment-ssh-cred")
-        NODE_USER = "${NODE_DEFAULT_SSH_CRED_USR}"
-        NODE_PASS = "${NODE_DEFAULT_SSH_CRED_PSW}"
-        CLUSTER_PASS = "${NODE_DEFAULT_SSH_CRED_PSW}"
-
         STAGE_DEPLOY = "yes"
     }
 
@@ -110,6 +96,12 @@ pipeline {
         stage('Deploy') {
             agent { node { label "mini_provisioner && !cleanup_req" } }
             when { expression { env.STAGE_DEPLOY == "yes" } }
+            environment {
+                // Credentials used to SSH node
+                NODE_DEFAULT_SSH_CRED =  credentials("${NODE_DEFAULT_SSH_CRED}")
+                NODE_USER = "${NODE_DEFAULT_SSH_CRED_USR}"
+                NODE_PASS = "${NODE_DEFAULT_SSH_CRED_PSW}"
+            }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
@@ -143,14 +135,13 @@ pipeline {
 	}
 
     post {
+        always {
+            sh label: 'Remove artifacts', script: '''rm -rf "${DESTINATION_RELEASE_LOCATION}"'''
+        }
         failure {
-            script {       
-                //manager.addShortText("${build_stage} Failed")
-
-                sh label: 'Remove artifacts', script: '''
-                    rm -rf "${DESTINATION_RELEASE_LOCATION}"
-                '''
-            }
+            script {
+                manager.addShortText("${build_stage} Failed")
+            }  
         }
     }
 }	
@@ -171,25 +162,19 @@ def getTestMachine(host, user, pass) {
 
 // Used Jenkins ansible plugin to execute ansible command
 def runAnsible(tags) {
-    withCredentials([usernamePassword(credentialsId: "${NODE_UN_PASS_CRED_ID}", passwordVariable: 'SERVICE_PASS', usernameVariable: 'SERVICE_USER'), string(credentialsId: "${CLOUDFORM_TOKEN_CRED_ID}", variable: 'CLOUDFORM_API_CRED')]) {
-        
-        dir("cortx-re/scripts/mini_provisioner") {
-            ansiblePlaybook(
-                playbook: 'csm_deploy.yml',
-                inventory: 'inventories/hosts',
-                tags: "${tags}",
-                extraVars: [
-                    "NODE1"                 : [value: "${NODE1_HOST}", hidden: false],
-                    "CORTX_BUILD"           : [value: "${CORTX_BUILD}", hidden: false] ,
-                    "CLUSTER_PASS"          : [value: "${CLUSTER_PASS}", hidden: false],
-                    "CLOUDFORM_API_CRED"    : [value: "${CLOUDFORM_API_CRED}", hidden: true],
-                    "SERVICE_USER"          : [value: "${SERVICE_USER}", hidden: true],
-                    "SERVICE_PASS"          : [value: "${SERVICE_PASS}", hidden: true],
-                ],
-                extras: '-v',
-                colorized: true
-            )
-        }
+    dir("cortx-re/scripts/mini_provisioner") {
+        ansiblePlaybook(
+            playbook: 'csm_deploy.yml',
+            inventory: 'inventories/hosts',
+            tags: "${tags}",
+            extraVars: [
+                "NODE1"                 : [value: "${NODE1_HOST}", hidden: false],
+                "CORTX_BUILD"           : [value: "${CORTX_BUILD}", hidden: false] ,
+                "CLUSTER_PASS"          : [value: "${NODE_PASS}", hidden: false]
+            ],
+            extras: '-v',
+            colorized: true
+        )
     }
 }
 

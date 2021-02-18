@@ -18,10 +18,6 @@
   fail: msg="Variable '{{ item }}' is not defined"
   when: item not in vars
   with_items: "{{ REQUIRED_VARS }}"
-
-# Add consul repo
-- name: "[install_prereq] : Add consul repository"
-  shell: yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
   
 # Add yum repositories
 - name: "[install_prereq] : Copy yum repo"
@@ -37,10 +33,14 @@
 - name: "[install_prereq] : Install py-utils dependencies"
   shell:  pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/main/py-utils/requirements.txt
 
+# Install consul
+- name: "[start_s3server] : Install consul-1.9.1"
+  shell: "yum install -y consul-1.9.1"
+
 # Install dependent coponents
 - name: "[install_prereq] : Install dependent rpm, cortx-py-utils, cortx-motr and cortx-hare"
   yum: 
-    name: [  "consul-1.9.1", "cortx-py-utils", "cortx-motr", "cortx-motr-devel", "cortx-s3server", "cortx-prvsnr", "cortx-hare" ]
+    name: [ "cortx-py-utils", "cortx-motr", "cortx-motr-devel", "cortx-s3server", "cortx-prvsnr", "cortx-hare" ]
     state: present
 
 ################### Motr Pre-req #################################

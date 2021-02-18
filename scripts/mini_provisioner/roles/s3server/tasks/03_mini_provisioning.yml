@@ -16,7 +16,6 @@
 - name: "[mini_provisioning] : Post Install" 
   shell: /opt/seagate/cortx/s3/bin/s3_setup post_install --config "json:///root/confstore.json"
 
-
 # Execute S3:Config
 - name: "[mini_provisioning] : S3 Config" 
   shell: /opt/seagate/cortx/s3/bin/s3_setup config --config "json:///root/confstore.json"
