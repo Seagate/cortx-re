@@ -308,9 +308,9 @@ pipeline {
                 sh label: 'Tag Release', script: '''
                     pushd $integration_dir/$release_tag
 						if [ "$THIRD_PARTY_VERSION" == "cortx-2.0" ]; then
-							thrid_party_dir=$(find /mnt/bigstorage/releases/cortx/third-party-deps/centos/ -type d  -name "$os_version-2.*" | sort -r | head -1)
+							thrid_party_dir="/mnt/bigstorage/releases/cortx/third-party-deps/centos/centos-7.8.2003-2.0.0-latest"
 						else
-							thrid_party_dir=$(find /mnt/bigstorage/releases/cortx/third-party-deps/centos/ -type d  -name "$os_version-1.*" | sort -r | head -1)
+							thrid_party_dir="/mnt/bigstorage/releases/cortx/third-party-deps/centos/centos-7.8.2003-1.0.0-1"
 						fi
 
 					ln -s $thrid_party_dir 3rd_party
