@@ -41,7 +41,7 @@ pipeline {
 			steps {
 				script { build_stage = env.STAGE_NAME }
 				sh label: '', script: '''
-				if [ "${SSPL_BRANCH}" == "Cortx-v1.0.0_Beta" ]; then
+				if [ "${SSPL_BRANCH}" == "cortx-1.0" ]; then
 					yum-config-manager --disable cortx-C7.7.1908
 				fi	
 					yum clean all && rm -rf /var/chache/yum 
