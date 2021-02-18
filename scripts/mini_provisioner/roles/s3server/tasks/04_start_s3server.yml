@@ -19,10 +19,6 @@
 #
 ##########################################################################################
 
-# # Add consul repo
-# - name: "[start_s3server] : Add consul repository"
-#   shell: yum-config-manager --add-repo {{ CONSUL_REPO }}
-
 # Install consul
 - name: "[start_s3server] : Install consul-1.9.1"
   shell: "yum install -y consul-1.9.1"
@@ -92,9 +88,3 @@
   ansible.builtin.service:
     name: s3backgroundconsumer
     state: started
-
-# Install s3iamcli
-# - name: "[start_s3server] : Install s3iamcli"
-#   yum: 
-#     name: cortx-s3iamcli
-#     state: present
