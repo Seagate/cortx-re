@@ -94,6 +94,15 @@ pipeline {
                     sh label: 'cleanup', script: '''
                     rm -rf /root/.seagate_src_cache/
                     '''
+
+                    def mailRecipients = "nilesh.govande@seagate.com, basavaraj.kirunge@seagate.com, rajesh.nambiar@seagate.com, ajinkya.dhumal@seagate.com, amit.kumar@seagate.com"
+                    mailRecipients = "gowthaman.chinnathambi@seagate.com"
+                                        
+                    emailext body: '''${SCRIPT, template="component-email-dev.template"}''',
+                    mimeType: 'text/html',
+                    recipientProviders: [requestor()], 
+                    subject: "[Jenkins] S3AutoPremerge : ${currentBuild.currentResult}, ${JOB_BASE_NAME}#${BUILD_NUMBER}",
+                    to: "${mailRecipients}"
                 }
             }
 
