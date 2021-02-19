@@ -58,6 +58,17 @@ pipeline {
 
 		stage ("Trigger Component Jobs") {
 			parallel {
+
+				stage('Install Dependecies') {
+					steps {
+						script { build_stage = env.STAGE_NAME }
+						sh label: 'Installed Dependecies', script: '''
+							yum install -y expect rpm-sign rng-tools genisoimage
+							systemctl start rngd
+							'''
+						}
+				}
+
 				stage ("Build Motr, Hare and S3Server") {
 					steps {
 						script { build_stage = env.STAGE_NAME }
@@ -178,15 +189,6 @@ pipeline {
 			}
 		}
 
-		stage('Install Dependecies') {
-			steps {
-				script { build_stage = env.STAGE_NAME }
-				sh label: 'Installed Dependecies', script: '''
-					yum install -y expect rpm-sign rng-tools genisoimage
-					systemctl start rngd
-					'''
-				}
-		}
 
 		stage ('Collect Component RPMS') {
 			steps {
