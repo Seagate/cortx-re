@@ -85,7 +85,7 @@ pipeline {
 					else
 						pushd cortx-sspl
 					fi
-						export build_number=${custom_build_number}
+						export build_number=${CUSTOM_CI_BUILD_ID}
 						./jenkins/build.sh -v $version -l DEBUG
 					popd
 				'''	

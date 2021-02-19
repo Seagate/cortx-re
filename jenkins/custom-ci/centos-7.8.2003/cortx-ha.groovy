@@ -11,8 +11,7 @@ pipeline {
         branch = "custom-ci" 
         os_version = "centos-7.8.2003"
         release_dir = "/mnt/bigstorage/releases/cortx"
-		custom_build_number = get_custom_build_number()
-		release_tag = "custom-build-$custom_build_number"
+		release_tag = "custom-build-$CUSTOM_CI_BUILD_ID"
 		build_upload_dir = "$release_dir/github/integration-custom-ci/$os_version/$release_tag/cortx_iso"
 
     }
@@ -61,7 +60,7 @@ pipeline {
 					set -xe
 					pushd $component
 					echo "Executing build script"
-   				   ./jenkins/build.sh -b $custom_build_number
+   				   ./jenkins/build.sh -b $CUSTOM_CI_BUILD_ID
 					popd
 				'''	
 			}
