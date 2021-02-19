@@ -1,26 +1,4 @@
 #!/usr/bin/env groovy
-properties([[$class: 'ThrottleJobProperty', categories: [], limitOneJobWithMatchingParams: true, maxConcurrentPerNode: 5, maxConcurrentTotal: 5, paramsToUseForLimit: 'S3_BRANCH', throttleEnabled: true, throttleOption: 'project']])
-
-def get_custom_build_number() {
-
-  def upstreamCause = currentBuild.rawBuild.getCause(Cause.UpstreamCause)
-  if (upstreamCause) {
-
-	def mainupstreamCause = Jenkins.getInstance().getItemByFullName(upstreamCause.getUpstreamProject(), hudson.model.Job).getBuildByNumber(upstreamCause.getUpstreamBuild()).getCause(Cause.UpstreamCause)
-	
-	if (mainupstreamCause) {
-		def mainupstreamBuildID = Jenkins.getInstance().getItemByFullName(mainupstreamCause.getUpstreamProject(), hudson.model.Job).getBuildByNumber(mainupstreamCause.getUpstreamBuild()).getId()
-		return mainupstreamBuildID
-	} else {
-		def buildNumber = currentBuild.number
-		return buildNumber
-		}
-  } else {
-    def buildNumber = currentBuild.number
-	return buildNumber
-	}
-}
-
 pipeline {
 	agent {
 		node {
@@ -38,14 +16,14 @@ pipeline {
 		branch = "custom-ci" 
 		os_version = "centos-7.8.2003"
 		component = "s3server"
-		custom_build_number = get_custom_build_number()
-		release_tag = "custom-build-$custom_build_number"
+		release_tag = "custom-build-$CUSTOM_CI_BUILD_ID"
 		build_upload_dir = "$release_dir/github/integration-custom-ci/$os_version/$release_tag/cortx_iso"
     }
 
 	parameters {  
 	    string(name: 'S3_URL', defaultValue: 'https://github.com/Seagate/cortx-s3server', description: 'Repository URL for S3Server')
         string(name: 'S3_BRANCH', defaultValue: 'stable', description: 'Branch for S3Server')
+		string(name: 'CUSTOM_CI_BUILD_ID', defaultValue: '0', description: 'Custom CI Build Number')
 		
 		choice(
             name: 'MOTR_BRANCH', 

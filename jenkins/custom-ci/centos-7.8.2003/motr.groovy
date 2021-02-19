@@ -1,18 +1,4 @@
 #!/usr/bin/env groovy
-properties([[$class: 'ThrottleJobProperty', categories: [], limitOneJobWithMatchingParams: true, maxConcurrentPerNode: 5, maxConcurrentTotal: 5, paramsToUseForLimit: 'MOTR_BRANCH', throttleEnabled: true, throttleOption: 'project']])
-
-def get_custom_build_number() {
-
-  def upstreamCause = currentBuild.rawBuild.getCause(Cause.UpstreamCause)
-  if (upstreamCause) {
-	def upstreamBuildID = Jenkins.getInstance().getItemByFullName(upstreamCause.getUpstreamProject(), hudson.model.Job).getBuildByNumber(upstreamCause.getUpstreamBuild()).getId()
-	return upstreamBuildID
-  } else {
-    def buildNumber = currentBuild.number
-	return buildNumber
-	}
-}
-
 pipeline {
     agent {
 		node {
@@ -33,6 +19,7 @@ pipeline {
 		string(name: 'S3_BRANCH', defaultValue: 'stable', description: 'Branch for S3Server')
 		string(name: 'HARE_URL', defaultValue: 'https://github.com/Seagate/cortx-hare', description: 'Branch to be used for Hare build.')
 		string(name: 'HARE_BRANCH', defaultValue: 'stable', description: 'Branch to be used for Hare build.')
+		string(name: 'CUSTOM_CI_BUILD_ID', defaultValue: '0', description: 'Custom CI Build Number')
 
 	}	
 
@@ -41,8 +28,7 @@ pipeline {
 		os_version = "centos-7.8.2003"
 		branch = "custom-ci"
 		component = "motr"
-		custom_build_number = get_custom_build_number()
-		release_tag = "custom-build-$custom_build_number"
+		release_tag = "custom-build-$CUSTOM_CI_BUILD_ID"
 		build_upload_dir = "$release_dir/github/integration-custom-ci/$os_version/$release_tag/cortx_iso"
     }
 
@@ -111,7 +97,8 @@ pipeline {
 						parameters: [
 									string(name: 'S3_BRANCH', value: "${S3_BRANCH}"),
 									string(name: 'MOTR_BRANCH', value: "custom-ci"),
-									string(name: 'S3_URL', value: "${S3_URL}")
+									string(name: 'S3_URL', value: "${S3_URL}"),
+									string(name: 'CUSTOM_CI_BUILD_ID', value: "${CUSTOM_CI_BUILD_ID}")
 								]
 					}
 				}
@@ -123,7 +110,8 @@ pipeline {
 						parameters: [
 									string(name: 'HARE_BRANCH', value: "${HARE_BRANCH}"),
 									string(name: 'MOTR_BRANCH', value: "custom-ci"),
-									string(name: 'HARE_URL', value: "${HARE_URL}")
+									string(name: 'HARE_URL', value: "${HARE_URL}"),
+									string(name: 'CUSTOM_CI_BUILD_ID', value: "${CUSTOM_CI_BUILD_ID}")
 								]
 					}
 				}

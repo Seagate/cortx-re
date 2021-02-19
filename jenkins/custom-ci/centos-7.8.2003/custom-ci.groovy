@@ -81,7 +81,8 @@ pipeline {
 														string(name: 'S3_URL', value: "${S3_URL}"),
 														string(name: 'S3_BRANCH', value: "${S3_BRANCH}"),
 														string(name: 'HARE_URL', value: "${HARE_URL}"),
-														string(name: 'HARE_BRANCH', value: "${HARE_BRANCH}")
+														string(name: 'HARE_BRANCH', value: "${HARE_BRANCH}"),
+														string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}")
                                             		]
 							} catch (err) {
 								build_stage = env.STAGE_NAME 			
@@ -98,8 +99,9 @@ pipeline {
                                                         try {
 								def prvsnrbuild = build job: 'prvsnr-custom-build', wait: true,
 								                  parameters: [
-									          	string(name: 'PRVSNR_URL', value: "${PRVSNR_URL}"),
-											string(name: 'PRVSNR_BRANCH', value: "${PRVSNR_BRANCH}")
+									            	string(name: 'PRVSNR_URL', value: "${PRVSNR_URL}"),
+											        string(name: 'PRVSNR_BRANCH', value: "${PRVSNR_BRANCH}"),
+													string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}")
 							        	          ]
 							} catch (err) {
 								build_stage = env.STAGE_NAME
@@ -123,7 +125,8 @@ pipeline {
 								def habuild = build job: 'cortx-ha', wait: true,
 									      parameters: [
 									      	  string(name: 'HA_URL', value: "${HA_URL}"),
-									      	  string(name: 'HA_BRANCH', value: "${HA_BRANCH}")
+									      	  string(name: 'HA_BRANCH', value: "${HA_BRANCH}"),
+											  string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}")	
 									      ]
 							} catch (err) {
 								build_stage = env.STAGE_NAME
@@ -141,7 +144,8 @@ pipeline {
 								def csm_agent_build = build job: 'custom-csm-agent-build', wait: true,
 										      parameters: [
 										      	  	string(name: 'CSM_AGENT_URL', value: "${CSM_AGENT_URL}"),
-						                        	string(name: 'CSM_AGENT_BRANCH', value: "${CSM_AGENT_BRANCH}")
+						                        	string(name: 'CSM_AGENT_BRANCH', value: "${CSM_AGENT_BRANCH}"),
+													string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}")
 										      ]
 							} catch (err) {
 								build_stage = env.STAGE_NAME
@@ -159,7 +163,8 @@ pipeline {
 								def csm_web_build = build job: 'custom-csm-web-build', wait: true,
 										    parameters: [
 										        string(name: 'CSM_WEB_URL', value: "${CSM_WEB_URL}"),
-												string(name: 'CSM_WEB_BRANCH', value: "${CSM_WEB_BRANCH}")
+												string(name: 'CSM_WEB_BRANCH', value: "${CSM_WEB_BRANCH}"),
+												string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}")
 										    ]
 							} catch (err) {
 								build_stage = env.STAGE_NAME
@@ -177,7 +182,8 @@ pipeline {
 								def ssplbuild = build job: 'sspl-custom-build', wait: true,
 										parameters: [
 											string(name: 'SSPL_URL', value: "${SSPL_URL}"),
-											string(name: 'SSPL_BRANCH', value: "${SSPL_BRANCH}")
+											string(name: 'SSPL_BRANCH', value: "${SSPL_BRANCH}"),
+											string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}")
 										]
 							} catch (err) {
 								build_stage = env.STAGE_NAME

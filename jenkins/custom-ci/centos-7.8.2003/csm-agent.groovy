@@ -1,18 +1,4 @@
 #!/usr/bin/env groovy
-properties([[$class: 'ThrottleJobProperty', categories: [], limitOneJobWithMatchingParams: true, maxConcurrentPerNode: 5, maxConcurrentTotal: 5, paramsToUseForLimit: 'CSM_AGENT_BRANCH', throttleEnabled: true, throttleOption: 'project']])
-
-def get_custom_build_number() {
-
-  def upstreamCause = currentBuild.rawBuild.getCause(Cause.UpstreamCause)
-  if (upstreamCause) {
-	def upstreamBuildID = Jenkins.getInstance().getItemByFullName(upstreamCause.getUpstreamProject(), hudson.model.Job).getBuildByNumber(upstreamCause.getUpstreamBuild()).getId()
-	return upstreamBuildID
-  } else {
-    def buildNumber = currentBuild.number
-	return buildNumber
-	}
-}
-
 pipeline {
 	agent {
 		node {
@@ -25,8 +11,7 @@ pipeline {
         branch = "custom-ci" 
         os_version = "centos-7.8.2003"
         release_dir = "/mnt/bigstorage/releases/cortx"
-		custom_build_number = get_custom_build_number()
-		release_tag = "custom-build-$custom_build_number"
+		release_tag = "custom-build-$CUSTOM_CI_BUILD_ID"
 		build_upload_dir = "$release_dir/github/integration-custom-ci/$os_version/$release_tag/cortx_iso"
     }
 
@@ -39,6 +24,7 @@ pipeline {
 	parameters {  
         string(name: 'CSM_AGENT_URL', defaultValue: 'https://github.com/Seagate/cortx-management.git', description: 'Repository URL for cortx-management build.')
 		string(name: 'CSM_AGENT_BRANCH', defaultValue: 'stable', description: 'Branch for cortx-management build.')
+		string(name: 'CUSTOM_CI_BUILD_ID', defaultValue: '0', description: 'Custom CI Build Number')
 	}	
 
 

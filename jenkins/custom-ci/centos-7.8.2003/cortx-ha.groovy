@@ -1,18 +1,4 @@
 #!/usr/bin/env groovy
-properties([[$class: 'ThrottleJobProperty', categories: [], limitOneJobWithMatchingParams: true, maxConcurrentPerNode: 5, maxConcurrentTotal: 5, paramsToUseForLimit: 'HA_BRANCH', throttleEnabled: true, throttleOption: 'project']])
-
-def get_custom_build_number() {
-
-  def upstreamCause = currentBuild.rawBuild.getCause(Cause.UpstreamCause)
-  if (upstreamCause) {
-	def upstreamBuildID = Jenkins.getInstance().getItemByFullName(upstreamCause.getUpstreamProject(), hudson.model.Job).getBuildByNumber(upstreamCause.getUpstreamBuild()).getId()
-	return upstreamBuildID
-  } else {
-    def buildNumber = currentBuild.number
-	return buildNumber
-	}
-}
-
 pipeline {
     agent {
 		node {
@@ -34,6 +20,7 @@ pipeline {
 	parameters {
 		string(name: 'HA_URL', defaultValue: 'https://github.com/Seagate/cortx-ha', description: 'Repository URL to be used for cortx-ha build.')
 		string(name: 'HA_BRANCH', defaultValue: 'stable', description: 'Branch to be used for cortx-ha build.')
+		string(name: 'CUSTOM_CI_BUILD_ID', defaultValue: '0', description: 'Custom CI Build Number')
 	}
 	
 	

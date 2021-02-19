@@ -1,18 +1,4 @@
 #!/usr/bin/env groovy
-properties([[$class: 'ThrottleJobProperty', categories: [], limitOneJobWithMatchingParams: true, maxConcurrentPerNode: 5, maxConcurrentTotal: 5, paramsToUseForLimit: 'PRVSNR_BRANCH', throttleEnabled: true, throttleOption: 'project']])
-
-def get_custom_build_number() {
-
-  def upstreamCause = currentBuild.rawBuild.getCause(Cause.UpstreamCause)
-  if (upstreamCause) {
-	def upstreamBuildID = Jenkins.getInstance().getItemByFullName(upstreamCause.getUpstreamProject(), hudson.model.Job).getBuildByNumber(upstreamCause.getUpstreamBuild()).getId()
-	return upstreamBuildID
-  } else {
-    def buildNumber = currentBuild.number
-	return buildNumber
-	}
-}
-
 pipeline { 
     agent {
         node {
@@ -23,6 +9,7 @@ pipeline {
 	parameters {  
         string(name: 'PRVSNR_URL', defaultValue: 'https://github.com/Seagate/cortx-prvsnr', description: 'Repository URL for Provisioner.')
 		string(name: 'PRVSNR_BRANCH', defaultValue: 'stable', description: 'Branch for Provisioner.')
+        string(name: 'CUSTOM_CI_BUILD_ID', defaultValue: '0', description: 'Custom CI Build Number')
 	}	
 
 	environment {
@@ -30,8 +17,7 @@ pipeline {
         branch = "custom-ci"
         os_version = "centos-7.8.2003"
         release_dir = "/mnt/bigstorage/releases/cortx"
-        custom_build_number = get_custom_build_number()
-		release_tag = "custom-build-$custom_build_number"
+        release_tag = "custom-build-$CUSTOM_CI_BUILD_ID"
 		build_upload_dir = "$release_dir/github/integration-custom-ci/$os_version/$release_tag/cortx_iso"
     }
 
@@ -61,10 +47,10 @@ pipeline {
             steps {
 				script { build_stage = env.STAGE_NAME }
                 sh encoding: 'utf-8', label: 'Provisioner RPMS', returnStdout: true, script: """
-                    sh ./devops/rpms/buildrpm.sh -g \$(git rev-parse --short HEAD) -e 1.0.0 -b ${custom_build_number}
+                    sh ./devops/rpms/buildrpm.sh -g \$(git rev-parse --short HEAD) -e 1.0.0 -b ${CUSTOM_CI_BUILD}
                 """
                 sh encoding: 'utf-8', label: 'Provisioner CLI RPMS', returnStdout: true, script: """
-				    sh ./cli/buildrpm.sh -g \$(git rev-parse --short HEAD) -e 1.0.0 -b ${custom_build_number}
+				    sh ./cli/buildrpm.sh -g \$(git rev-parse --short HEAD) -e 1.0.0 -b ${CUSTOM_CI_BUILD}
                 """
 				
 				sh encoding: 'UTF-8', label: 'api', script: '''
