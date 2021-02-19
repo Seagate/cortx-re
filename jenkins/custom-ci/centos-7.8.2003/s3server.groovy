@@ -1,5 +1,5 @@
 #!/usr/bin/env groovy
-properties([[$class: 'ThrottleJobProperty', categories: [], limitOneJobWithMatchingParams: false, maxConcurrentPerNode: 5, maxConcurrentTotal: 5, paramsToUseForLimit: 'S3_BRANCH', throttleEnabled: true, throttleOption: 'project']])
+properties([[$class: 'ThrottleJobProperty', categories: [], limitOneJobWithMatchingParams: true, maxConcurrentPerNode: 5, maxConcurrentTotal: 5, paramsToUseForLimit: 'S3_BRANCH', throttleEnabled: true, throttleOption: 'project']])
 
 def get_custom_build_number() {
 
