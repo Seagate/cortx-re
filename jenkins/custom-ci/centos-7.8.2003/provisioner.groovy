@@ -1,5 +1,5 @@
 #!/usr/bin/env groovy
-properties([[$class: 'ThrottleJobProperty', categories: [], limitOneJobWithMatchingParams: true, maxConcurrentPerNode: 1, maxConcurrentTotal: 1, paramsToUseForLimit: 'PRVSNR_BRANCH', throttleEnabled: true, throttleOption: 'category']])
+properties([[$class: 'ThrottleJobProperty', categories: [], limitOneJobWithMatchingParams: true, maxConcurrentPerNode: 1, maxConcurrentTotal: 1, paramsToUseForLimit: 'PRVSNR_BRANCH', throttleEnabled: true, throttleOption: 'project']])
 
 def get_custom_build_number() {
 
