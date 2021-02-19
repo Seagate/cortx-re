@@ -298,7 +298,7 @@ pipeline {
                 sh label: 'Repo Creation', script: '''
                     pushd $integration_dir/$release_tag/cortx_iso/
                     rpm -qi createrepo || yum install -y createrepo
-                    createrepo .
+                    createrepo -v --update .
                     popd
                 '''
 			}
