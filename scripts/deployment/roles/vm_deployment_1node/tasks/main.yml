@@ -1,0 +1,6 @@
+
+- include: 01_deploy_prereq.yml 
+  tags: ['01_DEPLOY_PREREQ']
+
+- include: 02_deploy.yml
+  tags: ['02_DEPLOY']
