@@ -1,4 +1,6 @@
 #!/usr/bin/env groovy
+properties([[$class: 'ThrottleJobProperty', categories: [], limitOneJobWithMatchingParams: false, maxConcurrentPerNode: 5, maxConcurrentTotal: 5, paramsToUseForLimit: 'PRVSNR_BRANCH', throttleEnabled: true, throttleOption: 'project']])
+
 def get_custom_build_number() {
 
   def upstreamCause = currentBuild.rawBuild.getCause(Cause.UpstreamCause)
@@ -37,6 +39,7 @@ pipeline {
         timeout(time: 15, unit: 'MINUTES')
         timestamps()
         ansiColor('xterm')
+        quietPeriod(30)
     }
     
     stages {
