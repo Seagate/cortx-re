@@ -139,6 +139,14 @@
     - "{{ dbconfig }}"
     - "{{ ipaddrinfo }}"
 
+- name: Remove provisioner setup files
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - "/root/script"
+    - "/root/provisioner.sh"
+
 - name: Remove a new host in hosts file
   lineinfile:
     path: /etc/hosts
