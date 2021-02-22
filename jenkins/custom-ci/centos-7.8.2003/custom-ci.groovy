@@ -12,13 +12,13 @@ pipeline {
 		version = "2.0.0"
 		branch = "custom-ci"
 		os_version = "centos-7.8.2003"
-		thrid_party_version = "2.0.0-latest"
 		release_dir = "/mnt/bigstorage/releases/cortx"
 		integration_dir = "$release_dir/github/integration-custom-ci/$os_version/"
 		release_tag = "custom-build-$BUILD_ID"
 		passphrase = credentials('rpm-sign-passphrase')
 		python_deps = "$release_dir/third-party-deps/python-deps/python-packages-2.0.0-latest"
 		cortx_os_iso = "/mnt/bigstorage/releases/cortx_builds/custom-os-iso/cortx-os-1.0.0-23.iso"
+		third_party_dir = "${THIRD_PARTY_VERSION == 'cortx-2.0' ? "$release_dir/third-party-deps/centos/centos-7.8.2003-2.0.0-latest" : "$release_dir/third-party-deps/centos/centos-7.8.2003-1.0.0-1"}"
 	}
 
 	options {
@@ -315,15 +315,8 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Tag Release', script: '''
                     pushd $integration_dir/$release_tag
-						if [ "$THIRD_PARTY_VERSION" == "cortx-2.0" ]; then
-							thrid_party_dir="/mnt/bigstorage/releases/cortx/third-party-deps/centos/centos-7.8.2003-2.0.0-latest"
-						else
-							thrid_party_dir="/mnt/bigstorage/releases/cortx/third-party-deps/centos/centos-7.8.2003-1.0.0-1"
-						fi
-
-					ln -s $thrid_party_dir 3rd_party
-					ln -s $python_deps python_deps
-					
+						ln -s $thrid_party_dir 3rd_party
+						ln -s $python_deps python_deps
                     popd
                 '''
 			}
@@ -383,7 +376,7 @@ pipeline {
 		success {
 				sh label: 'Delete Old Builds', script: '''
 				set +x
-				find ${integration_dir}/* -maxdepth 0 -mtime +30 -type d -exec ls -ld {} \\;
+				find ${integration_dir}/* -maxdepth 0 -mtime +30 -type d -exec rm -rf {} \\;
 				'''
 		}
 	
