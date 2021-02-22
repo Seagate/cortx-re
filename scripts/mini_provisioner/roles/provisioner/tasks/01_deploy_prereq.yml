@@ -1,0 +1,15 @@
+---
+
+- name: "[deploy-prereq] : Copy config file"
+  template:
+    src: config.ini.j2
+    dest: /root/config.ini
+    mode: '0754'
+  delegate_to: "srvnode-1"
+
+- name: "[deploy-prereq] : Install Git, Python3 on Primary Node"
+  yum:
+    name: [ 'git', 'expect' ]
+    state: latest
+    update_cache: yes   
+  delegate_to: "srvnode-1"
