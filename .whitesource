@@ -1,8 +1,9 @@
 {
   "scanSettings": {
-    "configMode": "LOCAL"
+    "configMode": "AUTO",
   },
   "checkRunSettings": {
+    "displayMode": "diff",
     "vulnerableCheckRunConclusionLevel": "failure"
   },
   "issueSettings": {
