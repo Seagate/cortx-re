@@ -51,16 +51,15 @@ pipeline {
 			steps {
 				script { build_stage = env.STAGE_NAME }
 				sh label: '', script: '''
-					sed '/baseurl/d' /etc/yum.repos.d/motr_current_build.repo
-					echo "baseurl=http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/$os_version/$release_tag/cortx_iso/"  >> /etc/yum.repos.d/motr_current_build.repo
-					yum-config-manager --disable cortx-C7.7.1908
+					yum-config-manager --disable cortx-C7.7.1908 motr_current_build
+					yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/$os_version/$release_tag/cortx_iso/
+					yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
 					yum clean all;rm -rf /var/cache/yum
-					rm -rf /var/cache/yum
 					
 					if [ "${HARE_BRANCH}" == "Cortx-v1.0.0_Beta" ]; then
-					yum install eos-core{,-devel} -y
+						yum install eos-core{,-devel} -y
 					else
-					yum install cortx-motr{,-devel} -y
+						yum install cortx-motr{,-devel} -y
 					fi
 				'''
 			}
