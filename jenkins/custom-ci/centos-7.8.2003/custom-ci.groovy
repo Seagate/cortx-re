@@ -315,7 +315,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Tag Release', script: '''
                     pushd $integration_dir/$release_tag
-						ln -s $thrid_party_dir 3rd_party
+						ln -s $third_party_dir 3rd_party
 						ln -s $python_deps python_deps
                     popd
                 '''
