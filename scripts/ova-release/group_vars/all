@@ -7,7 +7,7 @@ VSPHERE_CLUSTER: "cluster1"
 VSPHERE_DATASTORE: "DATA-1"
 BUILD_NUMBER: "{{ BUILD_URL.split('/')[-2] }}"
 #/mnt/bigstorage is a nfs mount
-OVA_FILE_PATH: "/mnt/bigstorage/cortx-{{ BUILD_NUMBER }}.ova"
+OVA_FILE_PATH: "/mnt/bigstorage/releases/opensource_builds/ova/cortx-{{ BUILD_NUMBER }}.ova"
 OVA_VM_NAME: "test-ova-vm"
 MGMT_ITF: "ens32"
 PBDATA_ITF: "ens33"
