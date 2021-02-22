@@ -34,7 +34,6 @@ import sys
 parser = argparse.ArgumentParser()
 parser.add_argument('-u', dest='username', type=str, help='JIRA username')
 parser.add_argument('-p', dest='password', type=str, help='JIRA password')
-#parser.add_argument('--query', dest='query', type=str, help='JIRA query')
 parser.add_argument('--build', dest='ova_build_number', type=str, help='OVA build number')
 parser.add_argument('--sourceBuild', dest='source_build_number', type=str, help='Source CORTX build number')
 parser.add_argument('--targetBuild', dest='target_build_number', type=str, help='Target CORTX build number')
@@ -48,8 +47,8 @@ release_repository = 'gauravchaudhari02/release-notes-testing'
 jira_base_url = 'https://jts.seagate.com'
 jira_issue_base_url = jira_base_url+'/browse/'
 releases_url="http://cortx-storage.colo.seagate.com/releases/cortx/github/cortx-1.0/centos-7.8.2003/"
-old_ova_path = '/root/cortx-ova-build-'+ args.ova_build_number +'.ova'
-new_ova_path = '/root/cortx-'+sem_ver+'.ova'
+old_ova_path = '/mnt/bigstorage/releases/opensource_builds/ova/cortx-ova-build-'+ args.ova_build_number +'.ova'
+new_ova_path = '/mnt/bigstorage/releases/opensource_builds/ova/cortx-va-'+sem_ver+'.ova'
 highlight_issues = args.highlight
 releasenotes = ""
 startReleaseDate = ""
