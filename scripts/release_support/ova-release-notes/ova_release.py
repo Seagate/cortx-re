@@ -68,7 +68,7 @@ def getReleaseDates():
    endReleaseDate = datetime.datetime.strptime(endDate, "%d-%b-%Y").strftime("%Y-%m-%d %H:%M")
 
 #collect jira issues data and create release-notes
-jira = JIRA(basic_auth=(args.username, args.password), options={'server':jira_base_url})
+jira = JIRA(basic_auth=(args.username,args.password), options={'server':jira_base_url})
 
 getReleaseDates()
 jql = "project = EOS AND (resolutiondate >= '{}' AND resolutiondate <= '{}') ORDER BY component".format(startReleaseDate,endReleaseDate)
