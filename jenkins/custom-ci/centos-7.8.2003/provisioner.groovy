@@ -47,10 +47,10 @@ pipeline {
             steps {
 				script { build_stage = env.STAGE_NAME }
                 sh encoding: 'utf-8', label: 'Provisioner RPMS', returnStdout: true, script: """
-                    sh ./devops/rpms/buildrpm.sh -g \$(git rev-parse --short HEAD) -e 1.0.0 -b ${CUSTOM_CI_BUILD}
+                    sh ./devops/rpms/buildrpm.sh -g \$(git rev-parse --short HEAD) -e 1.0.0 -b ${CUSTOM_CI_BUILD_ID}
                 """
                 sh encoding: 'utf-8', label: 'Provisioner CLI RPMS', returnStdout: true, script: """
-				    sh ./cli/buildrpm.sh -g \$(git rev-parse --short HEAD) -e 1.0.0 -b ${CUSTOM_CI_BUILD}
+				    sh ./cli/buildrpm.sh -g \$(git rev-parse --short HEAD) -e 1.0.0 -b ${CUSTOM_CI_BUILD_ID}
                 """
 				
 				sh encoding: 'UTF-8', label: 'api', script: '''
