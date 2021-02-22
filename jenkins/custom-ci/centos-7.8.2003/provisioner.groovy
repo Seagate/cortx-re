@@ -35,14 +35,6 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
-            steps {
-				script { build_stage = env.STAGE_NAME }
-                sh encoding: 'utf-8', label: 'Install Python', returnStdout: true, script: 'yum install -y python'
-                sh encoding: 'utf-8', label: 'Cleanup', returnStdout: true, script: 'test -d /root/rpmbuild && rm -rf /root/rpmbuild || echo "/root/rpmbuild absent. Skipping cleanup..."'
-            }
-        }
-
         stage('Build') {
             steps {
 				script { build_stage = env.STAGE_NAME }
@@ -57,9 +49,8 @@ pipeline {
 				if [ "${PRVSNR_BRANCH}" == "Cortx-v1.0.0_Beta" ]; then
 					echo "No Provisioner API RPMS in Beta Build hence skipping"
 				else
-					bash ./devops/rpms/api/build_python_api.sh -vv --out-dir /root/rpmbuild/RPMS/x86_64/ --pkg-ver ${custom_build_number}_git$(git rev-parse --short HEAD)
+					bash ./devops/rpms/api/build_python_api.sh -vv --out-dir /root/rpmbuild/RPMS/x86_64/ --pkg-ver ${CUSTOM_CI_BUILD_ID}_git$(git rev-parse --short HEAD)
 				fi
-				   ls -ltr /root/rpmbuild/RPMS/x86_64/*.rpm
 				'''
             }
         }
