@@ -370,9 +370,9 @@ pipeline {
 
 				sh label: 'Print Release Build and ISO location', script:'''
 				echo "Custom Release Build and ISO is available at,"
-					echo "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/release/$os_version/$release_tag/"
-					echo "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/release/$os_version/$release_tag/iso/$release_tag.iso"
-					echo "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/release/$os_version/$release_tag/iso/$release_tag-single.iso"
+					echo "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/$os_version/$release_tag/"
+					echo "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/$os_version/$release_tag/iso/$release_tag.iso"
+					echo "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/$os_version/$release_tag/iso/$release_tag-single.iso"
 		        '''
 		    }
 		}
@@ -383,7 +383,7 @@ pipeline {
 		success {
 				sh label: 'Delete Old Builds', script: '''
 				set +x
-				find /mnt/bigstorage/releases/cortx/github/integration-custom-ci/release/centos-7.8.2003/* -maxdepth 0 -mtime +30 -type d -exec rm -rf {} \\;
+				find ${integration_dir}/* -maxdepth 0 -mtime +30 -type d -exec ls -ld {} \\;
 				'''
 		}
 	
