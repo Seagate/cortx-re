@@ -5,11 +5,9 @@
     src: config.ini.j2
     dest: /root/config.ini
     mode: '0754'
-  delegate_to: "srvnode-1"
 
-- name: "[deploy-prereq] : Install Git, Python3 on Primary Node"
+- name: "[deploy-prereq] : Install Git on Primary Node"
   yum:
-    name: [ 'git', 'expect' ]
+    name: [ 'git' ]
     state: latest
     update_cache: yes   
-  delegate_to: "srvnode-1"
