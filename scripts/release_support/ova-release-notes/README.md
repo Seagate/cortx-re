@@ -3,7 +3,7 @@
 ## Description
 Create a OVA pre-release in [`Seagate/cortx`](https://github.com/Seagate/cortx) repository with release-notes includes features, bugfixes and general changes happened since last release.
 
-## How to create OVA pre-release with release-notes?
+## How to create OVA pre-release with release-notes
 1. Install all dependencies mentioned in `requirements.txt`.
 
 2. Run `ova_release.py` script with required arguments as follow
