@@ -19,8 +19,7 @@
 
 from pyVim import connect
 from config import *
-from pyVmomi import vim, vmodl
-import ssl
+from pyVmomi import vim
 import os
 import requests
 import urllib3

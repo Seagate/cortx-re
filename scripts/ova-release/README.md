@@ -4,7 +4,7 @@
 Generate OVA (Open Virtual Appliance) file from user mentioned CORTX build using ansible playbook.
 This playbook consists variety of roles required to generate and test OVA as follow,
 
-### Roles:
+### Roles
 
   - vm-snapshot-revert : Revert single node cluster VM to base snapshot (undo all previous installations) 
 
