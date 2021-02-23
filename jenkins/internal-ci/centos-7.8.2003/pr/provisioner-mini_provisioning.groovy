@@ -13,13 +13,14 @@ pipeline {
         ansiColor('xterm')  
     }
     parameters {  
-        string(name: 'PROVISIONER_URL', defaultValue: 'https://github.com/Seagate/cortx-prvsnr.git', description: 'Repo for PROVISIONER Agent')
+	string(name: 'PROVISIONER_URL', defaultValue: 'https://github.com/Seagate/cortx-prvsnr.git', description: 'Repo for PROVISIONER Agent')
         string(name: 'PROVISIONER_BRANCH', defaultValue: 'main', description: 'Branch for PROVISIONER Agent')
         choice(name: 'DEBUG', choices: ["no", "yes" ], description: 'Keep Host for Debuging')
     }
     environment {
 	//PR vars
-	//Provisioner Repo Info
+	// Hare Repo Info
+
         GPR_REPO = "https://github.com/${ghprbGhRepository}"
         PROVISIONER_URL = "${ghprbGhRepository != null ? GPR_REPO : PROVISIONER_URL}"
         PROVISIONER_BRANCH = "${sha1 != null ? sha1 : PROVISIONER_BRANCH}"
@@ -80,12 +81,8 @@ pipeline {
 					    echo -e "Setup Provisioner python API"
 						bash ./devops/rpms/api/build_python_api.sh -vv --out-dir /root/rpmbuild/RPMS/x86_64/ --pkg-ver ${BUILD_NUMBER}_git$(git rev-parse --short HEAD)
 					'''
-					
-					sh label: 'Copy RPMS', script: '''
-						mkdir -p $DESTINATION_RELEASE_LOCATION/$BUILD_NUMBER
-						cp /root/rpmbuild/RPMS/x86_64/*.rpm $DESTINATION_RELEASE_LOCATION/$BUILD_NUMBER
-					'''
-					sh label: 'Repo Creation', script: '''pushd $DESTINATION_RELEASE_LOCATION/$BUILD_NUMBER
+					sh label: 'Repo Creation', script: '''mkdir -p $DESTINATION_RELEASE_LOCATION
+					    pushd $DESTINATION_RELEASE_LOCATION
 						rpm -qi createrepo || yum install -y createrepo
 						createrepo .
 						popd
@@ -185,17 +182,12 @@ pipeline {
                 NODE_DEFAULT_SSH_CRED =  credentials("${NODE_DEFAULT_SSH_CRED}")
                 NODE_USER = "${NODE_DEFAULT_SSH_CRED_USR}"
                 NODE_PASS = "${NODE_DEFAULT_SSH_CRED_PSW}"
-                CLUSTER_PASS = "${NODE_DEFAULT_SSH_CRED_PSW}"
 				
             }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 echo 'Deploying provisioner and setup platform'
                 script {
-                    if(!env.CHANGE_PASS){
-                        env.CHANGE_PASS = "no"
-                    }
-
                     // Cleanup Workspace
                     cleanWs()
 
@@ -254,8 +246,7 @@ def runAnsible(tags){
                 extraVars: [
                     "NODE1"                 : [value: "${NODE1_HOST}", hidden: false],
                     "BUILD_URL"             : [value: "${CORTX_BUILD}", hidden: false] ,
-                    "CLUSTER_PASS"          : [value: "${CLUSTER_PASS}", hidden: false],
-                    "CLOUDFORM_API_CRED"    : [value: "${CLOUDFORM_API_CRED}", hidden: true],
+                    "NODE_PASS"             : [value: "${NODE_PASS}", hidden: false],
                     "SERVICE_USER"          : [value: "${SERVICE_USER}", hidden: true],
                     "SERVICE_PASS"          : [value: "${SERVICE_PASS}", hidden: true]
                 ],
