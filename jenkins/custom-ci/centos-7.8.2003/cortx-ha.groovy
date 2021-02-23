@@ -1,3 +1,4 @@
+#!/usr/bin/env groovy
 pipeline {
     agent {
 		node {
@@ -6,25 +7,26 @@ pipeline {
 	}
     
     environment {
-        env = "dev"
 		component = "cortx-ha"
         branch = "custom-ci" 
         os_version = "centos-7.8.2003"
         release_dir = "/mnt/bigstorage/releases/cortx"
-        component_dir = "$release_dir/components/github/$branch/$os_version/$env/$component/"
+		release_tag = "custom-build-$CUSTOM_CI_BUILD_ID"
+		build_upload_dir = "$release_dir/github/integration-custom-ci/$os_version/$release_tag/cortx_iso"
+
     }
 	
 	parameters {
 		string(name: 'HA_URL', defaultValue: 'https://github.com/Seagate/cortx-ha', description: 'Repository URL to be used for cortx-ha build.')
 		string(name: 'HA_BRANCH', defaultValue: 'stable', description: 'Branch to be used for cortx-ha build.')
+		string(name: 'CUSTOM_CI_BUILD_ID', defaultValue: '0', description: 'Custom CI Build Number')
 	}
 	
 	
 	options {
 		timeout(time: 35, unit: 'MINUTES')
 		timestamps()
-        ansiColor('xterm')
-		disableConcurrentBuilds()  
+        ansiColor('xterm')  
 	}
 
 	stages {
@@ -42,10 +44,9 @@ pipeline {
 				script { build_stage = env.STAGE_NAME }
 				sh label: '', script: '''
 					pushd $component
-					yum clean all;rm -rf /var/cache/yum
-					yum erase python36-PyYAML -y
-					bash jenkins/cicd/cortx-ha-dep.sh
-					pip3 install numpy
+						yum erase python36-PyYAML -y
+						bash jenkins/cicd/cortx-ha-dep.sh
+						pip3 install numpy
 					popd
 				'''
 			}
@@ -55,10 +56,9 @@ pipeline {
 			steps {
 				script { build_stage = env.STAGE_NAME }
 				sh label: 'Build', script: '''
-					set -xe
 					pushd $component
-					echo "Executing build script"
-   				   ./jenkins/build.sh -b $BUILD_NUMBER
+						echo "Executing build script"
+						./jenkins/build.sh -b $CUSTOM_CI_BUILD_ID
 					popd
 				'''	
 			}
@@ -70,8 +70,8 @@ pipeline {
 				sh label: 'Test', script: '''
 					set -xe
 					pushd $component
-					yum localinstall $WORKSPACE/$component/dist/rpmbuild/RPMS/x86_64/cortx-ha-*.rpm -y
-					bash jenkins/cicd/cortx-ha-cicd.sh
+						yum localinstall $WORKSPACE/$component/dist/rpmbuild/RPMS/x86_64/cortx-ha-*.rpm -y
+						bash jenkins/cicd/cortx-ha-cicd.sh
 					popd
 				'''	
 			}
@@ -81,24 +81,9 @@ pipeline {
 			steps {
 				script { build_stage = env.STAGE_NAME }
 				sh label: 'Copy RPMS', script: '''
-					mkdir -p $component_dir/$BUILD_NUMBER
-					cp $WORKSPACE/cortx-ha/dist/rpmbuild/RPMS/x86_64/*.rpm $component_dir/$BUILD_NUMBER
-				'''
-                sh label: 'Repo Creation', script: '''pushd $component_dir/$BUILD_NUMBER
-					rpm -qi createrepo || yum install -y createrepo
-					createrepo .
-					popd
-				'''
-			}
-		}
-	
-		stage ('Tag last_successful') {
-			steps {
-				script { build_stage = env.STAGE_NAME }
-				sh label: 'Tag last_successful', script: '''pushd $component_dir/
-					test -L $component_dir/last_successful && rm -f last_successful
-					ln -s $component_dir/$BUILD_NUMBER last_successful
-					popd
+					mkdir -p $build_upload_dir
+					cp $WORKSPACE/cortx-ha/dist/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir
+					createrepo -v --update $build_upload_dir
 				'''
 			}
 		}
