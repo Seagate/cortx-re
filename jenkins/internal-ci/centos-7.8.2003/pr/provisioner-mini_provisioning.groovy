@@ -59,15 +59,6 @@ pipeline {
 				dir('provisioner') {	
 					checkout([$class: 'GitSCM', branches: [[name: "${PROVISIONER_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${PROVISIONER_URL}", refspec: "${PROVISIONER_PR_REFSPEC}"]]])
             
-
-        
-					sh encoding: 'utf-8', label: 'Install Python', returnStdout: true, script: """
-					    yum install -y python
-					"""    
-					sh encoding: 'utf-8', label: 'Cleanup', returnStdout: true, script: 'test -d /root/rpmbuild && rm -rf /root/rpmbuild || echo "/root/rpmbuild absent. Skipping cleanup..."'
-         
-
-        
 					sh encoding: 'utf-8', label: 'Provisioner RPMS', returnStdout: true, script: """
 					    echo -e "Building Provisioner RPM's"
 						sh ./devops/rpms/buildrpm.sh -g \$(git rev-parse --short HEAD) -e $VERSION -b ${BUILD_NUMBER}
