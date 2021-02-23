@@ -12,7 +12,6 @@ Create a OVA pre-release in [`Seagate/cortx`](https://github.com/Seagate/cortx) 
 python3 ova_release.py -u <JIRA Username> -p <JIRA Password> --build <OVA Build Number> --release <GitHub Release Number> --sourceBuild <CORTX Build    Number> --targetBuild <CORTX Build Number>
 ```
   
-  
   Parameters:
     
     -u : JIRA Username

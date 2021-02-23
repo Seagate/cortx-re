@@ -27,7 +27,6 @@ import time
 import shutil
 import os
 import argparse
-import json
 import sys
 
 #parse command line arguments
