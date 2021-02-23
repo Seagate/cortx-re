@@ -56,7 +56,7 @@ pipeline {
             steps {
 				script { build_stage = env.STAGE_NAME }
 				echo "Building Provisioner RPM's"
-				dir('provisioner'){	
+				dir('provisioner') {	
 					checkout([$class: 'GitSCM', branches: [[name: "${PROVISIONER_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${PROVISIONER_URL}", refspec: "${PROVISIONER_PR_REFSPEC}"]]])
             
 
@@ -204,7 +204,7 @@ pipeline {
                         runAnsible("00_PREP_ENV, 01_DEPLOY_PREREQ, 02_DEPLOY, 03_PLAT_SETUP")
 
                     }
-                    if("${DEBUG}" == "yes"){
+                    if ("${DEBUG}" == "yes") {
                         
                         markNodeOffline("Provisioner Debug Mode Enabled on This Host  - ${JOB_URL}")
 
@@ -235,10 +235,10 @@ pipeline {
     }
 }
 
-def runAnsible(tags){
+def runAnsible(tags) {
     withCredentials([usernamePassword(credentialsId: "${NODE_UN_PASS_CRED_ID}", passwordVariable: 'SERVICE_PASS', usernameVariable: 'SERVICE_USER'),string(credentialsId: "${CLOUDFORM_TOKEN_CRED_ID}", variable: 'CLOUDFORM_API_CRED')]) {
         
-        dir("cortx-re/scripts/mini_provisioner"){
+        dir("cortx-re/scripts/mini_provisioner") {
             ansiblePlaybook(
                 playbook: 'provisioner_deploy.yml',
                 inventory: 'inventories/hosts',

@@ -30,9 +30,9 @@ rm -rf /etc/yum.repos.d/*cortx_iso*.repo
 yum clean all
 rm -rf /var/cache/yum/
 
-sshpass -p ${NODE_PASS} provisioner setup_provisioner srvnode-1:${NODE1} \
+sshpass -p "${NODE_PASS}" provisioner setup_provisioner srvnode-1:"${NODE1}" \
 --logfile --logfile-filename /var/log/seagate/provisioner/setup.log --source rpm --config-path ~/config.ini \
---dist-type bundle --target-build ${BUILD_URL}
+--dist-type bundle --target-build "${BUILD_URL}"
 
 provisioner configure_setup ./config.ini 1
 
