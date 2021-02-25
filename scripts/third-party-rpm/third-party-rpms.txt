@@ -1,0 +1,11 @@
+#CSM
+elasticsearch-oss == 6.8.8
+kibana-oss == 6.8.8
+python3-pip
+
+#S3server
+compat-lua-libs == 5.1.5
+haproxy == 1.8.14
+
+#SSPL
+systemd-python36
