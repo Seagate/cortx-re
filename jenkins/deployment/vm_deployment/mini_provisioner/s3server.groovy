@@ -50,6 +50,7 @@ pipeline {
         // Clone deploymemt scripts from cortx-re repo
         stage ('Prerequisite') {
             steps {
+                script { build_stage = env.STAGE_NAME }
                 script {
                     
                     // Add badget to jenkins build
@@ -77,6 +78,7 @@ pipeline {
         stage('00. Prepare Environment') {
             when { expression { env.STAGE_00_PREPARE_ENV == "yes" } }
             steps {
+                script { build_stage = env.STAGE_NAME }
                 script {
                     
                     info("Running '00. Prepare Environment' Stage")  
@@ -91,6 +93,7 @@ pipeline {
         stage('01. Prereq') {
             when { expression { env.STAGE_01_PREREQ == "yes" } }
             steps {
+                script { build_stage = env.STAGE_NAME }
                 script {
                     
                     info("Running '01. Prereq' Stage")
@@ -106,6 +109,7 @@ pipeline {
         stage('02. Install S3server') {
             when { expression { env.STAGE_02_INSTALL_S3SERVER == "yes" } }
             steps {
+                script { build_stage = env.STAGE_NAME }
                 script {
                     
                     info("Running '02. Install S3server' Stage")
@@ -121,6 +125,7 @@ pipeline {
         stage('03. Mini Provisioning') {
             when { expression { env.STAGE_03_MINI_PROV == "yes" } }
             steps {
+                script { build_stage = env.STAGE_NAME }
                 script {
                     
                     info("Running '03. Mini Provisioning' Stage")
@@ -136,6 +141,7 @@ pipeline {
         stage('04. Start S3server') {
             when { expression { env.STAGE_04_START_S3SERVER == "yes" } }
             steps {
+                script { build_stage = env.STAGE_NAME }
                 script {
                     
                     info("Running '04. Start S3server' Stage")
@@ -150,6 +156,7 @@ pipeline {
         stage('05. Validate Deployment') {
             when { expression { env.STAGE_05_VALIDATE_DEPLOYMENT == "yes" } }
             steps {
+                script { build_stage = env.STAGE_NAME }
                 script {
                     
                     info("Running '05. Validate Deployment' Stage")
@@ -203,10 +210,12 @@ pipeline {
                 archiveArtifacts artifacts: "*.log, *.json", onlyIfSuccessful: false, allowEmptyArchive: true 
                 cleanWs()
 
+                env.build_stage = "${build_stage}"
+                env.build_url = "${CORTX_BUILD}"
+
                 def mailRecipients = "nilesh.govande@seagate.com, basavaraj.kirunge@seagate.com, rajesh.nambiar@seagate.com, ajinkya.dhumal@seagate.com, amit.kumar@seagate.com"
-                mailRecipients = "gowthaman.chinnathambi@seagate.com"
                                     
-                emailext body: '''${SCRIPT, template="component-email-dev.template"}''',
+                emailext body: '''${SCRIPT, template="mini_prov-email.template"}''',
                 mimeType: 'text/html',
                 recipientProviders: [requestor()], 
                 subject: "[Jenkins] S3ManualMiniProvisioning : ${currentBuild.currentResult}, ${JOB_BASE_NAME}#${BUILD_NUMBER}",
@@ -234,8 +243,8 @@ def getTestMachine(host, user, pass) {
 def runAnsible(tags) {
 
     withCredentials([usernamePassword(credentialsId: "mini-prov-ldap-root-cred", passwordVariable: 'LDAP_ROOT_USER', usernameVariable: 'LDAP_ROOT_PWD'),
-        usernamePassword(credentialsId: "mini-prov-ldap-sg-cred", passwordVariable: 'LDAP_SGIAM_USER', usernameVariable: 'LDAP_SGIAM_PWD'),
-        usernamePassword(credentialsId: "mini-prov-bmc-cred", passwordVariable: 'BMC_USER', usernameVariable: 'BMC_SECRET')]) {
+        usernamePassword(credentialsId: "mini-prov-ldap-sg-cred", passwordVariable: 'LDAP_SGIAM_PWD', usernameVariable: 'LDAP_SGIAM_USER'),
+        usernamePassword(credentialsId: "mini-prov-bmc-cred", passwordVariable: 'BMC_SECRET', usernameVariable: 'BMC_USER')]) {
             dir("cortx-re/scripts/mini_provisioner") {
                 ansiblePlaybook(
                     playbook: 's3server_deploy.yml',
