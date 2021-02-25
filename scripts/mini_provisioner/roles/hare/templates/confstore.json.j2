@@ -227,7 +227,7 @@
     "product": "LR2",
     "setup": "cortx",
     "type": "bundle",
-    "target_build": "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/release/centos-7.8.2003/custom-build-500/",
+    "target_build": "{{ CORTX_BUILD }}",
     "update": {
       "base_dir": "/opt/seagate/cortx/updates",
       "repos": {}
@@ -281,11 +281,7 @@
       ]
     },
     "search_domains": null,
-    "cluster_ip": "127.0.0.1",
-    "dns_servers": [
-      "8.8.8.8"
-    ],
-    "mgmt_vip": "127.0.0.1",
+    "dns_servers": null,
     "server_nodes": {
       "{{ MACHINE_ID }}": "srvnode-1"
     },
@@ -328,20 +324,20 @@
           ],
           "interface_type": "tcp",
           "transport_type": "lnet",
-          "netmask": "255.255.255.0",
-          "public_ip": "127.0.0.1",
-          "private_ip": "{{ IP_ADDRESS }}",
-          "roaming_ip": "127.0.0.1",
-          "gateway": "255.255.255.0",
+          "public_ip": null,
+          "private_ip": "",
+          "netmask": null,
+          "gateway": null,
+          "roaming_ip": "127.0.0.1"
         }
       },
       "storage": {
         "enclosure_id": "enclosure-1",
         "metadata_devices": [
-          "/dev/sdb"
+          "{{ METADATA_DEVICE }}"
         ],
         "data_devices": [
-          "/dev/sdc"
+          "{{ DATA_DEVICE }}"
         ]
       },
       "s3_instances": 11
