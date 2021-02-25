@@ -95,10 +95,18 @@ pipeline {
                     rm -rf /root/.seagate_src_cache/
                     '''
 
+                    if("${ghprbPullLink}"){
+                        env.pr_id = "${ghprbPullLink}"
+                    }else{
+                        env.branch_name = "${S3_BRANCH}"
+                        env.repo_url = "${S3_URL}"
+                    }
+                    env.build_stage = "${build_stage}"
+
                     def mailRecipients = "nilesh.govande@seagate.com, basavaraj.kirunge@seagate.com, rajesh.nambiar@seagate.com, ajinkya.dhumal@seagate.com, amit.kumar@seagate.com"
                     mailRecipients = "gowthaman.chinnathambi@seagate.com"
                                         
-                    emailext body: '''${SCRIPT, template="component-email-dev.template"}''',
+                    emailext body: '''${SCRIPT, template="mini_prov-email.template"}''',
                     mimeType: 'text/html',
                     recipientProviders: [requestor()], 
                     subject: "[Jenkins] S3AutoPremerge : ${currentBuild.currentResult}, ${JOB_BASE_NAME}#${BUILD_NUMBER}",
