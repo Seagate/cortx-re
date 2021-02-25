@@ -176,8 +176,7 @@ pipeline {
 
                 sh label: 'RPM Signing', script: '''
                     pushd cortx-re/scripts/release_support
-                        sh build_release_info.sh -v ${VERSION} -b "${CORTX_ISO_LOCATION}"
-                        sh build-3rdParty-release-info.sh "${THIRD_PARTY_LOCATION}"
+                        sh build_release_info.sh -v ${VERSION} -b ${CORTX_ISO_LOCATION} -t ${THIRD_PARTY_LOCATION}
                         sh build_readme.sh "${DESTINATION_RELEASE_LOCATION}"
                     popd
 
@@ -261,10 +260,17 @@ pipeline {
             script  {
                 sh label: 'Remove artifacts', script: '''rm -rf "${DESTINATION_RELEASE_LOCATION}"'''
 
+                if(env.ghprbPullLink){
+                    env.pr_id = "${ghprbPullLink}"
+                }else{
+                    env.branch_name = "${S3_BRANCH}"
+                    env.repo_url = "${S3_URL}"
+                }
+                env.build_stage = "${build_stage}"
+                
                 def mailRecipients = "nilesh.govande@seagate.com, basavaraj.kirunge@seagate.com, rajesh.nambiar@seagate.com, ajinkya.dhumal@seagate.com, amit.kumar@seagate.com"
-                mailRecipients = "gowthaman.chinnathambi@seagate.com"
 
-                emailext body: '''${SCRIPT, template="component-email-dev.template"}''',
+                emailext body: '''${SCRIPT, template="mini_prov-email.template"}''',
                 mimeType: 'text/html',
                 recipientProviders: [requestor()], 
                 subject: "[Jenkins] S3AutoMiniProvisioning : ${currentBuild.currentResult}, ${JOB_BASE_NAME}#${BUILD_NUMBER}",
