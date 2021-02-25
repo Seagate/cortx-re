@@ -82,7 +82,10 @@ pipeline {
                     archiveArtifacts artifacts: 'html/*.*', fingerprint: true
                     publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: true, reportDir: 'html', reportFiles: 'index.html', reportName: 'CppCheck Report', reportTitles: ''])
                     //githubNotify context: 'premerge-test', description: "Build finished", targetUrl: "${BUILD_URL}/testReport",  status: 'SUCCESS'
-                    setBuildStatus("Build failed", "FAILURE", "${MOTR_URL}")
+                    
+                    githubNotify account: 'gowthamchinna', context: 'premerge-test', credentialsId: 'gowthamchinna',
+                                description: 'This is an example', repo: 'acceptance-test-harness', sha: "${sha}"
+                                , status: 'SUCCESS', targetUrl: '${BUILD_URL}/testReport'
                 }
             }
         }
@@ -177,13 +180,14 @@ def githubAPIAddComments(text_pr){
     }
 }
 
-
-void setBuildStatus(String message, String state, String repoURL) {
-  step([
-      $class: "GitHubCommitStatusSetter",
-      reposSource: [$class: "ManuallyEnteredRepositorySource", url: repoURL],
-      contextSource: [$class: "ManuallyEnteredCommitContextSource", context: "premerge-test"],
-      errorHandlers: [[$class: "ChangingBuildStatusErrorHandler", result: "UNSTABLE"]],
-      statusResultSource: [ $class: "ConditionalStatusResultSource", results: [[$class: "AnyBuildResult", message: message, state: state]] ]
-  ]);
+def setBuildStatus(String message, String state, String context, String sha) {
+    step([
+        $class: "GitHubCommitStatusSetter",
+        reposSource: [$class: "ManuallyEnteredRepositorySource", url: "${MOTR_URL}"],
+        contextSource: [$class: "ManuallyEnteredCommitContextSource", context: context],
+        errorHandlers: [[$class: "ChangingBuildStatusErrorHandler", result: "UNSTABLE"]],
+        commitShaSource: [$class: "ManuallyEnteredShaSource", sha: sha ],
+        statusBackrefSource: [$class: "ManuallyEnteredBackrefSource", backref: "${BUILD_URL}flowGraphTable/"],
+        statusResultSource: [$class: "ConditionalStatusResultSource", results: [[$class: "AnyBuildResult", message: message, state: state]] ]
+    ]);
 }
