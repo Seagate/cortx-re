@@ -3,4 +3,4 @@
 required_vars:
   - NODE1
   - BUILD_URL
-  - NODE_PASS
+  - CLUSTER_PASS
