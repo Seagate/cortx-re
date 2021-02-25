@@ -9,6 +9,19 @@ python3-pip
 #S3server
 compat-lua-libs == 5.1.5
 haproxy == 1.8.14
+libxml2
+libyaml
+openssl
+yaml-cpp
+gflags
+glog
+pkgconfig
+log4cxx_cortx 
+log4cxx_cortx-devel
+python36
+python36-ldap
+PyYAML
+hiredis
 
 #SSPL
 systemd-python36
