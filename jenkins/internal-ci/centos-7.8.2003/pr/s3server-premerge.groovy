@@ -95,7 +95,7 @@ pipeline {
                     rm -rf /root/.seagate_src_cache/
                     '''
 
-                    if("${ghprbPullLink}"){
+                    if((env.ghprbPullLink){
                         env.pr_id = "${ghprbPullLink}"
                     }else{
                         env.branch_name = "${S3_BRANCH}"

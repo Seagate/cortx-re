@@ -236,7 +236,7 @@ def runAnsible(tags) {
                 tags: "${tags}",
                 extraVars: [
                     "NODE1"                 : [value: "${NODE1_HOST}", hidden: false],
-                    "BUILD_URL"             : [value: "${CORTX_BUILD}", hidden: false] ,
+                    "BUILD_URL"             : [value: "${CORTX_BUILD}", hidden: false],
                     "CLUSTER_PASS"          : [value: "${NODE_PASS}", hidden: false],
                     "SERVICE_USER"          : [value: "${SERVICE_USER}", hidden: true],
                     "SERVICE_PASS"          : [value: "${SERVICE_PASS}", hidden: true]
