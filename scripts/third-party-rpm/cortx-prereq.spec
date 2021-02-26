@@ -5,6 +5,7 @@ Summary:    CORTX pre-requisite package
 License:    Seagate
 
 Requires:  third-party-deps
+Requires(pre) java-1.8.0-openjdk-headless
 Source:    %{name}-%{version}-%{_git_hash}.tgz
 
 %description
