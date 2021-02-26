@@ -32,7 +32,7 @@ pushd "$BUILD_LOCATION"
 cat <<EOF > THIRD_PARTY_RELEASE.INFO
 ---
 NAME: "CORTX"
-VERSION: "1.0.0"
+VERSION: "2.0.0"
 BUILD: $(echo "$BUILD_NUMBER" | sed -e 's/^/\"/g' -e 's/$/\"/g')
 OS: $(cat /etc/redhat-release | sed -e 's/ $//g' -e 's/^/\"/g' -e 's/$/\"/g')
 DATETIME: $(date +"%d-%b-%Y %H:%M %Z" | sed -e 's/^/\"/g' -e 's/$/\"/g')
