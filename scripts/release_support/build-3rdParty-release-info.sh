@@ -18,21 +18,35 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
-BUILD_LOCATION=$1
+usage() { echo "Usage: $0 [-b build location] [-v version]" 1>&2; exit 1; }
 
-if [ -z "$BUILD_LOCATION" ]; then
-echo "Build location is empty. exiting.."
-exit 1
+while getopts ":b:v:" o; do
+    case "${o}" in
+        b)
+            BUILD_LOCATION=${OPTARG}
+            ;;
+        v)
+            VERSION=${OPTARG}
+            ;;
+        *)
+            usage
+            ;;
+    esac
+done
+shift $((OPTIND-1))
+
+if [ -z "${BUILD_LOCATION}" ] || [ -z "${VERSION}" ]; then
+    usage
 fi
 
-echo -e "Generating RELEASE.INFO file"
+echo -e "Generating THIRD_PARTY_RELEASE.INFO file"
 pushd "$BUILD_LOCATION"
 #find . -type f -name *.rpm | awk -F '/' '{print $NF}' | awk '{ print "    - \""$1"\""}'
 
 cat <<EOF > THIRD_PARTY_RELEASE.INFO
 ---
 NAME: "CORTX"
-VERSION: "2.0.0"
+VERSION: "$VERSION"
 BUILD: $(echo "$BUILD_NUMBER" | sed -e 's/^/\"/g' -e 's/$/\"/g')
 OS: $(cat /etc/redhat-release | sed -e 's/ $//g' -e 's/^/\"/g' -e 's/$/\"/g')
 DATETIME: $(date +"%d-%b-%Y %H:%M %Z" | sed -e 's/^/\"/g' -e 's/$/\"/g')
