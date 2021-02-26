@@ -5,7 +5,6 @@ Summary:    CORTX pre-requisite package
 License:    Seagate
 
 Requires:  third-party-deps
-Requires(pre): /usr/bin/java
 Source:    %{name}-%{version}-%{_git_hash}.tgz
 
 %description
