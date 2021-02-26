@@ -48,7 +48,7 @@ do
 echo "Adding rpms from $dir"
 cat <<EOF >> THIRD_PARTY_RELEASE.INFO
     "$dir":
-$(find -L ./"$dir" -type f -not -path "./lustre/custom/tcp/*" -name '*.rpm' -or -name '*.tar.xz' | awk -F '/' '{print $NF}' | awk '{ print "       - \""$1"\""}')
+$(find -L ./"$dir" -type f -not -path "./lustre/custom/tcp/*" -name '*.rpm' -or -name '*.tar.xz' -or -name '*.tgz' | awk -F '/' '{print $NF}' | awk '{ print "       - \""$1"\""}')
 EOF
 done
 popd
