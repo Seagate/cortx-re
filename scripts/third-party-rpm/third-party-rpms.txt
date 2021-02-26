@@ -24,3 +24,13 @@ hiredis
 
 #SSPL
 systemd-python36
+rabbitmq-server
+udisks2
+hdparm
+python36 
+python36-dbus 
+python36-paramiko
+ipmitool 
+smartmontools 
+lshw
+perl(Config::Any)
