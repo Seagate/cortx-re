@@ -49,7 +49,7 @@ pipeline {
         stage('Checkout Release scripts') {
 			steps {
         	    script { build_stage = env.STAGE_NAME }
-                checkout([$class: 'GitSCM', branches: [[name: 'third-party-release-info']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/shailesh-vaidya/cortx-re']]])
+                checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
 			}
 		}
 			
