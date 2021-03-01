@@ -49,7 +49,7 @@ python36-pika
 python36-ply
 python36-psutil
 python36-psutil
-pyyaml
+PyYAML
 rabbitmq-server
 ruby
 rubygem-net-ssh
