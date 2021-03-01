@@ -26,7 +26,7 @@ cp -R python-requirements.txt %{buildroot}/opt/seagate/cortx/python-deps
 /opt/seagate/cortx/python-deps/python-requirements.txt
 
 %post
-echo "Installing CORTX prerequisite Python packages."
+echo -e "\n Installing CORTX prerequisite Python packages. \n"
 pip3 install -r /opt/seagate/cortx/python-deps/python-requirements.txt
 
 %clean
