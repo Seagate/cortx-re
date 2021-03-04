@@ -47,13 +47,28 @@ pipeline {
 			}
 		}
 	
+	  stage('Install python packages') {
+			steps {
+        	    script { build_stage = env.STAGE_NAME }
+				sh label: '', script: '''
+					yum erase python36-PyYAML -y
+					cat <<EOF >>/etc/pip.conf
+[global]
+timeout: 60
+index-url: http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/python-packages-2.0.0-latest/
+trusted-host: cortx-storage.colo.seagate.com
+EOF
+					pip3 install -r ./cortx-re/scripts/third-party-rpm/python-requirements.txt	
+					rm -rf /etc/pip.conf
+			'''		
+			}
+		}
 		stage('Install Dependencies') {
 			steps {
 				script { build_stage = env.STAGE_NAME }
 				sh label: '', script: '''
 					pushd $component
 						yum clean all;rm -rf /var/cache/yum
-						pip3 install -r ../cortx-re/scripts/third-party-rpm/python-requirements.txt
 						yum erase python36-PyYAML -y
 						bash jenkins/cicd/cortx-ha-dep.sh
 						pip3 install numpy
