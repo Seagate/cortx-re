@@ -38,15 +38,6 @@ pipeline {
 		}
 
 		// Install third-party dependencies. This needs to be removed once components move away from self-contained binaries 
-		stage('Checkout Release scripts') {
-			steps {
-        	    script { build_stage = env.STAGE_NAME }
-				dir ('cortx-re') {
-					checkout changelog: false, poll: false, scm: [$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CheckoutOption'], [$class: 'CloneOption', noTags: false, reference: '', shallow: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]]
-				}
-			}
-		}
-	
 	  stage('Install python packages') {
 			steps {
         	    script { build_stage = env.STAGE_NAME }
@@ -58,7 +49,7 @@ timeout: 60
 index-url: http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/python-packages-2.0.0-latest/
 trusted-host: cortx-storage.colo.seagate.com
 EOF
-					pip3 install -r ./cortx-re/scripts/third-party-rpm/python-requirements.txt	
+					pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/$branch/py-utils/requirements.txt
 					rm -rf /etc/pip.conf
 			'''		
 			}
