@@ -3,7 +3,7 @@ pipeline {
     agent {
         node {
             // This job runs on vm deployment controller node to execute vm cleanup for the deployment configured host
-            label "${NODE_LABEL}"
+            label "${NODE_LABEL} && cleanup_req"
         }
     }
 	
@@ -55,11 +55,10 @@ pipeline {
         // Cleanup previous deployment
         stage('Cleanup Node') {
             steps {
-                retry(count: 3) {   
+                retry(count: 2) {   
                     script {
                         
-                        withCredentials([usernamePassword(credentialsId: "${NODE_UN_PASS_CRED_ID}", passwordVariable: 'SERVICE_PASS', usernameVariable: 'SERVICE_USER'), string(credentialsId: "${CLOUDFORM_TOKEN_CRED_ID}", variable: 'CLOUDFORM_API_CRED')]) {
-            
+                        withCredentials([usernamePassword(credentialsId: "${NODE_UN_PASS_CRED_ID}", passwordVariable: 'SERVICE_PASS', usernameVariable: 'SERVICE_USER'), usernameColonPassword(credentialsId: "${CLOUDFORM_TOKEN_CRED_ID}", variable: 'CLOUDFORM_API_CRED')]) {
                             dir("cortx-re/scripts/mini_provisioner") {
                                 ansiblePlaybook(
                                     playbook: 'prepare.yml',

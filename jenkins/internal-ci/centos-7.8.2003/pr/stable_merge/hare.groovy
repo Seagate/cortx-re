@@ -17,7 +17,9 @@ pipeline {
     parameters {  
 	    string(name: 'HARE_URL', defaultValue: 'https://github.com/Seagate/cortx-hare', description: 'Repo for Hare')
         string(name: 'HARE_BRANCH', defaultValue: 'main', description: 'Branch for Hare')
-        choice(name: 'DEBUG', choices: ["no", "yes" ], description: 'Keep Host for Debuging')   
+        choice(name: 'DEBUG', choices: ["no", "yes" ], description: 'Keep Host for Debuging') 
+        string(name: 'HOST', defaultValue: '-', description: 'Host FQDN',  trim: true)
+        password(name: 'HOST_PASS', defaultValue: '-', description: 'Host machine root user password')     
 	}
 
     environment {
@@ -35,7 +37,7 @@ pipeline {
         //////////////////////////////// BUILD VARS //////////////////////////////////////////////////
 
         COMPONENT_NAME = "hare".trim()
-        BRANCH = "main"
+        BRANCH = "${ghprbTargetBranch != null ? ghprbTargetBranch : 'stable'}"
         OS_VERSION = "centos-7.8.2003"
         THIRD_PARTY_VERSION = "centos-7.8.2003-2.0.0-latest"
         VERSION = "2.0.0"
@@ -44,11 +46,11 @@ pipeline {
         // Artifacts root location
 
         // 'WARNING' - rm -rf command used on this path please careful when updating this value
-        DESTINATION_RELEASE_LOCATION = "/mnt/bigstorage/releases/cortx/github/pr-build/${COMPONENT_NAME}/${BUILD_NUMBER}"
+        DESTINATION_RELEASE_LOCATION = "/mnt/bigstorage/releases/cortx/github/pr-build/${BRANCH}/${COMPONENT_NAME}/${BUILD_NUMBER}"
         PYTHON_DEPS = "/mnt/bigstorage/releases/cortx/third-party-deps/python-deps/python-packages-2.0.0-latest"
         THIRD_PARTY_DEPS = "/mnt/bigstorage/releases/cortx/third-party-deps/centos/${THIRD_PARTY_VERSION}/"
         COMPONENTS_RPM = "/mnt/bigstorage/releases/cortx/components/github/${BRANCH}/${OS_VERSION}/dev/"
-        CORTX_BUILD = "http://cortx-storage.colo.seagate.com/releases/cortx/github/pr-build/${COMPONENT_NAME}/${BUILD_NUMBER}"
+        CORTX_BUILD = "http://cortx-storage.colo.seagate.com/releases/cortx/github/pr-build/${BRANCH}/${COMPONENT_NAME}/${BUILD_NUMBER}"
 
         // Artifacts location
         CORTX_ISO_LOCATION = "${DESTINATION_RELEASE_LOCATION}/cortx_iso"
@@ -56,17 +58,6 @@ pipeline {
         PYTHON_LIB_LOCATION = "${DESTINATION_RELEASE_LOCATION}/python_deps"
 
         ////////////////////////////////// DEPLOYMENT VARS /////////////////////////////////////////////////////
-
-        // NODE1_HOST - Env variables added in the node configurations
-
-        // GID/pwd used to update root password 
-        NODE_UN_PASS_CRED_ID = "mini-prov-change-pass"
-
-        // Credentials used to for node SSH
-        NODE_DEFAULT_SSH_CRED  = credentials("vm-deployment-ssh-cred")
-        NODE_USER = "${NODE_DEFAULT_SSH_CRED_USR}"
-        NODE_PASS = "${NODE_DEFAULT_SSH_CRED_PSW}"
-        CLUSTER_PASS = "${NODE_DEFAULT_SSH_CRED_PSW}"
 
         STAGE_DEPLOY = "yes"
     }
@@ -77,6 +68,15 @@ pipeline {
         stage('Build') {
             steps {
 				script { build_stage = env.STAGE_NAME }
+
+                sh """
+                    set +x
+                    echo "--------------BUILD PARAMETERS -------------------"
+                    echo "HARE_URL              = ${HARE_URL}"
+                    echo "HARE_BRANCH           = ${HARE_BRANCH}"
+                    echo "HARE_PR_REFSPEC       = ${HARE_PR_REFSPEC}"
+                    echo "-----------------------------------------------------------"
+                """
                  
                 dir("hare") {
 
@@ -110,8 +110,7 @@ pipeline {
 
                 // Install tools required for release process
                 sh label: 'Installed Dependecies', script: '''
-                    yum install -y expect rpm-sign rng-tools genisoimage python3-pip
-                    pip3 install githubrelease
+                    yum install -y expect rpm-sign rng-tools python3-pip
                     systemctl start rngd
                 '''
 
@@ -181,19 +180,36 @@ pipeline {
 
                     cp "${THIRD_PARTY_LOCATION}/THIRD_PARTY_RELEASE.INFO" "${DESTINATION_RELEASE_LOCATION}"
                     cp "${CORTX_ISO_LOCATION}/RELEASE.INFO" "${DESTINATION_RELEASE_LOCATION}"
-                '''		
+
+                    cp "${CORTX_ISO_LOCATION}/RELEASE.INFO" .
+                '''
+
+                archiveArtifacts artifacts: "RELEASE.INFO", onlyIfSuccessful: false, allowEmptyArchive: true			
             }
 
         }
 
-        // Ref - https://github.com/Seagate/cortx-hare/wiki/Hare-provisioning
+        // Deploy Cortx-Stack
         stage('Deploy') {
-            agent { node { label "mini_provisioner && !cleanup_req" } }
+            agent { 
+                node { 
+                    label params.HOST == "-" ? "vm_deployment_1n && !cleanup_req" : "vm_deployment_1n_user_host"
+                    customWorkspace "/var/jenkins/mini_provisioner/${JOB_NAME}_${BUILD_NUMBER}"
+                } 
+            }
             when { expression { env.STAGE_DEPLOY == "yes" } }
+            environment {
+                // Credentials used to SSH node
+                NODE_DEFAULT_SSH_CRED =  credentials("${NODE_DEFAULT_SSH_CRED}")
+                NODE_USER = "${NODE_DEFAULT_SSH_CRED_USR}"
+                NODE1_HOST = "${HOST == '-' ? NODE1_HOST : HOST }"
+                NODE_PASS = "${HOST_PASS == '-' ? NODE_DEFAULT_SSH_CRED_PSW : HOST_PASS}"
+
+                NODE_UN_PASS_CRED_ID = "mini-prov-change-pass"
+            }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
-                    
 
                     // Cleanup Workspace
                     cleanWs()
@@ -206,10 +222,10 @@ pipeline {
                     catchError {
                         
                         dir('cortx-re') {
-                            checkout([$class: 'GitSCM', branches: [[name: '*/mini-provisioner-dev']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 1, honorRefspec: true, noTags: true, reference: '', shallow: true], [$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
+                            checkout([$class: 'GitSCM', branches: [[name: '*/r2_vm_deployment']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 1, honorRefspec: true, noTags: true, reference: '', shallow: true], [$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
                         }
 
-                        runAnsible("00_PREP_ENV, 01_PREREQ, 02_MINI_PROV")
+                        runAnsible("00_PREPARE, 01_DEPLOY_PREREQ, 02_DEPLOY")
 
                     }
 
@@ -217,21 +233,40 @@ pipeline {
                     catchError {
 
                         sh label: 'download_log_files', returnStdout: true, script: """ 
-                            sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/root/*.json .
+                            sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/log/seagate/provisioner/*.log . &>/dev/null || true
+                            sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/opt/seagate/cortx_configs/provisioner_cluster.json . &>/dev/null || true
+                            sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/root/config.ini . &>/dev/null || true
+                            sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/root/*.log . &>/dev/null || true
+                            sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/lib/hare/cluster.yaml . &>/dev/null || true
                         """
                         
-                        archiveArtifacts artifacts: "**/*.json", onlyIfSuccessful: false, allowEmptyArchive: true 
+                        archiveArtifacts artifacts: "*.log, *.json, *.ini, *.yaml", onlyIfSuccessful: false, allowEmptyArchive: true 
                     }
 
-                    if("${DEBUG}" == "yes"){
-                        
-                        markNodeOffline("Hare Debug Mode Enabled on This Host  - ${JOB_URL}")
+                    hctlStatus = ""
+                    if ( fileExists('hctl_status.log') && currentBuild.currentResult == "SUCCESS" ) {
+                        hctlStatus = readFile(file: 'hctl_status.log')
+                        MESSAGE = "Cortx Stack VM Deployment Success"
+                        ICON = "accept.gif"
+                        STATUS = "SUCCESS"
+                    }else {
+                        manager.buildFailure()
+                        MESSAGE = "Cortx Stack VM Deployment Failed"
+                        ICON = "error.gif"
+                        STATUS = "FAILURE"
+                    }
 
-                    } else {
+                    hctlStatusHTML = "<textarea rows=20 cols=200 readonly style='margin: 0px; height: 392px; width: 843px;'>${hctlStatus}</textarea>"
+                    tableSummary = "<table border='1' cellspacing='0' cellpadding='0' width='400' align='left'> <tr> <td align='center'>Branch/Commit</td><td align='center'>${HARE_BRANCH}</td></tr><tr> <td align='center'>Deploy VM</td><td align='center'>${NODE1_HOST}</td></tr></table>"
+                    manager.createSummary("${ICON}").appendText("<h3>${MESSAGE}.</h3><p>Please check <a href=\"${BUILD_URL}/artifact/setup.log\">setup.log</a> for more info <br /><br /><h4>Test Details:</h4> ${tableSummary} <br /><br /><br /><h4>Cluster Status:${hctlStatusHTML}</h4> ", false, false, false, "red")
 
-                        // Trigger cleanup VM
-                        build job: 'Cortx-Automation/Deployment/VM-Cleanup', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${env.NODE_NAME}")]
-                   }
+                    if( "${HOST}" == "-" ) {
+                        if( "${DEBUG}" == "yes" ) {  
+                            markNodeOffline("Motr Debug Mode Enabled on This Host  - ${BUILD_URL}")
+                        } else {
+                            build job: 'Cortx-Automation/Deployment/VM-Cleanup', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${env.NODE_NAME}")]                    
+                        }
+                    }
 
                     // Cleanup Workspace
                     cleanWs()
@@ -242,7 +277,9 @@ pipeline {
 
     post {
         always {
-            sh label: 'Remove artifacts', script: '''rm -rf "${DESTINATION_RELEASE_LOCATION}"'''
+            script{
+                sh label: 'Remove artifacts', script: '''rm -rf "${DESTINATION_RELEASE_LOCATION}"'''
+            }
         }
         failure {
             script {
@@ -268,30 +305,43 @@ def getTestMachine(host, user, pass) {
 
 // Used Jenkins ansible plugin to execute ansible command
 def runAnsible(tags) {
-    dir("cortx-re/scripts/mini_provisioner") {
-        ansiblePlaybook(
-            playbook: 'hare_deploy.yml',
-            inventory: 'inventories/hosts',
-            tags: "${tags}",
-            extraVars: [
-                "NODE1"                 : [value: "${NODE1_HOST}", hidden: false],
-                "CORTX_BUILD"           : [value: "${CORTX_BUILD}", hidden: false] ,
-                "CLUSTER_PASS"          : [value: "${CLUSTER_PASS}", hidden: false]
-            ],
-            extras: '-v',
-            colorized: true
-        )
+    withCredentials([usernamePassword(credentialsId: "${NODE_UN_PASS_CRED_ID}", passwordVariable: 'SERVICE_PASS', usernameVariable: 'SERVICE_USER')]) {
+        
+        dir("cortx-re/scripts/deployment") {
+            ansiblePlaybook(
+                playbook: 'cortx_deploy_vm_1node.yml',
+                inventory: 'inventories/vm_deployment/hosts_1node',
+                tags: "${tags}",
+                extraVars: [
+                    "NODE1"                 : [value: "${NODE1_HOST}", hidden: false],
+                    "BUILD_URL"             : [value: "${CORTX_BUILD}", hidden: false] ,
+                    "CLUSTER_PASS"          : [value: "${NODE_PASS}", hidden: false],
+                    "SERVICE_USER"          : [value: "${SERVICE_USER}", hidden: true],
+                    "SERVICE_PASS"          : [value: "${SERVICE_PASS}", hidden: true],
+                    "CHANGE_PASS"           : [value: "no", hidden: false]
+                ],
+                extras: '-v',
+                colorized: true
+            )
+        }
     }
 }
-
-
-// Mark node for cleanup ( cleanup job will use this node label to identify cleanup node)
 def markNodeforCleanup() {
 	nodeLabel = "cleanup_req"
     node = getCurrentNode(env.NODE_NAME)
-	node.setLabelString(node.getLabelString()+" "+nodeLabel)
+	node.setLabelString(node.getLabelString() + " " + nodeLabel)
 	node.save()
     node = null
+}
+
+def getCurrentNode(nodeName) {
+  for (node in Jenkins.instance.nodes) {
+      if (node.getNodeName() == nodeName) {
+        echo "Found node for $nodeName"
+        return node
+    }
+  }
+  throw new Exception("No node for $nodeName")
 }
 
 // Make failed node offline
@@ -304,12 +354,17 @@ def markNodeOffline(message) {
     node = null
 }
 
-def getCurrentNode(nodeName) {
-  for (node in Jenkins.instance.nodes) {
-      if (node.getNodeName() == nodeName) {
-        echo "Found node for $nodeName"
-        return node
+def getBuild(buildURL) {
+
+    buildID = sh(script: "curl -s  $buildURL/RELEASE.INFO  | grep BUILD | cut -d':' -f2 | tr -d '\"' | xargs", returnStdout: true).trim()
+    buildbranch = "Build"
+    if( buildURL.contains("/cortx/github/main/") ) {
+        buildbranch="Main"
+    }else if( buildURL.contains("/cortx/github/stable/") ) {
+        buildbranch="Stable"
+    }else if ( buildURL.contains("/cortx/github/integration-custom-ci/")){
+        buildbranch="Custom-CI"
     }
-  }
-  throw new Exception("No node for $nodeName")
+
+ return "$buildbranch#$buildID"   
 }
