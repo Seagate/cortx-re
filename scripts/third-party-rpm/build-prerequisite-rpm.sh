@@ -33,7 +33,7 @@ DIST_DIR=cortx-prereq-$VERSION-git$GIT_VERSION
 
 #Generate source tar
 mkdir -p "$DIST_DIR"
-cp *.txt  "$DIST_DIR"/
+cp -- *.txt  "$DIST_DIR"/
 tar -cvzf /root/rpmbuild/SOURCES/"$DIST_DIR".tgz "$DIST_DIR"
 
 #Add require packages
