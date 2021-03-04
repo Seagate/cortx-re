@@ -27,7 +27,7 @@ _do_rest(){
     REST_METHOD="$3"
     REST_DATA="$4"
 
-    response=$(curl -s --insecure -H "X-Auth-Token: ${REST_CRED}" -H "Accept: application/json" --request "${REST_METHOD}" ${REST_DATA} "${REST_ENDPOINT}" )     
+    response=$(curl -s --insecure --user "${REST_CRED}" -H "Accept: application/json" --request "${REST_METHOD}" ${REST_DATA} "${REST_ENDPOINT}" )     
     echo "${response}"
 }
 
