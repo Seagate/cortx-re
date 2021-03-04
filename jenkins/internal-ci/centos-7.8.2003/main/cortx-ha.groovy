@@ -36,16 +36,27 @@ pipeline {
 				}
 			}
 		}
+
+		// Install third-party dependencies. This needs to be removed once components move away from self-contained binaries 
+		stage('Checkout Release scripts') {
+			steps {
+        	    script { build_stage = env.STAGE_NAME }
+				dir ('cortx-re') {
+					checkout([$class: 'GitSCM', branches: [[name: 'cortx-ha-fix']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/shailesh-vaidya/cortx-re']]])
+				}
+			}
+		}
 	
 		stage('Install Dependencies') {
 			steps {
 				script { build_stage = env.STAGE_NAME }
 				sh label: '', script: '''
 					pushd $component
-					yum clean all;rm -rf /var/cache/yum
-					yum erase python36-PyYAML -y
-					bash jenkins/cicd/cortx-ha-dep.sh
-					pip3 install numpy
+						yum clean all;rm -rf /var/cache/yum
+						pip3 install -r ../cortx-re/scripts/third-party-rpm/python-requirements.txt
+						yum erase python36-PyYAML -y
+						bash jenkins/cicd/cortx-ha-dep.sh
+						pip3 install numpy
 					popd
 				'''
 			}
