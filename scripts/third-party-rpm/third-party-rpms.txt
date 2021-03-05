@@ -11,9 +11,9 @@ genders
 gflags
 glog
 haproxy
-hdparm
+hdparm == 9.43
 hiredis
-ipmitool
+ipmitool == 1.8.18
 jq
 kibana-oss
 libaio
@@ -22,7 +22,7 @@ libxml2
 libyaml
 log4cxx_cortx
 log4cxx_cortx-devel
-lshw
+lshw == 17
 openldap-clients
 openldap-servers
 openssl
@@ -42,29 +42,28 @@ pkgconfig
 PyYAML
 python-magic
 python3-pip
-python36
+python36 == 3.6.8
 python36-PyYAML
-python36-dbus
-python36-gobject
+python36-dbus == 1.2.4
+python36-gobject == 3.22.0
 python36-ldap
-python36-paramiko
+python36-paramiko == 2.1.1
 python36-pika
 python36-pip
 python36-ply
-python36-psutil
-python36-psutil
-rabbitmq-server
+python36-psutil == 5.6.7
+rabbitmq-server == 3.8.9
 rsync
 rsyslog
 ruby
 rubygem-net-ssh
 selinux-policy
-shadow-utils
-smartmontools
+shadow-utils == 4.6
+smartmontools == 7.0
 sos
 stats_utils
 statsd
-systemd-python36
+systemd-python36 == 1.0.0
 sysvinit-tools
-udisks2
+udisks2 == 2.8.4
 yaml-cpp
