@@ -7,7 +7,7 @@ pipeline {
     }
 	
     triggers {
-        pollSCM 'H/5 * * * *'
+        pollSCM 'H/1 * * * *'
     }
 
 
@@ -27,7 +27,7 @@ pipeline {
         stage('Checkout') {
             steps {
 				script { build_stage = env.STAGE_NAME }
-					checkout([$class: 'GitSCM', branches: [[name: "thrid-party-rpm"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/shailesh-vaidya/cortx-re']]])
+                    checkout([$class: 'GitSCM', branches: [[name: 'thrid-party-rpm']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'PathRestriction', excludedRegions: '', includedRegions: 'scripts/third-party-rpm/.*']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'shailesh-github', url: 'https://github.com/shailesh-vaidya/cortx-re']]])
             }
         }
 
