@@ -58,8 +58,8 @@ rsyslog
 ruby
 rubygem-net-ssh
 selinux-policy
-shadow-utils == 2:4.6-5.el7
-smartmontools == 1:7.0-2.el7
+shadow-utils == 4.6
+smartmontools == 7.0
 sos
 stats_utils
 statsd
