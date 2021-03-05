@@ -1,3 +1,3 @@
 #!/bin/bash
 
-echo "Testing Git exclude path plugin#1" 
+echo "Testing Git exclude path plugin#2" 
