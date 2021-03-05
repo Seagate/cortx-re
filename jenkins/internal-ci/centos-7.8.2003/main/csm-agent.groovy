@@ -7,7 +7,7 @@ pipeline {
 	}
 	
 	triggers {
-        pollSCM 'H/5 * * * *'
+        pollSCM '*/5 * * * *'
     }
 	
 	environment { 
@@ -33,6 +33,7 @@ pipeline {
 		stage('Checkout') {
 			steps {
 				script { build_stage = env.STAGE_NAME }
+
 				checkout([$class: 'GitSCM', branches: [[name: "*/${branch}"]], doGenerateSubmoduleConfigurations: false,  extensions: [[$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-manager']]])
 			}
 		}
