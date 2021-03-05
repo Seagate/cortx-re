@@ -6,14 +6,14 @@ pipeline {
         }
     }
 	
-    triggers {
-        pollSCM 'H/1 * * * *'
-    }
-
-
-	environment {
-        version = "2.0.0"
-        build_upload_dir = "/mnt/bigstorage/releases/cortx/third-party-deps/rpm"
+    environment {
+		version = "2.0.0"
+        env = "dev"
+		component = "cortx-prereq"
+        branch = "main"
+        os_version = "centos-7.8.2003"
+        release_dir = "/mnt/bigstorage/releases/cortx"
+        build_upload_dir = "$release_dir/components/github/$branch/$os_version/$env/$component"
     }
 
     options {
@@ -27,7 +27,7 @@ pipeline {
         stage('Checkout') {
             steps {
 				script { build_stage = env.STAGE_NAME }
-                    checkout([$class: 'GitSCM', branches: [[name: 'thrid-party-rpm']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'PathRestriction', excludedRegions: '', includedRegions: 'scripts/third-party-rpm/.*']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'shailesh-github', url: 'https://github.com/shailesh-vaidya/cortx-re']]])
+                checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
             }
         }
 
