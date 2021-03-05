@@ -22,7 +22,7 @@ libxml2
 libyaml
 log4cxx_cortx
 log4cxx_cortx-devel
-lshw == 17
+lshw == B.02.18
 openldap-clients
 openldap-servers
 openssl
@@ -58,8 +58,8 @@ rsyslog
 ruby
 rubygem-net-ssh
 selinux-policy
-shadow-utils == 4.6
-smartmontools == 7.0
+shadow-utils == 4.6-5
+smartmontools == 7.0-1
 sos
 stats_utils
 statsd
