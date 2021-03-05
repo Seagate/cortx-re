@@ -29,9 +29,27 @@ pipeline {
         stage('Build') {
             steps {
 				script { build_stage = env.STAGE_NAME }
-                sh encoding: 'utf-8', label: 'Provisioner RPMS', script: """
+                sh encoding: 'utf-8', label: 'Build cortx-prereq package', script: """
                     pushd ./scripts/third-party-rpm
                         ./build-prerequisite-rpm.sh -v $version -r ${BUILD_NUMBER} -g \$(git rev-parse --short HEAD)
+                    popd    
+                """
+            }
+        }
+
+        stage('Test') {
+            steps {
+				script { build_stage = env.STAGE_NAME }
+                sh encoding: 'utf-8', label: 'Test cortx-prereq package', script: """
+                     cat <<EOF >>/etc/pip.conf
+[global]
+timeout: 60
+index-url: http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/python-packages-2.0.0-latest/
+trusted-host: cortx-storage.colo.seagate.com
+EOF
+                    yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/centos/centos-7.8.2003-2.0.0-latest/
+                    yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
+                    yum install java-1.8.0-openjdk-headless -y && yum install /root/rpmbuild/RPMS/x86_64/*.rpm
                 """
             }
         }
