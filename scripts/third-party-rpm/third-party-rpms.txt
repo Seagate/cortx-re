@@ -1,3 +1,4 @@
+PyYAML
 attr
 compat-lua-libs
 consul >= 1.7.0, consul < 1.10.0
@@ -39,7 +40,6 @@ perl-Try-Tiny
 perl-YAML-LibYAML
 perl-autodie
 pkgconfig
-PyYAML
 python-magic
 python3-pip
 python36 == 3.6.8

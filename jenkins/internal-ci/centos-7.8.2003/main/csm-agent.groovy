@@ -7,7 +7,7 @@ pipeline {
 	}
 	
 	triggers {
-        pollSCM '*/5 * * * *'
+        pollSCM 'H/5 * * * *'
     }
 	
 	environment { 
@@ -33,8 +33,7 @@ pipeline {
 		stage('Checkout') {
 			steps {
 				script { build_stage = env.STAGE_NAME }
-
-				checkout([$class: 'GitSCM', branches: [[name: "*/${branch}"]], doGenerateSubmoduleConfigurations: false,  extensions: [[$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-manager']]])
+				checkout([$class: 'GitSCM', branches: [[name: 'thrid-party-rpm']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'PathRestriction', excludedRegions: '', includedRegions: 'scripts/third-party-rpm/.*']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'shailesh-github', url: 'https://github.com/shailesh-vaidya/cortx-re']]])
 			}
 		}
 		

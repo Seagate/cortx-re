@@ -6,6 +6,11 @@ pipeline {
         }
     }
 	
+    triggers {
+        pollSCM 'H/5 * * * *'
+    }
+
+
 	environment {
         version = "2.0.0"
         build_upload_dir = "/mnt/bigstorage/releases/cortx/third-party-deps/rpm"
