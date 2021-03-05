@@ -2,7 +2,7 @@
 pipeline { 
     agent {
         node {
-            label 'docker-cp-centos-7.8.2003-node'
+            label 'vm_deployment_1n && !cleanup_reqe'
         }
     }
 	
@@ -86,4 +86,13 @@ EOF
 			}
 		}
 	}
+
+    post { 
+        always {
+            script {
+                    // Trigger cleanup VM
+                    build job: 'Cortx-Automation/Deployment/VM-Cleanup', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${env.NODE_NAME}")]                    
+                }
+            }
+    }
 }
