@@ -49,7 +49,7 @@ pipeline {
 
 		choice(
 			name: 'THIRD_PARTY_VERSION',
-			choices: ['cortx-2.0', 'cortx-1.0'],
+			choices: ['cortx-2.0', 'cortx-1.0', 'custom'],
 			description: 'Third Party Version to use.'
 		)
 	}
