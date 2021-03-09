@@ -38,6 +38,7 @@ pipeline {
 			steps {
 				script { build_stage = env.STAGE_NAME }
 				sh label: 'Build RPM', script: '''
+				rm -rf /etc/yum.repos.d/CentOS-*
 				yum-builddep -y ./scripts/custom-prereq/intel-isa-l/isal.spec
                 rpmbuild --define "_isa_l_version $isa_version" -bb ./scripts/custom-prereq/intel-isa-l/isal.spec
 		        '''
