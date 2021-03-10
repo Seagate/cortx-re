@@ -58,7 +58,7 @@ pipeline {
                             rm -rf  /root/rpmbuild/*/*
                             git branch
                             echo "Install prerequisite"
-                            yum install python36 -y 
+                            #yum install python36 -y   # REMOVED TO FIX - https://jts.seagate.com/browse/EOS-18735
                             echo $PWD
                             ./jenkins-build.sh --automate_ansible --generate_support_bundle /jenkins-job-logs --job_id $BUILD_ID
                         """

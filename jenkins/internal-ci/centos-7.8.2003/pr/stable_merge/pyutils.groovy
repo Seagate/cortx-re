@@ -66,6 +66,7 @@ pipeline {
         stage('Build') {
             steps {
 				script { build_stage = env.STAGE_NAME }
+                script { manager.addHtmlBadge("&emsp;<b>Target Branch : ${PY_UTILS_BRANCH}</b>&emsp;")}
 
                 sh """
                     set +x
