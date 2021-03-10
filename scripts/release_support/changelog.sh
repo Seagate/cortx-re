@@ -88,7 +88,7 @@ do
 					
 			echo -e "\t--[ Check-ins for $dir from $START_BUILD ($start_hash) to $TARGET_BUILD ($target_hash) ]--" >> $report_file
 			echo -e "Githash|Description|Author|" >> $report_file
-			change=$(git log $start_hash..$target_hash --oneline --pretty=format:"%h|%cd|%s|%an|");
+			change=$(git log "$start_hash".."$target_hash" --oneline --pretty=format:"%h|%cd|%s|%an|");
 		if [ "$change" ]; then
 			echo "$change" >> $report_file
 			else
