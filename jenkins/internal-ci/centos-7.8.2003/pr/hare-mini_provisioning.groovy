@@ -89,7 +89,7 @@ pipeline {
                         yum install cortx-motr{,-devel} -y
                     """
 
-                    sh label: 'Build', returnStatus: true, script: '''
+                    sh label: 'Build', script: '''
                         set -xe
                         echo "Executing build script"
                         export build_number=${BUILD_NUMBER}
