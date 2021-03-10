@@ -325,7 +325,7 @@ _ha_build:
 	
 	pushd "cortx-workspace/cortx-ha" && \
 		./jenkins/build.sh -v ${RELEASE_VERSION} -b ${BUILD_ID} && \
-		rm -rf ${RPM_DIR}/cortx-ha*.rpm && \
+		rm -rf ${RPM_DIR}/cortx-ha-*.rpm && \
 		mv dist/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
 		createrepo -v ${RPM_DIR} && \
 	popd
