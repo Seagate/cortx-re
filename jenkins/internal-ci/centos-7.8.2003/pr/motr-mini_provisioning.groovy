@@ -81,17 +81,17 @@ pipeline {
 
                     checkout([$class: 'GitSCM', branches: [[name: "${MOTR_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog'], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${MOTR_URL}",  name: 'origin', refspec: "${MOTR_PR_REFSEPEC}"]]])
 
-                     sh label: 'isa dep', script: '''
-                        yum install -y https://www.nasm.us/pub/nasm/releasebuilds/2.14/linux/nasm-2.14-0.fc27.x86_64.rpm
-                        wget https://github.com/intel/isa-l/archive/v2.30.0.tar.gz
-                        tar -xf v2.30.0.tar.gz
-                        cd isa-l-2.30.0/
-                        sh autogen.sh
-                        ./configure --prefix=/usr --libdir=/usr/lib64
-                        make
-                        make install
-                        ldconfig
-					'''
+                    //  sh label: 'isa dep', script: '''
+                    //     yum install -y https://www.nasm.us/pub/nasm/releasebuilds/2.14/linux/nasm-2.14-0.fc27.x86_64.rpm
+                    //     wget https://github.com/intel/isa-l/archive/v2.30.0.tar.gz
+                    //     tar -xf v2.30.0.tar.gz
+                    //     cd isa-l-2.30.0/
+                    //     sh autogen.sh
+                    //     ./configure --prefix=/usr --libdir=/usr/lib64
+                    //     make
+                    //     make install
+                    //     ldconfig
+					// '''
                 
                     sh label: '', script: '''
                         export build_number=${BUILD_ID}

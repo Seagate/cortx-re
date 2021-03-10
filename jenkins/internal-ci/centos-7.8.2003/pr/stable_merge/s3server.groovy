@@ -74,6 +74,7 @@ pipeline {
             steps {
 
 				script { build_stage = env.STAGE_NAME }
+                script { manager.addHtmlBadge("&emsp;<b>Target Branch : ${S3_BRANCH}</b>&emsp;")}
 
                 sh """
                     set +x
