@@ -239,7 +239,7 @@ _cortx-manager_prereq:
 _cortx-manager_build:
 	@echo "***************  Building cortx-manager RPMS *********************"
 	
-	pushd cortx-workspace/cortx-manager && \
+	- pushd cortx-workspace/cortx-manager && \
 		BUILD=$$(git rev-parse --short HEAD) && \
 		echo "Python:$(python --version)" && \
 		./cicd/build.sh -v ${RELEASE_VERSION} -b "${BUILD_ID}" -t -i && \
