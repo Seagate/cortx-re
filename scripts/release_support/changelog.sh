@@ -72,15 +72,15 @@ do
           exit 1
           fi	
 
-                if [ $component == cortx-hare ] || [ $component == cortx-sspl ] || [ $component == cortx-ha ]; then
-                        start_hash=$(grep $component start_build_manifest.txt | head -1 | awk -F['_'] '{print $2}' | cut -d. -f1 |  sed 's/git//g'); echo $start_hash
-                        target_hash=$(grep $component target_build_manifest.txt | head -1 | awk -F['_'] '{print $2}' | cut -d. -f1 |  sed 's/git//g'); echo $target_hash
-                elif [ "$component" == "cortx-csm_agent" ] || [ "$component" == "cortx-csm_web" ]; then
-                        start_hash=$(grep $component start_build_manifest.txt | head -1 | awk -F['_'] '{print $3}' |  cut -d. -f1); echo $start_hash
-                        target_hash=$(grep $component target_build_manifest.txt | head -1 | awk -F['_'] '{print $3}' |  cut -d. -f1); echo $target_hash
+                if [ "$component" == cortx-hare ] || [ "$component" == cortx-sspl ] || [ "$component" == cortx-ha ]; then
+                        start_hash=$(grep "$component" start_build_manifest.txt | head -1 | awk -F['_'] '{print $2}' | cut -d. -f1 |  sed 's/git//g'); echo $start_hash
+                        target_hash=$(grep "$component" target_build_manifest.txt | head -1 | awk -F['_'] '{print $2}' | cut -d. -f1 |  sed 's/git//g'); echo $target_hash
+                elif [ "$component" == cortx-csm_agent ] || [ "$component" == cortx-csm_web ]; then
+                        start_hash=$(grep "$component" start_build_manifest.txt | head -1 | awk -F['_'] '{print $3}' |  cut -d. -f1); echo $start_hash
+                        target_hash=$(grep "$component" target_build_manifest.txt | head -1 | awk -F['_'] '{print $3}' |  cut -d. -f1); echo $target_hash
                 else
-                        start_hash=$(grep $component start_build_manifest.txt | head -1 | awk -F['_'] '{print $2}' | sed 's/git//g'); echo $start_hash
-                        target_hash=$(grep $component target_build_manifest.txt | head -1 | awk -F['_'] '{print $2}' | sed 's/git//g'); echo $target_hash
+                        start_hash=$(grep "$component" start_build_manifest.txt | head -1 | awk -F['_'] '{print $2}' | sed 's/git//g'); echo $start_hash
+                        target_hash=$(grep "$component" target_build_manifest.txt | head -1 | awk -F['_'] '{print $2}' | sed 's/git//g'); echo $target_hash
                 fi
 
                  pushd $dir
