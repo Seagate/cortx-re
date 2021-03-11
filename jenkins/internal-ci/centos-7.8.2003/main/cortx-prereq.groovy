@@ -2,7 +2,7 @@
 pipeline { 
     agent {
         node {
-            label 'vm_deployment_1n && !cleanup_reqe'
+           label 'cortx-prereq-validation'
         }
     }
 	
@@ -13,7 +13,7 @@ pipeline {
         branch = "main"
         os_version = "centos-7.8.2003"
         release_dir = "/mnt/bigstorage/releases/cortx"
-        build_upload_dir = "$release_dir/components/github/$branch/$os_version/$env/$component"
+        build_upload_dir = "/mnt/bigstorage/releases/cortx/third-party-deps/rpm"
     }
 
     options {
@@ -24,10 +24,20 @@ pipeline {
     }
     
     stages {
+	
+		stage('Prerequisite') {
+            steps {
+                sh encoding: 'utf-8', label: 'Install Prerequisite Packages', script: """
+					yum install rpm-build rpmdevtools -y 
+					rpmdev-setuptree		
+                """
+			}
+		}
+	
         stage('Checkout') {
             steps {
 				script { build_stage = env.STAGE_NAME }
-                checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
+                checkout([$class: 'GitSCM', branches: [[name: 'third-party-debug']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/shailesh-vaidya/cortx-re']]])
             }
         }
 
@@ -46,12 +56,13 @@ pipeline {
             steps {
 				script { build_stage = env.STAGE_NAME }
                 sh encoding: 'utf-8', label: 'Test cortx-prereq package', script: """
-                     cat <<EOF >>/etc/pip.conf
+                     cat <<EOF >/etc/pip.conf
 [global]
 timeout: 60
 index-url: http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/python-packages-2.0.0-latest/
 trusted-host: cortx-storage.colo.seagate.com
 EOF
+					
                     yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/centos/centos-7.8.2003-2.0.0-latest/
                     yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
                     yum install java-1.8.0-openjdk-headless -y && yum install /root/rpmbuild/RPMS/x86_64/*.rpm -y
@@ -77,7 +88,7 @@ EOF
 		stage ('Tag last_successful') {
 			steps {
 				script { build_stage = env.STAGE_NAME }
-				sh label: 'Tag last_successful', script: '''
+				sh label: 'Clean-up', script: '''
                     pushd $build_upload_dir/
                     test -d $build_upload_dir/last_successful && rm -f last_successful
                     ln -s $build_upload_dir/$BUILD_NUMBER last_successful
@@ -86,13 +97,15 @@ EOF
 			}
 		}
 	}
-
-    post { 
-        always {
-            script {
-                    // Trigger cleanup VM
-                    build job: 'Cortx-Automation/Deployment/VM-Cleanup', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${env.NODE_NAME}")]                    
-                }
-            }
+	
+	post {
+	
+		success {
+				sh label: 'Delete Old Builds', script: '''
+				sh +x
+				rm -rf /etc/yum.repos.d/cortx-storage.colo.seagate.com* /etc/pip.conf /root/rpmbuild/RPMS/x86_64/*.rpm
+				yum erase cortx-prereq -y
+				'''
+		}
     }
 }
