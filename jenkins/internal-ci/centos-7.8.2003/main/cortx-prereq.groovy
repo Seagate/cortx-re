@@ -102,7 +102,7 @@ EOF
 	
 		success {
 				sh label: 'Delete Old Builds', script: '''
-				sh +x
+				set +x
 				rm -rf /etc/yum.repos.d/cortx-storage.colo.seagate.com* /etc/pip.conf /root/rpmbuild/RPMS/x86_64/*.rpm
 				yum erase cortx-prereq -y
 				'''
