@@ -13,7 +13,7 @@ pipeline {
         branch = "main"
         os_version = "centos-7.8.2003"
         release_dir = "/mnt/bigstorage/releases/cortx"
-        build_upload_dir = "/mnt/bigstorage/releases/cortx/third-party-deps/rpm"
+        build_upload_dir = "$release_dir/components/github/$branch/$os_version/$env/$component"
     }
 
     options {
