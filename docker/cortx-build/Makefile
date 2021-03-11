@@ -359,5 +359,5 @@ iso_generation:
 	
 	pushd ${RELEASE_BUILD} && \
 		mkdir -p ${RELEASE_BUILD}/iso && \
-		genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -publisher Seagate -o ${RELEASE_BUILD}/iso/cortx-1.0.0-${BUILD_ID}-single.iso ${RELEASE_BUILD} && \
+		genisoimage -input-charset iso8859-1 -exclude "*.tar.gz" -f -J -joliet-long -r -allow-lowercase -allow-multidot -publisher Seagate -o ${RELEASE_BUILD}/iso/cortx-1.0.0-${BUILD_ID}-single.iso ${RELEASE_BUILD} && \
 	popd
