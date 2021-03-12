@@ -33,8 +33,8 @@ echo ""
 
 #Setup repositories and install packages
 yum install yum-utils -y
-yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/centos/$THIRD_PARTY_VERSION/
-yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/$BRANCH/$OS_VERSION/last_successful_prod/cortx_iso/
+yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/centos/"$THIRD_PARTY_VERSION"/
+yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/"$BRANCH"/"$OS_VERSION"/last_successful_prod/cortx_iso/
 yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
 
 cat <<EOF >/etc/pip.conf
@@ -44,7 +44,7 @@ index-url: http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps
 trusted-host: cortx-storage.colo.seagate.com
 EOF
 
-if [ $RPM_LOCATION == "remote" ]; then
+if [ "$RPM_LOCATION" == "remote" ]; then
     yum install java-1.8.0-openjdk-headless -y && yum install cortx-prereq -y
 else
     yum install java-1.8.0-openjdk-headless -y && yum install /root/rpmbuild/RPMS/x86_64/*.rpm -y
