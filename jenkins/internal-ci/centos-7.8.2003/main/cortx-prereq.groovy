@@ -57,7 +57,7 @@ pipeline {
 				script { build_stage = env.STAGE_NAME }
                 sh encoding: 'utf-8', label: 'Test cortx-prereq package', script: """
                 pushd ./scripts/third-party-rpm
-                      ./install-cortx-prereq.sh  -t centos-7.8.2003-2.0.0-latest -p python-packages-2.0.0-latest -o centos-7.8.2003 -b main -r local
+                      sh ./install-cortx-prereq.sh  -t centos-7.8.2003-2.0.0-latest -p python-packages-2.0.0-latest -o centos-7.8.2003 -b main -r local
                 popd  
                 """
             }
