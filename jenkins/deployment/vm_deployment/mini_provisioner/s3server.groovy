@@ -242,30 +242,31 @@ def getTestMachine(host, user, pass) {
 // Used Jenkins ansible plugin to execute ansible command
 def runAnsible(tags) {
 
-    withCredentials([usernamePassword(credentialsId: "mini-prov-ldap-root-cred", passwordVariable: 'LDAP_ROOT_USER', usernameVariable: 'LDAP_ROOT_PWD'),
+    withCredentials([usernamePassword(credentialsId: "mini-prov-ldap-root-cred", passwordVariable: 'LDAP_ROOT_PWD', usernameVariable: 'LDAP_ROOT_USER'),
         usernamePassword(credentialsId: "mini-prov-ldap-sg-cred", passwordVariable: 'LDAP_SGIAM_PWD', usernameVariable: 'LDAP_SGIAM_USER'),
         usernamePassword(credentialsId: "mini-prov-bmc-cred", passwordVariable: 'BMC_SECRET', usernameVariable: 'BMC_USER')]) {
-            dir("cortx-re/scripts/mini_provisioner") {
-                ansiblePlaybook(
-                    playbook: 's3server_deploy.yml',
-                    inventory: 'inventories/hosts',
-                    tags: "${tags}",
-                    extraVars: [
-                        "NODE1"                 : [value: "${NODE1_HOST}", hidden: false],
-                        "CORTX_BUILD"           : [value: "${CORTX_BUILD}", hidden: false] ,
-                        "CLUSTER_PASS"          : [value: "${NODE_PASS}", hidden: false],
-                        "LDAP_ROOT_USER"        : [value: "${LDAP_ROOT_USER}", hidden: false],
-                        "LDAP_ROOT_PWD"         : [value: "${LDAP_ROOT_PWD}", hidden: true],
-                        "LDAP_SGIAM_USER"       : [value: "${LDAP_SGIAM_USER}", hidden: false],
-                        "LDAP_SGIAM_PWD"        : [value: "${LDAP_SGIAM_PWD}", hidden: true],
-                        "BMC_USER"              : [value: "${BMC_USER}", hidden: false],
-                        "BMC_SECRET"            : [value: "${BMC_SECRET}", hidden: true],
-                        "MESSAGING_PLATFORM"    : [value: "${MESSAGING_PLATFORM}", hidden: false]
-                    ],
-                    extras: '-v',
-                    colorized: true
-                )
-            }
+    
+        dir("cortx-re/scripts/mini_provisioner") {
+
+            ansiblePlaybook(
+                playbook: 's3server_deploy.yml',
+                inventory: 'inventories/hosts',
+                tags: "${tags}",
+                extraVars: [
+                    "NODE1"                 : [value: "${NODE1_HOST}", hidden: false],
+                    "CORTX_BUILD"           : [value: "${CORTX_BUILD}", hidden: false] ,
+                    "CLUSTER_PASS"          : [value: "${NODE_PASS}", hidden: false],
+                    "LDAP_ROOT_USER"        : [value: "${LDAP_ROOT_USER}", hidden: false],
+                    "LDAP_ROOT_PWD"         : [value: "${LDAP_ROOT_PWD}", hidden: true],
+                    "LDAP_SGIAM_USER"       : [value: "${LDAP_SGIAM_USER}", hidden: false],
+                    "LDAP_SGIAM_PWD"        : [value: "${LDAP_SGIAM_PWD}", hidden: true],
+                    "BMC_USER"              : [value: "${BMC_USER}", hidden: false],
+                    "BMC_SECRET"            : [value: "${BMC_SECRET}", hidden: true]
+                ],
+                extras: '-v',
+                colorized: true
+            )
+        }
     }
 }
 

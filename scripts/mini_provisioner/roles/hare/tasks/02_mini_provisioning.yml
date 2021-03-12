@@ -41,16 +41,16 @@
 
 # Execute Hare:Post_Install
 - name: "[mini_provisioning] : Post Install" 
-  shell: /opt/seagate/cortx/hare/bin/hare_setup --post_install
+  shell: /opt/seagate/cortx/hare/bin/hare_setup post_install --config 'json:///root/confstore.json'
 
 # Execute Hare:Config
 - name: "[mini_provisioning] : Hare Config" 
-  shell: /opt/seagate/cortx/hare/bin/hare_setup --config 'json:///root/confstore.json' --filename '/var/lib/hare/cluster.yaml'
+  shell: /opt/seagate/cortx/hare/bin/hare_setup config --config 'json:///root/confstore.json' --file '/var/lib/hare/cluster.yaml'
 
 # Execute Hare:Init
 - name: "[mini_provisioning] : Hare Init" 
-  shell: /opt/seagate/cortx/hare/bin/hare_setup --init
+  shell: /opt/seagate/cortx/hare/bin/hare_setup init --config 'json:///root/confstore.json' --file '/var/lib/hare/cluster.yaml'
 
 # Execute Hare:Test
 - name: "[mini_provisioning] : Hare Test" 
-  shell: /opt/seagate/cortx/hare/bin/hare_setup --test
+  shell: /opt/seagate/cortx/hare/bin/hare_setup test --config 'json:///root/confstore.json'
