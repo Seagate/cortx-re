@@ -40,7 +40,7 @@ cortx-s3server: cortx-motr _s3_prereq _s3_build
 cortx-hare: cortx-motr _cortx-hare_prereq _cortx-hare_build
 
 ## cortx-ha: generate cortx-ha packages.
-cortx-ha: _ha_prereq _ha_build
+cortx-ha: _cortx-py-utils_build _ha_prereq _ha_build
 
 ## cortx-management-portal: generate cortx-management-portal packages.
 cortx-management-portal: _cortx-py-utils_build cortx-prvsnr _cortx-management-portal_prereq _cortx-management-portal_build
@@ -239,10 +239,10 @@ _cortx-manager_prereq:
 _cortx-manager_build:
 	@echo "***************  Building cortx-manager RPMS *********************"
 	
-	- pushd cortx-workspace/cortx-manager && \
+	pushd cortx-workspace/cortx-manager && \
 		BUILD=$$(git rev-parse --short HEAD) && \
 		echo "Python:$(python --version)" && \
-		./cicd/build.sh -v ${RELEASE_VERSION} -b "${BUILD_ID}" -t -i && \
+		./cicd/build.sh -v ${RELEASE_VERSION} -b "${BUILD_ID}" -t -i || \
 		rm -rf ${RPM_DIR}/cortx-csm_agent*.rpm && \
 		mv ./dist/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
 		createrepo -v ${RPM_DIR} && \
@@ -315,7 +315,8 @@ _ha_prereq:
 	pushd "cortx-workspace/cortx-ha" && \
 		yum clean all;rm -rf /var/cache/yum && \
 		yum erase python36-PyYAML -y && \
-		yum install cortx-py-utils -y && \
+		pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/main/py-utils/requirements.txt && \
+		yum localinstall -y ${RPM_DIR}/cortx-py-utils*noarch.rpm && \
 		bash ./jenkins/cicd/cortx-ha-dep.sh  && \
 		pip3 install numpy && \
 	popd || (echo "ERROR: cortx-ha source code is not available in cortx-workspace. Exiting..."; exit 1)
