@@ -1,6 +1,6 @@
 ---
 - hosts: localhost
-  user: root
+  user: dummy-user
   vars_files:
     - group_vars/secrets.yml
   roles:
