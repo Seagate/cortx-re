@@ -46,7 +46,7 @@ pipeline {
 				script { build_stage = env.STAGE_NAME }
                 sh encoding: 'utf-8', label: 'Build cortx-prereq package', script: """
                     pushd ./scripts/third-party-rpm
-                        ./build-prerequisite-rpm.sh -v $version -r ${BUILD_NUMBER} -g \$(git rev-parse --short HEAD)
+                        sh ./build-prerequisite-rpm.sh -v $version -r ${BUILD_NUMBER} -g \$(git rev-parse --short HEAD)
                     popd    
                 """
             }
