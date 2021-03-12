@@ -37,7 +37,7 @@ pipeline {
         stage('Checkout') {
             steps {
 				script { build_stage = env.STAGE_NAME }
-                checkout([$class: 'GitSCM', branches: [[name: 'third-party-debug']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/shailesh-vaidya/cortx-re']]])
+                checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
             }
         }
 
