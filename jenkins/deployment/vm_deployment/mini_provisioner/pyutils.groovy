@@ -144,26 +144,20 @@ def getTestMachine(host, user, pass) {
 
 // Used Jenkins ansible plugin to execute ansible command
 def runAnsible(tags) {
-    withCredentials([usernamePassword(credentialsId: "${NODE_UN_PASS_CRED_ID}", passwordVariable: 'SERVICE_PASS', usernameVariable: 'SERVICE_USER'), string(credentialsId: "${CLOUDFORM_TOKEN_CRED_ID}", variable: 'CLOUDFORM_API_CRED')]) {
-        
-        dir("cortx-re/scripts/mini_provisioner") {
-            ansiblePlaybook(
-                playbook: 'pyutils_deploy.yml',
-                inventory: 'inventories/hosts',
-                tags: "${tags}",
-                extraVars: [
-                    "REIMAGE"               : [value: "no", hidden: false],
-                    "NODE1"                 : [value: "${NODE1_HOST}", hidden: false],
-                    "CORTX_BUILD"           : [value: "${CORTX_BUILD}", hidden: false] ,
-                    "CLUSTER_PASS"          : [value: "${CLUSTER_PASS}", hidden: false],
-                    "CLOUDFORM_API_CRED"    : [value: "${CLOUDFORM_API_CRED}", hidden: true],
-                    "SERVICE_USER"          : [value: "${SERVICE_USER}", hidden: true],
-                    "SERVICE_PASS"          : [value: "${SERVICE_PASS}", hidden: true]
-                ],
-                extras: '-v',
-                colorized: true
-            )
-        }
+    
+    dir("cortx-re/scripts/mini_provisioner") {
+        ansiblePlaybook(
+            playbook: 'pyutils_deploy.yml',
+            inventory: 'inventories/hosts',
+            tags: "${tags}",
+            extraVars: [
+                "NODE1"                 : [value: "${NODE1_HOST}", hidden: false],
+                "CORTX_BUILD"           : [value: "${CORTX_BUILD}", hidden: false] ,
+                "CLUSTER_PASS"          : [value: "${CLUSTER_PASS}", hidden: false]
+            ],
+            extras: '-v',
+            colorized: true
+        )
     }
 }
 
