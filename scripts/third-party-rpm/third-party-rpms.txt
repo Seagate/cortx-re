@@ -43,6 +43,7 @@ pkgconfig
 python-magic
 python3-pip
 python36 == 3.6.8
+python36-boto3 >= 1.4.6
 python36-PyYAML
 python36-dbus == 1.2.4
 python36-gobject == 3.22.0
