@@ -19,6 +19,7 @@
       - firewalld-0.6.3-8.el7
       - python3
       - expect
+      - s3cmd
     state: present
 
 - name: Copy a config file
@@ -37,13 +38,21 @@
     group: root
     mode: '0750'
 
+- name: Copy s3sanity config script
+  copy:
+    src: files/s3config
+    dest: /root/.s3cfg
+    owner: root
+    group: root
+    mode: '0754'
+
 - name: Copy provisioner script
   copy:
-      src: files/provisioner.sh
-      dest: provisioner.sh
-      owner: root
-      group: root
-      mode: '0754'
+    src: files/provisioner.sh
+    dest: provisioner.sh
+    owner: root
+    group: root
+    mode: '0754'
 
 #provisoner fix      
 - name: Add srvnode-1 in hosts

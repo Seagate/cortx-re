@@ -70,6 +70,9 @@
   shell: "{{ item }}"
   with_items:
     - "salt '*' cmd.run 'firewall-cmd --zone=public-data-zone --add-port=80/tcp --permanent'"
-    - "salt '*' cmd.run 'firewall-cmd --zone=public-data-zone --add-port=28100/tcp --permanent'"
     - "salt '*' cmd.run 'firewall-cmd --reload'"
+  delegate_to: "{{ ansible_host }}"
+
+- name: Execute s3 sanity tests
+  shell: sh /opt/seagate/cortx/s3/scripts/s3-sanity-test.sh -e 127.0.0.1
   delegate_to: "{{ ansible_host }}"
