@@ -73,6 +73,7 @@
     - "salt '*' cmd.run 'firewall-cmd --reload'"
   delegate_to: "{{ ansible_host }}"
 
+#wiki reference - https://github.com/Seagate/cortx/blob/main/doc/CORTX_on_Open_Virtual_Appliance.rst 
 - name: Execute s3 sanity tests
   shell: sh /opt/seagate/cortx/s3/scripts/s3-sanity-test.sh -e 127.0.0.1
   delegate_to: "{{ ansible_host }}"
