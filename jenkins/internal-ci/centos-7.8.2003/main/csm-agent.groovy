@@ -52,7 +52,7 @@ pipeline {
 			steps {
 				script { build_stage = env.STAGE_NAME }
 				// Exclude return code check for csm_setup and csm_test
-				sh label: 'Build', returnStatus: true, script: '''
+				sh label: 'Build', script: '''
 					BUILD=$(git rev-parse --short HEAD)
 					echo "Executing build script"
 					echo "Python:$(python --version)"
