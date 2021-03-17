@@ -344,7 +344,7 @@ cortx-prereq:
 		./build-prerequisite-rpm.sh -v ${RELEASE_VERSION} -r ${BUILD_ID} -g $$GIT_HASH && \
 		rm -rf ${RPM_DIR}/cortx-prereq*.rpm && \
 		mv /root/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
-	popd && \
+	popd
 
 release_build:
 	@echo "***************  Generating Release Build *********************"
