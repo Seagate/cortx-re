@@ -28,6 +28,9 @@
 - name: "[mini_provisioning] : Refresh yum repos"
   shell: yum clean all
 
+- name: "[mini_provisioning] : Install RE pre-req"
+  shell: "curl -s -L http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rpm/install-cortx-prereq.sh | bash"
+
 # Install elasticsearch and consul
 - name: "[mini_provisioning] : Install elasticsearch and consul"
   shell: "yum install -y java consul-1.9.1 elasticsearch-oss-6.8.8"
@@ -46,9 +49,9 @@
     state: started
 
 # Install csm agent and web
-- name: "[mini_provisioning] : Install csm agent and cli"
+- name: "[mini_provisioning] : Install csm agent, cortx-py-utils, python36-cortx-prvsnr and cli"
   yum: 
-    name: ["cortx-cli", "cortx-csm_agent"]
+    name: ["cortx-cli", "cortx-csm_agent", "cortx-py-utils", "python36-cortx-prvsnr"]
     state: present
 
 # Get Machine ID
