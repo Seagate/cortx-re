@@ -1,0 +1,18 @@
+---
+- name: Take nodes offline
+  hosts: nodes
+  remote_user: root
+
+  vars:
+    jenkins_host: eos-jenkins.mero.colo.seagate.com
+
+  tasks:
+  - name: Take node offline
+    uri:
+      url: http://{{ jenkins_host }}/computer/{{ item }}/toggleOffline?offlineMessage=bye
+      url_username: "{{ jenkins_user }}"
+      url_password: "{{ jenkins_password }}"
+      method: POST
+      force_basic_auth: yes
+      status_code: 302
+    with_items: "{{ groups['jenkins-nodes'] }}"
