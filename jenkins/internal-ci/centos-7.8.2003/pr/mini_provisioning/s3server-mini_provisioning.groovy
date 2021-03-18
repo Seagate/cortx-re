@@ -195,8 +195,14 @@ pipeline {
         // 5. Validate the deployment by performing basic i/o using s3cli command
         // Ref - https://github.com/Seagate/cortx-s3server/wiki/S3server-provisioning-on-single-node-cluster:-Manual
         stage('Deploy') {
-            agent { node { label "mini_provisioner_s3 && !cleanup_req" } }
             when { expression { env.STAGE_DEPLOY == "yes" } }
+            agent {
+                node {
+                    // Run deployment on mini_provisioner nodes (vm deployment nodes)
+                    label params.HOST == "-" ? "mini_provisioner_s3 && !cleanup_req" : "mini_provisioner_s3_user_host"
+                    customWorkspace "/var/jenkins/mini_provisioner/${JOB_NAME}_${BUILD_NUMBER}"
+                }
+            }
             environment {
                 // Credentials used to SSH node
                 NODE_DEFAULT_SSH_CRED =  credentials("${NODE_DEFAULT_SSH_CRED}")

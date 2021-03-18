@@ -16,6 +16,8 @@ pipeline {
         string(name: 'PROVISIONER_URL', defaultValue: 'https://github.com/Seagate/cortx-prvsnr.git', description: 'Repo for PROVISIONER Agent')
         string(name: 'PROVISIONER_BRANCH', defaultValue: 'main', description: 'Branch for PROVISIONER Agent')
         choice(name: 'DEBUG', choices: ["no", "yes" ], description: 'Keep Host for Debuging')
+        string(name: 'HOST', defaultValue: '-', description: 'Host FQDN',  trim: true)
+        password(name: 'HOST_PASS', defaultValue: '-', description: 'Host machine root user password')
     }
     environment {
 	//PR vars
@@ -164,15 +166,20 @@ pipeline {
 
         }
         stage('Deploy') {
-            agent { node { label "mini_provisioner && !cleanup_req" } }
             when { expression { env.STAGE_DEPLOY == "yes" } }
+            agent {
+                node {
+                    // Run deployment on mini_provisioner nodes (vm deployment nodes)
+                    label params.HOST == "-" ? "mini_provisioner && !cleanup_req" : "mini_provisioner_user_host"
+                    customWorkspace "/var/jenkins/mini_provisioner/${JOB_NAME}_${BUILD_NUMBER}"
+                }
+            }
             environment {
-                NODE_UN_PASS_CRED_ID = "mini-prov-change-pass"
                 // Credentials used to SSH node
                 NODE_DEFAULT_SSH_CRED =  credentials("${NODE_DEFAULT_SSH_CRED}")
                 NODE_USER = "${NODE_DEFAULT_SSH_CRED_USR}"
-                NODE_PASS = "${NODE_DEFAULT_SSH_CRED_PSW}"
-				
+                NODE1_HOST = "${HOST == '-' ? NODE1_HOST : HOST }"
+                NODE_PASS = "${HOST_PASS == '-' ? NODE_DEFAULT_SSH_CRED_PSW : HOST_PASS}"
             }
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -194,14 +201,13 @@ pipeline {
                         runAnsible("00_PREP_ENV, 01_DEPLOY_PREREQ, 02_DEPLOY, 03_PLAT_SETUP")
 
                     }
-                    if ("${DEBUG}" == "yes") {
-                        
-                        markNodeOffline("Provisioner Debug Mode Enabled on This Host  - ${JOB_URL}")
-
-                    } else {
-
-                        // Trigger cleanup VM
-                        build job: 'Cortx-Automation/Deployment/VM-Cleanup', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${env.NODE_NAME}")]
+                    
+                    if( "${HOST}" == "-" ) {
+                        if( "${DEBUG}" == "yes" ) {  
+                            markNodeOffline("Debug Mode Enabled on This Host  - ${BUILD_URL}")
+                        } else {
+                            build job: 'Cortx-Automation/Deployment/VM-Cleanup', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${env.NODE_NAME}")]                    
+                        }
                     }
 
                     // Cleanup Workspace
