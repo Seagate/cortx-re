@@ -65,7 +65,7 @@ pipeline {
         stage('Build') {
             steps {
 				script { build_stage = env.STAGE_NAME }
-                script { manager.addHtmlBadge("&emsp;<b>Target Branch : ${CSM_BRANCH}</b>&emsp;")}
+                script { manager.addHtmlBadge("&emsp;<b>Target Branch : ${BRANCH}</b>&emsp;")}
 
                 sh """
                     set +x
