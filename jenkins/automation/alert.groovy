@@ -5,6 +5,13 @@ pipeline {
 			label 'docker-cp-centos-7.8.2003-node'
 		}
 	}
+	parameters {
+        string(name: 'PATH1', defaultValue: '/mnt/data1/releases/cortx/github/cortx-1.0/centos-7.8.2003', description: 'Build Path1')
+		string(name: 'PATH2', defaultValue: '/mnt/data1/releases/cortx/github/release/rhel-7.7.1908', description: 'Build Path2')
+		string(name: 'BUILD', defaultValue: "$BUILD", description: 'BuildNumber')
+		choice(name: 'BRANCH', choices: ["main", "custom-ci"], description: 'Branch to be deleted')
+        
+    }
 	environment {
 		SPACE = sh(script: "df -h | grep /mnt/data1/releases", , returnStdout: true).trim()
 	}
@@ -36,17 +43,29 @@ pipeline {
 					steps {
 						sh label: 'Threshold alert', script: '''#!/bin/bash
 						CURRENT=$(df -h | grep /mnt/data1/releases | awk '{print $5}' | sed 's/%//g')
-					        THRESHOLD=70
+					    THRESHOLD=75
 						echo "The Current disk space is $CURRENT "
 						if [ "$CURRENT" -gt "$THRESHOLD" ] ; then
 						echo Your /mnt/data1/releases partition remaining free space is critically low. Used: $CURRENT%. Threshold: $THRESHOLD%  So, 30 days older files will be deleted $(date)
-						fpath=/mnt/data1/releases
-						source /mnt/data1/releases/exclude_build.txt
+						#fpath=/mnt/data1/releases
+						#source /var/lib/jenkins/workspace/Alert/exclude_build.txt
 						
-						#Backup of exclude builds
-						find $build -path $path1 -path $path2 -prune -false -o -name '*' -exec cp {} /mnt/data1/releases/backups/cortx_build_backup/custom_build_backup \\;
+						echo ----Backup of exclude builds--------
+						build=$(echo $BUILD | sed -e 's/,/ /g' -e 's/"//g')
+						#find ${BUILD1} ${BUILD2} ${BUILD3} -path ${PATH1} -path ${PATH2} -prune -false -o -name '*' -exec cp -R {} /mnt/data1/releases/backups/cortx_build_backup/ \\;
+						find $build -path ${PATH1} -path ${PATH2} -prune -false -o -name '*' -exec cp -R {} /mnt/data1/releases/backups/cortx_build_backup/ \\;
+						if [ "${BRANCH}" == "main" ] ; then
+						echo -----Files to be Deleted from MAIN branch-----
+						fpath=/mnt/data1/releases/cortx/github/main
+						find $fpath -type f -mtime +30 ! -name '*.INFO*' -type l -exec ls -lrt {} + > $WORKSPACE/file1.out
+						find $fpath -type f -mtime +30 ! -name '*.INFO*' -type l -exec rm -rf {} \\;
+						else
+						echo -----Files to be Deleted from CUSTOM-CI branch-----
+						fpath=/mnt/data1/releases/cortx/github/custom-ci
+						find $fpath -type f -mtime +30 ! -name '*.INFO*' -type l -exec ls -lrt {} + > $WORKSPACE/file1.out
+						fi
 						
-						find $fpath -maxdepth 1 ! -type l -print | cut -c1- | grep -v "\\#" &&  find $build -path $path1 -path $path2 -prune -false -o -name '*' && find $fpath ! -name '*.INFO*' && find $fpath -type f -mtime +30  -exec rm -rf {} \\;
+						#find $fpath -type f -mtime +30 ! -name '*.INFO*' -type l -exec rm -rf {} \\;
 						
 						fi
 					'''
@@ -65,6 +84,4 @@ pipeline {
 		}
 	}
 }
-
-
 
