@@ -20,6 +20,9 @@
   when: item not in vars
   with_items: "{{ REQUIRED_VARS }}"
 
+- name: "[mini_provisioning] : Install RE pre-req"
+  shell: "curl -s -L http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rpm/install-cortx-prereq.sh | bash"
+
 # Install build tools
 - name: "[sspl_miniprovisionig] : Install build tools"
   yum: 

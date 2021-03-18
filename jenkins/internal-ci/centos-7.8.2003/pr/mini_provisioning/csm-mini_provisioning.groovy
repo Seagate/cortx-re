@@ -31,15 +31,29 @@ pipeline {
         CSM_BRANCH_REFSEPEC = "+refs/heads/*:refs/remotes/origin/*"
         CSM_PR_REFSEPEC = "${ghprbPullId != null ? CSM_GPR_REFSEPEC : CSM_BRANCH_REFSEPEC}"
 
+
         //////////////////////////////// BUILD VARS //////////////////////////////////////////////////
 
         COMPONENT_NAME = "csm-agent".trim()
         BRANCH = "main"
         OS_VERSION = "centos-7.8.2003"
+        THIRD_PARTY_VERSION = "centos-7.8.2003-2.0.0-latest"
+        VERSION = "2.0.0"
+        PASSPHARASE = credentials('rpm-sign-passphrase')
+
+        // Artifacts root location
 
         // 'WARNING' - rm -rf command used on this path please careful when updating this value
         DESTINATION_RELEASE_LOCATION = "/mnt/bigstorage/releases/cortx/github/pr-build/${COMPONENT_NAME}/${BUILD_NUMBER}"
+        PYTHON_DEPS = "/mnt/bigstorage/releases/cortx/third-party-deps/python-deps/python-packages-2.0.0-latest"
+        THIRD_PARTY_DEPS = "/mnt/bigstorage/releases/cortx/third-party-deps/centos/${THIRD_PARTY_VERSION}/"
+        COMPONENTS_RPM = "/mnt/bigstorage/releases/cortx/components/github/${BRANCH}/${OS_VERSION}/dev/"
         CORTX_BUILD = "http://cortx-storage.colo.seagate.com/releases/cortx/github/pr-build/${COMPONENT_NAME}/${BUILD_NUMBER}"
+
+        // Artifacts location
+        CORTX_ISO_LOCATION = "${DESTINATION_RELEASE_LOCATION}/cortx_iso"
+        THIRD_PARTY_LOCATION = "${DESTINATION_RELEASE_LOCATION}/3rd_party"
+        PYTHON_LIB_LOCATION = "${DESTINATION_RELEASE_LOCATION}/python_deps"
 
         STAGE_DEPLOY = "yes"
     }
@@ -79,21 +93,95 @@ pipeline {
                         mkdir -p "${DESTINATION_RELEASE_LOCATION}"
             
                         if [[ ( ! -z `ls ./dist/rpmbuild/RPMS/x86_64/*.rpm `)]]; then
-                            cp ./dist/rpmbuild/RPMS/x86_64/*.rpm "${DESTINATION_RELEASE_LOCATION}"
+                            mkdir -p "${CORTX_ISO_LOCATION}"
+                            cp ./dist/rpmbuild/RPMS/x86_64/*.rpm "${CORTX_ISO_LOCATION}"
                         else
                             echo "RPM not exists !!!"
                             exit 1
                         fi
-
-                        pushd ${DESTINATION_RELEASE_LOCATION}
-                            rpm -qi createrepo || yum install -y createrepo
-                            createrepo .
-                        popd
-                    '''	
+                    '''		
                 }
             }
         }
 
+        // Release cortx deployment stack
+        stage('Release') {
+            steps {
+				script { build_stage = env.STAGE_NAME }
+
+                dir('cortx-re') {
+                    checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 1, honorRefspec: true, noTags: true, reference: '', shallow: true], [$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
+                }
+
+                // Install tools required for release process
+                 sh label: 'Installed Dependecies', script: '''
+                    yum install -y expect rpm-sign rng-tools python3-pip
+                    systemctl start rngd
+                '''
+
+                // Integrate components rpms
+                sh label: 'Collect Release Artifacts', script: '''
+                    
+                    pushd ${COMPONENTS_RPM}
+                        for component in `ls -1 | grep -E -v "${COMPONENT_NAME}"`
+                        do
+                            echo -e "Copying RPM's for $component"
+                            if ls $component/last_successful/*.rpm 1> /dev/null 2>&1; then
+                                cp $component/last_successful/*.rpm "${CORTX_ISO_LOCATION}"
+                            fi
+                        done
+                    popd
+
+                    # Symlink 3rdparty repo artifacts
+                    ln -s "${THIRD_PARTY_DEPS}" "${THIRD_PARTY_LOCATION}"
+                        
+                    # Symlink python dependencies
+                    ln -s "${PYTHON_DEPS}" "${PYTHON_LIB_LOCATION}"
+                '''
+
+                sh label: 'RPM Signing', script: '''
+                    pushd cortx-re/scripts/rpm-signing
+                        cat gpgoptions >>  ~/.rpmmacros
+                        sed -i 's/passphrase/'${PASSPHARASE}'/g' genkey-batch
+                        gpg --batch --gen-key genkey-batch
+                        gpg --export -a 'Seagate'  > RPM-GPG-KEY-Seagate
+                        rpm --import RPM-GPG-KEY-Seagate
+                    popd
+
+                    pushd cortx-re/scripts/rpm-signing
+                        chmod +x rpm-sign.sh
+                        cp RPM-GPG-KEY-Seagate ${CORTX_ISO_LOCATION}
+                        for rpm in `ls -1 ${CORTX_ISO_LOCATION}/*.rpm`
+                        do
+                            ./rpm-sign.sh ${PASSPHARASE} ${rpm}
+                        done
+                    popd
+
+                '''
+                
+                sh label: 'RPM Signing', script: '''
+                    pushd ${CORTX_ISO_LOCATION}
+                        rpm -qi createrepo || yum install -y createrepo
+                        createrepo .
+                    popd
+                '''	
+
+                sh label: 'RPM Signing', script: '''
+                    pushd cortx-re/scripts/release_support
+                        sh build_readme.sh "${DESTINATION_RELEASE_LOCATION}"
+                        sh build_release_info.sh -v ${VERSION} -b ${CORTX_ISO_LOCATION} -t ${THIRD_PARTY_LOCATION}
+                    popd
+
+                    cp "${THIRD_PARTY_LOCATION}/THIRD_PARTY_RELEASE.INFO" "${DESTINATION_RELEASE_LOCATION}"
+                    cp "${CORTX_ISO_LOCATION}/RELEASE.INFO" "${DESTINATION_RELEASE_LOCATION}"
+
+                    cp "${CORTX_ISO_LOCATION}/RELEASE.INFO" .
+                '''	
+
+                archiveArtifacts artifacts: "RELEASE.INFO", onlyIfSuccessful: false, allowEmptyArchive: true	
+            }
+
+        }
 
         // Deploy csm mini provisioner 
         stage('Deploy') {

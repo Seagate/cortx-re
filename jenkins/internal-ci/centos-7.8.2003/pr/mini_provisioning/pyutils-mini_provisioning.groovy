@@ -35,19 +35,27 @@ pipeline {
         //////////////////////////////// BUILD VARS //////////////////////////////////////////////////
 
         COMPONENT_NAME = "cortx-utils".trim()
-        BRANCH = "main"
+        BRANCH = "${ghprbTargetBranch != null ? ghprbTargetBranch : 'stable'}"
         OS_VERSION = "centos-7.8.2003"
-        version = "2.0.0" 
+        THIRD_PARTY_VERSION = "centos-7.8.2003-2.0.0-latest"
+        PASSPHARASE = credentials('rpm-sign-passphrase')
 
-        // 'WARNING' - rm -rf command used on this path please careful when updating this value
-        DESTINATION_RELEASE_LOCATION = "/mnt/bigstorage/releases/cortx/github/pr-build/${COMPONENT_NAME}/${BUILD_NUMBER}"
-        CORTX_BUILD = "http://cortx-storage.colo.seagate.com/releases/cortx/github/pr-build/${COMPONENT_NAME}/${BUILD_NUMBER}"
+        VERSION = "2.0.0" 
+		
+	    // Artifacts root location
+		
+	    DESTINATION_RELEASE_LOCATION = "/mnt/bigstorage/releases/cortx/github/pr-build/${BRANCH}/${COMPONENT_NAME}/${BUILD_NUMBER}"
+        CORTX_BUILD = "http://cortx-storage.colo.seagate.com/releases/cortx/github/pr-build/${BRANCH}/${COMPONENT_NAME}/${BUILD_NUMBER}"
+        PYTHON_DEPS = "/mnt/bigstorage/releases/cortx/third-party-deps/python-deps/python-packages-2.0.0-latest"
+        THIRD_PARTY_DEPS = "/mnt/bigstorage/releases/cortx/third-party-deps/centos/${THIRD_PARTY_VERSION}/"
+        COMPONENTS_RPM = "/mnt/bigstorage/releases/cortx/components/github/${BRANCH}/${OS_VERSION}/dev/"
 
-        ////////////////////////////////// DEPLOYMENT VARS /////////////////////////////////////////////////////
-
-        // NODE1_HOST - Env variables added in the node configurations
+        // Artifacts location
+        CORTX_ISO_LOCATION = "${DESTINATION_RELEASE_LOCATION}/cortx_iso"
+        THIRD_PARTY_LOCATION = "${DESTINATION_RELEASE_LOCATION}/3rd_party"
+        PYTHON_LIB_LOCATION = "${DESTINATION_RELEASE_LOCATION}/python_deps"
+		
         build_id = sh(script: "echo ${CORTX_BUILD} | rev | cut -d '/' -f2,3 | rev", returnStdout: true).trim()
-
         STAGE_DEPLOY = "yes"
     }
 
@@ -57,6 +65,16 @@ pipeline {
         stage('Build') {
             steps {
 				script { build_stage = env.STAGE_NAME }
+                script { manager.addHtmlBadge("&emsp;<b>Target Branch : ${BRANCH}</b>&emsp;<br />")}
+
+                sh """
+                    set +x
+                    echo "--------------BUILD PARAMETERS -------------------"
+                    echo "PY_UTILS_URL              = ${PY_UTILS_URL}"
+                    echo "PY_UTILS_BRANCH           = ${PY_UTILS_BRANCH}"
+                    echo "PY_UTILS_PR_REFSPEC       = ${PY_UTILS_PR_REFSPEC}"
+                    echo "-----------------------------------------------------------"
+                """
                  
                 dir("cortx_utils") {
 
@@ -65,30 +83,100 @@ pipeline {
                     sh label: 'Build', script: '''
                         yum install python36-devel -y
                         pushd py-utils
-                            python3.6 setup.py bdist_rpm --version=$version --post-install utils-post-install --post-uninstall utils-post-uninstall --post-uninstall utils-post-uninstall --release="${BUILD_NUMBER}_$(git rev-parse --short HEAD)"
+                            python3.6 setup.py bdist_rpm --version=$VERSION --post-install utils-post-install --post-uninstall utils-post-uninstall --post-uninstall utils-post-uninstall --release="${BUILD_NUMBER}_$(git rev-parse --short HEAD)"
                         popd
                         
-                        ./statsd-utils/jenkins/build.sh -v $version -b $BUILD_NUMBER
-                    '''
-
-                    sh label: 'Copy RPMS', script: '''
-
-                        rm -rf "${DESTINATION_RELEASE_LOCATION}"
-                        mkdir -p "${DESTINATION_RELEASE_LOCATION}"
-
-                        shopt -s extglob
-                        cp ./py-utils/dist/!(*.src.rpm|*.tar.gz) "${DESTINATION_RELEASE_LOCATION}"
-                        cp ./statsd-utils/dist/rpmbuild/RPMS/x86_64/*.rpm "${DESTINATION_RELEASE_LOCATION}"
-
-                        pushd ${DESTINATION_RELEASE_LOCATION}
-                            rpm -qi createrepo || yum install -y createrepo
-                            createrepo .
-                        popd
+                        ./statsd-utils/jenkins/build.sh -v $VERSION -b $BUILD_NUMBER
                     '''
                 }
             }
         }
 
+        // Release cortx deployment stack
+        stage('Release') {
+            steps {
+				script { build_stage = env.STAGE_NAME }
+                echo "Creating Provisioner Release"
+                dir('cortx-re') {
+                    checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 1, honorRefspec: true, noTags: true, reference: '', shallow: true], [$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
+                }
+
+                // Install tools required for release process
+                sh label: 'Installed Dependecies', script: '''
+                    yum install -y expect rpm-sign rng-tools python3-pip
+                    systemctl start rngd
+                '''
+
+                // Integrate components rpms
+                sh label: 'Collect Release Artifacts', script: '''
+                    set -x 
+                    echo -e "Gathering all component RPM's and create release"
+                    rm -rf "${DESTINATION_RELEASE_LOCATION}"
+                    mkdir -p "${DESTINATION_RELEASE_LOCATION}"
+
+                    mkdir -p "${CORTX_ISO_LOCATION}"
+                    shopt -s extglob
+                    ls
+                    cp ./cortx_utils/py-utils/dist/!(*.src.rpm|*.tar.gz) "${CORTX_ISO_LOCATION}"
+                    cp ./cortx_utils/statsd-utils/dist/rpmbuild/RPMS/x86_64/*.rpm "${CORTX_ISO_LOCATION}"
+
+                    pushd ${COMPONENTS_RPM}
+                        for component in `ls -1 | grep -E -v "${COMPONENT_NAME}"`
+                        do
+                            echo -e "Copying RPM's for $component"
+                            if ls $component/last_successful/*.rpm 1> /dev/null 2>&1; then
+                                cp $component/last_successful/*.rpm "${CORTX_ISO_LOCATION}"
+                            fi
+                        done
+                    popd
+                    # Symlink 3rdparty repo artifacts
+                    ln -s "${THIRD_PARTY_DEPS}" "${THIRD_PARTY_LOCATION}"
+                        
+                    # Symlink python dependencies
+                    ln -s "${PYTHON_DEPS}" "${PYTHON_LIB_LOCATION}"
+                '''
+
+                sh label: 'RPM Signing', script: '''
+                    pushd cortx-re/scripts/rpm-signing
+                        cat gpgoptions >>  ~/.rpmmacros
+                        sed -i 's/passphrase/'${PASSPHARASE}'/g' genkey-batch
+                        gpg --batch --gen-key genkey-batch
+                        gpg --export -a 'Seagate'  > RPM-GPG-KEY-Seagate
+                        rpm --import RPM-GPG-KEY-Seagate
+                    popd
+                    pushd cortx-re/scripts/rpm-signing
+                        chmod +x rpm-sign.sh
+                        cp RPM-GPG-KEY-Seagate ${CORTX_ISO_LOCATION}
+                        for rpm in `ls -1 ${CORTX_ISO_LOCATION}/*.rpm`
+                        do
+                            ./rpm-sign.sh ${PASSPHARASE} ${rpm}
+                        done
+                    popd
+                '''
+                
+                sh label: 'RPM Signing', script: '''
+                    pushd ${CORTX_ISO_LOCATION}
+                        rpm -qi createrepo || yum install -y createrepo
+                        createrepo .
+                    popd
+                '''	
+
+                sh label: 'RPM Signing', script: '''
+                    echo -e "Creating release information files"
+                    pushd cortx-re/scripts/release_support
+                        sh build_release_info.sh -v ${VERSION} -b ${CORTX_ISO_LOCATION} -t ${THIRD_PARTY_LOCATION}
+                        sh build_readme.sh "${DESTINATION_RELEASE_LOCATION}"
+                    popd
+                    cp "${THIRD_PARTY_LOCATION}/THIRD_PARTY_RELEASE.INFO" "${DESTINATION_RELEASE_LOCATION}"
+                    cp "${CORTX_ISO_LOCATION}/RELEASE.INFO" "${DESTINATION_RELEASE_LOCATION}"
+
+                    cp "${CORTX_ISO_LOCATION}/RELEASE.INFO" .
+                '''	
+
+                archiveArtifacts artifacts: "RELEASE.INFO", onlyIfSuccessful: false, allowEmptyArchive: true	
+            }
+
+        }
 
         // Deploy py_utils mini provisioner 
         stage('Deploy') {
