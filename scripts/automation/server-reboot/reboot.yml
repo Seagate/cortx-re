@@ -1,6 +1,6 @@
 ---
 - name: reboot servers
-  hosts: nodes
+  hosts: all
   remote_user: root
 
   tasks:

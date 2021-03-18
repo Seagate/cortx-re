@@ -1,7 +1,12 @@
 [nodes]
 ssc-vm-1613.colo.seagate.com
+ssc-vm-2382.colo.seagate.com
 
-[all:vars]
+[jenkins-nodes]
+reboot-test-node
+s3-dev-build-7.8.2003-test-node-ssc-vm-2382
+
+[nodes:vars]
 ansible_connection=ssh
 ansible_user=root
 ansible_ssh_common_args='-o StrictHostKeyChecking=no'
