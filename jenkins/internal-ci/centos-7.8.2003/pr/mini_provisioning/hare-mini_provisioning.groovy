@@ -18,7 +18,9 @@ pipeline {
 	    string(name: 'HARE_URL', defaultValue: 'https://github.com/Seagate/cortx-hare', description: 'Repo for Hare')
         string(name: 'HARE_BRANCH', defaultValue: 'main', description: 'Branch for Hare')
         choice(name: 'DEBUG', choices: ["no", "yes" ], description: 'Keep Host for Debuging')   
-	}
+        string(name: 'HOST', defaultValue: '-', description: 'Host FQDN',  trim: true)
+        password(name: 'HOST_PASS', defaultValue: '-', description: 'Host machine root user password')
+    }
 
     environment {
 
@@ -54,19 +56,6 @@ pipeline {
         CORTX_ISO_LOCATION = "${DESTINATION_RELEASE_LOCATION}/cortx_iso"
         THIRD_PARTY_LOCATION = "${DESTINATION_RELEASE_LOCATION}/3rd_party"
         PYTHON_LIB_LOCATION = "${DESTINATION_RELEASE_LOCATION}/python_deps"
-
-        ////////////////////////////////// DEPLOYMENT VARS /////////////////////////////////////////////////////
-
-        // NODE1_HOST - Env variables added in the node configurations
-
-        // GID/pwd used to update root password 
-        NODE_UN_PASS_CRED_ID = "mini-prov-change-pass"
-
-        // Credentials used to for node SSH
-        NODE_DEFAULT_SSH_CRED  = credentials("vm-deployment-ssh-cred")
-        NODE_USER = "${NODE_DEFAULT_SSH_CRED_USR}"
-        NODE_PASS = "${NODE_DEFAULT_SSH_CRED_PSW}"
-        CLUSTER_PASS = "${NODE_DEFAULT_SSH_CRED_PSW}"
 
         STAGE_DEPLOY = "yes"
     }
@@ -188,8 +177,21 @@ pipeline {
 
         // Ref - https://github.com/Seagate/cortx-hare/wiki/Hare-provisioning
         stage('Deploy') {
-            agent { node { label "mini_provisioner && !cleanup_req" } }
             when { expression { env.STAGE_DEPLOY == "yes" } }
+            agent {
+                node {
+                    // Run deployment on mini_provisioner nodes (vm deployment nodes)
+                    label params.HOST == "-" ? "mini_provisioner && !cleanup_req" : "mini_provisioner_user_host"
+                    customWorkspace "/var/jenkins/mini_provisioner/${JOB_NAME}_${BUILD_NUMBER}"
+                }
+            }
+            environment {
+                // Credentials used to SSH node
+                NODE_DEFAULT_SSH_CRED =  credentials("${NODE_DEFAULT_SSH_CRED}")
+                NODE_USER = "${NODE_DEFAULT_SSH_CRED_USR}"
+                NODE1_HOST = "${HOST == '-' ? NODE1_HOST : HOST }"
+                NODE_PASS = "${HOST_PASS == '-' ? NODE_DEFAULT_SSH_CRED_PSW : HOST_PASS}"
+            }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
@@ -223,15 +225,13 @@ pipeline {
                         archiveArtifacts artifacts: "**/*.json", onlyIfSuccessful: false, allowEmptyArchive: true 
                     }
 
-                    if("${DEBUG}" == "yes"){
-                        
-                        markNodeOffline("Hare Debug Mode Enabled on This Host  - ${JOB_URL}")
-
-                    } else {
-
-                        // Trigger cleanup VM
-                        build job: 'Cortx-Automation/Deployment/VM-Cleanup', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${env.NODE_NAME}")]
-                   }
+                    if( "${HOST}" == "-" ) {
+                        if( "${DEBUG}" == "yes" ) {  
+                            markNodeOffline("Debug Mode Enabled on This Host  - ${BUILD_URL}")
+                        } else {
+                            build job: 'Cortx-Automation/Deployment/VM-Cleanup', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${env.NODE_NAME}")]                    
+                        }
+                    }
 
                     // Cleanup Workspace
                     cleanWs()
@@ -276,7 +276,7 @@ def runAnsible(tags) {
             extraVars: [
                 "NODE1"                 : [value: "${NODE1_HOST}", hidden: false],
                 "CORTX_BUILD"           : [value: "${CORTX_BUILD}", hidden: false] ,
-                "CLUSTER_PASS"          : [value: "${CLUSTER_PASS}", hidden: false]
+                "CLUSTER_PASS"          : [value: "${NODE_PASS}", hidden: false]
             ],
             extras: '-v',
             colorized: true

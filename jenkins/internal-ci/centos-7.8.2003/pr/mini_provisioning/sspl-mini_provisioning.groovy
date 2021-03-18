@@ -1,9 +1,11 @@
 #!/usr/bin/env groovy
 // CLEANUP REQUIRED
 pipeline { 
+
     agent {
         node {
-            label 'mini_provisioner_sspl'
+            // Run deployment on mini_provisioner nodes (vm deployment nodes)
+            label "mini_provisioner_sspl"
         }
     }
 
@@ -16,7 +18,7 @@ pipeline {
 
     parameters {  
 	    string(name: 'SSPL_URL', defaultValue: 'https://github.com/Seagate/cortx-monitor', description: 'Repo for SSPL')
-        string(name: 'SSPL_BRANCH', defaultValue: 'main', description: 'Branch for SSPL')     
+        string(name: 'SSPL_BRANCH', defaultValue: 'main', description: 'Branch for SSPL')  
 	}
 
     environment {
