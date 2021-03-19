@@ -1,6 +1,6 @@
 ---
 - name: Take nodes offline
-  hosts: nodes
+  hosts: localhost
   remote_user: root
 
   vars:
@@ -15,4 +15,4 @@
       method: POST
       force_basic_auth: yes
       status_code: 302
-    with_items: "{{ groups['jenkins-nodes'] }}"
+    with_items: "{{ groups['all'] }}"
