@@ -23,7 +23,7 @@ done
 shift $((OPTIND-1))
 
 if [ -z "${RELEASE_VERSION}" ] || [ -z "${VERSION}" ]; then
-    usage
+    usage test
 fi
 
 if [ -z "${GIT_VERSION}" ]; then
