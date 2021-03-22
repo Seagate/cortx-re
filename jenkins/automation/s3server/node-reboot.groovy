@@ -36,7 +36,7 @@ pipeline {
             }
         }    
 
-		stage('Reboot System') {
+		stage('Reboot Nodes') {
             steps {
                 script {
 
