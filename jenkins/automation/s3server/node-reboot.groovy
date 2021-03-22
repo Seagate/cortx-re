@@ -1,54 +1,58 @@
-#!/usr/bin/env groovy
-pipeline { 
+pipeline {
     agent { label 'docker-cp-centos-7.8.2003-node' }
 
     options {
-        timeout(time: 120, unit: 'MINUTES')
+        timeout(50)
         timestamps()
         ansiColor('xterm') 
+        disableConcurrentBuilds()
         buildDiscarder(logRotator(numToKeepStr: "30"))
     }
 
-    stages {
+    environment {
+        VM_CRED = credentials('node-user')
+		JENKINS_API = credentials('jenkins_rest_token')
+        GITHUB_TOKEN = credentials('cortx-admin-github')
+    }
 
-        // Clone deploymemt scripts from cortx-re repo
+    stages {
+        
         stage ('Checkout Scripts') {
             steps {
                 script {
+            
 					// Clone cortx-re repo
                     dir('cortx-re') {
                         checkout([$class: 'GitSCM', branches: [[name: 's3-node-reboot']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/shailesh-vaidya/cortx-re']]])                
                     }
+
                 }
             }
-        }
-		
-		stage('Install prerequisite') {
+        }    
+
+		stage('Reboot System') {
 		steps {
-			sh label: '', returnStatus: true, script: '''
-				yum install ansible -y
-			'''
+			 script {
+				def nodelist = nodesByLabel ('reboot-test')
+				print nodelist
+				env.NODE_LIST=nodelist.join(",")
+
+			}	
+			
+			sh label: '', returnStatus: true, script: """
+			   yum install ansible -y
+				
+               for i in \${NODE_LIST/,/ }; do NODE_IP_LIST=\$NODE_IP_LIST,\$(curl -s -X POST -L --user "$JENKINS_API_USR:$JENKINS_API_PSW" -d "script=println InetAddress.localHost.hostAddress" http://eos-jenkins.mero.colo.seagate.com/computer/\$i/scriptText); done
+				
+				pushd cortx-re/scripts/automation/server-reboot/
+				    ansible-playbook node-reboot.yml --tags jenkins-offline -i \$NODE_LIST  --extra-vars "ansible_ssh_pass=$VM_CRED_PSW jenkins_password="$JENKINS_API_PSW" jenkins_user=$JENKINS_API_USR"
+			    	ansible-playbook node-reboot.yml --tags reboot -i \$NODE_IP_LIST  --extra-vars "ansible_ssh_pass=$VM_CRED_PSW"
+					ansible-playbook node-reboot.yml --tags jenkins-online -i \$NODE_LIST  --extra-vars "ansible_ssh_pass=$VM_CRED_PSW jenkins_password="$JENKINS_API_PSW" jenkins_user=$JENKINS_API_USR"
+				popd
+				
+			"""
+	
 			}
 		}
-
-        stage('Reboot Nodes') {
-            steps {
-                script {
-				   withCredentials([usernamePassword(credentialsId: 'node-user', passwordVariable: 'USER_PASS', usernameVariable: 'USER_NAME')]) {
-						dir("cortx-re/scripts/automation/server-reboot/") {
-							ansiblePlaybook(
-								playbook: 'reboot.yml',
-								inventory: 'hosts',
-								extraVars: [
-									"ansible_ssh_pass"                 : [value: "${USER_PASS}", hidden: false],
-								],
-								extras: '-v',
-								colorized: true
-							)
-						}                        
-					}
-				}
-            }
-        }
 	}
 }
