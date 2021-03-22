@@ -44,10 +44,11 @@ pipeline {
 				script { build_stage = env.STAGE_NAME }
 				sh label: '', script: '''
 					yum install -y cortx-prvsnr
+					yum erase python36-PyYAML -y 
 					pip3.6 install  pyinstaller==3.5
 					curl -s http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rpm/install-cortx-prereq.sh | bash 
 
-					#List installed Python packages
+					echo "List of installed Python packages"
 					pip3 list
 
 				'''
