@@ -26,12 +26,10 @@ pipeline {
         stage ('Checkout Scripts') {
             steps {
                 script {
-            
-					// Clone cortx-re repo
+            	// Clone cortx-re repo
                     dir('cortx-re') {
-                        checkout([$class: 'GitSCM', branches: [[name: "$REPO_BRANCH"]], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "$REPO_URL"]])                
+						checkout([$class: 'GitSCM', branches: [[name: "$REPO_BRANCH"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: false, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "$REPO_URL"]]])               
                     }
-
                 }
             }
         }    
