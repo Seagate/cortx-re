@@ -43,6 +43,10 @@ pipeline {
 			steps {
 				script { build_stage = env.STAGE_NAME }
 				sh label: '', script: '''
+				#Use main branch for cortx-py-utils
+				sed -i 's/stable/main/'  /etc/yum.repos.d/cortx.repo
+				yum clean all && rm -rf /var/cache/yum
+
 				# Install cortx-prereq package
 					pip3 uninstall pip -y && yum install python3-pip -y && ln -s /usr/bin/pip3 /usr/local/bin/pip3
 					curl -s http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rpm/install-cortx-prereq.sh | bash 
@@ -61,7 +65,7 @@ pipeline {
 					BUILD=$(git rev-parse --short HEAD)
 					echo "Executing build script"
 					echo "Python:$(python --version)"
-					./cicd/build.sh -v $version -b $BUILD_NUMBER -t -i
+					./cicd/build.sh -v $version -b $BUILD_NUMBER -t
 				'''	
 			}
 		}
