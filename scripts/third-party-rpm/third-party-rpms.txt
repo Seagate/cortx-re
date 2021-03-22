@@ -33,6 +33,7 @@ perl
 perl(Config::Any)
 perl-DateTime
 perl-File-Which
+test-package
 perl-List-MoreUtils
 perl-MCE
 perl-Sereal
