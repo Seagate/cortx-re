@@ -15,6 +15,12 @@ pipeline {
         GITHUB_TOKEN = credentials('cortx-admin-github')
     }
 
+    parameters {
+		string(name: 'REPO_URL', defaultValue: 'https://github.com/shailesh-vaidya/cortx-re', description: 'Repository URL to be used for cortx-re.')
+		string(name: 'REPO_BRANCH', defaultValue: 'main', description: 'Branch to be used for cortx-re repo.')
+		string(name: 'REBOOT_LABEL', defaultValue: 'reboot-test', description: 'Node Lable for reboot')
+	}
+
     stages {
         
         stage ('Checkout Scripts') {
@@ -23,7 +29,7 @@ pipeline {
             
 					// Clone cortx-re repo
                     dir('cortx-re') {
-                        checkout([$class: 'GitSCM', branches: [[name: 's3-node-reboot']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/shailesh-vaidya/cortx-re']]])                
+                        checkout([$class: 'GitSCM', branches: [[name: "$REPO_BRANCH"]], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "$REPO_URL"]])                
                     }
 
                 }
@@ -35,7 +41,7 @@ pipeline {
                 script {
 
                 // Move this code to Ansible playbook       
-                    def nodelist = nodesByLabel ('reboot-test')
+                    def nodelist = nodesByLabel ("${params.REBOOT_LABEL}")
                     print nodelist
                     env.NODE_LIST=nodelist.join(",")
 
