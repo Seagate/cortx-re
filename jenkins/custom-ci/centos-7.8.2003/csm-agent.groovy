@@ -53,7 +53,7 @@ pipeline {
 					yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
 				else
 					yum-config-manager --disable cortx-C7.7.1908,cortx-uploads
-					yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/stable/$os_version/last_successful/
+					yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/main/$os_version/last_successful/
 					yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
 				fi	
 				yum clean all && rm -rf /var/cache/yum
@@ -64,7 +64,9 @@ pipeline {
 						yum install -y eos-py-utils
 						pip3.6 install  pyinstaller==3.5
 					else
-						yum install -y cortx-prvsnr
+					# Install cortx-prereq package
+						pip3 uninstall pip -y && yum install python3-pip -y && ln -s /usr/bin/pip3 /usr/local/bin/pip3
+						curl -s http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rpm/install-cortx-prereq.sh | bash 
 						pip3.6 install  pyinstaller==3.5
 					fi
 				"""
