@@ -9,6 +9,8 @@ pipeline {
         buildDiscarder(logRotator(numToKeepStr: "30"))
     }
 
+    triggers { cron('30 21 * * *') }
+
     environment {
         VM_CRED = credentials('node-user')
 		JENKINS_API = credentials('jenkins_rest_token')
@@ -18,7 +20,7 @@ pipeline {
     parameters {
 		string(name: 'REPO_URL', defaultValue: 'https://github.com/shailesh-vaidya/cortx-re', description: 'Repository URL to be used for cortx-re.')
 		string(name: 'REPO_BRANCH', defaultValue: 'main', description: 'Branch to be used for cortx-re repo.')
-		string(name: 'REBOOT_LABEL', defaultValue: 'reboot-test', description: 'Node Lable for reboot')
+		string(name: 'REBOOT_LABEL', defaultValue: 's3-dev-build-7.8.2003', description: 'Node Lable for reboot')
 	}
 
     stages {
