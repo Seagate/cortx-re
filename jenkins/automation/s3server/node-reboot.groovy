@@ -31,28 +31,36 @@ pipeline {
         }    
 
 		stage('Reboot System') {
-		steps {
-			 script {
-				def nodelist = nodesByLabel ('reboot-test')
-				print nodelist
-				env.NODE_LIST=nodelist.join(",")
+            steps {
+                script {
 
-			}	
-			
-			sh label: '', returnStatus: true, script: """
-			   yum install ansible -y
-				
-               for i in \${NODE_LIST/,/ }; do NODE_IP_LIST=\$NODE_IP_LIST,\$(curl -s -X POST -L --user "$JENKINS_API_USR:$JENKINS_API_PSW" -d "script=println InetAddress.localHost.hostAddress" http://eos-jenkins.mero.colo.seagate.com/computer/\$i/scriptText); done
-				
-				pushd cortx-re/scripts/automation/server-reboot/
-				    ansible-playbook node-reboot.yml --tags jenkins-offline -i \$NODE_LIST  --extra-vars "ansible_ssh_pass=$VM_CRED_PSW jenkins_password="$JENKINS_API_PSW" jenkins_user=$JENKINS_API_USR"
-			    	ansible-playbook node-reboot.yml --tags reboot -i \$NODE_IP_LIST  --extra-vars "ansible_ssh_pass=$VM_CRED_PSW"
-					ansible-playbook node-reboot.yml --tags jenkins-online -i \$NODE_LIST  --extra-vars "ansible_ssh_pass=$VM_CRED_PSW jenkins_password="$JENKINS_API_PSW" jenkins_user=$JENKINS_API_USR"
-				popd
-				
-			"""
-	
-			}
+                // Move this code to Ansible playbook       
+                    def nodelist = nodesByLabel ('reboot-test')
+                    print nodelist
+                    env.NODE_LIST=nodelist.join(",")
+
+                }	
+                
+                // Move this code to Ansible playbook
+                sh label: 'Install Ansible', returnStatus: true, script: """
+
+                yum install ansible -y
+                  
+                for i in \${NODE_LIST/,/ }; do NODE_IP_LIST=\$NODE_IP_LIST,\$(curl -s -X POST -L --user "$JENKINS_API_USR:$JENKINS_API_PSW" -d "script=println InetAddress.localHost.hostAddress" http://eos-jenkins.mero.colo.seagate.com/computer/\$i/scriptText); done
+                    
+                    pushd cortx-re/scripts/automation/server-reboot/
+                        #Take nodes offline
+                        ansible-playbook node-reboot.yml --tags jenkins-offline -i \$NODE_LIST  --extra-vars "ansible_ssh_pass=$VM_CRED_PSW jenkins_password="$JENKINS_API_PSW" jenkins_user=$JENKINS_API_USR"
+                        
+                        #Reboot nodes
+                        ansible-playbook node-reboot.yml --tags reboot -i \$NODE_IP_LIST  --extra-vars "ansible_ssh_pass=$VM_CRED_PSW"
+                        
+                        #Bring nodes online
+                        ansible-playbook node-reboot.yml --tags jenkins-online -i \$NODE_LIST  --extra-vars "ansible_ssh_pass=$VM_CRED_PSW jenkins_password="$JENKINS_API_PSW" jenkins_user=$JENKINS_API_USR"
+                    popd
+                    
+                """
+            }
 		}
 	}
 }
