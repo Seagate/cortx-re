@@ -81,7 +81,7 @@ pipeline {
 				script { build_stage = env.STAGE_NAME }
 				sh label: 'Copy RPMS', script: '''
 					mkdir -p $build_upload_dir/$BUILD_NUMBER
-					cp ./dist/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir/$BUILD_NUMBER
+					cp ./cortx-csm-agent/dist/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir/$BUILD_NUMBER
 				'''
 				sh label: 'Repo Creation', script: '''pushd $build_upload_dir/$BUILD_NUMBER
 					rpm -qi createrepo || yum install -y createrepo

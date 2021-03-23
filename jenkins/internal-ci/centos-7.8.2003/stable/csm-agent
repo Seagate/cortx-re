@@ -34,7 +34,9 @@ pipeline {
 			steps {
 				script { build_stage=env.STAGE_NAME }
 
-				checkout([$class: 'GitSCM', branches: [[name: '*/stable']], doGenerateSubmoduleConfigurations: false,  extensions: [[$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-manager']]])
+				dir ('cortx-csm-agent') {
+					checkout([$class: 'GitSCM', branches: [[name: "*/${branch}"]], doGenerateSubmoduleConfigurations: false,  extensions: [[$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-manager']]])
+				}
 			}
 		}
 		
@@ -69,7 +71,7 @@ pipeline {
 					BUILD=$(git rev-parse --short HEAD)
 					echo "Executing build script"
 					echo "Python:$(python --version)"
-					./cicd/build.sh -v $version -b $BUILD_NUMBER -t -i
+					./cortx-csm-agent/cicd/build.sh -v $version -b $BUILD_NUMBER -t -i
 				'''	
 			}
 		}
@@ -79,7 +81,7 @@ pipeline {
 				script { build_stage=env.STAGE_NAME }
 				sh label: 'Copy RPMS', script: '''
 					mkdir -p $build_upload_dir/$BUILD_NUMBER
-					cp ./dist/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir/$BUILD_NUMBER
+					cp ./cortx-csm-agent/dist/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir/$BUILD_NUMBER
 				'''
 				sh label: 'Repo Creation', script: '''pushd $build_upload_dir/$BUILD_NUMBER
 					rpm -qi createrepo || yum install -y createrepo
