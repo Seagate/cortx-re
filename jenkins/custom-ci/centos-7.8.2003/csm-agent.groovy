@@ -52,7 +52,7 @@ pipeline {
 
 				sh label: 'Install cortx-prereq package', script: """
 					pip3 uninstall pip -y && yum install python3-pip -y && ln -s /usr/bin/pip3 /usr/local/bin/pip3
-					./cortx-re/scripts/third-party-rpm/install-cortx-prereq.sh
+					sh ./cortx-re/scripts/third-party-rpm/install-cortx-prereq.sh
 				"""
 
 				sh label: 'Configure yum repositories', script: """
