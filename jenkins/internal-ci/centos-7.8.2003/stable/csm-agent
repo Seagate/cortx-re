@@ -40,10 +40,23 @@ pipeline {
 		
 		stage('Install Dependencies') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
+
+				dir ('cortx-re') {
+					checkout changelog: false, poll: false, scm: [$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', noTags: true, reference: '', shallow: true]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]]
+				}
+
 				sh label: '', script: '''
-					yum install -y eos-py-utils cortx-prvsnr
-					pip3.6 install  pyinstaller==3.5
+				#Use main branch for cortx-py-utils
+				sed -i 's/stable/main/'  /etc/yum.repos.d/cortx.repo
+				yum clean all && rm -rf /var/cache/yum
+
+				# Install cortx-prereq package
+					pip3 uninstall pip -y && yum install python3-pip -y && ln -s /usr/bin/pip3 /usr/local/bin/pip3
+					sh ./cortx-re/scripts/third-party-rpm/install-cortx-prereq.sh
+
+				# Install pyinstaller	
+				pip3.6 install  pyinstaller==3.5
 				'''
 			}
 		}	
