@@ -8,7 +8,7 @@ license |
 Source  | 
 
 
-### Pre Check before adding new package:
+### Please added following details about package:
 
 * [ ] Purpose of using new SW ?
 * [ ] Location of the source code of new opensource SW ?
