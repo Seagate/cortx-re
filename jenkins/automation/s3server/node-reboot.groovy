@@ -14,7 +14,6 @@ pipeline {
     environment {
         VM_CRED = credentials('node-user')
 		JENKINS_API = credentials('jenkins_rest_token')
-        GITHUB_TOKEN = credentials('cortx-admin-github')
     }
 
     parameters {
