@@ -47,6 +47,7 @@ pipeline {
             steps {
 				script { build_stage = env.STAGE_NAME }
                 sh encoding: 'utf-8', label: 'Provisioner RPMS', returnStdout: true, script: """
+				    rm -rf /etc/yum.repos.d/CentOS-*
                     sh ./devops/rpms/buildrpm.sh -g \$(git rev-parse --short HEAD) -e $version -b ${BUILD_NUMBER}
                 """
                 sh encoding: 'utf-8', label: 'Provisioner CLI RPMS', returnStdout: true, script: """
