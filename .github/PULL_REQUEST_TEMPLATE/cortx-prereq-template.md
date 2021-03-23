@@ -8,7 +8,7 @@ license |
 Source  | 
 
 
-### Please added following details about package
+### Please add below details about package
 
 * [ ] Purpose of using new SW ?
 * [ ] Location of the source code of new opensource SW ?
