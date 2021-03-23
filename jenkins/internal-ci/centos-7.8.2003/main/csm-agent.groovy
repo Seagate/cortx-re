@@ -34,13 +34,20 @@ pipeline {
 			steps {
 				script { build_stage = env.STAGE_NAME }
 
-				checkout([$class: 'GitSCM', branches: [[name: "*/${branch}"]], doGenerateSubmoduleConfigurations: false,  extensions: [[$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-manager']]])
+				dir ('cortx-csm-agent') {
+					checkout([$class: 'GitSCM', branches: [[name: "*/${branch}"]], doGenerateSubmoduleConfigurations: false,  extensions: [[$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-manager']]])
+				}
 			}
 		}
 		
 		stage('Install Dependencies') {
 			steps {
 				script { build_stage = env.STAGE_NAME }
+
+				dir ('cortx-re') {
+					checkout changelog: false, poll: false, scm: [$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', noTags: true, reference: '', shallow: true]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]]
+				}
+
 				sh label: '', script: '''
 				#Use main branch for cortx-py-utils
 				sed -i 's/stable/main/'  /etc/yum.repos.d/cortx.repo
@@ -48,8 +55,9 @@ pipeline {
 
 				# Install cortx-prereq package
 					pip3 uninstall pip -y && yum install python3-pip -y && ln -s /usr/bin/pip3 /usr/local/bin/pip3
-					curl -s http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rpm/install-cortx-prereq.sh | bash 
-					
+					./cortx-re/scripts/third-party-rpm/install-cortx-prereq.sh
+
+				# Install pyinstaller	
 				pip3.6 install  pyinstaller==3.5
 				'''
 			}
@@ -63,7 +71,7 @@ pipeline {
 					BUILD=$(git rev-parse --short HEAD)
 					echo "Executing build script"
 					echo "Python:$(python --version)"
-					./cicd/build.sh -v $version -b $BUILD_NUMBER -t
+					./cortx-csm-agent/cicd/build.sh -v $version -b $BUILD_NUMBER -t
 				'''	
 			}
 		}

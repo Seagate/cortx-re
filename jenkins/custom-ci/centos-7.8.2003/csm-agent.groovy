@@ -40,6 +40,9 @@ pipeline {
 				dir('seagate-ldr') {
 				    checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/seagate-ldr.git']]])
 				}
+				dir ('cortx-re') {
+					checkout changelog: false, poll: false, scm: [$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', noTags: true, reference: '', shallow: true]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]]
+				}
 			}
 		}
 		
@@ -49,7 +52,7 @@ pipeline {
 
 				sh label: 'Install cortx-prereq package', script: """
 					pip3 uninstall pip -y && yum install python3-pip -y && ln -s /usr/bin/pip3 /usr/local/bin/pip3
-					curl -s http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rpm/install-cortx-prereq.sh | bash 
+					./cortx-re/scripts/third-party-rpm/install-cortx-prereq.sh
 				"""
 
 				sh label: 'Configure yum repositories', script: """
