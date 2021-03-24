@@ -52,8 +52,8 @@ echo "Folders List: $folder_list"
 for i in "${folder_list[@]}"
 do
   echo "syncing folder $i, this may take a while"
-  rsync -av --ignore-existing ./$i "$DESTDIR"
-  rsync -av --update ./$i "$DESTDIR" --delete
+  rsync -av --ignore-existing ./"$i" "$DESTDIR"
+  rsync -av --update ./"$i" "$DESTDIR" --delete
 done
 
 #rsync --files-from=$TMPFILE $SRCDIR 744417@10.230.242.73:$DESTDIR
