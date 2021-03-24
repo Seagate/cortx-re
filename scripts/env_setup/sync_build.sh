@@ -26,10 +26,23 @@ then
    echo "Some or all of the parameters are empty";
    helpFunction
 fi
+
+if [ ! -d "$source" ]; then
+   echo "Error: Remote path '$source' is NOT found."
+   exit 1
+fi
+
+if [ ! -d "$destination" ]; then
+   echo "Warning: Local path '$destination' is NOT found."
+   echo "Creating the local path '$destination'..."
+   mkdir -p "$destination"
+fi
+
 SRCDIR=$source
 DESTDIR=$destination
 NUMDAYS=$retention
 
+pushd $SRCDIR
 echo "searching for files to sync"
 #only find artifacts that are NUMDAYS old
 folder_list=$(find . -mindepth 1 -maxdepth 1 -type d -mtime -$NUMDAYS -printf "%f\n")
