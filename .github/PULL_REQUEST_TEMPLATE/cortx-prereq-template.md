@@ -14,8 +14,8 @@ Source  |
 * [ ] Location of the source code of new opensource SW ?
 * [ ] Did you evaluate existing SW and confirm they do not serve the purpose ? If yes, include the comparison. If no, why ?
 * [ ] Who is building it or how it gets built ? If yes, Which component/rpm will it be included ? i.e. name of the rpm which includes SW.
-* [ ] Location of the of download of opensource SW rpm ?
-* [ ] Who will be support this ?
-* [ ] Is there a configuration required for this ? Who will configure it ?
-* [ ] Which component will deploy on all the nodes ?
+* [ ] Download location of opensource software package ?
+* [ ] Who will be supporting this package ?
+* [ ] Is there a configuration required for this? Who will be configuring it ?
+* [ ] Which component is responsible for deploying on nodes ?
 * [ ] What is the licensing policy ? Is it approved by legal ? 
