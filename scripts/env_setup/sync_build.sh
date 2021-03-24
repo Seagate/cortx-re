@@ -42,18 +42,18 @@ SRCDIR=$source
 DESTDIR=$destination
 NUMDAYS=$retention
 
-pushd $SRCDIR
+pushd "$SRCDIR"
 echo "searching for files to sync"
 #only find artifacts that are NUMDAYS old
-folder_list=$(find . -mindepth 1 -maxdepth 1 -type d -mtime -$NUMDAYS -printf "%f\n")
+folder_list=$(find . -mindepth 1 -maxdepth 1 -type d -mtime -"$NUMDAYS" -printf "%f\n")
 
-echo $folder_list
+echo "Folders List: $folder_list"
 
 for i in "${folder_list[@]}"
 do
   echo "syncing folder $i, this may take a while"
-  rsync -av --ignore-existing ./$i $DESTDIR
-  rsync -av --update ./$i $DESTDIR --delete
+  rsync -av --ignore-existing ./$i "$DESTDIR"
+  rsync -av --update ./$i "$DESTDIR" --delete
 done
 
 #rsync --files-from=$TMPFILE $SRCDIR 744417@10.230.242.73:$DESTDIR
