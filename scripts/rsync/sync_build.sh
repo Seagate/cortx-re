@@ -31,8 +31,7 @@ DESTDIR=$destination
 NUMDAYS=$retention
 
 echo "searching for files to sync"
-#only find log files that are 14 days old or newer, then dump them to a temp file that is only the file name delimited with newlines
-cd $SRCDIR
+#only find artifacts that are NUMDAYS old
 folder_list=$(find . -mindepth 1 -maxdepth 1 -type d -mtime -$NUMDAYS -printf "%f\n")
 
 echo $folder_list
