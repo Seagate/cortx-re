@@ -45,6 +45,7 @@ pipeline {
 			steps {
         	    script { build_stage = env.STAGE_NAME }
 				sh label: '', script: '''
+				    rm -rf /etc/yum.repos.d/CentOS-*
 					yum erase python36-PyYAML -y
 					cat <<EOF >>/etc/pip.conf
 [global]

@@ -61,9 +61,7 @@ pipeline {
 			steps {
 				script { build_stage = env.STAGE_NAME }
 				sh label: '', script: '''
-				echo $version
-				echo ${version}
-				
+				rm -rf /etc/yum.repos.d/CentOS-*
 				echo "VERSION: $version"
 				if [ "$version" == "1.0.0" ]; then
 					yum-config-manager --disable cortx-C7.7.1908

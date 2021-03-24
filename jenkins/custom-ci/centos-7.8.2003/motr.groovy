@@ -46,6 +46,7 @@ pipeline {
 		    steps {
 				script { build_stage = env.STAGE_NAME }
 				sh label: '', script: '''
+						rm -rf /etc/yum.repos.d/CentOS-*
 						export build_number=${BUILD_ID}
 						kernel_src=$(ls -1rd /lib/modules/*/build | head -n1)
 						
