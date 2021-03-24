@@ -4,8 +4,8 @@ helpFunction()
 {
    echo ""
    echo "Usage: $0 -s source -d destination -r retention"
-   echo -e "\t-s Cortx build path"
-   echo -e "\t-d Pune server path"
+   echo -e "\t-s Remote build path"
+   echo -e "\t-d Local build path"
    echo -e "\t-r Retention peroid for sync"
    exit 1 # Exit script after printing help
 }
