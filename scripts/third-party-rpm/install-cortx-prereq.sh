@@ -1,6 +1,6 @@
 #!/bin/bash
 
-usage() { echo "Usage: $0 [ -b branch] [ -t third-party-version] [ -p python-deps-version] [ -o os-version ] [ -r RPM location]" 1>&2; exit 1; }
+usage() { echo "Usage: $0 [ -b branch] [ -n build_number ] [ -t third-party-version] [ -p python-deps-version] [ -o os-version ] [ -r RPM location]" 1>&2; exit 1; }
 
 #Define Default values
 BRANCH=main
