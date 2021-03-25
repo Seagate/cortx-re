@@ -3,25 +3,25 @@
 helpFunction()
 {
    echo ""
-   echo "Usage: $0 -s source -d destination -r retention"
+   echo "Usage: $0 -s source -d destination -c retention"
    echo -e "\t-s Remote build path"
    echo -e "\t-d Local build path"
-   echo -e "\t-r Retention peroid for sync"
+   echo -e "\t-c Specify number artifacts for the sync"
    exit 1 # Exit script after printing help
 }
 
-while getopts "s:d:r:" opt
+while getopts "s:d:c:" opt
 do
    case "$opt" in
       s ) source="$OPTARG" ;;
       d ) destination="$OPTARG" ;;
-      r ) retention="$OPTARG" ;;
+      c ) count="$OPTARG" ;;
       ? ) helpFunction ;; # Print helpFunction in case parameter is non-existent
    esac
 done
 
 # Print helpFunction in case parameters are empty
-if [ -z "$source" ] || [ -z "$destination" ] || [ -z "$retention" ]
+if [ -z "$source" ] || [ -z "$destination" ]
 then
    echo "Some or all of the parameters are empty";
    helpFunction
@@ -38,22 +38,21 @@ if [ ! -d "$destination" ]; then
    mkdir -p "$destination"
 fi
 
-SRCDIR=$source
-DESTDIR=$destination
-NUMDAYS=$retention
+pushd "$source"
+if [ -z $count ]; then
+   rsync -av --ignore-existing ./"$i" "$destination"
+   exit 1
+else
+   echo "searching for files to sync"
+   #only find last updated artifacts
+   folder_list=$(ls -1t | head -n $count)
+   echo "Folders List: $folder_list"
 
-pushd "$SRCDIR"
-echo "searching for files to sync"
-#only find artifacts that are NUMDAYS old
-folder_list=$(find . -mindepth 1 -maxdepth 1 -type d -mtime -"$NUMDAYS" -printf "%f\n")
-
-echo "Folders List: $folder_list"
-
-for i in "${folder_list[@]}"
-do
-  echo "syncing folder $i, this may take a while"
-  rsync -av --ignore-existing ./"$i" "$DESTDIR"
-  rsync -av --update ./"$i" "$DESTDIR" --delete
-done
-
-#rsync --files-from=$TMPFILE $SRCDIR 744417@10.230.242.73:$DESTDIR
+   for i in "${folder_list[@]}"
+   do
+     echo "syncing folder $i, this may take a while"
+     rsync -av --ignore-existing ./"$i" "$destination"
+     # rsync -av --update ./"$i" "$DESTDIR" --delete
+   done
+   #rsync --files-from=$TMPFILE $SRCDIR 744417@10.230.242.73:$DESTDIR
+fi
