@@ -39,13 +39,13 @@ if [ ! -d "$destination" ]; then
 fi
 
 pushd "$source"
-if [ -z $count ]; then
+if [ -z "$count" ]; then
    rsync -av --ignore-existing ./"$i" "$destination"
    exit 1
 else
    echo "searching for files to sync"
    #only find last updated artifacts
-   folder_list=$(ls -1t | head -n $count)
+   folder_list=$(ls -1t | head -n "$count")
    echo "Folders List: $folder_list"
 
    for i in "${folder_list[@]}"
