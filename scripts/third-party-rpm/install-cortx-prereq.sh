@@ -39,7 +39,7 @@ yum install yum-utils -y
 yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/centos/"$THIRD_PARTY_VERSION"/
 
 if [ "$BUILD_NUMBER" == "last_successful_prod" ]; then
-    yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/centos/"$THIRD_PARTY_VERSION"/
+    yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/"$BRANCH"/"$OS_VERSION"/last_successful_prod/cortx_iso/
 else
     yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/"$BRANCH"/"$OS_VERSION"/"$BUILD_NUMBER"/prod/cortx_iso/
 fi
