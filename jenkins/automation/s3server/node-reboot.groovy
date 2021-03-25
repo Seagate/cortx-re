@@ -68,4 +68,32 @@ pipeline {
             }
 		}
 	}
+
+    post {
+
+		success {
+        	    emailext (
+                    subject: "SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
+                    body: """
+                    <h><span style=color:green>SUCCESSFUL:</span> Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</h>
+                    <p>Check console output at "<a href="${env.BUILD_URL}">${env.JOB_NAME} [${env.BUILD_NUMBER}]</a>"</p>
+                    <p>Nodes Rebooted </p>
+                    <p>${env.NODE_LIST}</p> 
+                    """,
+                    to: 'shailesh.vaidya@seagate.com',
+                    recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
+                )
+        	}
+		
+		failure {
+	            emailext (
+                    subject: "FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
+                    body: """
+                    <h><span style=color:red>FAILED:</span> Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</h>
+                    <p>Check console output at "<a href="${env.BUILD_URL}">${env.JOB_NAME} [${env.BUILD_NUMBER}]</a>"</p>
+                    """,
+                    to: 'shailesh.vaidya@seagate.com',
+                 )
+ 	       }	
+    	}
 }
