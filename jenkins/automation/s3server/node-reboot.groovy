@@ -17,7 +17,7 @@ pipeline {
     }
 
     parameters {
-		string(name: 'REPO_URL', defaultValue: 'https://github.com/shailesh-vaidya/cortx-re', description: 'Repository URL to be used for cortx-re.')
+		string(name: 'REPO_URL', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repository URL to be used for cortx-re.')
 		string(name: 'REPO_BRANCH', defaultValue: 'main', description: 'Branch to be used for cortx-re repo.')
 		string(name: 'REBOOT_LABEL', defaultValue: 's3-dev-build-7.8.2003', description: 'Node Lable for reboot')
 	}
