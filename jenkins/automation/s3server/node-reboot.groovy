@@ -47,7 +47,7 @@ pipeline {
                 }	
                 
                 // Move this code to Ansible playbook
-                sh label: 'Install Ansible', returnStatus: true, script: """
+                sh label: 'Install Ansible', script: """
 
                 yum install ansible -y
                   
