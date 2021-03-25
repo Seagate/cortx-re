@@ -4,17 +4,19 @@ usage() { echo "Usage: $0 [ -b branch] [ -t third-party-version] [ -p python-dep
 
 #Define Default values
 BRANCH=main
+BUILD_NUMBER=last_successful_prod
 OS_VERSION=centos-7.8.2003
 THIRD_PARTY_VERSION=centos-7.8.2003-2.0.0-latest
 PYTHON_DEPS_VERSION=python-packages-2.0.0-latest
 RPM_LOCATION=remote
 
-while getopts "t:p:b:o:r:" opt; do
+while getopts "t:p:b:n:o:r:" opt; do
     case $opt in
         t ) THIRD_PARTY_VERSION=$OPTARG;;
         p ) PYTHON_DEPS_VERSION=$OPTARG;;
         o ) OS_VERSION=$OPTARG;;
         b ) BRANCH=$OPTARG;;
+        n ) BUILD_NUMBER=$OPTARG;;
         r ) RPM_LOCATION=$OPTARG;;
         h ) usage
         exit 0;;
@@ -25,6 +27,7 @@ done
 
 echo " Using following values:"
 echo "BRANCH $BRANCH"
+echo "BUILD_NUMBER $BUILD_NUMBER"
 echo "OS_VERSION $OS_VERSION"
 echo "THIRD_PARTY_VERSION $THIRD_PARTY_VERSION"
 echo "PYTHON_DEPS_VERSION $PYTHON_DEPS_VERSION"
@@ -34,7 +37,13 @@ echo ""
 #Setup repositories and install packages
 yum install yum-utils -y
 yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/centos/"$THIRD_PARTY_VERSION"/
-yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/"$BRANCH"/"$OS_VERSION"/last_successful_prod/cortx_iso/
+
+if [ "$BUILD_NUMBER" == "last_successful_prod" ]; then
+    yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/centos/"$THIRD_PARTY_VERSION"/
+else
+    yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/"$BRANCH"/"$OS_VERSION"/"$BUILD_NUMBER"/prod/cortx_iso/
+fi
+
 yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
 
 cat <<EOF >/etc/pip.conf
