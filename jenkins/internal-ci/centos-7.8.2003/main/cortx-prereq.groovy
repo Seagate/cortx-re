@@ -28,6 +28,7 @@ pipeline {
 		stage('Prerequisite') {
             steps {
                 sh encoding: 'utf-8', label: 'Install Prerequisite Packages', script: """
+                    yum erase cortx-prereq -y
 					yum install rpm-build rpmdevtools -y 
 					rpmdev-setuptree		
                 """
