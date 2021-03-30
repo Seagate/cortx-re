@@ -18,11 +18,11 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
-usage() { echo "Usage: $0 [-b build location] [-v version] [ -t third party location]" 1>&2; exit 1; }
+usage() { echo "Usage: $0 [-l build location] [-b branch]  [-v version] [ -t third party location]" 1>&2; exit 1; }
 
-while getopts ":b:v:t:" o; do
+while getopts ":l:v:t:b:" o; do
     case "${o}" in
-        b)
+        l)
             BUILD_LOCATION=${OPTARG}
             ;;
         t)
@@ -31,6 +31,10 @@ while getopts ":b:v:t:" o; do
         v)
             VERSION=${OPTARG}
             ;;
+        b)
+            BRANCH=${OPTARG}
+            ;;
+
         *)
             usage
             ;;
@@ -38,9 +42,14 @@ while getopts ":b:v:t:" o; do
 done
 shift $((OPTIND-1))
 
-if [ -z "${BUILD_LOCATION}" ] || [ -z "${VERSION}" ] || [ -z "${THIRD_PARTY_LOCATION}" ]; then
+if [ -z "${BUILD_LOCATION}" ] || [ -z "${BRANCH}" ] || [ -z "${VERSION}" ] || [ -z "${THIRD_PARTY_LOCATION}" ]; then
     usage
 fi
+
+if [ -z "${BUILD_NUMBER}" ]; then
+BUILD_NUMBER="0"
+fi
+
 
 echo -e "Generating RELEASE.INFO file"
 
@@ -50,7 +59,7 @@ cat <<EOF > RELEASE.INFO
 ---
 NAME: "CORTX"
 VERSION: "$VERSION"
-BRANCH: "$branch"
+BRANCH: "$BRANCH"
 THIRD_PARTY_VERSION: $(readlink -f "$THIRD_PARTY_LOCATION" | awk -F '/' '{print $NF}' | sed -e 's/^/\"/g' -e 's/$/\"/g')
 BUILD: $(echo "$BUILD_NUMBER" | sed -e 's/^/\"/g' -e 's/$/\"/g')
 OS: $(cat /etc/redhat-release | sed -e 's/ $//g' -e 's/^/\"/g' -e 's/$/\"/g')
