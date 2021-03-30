@@ -45,15 +45,14 @@ if [ -z $count ]; then
 else
    echo "searching for files to sync"
    #only find last updated artifacts
-   folder_list=($(ls -1t | head -n "$count"))
+   folder_list=($(ls -1t | head -n "$count")
    echo "Folders List: $folder_list"
 
    for i in "${folder_list[@]}"
    do
      directory=$(echo "$i" | xargs)
-     echo "syncing folder $i, this may take a while"
+     echo "syncing folder $directory, this may take a while"
      rsync -av --ignore-existing ./"$directory" "$destination"
      # rsync -av --update ./"$i" "$DESTDIR" --delete
    done
-   #rsync --files-from=$TMPFILE $SRCDIR 744417@10.230.242.73:$DESTDIR
 fi
