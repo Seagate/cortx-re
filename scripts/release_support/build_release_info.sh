@@ -18,7 +18,7 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
-usage() { echo "Usage: $0 [-l build location] [-b branch]  [-v version] [ -t third party location]" 1>&2; exit 1; }
+usage() { echo "Usage: $0 [-l build location] [-b branch] [-v version] [ -t third party location]" 1>&2; exit 1; }
 
 while getopts ":l:v:t:b:" o; do
     case "${o}" in
@@ -34,7 +34,6 @@ while getopts ":l:v:t:b:" o; do
         b)
             BRANCH=${OPTARG}
             ;;
-
         *)
             usage
             ;;
@@ -71,9 +70,8 @@ EOF
 popd || exit
 
 echo -e "Generating THIRD_PARTY_RELEASE.INFO file"
-pushd "$THIRD_PARTY_LOCATION"
-#find . -type f -name *.rpm | awk -F '/' '{print $NF}' | awk '{ print "    - \""$1"\""}'
 
+pushd "$THIRD_PARTY_LOCATION"
 cat <<EOF > THIRD_PARTY_RELEASE.INFO
 ---
 NAME: "CORTX"
