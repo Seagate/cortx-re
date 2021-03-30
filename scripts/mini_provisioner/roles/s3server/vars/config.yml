@@ -1,19 +1,10 @@
-# S3 Deployment configs
-S3_UPDATE_HOST_SCRIPT: https://raw.githubusercontent.com/Seagate/cortx-s3server/main/update-hosts.sh
 STX_PEM: https://raw.githubusercontent.com/Seagate/cortx-prvsnr/pre-cortx-1.0/srv/components/misc_pkgs/ssl_certs/files/stx.pem
-
-MESSAGING_PLATFORM: rabbit_mq
+S3_IAM_CLI_LOCATION: http://cortx-storage.colo.seagate.com/releases/cortx/github/main/centos-7.8.2003/last_successful/
 
 DATA_DEVICE: /dev/sdb
 METADATA_DEVICE: /dev/sdc
 
 REQUIRED_VARS:
-  - LDAP_ROOT_USER
-  - LDAP_ROOT_PWD
-  - LDAP_SGIAM_USER
-  - LDAP_SGIAM_PWD
-  - BMC_USER
-  - BMC_SECRET
   - NODE1
   - CORTX_BUILD
 

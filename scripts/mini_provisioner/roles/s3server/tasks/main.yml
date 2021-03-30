@@ -16,14 +16,11 @@
 - include: 01_install_prerequisites.yml
   tags: ['01_PREREQ']
 
-- include: 02_install_s3server.yml
-  tags: ['02_INSTALL_S3SERVER']
+- include: 02_mini_provisioning.yml
+  tags: ['02_MINI_PROV']
 
-- include: 03_mini_provisioning.yml
-  tags: ['03_MINI_PROV']
+- include: 03_start_s3server.yml
+  tags: ['03_START_S3SERVER']
 
-- include: 04_start_s3server.yml
-  tags: ['04_START_S3SERVER']
-
-- include: 05_validate.yml
-  tags: ['05_VALIDATE']
+- include: 04_validate.yml
+  tags: ['04_VALIDATE']

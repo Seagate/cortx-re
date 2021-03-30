@@ -212,7 +212,7 @@ pipeline {
 
                 sh label: 'RPM Signing', script: '''
                     pushd cortx-re/scripts/release_support
-                        sh build_release_info.sh -v ${VERSION} -b ${CORTX_ISO_LOCATION} -t ${THIRD_PARTY_LOCATION}
+                        sh build_release_info.sh -v ${VERSION} -l ${CORTX_ISO_LOCATION} -t ${THIRD_PARTY_LOCATION}
                         sh build_readme.sh "${DESTINATION_RELEASE_LOCATION}"
                     popd
 
