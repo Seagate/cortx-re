@@ -270,8 +270,7 @@ pipeline {
 			steps {
                 script { build_stage = env.STAGE_NAME }
                 
-				checkout changelog: false, poll: false, scm: [$class: 'GitSCM', branches: [[name: 'branch_info']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'shailesh-github', url: 'https://github.com/shailesh-vaidya/cortx-re']]]
-				
+				checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
                 
                 sh label: 'Generate Key', script: '''
                     set +x
