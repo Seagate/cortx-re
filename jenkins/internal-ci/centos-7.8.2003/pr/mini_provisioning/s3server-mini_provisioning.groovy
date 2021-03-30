@@ -17,10 +17,22 @@ pipeline {
     parameters {  
 	    string(name: 'S3_URL', defaultValue: 'https://github.com/Seagate/cortx-s3server', description: 'Repo for S3Server')
         string(name: 'S3_BRANCH', defaultValue: 'main', description: 'Branch for S3Server')
-        choice(name: 'MESSAGING_PLATFORM', choices: ["rabbit_mq", "message_bus"], description: 'MESSAGING_PLATFORM')
-        choice(name: 'DEBUG', choices: ["no", "yes" ], description: 'Keep Host for Debuging')
-        string(name: 'HOST', defaultValue: '-', description: 'Host FQDN',  trim: true)
-        password(name: 'HOST_PASS', defaultValue: '-', description: 'Host machine root user password')   
+        choice(name: 'DEBUG', choices: ["no", "yes" ], description: '''<pre>
+no -> Cleanup the vm on post deployment  
+yes -> Preserve host for troublshooting [ WARNING ! Automated Deployment May be queued/blocked if more number of vm used for debuging ]  
+</pre>''')
+        string(name: 'HOST', defaultValue: '-', description: '''<pre>
+FQDN of ssc-vm
+
+Recommended VM specification:
+- Cloudform VM Template : LDRr2 - CentOS 7.8  
+- vCPUs                 : 1  
+- Memory (RAM)          : 4GB  
+- Additional Disks      : 2   
+- Additional Disk Size  : 25 GB  
+</pre>
+        ''',  trim: true)
+        password(name: 'HOST_PASS', defaultValue: '-', description: 'VM <b>root</b> user password')   
 	}
 
     environment {
@@ -176,7 +188,7 @@ pipeline {
 
                 sh label: 'RPM Signing', script: '''
                     pushd cortx-re/scripts/release_support
-                        sh build_release_info.sh -v ${VERSION} -b ${CORTX_ISO_LOCATION} -t ${THIRD_PARTY_LOCATION}
+                        sh build_release_info.sh -v ${VERSION} -l ${CORTX_ISO_LOCATION} -t ${THIRD_PARTY_LOCATION}
                         sh build_readme.sh "${DESTINATION_RELEASE_LOCATION}"
                     popd
 
@@ -188,12 +200,6 @@ pipeline {
         }
 
         // Deploy s3 mini provisioner 
-        // 1. Intall prereq tools
-        // 2. Install s3server and dependent component(motr,cortx-pyutils) from the provided build
-        // 3. Execute s3 mini provisioning to configure the deployment attributes
-        // 4. Start S3Server, Motr to perform I/O
-        // 5. Validate the deployment by performing basic i/o using s3cli command
-        // Ref - https://github.com/Seagate/cortx-s3server/wiki/S3server-provisioning-on-single-node-cluster:-Manual
         stage('Deploy') {
             when { expression { env.STAGE_DEPLOY == "yes" } }
             agent {
@@ -225,22 +231,32 @@ pipeline {
                     catchError {
                         
                         dir('cortx-re') {
-                            checkout([$class: 'GitSCM', branches: [[name: '*/mini-provisioner-dev']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 1, honorRefspec: true, noTags: true, reference: '', shallow: true], [$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
+                            checkout([$class: 'GitSCM', branches: [[name: '*/EOS-18973']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 1, honorRefspec: true, noTags: true, reference: '', shallow: true], [$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/gowthamchinna/cortx-re']]])
                         }
 
-                        runAnsible("00_PREP_ENV, 01_PREREQ, 02_INSTALL_S3SERVER, 03_MINI_PROV, 04_START_S3SERVER, 05_VALIDATE")
+                        runAnsible("00_PREP_ENV, 01_PREREQ, 02_MINI_PROV, 03_START_S3SERVER, 04_VALIDATE")
 
                     }
 
                     // Collect logs from test node
                     catchError {
 
-                        sh label: 'download_log_files', returnStdout: true, script: """ 
-                            sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/root/*.json .
-                            sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/root/*.log .
-                        """
-                        
-                        archiveArtifacts artifacts: "*.json, *.log", onlyIfSuccessful: false, allowEmptyArchive: true 
+                            // Download deployment log files from deployment node
+                            try {
+                                sh label: 'download_log_files', returnStdout: true, script: """ 
+                                    mkdir -p artifacts
+                                    sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/root/*.log artifacts/ || true
+                                    sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/etc/haproxy/haproxy.cfg artifacts/ || true
+                                    sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/opt/seagate/cortx/s3/conf/*1-node artifacts/ || true
+                                    sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/opt/seagate/cortx/s3/s3backgrounddelete/config.yaml artifacts/s3backgrounddelete_config.yaml || true
+                                    sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/tmp/cortx-config-new artifacts/ || true
+                                    sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/etc/hosts artifacts/ || true
+                                """
+                            } catch (err) {
+                                echo err.getMessage()
+                            }
+
+                            archiveArtifacts artifacts: "artifacts/*", onlyIfSuccessful: false, allowEmptyArchive: true 
                     }
 
                     if( "${HOST}" == "-" ) {
@@ -275,7 +291,6 @@ pipeline {
                 env.build_stage = "${build_stage}"
                 
                 def mailRecipients = "nilesh.govande@seagate.com, basavaraj.kirunge@seagate.com, rajesh.nambiar@seagate.com, ajinkya.dhumal@seagate.com, amit.kumar@seagate.com"
-
                 emailext body: '''${SCRIPT, template="mini_prov-email.template"}''',
                 mimeType: 'text/html',
                 recipientProviders: [requestor()], 
@@ -307,32 +322,20 @@ def getTestMachine(host, user, pass) {
 
 // Used Jenkins ansible plugin to execute ansible command
 def runAnsible(tags) {
+      
+    dir("cortx-re/scripts/mini_provisioner") {
 
-    withCredentials([usernamePassword(credentialsId: "mini-prov-ldap-root-cred", passwordVariable: 'LDAP_ROOT_PWD', usernameVariable: 'LDAP_ROOT_USER'),
-        usernamePassword(credentialsId: "mini-prov-ldap-sg-cred", passwordVariable: 'LDAP_SGIAM_PWD', usernameVariable: 'LDAP_SGIAM_USER'),
-        usernamePassword(credentialsId: "mini-prov-bmc-cred", passwordVariable: 'BMC_SECRET', usernameVariable: 'BMC_USER')]) {
-    
-        dir("cortx-re/scripts/mini_provisioner") {
-
-            ansiblePlaybook(
-                playbook: 's3server_deploy.yml',
-                inventory: 'inventories/hosts',
-                tags: "${tags}",
-                extraVars: [
-                    "NODE1"                 : [value: "${NODE1_HOST}", hidden: false],
-                    "CORTX_BUILD"           : [value: "${CORTX_BUILD}", hidden: false] ,
-                    "CLUSTER_PASS"          : [value: "${NODE_PASS}", hidden: false],
-                    "LDAP_ROOT_USER"        : [value: "${LDAP_ROOT_USER}", hidden: false],
-                    "LDAP_ROOT_PWD"         : [value: "${LDAP_ROOT_PWD}", hidden: true],
-                    "LDAP_SGIAM_USER"       : [value: "${LDAP_SGIAM_USER}", hidden: false],
-                    "LDAP_SGIAM_PWD"        : [value: "${LDAP_SGIAM_PWD}", hidden: true],
-                    "BMC_USER"              : [value: "${BMC_USER}", hidden: false],
-                    "BMC_SECRET"            : [value: "${BMC_SECRET}", hidden: true]
-                ],
-                extras: '-v',
-                colorized: true
-            )
-        }
+        ansiblePlaybook(
+            playbook: 's3server_deploy.yml',
+            inventory: 'inventories/hosts',
+            tags: "${tags}",
+            extraVars: [
+                "NODE1"                 : [value: "${NODE1_HOST}", hidden: false],
+                "CORTX_BUILD"           : [value: "${CORTX_BUILD}", hidden: false] ,
+                "CLUSTER_PASS"          : [value: "${NODE_PASS}", hidden: false]            ],
+            extras: '-v',
+            colorized: true
+        )
     }
 }
 
@@ -340,8 +343,8 @@ def runAnsible(tags) {
 def createSummary() {
 
     hctl_status = ""
-    if (fileExists ('hctl_status.log')) {
-        hctl_status = readFile(file: 'hctl_status.log')
+    if (fileExists ('artifacts/hctl_status.log')) {
+        hctl_status = readFile(file: 'artifacts/hctl_status.log')
         MESSAGE = "S3Server Deployment Completed"
         ICON = "accept.gif"
     }else {
@@ -352,8 +355,8 @@ def createSummary() {
 
     hctl_status_html = "<textarea rows=20 cols=200 readonly style='margin: 0px; height: 392px; width: 843px;'>${hctl_status}</textarea>"
     table_summary = "<table border='1' cellspacing='0' cellpadding='0' width='400' align='left'> <tr> <td align='center'>Build</td><td align='center'><a href=${CORTX_BUILD}>${build_id}</a></td></tr><tr> <td align='center'>Test VM</td><td align='center'>${NODE1_HOST}</td></tr></table>"
-    manager.createSummary("${ICON}").appendText("<h3>${MESSAGE} for the build <a href=\"${CORTX_BUILD}\">${build_id}.</a></h3><br /><h4>Test Details:</h4> ${table_summary} <br /><br /><br /><h4>HCTL Status:${hctl_status_html}</h4> ", false, false, false, "red")
-
+    manager.createSummary("${ICON}").appendText("<h3>${MESSAGE} for the build <a href=\"${CORTX_BUILD}\">${build_id}.</a></h3><br /><br /><h4>Test Details:</h4> ${table_summary} <br /><br /><br /><h4>HCTL Status:${hctl_status_html}</h4> ", false, false, false, "red")
+              
 }
 
 

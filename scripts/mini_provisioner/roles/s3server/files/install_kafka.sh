@@ -16,9 +16,12 @@
 #
 # For any questions about this software or licensing,
 # please email opensource@seagate.com or cortx-questions@seagate.com.
-HOST_NAME=$1
-wget https://raw.githubusercontent.com/Seagate/cortx-s3server/main/scripts/kafka/install-kafka.sh
-wget https://raw.githubusercontent.com/Seagate/cortx-s3server/main/scripts/kafka/create-topic.sh
 
-sh install-kafka.sh -c 1 -i $HOST_NAME
-sh create-topic.sh -c 1 -i $HOST_NAME
+yum install java java-devel -y
+cd /opt
+curl "http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/centos/centos-7.8.2003-2.0.0-latest/commons/kafka/kafka_2.13-2.7.0.tgz" -o kafka.tgz
+tar -xzf kafka.tgz
+mv kafka_2.13-2.7.0 kafka
+cd kafka
+bin/zookeeper-server-start.sh -daemon config/zookeeper.properties
+bin/kafka-server-start.sh -daemon config/server.properties

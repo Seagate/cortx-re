@@ -9,11 +9,32 @@ pipeline {
     }
 	
     parameters {
-        string(name: 'CORTX_BUILD', defaultValue: 'http://cortx-storage.colo.seagate.com/releases/cortx/github/main/centos-7.8.2003/last_successful_prod/', description: 'Build URL',  trim: true)
-        choice(name: 'MESSAGING_PLATFORM', choices: ["rabbit_mq", "message_bus"], description: 'MESSAGING_PLATFORM')
-        choice(name: 'DEBUG', choices: ["no", "yes" ], description: 'Keep Host for Debuging')
-        string(name: 'HOST', defaultValue: '-', description: 'Host FQDN',  trim: true)
-        password(name: 'HOST_PASS', defaultValue: '-', description: 'Host machine root user password')   
+        string(name: 'CORTX_BUILD', defaultValue: 'http://cortx-storage.colo.seagate.com/releases/cortx/github/main/centos-7.8.2003/last_successful_prod/', trim: true, description: '''<pre>
+Target build URL  
+Example: The URL should contain directory structure like,  
+3rd_party/  
+cortx_iso/  
+python_deps/   
+RELEASE.INFO  
+THIRD_PARTY_RELEASE.INFO  
+</pre>  
+        '''  )
+        choice(name: 'DEBUG', choices: ["no", "yes" ], description: '''<pre>
+no -> Cleanup the vm on post deployment  
+yes -> Preserve host for troublshooting [ WARNING ! Automated Deployment May be queued/blocked if more number of vm used for debuging ]  
+</pre>''')
+        string(name: 'HOST', defaultValue: '-', description: '''<pre>
+FQDN of ssc-vm
+
+Recommended VM specification:
+- Cloudform VM Template : LDRr2 - CentOS 7.8  
+- vCPUs                 : 1  
+- Memory (RAM)          : 4GB  
+- Additional Disks      : 2   
+- Additional Disk Size  : 25 GB  
+</pre>
+        ''',  trim: true)
+        password(name: 'HOST_PASS', defaultValue: '-', description: 'VM <b>root</b> user password')   
     }
 
 	environment {
@@ -31,10 +52,9 @@ pipeline {
         // Control to skip/run stages - (used for trublshooting purpose)
         STAGE_00_PREPARE_ENV = "yes"
         STAGE_01_PREREQ = "yes"
-        STAGE_02_INSTALL_S3SERVER = "yes"
-        STAGE_03_MINI_PROV = "yes"
-        STAGE_04_START_S3SERVER = "yes"
-        STAGE_05_VALIDATE_DEPLOYMENT = "yes"
+        STAGE_02_MINI_PROV = "yes"
+        STAGE_03_START_S3SERVER = "yes"
+        STAGE_04_VALIDATE_DEPLOYMENT = "yes"
 
     }
 
@@ -66,7 +86,7 @@ pipeline {
 
                     // Clone cortx-re repo
                     dir('cortx-re') {
-                        checkout([$class: 'GitSCM', branches: [[name: '*/mini-provisioner-dev']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])                
+                        checkout([$class: 'GitSCM', branches: [[name: '*/EOS-18973']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/gowthamchinna/cortx-re']]])                
                     }
                     
                     markNodeforCleanup()
@@ -89,7 +109,6 @@ pipeline {
         }
 
         // Execute s3 mini provisioning prereq steps  
-        // Ref - https://github.com/Seagate/cortx-s3server/wiki/S3server-provisioning-on-single-node-cluster:-Manual#pre-requisites
         stage('01. Prereq') {
             when { expression { env.STAGE_01_PREREQ == "yes" } }
             steps {
@@ -104,64 +123,46 @@ pipeline {
             } 
         }
 
-        // Install s3server and dependent component(motr,cortx-pyutils) from the provided build
-        // Ref - https://github.com/Seagate/cortx-s3server/wiki/S3server-provisioning-on-single-node-cluster:-Manual#install-cortx-s3server-and-cortx-motr-packages
-        stage('02. Install S3server') {
-            when { expression { env.STAGE_02_INSTALL_S3SERVER == "yes" } }
-            steps {
-                script { build_stage = env.STAGE_NAME }
-                script {
-                    
-                    info("Running '02. Install S3server' Stage")
-
-                    runAnsible("02_INSTALL_S3SERVER")
-
-                }
-            } 
-        }
-
         // Execute s3 mini provisioning to configure the deployment attributes
-        // Ref - https://github.com/Seagate/cortx-s3server/wiki/S3server-provisioning-on-single-node-cluster:-Manual#s3server-mini-provisioning 
         stage('03. Mini Provisioning') {
-            when { expression { env.STAGE_03_MINI_PROV == "yes" } }
+            when { expression { env.STAGE_02_MINI_PROV == "yes" } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
                     
-                    info("Running '03. Mini Provisioning' Stage")
+                    info("Running '02. Mini Provisioning' Stage")
 
-                    runAnsible("03_MINI_PROV")
+                    runAnsible("02_MINI_PROV")
 
                 }
             } 
         }
 
         // Start S3Server, Motr to perform I/O
-        // Ref - https://github.com/Seagate/cortx-s3server/wiki/S3server-provisioning-on-single-node-cluster:-Manual#start-s3server-and-motr-for-io
         stage('04. Start S3server') {
-            when { expression { env.STAGE_04_START_S3SERVER == "yes" } }
+            when { expression { env.STAGE_03_START_S3SERVER == "yes" } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
                     
-                    info("Running '04. Start S3server' Stage")
+                    info("Running '03. Start S3server' Stage")
 
-                    runAnsible("04_START_S3SERVER")
+                    runAnsible("03_START_S3SERVER")
 
                 }
             } 
         }
 
         // Validate the deployment by performing basic i/o using s3cli command
-        stage('05. Validate Deployment') {
-            when { expression { env.STAGE_05_VALIDATE_DEPLOYMENT == "yes" } }
+        stage('04. Validate Deployment') {
+            when { expression { env.STAGE_04_VALIDATE_DEPLOYMENT == "yes" } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
                     
-                    info("Running '05. Validate Deployment' Stage")
+                    info("Running '04. Validate Deployment' Stage")
 
-                    runAnsible("05_VALIDATE")
+                    runAnsible("04_VALIDATE")
 
                 }
             } 
@@ -175,12 +176,19 @@ pipeline {
                 // Download deployment log files from deployment node
                 try {
                     sh label: 'download_log_files', returnStdout: true, script: """ 
-                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/root/*.log . || true
-                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/root/*.json . || true
+                        mkdir -p artifacts
+                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/root/*.log artifacts/ || true
+                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/etc/haproxy/haproxy.cfg artifacts/ || true
+                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/opt/seagate/cortx/s3/conf/*1-node artifacts/ || true
+                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/opt/seagate/cortx/s3/s3backgrounddelete/config.yaml artifacts/s3backgrounddelete_config.yaml || true
+                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/tmp/cortx-config-new artifacts/ || true
+                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/etc/hosts artifacts/ || true
                     """
                 } catch (err) {
                     echo err.getMessage()
                 }
+
+                archiveArtifacts artifacts: "artifacts/*", onlyIfSuccessful: false, allowEmptyArchive: true 
 
                 if( "${HOST}" == "-" ) {
                     if( "${DEBUG}" == "yes" ) {  
@@ -192,8 +200,8 @@ pipeline {
                                      
                 // Define build status based on hctl command
                 hctl_status = ""
-                if (fileExists ('hctl_status.log')) {
-                    hctl_status = readFile(file: 'hctl_status.log')
+                if (fileExists ('artifacts/hctl_status.log')) {
+                    hctl_status = readFile(file: 'artifacts/hctl_status.log')
                     MESSAGE = "S3Server Deployment Completed"
                     ICON = "accept.gif"
                 }else {
@@ -204,17 +212,15 @@ pipeline {
 
                 hctl_status_html = "<textarea rows=20 cols=200 readonly style='margin: 0px; height: 392px; width: 843px;'>${hctl_status}</textarea>"
                 table_summary = "<table border='1' cellspacing='0' cellpadding='0' width='400' align='left'> <tr> <td align='center'>Build</td><td align='center'><a href=${CORTX_BUILD}>${build_id}</a></td></tr><tr> <td align='center'>Test VM</td><td align='center'>${NODE1_HOST}</td></tr></table>"
-                manager.createSummary("${ICON}").appendText("<h3>${MESSAGE} for the build <a href=\"${CORTX_BUILD}\">${build_id}.</a></h3><p>Please check <a href=\"${CORTX_BUILD}/artifact/setup.log\">setup.log</a> for more info <br /><br /><h4>Test Details:</h4> ${table_summary} <br /><br /><br /><h4>HCTL Status:${hctl_status_html}</h4> ", false, false, false, "red")
+                manager.createSummary("${ICON}").appendText("<h3>${MESSAGE} for the build <a href=\"${CORTX_BUILD}\">${build_id}.</a></h3><br /><br /><h4>Test Details:</h4> ${table_summary} <br /><br /><br /><h4>HCTL Status:${hctl_status_html}</h4> ", false, false, false, "red")
               
                  // Archive all log generated by Test
-                archiveArtifacts artifacts: "*.log, *.json", onlyIfSuccessful: false, allowEmptyArchive: true 
                 cleanWs()
 
                 env.build_stage = "${build_stage}"
                 env.build_url = "${CORTX_BUILD}"
 
                 def mailRecipients = "nilesh.govande@seagate.com, basavaraj.kirunge@seagate.com, rajesh.nambiar@seagate.com, ajinkya.dhumal@seagate.com, amit.kumar@seagate.com"
-                                    
                 emailext body: '''${SCRIPT, template="mini_prov-email.template"}''',
                 mimeType: 'text/html',
                 recipientProviders: [requestor()], 
@@ -242,31 +248,20 @@ def getTestMachine(host, user, pass) {
 // Used Jenkins ansible plugin to execute ansible command
 def runAnsible(tags) {
 
-    withCredentials([usernamePassword(credentialsId: "mini-prov-ldap-root-cred", passwordVariable: 'LDAP_ROOT_PWD', usernameVariable: 'LDAP_ROOT_USER'),
-        usernamePassword(credentialsId: "mini-prov-ldap-sg-cred", passwordVariable: 'LDAP_SGIAM_PWD', usernameVariable: 'LDAP_SGIAM_USER'),
-        usernamePassword(credentialsId: "mini-prov-bmc-cred", passwordVariable: 'BMC_SECRET', usernameVariable: 'BMC_USER')]) {
-    
-        dir("cortx-re/scripts/mini_provisioner") {
+    dir("cortx-re/scripts/mini_provisioner") {
 
-            ansiblePlaybook(
-                playbook: 's3server_deploy.yml',
-                inventory: 'inventories/hosts',
-                tags: "${tags}",
-                extraVars: [
-                    "NODE1"                 : [value: "${NODE1_HOST}", hidden: false],
-                    "CORTX_BUILD"           : [value: "${CORTX_BUILD}", hidden: false] ,
-                    "CLUSTER_PASS"          : [value: "${NODE_PASS}", hidden: false],
-                    "LDAP_ROOT_USER"        : [value: "${LDAP_ROOT_USER}", hidden: false],
-                    "LDAP_ROOT_PWD"         : [value: "${LDAP_ROOT_PWD}", hidden: true],
-                    "LDAP_SGIAM_USER"       : [value: "${LDAP_SGIAM_USER}", hidden: false],
-                    "LDAP_SGIAM_PWD"        : [value: "${LDAP_SGIAM_PWD}", hidden: true],
-                    "BMC_USER"              : [value: "${BMC_USER}", hidden: false],
-                    "BMC_SECRET"            : [value: "${BMC_SECRET}", hidden: true]
-                ],
-                extras: '-v',
-                colorized: true
-            )
-        }
+        ansiblePlaybook(
+            playbook: 's3server_deploy.yml',
+            inventory: 'inventories/hosts',
+            tags: "${tags}",
+            extraVars: [
+                "NODE1"                 : [value:"${NODE1_HOST}", hidden: false],
+                "CORTX_BUILD"           : [value: "${CORTX_BUILD}", hidden: false] ,
+                "CLUSTER_PASS"          : [value: "${NODE_PASS}", hidden: false]
+            ],
+            extras: '-v',
+            colorized: true
+        )
     }
 }
 
