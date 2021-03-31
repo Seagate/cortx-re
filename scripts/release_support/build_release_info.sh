@@ -51,6 +51,7 @@ fi
 
 
 echo -e "Generating RELEASE.INFO file"
+EXCLUDE_PACKAGES="cortx-motr-devel\|cortx-motr-tests-ut\|cortx-libsspl_sec-devel\|cortx-libsspl_sec-method_pki\|cortx-prvsnr-cli\|cortx-sspl-cli\|cortx-s3iamcli-devel\|cortx-sspl-test"
 pushd "$BUILD_LOCATION" || exit
 cat <<EOF > RELEASE.INFO
 ---
