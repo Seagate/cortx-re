@@ -4,7 +4,7 @@
 #         This tasks starts csm deployment
 # Reference:
 #----------- 
-#         https://github.com/Seagate/cortx-manager/wiki/CORTX-Manager-Single-Node-Deployment-on-VM-:-Manual
+#         https://github.com/Seagate/cortx-manager/wiki/CORTX-Manager-Single-Node-Deployment-on-VM
 # Steps:
 #--------
 #      1. Pre-Requisites Installation
@@ -13,84 +13,12 @@
 #      4. Start CORTX manager
 ##########################################################################################
 
-- name: "[mini_provisioning] : Validate the required input arguments for this playbook"
-  fail: msg="Variable '{{ item }}' is not defined"
-  when: item not in vars
-  with_items: "{{ REQUIRED_VARS }}"
+- include: 01_install_prerequisites.yml
+  tags: ['01_PREREQ']
 
-# Add yum repositories
-- name: "[mini_provisioning] : Copy yum repo"
-  template:
-    src: cortx.repo.j2
-    dest: /etc/yum.repos.d/cortx.repo
-  
-# Refresh yum repo
-- name: "[mini_provisioning] : Refresh yum repos"
-  shell: yum clean all
+- include: 02_install_cortx_manager.yml
+  tags: ['02_INSTALL_CORTX_MANAGER']
 
-- name: "[mini_provisioning] : Install RE pre-req"
-  shell: "curl -s -L http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rpm/install-cortx-prereq.sh | bash"
+- include: 03_mini_provisioning.yml
+  tags: ['03_MINI_PROV']  
 
-# Install elasticsearch and consul
-- name: "[mini_provisioning] : Install elasticsearch and consul"
-  shell: "yum install -y java consul-1.9.1 elasticsearch-oss-6.8.8"
-
-# Start consul
-- name: "[mini_provisioning] : Restart consul"
-  ansible.builtin.service:
-    name: consul
-    state: started
-  ignore_errors: yes
-  
-# Start elasticsearch
-- name: "[mini_provisioning] : Start elasticsearch"
-  ansible.builtin.service:
-    name: elasticsearch
-    state: started
-
-# Install csm agent and web
-- name: "[mini_provisioning] : Install csm agent, cortx-py-utils, python36-cortx-prvsnr and cli"
-  yum: 
-    name: ["cortx-cli", "cortx-csm_agent", "cortx-py-utils", "python36-cortx-prvsnr"]
-    state: present
-
-# Get Machine ID
-- name: "[mini_provisioning] : Get Machine ID" 
-  shell: cat /etc/machine-id
-  register: machineid_out
-
-- set_fact:
-    MACHINE_ID: "{{ machineid_out.stdout }}"
-
-# Update machine-id
-- name: "[mini_provisioning] : Update machine id" 
-  shell: "sed -i 's/machine_id/{{ MACHINE_ID }}/g' /opt/seagate/cortx/csm/templates/csm_setup_conf_template.json"
-
-# Execute CSM:Post_Install
-- name: "[mini_provisioning] : Post Install" 
-  shell: /opt/seagate/cortx/csm/bin/csm_setup post_install --config json:///opt/seagate/cortx/csm/templates/csm_setup_conf_template.json
-
-# Execute CSM:Config
-- name: "[mini_provisioning] : CSM Config" 
-  shell: /opt/seagate/cortx/csm/bin/csm_setup config --config json:///opt/seagate/cortx/csm/templates/csm_setup_conf_template.json
-
-# Execute CSM:Init
-- name: "[mini_provisioning] : CSM Init" 
-  shell: /opt/seagate/cortx/csm/bin/csm_setup init --config json:///opt/seagate/cortx/csm/templates/csm_setup_conf_template.json
-
-# Start CSM Agent
-- name: "[mini_provisioning] : Start csm_agent"
-  shell: systemctl start csm_agent
-  register: csm_agent_out
-  ignore_errors: true
-
-# Console Journalctl log
-- name: "[mini_provisioning] : Journalctl log" 
-  shell: journalctl --unit=csm_agent.service | tail -n 100
-  when: csm_agent_out.rc != 0
-
-# Run CSM Sanity Test
-- name: "[mini_provisioning] : Run Sanity Test"
-  shell: csm_setup test -t /opt/seagate/cortx/csm/test/plans/self_test.pln -f /opt/seagate/cortx/csm/test/test_data/args.yaml -l /tmp/csm_test -o /root/sanity_test.log
-  register: csm_test_out
-  failed_when: '"PASS" not in csm_test_out.stdout'

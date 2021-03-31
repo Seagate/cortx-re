@@ -1,0 +1,62 @@
+---
+- name: "[install_cortx_manager] : Install Cortx-manager and Cortx-cli RPM's"
+  shell: "rpm -i {{ item }}"
+  with_fileglob:
+    - "http://cortx-storage.colo.seagate.com/releases/eos/components/dev/multibranch/cortx-manager/main/*.rpm"
+
+- name: "[install_cortx_manager] : Install python36-cortx-prvsnr"
+  shell: "yum install -y {{ item }}"
+  with_fileglob:
+    - "http://cortx-storage.colo.seagate.com/releases/cortx/github/main/centos-7.8.2003/last_successful_prod/cortx_iso/python36-cortx-prvsnr-*.rpm"
+  
+- name: "[install_cortx_manager] : Get Machine ID" 
+  shell: cat /etc/machine-id
+  register: machineid_out
+
+- set_fact:
+    MACHINE_ID: "{{ machineid_out.stdout }}"
+
+- name: "[install_cortx_manager] : Update post_install configuration template"
+  ansible.builtin.replace:
+    path: /opt/seagate/cortx/csm/conf/csm.post_install.tmpl.1-node
+    regexp: 'TMPL_MACHINE_ID'
+    replace: "{{ MACHINE_ID }}"
+
+- name: "[install_cortx_manager] : Update prepare configuration template"
+  ansible.builtin.replace:
+    path: /opt/seagate/cortx/csm/conf/csm.prepare.tmpl.1-node
+    regexp: "{{ item.tempval }}"
+    replace: "{{ item.val }}"
+  with_items:
+    - { tempval: "TMPL_MACHINE_ID", val: "{{ MACHINE_ID }}" }
+    - { tempval: "TMPL_SERVER_NAME", val: "{{ SERVER_NAME }}" }
+    - { tempval: "TMPL_SERVER_HOSTNAME", val: "{{ ansible_nodename }}" }
+    - { tempval: "TMPL_CLUSTER_ID", val: "{{ CLUSTER_ID }}" }
+    - { tempval: "TMPL_CSM_SECRET_KEY", val: "{{ SECRET_KEY }}" }
+    - { tempval: "TMPL_SGIAM_SECRET_KEY", val: "{{ SECRET_KEY }}" }  
+
+- name: "[install_cortx_manager] : Update config configuration template"
+  ansible.builtin.replace:
+    path: /opt/seagate/cortx/csm/conf/csm.config.tmpl.1-node
+    regexp: "{{ item.tempval }}"
+    replace: "{{ item.val }}"
+  with_items:  
+    - { tempval: "TMPL_MACHINE_ID", val: "{{ MACHINE_ID }}" }
+    - { tempval: "TMPL_SERVER_NAME", val: "{{ SERVER_NAME }}" }
+    - { tempval: "TMPL_SERVER_HOSTNAME", val: "{{ ansible_nodename }}" }
+    - { tempval: "TMPL_CLUSTER_ID", val: "{{ CLUSTER_ID }}" }
+    - { tempval: "TMPL_CSM_SECRET_KEY", val: "{{ SECRET_KEY }}" }
+    - { tempval: "TMPL_SGIAM_SECRET_KEY", val: "{{ SECRET_KEY }}" }  
+
+- name: "[install_cortx_manager] : Update init configuration template"
+  ansible.builtin.replace:
+    path: /opt/seagate/cortx/csm/conf/csm.init.tmpl.1-node
+    regexp: "{{ item.tempval }}"
+    replace: "{{ item.val }}"
+  with_items:
+    - { tempval: "TMPL_MACHINE_ID", val: "{{ MACHINE_ID }}" }
+    - { tempval: "TMPL_SERVER_NAME", val: "{{ SERVER_NAME }}" }
+    - { tempval: "TMPL_SERVER_HOSTNAME", val: "{{ ansible_nodename }}" }
+    - { tempval: "TMPL_CLUSTER_ID", val: "{{ CLUSTER_ID }}" }
+    - { tempval: "TMPL_CSM_SECRET_KEY", val: "{{ SECRET_KEY }}" }
+    - { tempval: "TMPL_SGIAM_SECRET_KEY", val: "{{ SECRET_KEY }}" }

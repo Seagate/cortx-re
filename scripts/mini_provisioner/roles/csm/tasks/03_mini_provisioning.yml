@@ -1,0 +1,37 @@
+---
+- name: "[mini_provisioning] : CSM Post Install" 
+  shell: /opt/seagate/cortx/csm/bin/csm_setup post_install --config json:///opt/seagate/cortx/csm/conf/csm.post_install.tmpl.1-node
+  register: csm_postinstall_out
+  failed_when: '"PASS" not in csm_postinstall_out.stdout'
+
+- name: "[mini_provisioning] : CSM Prepare"
+  shell: /opt/seagate/cortx/csm/bin/csm_setup prepare --config json:///opt/seagate/cortx/csm/conf/csm.prepare.tmpl.1-node
+  register: csm_prepare_out
+  failed_when: '"PASS" not in csm_prepare_out.stdout'
+
+- name: "[mini_provisioning] : CSM Config" 
+  shell: /opt/seagate/cortx/csm/bin/csm_setup config --config json:///opt/seagate/cortx/csm/conf/csm.config.tmpl.1-node
+  register: csm_config_out
+  failed_when: '"PASS" not in csm_config_out.stdout'
+
+- name: "[mini_provisioning] : CSM Init" 
+  shell: /opt/seagate/cortx/csm/bin/csm_setup init --config json:///opt/seagate/cortx/csm/conf/csm.init.tmpl.1-node
+  register: csm_init_out
+  failed_when: '"PASS" not in csm_init_out.stdout'
+
+- name: "[mini_provisioning] : Enable csm_agent"
+  shell: systemctl enable csm_agent
+
+- name: "[mini_provisioning] : Start csm_agent"
+  shell: systemctl start csm_agent
+  register: csm_agent_out
+  ignore_errors: true
+
+- name: "[mini_provisioning] : Journalctl log" 
+  shell: journalctl --unit=csm_agent.service | tail -n 100
+  when: csm_agent_out.rc != 0
+
+- name: "[mini_provisioning] : Run Sanity Test"
+  shell: csm_setup test -t /opt/seagate/cortx/csm/test/plans/self_test.pln -f /opt/seagate/cortx/csm/test/test_data/args.yaml -l /tmp/csm_test -o /tmp/test.out
+  register: csm_test_out
+  failed_when: '"PASS" not in csm_test_out.stdout'

@@ -1,0 +1,50 @@
+---
+# Validate input args
+- name: "[install_prereq] : Validate the required input arguments for this playbook"
+  fail: msg="Variable '{{ item }}' is not defined"
+  when: item not in vars
+  with_items: "{{ REQUIRED_VARS }}"
+
+# Execute pre-requisites installation script
+- name: "[install_prereq] : Install RE pre-req"
+  shell: "curl -s -L http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rpm/install-cortx-prereq.sh | bash"
+
+# Start and enable elasticsearch
+- name: "[install_prereq] : Start elasticsearch"
+  ansible.builtin.service:
+    name: elasticsearch
+    enabled: yes
+    state: started
+  register: elasticsearch_status
+  ignore_errors: true
+
+# Console Elasticsearch Journalctl log
+- name: "[install_prereq] : Elasticsearch journalctl log" 
+  shell: journalctl --unit=elasticsearch.service | tail -n 100
+  when: elasticsearch_status.rc != 0  
+
+# Update service file 
+- name: "[install_prereq] : Update consul service file"
+  ansible.builtin.lineinfile:
+    path: /usr/lib/systemd/system/consul.service
+    regexp: '^ExecStart='
+    line: ExecStart=/usr/bin/consul agent -dev
+
+- name: "[install_prereq] : Reload daemon process"
+  command: systemctl daemon-reload
+
+# Restart and enable consul
+- name: "[install_prereq] : Restart Consul"
+  ansible.builtin.service:
+    name: consul
+    enabled: yes
+    state: restarted
+  register: consul_status
+  ignore_errors: true
+
+# Console Consul Journalctl log
+- name: "[install_prereq] : Consul journalctl log" 
+  shell: journalctl --unit=consul.service | tail -n 100
+  when: consul_status.rc != 0  
+
+
