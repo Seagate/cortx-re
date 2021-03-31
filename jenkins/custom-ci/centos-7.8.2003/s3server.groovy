@@ -102,7 +102,7 @@ pipeline {
 								if [ -f ./rpms/s3testrpm/buildrpm.sh ]; then
 									./rpms/s3testrpm//buildrpm.sh -P $PWD
 								else
-								   "No s3test rpm build script found. Skipping..."	
+								   echo "No s3test rpm build script found. Skipping..."	
 								fi	
 							'''
 					}
