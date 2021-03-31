@@ -86,7 +86,7 @@ Recommended VM specification:
 
                     // Clone cortx-re repo
                     dir('cortx-re') {
-                        checkout([$class: 'GitSCM', branches: [[name: '*/EOS-18973']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/gowthamchinna/cortx-re']]])                
+                        checkout([$class: 'GitSCM', branches: [[name: '*/mini-provisioner-dev']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])                
                     }
                     
                     markNodeforCleanup()
