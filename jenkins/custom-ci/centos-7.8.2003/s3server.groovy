@@ -77,12 +77,6 @@ pipeline {
 						script { build_stage = env.STAGE_NAME }
 								sh label: '', script: '''
 								export build_number=${CUSTOM_CI_BUILD_ID}
-
-								#Build Test rpm
-								if [ -f ./rpms/s3testrpm/buildrpm.sh ]; then
-									./rpms/s3testrpm//buildrpm.sh -P $PWD
-								fi	
-
 								./rpms/s3/buildrpm.sh -P $PWD
 							'''
 					}
@@ -94,6 +88,22 @@ pipeline {
 								sh label: '', script: '''
 								export build_number=${CUSTOM_CI_BUILD_ID}
 								./rpms/s3iamcli/buildrpm.sh -P $PWD
+							'''
+					}
+				}
+
+				stage('Build s3test RPM') {
+					steps {
+						script { build_stage = env.STAGE_NAME }
+								sh label: '', script: '''
+								export build_number=${CUSTOM_CI_BUILD_ID}
+								
+								#Build Test rpm
+								if [ -f ./rpms/s3testrpm/buildrpm.sh ]; then
+									./rpms/s3testrpm//buildrpm.sh -P $PWD
+								else
+								   "No s3test rpm build script found. Skipping..."	
+								fi	
 							'''
 					}
 				}
