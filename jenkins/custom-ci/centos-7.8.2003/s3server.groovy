@@ -80,7 +80,7 @@ pipeline {
 
 								#Build Test rpm
 								if [ -f ./rpms/s3testrpm/buildrpm.sh ]; then
-									./rpms/s3testrpm//buildrpm.sh
+									./rpms/s3testrpm//buildrpm.sh -P $PWD
 								fi	
 
 								./rpms/s3/buildrpm.sh -P $PWD
