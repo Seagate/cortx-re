@@ -14,9 +14,11 @@
   register: s3_mini_prepare
   failed_when: '"prepare successful" not in s3_mini_prepare.stdout'
 
+- name: "[S3server Mini Provisioning] : S3:Config - Start Services" 
+  script: files/start_service.sh haproxy slapd rsyslog sshd
+
 - name: "[S3server Mini Provisioning] : S3:Config" 
   shell: |
-    sh /opt/seagate/cortx/s3/bin/s3prov_start_services.sh haproxy slapd rabbitmq-server rsyslog sshd
     /opt/seagate/cortx/utils/bin/utils_setup config --config "json:///tmp/cortx-config-new"
     /opt/seagate/cortx/s3/bin/s3_setup config --config "yaml:///opt/seagate/cortx/s3/conf/s3.config.tmpl.1-node"
   register: s3_mini_config
