@@ -18,10 +18,14 @@ pipeline {
 	    string(name: 'S3_URL', defaultValue: 'https://github.com/Seagate/cortx-s3server', description: 'Repo for S3Server')
         string(name: 'S3_BRANCH', defaultValue: 'main', description: 'Branch for S3Server')
         choice(name: 'DEBUG', choices: ["no", "yes" ], description: '''<pre>
+NOTE : Only applicable when 'HOST' parameter is provided
+
 no -> Cleanup the vm on post deployment  
 yes -> Preserve host for troublshooting [ WARNING ! Automated Deployment May be queued/blocked if more number of vm used for debuging ]  
 </pre>''')
         string(name: 'HOST', defaultValue: '-', description: '''<pre>
+When Host is provided the job will run till s3init step  - https://github.com/Seagate/cortx-s3server/wiki/S3server-provisioning-on-single-node-VM-cluster:-Manual#s3init
+
 FQDN of ssc-vm
 
 Recommended VM specification:
@@ -223,7 +227,9 @@ Recommended VM specification:
                     // Cleanup Workspace
                     cleanWs()
 
-                    markNodeforCleanup()
+                    if( "${HOST}" == "-" ) {
+                        markNodeforCleanup()
+                    }
 
                     manager.addHtmlBadge("&emsp;<b>Deployment Host :</b><a href='${JENKINS_URL}/computer/${env.NODE_NAME}'> ${NODE1_HOST}</a>&emsp;")
 
@@ -234,8 +240,13 @@ Recommended VM specification:
                             checkout([$class: 'GitSCM', branches: [[name: '*/mini-provisioner-dev']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 1, honorRefspec: true, noTags: true, reference: '', shallow: true], [$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
                         }
 
-                        runAnsible("00_PREP_ENV, 01_PREREQ, 02_MINI_PROV, 03_START_S3SERVER, 04_VALIDATE")
+                        if( "${HOST}" == "-" ) {
+                            runAnsible("00_PREP_ENV, 01_PREREQ, 02_MINI_PROV, 03_START_S3SERVER, 04_VALIDATE")
 
+                        } else {
+                            runAnsible("00_PREP_ENV, 01_PREREQ, 02_MINI_PROV")
+                        }
+                        
                     }
 
                     // Collect logs from test node
@@ -265,11 +276,11 @@ Recommended VM specification:
                         } else {
                             build job: 'Cortx-Automation/Deployment/VM-Cleanup', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${env.NODE_NAME}")]                    
                         }
+
+                        // Create Summary
+                        createSummary()
                     }
                     
-                    // Create Summary
-                    createSummary()
-
                     // Cleanup Workspace
                     cleanWs()
                 }
