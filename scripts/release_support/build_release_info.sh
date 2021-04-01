@@ -94,3 +94,4 @@ $(find -L ./"$dir" -type f -not -path "./lustre/custom/tcp/*" -name '*.rpm' -or 
 EOF
 done
 popd
+
