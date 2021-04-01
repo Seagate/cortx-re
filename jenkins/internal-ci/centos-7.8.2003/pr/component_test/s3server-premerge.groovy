@@ -11,6 +11,10 @@ pipeline {
         timeout(time: 180, unit: 'MINUTES')
 	}
 
+    triggers { 
+        triggers { cron('30 22 * * *') }
+    } 
+
     parameters {  
 	    string(name: 'S3_URL', defaultValue: 'https://github.com/Seagate/cortx-s3server', description: 'Repo for S3Server')
         string(name: 'S3_BRANCH', defaultValue: 'main', description: 'Branch for S3Server')     
