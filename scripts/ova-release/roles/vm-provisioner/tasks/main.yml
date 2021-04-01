@@ -38,14 +38,6 @@
     group: root
     mode: '0750'
 
-- name: Copy s3sanity config script
-  copy:
-    src: files/s3config
-    dest: /root/.s3cfg
-    owner: root
-    group: root
-    mode: '0754'
-
 - name: Copy provisioner script
   copy:
     src: files/provisioner.sh
@@ -74,15 +66,6 @@
   failed_when: "'ERROR' in command_result.stdout"
 
 #provisioner fix for sms1 only
-- name: Copy certificate
-  copy:
-    src: files/cert.pem
-    dest: /opt/seagate/cortx/provisioner/srv/components/misc_pkgs/ssl_certs/files/stx.pem
-    mode: '0754'
-
-- name: Update certificate
-  shell: salt-call state.apply components.misc_pkgs.ssl_certs
-
 - name: Edit csm config file
   shell: "sed -i 's/host:.*/host: 127.0.0.1/g' /etc/csm/database.yaml"
 
