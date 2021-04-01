@@ -20,10 +20,13 @@ THIRD_PARTY_RELEASE.INFO
 </pre>  
         '''  )
         choice(name: 'DEBUG', choices: ["no", "yes" ], description: '''<pre>
+NOTE : Only applicable when 'HOST' parameter is provided
+
 no -> Cleanup the vm on post deployment  
 yes -> Preserve host for troublshooting [ WARNING ! Automated Deployment May be queued/blocked if more number of vm used for debuging ]  
 </pre>''')
         string(name: 'HOST', defaultValue: '-', description: '''<pre>
+When Host is provided the job will run till s3init step  - https://github.com/Seagate/cortx-s3server/wiki/S3server-provisioning-on-single-node-VM-cluster:-Manual#s3init
 FQDN of ssc-vm
 
 Recommended VM specification:
@@ -89,7 +92,9 @@ Recommended VM specification:
                         checkout([$class: 'GitSCM', branches: [[name: '*/mini-provisioner-dev']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])                
                     }
                     
-                    markNodeforCleanup()
+                    if( "${HOST}" == "-" ) {
+                        markNodeforCleanup()
+                    }
                 }
             }
         }
@@ -140,7 +145,7 @@ Recommended VM specification:
 
         // Start S3Server, Motr to perform I/O
         stage('04. Start S3server') {
-            when { expression { env.STAGE_03_START_S3SERVER == "yes" } }
+            when { expression { env.STAGE_03_START_S3SERVER == "yes" && params.HOST == "-" } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
@@ -155,7 +160,7 @@ Recommended VM specification:
 
         // Validate the deployment by performing basic i/o using s3cli command
         stage('04. Validate Deployment') {
-            when { expression { env.STAGE_04_VALIDATE_DEPLOYMENT == "yes" } }
+            when { expression { env.STAGE_04_VALIDATE_DEPLOYMENT == "yes"  && params.HOST == "-" } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
@@ -191,29 +196,31 @@ Recommended VM specification:
                 archiveArtifacts artifacts: "artifacts/*", onlyIfSuccessful: false, allowEmptyArchive: true 
 
                 if( "${HOST}" == "-" ) {
+
                     if( "${DEBUG}" == "yes" ) {  
                         markNodeOffline("S3 Debug Mode Enabled on This Host  - ${BUILD_URL}")
                     } else {
                         build job: 'Cortx-Automation/Deployment/VM-Cleanup', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${env.NODE_NAME}")]                    
                     }
-                }
-                                     
-                // Define build status based on hctl command
-                hctl_status = ""
-                if (fileExists ('artifacts/hctl_status.log')) {
-                    hctl_status = readFile(file: 'artifacts/hctl_status.log')
-                    MESSAGE = "S3Server Deployment Completed"
-                    ICON = "accept.gif"
-                }else {
-                    manager.buildFailure()
-                    MESSAGE = "S3Server Deployment Failed"
-                    ICON = "error.gif"
-                }
 
-                hctl_status_html = "<textarea rows=20 cols=200 readonly style='margin: 0px; height: 392px; width: 843px;'>${hctl_status}</textarea>"
-                table_summary = "<table border='1' cellspacing='0' cellpadding='0' width='400' align='left'> <tr> <td align='center'>Build</td><td align='center'><a href=${CORTX_BUILD}>${build_id}</a></td></tr><tr> <td align='center'>Test VM</td><td align='center'>${NODE1_HOST}</td></tr></table>"
-                manager.createSummary("${ICON}").appendText("<h3>${MESSAGE} for the build <a href=\"${CORTX_BUILD}\">${build_id}.</a></h3><br /><br /><h4>Test Details:</h4> ${table_summary} <br /><br /><br /><h4>HCTL Status:${hctl_status_html}</h4> ", false, false, false, "red")
-              
+                    // Define build status based on hctl command
+                    hctl_status = ""
+                    if (fileExists ('artifacts/hctl_status.log')) {
+                        hctl_status = readFile(file: 'artifacts/hctl_status.log')
+                        MESSAGE = "S3Server Deployment Completed"
+                        ICON = "accept.gif"
+                    }else {
+                        manager.buildFailure()
+                        MESSAGE = "S3Server Deployment Failed"
+                        ICON = "error.gif"
+                    }
+
+                    hctl_status_html = "<textarea rows=20 cols=200 readonly style='margin: 0px; height: 392px; width: 843px;'>${hctl_status}</textarea>"
+                    table_summary = "<table border='1' cellspacing='0' cellpadding='0' width='400' align='left'> <tr> <td align='center'>Build</td><td align='center'><a href=${CORTX_BUILD}>${build_id}</a></td></tr><tr> <td align='center'>Test VM</td><td align='center'>${NODE1_HOST}</td></tr></table>"
+                    manager.createSummary("${ICON}").appendText("<h3>${MESSAGE} for the build <a href=\"${CORTX_BUILD}\">${build_id}.</a></h3><br /><br /><h4>Test Details:</h4> ${table_summary} <br /><br /><br /><h4>HCTL Status:${hctl_status_html}</h4> ", false, false, false, "red")
+                
+                }                            
+        
                  // Archive all log generated by Test
                 cleanWs()
 

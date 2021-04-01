@@ -64,7 +64,9 @@ pipeline {
                         checkout([$class: 'GitSCM', branches: [[name: '*/mini-provisioner-dev']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])                
                     }
                     
-                    markNodeforCleanup()
+                    if( "${HOST}" == "-" ) {
+                        markNodeforCleanup()
+                    }
                 }
             }
         }
