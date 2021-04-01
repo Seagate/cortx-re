@@ -19,7 +19,6 @@
       - firewalld-0.6.3-8.el7
       - python3
       - expect
-      - s3cmd
     state: present
 
 - name: Copy a config file
