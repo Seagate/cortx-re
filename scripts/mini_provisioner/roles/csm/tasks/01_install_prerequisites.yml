@@ -1,4 +1,7 @@
 ---
+- name: Gather facts
+  setup:
+
 # Validate input args
 - name: "[install_prereq] : Validate the required input arguments for this playbook"
   fail: msg="Variable '{{ item }}' is not defined"
