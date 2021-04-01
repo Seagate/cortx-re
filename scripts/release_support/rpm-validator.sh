@@ -41,7 +41,7 @@ if [ -z "$OS_VERSION" ]; then echo "No OS_VERSION provided.."; exit 1; fi
 RPM_LOCATION="http://cortx-storage.colo.seagate.com/releases/cortx/github/$BRANCH/$OS_VERSION"
 
 # Validation Params
-RPM_VERSION_EXPECTED="2.0.0"
+RPM_VERSION_EXPECTED='2.0.[0-9]+'
 RPM_LICENSE_EXPECTED="Seagate"
 
 RPM_NAMING_PATTERN="cortx-[component_name]-[version]-[bld]_[git_tag].[platform].rpm"
@@ -54,22 +54,20 @@ COMPONENT_RPM_PATTERN_ARRAY=(
                     "CSM:cortx-csm_agent,csm_web"
                     "Provisioner:cortx-prvsnr"
                     "SSPL:cortx-sspl"
-                    "NFS:cortx-fs,cortx-dsal,cortx-nsal,cortx-utils"
                     "CORTX-utils:cortx-py-utils,stats_utils"
                 )
 
 RPM_INSTALL_ROOT_PATH="/opt/seagate/cortx"
 RPM_LOG_ROOT_PATH="/var/log/cortx"
 RPM_INSTALL_PATH_EXPECTED=(
-                    "cortx-utils:lib" "cortx-nsal:lib" "cortx-dsal:lib" "cortx-fs:lib,conf" # NFS
-                    "cortx-motr:bin,lib,conf,log"                                           # Motr
-                    "cortx-s3server:bin,lib,conf,log" "cortx-s3iamcli:bin,lib,conf,log"     # S3Server
-                    "cortx-hare:bin,lib,conf,log"                                           # Hare
-                    "cortx-ha:bin,lib,conf,log"                                             # HA
-                    "cortx-csm_agent:bin,lib,conf,log" "cortx-csm_web:bin,lib,conf,log"     # CSM
-                    "cortx-prvsnr:bin,lib,conf,log"                                         # Prvsnr
-                    "cortx-sspl:bin,lib,conf,log"                                           # SSPL
-                    "cortx-py-utils:bin,lib,conf,log" "stats_utils:bin,lib,conf,log"        # CORTX Utils
+                    "cortx-motr:bin,conf"                                                   # Motr
+                    "cortx-s3server:bin,conf" "cortx-s3iamcli:bin,conf"                     # S3Server
+                    "cortx-hare:bin,conf"                                                   # Hare
+                    "cortx-ha:bin,conf"                                                     # HA
+                    "cortx-csm_agent:bin,conf" "cortx-csm_web:bin,conf"                     # CSM
+                    "cortx-prvsnr:bin,conf"                                                 # Prvsnr
+                    "cortx-sspl:bin,conf"                                                   # SSPL
+                    "cortx-py-utils:bin,conf" "stats_utils:bin,conf"                        # CORTX Utils
                 )
 
 VALIDATION_ENVIRONMENT="OS : $(cat /etc/redhat-release | sed -e 's/ $//g') , Kernel : $(uname -r)"
@@ -238,13 +236,11 @@ _generate_rpm_validation_report(){
             RPM_NAMING_PATTERN="cortx-[component_name]-[version]-[bld]_[git_tag].[platform].rpm"
 
             rpm_name_expected=$(echo -e "$RPM_NAMING_PATTERN" | sed -e "s/cortx-\[component_name\]/$rpm_name/g;s/\[version\]/$RPM_VERSION_EXPECTED/g; s/\[bld\]_\[git_tag\]/$rpm_release/g; s/\[platform\]/$rpm_arch/g")
-
             name_check="<td $HTML_TD_STYLE><span style='color:green; text-shadow: -2px 0 black, 0 2px black, 2px 0 black, 0 -2px black; font-size: 30px;'>&#10003;</span></td>"
-            if [[ "$rpm" != "$rpm_name_expected" ]]
+            if [[ ! "$rpm" =~ $rpm_name_expected ]]
             then
                 name_check="<td $HTML_TD_STYLE><b>Invalid RPM Name :</b> <br> - <b><i>Expected : </b></i>$rpm_name_expected<br> -  <b><i>Actual : </b></i>$rpm</td>"
             fi
-
             license_check="<td $HTML_TD_STYLE><span style='color:green; text-shadow: -2px 0 black, 0 2px black, 2px 0 black, 0 -2px black; font-size: 30px;'>&#10003;</span></td>"
             if [[ "$rpm_license" != "$RPM_LICENSE_EXPECTED" ]]
             then
