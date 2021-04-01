@@ -250,7 +250,9 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 script {
 
-                    markNodeforCleanup()
+                    if( "${HOST}" == "-" ) {
+                        markNodeforCleanup()
+                    }
 
                     // Cleanup Workspace
                     cleanWs()

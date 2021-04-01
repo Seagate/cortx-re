@@ -188,7 +188,9 @@ pipeline {
                     // Cleanup Workspace
                     cleanWs()
 
-                    markNodeforCleanup()
+                    if( "${HOST}" == "-" ) {
+                        markNodeforCleanup()
+                    }
 
                     manager.addHtmlBadge("&emsp;<b>Deployment Host :</b><a href='${JENKINS_URL}/computer/${env.NODE_NAME}'> ${NODE1_HOST}</a>&emsp;")
 
