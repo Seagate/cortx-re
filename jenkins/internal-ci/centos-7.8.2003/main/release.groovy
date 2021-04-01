@@ -9,7 +9,7 @@ pipeline {
 	
     environment {
         version = "2.0.0"
-        thrid_party_version = "2.0.0-1"
+        thrid_party_version = "2.0.0-latest"
         os_version = "centos-7.8.2003"
         branch = "main"
         release_dir = "/mnt/bigstorage/releases/cortx"
@@ -21,7 +21,7 @@ pipeline {
         token = credentials('shailesh-github-token')
         ARTIFACT_LOCATION = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version"
         thrid_party_dir = "$release_dir/third-party-deps/centos/centos-7.8.2003-$thrid_party_version/"
-		python_deps = "$release_dir/third-party-deps/python-deps/python-packages-2.0.0-0"
+		python_deps = "$release_dir/third-party-deps/python-deps/python-packages-2.0.0-latest"
         cortx_os_iso = "/mnt/bigstorage/releases/cortx_builds/custom-os-iso/cortx-os-1.0.0-23.iso"
         // WARNING : 'rm' command where used in this dir path, be conscious while changing the value  
 		cortx_build_dir = "$release_dir/github/$branch/$os_version/cortx_builds" 
@@ -41,7 +41,6 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Installed Dependecies', script: '''
                     yum install -y expect rpm-sign rng-tools genisoimage python3-pip
-					pip3 install githubrelease
                     systemctl start rngd
                 '''	
 			}
@@ -188,10 +187,9 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Build Release Info', script: """
 				    pushd scripts/release_support
-                        sh build_release_info.sh -v $version -b $integration_dir/$release_tag/dev
-                        sh build_release_info.sh -v $version -b $integration_dir/$release_tag/prod
-						sh build-3rdParty-release-info.sh $cortx_build_dir/$release_tag/3rd_party
-    					sh build_readme.sh $integration_dir/$release_tag
+                        sh build_release_info.sh -b $branch -v $version -l $integration_dir/$release_tag/dev -t $cortx_build_dir/$release_tag/3rd_party
+                        sh build_release_info.sh -b $branch -v $version -l $integration_dir/$release_tag/prod -t $cortx_build_dir/$release_tag/3rd_party
+						sh build_readme.sh $integration_dir/$release_tag
 					popd
 					
 					cp $integration_dir/$release_tag/README.txt .
@@ -258,6 +256,19 @@ pipeline {
 			}
 		}
 
+        stage ("Deploy") {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+				script {
+                    build job: 'Main Deploy', propagate: false, wait: false, parameters: [
+                            string(name: 'CORTX_BUILD', value: "http://cortx-storage.colo.seagate.com/releases/cortx/github/${branch}/${os_version}/${env.release_tag}/prod"), 
+                            string(name: 'NOTIFICATION', value: "None"),
+                            booleanParam(name: 'CREATE_JIRA_ISSUE_ON_FAILURE', value: true),
+                            booleanParam(name: 'AUTOMATED', value: true)
+                        ]     
+				}
+            }
+        }
 	}
 	
 	post {

@@ -130,6 +130,38 @@ pipeline {
 				}
             }
         }
+	stage('Update Jira') {
+		when { expression { return env.release_build != null } }
+		steps {
+			script { build_stage=env.STAGE_NAME }
+				script {
+					def jiraIssues = jiraIssueSelector(issueSelector: [$class: 'DefaultIssueSelector'])
+					jiraIssues.each { issue ->
+						def author =  getAuthor(issue)
+						jiraAddComment(
+							idOrKey: issue,
+							site: "SEAGATE_JIRA",
+							comment: "{panel:bgColor=#c1c7d0}"+
+								"h2. ${component} - ${branch} branch build pipeline SUCCESS\n"+
+								"h3. Build Info:  \n"+
+									author+
+										"* Component Build  :  ${BUILD_NUMBER} \n"+
+										"* Release Build    :  ${release_build}  \n\n  "+
+								"h3. Artifact Location  :  \n"+
+									"*  "+"${release_build_location} "+"\n"+
+									"{panel}",
+							failOnError: false,
+							auditLog: false
+						)
+						//def jiraFileds = jiraGetIssue idOrKey: issue, site: "SEAGATE_JIRA", failOnError: false
+						//if(jiraFileds.data != null){
+						//def labels_data =  jiraFileds.data.fields.labels + "cortx_stable_b${release_build}"
+						//jiraEditIssue idOrKey: issue, issue: [fields: [ labels: labels_data ]], site: "SEAGATE_JIRA", failOnError: false
+						//}
+					}
+				}
+		}
+	}
 	}
 
 	post {
@@ -149,17 +181,15 @@ pipeline {
                 }
 
                 if( currentBuild.rawBuild.getCause(hudson.triggers.SCMTrigger$SCMTriggerCause) ) {
-                    def toEmail = ""
-                    def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
-                    if( manager.build.result.toString() == "FAILURE" ) {
-                        toEmail = "CORTX.s3@seagate.com,shailesh.vaidya@seagate.com"
-                        recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
+                    def toEmail = "nilesh.govande@seagate.com, basavaraj.kirunge@seagate.com, rajesh.nambiar@seagate.com, ajinkya.dhumal@seagate.com, amit.kumar@seagate.com"
+                    def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
+                    if( manager.build.result.toString() == "FAILURE") {
+                        toEmail = "CORTX.s3@seagate.com"
                     }
-
                     emailext (
                         body: '''${SCRIPT, template="component-email-dev.template"}''',
                         mimeType: 'text/html',
-                        subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
+                        subject: "[Jenkins] S3Main PostMerge : ${currentBuild.currentResult}, ${JOB_BASE_NAME}#${BUILD_NUMBER}",
                         attachLog: true,
                         to: toEmail,
                         recipientProviders: recipientProvidersClass
@@ -170,4 +200,24 @@ pipeline {
 			}
 		}	
     }
+}
+
+@NonCPS
+def getAuthor(issue) {
+
+    def changeLogSets = currentBuild.rawBuild.changeSets
+    def author= ""
+    def response = ""
+    // Grab build information
+    for (int i = 0; i < changeLogSets.size(); i++){
+        def entries = changeLogSets[i].items
+        for (int j = 0; j < entries.length; j++) {
+            def entry = entries[j]
+            if((entry.msg).contains(issue)){
+                author = entry.author
+            }
+        }
+    }
+    response = "* Author: "+author+"\n"
+    return response
 }

@@ -71,7 +71,7 @@ pipeline {
                     LDR_BUID_PATH=$(sed \'s/http\\:\\/\\/cortx-storage.colo.seagate.com/\\/mnt\\/bigstorage/g\' <<< $LDR_RELEASE_BUILD)
                     mkdir -p $integration_dir/$release_tag/cortx_iso
                     shopt -s extglob
-                    cp $LDR_BUID_PATH/cortx_iso/!(cortx-csm_web*).rpm $integration_dir/$release_tag/cortx_iso
+                    cp $LDR_BUID_PATH/cortx_iso/!(ud*|cortx-csm_web*).rpm $integration_dir/$release_tag/cortx_iso
                     cp $csm_web_dir/last_successful/*.rpm $integration_dir/$release_tag/cortx_iso
                 '''
 			}
@@ -183,9 +183,8 @@ pipeline {
                 script { build_stage=env.STAGE_NAME }
                 sh label: 'Build Release Info', script: """
 				    pushd scripts/release_support
-                        sh build_release_info.sh -v $version -b $integration_dir/$release_tag/cortx_iso
-						sh build-3rdParty-release-info.sh $integration_dir/$release_tag/3rd_party
-    					sh build_readme.sh $integration_dir/$release_tag
+                        sh build_release_info.sh -v $version -b $integration_dir/$release_tag/cortx_iso -t $integration_dir/$release_tag/3rd_party
+                        sh build_readme.sh $integration_dir/$release_tag
 					popd
 					
 					cp $integration_dir/$release_tag/README.txt .

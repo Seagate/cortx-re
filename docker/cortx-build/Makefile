@@ -1,9 +1,10 @@
 SHELL := /bin/bash
 BUILD_ID = 0
 RELEASE_VERSION = "2.0.0"
-RELASE_BUILD = "/var/artifacts/${BUILD_ID}"
+RELEASE_BUILD = "/var/artifacts/${BUILD_ID}"
 RPM_DIR = "/var/artifacts/${BUILD_ID}/cortx_iso"
-THIRD_PARTY_VERSION = "third-party-deps-1.0.0-0"
+THIRD_PARTY_VERSION = "1.0.0-0"
+BRANCH = "main"
 
 .PHONY: help
 ## help: print this help message.
@@ -18,11 +19,11 @@ help : Makefile
 ## clean: remove existing /var/artifacts/0 directory. 
 clean:
 	rm -rf "/root/rpmbuild/"
-	rm -rf ${RELASE_BUILD}
+	rm -rf ${RELEASE_BUILD}
 	mkdir -p ${RPM_DIR}
 
 ## build: generate complete CORTX build including third-party-deps at "/var/artifacts/0"
-build: io-path control-path release_build
+build: io-path control-path cortx-prereq release_build
 
 ## control-path: generate control-path packages. cortx-provisioner, cortx-monitor, cortx-manager, cortx-management-portal and cortx-ha.
 control-path: cortx-prvsnr cortx-monitor cortx-manager cortx-management-portal cortx-ha
@@ -40,7 +41,7 @@ cortx-s3server: cortx-motr _s3_prereq _s3_build
 cortx-hare: cortx-motr _cortx-hare_prereq _cortx-hare_build
 
 ## cortx-ha: generate cortx-ha packages.
-cortx-ha: _ha_prereq _ha_build
+cortx-ha: _cortx-py-utils_build _ha_prereq _ha_build
 
 ## cortx-management-portal: generate cortx-management-portal packages.
 cortx-management-portal: _cortx-py-utils_build cortx-prvsnr _cortx-management-portal_prereq _cortx-management-portal_build
@@ -73,7 +74,7 @@ _cortx-motr_prereq:
 		cp cortx-motr.spec.in cortx-motr.spec && \
 		sed -i 's/@.*@/111/g' cortx-motr.spec && \
 		yum-builddep -y cortx-motr.spec && \
-	popd
+	popd || (echo "ERROR: cortx-motr source code is not available in cortx-workspace. Exiting..."; exit 1)
 
 _cortx-motr_build:
 	
@@ -85,7 +86,8 @@ _cortx-motr_build:
 		./configure --with-linux=$$KERNEL && \
 		export build_number=${BUILD_ID} && \
 		make rpms && \
-		cp /root/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
+		rm -rf ${RPM_DIR}/cortx-motr*.rpm && \
+		mv /root/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
 		createrepo -v ${RPM_DIR} && \
 	popd
 
@@ -102,7 +104,7 @@ _s3_prereq:
 	pushd cortx-workspace/cortx-s3server && \
 	  yum localinstall -y ${RPM_DIR}/cortx-motr-[0-9]*.rpm ${RPM_DIR}/cortx-motr-devel-[0-9]*.rpm && \
 		yum clean all;rm -rf /var/cache/yum && \
-	popd
+	popd || (echo "ERROR: cortx-s3server source code is not available in cortx-workspace. Exiting..."; exit 1)
 
 _s3_build:
 	@echo "***************  Building S3 RPMS *********************"
@@ -113,8 +115,9 @@ _s3_build:
 		./rpms/s3/buildrpm.sh -S ${RELEASE_VERSION} -G $$(git rev-parse --short HEAD) && \
 		export build_number=${BUILD_ID} && \
 	    ./rpms/s3iamcli/buildrpm.sh -S ${RELEASE_VERSION} -G $$(git rev-parse --short HEAD) && \
-		cp /root/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
-       	cp /root/rpmbuild/RPMS/noarch/*.rpm ${RPM_DIR} && \
+		rm -rf {RPM_DIR}/cortx-s3*.rpm && \
+		mv /root/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
+       	mv /root/rpmbuild/RPMS/noarch/*.rpm ${RPM_DIR} && \
 		createrepo -v ${RPM_DIR} && \
 	popd
 
@@ -130,7 +133,7 @@ _cortx-hare_prereq:
 
 	pushd cortx-workspace/cortx-hare && \
 		yum localinstall -y ${RPM_DIR}/cortx-motr-[0-9]*.rpm ${RPM_DIR}/cortx-motr-devel-[0-9]*.rpm && \
-	popd
+	popd || (echo "ERROR: cortx-hare source code is not available in cortx-workspace. Exiting..."; exit 1)
 
 _cortx-hare_build:
 	@echo "***************  Building cortx-hare RPMS *********************"
@@ -139,7 +142,8 @@ _cortx-hare_build:
 		echo "Executing build script" && \
 		export build_number=${BUILD_ID} && \
 		make VERSION=${RELEASE_VERSION} rpm && \
-		cp /root/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
+		rm -rf ${RPM_DIR}/cortx-hare*.rpm && \
+		mv /root/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
 		createrepo -v ${RPM_DIR} && \
 	popd
 
@@ -158,7 +162,7 @@ _cortx-posix_prereq:
 		yum localinstall -y ${RPM_DIR}/cortx-motr-[0-9]*.rpm ${RPM_DIR}/cortx-motr-devel-[0-9]*.rpm && \
 		yum install libevhtp libevhtp-devel libevent libevent-devel userspace-rcu-devel dbus-devel -y && \
 		sed -i 's/QA_CHECK_RPATHS=1/QA_CHECK_RPATHS=0/g' ~/.rpmmacros && \
-	popd
+	popd || (echo "ERROR: cortx-posix source code is not available in cortx-workspace. Exiting..."; exit 1)
 
 _cortx-posix_build:
 	@echo "***************  Building cortx-posix RPMS *********************"
@@ -184,12 +188,12 @@ _cortx-py-utils_build:
 	@echo "***************  Installing cortx-management-portal Prereqsites *********************"
 	pushd cortx-workspace/cortx-utils/py-utils && \
 		yum install python36-devel -y && \
-		python3.6 setup.py bdist_rpm --version=${RELEASE_VERSION} --post-install utils-post-install --post-uninstall utils-post-uninstall --post-uninstall utils-post-uninstall --release="${BUILD_NUMBER}_$(git rev-parse --short HEAD)" && \
+		python3.6 setup.py bdist_rpm --version=${RELEASE_VERSION} --post-install utils-post-install --post-uninstall utils-post-uninstall --post-uninstall utils-post-uninstall --release="${BUILD_ID}_$$(git rev-parse --short HEAD)" && \
 		../statsd-utils/jenkins/build.sh -b ${BUILD_ID} && \
 		mv /cortx-workspace/cortx-utils/statsd-utils/dist/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
 		mv /cortx-workspace/cortx-utils/py-utils/dist/*.rpm ${RPM_DIR} && \
 		createrepo -v ${RPM_DIR} && \
-	popd
+	popd || (echo "ERROR: cortx-utils source code is not available in cortx-workspace. Exiting..."; exit 1)
 
 #***********************************************************************************
 #   Component:  cortx-management-portal
@@ -203,7 +207,7 @@ _cortx-management-portal_prereq:
 	pushd cortx-workspace/cortx-management-portal && \
 		yum localinstall -y ${RPM_DIR}/cortx-py-utils*noarch.rpm ${RPM_DIR}/cortx-prvsnr*.rpm ${RPM_DIR}/python36-cortx-prvsnr*.rpm  && \
         pip3.6 install  pyinstaller==3.5 && \
-	popd
+	popd || (echo "ERROR: cortx-management-portal source code is not available in cortx-workspace. Exiting..."; exit 1)
 
 _cortx-management-portal_build:
 	@echo "***************  Building cortx-management-portal RPMS *********************"
@@ -212,7 +216,8 @@ _cortx-management-portal_build:
 		BUILD=$$(git rev-parse --short HEAD) && \
 		echo "Python:$$(python --version)" && \
 		./cicd/build.sh -v ${RELEASE_VERSION} -v ${RELEASE_VERSION} -b "${BUILD_ID}" -t -i && \
-		cp ./dist/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
+		rm -rf ${RPM_DIR}/cortx-csm_web*.rpm && \
+		mv ./dist/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
 		createrepo -v ${RPM_DIR} && \
 	popd
 
@@ -230,7 +235,7 @@ _cortx-manager_prereq:
 	pushd cortx-workspace/cortx-manager && \
 		yum localinstall -y ${RPM_DIR}/cortx-py-utils*noarch.rpm ${RPM_DIR}/cortx-prvsnr*.rpm ${RPM_DIR}/python36-cortx-prvsnr*.rpm && \
         pip3.6 install  pyinstaller==3.5 && \
-	popd
+	popd || (echo "ERROR: cortx-manager source code is not available in cortx-workspace. Exiting..."; exit 1)
 
 _cortx-manager_build:
 	@echo "***************  Building cortx-manager RPMS *********************"
@@ -238,8 +243,9 @@ _cortx-manager_build:
 	pushd cortx-workspace/cortx-manager && \
 		BUILD=$$(git rev-parse --short HEAD) && \
 		echo "Python:$(python --version)" && \
-		./cicd/build.sh -v ${RELEASE_VERSION} -b "${BUILD_ID}" -t -i && \
-		cp ./dist/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
+		./cicd/build.sh -v ${RELEASE_VERSION} -b "${BUILD_ID}" -t -i || \
+		rm -rf ${RPM_DIR}/cortx-csm_agent*.rpm && \
+		mv ./dist/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
 		createrepo -v ${RPM_DIR} && \
 	popd
 
@@ -255,15 +261,16 @@ _prvsnr_prereq:
 
 	pushd cortx-workspace/cortx-prvsnr/ && \
 		yum install -y python && \
-	popd
+	popd || (echo "ERROR: cortx-prvsnr codebase is not available in cortx-workspace.Exiting..."; exit 1)
 
 _prvsnr_build:
 	@echo "***************  Building cortx-prvsnr RPMS *********************"
 	
 	pushd cortx-workspace/cortx-prvsnr/ && \
+        rm -rf ${RPM_DIR}/*cortx-prvsnr*.rpm /root/rpmbuild/RPMS/x86_64/*cortx-prvsnr*.rpm && \
 		sh ./devops/rpms/buildrpm.sh -g "$$(git rev-parse --short HEAD)" -e ${RELEASE_VERSION} -b "${BUILD_ID}" && \
 		sh ./cli/buildrpm.sh -g "$$(git rev-parse --short HEAD)" -e ${RELEASE_VERSION} -b "${BUILD_ID}" && \
-		bash ./devops/rpms/api/build_python_api.sh -vv --out-dir /root/rpmbuild/RPMS/x86_64/ --pkg-ver ${RELEASE_VERSION} && \
+		bash ./devops/rpms/api/build_python_api.sh -vv --out-dir /root/rpmbuild/RPMS/x86_64/ --pkg-ver ${BUILD_ID}_git$$(git rev-parse --short HEAD) && \
 		cp /root/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
 		createrepo -v ${RPM_DIR} && \
 	popd
@@ -281,7 +288,7 @@ _cortx-monitor_prereq:
 	pushd cortx-workspace/cortx-monitor && \
 		yum localinstall -y ${RPM_DIR}/cortx-py-utils*noarch.rpm && \
 		yum install sudo python-Levenshtein libtool doxygen python-pep8 openssl-devel graphviz check-devel -y && \
-	popd
+	popd || (echo "ERROR: cortx-monitor source code is not available in cortx-workspace. Exiting..."; exit 1)
 
 _cortx-monitor_build:
 	@echo "***************  Building sspl RPMS *********************"
@@ -290,8 +297,9 @@ _cortx-monitor_build:
 		export build_number=${BUILD_ID} && \
 		echo "Executing build script" && \
 		./jenkins/build.sh -v ${RELEASE_VERSION} -l DEBUG && \
-		cp /root/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
-        cp /root/rpmbuild/RPMS/noarch/*.rpm ${RPM_DIR} && \
+		rm -rf ${RPM_DIR}/*sspl*.rpm && \
+		mv /root/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
+        mv /root/rpmbuild/RPMS/noarch/*.rpm ${RPM_DIR} && \
 		createrepo -v ${RPM_DIR} && \
 	popd
 
@@ -308,17 +316,19 @@ _ha_prereq:
 	pushd "cortx-workspace/cortx-ha" && \
 		yum clean all;rm -rf /var/cache/yum && \
 		yum erase python36-PyYAML -y && \
-		yum install cortx-py-utils -y && \
+		pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/main/py-utils/requirements.txt && \
+		yum localinstall -y ${RPM_DIR}/cortx-py-utils*noarch.rpm && \
 		bash ./jenkins/cicd/cortx-ha-dep.sh  && \
 		pip3 install numpy && \
-	popd
+	popd || (echo "ERROR: cortx-ha source code is not available in cortx-workspace. Exiting..."; exit 1)
 
 _ha_build:
 	@echo "***************  Building HA RPMS *********************"
 	
 	pushd "cortx-workspace/cortx-ha" && \
 		./jenkins/build.sh -v ${RELEASE_VERSION} -b ${BUILD_ID} && \
-		cp dist/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
+		rm -rf ${RPM_DIR}/cortx-ha-*.rpm && \
+		mv dist/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
 		createrepo -v ${RPM_DIR} && \
 	popd
 
@@ -328,6 +338,15 @@ _ha_build:
 #		release_build - Setup yum repo, Generate RELEASE.INFO, gpg key sigining.
 #
 #***********************************************************************************
+cortx-prereq:
+	@echo "***************  Generating cortx-prereq RPM *********************"
+
+	pushd /opt/third-party-rpm/ && \
+		./build-prerequisite-rpm.sh -v ${RELEASE_VERSION} -r ${BUILD_ID} -g $$GIT_HASH && \
+		rm -rf ${RPM_DIR}/cortx-prereq*.rpm && \
+		mv /root/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
+	popd
+
 release_build:
 	@echo "***************  Generating Release Build *********************"
 
@@ -336,17 +355,20 @@ release_build:
 		for rpm in `ls -1 *.rpm`; do expect /opt/rpm-signing/rpm-sign.sh $$rpm; done && \
 		createrepo -v . && \
 	popd && \
-	pushd ${RELASE_BUILD} && \
-		sh /opt/release_support/build_release_info.sh -v ${RELEASE_VERSION} -b ${RPM_DIR}  && \
-		githubrelease asset seagate/cortx download ${THIRD_PARTY_VERSION} && \
-		mkdir -p 3rd_party && tar -xvzf *.tar.gz -C 3rd_party --strip-components=1 && \
+	pushd ${RELEASE_BUILD} && \
+		githubrelease asset seagate/cortx download third-party-deps-${THIRD_PARTY_VERSION} && \
+		mkdir -p 3rd_party && tar -xvzf third-party-centos-7.8.2003-${THIRD_PARTY_VERSION}.tar.gz -C 3rd_party --strip-components=1 && \
+		mkdir -p python_deps && tar -xvzf python-deps-${THIRD_PARTY_VERSION}.tar.gz -C python_deps --strip-components=1 && \
+		cortx_prvsnr_preq=$$(ls /var/artifacts/0/cortx_iso/python36-cortx-prvsnr* | awk -F'_' '{split($$(NF-1), A ,"."); gsub("git", "", A[1]); print A[1]}') && \
+		wget -O cortx-prep-${RELEASE_VERSION}-${BUILD_ID}.sh https://raw.githubusercontent.com/Seagate/cortx-prvsnr/$$cortx_prvsnr_preq/cli/src/cortx_prep.sh && \
+ 		sh /opt/release_support/build_release_info.sh -b ${BRANCH} -v ${RELEASE_VERSION} -l ${RPM_DIR} -t ${RELEASE_BUILD}/3rd_party && \
 	popd
 
 ## iso_generation: generate ISO file from release build.
 iso_generation:
 	@echo "***************  Generating ISO file *********************"
 	
-	pushd ${RELASE_BUILD} && \
-		mkdir -p ${RELASE_BUILD}/iso && \
-		genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -publisher Seagate -o ${RELASE_BUILD}/iso/cortx-1.0.0-${BUILD_ID}-single.iso ${RELASE_BUILD} && \
+	pushd ${RELEASE_BUILD} && \
+		mkdir -p ${RELEASE_BUILD}/iso && \
+		genisoimage -input-charset iso8859-1 -exclude "python-deps-${THIRD_PARTY_VERSION}.tar.gz" -m "third-party-centos-7.8.2003-${THIRD_PARTY_VERSION}.tar.gz" -f -J -joliet-long -r -allow-lowercase -allow-multidot -publisher Seagate -o ${RELEASE_BUILD}/iso/cortx-1.0.0-${BUILD_ID}-single.iso ${RELEASE_BUILD} && \
 	popd

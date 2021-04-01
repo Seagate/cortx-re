@@ -36,16 +36,34 @@ pipeline {
 				}
 			}
 		}
-	
+
+		// Install third-party dependencies. This needs to be removed once components move away from self-contained binaries 
+	  stage('Install python packages') {
+			steps {
+        	    script { build_stage = env.STAGE_NAME }
+				sh label: '', script: '''
+					yum erase python36-PyYAML -y
+					cat <<EOF >>/etc/pip.conf
+[global]
+timeout: 60
+index-url: http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/python-packages-2.0.0-latest/
+trusted-host: cortx-storage.colo.seagate.com
+EOF
+					pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/$branch/py-utils/requirements.txt
+					rm -rf /etc/pip.conf
+			'''		
+			}
+		}
+		
 		stage('Install Dependencies') {
 			steps {
 				script { build_stage = env.STAGE_NAME }
 				sh label: '', script: '''
 					pushd $component
-					yum clean all;rm -rf /var/cache/yum
-					yum erase python36-PyYAML -y
-					bash jenkins/cicd/cortx-ha-dep.sh
-					pip3 install numpy
+						yum clean all;rm -rf /var/cache/yum
+						yum erase python36-PyYAML -y
+						bash jenkins/cicd/cortx-ha-dep.sh
+						pip3 install numpy
 					popd
 				'''
 			}
@@ -58,7 +76,7 @@ pipeline {
 					set -xe
 					pushd $component
 					echo "Executing build script"
-   				   ./jenkins/build.sh -v $version -b $BUILD_NUMBER
+   				   ./jenkins/build.sh -v ${version:0:1} -m ${version:2:1} -r ${version:4:1} -b $BUILD_NUMBER
 					popd
 				'''	
 			}
@@ -114,6 +132,39 @@ pipeline {
 				}
             }
         }
+        stage('Update Jira') {
+		when { expression { return env.release_build != null } }
+	        steps {
+			script { build_stage=env.STAGE_NAME }
+				script {
+					def jiraIssues = jiraIssueSelector(issueSelector: [$class: 'DefaultIssueSelector'])
+					jiraIssues.each { issue ->
+						def author =  getAuthor(issue)
+						jiraAddComment(	
+							idOrKey: issue,
+							site: "SEAGATE_JIRA",
+							comment: "{panel:bgColor=#c1c7d0}"+
+								"h2. ${component} - ${branch} branch build pipeline SUCCESS\n"+
+								"h3. Build Info:  \n"+
+									 author+
+									 	"* Component Build  :  ${BUILD_NUMBER} \n"+
+										"* Release Build    :  ${release_build}  \n\n  "+
+								"h3. Artifact Location  :  \n"+
+									"*  "+"${release_build_location} "+"\n"+
+									"{panel}",
+							failOnError: false,
+							auditLog: false
+						)
+
+				             //def jiraFileds = jiraGetIssue idOrKey: issue, site: "SEAGATE_JIRA", failOnError: false
+					     //if(jiraFileds.data != null){
+				             //def labels_data =  jiraFileds.data.fields.labels + "cortx_stable_b${release_build}"
+					     //jiraEditIssue idOrKey: issue, issue: [fields: [ labels: labels_data ]], site: "SEAGATE_JIRA", failOnError: false
+				               // }
+					}
+				}
+		}
+	}
 
 	}
 	
@@ -151,3 +202,24 @@ pipeline {
 		}	
     }
 }
+
+@NonCPS
+def getAuthor(issue) {
+
+    def changeLogSets = currentBuild.rawBuild.changeSets
+    def author= ""
+    def response = ""
+    // Grab build information
+    for (int i = 0; i < changeLogSets.size(); i++){
+        def entries = changeLogSets[i].items
+        for (int j = 0; j < entries.length; j++) {
+            def entry = entries[j]
+            if((entry.msg).contains(issue)){
+                author = entry.author
+            }
+        }
+    }
+    response = "* Author: "+author+"\n"
+    return response
+}
+
