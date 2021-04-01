@@ -5,6 +5,16 @@
   when: item not in vars
   with_items: "{{ REQUIRED_VARS }}"
 
+# Add yum repositories
+- name: "[install_prereq] : Copy yum repo"
+  template:
+    src: cortx.repo.j2
+    dest: /etc/yum.repos.d/cortx.repo
+  
+# Refresh yum repo
+- name: "[install_prereq] : Refresh yum repos"
+  shell: yum clean all
+
 # Execute pre-requisites installation script
 - name: "[install_prereq] : Install RE pre-req"
   shell: "curl -s -L http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rpm/install-cortx-prereq.sh | bash"
@@ -47,4 +57,25 @@
   shell: journalctl --unit=consul.service | tail -n 100
   when: consul_status.rc != 0  
 
+- name: "[install_prereq] : Install csm agent, csm web, cortx-py-utils, python36-cortx-prvsnr and cli"
+  yum: 
+    name: ["cortx-cli", "cortx-csm_agent", "cortx-csm_web", "cortx-py-utils", "python36-cortx-prvsnr"]
+    state: present
 
+- name: "[install_prereq] : Create a cortx directory if does not exist"
+  ansible.builtin.file:
+    path: /etc/cortx
+    state: directory
+    mode: '0755'
+
+- name: "[install_prereq] : Copy utils post install config"
+  ansible.builtin.template:
+    src: utils_config.j2
+    dest: /opt/seagate/cortx/utils/conf/utils.post_install.tmpl.1-node
+    mode: '0774'    
+
+- name: "[install_prereq] : Copy utils config"
+  ansible.builtin.template:
+    src: utils_config.j2
+    dest: /opt/seagate/cortx/utils/conf/utils.config.tmpl.1-node
+    mode: '0774'

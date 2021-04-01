@@ -1,14 +1,4 @@
 ---
-- name: "[install_cortx_manager] : Install Cortx-manager and Cortx-cli RPM's"
-  shell: "rpm -i {{ item }}"
-  with_fileglob:
-    - "http://cortx-storage.colo.seagate.com/releases/eos/components/dev/multibranch/cortx-manager/main/*.rpm"
-
-- name: "[install_cortx_manager] : Install python36-cortx-prvsnr"
-  shell: "yum install -y {{ item }}"
-  with_fileglob:
-    - "http://cortx-storage.colo.seagate.com/releases/cortx/github/main/centos-7.8.2003/last_successful_prod/cortx_iso/python36-cortx-prvsnr-*.rpm"
-  
 - name: "[install_cortx_manager] : Get Machine ID" 
   shell: cat /etc/machine-id
   register: machineid_out

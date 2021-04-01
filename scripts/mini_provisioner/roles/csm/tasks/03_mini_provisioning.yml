@@ -1,24 +1,22 @@
 ---
 - name: "[mini_provisioning] : CSM Post Install" 
-  shell: /opt/seagate/cortx/csm/bin/csm_setup post_install --config json:///opt/seagate/cortx/csm/conf/csm.post_install.tmpl.1-node
-  register: csm_postinstall_out
-  failed_when: '"PASS" not in csm_postinstall_out.stdout'
-
+  shell: "{{ item }}" 
+  with_items:
+    - "/opt/seagate/cortx/utils/bin/utils_setup post_install --config json:///opt/seagate/cortx/utils/conf/utils.post_install.tmpl.1-node"
+    - "/opt/seagate/cortx/csm/bin/csm_setup post_install --config json:///opt/seagate/cortx/csm/conf/csm.post_install.tmpl.1-node"
+  
 - name: "[mini_provisioning] : CSM Prepare"
   shell: /opt/seagate/cortx/csm/bin/csm_setup prepare --config json:///opt/seagate/cortx/csm/conf/csm.prepare.tmpl.1-node
-  register: csm_prepare_out
-  failed_when: '"PASS" not in csm_prepare_out.stdout'
-
+  
 - name: "[mini_provisioning] : CSM Config" 
-  shell: /opt/seagate/cortx/csm/bin/csm_setup config --config json:///opt/seagate/cortx/csm/conf/csm.config.tmpl.1-node
-  register: csm_config_out
-  failed_when: '"PASS" not in csm_config_out.stdout'
+  shell: "{{ item }}"
+  with_items:
+    - "/opt/seagate/cortx/utils/bin/utils_setup config --config json:///opt/seagate/cortx/utils/conf/utils.config.tmpl.1-node"
+    - "/opt/seagate/cortx/csm/bin/csm_setup config --config json:///opt/seagate/cortx/csm/conf/csm.config.tmpl.1-node"
 
 - name: "[mini_provisioning] : CSM Init" 
   shell: /opt/seagate/cortx/csm/bin/csm_setup init --config json:///opt/seagate/cortx/csm/conf/csm.init.tmpl.1-node
-  register: csm_init_out
-  failed_when: '"PASS" not in csm_init_out.stdout'
-
+  
 - name: "[mini_provisioning] : Enable csm_agent"
   shell: systemctl enable csm_agent
 
