@@ -1,7 +1,7 @@
 pipeline {
     agent {
         node {
-            label 'docker-image-centos-7.8.2003-node'
+            label 'docker-image-build-centos-7.8'
         }
     }
     
@@ -73,18 +73,18 @@ pipeline {
 			steps {
 				script { build_stage = env.STAGE_NAME }
 				               
-                checkout changelog: false, poll: false, scm: [$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: '/mnt/docker/tmp/cortx-workspace'], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: false, recursiveSubmodules: true, reference: '', shallow: true, trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/Seagate/cortx']]]
+                checkout changelog: false, poll: false, scm: [$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: '/mnt/workspace/'], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: false, recursiveSubmodules: true, reference: '', shallow: true, trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/Seagate/cortx']]]
 
                 sh label: 'Validate Docker image', script: '''
                 if [ $ENVIRONMENT == "internal-ci" ]; then
-                    docker run --rm -v /mnt/docker/tmp/cortx-workspace:/cortx-workspace -v /mnt/docker/tmp/artifacts:/var/artifacts ghcr.io/seagate/cortx-re/cortx-build-internal:$OS_VERSION make clean build
+                    docker run --rm -v /mnt/workspace:/cortx-workspace -v /mnt/artifacts:/var/artifacts ghcr.io/seagate/cortx-re/cortx-build-internal:$OS_VERSION make clean build
                 else    
-                    docker run --rm -v /mnt/docker/tmp/cortx-workspace:/cortx-workspace -v /mnt/docker/tmp/artifacts:/var/artifacts ghcr.io/seagate/cortx-build:$OS_VERSION make clean build
+                    docker run --rm -v /mnt/workspace:/cortx-workspace -v /mnt/artifacts:/var/artifacts ghcr.io/seagate/cortx-build:$OS_VERSION make clean build
                 fi
                 echo "CORTX Packages generated..."
-                grep -w "cortx-motr\\|cortx-s3server\\|cortx-hare\\|cortx-csm_agent\\|cortx-csm_web\\|cortx-sspl\\|cortx-s3server\\|cortx-prvsnr" /mnt/docker/tmp/artifacts/0/cortx_iso/RELEASE.INFO
-                cat /mnt/docker/tmp/artifacts/0/cortx_iso/RELEASE.INFO
-                rm -rf /mnt/docker/tmp/
+                grep -w "cortx-motr\\|cortx-s3server\\|cortx-hare\\|cortx-csm_agent\\|cortx-csm_web\\|cortx-sspl\\|cortx-s3server\\|cortx-prvsnr" /mnt/artifacts/0/cortx_iso/RELEASE.INFO
+                cat /mnt/artifacts/0/cortx_iso/RELEASE.INFO
+                rm -rf /mnt/artifacts/* /mnt/workspace/*
                 '''
 			}
 		}
