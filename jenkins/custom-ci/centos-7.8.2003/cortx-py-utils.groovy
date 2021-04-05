@@ -10,12 +10,6 @@ pipeline {
 	    string(name: 'CORTX_UTILS_URL', defaultValue: 'https://github.com/Seagate/cortx-utils', description: 'Repository URL for cortx-py-utils build')
         string(name: 'CORTX_UTILS_BRANCH', defaultValue: 'stable', description: 'Branch for cortx-py-utils build')
 		string(name: 'CUSTOM_CI_BUILD_ID', defaultValue: '0', description: 'Custom CI Build Number')
-		
-		choice(
-            name: 'MOTR_BRANCH', 
-            choices: ['custom-ci', 'stable', 'Cortx-v1.0.0_Beta'],
-            description: 'Branch name to pick-up other components rpms'
-        )
 	}
 	
 
@@ -40,7 +34,7 @@ pipeline {
 		stage('Checkout py-utils') {
 			steps {
                 script { build_stage = env.STAGE_NAME }
-                checkout([$class: 'GitSCM', branches: [[name: "*/${branch}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-utils']]])
+                checkout([$class: 'GitSCM', branches: [[name: "${CORTX_UTILS_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-utils']]])
 			}
 		}
 	
