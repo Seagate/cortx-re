@@ -1,16 +1,4 @@
-
-# #######################################################################################
-# Description:
-#-------------
-#         This tasks starts bootstrap motr for I/O
-# Reference:
-#----------- 
-#         https://github.com/Seagate/cortx-motr/wiki/Motr-deployment-using-motr_setup-on-singlenode-VM
-# Steps:
-#--------
-#      1. Bootstrap hctl cluster
-#
-##########################################################################################
+# Reference : https://github.com/Seagate/cortx-motr/wiki/Motr-deployment-using-motr_setup-on-singlenode-VM#create-cdf-file
 
 # Get Hostname
 - name: "[bootstrap_cluster] : Get hostname" 
