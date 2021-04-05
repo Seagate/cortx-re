@@ -52,9 +52,15 @@ pipeline {
 				script { build_stage = env.STAGE_NAME }
 				sh label: 'Configure yum repositories', script: '''
 					set +x
-					yum-config-manager --disable cortx-C7.7.1908 motr_current_build
-					yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/$os_version/$release_tag/cortx_iso/
-					yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
+					if [ "${HARE_BRANCH}" == "cortx-1.0" ]; then
+						yum-config-manager --disable cortx-C7.7.1908
+						yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/cortx-1.0/$os_version/last_successful/
+						yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
+					else
+						yum-config-manager --disable cortx-C7.7.1908,cortx-uploads
+						yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/main/$os_version/last_successful/
+						yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
+					fi	
 					yum clean all;rm -rf /var/cache/yum
 				'''	
 
@@ -62,7 +68,7 @@ pipeline {
 					if [ "${HARE_BRANCH}" == "Cortx-v1.0.0_Beta" ]; then
 						yum install eos-core{,-devel} -y
 					else
-						yum install cortx-motr{,-devel} -y
+						yum install cortx-py-utils cortx-motr{,-devel} -y
 					fi
 				'''
 			}
