@@ -45,9 +45,9 @@ pipeline {
 						script { build_stage = env.STAGE_NAME }
 						script {
 							sh label: '', script: '''
-								sed '/baseurl/d' /etc/yum.repos.d/motr_current_build.repo
+								sed -i '/baseurl/d' /etc/yum.repos.d/motr_current_build.repo
 								echo "baseurl=http://cortx-storage.colo.seagate.com/releases/cortx/components/github/$branch/$os_version/dev/motr/last_successful/"  >> /etc/yum.repos.d/motr_current_build.repo
-								yum-config-manager --disable cortx-C7.7.1908
+								# Install cortx-py-utils from main branch
 								sed -i 's/stable/main/'  /etc/yum.repos.d/cortx.repo
 								yum clean all;rm -rf /var/cache/yum
 							'''
@@ -60,9 +60,9 @@ pipeline {
 						script { build_stage = env.STAGE_NAME }
 						script {
 							sh label: '', script: '''
-								sed '/baseurl/d' /etc/yum.repos.d/motr_current_build.repo
+								sed -i '/baseurl/d' /etc/yum.repos.d/motr_current_build.repo
 								echo "baseurl=http://cortx-storage.colo.seagate.com/releases/cortx/components/github/$branch/$os_version/dev/motr/current_build/"  >> /etc/yum.repos.d/motr_current_build.repo
-								yum-config-manager --disable cortx-C7.7.1908
+								# Install cortx-py-utils from main branch
 								sed -i 's/stable/main/'  /etc/yum.repos.d/cortx.repo
 								yum clean all;rm -rf /var/cache/yum
 							'''
