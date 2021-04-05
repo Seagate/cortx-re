@@ -64,7 +64,7 @@
 
 - name: "[mini_provisioning] : Journalctl log" 
   shell: journalctl --unit=csm_agent.service | tail -n 100
-  when: "{{ csm_agent_out.rc }} == 0"
+  when: csm_agent_out.rc != 0
 
 - name: "[mini_provisioning] : Run Sanity Test"
   shell: csm_setup test -t /opt/seagate/cortx/csm/test/plans/self_test.pln -f /opt/seagate/cortx/csm/test/test_data/args.yaml -l /tmp/csm_test -o /tmp/test.out
