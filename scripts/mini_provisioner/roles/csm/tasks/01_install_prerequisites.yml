@@ -33,8 +33,8 @@
 
 # Console Elasticsearch Journalctl log
 - name: "[install_prereq] : Elasticsearch journalctl log" 
-  shell: journalctl --unit=elasticsearch.service | tail -n 100
-  when: 'elasticsearch_status.rc != 0'
+  debug:
+    var: "{{ elasticsearch_status }}"
 
 # Update service file 
 - name: "[install_prereq] : Update consul service file"
