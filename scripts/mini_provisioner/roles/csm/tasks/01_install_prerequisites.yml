@@ -29,12 +29,12 @@
     enabled: yes
     state: started
   register: elasticsearch_status
-#  ignore_errors: true
+  ignore_errors: true
 
 # Console Elasticsearch Journalctl log
-#- name: "[install_prereq] : Elasticsearch journalctl log" 
-#  shell: journalctl --unit=elasticsearch.service | tail -n 100
-#  when: elasticsearch_status.rc != 0  
+- name: "[install_prereq] : Elasticsearch journalctl log" 
+  shell: journalctl --unit=elasticsearch.service | tail -n 100
+  when: elasticsearch_status.rc == 0  
 
 # Update service file 
 - name: "[install_prereq] : Update consul service file"
@@ -53,12 +53,12 @@
     enabled: yes
     state: restarted
   register: consul_status
-#  ignore_errors: true
+  ignore_errors: true
 
 # Console Consul Journalctl log
-#- name: "[install_prereq] : Consul journalctl log" 
-#  shell: journalctl --unit=consul.service | tail -n 100
-#  when: "{{ consul_status.rc }} != 0" 
+- name: "[install_prereq] : Consul journalctl log" 
+  shell: journalctl --unit=consul.service | tail -n 100
+  when: consul_status.rc == 0
 
 - name: "[install_prereq] : Install csm agent, csm web, cortx-py-utils, python36-cortx-prvsnr and cli"
   yum: 
