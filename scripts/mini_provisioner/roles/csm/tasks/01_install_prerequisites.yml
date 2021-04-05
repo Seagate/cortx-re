@@ -24,17 +24,14 @@
 
 # Start and enable elasticsearch
 - name: "[install_prereq] : Start elasticsearch"
-  ansible.builtin.service:
-    name: elasticsearch
-    enabled: yes
-    state: started
+  shell: systemctl restart elasticsearch
   register: elasticsearch_status
   ignore_errors: true
 
 # Console Elasticsearch Journalctl log
 - name: "[install_prereq] : Elasticsearch journalctl log" 
-  debug:
-    var: "{{ elasticsearch_status }}"
+  shell: journalctl --unit=elasticsearch.service | tail -n 100
+  when: 'elasticsearch_status.rc != 0'
 
 # Update service file 
 - name: "[install_prereq] : Update consul service file"
@@ -48,10 +45,7 @@
 
 # Restart and enable consul
 - name: "[install_prereq] : Restart Consul"
-  ansible.builtin.service:
-    name: consul
-    enabled: yes
-    state: restarted
+  shell: systemctl restart consul
   register: consul_status
   ignore_errors: true
 
