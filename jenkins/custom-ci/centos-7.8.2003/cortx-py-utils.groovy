@@ -47,7 +47,7 @@ pipeline {
 				pushd py-utils
                     if [ "${CORTX_UTILS_BRANCH}" == "cortx-1.0" ]; then
                         python3 setup.py bdist_rpm --post-install utils-post-install --pre-uninstall utils-pre-uninstall --release="${BUILD_NUMBER}_$(git rev-parse --short HEAD)"
-                    then   
+                    else   
                         python3.6 setup.py bdist_rpm --version=$version --post-install utils-post-install --post-uninstall utils-post-uninstall --post-uninstall utils-post-uninstall --release="${BUILD_NUMBER}_$(git rev-parse --short HEAD)"
                     fi    
 				popd
