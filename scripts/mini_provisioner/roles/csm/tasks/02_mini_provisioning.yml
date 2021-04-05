@@ -19,33 +19,13 @@
     - name: "[mini_provisioning] : CSM Init" 
       shell: /opt/seagate/cortx/csm/bin/csm_setup init --config json:///opt/seagate/cortx/csm/conf/csm.init.tmpl.1-node
   rescue:
-    - name: Display post_install contents
-      command: cat /opt/seagate/cortx/csm/conf/csm.post_install.tmpl.1-node
-      register: post_install_output
-
-    - name: Print post_install contents to console
-      debug: msg = "{{ post_install_output.stdout }}"
-
-    - name: Display prepare contents
-      command: cat /opt/seagate/cortx/csm/conf/csm.prepare.tmpl.1-node
-      register: prepare_output
-
-    - name: Print prepare contents to console
-      debug: msg = "{{ prepare_output.stdout }}"
-
-    - name: Display config contents
-      command: cat /opt/seagate/cortx/csm/conf/csm.config.tmpl.1-node
-      register: config_output
-
-    - name: Print config contents to console
-      debug: msg = "{{ config_output.stdout }}"
-
-    - name: Display init contents
-      command: cat /opt/seagate/cortx/csm/conf/csm.init.tmpl.1-node
-      register: init_output
-
-    - name: Print init contents to console
-      debug: msg = "{{ init_output.stdout }}"
+    - name: display config templates
+      debug: var=item
+      with_file:
+        - "/opt/seagate/cortx/csm/conf/csm.post_install.tmpl.1-node"
+        - "/opt/seagate/cortx/csm/conf/csm.prepare.tmpl.1-node"
+        - "/opt/seagate/cortx/csm/conf/csm.config.tmpl.1-node"
+        - "/opt/seagate/cortx/csm/conf/csm.init.tmpl.1-node"
 
     - name: Display logs
       shell: cat /tmp/csm_setup.log

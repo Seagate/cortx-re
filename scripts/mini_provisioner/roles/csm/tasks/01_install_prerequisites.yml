@@ -85,7 +85,6 @@
     dest: /opt/seagate/cortx/utils/conf/utils.config.tmpl.1-node
     mode: '0774'
 
----
 - name: "[install_cortx_manager] : Get Machine ID" 
   shell: cat /etc/machine-id
   register: machineid_out
