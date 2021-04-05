@@ -45,7 +45,11 @@ pipeline {
 				sh label: 'Build', script: '''
 				yum install python36-devel -y
 				pushd py-utils
-				python3.6 setup.py bdist_rpm --version=$version --post-install utils-post-install --post-uninstall utils-post-uninstall --post-uninstall utils-post-uninstall --release="${BUILD_NUMBER}_$(git rev-parse --short HEAD)"
+                    if [ "${CORTX_UTILS_BRANCH}" == "cortx-1.0" ]; then
+                        python3 setup.py bdist_rpm --post-install utils-post-install --pre-uninstall utils-pre-uninstall --release="${BUILD_NUMBER}_$(git rev-parse --short HEAD)"
+                    then   
+                        python3.6 setup.py bdist_rpm --version=$version --post-install utils-post-install --post-uninstall utils-post-uninstall --post-uninstall utils-post-uninstall --release="${BUILD_NUMBER}_$(git rev-parse --short HEAD)"
+                    fi    
 				popd
 				
 				./statsd-utils/jenkins/build.sh -v $version -b $BUILD_NUMBER
