@@ -62,6 +62,7 @@ pipeline {
 								sed '/baseurl/d' /etc/yum.repos.d/motr_current_build.repo
 								echo "baseurl=http://cortx-storage.colo.seagate.com/releases/cortx/components/github/$branch/$os_version/dev/motr/current_build/"  >> /etc/yum.repos.d/motr_current_build.repo
 								yum-config-manager --disable cortx-C7.7.1908
+								sed -i 's/stable/main/'  /etc/yum.repos.d/cortx.repo
 								yum clean all;rm -rf /var/cache/yum
 							'''
 						}
@@ -74,7 +75,7 @@ pipeline {
 			steps {
 				script { build_stage = env.STAGE_NAME }
 				sh label: '', script: '''
-					yum install cortx-motr{,-devel} -y
+					yum install cortx-py-utils cortx-motr{,-devel} -y
 				'''
 			}
 		}
