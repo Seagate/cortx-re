@@ -15,6 +15,7 @@ pipeline {
 
    	environment {
      	release_dir = "/mnt/bigstorage/releases/cortx"
+        version = "2.0.0"
 		branch = "custom-ci"
 		os_version = "centos-7.8.2003"
 		component = "hare"
