@@ -46,6 +46,8 @@ pipeline {
 		string(name: 'S3_URL', defaultValue: 'https://github.com/Seagate/cortx-s3server.git', description: 'S3Server Repository URL', trim: true)
 		string(name: 'SSPL_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for SSPL', trim: true)
 		string(name: 'SSPL_URL', defaultValue: 'https://github.com/Seagate/cortx-monitor.git', description: 'SSPL Repository URL', trim: true)
+		string(name: 'CORTX_UTILS_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX Utils', trim: true)
+		string(name: 'CORTX_UTILS_URL', defaultValue: 'https://github.com/Seagate/cortx-utils', description: 'CORTX Utils Repository URL', trim: true)
 
 		choice(
 			name: 'THIRD_PARTY_VERSION',
@@ -55,6 +57,25 @@ pipeline {
 	}
 
 	stages {
+
+		stage ("Build CORTX Utils") {
+			steps {
+				script { build_stage = env.STAGE_NAME }
+				script {
+					try {
+						def cortx_utils_build = build job: 'custom-cortx-py-utils', wait: true,
+										parameters: [
+											string(name: 'CORTX_UTILS_URL', value: "${CORTX_UTILS_URL}"),
+											string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}"),
+											string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}")
+										]
+					} catch (err) {
+						build_stage = env.STAGE_NAME
+						error "Failed to Build CORTX Utils"
+					}
+				}                        
+			}
+		}	
 
 		stage ("Trigger Component Jobs") {
 			parallel {
@@ -328,7 +349,7 @@ pipeline {
 
                 sh label: 'Build MANIFEST', script: """
 					pushd scripts/release_support
-						sh build_release_info.sh -v $version -b $integration_dir/$release_tag/cortx_iso/ -t $integration_dir/$release_tag/3rd_party
+						sh build_release_info.sh -b $branch -v $version -l $integration_dir/$release_tag/cortx_iso/ -t $integration_dir/$release_tag/3rd_party
 						sh build_readme.sh $integration_dir/$release_tag
 					popd
 					
