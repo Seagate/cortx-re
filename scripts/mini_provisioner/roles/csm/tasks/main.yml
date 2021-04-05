@@ -16,9 +16,12 @@
 - include: 01_install_prerequisites.yml
   tags: ['01_PREREQ']
 
-- include: 02_install_cortx_manager.yml
-  tags: ['02_INSTALL_CORTX_MANAGER']
+- include: 02_mini_provisioning.yml
+  tags: ['02_MINI_PROV']
 
-- include: 03_mini_provisioning.yml
-  tags: ['03_MINI_PROV']  
+- include: 03_start_csm.yml
+  tags: ['03_START_CSM']  
+
+- include: 04_validate.yml
+  tags: ['04_VALIDATE'] 
 

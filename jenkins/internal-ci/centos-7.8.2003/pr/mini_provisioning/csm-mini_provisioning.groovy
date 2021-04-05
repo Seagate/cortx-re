@@ -218,7 +218,7 @@ pipeline {
                             checkout([$class: 'GitSCM', branches: [[name: '*/mini-provisioner-dev']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 1, honorRefspec: true, noTags: true, reference: '', shallow: true], [$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
                         }
 
-                        runAnsible("00_PREP_ENV, 01_PREREQ, 02_INSTALL_CORTX_MANAGER, 03_MINI_PROV")
+                        runAnsible("00_PREP_ENV, 01_PREREQ, 02_MINI_PROV, 03_START_CSM, 04_VALIDATE")
 
                     }
 
