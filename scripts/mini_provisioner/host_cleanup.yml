@@ -1,0 +1,6 @@
+- name: Host Cleanup
+  hosts: srvnode-1
+  become: true
+  vars_files: roles/host_cleanup/vars/config.yml 
+  roles:
+    - role: host_cleanup

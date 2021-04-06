@@ -19,6 +19,7 @@ pipeline {
         NODE_DEFAULT_SSH_CRED = credentials("${NODE_DEFAULT_SSH_CRED}")
         NODE_USER = "${NODE_DEFAULT_SSH_CRED_USR}"
         NODE_PASS = "${NODE_DEFAULT_SSH_CRED_PSW}"
+        CLUSTER_PASS = "${NODE_DEFAULT_SSH_CRED_PSW}"
     }
 
     options {
@@ -30,102 +31,81 @@ pipeline {
 
     
     stages {
-        
-        stage("SSH Connectivity Check") {
+        stage ('Checkout Scripts') {
             steps {
                 script {
-                    def remoteHost = getTestMachine("${NODE1_HOST}", "${NODE_USER}", "${NODE_PASS}")
-                    sshCommand remote: remoteHost, command: "exit"
-                    echo "Successfully connected to VM ${env.NODE_NAME}!"
-                }
-            }    
-        }
-        stage("Teardown of Cortx Stack!") {
-            steps {
-                script {
-                    def remoteHost = getTestMachine("${NODE1_HOST}", "${NODE_USER}", "${NODE_PASS}")
-                    sshCommand remote: remoteHost, command: """
-                        /opt/seagate/cortx/provisioner/cli/destroy-vm --ctrlpath-states --iopath-states --prereq-states --system-states --ha-states || true
-                    """
-                    echo "Successfully teardown of Cortx Stack!"
+                    
+                    // Add badget to jenkins build
+                    manager.addHtmlBadge("&emsp;<b>Host :</b><a href='${JENKINS_URL}/computer/${env.NODE_NAME}'> ${env.NODE_NAME}</a>")
+
+                    // Clone cortx-re repo
+                    dir('cortx-re') {
+                        checkout([$class: 'GitSCM', branches: [[name: '*/cortx-stack-cleanup-job']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])                
+                    }
+
                 }
             }
         }
-        stage("Stop Salt services") {
+        stage('Cleanup Node') {
             steps {
-                script {
-                    def remoteHost = getTestMachine("${NODE1_HOST}", "${NODE_USER}", "${NODE_PASS}")
-                    sshCommand remote: remoteHost, command: """
-                        systemctl status glustersharedstorage >/dev/null && systemctl stop glustersharedstorage || true
-                        systemctl status glusterfsd >/dev/null && systemctl stop glusterfsd || true
-                        systemctl status glusterd >/dev/null && systemctl stop glusterd || true
-                        systemctl status salt-minion >/dev/null && systemctl stop salt-minion || true
-                        systemctl status salt-master >/dev/null && systemctl stop salt-master || true
-                    """
-                    echo "Sucessfully stopped salt and gluster services"
+                retry(count: 2) {   
+                    script {
+                        
+                        withCredentials([usernamePassword(credentialsId: "${NODE_UN_PASS_CRED_ID}", passwordVariable: 'SERVICE_PASS', usernameVariable: 'SERVICE_USER'), usernameColonPassword(credentialsId: "${CLOUDFORM_TOKEN_CRED_ID}", variable: 'CLOUDFORM_API_CRED')]) {
+                            dir("cortx-re/scripts/mini_provisioner") {
+                                ansiblePlaybook(
+                                    playbook: 'host_cleanup.yml',
+                                    inventory: 'inventories/hosts',
+                                    extraVars: [
+                                        "NODE1"                 : [value: "${NODE1_HOST}", hidden: false],
+                                        "CLUSTER_PASS"          : [value: "${CLUSTER_PASS}", hidden: false],
+                                        "SERVICE_USER"          : [value: "${SERVICE_USER}", hidden: true],
+                                        "SERVICE_PASS"          : [value: "${SERVICE_PASS}", hidden: true]
+                                    ],
+                                    extras: '-v',
+                                    colorized: true
+                                )
+                            }                        
+                        }
+
+                        def remoteHost = getTestMachine("${NODE1_HOST}", "${NODE_USER}", "${NODE_PASS}")
+
+                        // Validate Cleanup
+                        sshCommand remote: remoteHost, command: '''
+                            set +x
+                            if [[ ! $(ls -1 '/root') ]]; then
+                                echo "[ reimage_validation ] : OK - No Files in '/root' location";
+                            else 
+                                echo "[ reimage_validation ] : NOT_OK - Files found in /root";
+                                exit 1
+                            fi
+                            for folder in "/var/log/seagate" "/opt/seagate";
+                            do
+                                if [[ ! -d "${folder}" ]]; then
+                                    echo "[ reimage_validation ] : OK - Folder does not exists ( ${folder} )";
+                                else 
+                                    echo "[ reimage_validation ] : NOT_OK - Folder exists ${folder}";
+                                    exit 1
+                                fi
+                            done
+                            if [[ ! $(yum list installed | grep "cortx") ]]; then
+                                echo "[ reimage_validation ] : OK - No cortx component get installed";
+                            else
+                                echo "[ reimage_validation ] : NOT_OK - cortx component already installed";
+                                exit 1
+                            fi 
+                        '''
+                    }
                 }
             }
-        }
-        stage("Uninstall rpms") {
-            steps {
-                script {
-                    def remoteHost = getTestMachine("${NODE1_HOST}", "${NODE_USER}", "${NODE_PASS}")
-                    sshCommand remote: remoteHost, command: """
-                        yum erase -y cortx-prvsnr cortx-prvsnr-cli      # Cortx Provisioner packages
-                        yum erase -y gluster-fuse gluster-server        # Gluster FS packages
-                        yum erase -y salt-minion salt-master salt-api   # Salt packages
-                        yum erase -y python36-m2crypto                  # Salt dependency
-                        yum erase -y python36-cortx-prvsnr              # Cortx Provisioner API packages
-                        # Brute clean for any cortx rpm packages
-                        yum erase -y *cortx*
-                        # Re-condition yum db
-                        yum autoremove -y
-                        yum clean all
-                        rm -rf /var/cache/yum
-                        # Remove cortx-py-utils
-                        pip3 uninstall -y cortx-py-utils
-                        # Cleanup pip packages
-                        pip3 freeze|xargs pip3 uninstall -y
-                        # Cleanup pip config
-                        test -e /etc/pip.conf && rm -f /etc/pip.conf
-                        rm -rf ~/.cache/pip
-                    """
-                    echo "Successfully uninstalled rpms"
-                }
-            }
-        }
-        stage("Cleanup bricks and other directories") {
-            steps {
-                script {
-                    def remoteHost = getTestMachine("${NODE1_HOST}", "${NODE_USER}", "${NODE_PASS}")
-                    sshCommand remote: remoteHost, command: """
-                        # Cortx software dirs
-                        rm -rf /opt/seagate/cortx
-                        rm -rf /opt/seagate/cortx_configs
-                        rm -rf /opt/seagate
-                        # Bricks cleanup
-                        test -e /var/lib/seagate && rm -rf /var/lib/seagate || true
-                        test -e /srv/glusterfs && rm -rf /srv/glusterfs || true
-                        # Cleanup Salt
-                        test -e /var/cache/salt && rm -rf /var/cache/salt || true
-                        test -e /etc/salt && rm -rf /etc/salt || true
-                        # Cleanup Provisioner profile directory
-                        test -e /opt/isos && rm -rf /opt/isos || true
-                        test -e /root/.provisioner && rm -rf /root/.provisioner || true
-                        test -e /etc/yum.repos.d/RELEASE_FACTORY.INFO && rm -f /etc/yum.repos.d/RELEASE_FACTORY.INFO || true
-                        test -e /root/.ssh && rm -rf /root/.ssh || true
-                    """
-                    echo "Successfully removed!"
-                }
-            }
-        }
+        }    
     }
 
     post {
         failure {
             script {
                 // On cleanup failure take node offline
-                markNodeOffline(" VM Re-Image Issue  - Automated offline")
+                markNodeOffline(" VM Clean-Up Issue  - Automated offline")
             }
         }
         success {
