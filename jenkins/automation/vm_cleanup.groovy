@@ -115,7 +115,7 @@ pipeline {
         failure {
             script {
                 // On cleanup failure take node offline
-                markNodeOffline(" VM Re-Image Issue  - Automated offline")
+                markNodeOffline(" VM Re-Image Issue  - Automated offline , Ref : ${BUILD_URL}")
             }
         }
         success {
