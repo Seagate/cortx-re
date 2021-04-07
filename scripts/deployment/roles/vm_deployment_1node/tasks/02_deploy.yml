@@ -4,8 +4,12 @@
   script: files/cortx_deploy.sh {{ BUILD_URL }} {{ NODE1 }} '{{ CLUSTER_PASS }}'
   ignore_errors: true
 
-- name: "[validate] : Get installed rpm info"
+- name: "[validate] : Get installed rpm package info"
   shell: yum list installed | grep 'cortx' 2>&1 | tee -a /root/installed_cortx_rpm_list.log
+  ignore_errors: true
+
+- name: "[validate] : Get installed pip package info"
+  shell: pip3 freeze | tee -a /root/installed_pip_packages_list.log
   ignore_errors: true
 
 - name: "[validate] : Validate Deployment"

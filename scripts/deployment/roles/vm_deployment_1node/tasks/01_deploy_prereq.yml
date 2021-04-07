@@ -10,15 +10,9 @@
     dest: /root/config.ini
     mode: '0754'
 
-- name: "[deploy_prereq] : Install Git, sshpass on primary node"
-  yum:
-    name: [ 'git', 'sshpass' ]
-    state: latest
-    update_cache: yes
-
 - name: "[deploy_prereq] : Install RE pre-req"
   shell: "curl -s -L http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rpm/install-cortx-prereq.sh | bash"
 
 - name: "[deploy_prereq] : Deploy cluster prereq"
-  script: files/cortx_deploy_prereq.sh {{ BUILD_URL }} {{ NODE1 }} '{{ CLUSTER_PASS }}'
+  script: files/cortx_deploy_prereq.sh {{ BUILD_URL }}
 
