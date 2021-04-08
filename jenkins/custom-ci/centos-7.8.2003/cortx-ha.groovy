@@ -72,8 +72,12 @@ EOF
 				sh label: '', script: '''
 					if [ "$version" == "1.0.0" ]; then
 						yum-config-manager --disable cortx-C7.7.1908
+						yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/cortx-1.0/$os_version/last_successful/
 					fi	
 
+					yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/$os_version/$release_tag/cortx_iso/
+					yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
+					
 					pushd $component
 						yum erase python36-PyYAML -y
 						bash jenkins/cicd/cortx-ha-dep.sh
