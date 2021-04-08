@@ -39,7 +39,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
 				sh label: 'Build', script: '''
 				yum install python36-devel -y
-				./py-utils/jenkins/build.sh -v $version -b $BUILD_NUMBER
+				./jenkins/build.sh -v $version -b $BUILD_NUMBER
 				./statsd-utils/jenkins/build.sh -v $version -b $BUILD_NUMBER
 	        '''	
 			}
