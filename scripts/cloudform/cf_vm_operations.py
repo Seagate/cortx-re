@@ -91,6 +91,7 @@ class VMOperations:
 
     Methods
     -------
+    create_vm(): Create the SSC VM for the given service template
     get_vm_info(): Get the information about the VM
     retire_service(): Retires given service
     retire_vm(): Retires the given VM
