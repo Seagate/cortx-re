@@ -51,7 +51,7 @@ pipeline {
 				sh label: '', script: '''
 				echo "VERSION: $version"
 				if [ "$version" != "1.0.0" ]; then
-				yum erase python36-PyYAML -y
+					yum erase python36-PyYAML -y
 				cat <<EOF >>/etc/pip.conf
 [global]
 timeout: 60
