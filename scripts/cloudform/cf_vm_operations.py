@@ -66,9 +66,12 @@ def get_args():
     # Create the parser
     parser = argparse.ArgumentParser()
     # Add the arguments
-    parser.add_argument('--action', '-a', required=True, help="Perform the Operation")
+    parser.add_argument('--action', '-a', choices=['create_vm', 'list_vm_snaps', 'revert_vm_snap',
+                                                   'retire_vm', 'get_vm_info'], required=True,
+                        help="Perform the Operation")
     parser.add_argument('--token', '-t', help="Token for API Authentication")
-    parser.add_argument('--fqdn', '-f', default="ssc-cloud.colo.seagate.com", help="SSC hostname")
+    parser.add_argument('--fqdn', '-f', choices=['ssc-cloud.colo.seagate.com'],
+                        default="ssc-cloud.colo.seagate.com", help="SSC hostname")
     parser.add_argument('--service_template', '-s', help="Service Template ID for VM creation")
     parser.add_argument('--service_id', '-i', help="Service Template ID for VM creation")
     parser.add_argument('--host', '-v', help="SSC VM name")
@@ -110,7 +113,7 @@ class VMOperations:
         self.session = requests_retry_session(session=requests.Session())
 
         if not parameters.token:
-            _url = 'https://ssc-cloud.colo.seagate.com/api/auth'
+            _url = 'https://%s/api/auth' % parameters.fqdn
             _response = self.session.get(_url, auth=HTTPBasicAuth(parameters.user, parameters.password), verify=False)
             self.args.token = _response.json()['auth_token']
 
