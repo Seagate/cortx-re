@@ -3,13 +3,14 @@ pipeline {
     agent {
         node {
             // This job runs on vm deployment controller node to execute vm cleanup for the deployment configured host
-            label "${NODE_LABEL} && cleanup_req"
+            label "vm_deployment_1n_user_host"
         }
     }
 	
     // Accept node label as parameter
     parameters {
-        string(name: 'NODE_LABEL', defaultValue: 'cleanup_req', description: 'Node Label',  trim: true)
+        string(name: 'HOST', description: 'Host FQDN',  trim: true)
+        password(name: 'HOST_PASS', description: 'Host machine root user password')
     }
 
 	environment {
@@ -18,8 +19,8 @@ pipeline {
         // Credentials used to SSH node
         NODE_DEFAULT_SSH_CRED = credentials("${NODE_DEFAULT_SSH_CRED}")
         NODE_USER = "${NODE_DEFAULT_SSH_CRED_USR}"
-        NODE_PASS = "${NODE_DEFAULT_SSH_CRED_PSW}"
-        CLUSTER_PASS = "${NODE_DEFAULT_SSH_CRED_PSW}"
+        NODE1_HOST = "${HOST}"
+        NODE_PASS = "${HOST_PASS}"
     }
 
     options {
@@ -40,7 +41,7 @@ pipeline {
 
                     // Clone cortx-re repo
                     dir('cortx-re') {
-                        checkout([$class: 'GitSCM', branches: [[name: '*/cortx-stack-cleanup-job']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])                
+                        checkout([$class: 'GitSCM', branches: [[name: '*/cortx-stack-cleanup-job']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/gauravchaudhari02/cortx-re.git']]])                
                     }
 
                 }
@@ -58,9 +59,7 @@ pipeline {
                                     inventory: 'inventories/hosts',
                                     extraVars: [
                                         "NODE1"                 : [value: "${NODE1_HOST}", hidden: false],
-                                        "CLUSTER_PASS"          : [value: "${CLUSTER_PASS}", hidden: false],
-                                        "SERVICE_USER"          : [value: "${SERVICE_USER}", hidden: true],
-                                        "SERVICE_PASS"          : [value: "${SERVICE_PASS}", hidden: true]
+                                        "CLUSTER_PASS"          : [value: "${NODE_PASS}", hidden: false]
                                     ],
                                     extras: '-v',
                                     colorized: true
