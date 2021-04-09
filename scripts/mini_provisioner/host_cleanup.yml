@@ -1,5 +1,4 @@
 ---
----
 - name: Prepare Environment
   hosts: localhost
   become: true
