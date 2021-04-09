@@ -1,3 +1,13 @@
+---
+---
+- name: Prepare Environment
+  hosts: localhost
+  become: true
+  gather_facts: True
+  roles:
+    - role: 00_prepare_environment
+      tags: ['00_PREP_ENV']
+
 - name: Host Cleanup
   hosts: srvnode-1
   become: true
