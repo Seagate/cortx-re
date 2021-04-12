@@ -1,82 +1,23 @@
 # #######################################################################################
 # Description:
 #-------------
-#         This tasks starts pyutils  deployment
+#         This tasks starts Utils deployment
 # Reference:
-#----------- 
+#-----------
 #         https://github.com/Seagate/cortx-utils/wiki/%22cortx-py-utils%22-single-node-manual-provisioning
 # Steps:
 #--------
-#      1. Pre-Requisites Installation
-#      2. Install cortx-py-utils rpm
-#      3. cortx-py-utils mini Provisioning
+#      1. Install Utils
+#      2. Execute Mini Provisioning
+#      3. Validate Deployment
 ##########################################################################################
 
-- name: "[mini_provisioning] : Validate the required input arguments for this playbook"
-  fail: msg="Variable '{{ item }}' is not defined"
-  when: item not in vars
-  with_items: "{{ REQUIRED_VARS }}"
+- include: 01_install_prerequisites.yml
+  tags: ['01_PREREQ']
 
-# Add yum repositories
-- name: "[mini_provisioning] : Copy yum repo"
-  template:
-    src: cortx.repo.j2
-    dest: /etc/yum.repos.d/cortx.repo
-  
-# Refresh yum repo
-- name: "[mini_provisioning] : Refresh yum repos"
-  shell: yum clean all
-  
-# Install py-utils req
-- name: "[mini_provisioning] : Install gcc & python3-devel"
-  shell: yum install -y gcc python3-devel
+- include: 02_mini_provisioning.yml
+  tags: ['02_MINI_PROV']
 
-# Install py-utils req
-- name: "[install_prereq] : Install py-utils dependencies"
-  shell:  pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/main/py-utils/requirements.txt
+- include: 03_validate.yml
+  tags: ['03_VALIDATE']
 
-# Install elasticsearch and consul
-- name: "[mini_provisioning] : Download & Install Kafka"
-  script: files/install_kafka.sh
-
-  # Create Dir
-- name: "[mini_provisioning] : Install Kafka"
-  shell: "mkdir -p /etc/cortx"
-
-# Install "cortx-cli"
-- name: "[mini_provisioning] : Install Py-Utils"
-  yum: 
-    name: ["cortx-py-utils"]
-    state: present
-
-# Get Machine ID
-- name: "[mini_provisioning] : Get Machine ID" 
-  shell: cat /etc/machine-id
-  register: machineid_out
-
-# Get IP Address
-- name: "[mini_provisioning] : Get Ipaddress" 
-  shell: hostname -I | cut -d' ' -f1 | xargs
-  register: ipaddress_out
-
-- set_fact:
-    MACHINE_ID: "{{ machineid_out.stdout }}"
-    IP_ADDRESS: "{{ ipaddress_out.stdout }}"
-
-# Create confstore.json in deployment node
-- name: "[mini_provisioning] : Copy confstore json file"
-  template:
-    src: confstore.json.j2
-    dest: /root/confstore.json
-
-# Update Py-Utils:Post_Install
-- name: "[mini_provisioning] : Py-Utils Post Install" 
-  shell: "/opt/seagate/cortx/utils/bin/utils_setup post_install --config json:///root/confstore.json"
-
-# Execute Py-Utils:Config
-- name: "[mini_provisioning] : Py-Utils Config" 
-  shell: "/opt/seagate/cortx/utils/bin/utils_setup config --config json:///root/confstore.json"
-
-# Execute Py-Utils:Test
-- name: "[mini_provisioning] : Py-Utils Test" 
-  shell: "/opt/seagate/cortx/utils/bin/utils_setup test --config json:///root/confstore.json"

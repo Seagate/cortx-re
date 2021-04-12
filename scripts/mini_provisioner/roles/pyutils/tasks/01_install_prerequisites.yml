@@ -1,0 +1,66 @@
+# #######################################################################################
+# Description:
+#-------------
+#         This tasks starts pyutils  deployment
+# Reference:
+#-----------
+#         https://github.com/Seagate/cortx-utils/wiki/%22cortx-py-utils%22-single-node-manual-provisioning
+# Steps:
+#--------
+#      1. Pre-Requisites Installation
+#      2. Install cortx-py-utils rpm
+#      3. cortx-py-utils mini Provisioning
+##########################################################################################
+
+- name: "[mini_provisioning] : Validate the required input arguments for this playbook"
+  fail: msg="Variable '{{ item }}' is not defined"
+  when: item not in vars
+  with_items: "{{ REQUIRED_VARS }}"
+
+# Add yum repositories
+- name: "[mini_provisioning] : Copy yum repo"
+  template:
+    src: cortx.repo.j2
+    dest: /etc/yum.repos.d/cortx.repo
+
+# Refresh yum repo
+- name: "[mini_provisioning] : Refresh yum repos"
+  shell: yum clean all
+
+# Install py-utils req
+- name: "[mini_provisioning] : Install gcc & python3-devel"
+  shell: yum install -y gcc python3-devel
+
+# Install py-utils req
+- name: "[install_prereq] : Install py-utils dependencies"
+  shell:  pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/main/py-utils/requirements.txt
+
+# Install elasticsearch and consul
+- name: "[mini_provisioning] : Download & Install Kafka"
+  script: files/install_kafka.sh
+
+  # Create Dir
+- name: "[mini_provisioning] : Install Kafka"
+  shell: "mkdir -p /etc/cortx"
+
+# Install "cortx-cli"
+- name: "[mini_provisioning] : Install Py-Utils"
+  yum:
+    name: ["cortx-py-utils"]
+    state: present
+
+- name: "[Pre-Requisites] : Copy utils post install config"
+  file:
+    path: /tmp/utils.post_install.tmpl.1-node
+    state: touch
+
+- name: "[install_prereq] : Copy utils config"
+  ansible.builtin.template:
+    src: utils_config.j2
+    dest: /tmp/utils.config.tmpl.1-node
+    mode: '0774'
+
+- name: "[Pre-Requisites] : Copy utils test config file"
+  file:
+    path: /tmp/utils.test.tmpl.1-node
+    state: touch
