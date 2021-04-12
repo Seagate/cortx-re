@@ -1,0 +1,76 @@
+# #######################################################################################
+# Description:
+#-------------
+#         This tasks deploys sspl on single node
+# Reference:
+#----------- 
+#         https://github.com/Seagate/cortx-monitor/wiki/LR2:-SSPL-Self-Provisioning
+# Steps:
+#--------
+#      1. Install build tools
+#      2. Download deploy wrapper script
+#      3. Cleanup old installation
+#      4. Setup yum repo for dependency installation
+#      5. Deploy SSPL
+#      6. Validate Deployment
+##########################################################################################
+
+- name: "[sspl_miniprovisionig] : Validate the required input arguments for this playbook"
+  fail: msg="Variable '{{ item }}' is not defined"
+  when: item not in vars
+  with_items: "{{ REQUIRED_VARS }}"
+
+- name: "[mini_provisioning] : Install RE pre-req"
+  shell: "curl -s -L http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rpm/install-cortx-prereq.sh | bash"
+
+# Install build tools
+- name: "[sspl_miniprovisionig] : Install build tools"
+  yum: 
+    name: [ "rpm-build", "gcc", "openssl-devel", "graphviz", "python-pep8", "python36-devel", "libffi-devel" ]
+    state: present
+
+# Download deploy wrapper
+- name: "[sspl_miniprovisionig] : Download deploy wrapper script"
+  get_url:
+    url: "{{ CORTX_MONITOR_BASE_URL }}/low-level/files/opt/seagate/sspl/setup/sspl_dev_deploy"
+    dest: /root/sspl_dev_deploy
+    mode: '0755'
+
+# Cleanup old installation
+- name: "[sspl_miniprovisionig] : Cleanup sspl rpm - Tmp fix" 
+  shell: yum --setopt=tsflags=noscripts erase -y  cortx-sspl.noarch
+
+# Cleanup old installation
+- name: "[sspl_miniprovisionig] : Cleanup old installation" 
+  shell: python3 /root/sspl_dev_deploy --cleanup
+
+# Setup yum repo
+- name: "[sspl_miniprovisionig] : Setup yum repo for dependency installation" 
+  shell: python3 /root/sspl_dev_deploy --setup_repo
+
+# Deploy SSPL
+- name: "[sspl_miniprovisionig] : Deploy SSPL" 
+  shell: python3 /root/sspl_dev_deploy -L /root/SSPL_RPMS -St 5u84 -Sr physical --standalone_installation
+  register: deploy_result
+  failed_when:
+      - deploy_result.rc != 0
+
+# Validate SSPL Deployment
+- name: "[sspl_miniprovisionig] : Validate deployment" 
+  script: /opt/seagate/cortx/sspl/bin/sspl_setup test --config yaml:///opt/seagate/cortx/sspl/conf/sample_global_cortx_config.yaml --plan sanity 2>&1 | tee -a /root/sspl_sanity_console_log.txt
+  register: sanity_execution
+  failed_when:
+      - sanity_execution.rc != 0
+
+# Copy Test Results
+- name: "[sspl_miniprovisionig] : Copy Test Results" 
+  copy:
+    src: /tmp/sspl_test_result.html
+    dest: /root/sspl_test_result.html
+  
+# Validate Test Results
+- name: "[sspl_miniprovisionig] : Validate Test Results" 
+  command: "grep -q 'Overall Status: Passed' /root/sspl_test_result.html"
+  register: sanity_test_result
+  failed_when:
+      - sanity_test_result.rc != 0

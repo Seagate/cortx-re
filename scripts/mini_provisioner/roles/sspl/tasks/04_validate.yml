@@ -1,0 +1,28 @@
+# Reference : https://github.com/Seagate/cortx-monitor/wiki/Cortx-monitor-single-node-VM-provisioning-manual:-Manual#sspltest
+
+- name: "[ Validate ] : Get service facts"
+  service_facts:
+  no_log: True
+
+- name: "[ Validate ] :  Validate  all the expected services [slapd, haproxy, s3authserver] are up & running"
+  fail: msg="Service '{{ item }}' not running"
+  when: ansible_facts.services['{{ item }}'].state != "running"
+  with_items:
+    - slapd.service
+    - haproxy.service
+    - s3authserver.service
+
+- name: "[ Validate ] : Wait for service to start"
+  command: "systemctl status sspl-ll"
+  register: sspl_status
+  until:
+    - "'[started]  sspl-ll' in sspl_status.stdout"
+  retries: 20
+  delay: 30
+
+- name: "[ Validate ] : SSPL Sanity Test" 
+  shell: /opt/seagate/cortx/sspl/bin/sspl_setup test --config "yaml:///opt/seagate/cortx/sspl/conf/sample_global_cortx_config.yaml" --plan sanity
+  register: sspl_mini_test
+
+- debug: var=sspl_mini_test
+#  failed_when: '"PASS: S3-Sanity test passed" not in s3_mini_test.stdout'
