@@ -67,3 +67,4 @@ systemd-python36 == 1.0.0
 sysvinit-tools
 udisks2 == 2.8.4
 yaml-cpp
+gcc
