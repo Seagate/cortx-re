@@ -68,9 +68,7 @@ pipeline {
                     def remote = getTestMachine(VM_FQDN)
                     def commandResult = sshCommand remote: remote, command: """
                         echo "Clean up VM before use"
-                        yum remove cortx-hare -y
-                        yum remove cortx-motr{,-devel} -y
-                        yum remove consul -y
+                        yum remove cortx-hare cortx-motr{,-devel} consul -y 
                         rm -rf /var/crash/* /var/log/seagate/* /var/log/hare/* /var/log/motr/* /var/lib/hare/* /var/motr/* /etc/motr/*
                         rm -rf /root/.cache/dhall* /root/rpmbuild
                         """
