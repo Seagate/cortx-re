@@ -34,6 +34,12 @@ mkdir -p $RPM_BUILD_ROOT/var/log/kafka
 %clean
 rm -rf $RPM_BUILD_ROOT
 
+%pre
+/usr/bin/getent group kafka >/dev/null || /usr/sbin/groupadd -r kafka
+if ! /usr/bin/getent passwd kafka >/dev/null ; then
+    /usr/sbin/useradd -r -g kafka -m -d %{_prefix}/kafka -s /bin/bash -c "Kafka" kafka
+fi
+
 %files
 %defattr(-,root,root)
 %attr(0755,kafka,kafka) %dir /opt/kafka
