@@ -1,51 +1,29 @@
-# #######################################################################################
-# Description:
-#-------------
-#         This tasks performs all prerequisites steps required for hare mini provisioning
-# Reference:
-#----------- 
-#         https://github.com/Seagate/cortx-hare/wiki/Hare-provisioning
-# Steps:
-#--------
-#      1. Install cortx-py-utils    
-#      2. Install cortx-motr
-#      3. Install S3server (optional)
-#      4. Install cortx-prvsnr (optional)
-#      5. Install Hare
-##########################################################################################
+# Reference : https://github.com/Seagate/cortx-hare/wiki/Hare-provisioning-for-single-node-deployment
 
-- name: "[install_prereq] : Validate the required input arguments for this playbook"
+# Validate required parameters are exists
+- name: "[Pre requisites] : Validate the required input arguments for this playbook"
   fail: msg="Variable '{{ item }}' is not defined"
   when: item not in vars
   with_items: "{{ REQUIRED_VARS }}"
   
 # Add yum repositories
-- name: "[install_prereq] : Copy yum repo"
+- name: "[Pre requisites] : Copy yum repo"
   template:
     src: cortx.repo.j2
     dest: /etc/yum.repos.d/cortx.repo
-  
-# Install py-utils req
-- name: "[mini_provisioning] : Install gcc & python3-devel"
-  shell: yum install -y gcc python3-devel
 
-# Install py-utils req
-- name: "[install_prereq] : Install py-utils dependencies"
-  shell:  pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/main/py-utils/requirements.txt
-
-# Install consul
-- name: "[start_s3server] : Install consul-1.9.1"
-  shell: "yum install -y consul-1.9.1"
+- name: "[Pre-Requisites] :1. Install third-party packages" 
+  shell: curl -s http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rpm/install-cortx-prereq.sh | bash -s -- -b {{ CORTX_BUILD }}
 
 # Install dependent coponents
-- name: "[install_prereq] : Install dependent rpm, cortx-py-utils, cortx-motr and cortx-hare"
+- name: "[Pre requisites] : Install dependent rpm, cortx-py-utils, cortx-motr and cortx-hare"
   yum: 
     name: [ "cortx-py-utils", "cortx-motr", "cortx-motr-devel", "cortx-s3server", "cortx-prvsnr", "cortx-hare" ]
     state: present
 
 ################### Motr Pre-req #################################
 # Configure lnet
-- name: "[install_prereq] : Copy lnet conf"
+- name: "[Pre requisites] : Copy lnet conf"
   copy:
       src: files/lnet.conf
       dest: /etc/modprobe.d/lnet.conf
@@ -54,27 +32,107 @@
       mode: '0755'
 
 # Start Lnet
-- name: "[install_prereq] : Start lnet"
+- name: "[Pre requisites] : Start lnet"
   ansible.builtin.service:
     name: lnet
     state: restarted
 
 ########################  S3server Pre-req ############################
-# Install rabitmq server
-- name: "[install_prereq] : Install rabbitmq-server"
-  yum: 
-    name: rabbitmq-server
-    state: present
-
-# Start rabitmq server
-- name: "[install_prereq] : Start/Enable rabitmq server"
-  service:
-    name: rabbitmq-server
-    state: started
-    enabled: yes
 
 # Install haproxy
-- name: "[install_prereq] : Install haproxy"
+- name: "[Pre requisites] : Install haproxy"
   yum: 
     name: haproxy
-    state: present
+    state: present  
+
+- name: "[Pre-Requisites] : Get Machine-ID of the VM" 
+  shell: cat /etc/machine-id
+  register: machineid
+
+- name: "[Pre-Requisites] : Get FQDN of the VM" 
+  shell: hostname
+  register: hostname
+
+- name: "[Pre-Requisites] : Get Cluster-ID" 
+  shell:  cat /opt/seagate/cortx/s3/s3backgrounddelete/s3_cluster.yaml | grep 'cluster_id:' | cut -d '"' -f2
+  register: cluster_id
+
+- set_fact:
+    HOSTNAME: "{{ hostname.stdout }}"
+    CLUSTER_ID: "{{ cluster_id.stdout }}"
+    MACHINE_ID: "{{ machineid.stdout }}"
+
+- name: "[Pre-Requisites] : Change data device count in hare.config.conf.tmpl.1-node" 
+  shell: sed -i '/"TMPL_DATA_DEVICE_2"/d ; s/"TMPL_DATA_DEVICE_1",/"TMPL_DATA_DEVICE_1"/g' /opt/seagate/cortx/hare/conf/hare.config.conf.tmpl.1-node
+
+- name: "[Pre-Requisites] : Change data device count hare.init.conf.tmpl.1-node" 
+  shell:  sed -i '/"TMPL_DATA_DEVICE_2"/d ; s/"TMPL_DATA_DEVICE_1",/"TMPL_DATA_DEVICE_1"/g' /opt/seagate/cortx/hare/conf/hare.init.conf.tmpl.1-node
+
+- name: "[Pre-Requisites] : Change data device count hare.test.conf.tmpl.1-node" 
+  shell:  sed -i '/"TMPL_DATA_DEVICE_2"/d ; s/"TMPL_DATA_DEVICE_1",/"TMPL_DATA_DEVICE_1"/g' /opt/seagate/cortx/hare/conf/hare.test.conf.tmpl.1-node
+
+- name: "[Pre requisites] : Update config template"
+  ansible.builtin.replace:
+    path: /opt/seagate/cortx/hare/conf/hare.config.conf.tmpl.1-node
+    regexp: "{{ item.tempval }}"
+    replace: "{{ item.val }}"
+  with_items:  
+    - { tempval: "TMPL_CLUSTER_ID", val: "{{ CLUSTER_ID }}" }
+    - { tempval: "TMPL_STORAGESET_COUNT", val: "1" }
+    - { tempval: "TMPL_DATA_UNITS_COUNT", val: "1" }
+    - { tempval: "TMPL_PARITY_UNITS_COUNT", val: "0" }
+    - { tempval: "TMPL_SPARE_UNITS_COUNT", val: "0" }
+    - { tempval: "TMPL_STORAGESET_NAME", val: "storage-set-1" }  
+    - { tempval: "TMPL_MACHINE_ID", val: "{{ MACHINE_ID }}" }  
+    - { tempval: "TMPL_HOSTNAME", val: "{{ HOSTNAME }}" }  
+    - { tempval: "TMPL_SERVER_NODE_NAME", val: "srvnode-1" }  
+    - { tempval: "TMPL_DATA_INTERFACE_TYPE", val: "tcp" }  
+    - { tempval: "TMPL_PRIVATE_DATA_INTERFACE_1", val: "eth3" }
+    - { tempval: "TMPL_PRIVATE_DATA_INTERFACE_2", val: "eth4" }
+    - { tempval: "TMPL_S3SERVER_INSTANCES_COUNT", val: "1" }  
+    - { tempval: "TMPL_DATA_DEVICE_1", val: "{{ DATA_DEVICE }}" }  
+    - { tempval: "TMPL_METADATA_DEVICE", val: "{{ METADATA_DEVICE }}" }  
+
+- name: "[Pre requisites] : Update init template"
+  ansible.builtin.replace:
+    path: /opt/seagate/cortx/hare/conf/hare.init.conf.tmpl.1-node
+    regexp: "{{ item.tempval }}"
+    replace: "{{ item.val }}"
+  with_items:  
+    - { tempval: "TMPL_CLUSTER_ID", val: "{{ CLUSTER_ID }}" }
+    - { tempval: "TMPL_STORAGESET_COUNT", val: "1" }
+    - { tempval: "TMPL_DATA_UNITS_COUNT", val: "1" }
+    - { tempval: "TMPL_PARITY_UNITS_COUNT", val: "0" }
+    - { tempval: "TMPL_SPARE_UNITS_COUNT", val: "0" }
+    - { tempval: "TMPL_STORAGESET_NAME", val: "storage-set-1" }  
+    - { tempval: "TMPL_MACHINE_ID", val: "{{ MACHINE_ID }}" }  
+    - { tempval: "TMPL_HOSTNAME", val: "{{ HOSTNAME }}" }  
+    - { tempval: "TMPL_SERVER_NODE_NAME", val: "srvnode-1" }  
+    - { tempval: "TMPL_DATA_INTERFACE_TYPE", val: "tcp" }  
+    - { tempval: "TMPL_PRIVATE_DATA_INTERFACE_1", val: "eth3" }
+    - { tempval: "TMPL_PRIVATE_DATA_INTERFACE_2", val: "eth4" }
+    - { tempval: "TMPL_S3SERVER_INSTANCES_COUNT", val: "1" }  
+    - { tempval: "TMPL_DATA_DEVICE_1", val: "{{ DATA_DEVICE }}" }  
+    - { tempval: "TMPL_METADATA_DEVICE", val: "{{ METADATA_DEVICE }}" }    
+
+- name: "[Pre requisites] : Update test template"
+  ansible.builtin.replace:
+    path: /opt/seagate/cortx/hare/conf/hare.test.conf.tmpl.1-node
+    regexp: "{{ item.tempval }}"
+    replace: "{{ item.val }}"
+  with_items:  
+    - { tempval: "TMPL_CLUSTER_ID", val: "{{ CLUSTER_ID }}" }
+    - { tempval: "TMPL_STORAGESET_COUNT", val: "1" }
+    - { tempval: "TMPL_DATA_UNITS_COUNT", val: "1" }
+    - { tempval: "TMPL_PARITY_UNITS_COUNT", val: "0" }
+    - { tempval: "TMPL_SPARE_UNITS_COUNT", val: "0" }
+    - { tempval: "TMPL_STORAGESET_NAME", val: "storage-set-1" }  
+    - { tempval: "TMPL_MACHINE_ID", val: "{{ MACHINE_ID }}" }  
+    - { tempval: "TMPL_HOSTNAME", val: "{{ HOSTNAME }}" }  
+    - { tempval: "TMPL_SERVER_NODE_NAME", val: "srvnode-1" }  
+    - { tempval: "TMPL_DATA_INTERFACE_TYPE", val: "tcp" }  
+    - { tempval: "TMPL_PRIVATE_DATA_INTERFACE_1", val: "eth3" }
+    - { tempval: "TMPL_PRIVATE_DATA_INTERFACE_2", val: "eth4" }
+    - { tempval: "TMPL_S3SERVER_INSTANCES_COUNT", val: "1" }  
+    - { tempval: "TMPL_DATA_DEVICE_1", val: "{{ DATA_DEVICE }}" }  
+    - { tempval: "TMPL_METADATA_DEVICE", val: "{{ METADATA_DEVICE }}" }   

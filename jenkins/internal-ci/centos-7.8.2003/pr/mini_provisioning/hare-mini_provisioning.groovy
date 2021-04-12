@@ -213,7 +213,7 @@ pipeline {
                             checkout([$class: 'GitSCM', branches: [[name: '*/mini-provisioner-dev']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 1, honorRefspec: true, noTags: true, reference: '', shallow: true], [$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
                         }
 
-                        runAnsible("00_PREP_ENV, 01_PREREQ, 02_MINI_PROV")
+                        runAnsible("00_PREP_ENV, 01_PREREQ, 02_MINI_PROV, 04_VALIDATE")
 
                     }
 
@@ -221,10 +221,12 @@ pipeline {
                     catchError {
 
                         sh label: 'download_log_files', returnStdout: true, script: """ 
-                            sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/root/*.json .
+                            mkdir -p artifacts
+                            sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/opt/seagate/cortx/hare/conf/*1-node artifacts/ || true
+                            sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/lib/hare/cluster.yaml artifacts/ || true
                         """
                         
-                        archiveArtifacts artifacts: "**/*.json", onlyIfSuccessful: false, allowEmptyArchive: true 
+                        archiveArtifacts artifacts: "artifacts/*", onlyIfSuccessful: false, allowEmptyArchive: true  
                     }
 
                     if( "${HOST}" == "-" ) {
