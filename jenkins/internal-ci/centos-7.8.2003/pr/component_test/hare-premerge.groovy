@@ -63,7 +63,19 @@ pipeline {
             }
             steps {
                 checkout([$class: 'GitSCM', branches: [[name: "${HARE_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 0, noTags: false, reference: '', shallow: false,  timeout: 5], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${HARE_REPO}",  name: 'origin', refspec: "${HARE_PR_REFSPEC}"]]])
-                sh 'VERBOSE=true WAIT_TIMEOUT=40 jenkins/vm-reset'
+                //sh 'VERBOSE=true WAIT_TIMEOUT=40 jenkins/vm-reset'
+                script {
+                    def remote = getTestMachine(VM_FQDN)
+                    def commandResult = sshCommand remote: remote, command: """
+                        echo "Clean up VM before use"
+                        yum remove cortx-hare -y
+                        yum remove cortx-motr{,-devel} -y
+                        yum remove consul -y
+                        rm -rf /var/crash/* /var/log/seagate/* /var/log/hare/* /var/log/motr/* /var/lib/hare/* /var/motr/* /etc/motr/*
+                        rm -rf /root/.cache/dhall* /root/rpmbuild
+                        """
+                        echo "Result: " + commandResult
+                }    
             }
         }
         stage('Prepare environment') {
@@ -202,6 +214,15 @@ pipeline {
 
         // NOTE: Add here new stages with tests if needed
     }
+
+    post {
+        always {
+            script {
+                echo 'Cleanup Workspace.'
+                cleanWs() /* clean up workspace */
+            }
+        }
+    }        
 }
 
 // Method returns VM Host Information ( host, ssh cred)
