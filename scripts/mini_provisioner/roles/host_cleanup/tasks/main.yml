@@ -1,7 +1,4 @@
 ---
-- include: passwordless_authentication.yml 
-  delegate_to: localhost
-
 - name: "Validate the required input arguments for this playbook"
   fail: msg="Variable '{{ item }}' is not defined"
   when: item not in vars
