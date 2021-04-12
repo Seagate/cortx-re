@@ -4,6 +4,8 @@
   when: item not in vars
   with_items: "{{ REQUIRED_VARS }}"
 
+- include: passwordless_authentication.yml 
+
 - name: Teardown Cortx Stack
   shell: /opt/seagate/cortx/provisioner/cli/destroy-vm --ctrlpath-states --iopath-states --prereq-states --system-states --ha-states || true
 
