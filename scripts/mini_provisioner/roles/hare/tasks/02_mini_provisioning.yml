@@ -1,56 +1,17 @@
-# #######################################################################################
-# Description:
-#-------------
-#         This tasks configure and initializes the Hare 
-# Reference:
-#----------- 
-#         https://github.com/Seagate/cortx-Hare/wiki/Hare-deployment-using-Hare_setup-on-singlenode-VM
-# Steps:
-#--------
-#      1. Execute Hare:post_install      
-#      2. Execute Hare:config
-#      3. Execute Hare:init  
-#      2. Execute Hare:test  
-##########################################################################################
-
-# Get Hostname
-- name: "[mini_provisioning] : Get Hostname" 
-  shell: hostname
-  register: hostname_out
-
-# Get Machine ID
-- name: "[mini_provisioning] : Get Machine ID" 
-  shell: cat /etc/machine-id
-  register: machineid_out
-
-# Get IP Address
-- name: "[mini_provisioning] : Get Ipaddress" 
-  shell: hostname -I | cut -d' ' -f2 | xargs
-  register: ipaddress_out
-
-- set_fact:
-    HOSTNAME: "{{ hostname_out.stdout }}"
-    MACHINE_ID: "{{ machineid_out.stdout }}"
-    IP_ADDRESS: "{{ ipaddress_out.stdout }}"
-
-# Create confstore.json in deployment node
-- name: "[mini_provisioning] : Copy confstore json file"
-  template:
-    src: confstore.json.j2
-    dest: /root/confstore.json
+# Reference : https://github.com/Seagate/cortx-hare/wiki/Hare-provisioning-for-single-node-deployment#provisioning
 
 # Execute Hare:Post_Install
-- name: "[mini_provisioning] : Post Install" 
-  shell: /opt/seagate/cortx/hare/bin/hare_setup post_install --config 'json:///root/confstore.json'
+- name: "[mini_provisioning] : Hare Post Install" 
+  shell: /opt/seagate/cortx/hare/bin/hare_setup post_install --config 'json:///opt/seagate/cortx/hare/conf/hare.post_install.conf.tmpl.1-node'
+
+# Execute Hare:Config
+- name: "[mini_provisioning] : Hare Prepare" 
+  shell: /opt/seagate/cortx/hare/bin/hare_setup prepare --config 'json:///opt/seagate/cortx/hare/conf/hare.prepare.conf.tmpl.1-node'
 
 # Execute Hare:Config
 - name: "[mini_provisioning] : Hare Config" 
-  shell: /opt/seagate/cortx/hare/bin/hare_setup config --config 'json:///root/confstore.json' --file '/var/lib/hare/cluster.yaml'
+  shell: /opt/seagate/cortx/hare/bin/hare_setup config --config 'json:///opt/seagate/cortx/hare/conf/hare.config.conf.tmpl.1-node' --file '/var/lib/hare/cluster.yaml'
 
 # Execute Hare:Init
 - name: "[mini_provisioning] : Hare Init" 
-  shell: /opt/seagate/cortx/hare/bin/hare_setup init --config 'json:///root/confstore.json' --file '/var/lib/hare/cluster.yaml'
-
-# Execute Hare:Test
-- name: "[mini_provisioning] : Hare Test" 
-  shell: /opt/seagate/cortx/hare/bin/hare_setup test --config 'json:///root/confstore.json'
+  shell: /opt/seagate/cortx/hare/bin/hare_setup init --config 'json:///opt/seagate/cortx/hare/conf/hare.init.conf.tmpl.1-node' --file '/var/lib/hare/cluster.yaml'
