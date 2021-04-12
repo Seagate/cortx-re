@@ -50,6 +50,7 @@ fi
 %defattr(-,root,root)
 %attr(0755,kafka,kafka) %dir /opt/kafka
 %attr(0755,kafka,kafka) /opt/kafka/bin
+%attr(0755,kafka,kafka) /opt/zookeeper/bin
 %attr(0755,kafka,kafka) /opt/kafka/libs
 %config(noreplace) %attr(755,kafka,kafka) /opt/kafka/config
 %attr(0755,kafka,kafka) %dir /var/log/kafka
