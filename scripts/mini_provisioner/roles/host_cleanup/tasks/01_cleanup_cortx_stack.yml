@@ -1,0 +1,69 @@
+---
+- name: "Validate the required input arguments for this playbook"
+  fail: msg="Variable '{{ item }}' is not defined"
+  when: item not in vars
+  with_items: "{{ REQUIRED_VARS }}"
+
+- name: Teardown Cortx Stack
+  shell: /opt/seagate/cortx/provisioner/cli/destroy-vm --ctrlpath-states --iopath-states --prereq-states --system-states --ha-states || true
+
+- name: Stop Salt services
+  shell: "{{ item }}"
+  with_items:
+    - "systemctl status glustersharedstorage >/dev/null && systemctl stop glustersharedstorage || true"
+    - "systemctl status glusterfsd >/dev/null && systemctl stop glusterfsd || true"
+    - "systemctl status glusterd >/dev/null && systemctl stop glusterd || true"
+    - "systemctl status salt-minion >/dev/null && systemctl stop salt-minion || true"
+    - "systemctl status salt-master >/dev/null && systemctl stop salt-master || true"
+
+- name: Remove provisioner and salt packages
+  yum:
+    name:
+      - cortx-prvsnr
+      - cortx-prvsnr-cli
+      - gluster-fuse
+      - gluster-server
+      - salt-minion
+      - salt-master
+      - salt-api
+      - python36-m2crypto
+      - python36-cortx-prvsnr
+    state: absent
+
+- name: Remove cortx rpm packages
+  yum: 
+    name: "*cortx*"
+    state: absent
+
+- name: Remove leaf packages
+  yum: 
+    autoremove: yes
+
+- name: Clear yum cache
+  command: "{{ item }}"
+  with_items:
+    - "yum clean all"
+    - "rm -rf /var/cache/yum"
+
+- name: Cleanup pip packages
+  shell: "{{ item }}"
+  with_items:
+    - "pip3 uninstall -y cortx-py-utils"
+    - "pip3 freeze|xargs pip3 uninstall -y"
+    - "test -e /etc/pip.conf && rm -f /etc/pip.conf"
+    - "rm -rf ~/.cache/pip"
+
+- name: Cleanup directories
+  shell: "{{ item }}"
+  with_items:
+    - "rm -rf /opt/seagate/cortx"
+    - "rm -rf /opt/seagate/cortx_configs"
+    - "rm -rf /opt/seagate"
+    - "test -e /var/lib/seagate && rm -rf /var/lib/seagate || true"
+    - "test -e /srv/glusterfs && rm -rf /srv/glusterfs || true"
+    - "test -e /var/cache/salt && rm -rf /var/cache/salt || true"
+    - "test -e /etc/salt && rm -rf /etc/salt || true"
+    - "test -e /opt/isos && rm -rf /opt/isos || true"
+    - "test -e /root/.provisioner && rm -rf /root/.provisioner || true"
+    - "test -e /etc/yum.repos.d/RELEASE_FACTORY.INFO && rm -f /etc/yum.repos.d/RELEASE_FACTORY.INFO || true"
+    - "test -e /root/.ssh && rm -rf /root/.ssh || true"
