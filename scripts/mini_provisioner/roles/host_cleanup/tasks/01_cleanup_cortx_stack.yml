@@ -48,10 +48,10 @@
 - name: Cleanup pip packages
   shell: "{{ item }}"
   with_items:
-    - "pip3 uninstall -y cortx-py-utils"
-    - "pip3 freeze|xargs pip3 uninstall -y"
-    - "test -e /etc/pip.conf && rm -f /etc/pip.conf"
-    - "rm -rf ~/.cache/pip"
+    - "pip3 uninstall -y cortx-py-utils || true"
+    - "pip3 freeze|xargs pip3 uninstall -y || true"
+    - "test -e /etc/pip.conf && rm -f /etc/pip.conf || true"
+    - "rm -rf ~/.cache/pip || true"
 
 - name: Cleanup directories
   shell: "{{ item }}"
