@@ -27,6 +27,7 @@ rm config/zookeeper.properties
 mkdir -p $RPM_BUILD_ROOT%{_prefix}/kafka
 mkdir $RPM_BUILD_ROOT%{_prefix}/kafka/bin
 cp bin/kafka-*.sh $RPM_BUILD_ROOT%{_prefix}/kafka/bin/
+cp bin/zookeeper-*.sh $RPM_BUILD_ROOT%{_prefix}/zookeeper/bin/
 cp -r libs $RPM_BUILD_ROOT%{_prefix}/kafka/
 cp -r config $RPM_BUILD_ROOT%{_prefix}/kafka/
 mkdir -p $RPM_BUILD_ROOT/var/log/kafka
@@ -44,6 +45,7 @@ fi
 %defattr(-,root,root)
 %attr(0755,kafka,kafka) %dir /opt/kafka
 %attr(0755,kafka,kafka) /opt/kafka/bin
+%attr(0755,kafka,kafka) /opt/zookeeper/bin
 %attr(0755,kafka,kafka) /opt/kafka/libs
 %config(noreplace) %attr(755,kafka,kafka) /opt/kafka/config
 %attr(0755,kafka,kafka) %dir /var/log/kafka
