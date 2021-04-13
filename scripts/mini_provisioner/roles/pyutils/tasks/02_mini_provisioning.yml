@@ -4,15 +4,9 @@
   shell: |
     /opt/seagate/cortx/utils/bin/utils_setup post_install --config yaml:///tmp/utils.post_install.tmpl.1-node
   register: utils_mini_post_install
-  failed_when: '"post_install successful" not in utils_mini_post_install.stdout'
 
 - name: "[UTILS Mini Provisioning] : Config"
   shell: |
     /opt/seagate/cortx/utils/bin/utils_setup config --config yaml:///tmp/utils.config.tmpl.1-node
   register: utils_mini_config_install
-  failed_when: '"config successful" not in utils_mini_config_install.stdout'
-
-- name: "[UTILS Mini Provisioning] : Test"
-  shell: /opt/seagate/cortx/utils/bin/utils_setup test --config yaml:///tmp/utils.test.tmpl.1-node
-  register: utils_mini_test
 

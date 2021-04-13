@@ -26,22 +26,13 @@
 # Refresh yum repo
 - name: "[mini_provisioning] : Refresh yum repos"
   shell: yum clean all
-
-# Install py-utils req
-- name: "[mini_provisioning] : Install gcc & python3-devel"
-  shell: yum install -y gcc python3-devel
-
-# Install py-utils req
-- name: "[install_prereq] : Install py-utils dependencies"
-  shell:  pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/main/py-utils/requirements.txt
+  
+- name: "[Pre-Requisites] :1. Install third-party packages" 
+  shell: curl -s http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rpm/install-cortx-prereq.sh | bash -s -- -b {{ CORTX_BUILD }}  
 
 # Install elasticsearch and consul
 - name: "[mini_provisioning] : Download & Install Kafka"
   script: files/install_kafka.sh
-
-  # Create Dir
-- name: "[mini_provisioning] : Install Kafka"
-  shell: "mkdir -p /etc/cortx"
 
 # Install "cortx-cli"
 - name: "[mini_provisioning] : Install Py-Utils"
@@ -51,16 +42,16 @@
 
 - name: "[Pre-Requisites] : Copy utils post install config"
   file:
-    path: /tmp/utils.post_install.tmpl.1-node
+    path: /opt/seagate/cortx/utils/conf/utils.post_install.tmpl.1-node
     state: touch
 
 - name: "[install_prereq] : Copy utils config"
   ansible.builtin.template:
     src: utils_config.j2
-    dest: /tmp/utils.config.tmpl.1-node
+    dest: /opt/seagate/cortx/utils/conf/utils.config.tmpl.1-node
     mode: '0774'
 
 - name: "[Pre-Requisites] : Copy utils test config file"
   file:
-    path: /tmp/utils.test.tmpl.1-node
+    path: /opt/seagate/cortx/utils/conf/utils.test.tmpl.1-node
     state: touch
