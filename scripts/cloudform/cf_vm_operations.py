@@ -22,6 +22,8 @@ import argparse
 import json
 import sys
 import time
+import random
+import string
 # from redis import Redis
 # from rq import Queue
 
@@ -300,6 +302,30 @@ class VMOperations:
             _res_start = self.check_status(_response)
         return _response
 
+    def create_vm_snap(self, _response):
+        _vm_info = self.get_vm_info()
+        _vm_name = _vm_info['resources']['name']
+        name = "%s-%s" % (_vm_name, ''.join(random.sample(string.ascii_lowercase, 6)))
+        self.method = "POST"
+        self.url = _vm_info['resources']['name'] + "/snapshots"
+        self.payload = {
+            "action": "create",
+            "resources": [{"name": name}]
+        }
+        _response = self.execute_request()
+        if _response['results'][0]['success']:
+            print(_response['results'][0]['message'])
+            _snap_res = self.check_status(_response)
+            if _snap_res['state'] == "Finished":
+                print("Created the VM snapshot. Message: %s" % _snap_res['message'])
+                print(json.dumps(_snap_res, indent=4, sort_keys=True))
+            else:
+                print("Failed to create the VM snapshot...")
+                print("Response: %s" % _snap_res)
+        else:
+            print("Failed to process the create VM snapshot API request...")
+            sys.exit()
+
     def revert_vm_snap(self, _response=''):
         _vm_info = self.get_vm_info()
         _vm_state = _vm_info['resources'][0]['power_state']
@@ -342,6 +368,7 @@ class VMOperations:
                     print("Response: %s" % _revert_res)
             else:
                 print("Failed to process the revert API request...")
+                sys.exit()
         return _response
 
 
