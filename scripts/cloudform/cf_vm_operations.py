@@ -1,17 +1,29 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#######################################################################
-# Author                : Venkatesh K
-# Date                  : 08-04-2021
-# Description           : Automation for Cloudforms SSC VM Operations
-# Usage                 : Refer the get_args function or documentation
-#######################################################################
+#
+# Copyright (c) 2020 Seagate Technology LLC and/or its Affiliates
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# For any questions about this software or licensing,
+# please email opensource@seagate.com or cortx-questions@seagate.com.
+#
 
 import requests
 import argparse
 import json
 import sys
 import time
+# from redis import Redis
+# from rq import Queue
 
 from requests.packages import urllib3
 from requests.adapters import HTTPAdapter
@@ -27,6 +39,7 @@ MAX_RETRY_FOR_SESSION = 2
 BACK_OFF_FACTOR = 0.3
 TIME_BETWEEN_RETRIES = 1000
 ERROR_CODES = (500, 502, 504)
+ITER_COUNT = 20
 
 
 def requests_retry_session(retries=MAX_RETRY_FOR_SESSION,
@@ -75,8 +88,10 @@ def get_args():
     parser.add_argument('--service_template', '-s', help="Service Template ID for VM creation")
     parser.add_argument('--service_id', '-i', help="Service Template ID for VM creation")
     parser.add_argument('--host', '-v', help="SSC VM name")
-    parser.add_argument('--cpu', '-c', default=4, help="Number of Core for VM")
-    parser.add_argument('--memory', '-m', default=8192, help="VM Memory")
+    parser.add_argument('--extra_disk_count', '-d', default=1, choices=range(1, 12), help="Extra disk count of the VM")
+    parser.add_argument('--extra_disk_size', '-f', default=25, choices=[25, 50, 75, 100], help="Extra disk size of the VM")
+    parser.add_argument('--cpu', '-c', default=1, choices=[1, 2, 4, 8], help="Number of Core for VM")
+    parser.add_argument('--memory', '-m', default=4096, choices=[4096, 8192, 16384], help="VM Memory")
     parser.add_argument('--snap_id', '-n', help="Snap ID of the VM")
     parser.add_argument('--user', '-u', help="GID of the user for SSC Auth")
     parser.add_argument('--password', '-p', help="Password of the user for SSC Auth")
@@ -119,6 +134,7 @@ class VMOperations:
 
     def execute_request(self):
         try:
+
             if self.method == "POST":
                 r = self.session.post(self.url, data=json.dumps(self.payload), headers=self.headers, verify=False)
             else:
@@ -126,6 +142,27 @@ class VMOperations:
         except requests.exceptions.RequestException as e:
             raise SystemExit(e)
         return r.json()
+
+    def check_status(self, _response):
+        self.url = _response['task_href']
+        self.method = "GET"
+        self.payload = ""
+        _count = 0
+        _res = ''
+        while _count < ITER_COUNT:
+            time.sleep(30)
+            _res = self.execute_request()
+            _rss_state = _res['state']
+            if _rss_state == "Finished":
+                print(json.dumps(_res, indent=4, sort_keys=True))
+                break
+            else:
+                print("Checking the VM status again...")
+                if _count == ITER_COUNT:
+                    print('The request has been processed, but response state is not matched with expectation')
+                    sys.exit()
+            _count += 1
+        return _res
 
     def get_catalog_id(self):
         self.method = "GET"
@@ -139,6 +176,7 @@ class VMOperations:
         service_template_resp = self.get_catalog_id()
         service_catalog_id = service_template_resp['service_template_catalog_id']
         self.method = "POST"
+        self.headers = {'content-type': 'application/json', 'X-Auth-Token': self.args.token}
         self.url = "https://%s/api/service_catalogs/%s/service_templates/%s" \
                    % (self.args.fqdn, service_catalog_id, self.args.service_template)
         self.payload = {
@@ -146,8 +184,8 @@ class VMOperations:
             "resource": {
                 "href": "https://%s/api/service_templates/%s" % (self.args.fqdn, self.args.service_template),
                 "dialog_check_box_1": "t",
-                "extra_disk_count": "2",
-                "extra_disk_size": "50",
+                "extra_disk_count": self.args.extra_disk_count,
+                "extra_disk_size": self.args.extra_disk_size,
                 "option_0_vm_memory": self.args.memory,
                 "option_0_cores_per_socket": self.args.cpu,
                 "dialog_share_vms_disks": "t"
@@ -155,7 +193,33 @@ class VMOperations:
         }
 
         # Process the request
-        return self.execute_request()
+        _response = self.execute_request()
+        if _response['status'] == "Ok":
+            self.method = "GET"
+            _service_req_url = _response['href']
+            self.url = "%s??expand=request_tasks" % _service_req_url
+            self.payload = ""
+            print("Creating the VM might take time...")
+            _count = 0
+            while _count < ITER_COUNT:
+                time.sleep(60)
+                vm_status_res = self.execute_request()
+                _vm_state = vm_status_res['request_state']
+                _count += 1
+                if _vm_state == "finished":
+                    print("Expected VM state is matched with current VM state")
+                    _vm_message = vm_status_res['message']
+                    print("VM message: %s" % _vm_message)
+                    print(json.dumps(vm_status_res, indent=4, sort_keys=True))
+                    break
+                else:
+                    print("Expected VM state is finished, but current state is %s..." % _vm_state)
+                    if _count == ITER_COUNT:
+                        print('VM has ordered successfully, but VM state is not matched with expectation..')
+                        sys.exit()
+        else:
+            print("Failed to process the VM request..%s" % _response)
+        return _response
 
     def get_vm_info(self):
         self.payload = ""
@@ -165,27 +229,40 @@ class VMOperations:
         self.headers = {'content-type': 'application/json', 'X-Auth-Token': self.args.token}
         return self.execute_request()
 
-    def retire_service(self):
-        self.method = "POST"
-        self.url = "https://%s/api/services/%s" % (self.args.fqdn, self.args.service_id)
-        self.payload = {
-            "action": "retire"
-        }
-        self.headers = {'content-type': 'application/json', 'X-Auth-Token': self.args.token}
-        # Process the request
-        return self.execute_request()
-
     def retire_vm(self):
         _get_vm_info = self.get_vm_info()
-        _vm_id = _get_vm_info['resources'][0]['id']
-        self.method = "POST"
-        self.url = "https://%s/api/vms/%s" % (self.args.fqdn, _vm_id)
-        self.payload = {
-            "action": "retire"
-        }
-        self.headers = {'content-type': 'application/json', 'X-Auth-Token': self.args.token}
-        # Process the request
-        return self.execute_request()
+        _response = ""
+        if _get_vm_info['resources'][0]['retirement_state'] != "retired":
+            _vm_id = _get_vm_info['resources'][0]['id']
+            self.method = "POST"
+            self.url = "https://%s/api/vms/%s" % (self.args.fqdn, _vm_id)
+            self.payload = {
+                "action": "retire"
+            }
+            self.headers = {'content-type': 'application/json', 'X-Auth-Token': self.args.token}
+            # Process the request
+            _response = self.execute_request()
+            print("Retiring the VM might take time...")
+            _count = 0
+            while _count < ITER_COUNT:
+                time.sleep(30)
+                _vm_info = self.get_vm_info()
+                _vm_state = _vm_info['resources'][0]['retirement_state']
+                if _vm_state == "retired":
+                    print("Matched current VM state and expected VM state")
+                    print("VM has been retired successfully....")
+                    print(json.dumps(_vm_info, indent=4, sort_keys=True))
+                    break
+                else:
+                    print("Current VM state is %s, expected VM state is finished.." % _vm_state)
+                    if _count == ITER_COUNT:
+                        print('VM retire request has processed, but VM state is unexpected..')
+                        sys.exit()
+                _count += 1
+        else:
+            print("The VM already is in retired state...")
+            sys.exit()
+        return _response
 
     def list_vm_snaps(self):
         _vm_info = self.get_vm_info()
@@ -203,7 +280,11 @@ class VMOperations:
         }
         self.headers = {'content-type': 'application/json', 'X-Auth-Token': self.args.token}
         # Process the request
-        return self.execute_request()
+        _response = self.execute_request()
+        if _response['success']:
+            print("Stopping the VM might take time...")
+            _res_stop = self.check_status(_response)
+        return _response
 
     def start_vm(self, vm_id):
         self.method = "POST"
@@ -213,49 +294,55 @@ class VMOperations:
         }
         self.headers = {'content-type': 'application/json', 'X-Auth-Token': self.args.token}
         # Process the request
-        return self.execute_request()
+        _response = self.execute_request()
+        if _response['success']:
+            print("Starting the VM might take time...")
+            _res_start = self.check_status(_response)
+        return _response
 
-    def revert_vm_snap(self, response=None):
+    def revert_vm_snap(self, _response=''):
         _vm_info = self.get_vm_info()
         _vm_state = _vm_info['resources'][0]['power_state']
         _vm_id = _vm_info['resources'][0]['id']
+        _stop_res = ""
 
         # Stop the VM before snapshot revert
         if _vm_state == "on":
             _stop_res = self.stop_vm(_vm_id)
-            print("Response for stop VM request: ")
-            print(json.dumps(_stop_res, indent=4, sort_keys=True))
-
-            print("Stopping the VM might take time...")
-            _count = 0
-            while _count < 15:
+            if _stop_res:
                 time.sleep(30)
                 _vm_info = self.get_vm_info()
                 _vm_state = _vm_info['resources'][0]['power_state']
-                if _vm_state == "off":
-                    print("VM has been stopped successfully....")
-                    print(json.dumps(_vm_info, indent=4, sort_keys=True))
-                    break
-                else:
-                    print("VM state is still on, so iterating again...")
-                _count += 1
+                print("VM has been stopped successfully. VM status is %s.." % _vm_state)
         else:
             print("VM is already stopped...")
 
-        if _vm_state == "off":
+        if _stop_res or _vm_state == "off":
             print("Revert the VM snapshots...")
             self.method = "POST"
             self.payload = {"action": "revert"}
             self.url = "https://%s/api/vms/%s/snapshots/%s" % (self.args.fqdn, _vm_id, self.args.snap_id)
             self.headers = {'content-type': 'application/json', 'X-Auth-Token': self.args.token}
             # Process the request
-            response = self.execute_request()
-            time.sleep(60)
-            # Start the VM after snapshot revert
-            _start_res = self.start_vm(_vm_id)
-            print("Starting the VM after snapshot revert")
-            print(json.dumps(_start_res, indent=4, sort_keys=True))
-        return response
+            _response = self.execute_request()
+            if _response["success"]:
+                _revert_res = self.check_status(_response)
+                if _revert_res['state'] == "Finished":
+                    print("Revert message: %s" % _revert_res['message'])
+                    print(json.dumps(_revert_res, indent=4, sort_keys=True))
+                    # Start the VM after snapshot revert
+                    _start_res = self.start_vm(_vm_id)
+                    if _start_res:
+                        print("Started the VM after snapshot revert")
+                        print(json.dumps(_start_res, indent=4, sort_keys=True))
+                    else:
+                        print("Failed to start the VM after revert...")
+                else:
+                    print("Failed to revert the VM...")
+                    print("Response: %s" % _revert_res)
+            else:
+                print("Failed to process the revert API request...")
+        return _response
 
 
 def main():
@@ -281,19 +368,15 @@ def main():
     elif args.action == "list_vm_snaps":
         if args.host:
             result = vm_object.list_vm_snaps()
-    elif args.action == "retire_service":
-        if args.service_id:
-            result = vm_object.retire_service()
     elif args.action == "revert_vm_snap":
-        if args.snap_id:
+        if args.snap_id and args.host:
             result = vm_object.revert_vm_snap()
 
     if result:
-        print("VM operation %s has been processed successfully....." % args.action)
+        print("VM operation %s request has been polled successfully....." % args.action)
         print(json.dumps(result, indent=4, sort_keys=True))
     else:
-        print("Please check the VM action. It should be one of "
-              "[create_vm, list_vm_snaps, revert_vm_snap, retire_vm, get_vm_info]")
+        print("Please check the command-line parameter")
 
 
 if __name__ == '__main__':
