@@ -84,7 +84,7 @@ pipeline {
         }
 
        
-        // Install Hare and dependent component(motr,cortx-pyutils) from the provided build
+        // Install cortx-pyutils from the provided build
         stage('02. Deploy') {
             when { expression { env.STAGE_02_DEPLOY == "yes" } }
             steps {
