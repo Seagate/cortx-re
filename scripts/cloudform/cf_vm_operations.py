@@ -89,7 +89,7 @@ def get_args():
     parser.add_argument('--service_id', '-i', help="Service Template ID for VM creation")
     parser.add_argument('--host', '-v', help="SSC VM name")
     parser.add_argument('--extra_disk_count', '-d', default=1, choices=range(1, 12), help="Extra disk count of the VM")
-    parser.add_argument('--extra_disk_size', '-f', default=25, choices=[25, 50, 75, 100], help="Extra disk size of the VM")
+    parser.add_argument('--extra_disk_size', '-k', default=25, choices=[25, 50, 75, 100], help="Extra disk size of the VM")
     parser.add_argument('--cpu', '-c', default=1, choices=[1, 2, 4, 8], help="Number of Core for VM")
     parser.add_argument('--memory', '-m', default=4096, choices=[4096, 8192, 16384], help="VM Memory")
     parser.add_argument('--snap_id', '-n', help="Snap ID of the VM")
