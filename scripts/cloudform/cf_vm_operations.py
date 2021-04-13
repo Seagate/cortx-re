@@ -81,7 +81,7 @@ def get_args():
     # Create the parser
     parser = argparse.ArgumentParser()
     # Add the arguments
-    parser.add_argument('--action', '-a', choices=['create_vm', 'list_vm_snaps', 'revert_vm_snap',
+    parser.add_argument('--action', '-a', choices=['create_vm_snap', 'create_vm', 'list_vm_snaps', 'revert_vm_snap',
                                                    'retire_vm', 'get_vm_info'], required=True,
                         help="Perform the Operation")
     parser.add_argument('--token', '-t', help="Token for API Authentication")
@@ -302,20 +302,20 @@ class VMOperations:
             _res_start = self.check_status(_response)
         return _response
 
-    def create_vm_snap(self, _response):
+    def create_vm_snap(self, _response=''):
         _vm_info = self.get_vm_info()
-        _vm_name = _vm_info['resources']['name']
+        _vm_name = _vm_info['resources'][0]['name']
         name = "%s-%s" % (_vm_name, ''.join(random.sample(string.ascii_lowercase, 6)))
         self.method = "POST"
-        self.url = _vm_info['resources']['name'] + "/snapshots"
+        self.url = _vm_info['resources'][0]['href'] + "/snapshots"
         self.payload = {
             "action": "create",
-            "resources": [{"name": name}]
+            "resources": [{"name": name, "description": name}]
         }
         _response = self.execute_request()
         if _response['results'][0]['success']:
             print(_response['results'][0]['message'])
-            _snap_res = self.check_status(_response)
+            _snap_res = self.check_status(_response['results'][0])
             if _snap_res['state'] == "Finished":
                 print("Created the VM snapshot. Message: %s" % _snap_res['message'])
                 print(json.dumps(_snap_res, indent=4, sort_keys=True))
@@ -325,6 +325,7 @@ class VMOperations:
         else:
             print("Failed to process the create VM snapshot API request...")
             sys.exit()
+        return _response
 
     def revert_vm_snap(self, _response=''):
         _vm_info = self.get_vm_info()
@@ -398,6 +399,9 @@ def main():
     elif args.action == "revert_vm_snap":
         if args.snap_id and args.host:
             result = vm_object.revert_vm_snap()
+    elif args.action == "create_vm_snap":
+        if args.host:
+            result = vm_object.create_vm_snap()
 
     if result:
         print("VM operation %s request has been polled successfully....." % args.action)
