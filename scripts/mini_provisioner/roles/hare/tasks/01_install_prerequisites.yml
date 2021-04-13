@@ -63,13 +63,10 @@
     MACHINE_ID: "{{ machineid.stdout }}"
 
 - name: "[Pre-Requisites] : Change data device count in hare.config.conf.tmpl.1-node" 
-  shell: sed -i '/"TMPL_DATA_DEVICE_2"/d ; s/"TMPL_DATA_DEVICE_1",/"TMPL_DATA_DEVICE_1"/g' /opt/seagate/cortx/hare/conf/hare.config.conf.tmpl.1-node
-
-- name: "[Pre-Requisites] : Change data device count hare.init.conf.tmpl.1-node" 
-  shell:  sed -i '/"TMPL_DATA_DEVICE_2"/d ; s/"TMPL_DATA_DEVICE_1",/"TMPL_DATA_DEVICE_1"/g' /opt/seagate/cortx/hare/conf/hare.init.conf.tmpl.1-node
-
-- name: "[Pre-Requisites] : Change data device count hare.test.conf.tmpl.1-node" 
-  shell:  sed -i '/"TMPL_DATA_DEVICE_2"/d ; s/"TMPL_DATA_DEVICE_1",/"TMPL_DATA_DEVICE_1"/g' /opt/seagate/cortx/hare/conf/hare.test.conf.tmpl.1-node
+  shell: |
+    sed -i '/"TMPL_DATA_DEVICE_2"/d ; s/"TMPL_DATA_DEVICE_1",/"TMPL_DATA_DEVICE_1"/g' /opt/seagate/cortx/hare/conf/hare.config.conf.tmpl.1-node
+    sed -i '/"TMPL_DATA_DEVICE_2"/d ; s/"TMPL_DATA_DEVICE_1",/"TMPL_DATA_DEVICE_1"/g' /opt/seagate/cortx/hare/conf/hare.init.conf.tmpl.1-node
+    sed -i '/"TMPL_DATA_DEVICE_2"/d ; s/"TMPL_DATA_DEVICE_1",/"TMPL_DATA_DEVICE_1"/g' /opt/seagate/cortx/hare/conf/hare.test.conf.tmpl.1-node
 
 - name: "[Pre requisites] : Update config template"
   ansible.builtin.replace:
