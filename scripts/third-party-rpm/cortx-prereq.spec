@@ -13,7 +13,7 @@ CORTX Depenedecny Package. This package installed RPM and Python packages requir
 %global debug_package %{nil}
 
 %pre
-if [ ! -f "/etc/pip.conf" ]; then
+if ! grep -q 'index-url.*python_deps' /etc/pip.conf; then
    echo "ERROR:/etc/pip.conf is not configured with custom python repo. Exiting.."
    echo "Please follow steps mentioned at https://github.com/Seagate/cortx-prvsnr/wiki/Deploy-VM-Hosted-Repo#production-environment"
    exit 1
