@@ -22,6 +22,10 @@ pipeline {
         ansiColor('xterm') 
         disableConcurrentBuilds()   
     }
+
+    triggers {
+        pollSCM '*/5 * * * *'
+    }
     
     stages {
 	
