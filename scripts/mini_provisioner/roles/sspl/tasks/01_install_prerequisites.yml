@@ -16,9 +16,6 @@
 - name: "[Pre-Requisites] : 3. SSPL rpm" 
   shell: yum install -y --nogpgcheck cortx-sspl cortx-libsspl
 
-- name: "[Pre-Requisites] : Install gcc & python3-devel"
-  shell: yum install -y gcc python3-devel
-
 # Install elasticsearch and consul
 - name: "[Pre-Requisites] : Download & Install Kafka"
   script: files/install_kafka.sh
