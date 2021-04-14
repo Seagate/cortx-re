@@ -14,10 +14,6 @@
   register: sspl_mini_config_install
   failed_when: '"config successful" not in sspl_mini_config_install.stdout'
 
-- name: "[SSPL Mini Provisioning] : Test"
-  shell: /opt/seagate/cortx/utils/bin/utils_setup test --config yaml:///tmp/utils.test.tmpl.1-node
-  register: sspl_mini_test
-
 - name: "[SSPL Mini Provisioning] : SSPL:Prepare" 
   shell: /opt/seagate/cortx/sspl/bin/sspl_setup prepare --config yaml:///tmp/sspl.prepare.tmpl.1-node
   register: sspl_mini_prepare
