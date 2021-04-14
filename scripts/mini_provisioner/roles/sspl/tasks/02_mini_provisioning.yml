@@ -5,21 +5,37 @@
     /opt/seagate/cortx/utils/bin/utils_setup post_install --config yaml:///tmp/utils.post_install.tmpl.1-node
     /opt/seagate/cortx/sspl/bin/sspl_setup post_install --config yaml:///tmp/sspl.post-install.tmpl.1-node
   register: sspl_mini_post_install
-  failed_when: '"post_install successful" not in sspl_mini_post_install.stdout'
+#  failed_when: '"post_install successful" not in sspl_mini_post_install.stdout'
 
+- name: Print sspl_mini_post_install
+  debug:
+    msg: "SSPL Mini Post Install O/p: {{ sspl_mini_post_install.stdout }}"
+
+- name: "[SSPL Mini Provisioning] : SSPL:Prepare" 
+  shell: /opt/seagate/cortx/sspl/bin/sspl_setup prepare --config yaml:///tmp/sspl.prepare.tmpl.1-node
+  register: sspl_mini_prepare
+ # failed_when: '"prepare successful" not in sspl_mini_prepare.stdout'
+
+name: Print sspl_mini_prepare
+  debug:
+    msg: "SSPL Mini Prepare O/p: {{ sspl_mini_prepare.stdout }}"  
+ 
 - name: "[SSPL Mini Provisioning] : Config" 
   shell: |
     /opt/seagate/cortx/utils/bin/utils_setup config --config yaml:///tmp/utils.config.tmpl.1-node
     /opt/seagate/cortx/sspl/bin/sspl_setup config --config yaml:///tmp/sspl.config.tmpl.1-node
   register: sspl_mini_config_install
-  failed_when: '"config successful" not in sspl_mini_config_install.stdout'
+ # failed_when: '"config successful" not in sspl_mini_config_install.stdout'
 
-- name: "[SSPL Mini Provisioning] : SSPL:Prepare" 
-  shell: /opt/seagate/cortx/sspl/bin/sspl_setup prepare --config yaml:///tmp/sspl.prepare.tmpl.1-node
-  register: sspl_mini_prepare
-  failed_when: '"prepare successful" not in sspl_mini_prepare.stdout'
-
+- name: Print sspl_mini_config_install
+  debug:
+    msg: "SSPL Mini Config Install O/p: {{ sspl_mini_config_install.stdout }}"
+    
 - name: "[SSPL Mini Provisioning] : SSPL:Init" 
   shell: /opt/seagate/cortx/sspl/bin/sspl_setup init --config yaml:///tmp/sspl.init.tmpl.1-node
   register: sspl_mini_init
-  failed_when: '"init successful" not in sspl_mini_init.stdout'
+ # failed_when: '"init successful" not in sspl_mini_init.stdout'
+
+- name: Print sspl_mini_init
+  debug:
+    msg: "SSPL Mini Init Install O/p: {{ sspl_mini_init.stdout }}"
