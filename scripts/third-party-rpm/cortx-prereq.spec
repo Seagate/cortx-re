@@ -8,7 +8,7 @@ Requires:  third-party-deps
 Source:    %{name}-%{version}-%{_git_hash}.tgz
 
 %description
-CORTX Depenedecny Package. This package installed RPM and Python packages required for CORTX deployment.
+CORTX Depenedecny Package. Installs RPM and Python packages required for CORTX deployment.
 
 %global debug_package %{nil}
 
