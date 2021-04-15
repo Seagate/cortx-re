@@ -69,12 +69,7 @@ pipeline {
 				"""
 
 				sh label: 'Install packages', script: """
-					if [ "${CSM_AGENT_BRANCH}" == "Cortx-v1.0.0_Beta" ]; then
-						yum install -y eos-py-utils
-						pip3.6 install  pyinstaller==3.5
-					else
-						pip3.6 install  pyinstaller==3.5
-					fi
+					pip3.6 install pyinstaller==3.5 --trusted-host pypi.org --trusted-host files.pythonhosted.org
 				"""
 			}
 		}	

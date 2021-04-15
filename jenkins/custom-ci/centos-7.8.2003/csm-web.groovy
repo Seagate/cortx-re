@@ -47,7 +47,7 @@ pipeline {
 				script { build_stage = env.STAGE_NAME }
 				sh label: '', script: '''
 					yum install -y cortx-py-utils cortx-prvsnr
-					pip3.6 install  pyinstaller==3.5
+					pip3.6 install pyinstaller==3.5 --trusted-host pypi.org --trusted-host files.pythonhosted.org
 				'''
 			}
 		}	
