@@ -69,7 +69,12 @@ pipeline {
 				"""
 
 				sh label: 'Install packages', script: """
-					pip3.6 install pyinstaller==3.5 --trusted-host pypi.org --trusted-host files.pythonhosted.org
+				cat <<EOF >/etc/pip.conf
+[global]
+timeout: 120
+trusted-host: pypi.org files.pythonhosted.org
+EOF
+					pip3.6 install pyinstaller==3.5
 				"""
 			}
 		}	
