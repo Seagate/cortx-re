@@ -18,6 +18,6 @@
 - include: 02_mini_provisioning.yml
   tags: ['02_MINI_PROV']
 
-- include: 03_validate.yml
-  tags: ['03_VALIDATE']
+- include: 04_validate.yml
+  tags: ['04_VALIDATE']
 
