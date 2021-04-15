@@ -111,6 +111,11 @@ Recommended VM specification:
                         export build_number=${BUILD_NUMBER}
                         ./rpms/s3iamcli/buildrpm.sh -S $VERSION -P $PWD
                     '''
+
+                    sh label: 'Build s3test RPM', script: '''
+                        export build_number=${BUILD_NUMBER}
+                        ./rpms/s3test/buildrpm.sh -P $PWD
+                    '''
                 }
             }
         }
