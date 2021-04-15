@@ -43,6 +43,7 @@
 - set_fact:
     MACHINE_ID: "{{ machineid_out.stdout }}"
 
+#Dummy values for Controller to perform testing.
 - name: "[Provsioning] : Edit post install sspl script"
   ansible.builtin.replace:
     path: /opt/seagate/cortx/sspl/conf/sspl.post-install.tmpl.1-node
