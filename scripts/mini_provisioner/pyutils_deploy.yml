@@ -13,4 +13,3 @@
   vars_files: roles/pyutils/vars/config.yml 
   roles:
     - role: pyutils
-      tags: ['01_DEPLOY']

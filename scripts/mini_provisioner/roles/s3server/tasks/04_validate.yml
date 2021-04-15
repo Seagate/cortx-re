@@ -29,14 +29,15 @@
 - name: "[ Validate ] : Install s3iamcli RPM"
   shell: |
     if [[  "$(yum list available | grep cortx-s3iamcli)" ]]; then
-      echo "Installing cortx-s3iamcli rpm from build repo"
-      yum install -y --nogpgcheck cortx-s3iamcli
+      echo "Installing cortx-s3iamcli cortx-s3-test rpm from build repo"
+      yum install -y --nogpgcheck cortx-s3iamcli cortx-s3-test
     else
       echo "Installing cortx-s3iamcli rpm from last successful main repo"
       yum install -y --nogpgcheck {{ S3_IAM_CLI_LOCATION }}/$(curl -s {{ S3_IAM_CLI_LOCATION }} | grep cortx-s3iamcli | grep -v cortx-s3iamcli-devel | cut -d'"' -f2)
+      yum install -y --nogpgcheck {{ S3_IAM_CLI_LOCATION }}/$(curl -s {{ S3_IAM_CLI_LOCATION }} | grep cortx-s3-test | cut -d'"' -f2)
     fi
 
 - name: "[ Validate ] : S3 Sanity Test" 
-  shell: /opt/seagate/cortx/s3/bin/s3_setup test --config "yaml:///opt/seagate/cortx/s3/conf/s3.test.tmpl.1-node" --plan "test_plan"
+  shell: /opt/seagate/cortx/s3/bin/s3_setup test --config "yaml:///opt/seagate/cortx/s3/conf/s3.test.tmpl.1-node"
   register: s3_mini_test
   failed_when: '"PASS: S3-Sanity test passed" not in s3_mini_test.stdout'

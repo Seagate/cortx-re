@@ -111,6 +111,11 @@ Recommended VM specification:
                         export build_number=${BUILD_NUMBER}
                         ./rpms/s3iamcli/buildrpm.sh -S $VERSION -P $PWD
                     '''
+
+                    sh label: 'Build s3test RPM', script: '''
+                        export build_number=${BUILD_NUMBER}
+                        ./rpms/s3test/buildrpm.sh -P $PWD
+                    '''
                 }
             }
         }
@@ -261,6 +266,7 @@ Recommended VM specification:
                                     sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/opt/seagate/cortx/s3/s3backgrounddelete/config.yaml artifacts/s3backgrounddelete_config.yaml || true
                                     sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/tmp/cortx-config-new artifacts/ || true
                                     sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/etc/hosts artifacts/ || true
+                                    sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/opt/seagate/cortx/s3/mini-prov/*.json artifacts/ || true
                                 """
                             } catch (err) {
                                 echo err.getMessage()

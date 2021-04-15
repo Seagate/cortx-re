@@ -1,0 +1,51 @@
+# #######################################################################################
+# Description:
+#-------------
+#         This tasks starts pyutils  deployment
+# Reference:
+#-----------
+#         https://github.com/Seagate/cortx-utils/wiki/%22cortx-py-utils%22-single-node-manual-provisioning
+# Steps:
+#--------
+#      1. Pre-Requisites Installation
+#      2. Install cortx-py-utils rpm
+#      3. cortx-py-utils mini Provisioning
+##########################################################################################
+
+- name: "[mini_provisioning] : Validate the required input arguments for this playbook"
+  fail: msg="Variable '{{ item }}' is not defined"
+  when: item not in vars
+  with_items: "{{ REQUIRED_VARS }}"
+
+# Add yum repositories
+- name: "[mini_provisioning] : Copy yum repo"
+  template:
+    src: cortx.repo.j2
+    dest: /etc/yum.repos.d/cortx.repo
+
+# Refresh yum repo
+- name: "[mini_provisioning] : Refresh yum repos"
+  shell: yum clean all
+  
+- name: "[Pre-Requisites] :1. Install third-party packages" 
+  shell: curl -s http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rpm/install-cortx-prereq.sh | bash -s -- -b {{ CORTX_BUILD }}  
+
+# Install elasticsearch and consul
+- name: "[mini_provisioning] : Download & Install Kafka"
+  script: files/install_kafka.sh
+
+# Install "cortx-cli"
+- name: "[install_prereq] : Install cortx-py-utils"
+  yum: 
+    name: ["cortx-py-utils"]
+    state: present
+
+- name: "[install_prereq] : Update Utils config Template"
+  ansible.builtin.replace:
+    path: /opt/seagate/cortx/utils/conf/utils.config.tmpl.1-node
+    regexp: "{{ item.tempval }}"
+    replace: "{{ item.val }}"
+  with_items:
+    - { tempval: "TMPL_KAFKA_SERVER1_FQDN", val: "{{ NODE1 }}" }
+    - { tempval: "TMPL_KAFKA_SERVER1_PORT", val: "9092" }
+

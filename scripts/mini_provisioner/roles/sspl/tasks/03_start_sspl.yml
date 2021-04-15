@@ -2,6 +2,6 @@
 
 - name: "[Start SSPL]  : Start SSPL-ll"
   ansible.builtin.service:
-    name: sspl-11
+    name: sspl-ll
     state: started
 

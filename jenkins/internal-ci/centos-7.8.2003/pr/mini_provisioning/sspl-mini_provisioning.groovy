@@ -214,6 +214,22 @@ pipeline {
 
                     }
 
+                     // Collect logs from test node
+                    catchError {
+
+                            // Download deployment log files from deployment node
+                            try {
+                                sh label: 'download_log_files', returnStdout: true, script: """ 
+                                    mkdir -p artifacts
+                                    sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/opt/seagate/cortx/sspl/conf/*1-node artifacts/ || true
+                                """
+                            } catch (err) {
+                                echo err.getMessage()
+                            }
+
+                            archiveArtifacts artifacts: "artifacts/*", onlyIfSuccessful: false, allowEmptyArchive: true 
+                    }
+
                     // Trigger cleanup VM
                     if( "${HOST}" == "-" ) {
                         if( "${DEBUG}" == "yes" ) {
