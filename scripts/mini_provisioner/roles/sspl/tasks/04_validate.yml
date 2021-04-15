@@ -9,7 +9,7 @@
   delay: 30
 
 - name: "[ Validate ] : SSPL Sanity Test" 
-  shell: /opt/seagate/cortx/sspl/bin/sspl_setup test --config "yaml:///opt/seagate/cortx/sspl/conf/sample_global_cortx_config.yaml" --plan sanity
+  shell: /opt/seagate/cortx/sspl/bin/sspl_setup test --config "yaml:///etc/sspl_global_config_copy.yaml" --plan sanity
   register: sspl_mini_test
 
 - debug: var=sspl_mini_test
