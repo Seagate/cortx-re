@@ -127,7 +127,6 @@ Recommended VM specification:
                 // Install tools required for release process
                 sh label: 'Installed Dependecies', script: '''
                     yum install -y expect rpm-sign rng-tools genisoimage python3-pip
-                    pip3 install githubrelease
                     systemctl start rngd
                 '''
 
