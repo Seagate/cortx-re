@@ -96,7 +96,6 @@ pipeline {
                 sh label: 'Installed Dependecies', script: '''
                     echo -e "Installing dependencies for release"
                     yum install -y expect rpm-sign rng-tools genisoimage python3-pip
-                    pip3 install githubrelease
                     systemctl start rngd
                 '''
 
