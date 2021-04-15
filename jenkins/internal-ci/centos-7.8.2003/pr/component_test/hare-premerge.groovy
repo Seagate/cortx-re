@@ -43,7 +43,7 @@ pipeline {
         REPO_NAME = 'cortx-hare'
         // Updates :
         //   - Need new VM with clean state snapshot for HARE CI : https://jts.seagate.com/browse/EOS-18463
-        VM_FQDN = 'ssc-vm-2592.colo.seagate.com' // SSC VM used for Hare CI 
+        VM_FQDN = 'ssc-vm-3370.colo.seagate.com' // SSC VM used for Hare CI 
         VM_CRED = credentials('node-user') // To connect SSC VM over SSH
         GITHUB_TOKEN = credentials('cortx-admin-github') // To clone cortx-hare repo
 
