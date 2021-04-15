@@ -230,10 +230,10 @@ pipeline {
 
     post {
         always {
-            script  {
-                sh label: 'Remove artifacts', script: '''rm -rf "${DESTINATION_RELEASE_LOCATION}"'''
+            //script  {
+        	sh label: 'Remove artifacts', script: '''rm -rf "${DESTINATION_RELEASE_LOCATION}"'''
 
-                if(env.ghprbPullLink){
+         /*       if(env.ghprbPullLink){
                     env.pr_id = "${ghprbPullLink}"
                 }else{
                     env.branch_name = "${SSPL_BRANCH}"
@@ -247,7 +247,7 @@ pipeline {
                 recipientProviders: [requestor()],
                 subject: "[Jenkins] SSPLAutoMiniProvisioning : ${currentBuild.currentResult}, ${JOB_BASE_NAME}#${BUILD_NUMBER}",
                 to: "${mailRecipients}"
-            }
+            }*/
         }
         failure {
             script {
