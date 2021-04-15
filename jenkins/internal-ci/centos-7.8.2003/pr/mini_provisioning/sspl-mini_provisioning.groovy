@@ -26,7 +26,7 @@ pipeline {
 
     environment {
 
-        COMPONENT_NAME = "provisioner".trim()
+        COMPONENT_NAME = "sspl".trim()
         OS_VERSION = "centos-7.8.2003"
         GPR_REPO = "https://github.com/${ghprbGhRepository}"
         SSPL_URL = "${ghprbGhRepository != null ? GPR_REPO : SSPL_URL}"
