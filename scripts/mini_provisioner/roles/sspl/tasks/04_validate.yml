@@ -1,17 +1,5 @@
 # Reference : https://github.com/Seagate/cortx-monitor/wiki/Cortx-monitor-single-node-VM-provisioning-manual:-Manual#sspltest
 
-- name: "[ Validate ] : Get service facts"
-  service_facts:
-  no_log: True
-
-- name: "[ Validate ] :  Validate  all the expected services [slapd, haproxy, s3authserver] are up & running"
-  fail: msg="Service '{{ item }}' not running"
-  when: ansible_facts.services['{{ item }}'].state != "running"
-  with_items:
-    - slapd.service
-    - haproxy.service
-    - s3authserver.service
-
 - name: "[ Validate ] : Wait for service to start"
   command: "systemctl status sspl-ll"
   register: sspl_status
