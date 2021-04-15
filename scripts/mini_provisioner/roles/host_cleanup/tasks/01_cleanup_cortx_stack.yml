@@ -59,6 +59,8 @@
     - "rm -rf /opt/seagate/cortx"
     - "rm -rf /opt/seagate/cortx_configs"
     - "rm -rf /opt/seagate"
+    - "rm -rf /root/*.*"
+    - "rm -rf /etc/yum.repos.d/*"
     - "test -e /var/lib/seagate && rm -rf /var/lib/seagate || true"
     - "test -e /srv/glusterfs && rm -rf /srv/glusterfs || true"
     - "test -e /var/cache/salt && rm -rf /var/cache/salt || true"
