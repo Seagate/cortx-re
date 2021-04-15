@@ -23,15 +23,10 @@
 - name: "[Pre-Requisites] : 3. PY-UTILS rpm"
   shell: yum install -y --nogpgcheck cortx-py-utils*
 
-- name: "[Pre-Requisites] : Copy utils post install config"
-  file:
-    path: /tmp/utils.post_install.tmpl.1-node
-    state: touch
-
 - name: "[install_prereq] : Copy utils config"
   ansible.builtin.template:
     src: utils_config.j2
-    dest: /tmp/utils.config.tmpl.1-node
+    dest: /opt/seagate/cortx/sspl/conf/utils.config.tmpl.1-node
     mode: '0774'
 
 - name: "[Pre-Requisites] : 4. Machine-ID of the VM" 
@@ -48,15 +43,9 @@
 - set_fact:
     MACHINE_ID: "{{ machineid_out.stdout }}"
 
-- name: "[Provsioning] : Post install sspl"
-  ansible.builtin.template:
-    src: sspl.post-install.j2
-    dest: /tmp/sspl.post-install.tmpl.1-node
-    mode: '0774'
-
 - name: "[Provsioning] : Edit post install sspl script"
   ansible.builtin.replace:
-    path: /tmp/sspl.post-install.tmpl.1-node
+    path: /opt/seagate/cortx/sspl/conf/sspl.post-install.tmpl.1-node
     regexp: "{{ item.tempval }}"
     replace: "{{ item.val }}"
   with_items:
@@ -76,30 +65,12 @@
     - { tempval: "TMPL_CONTROLLER_TYPE", val: "Gallium" }
     - { tempval: "TMPL_CONTROLLER_USER", val: "manage" }
 
-- name: "[Provsioning] : Prepare install sspl"
-  ansible.builtin.template:
-    src: sspl.prepare.j2
-    dest: /tmp/sspl.prepare.tmpl.1-node
-    mode: '0774'
-
-- name: "[Provsioning] : Config install sspl"
-  ansible.builtin.template:
-    src: sspl.config.j2
-    dest: /tmp/sspl.config.tmpl.1-node
-    mode: '0774'
-
-- name: "[Provsioning] : Init config sspl"
-  ansible.builtin.template:
-    src: sspl.init.j2
-    dest: /tmp/sspl.config.tmpl.1-node
-    mode: '0774'
-
 - name: "[Provsioning] : Edit prepare install sspl script"
   ansible.builtin.replace:
     path: 
-      - /tmp/sspl.prepare.tmpl.1-node
-      - /tmp/sspl.config.tmpl.1-node
-      - /tmp/sspl.init.tmpl.1-node 
+      - /opt/seagate/cortx/sspl/conf/sspl.prepare.tmpl.1-node
+      - /opt/seagate/cortx/sspl/conf/sspl.config.tmpl.1-node
+      - /opt/seagate/cortx/sspl/conf/sspl.init.tmpl.1-node 
     regexp: "{{ item.tempval }}"
     replace: "{{ item.val }}"
   with_items:
