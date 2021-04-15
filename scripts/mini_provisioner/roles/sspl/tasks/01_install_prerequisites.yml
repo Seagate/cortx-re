@@ -1,0 +1,108 @@
+# Reference : https://github.com/Seagate/cortx-monitor/wiki/Cortx-monitor-single-node-VM-provisioning-manual:-Manual#sspltest pre-requisites
+
+- name: Gather facts
+  setup:
+  
+- name: "[Pre-Requisites] : Validate input arguments"
+  fail: msg="Variable '{{ item }}' is not defined"
+  when: item not in vars
+  with_items: "{{ REQUIRED_VARS }}"
+
+- name: "[Pre-Requisites] : Setup yum repository"
+  template:
+    src: cortx.repo.j2
+    dest: /etc/yum.repos.d/cortx.repo
+
+- name: "[Pre-Requisites] :1. Install third-party packages" 
+  shell: curl -s http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rpm/install-cortx-prereq.sh | bash -s -- -b {{ CORTX_BUILD }}
+
+- name: "[Pre-Requisites] : 3. SSPL rpm" 
+  shell: yum install -y --nogpgcheck cortx-sspl cortx-libsspl
+
+# Install elasticsearch and consul
+- name: "[Pre-Requisites] : Download & Install Kafka"
+  script: files/install_kafka.sh
+
+- name: "[Pre-Requisites] : 3. PY-UTILS rpm"
+  shell: yum install -y --nogpgcheck cortx-py-utils*
+
+- name: "[install_prereq] : Copy utils config"
+  ansible.builtin.template:
+    src: utils_config.j2
+    dest: /opt/seagate/cortx/sspl/conf/utils.config.tmpl.1-node
+    mode: '0774'
+
+- name: "[Pre-Requisites] : 4. Machine-ID of the VM" 
+  shell: cat /etc/machine-id
+  register: machineid
+
+- set_fact:
+    MACHINE_ID: "{{ machineid_out.stdout }}"
+
+- name: "[Pre-Requisites] : 5. FQDN of the VM" 
+  shell: hostname
+  register: hostname
+
+- set_fact:
+    MACHINE_ID: "{{ machineid_out.stdout }}"
+    HOSTNAME: "{{ hostname.stdout }}"
+
+#Dummy values for Controller to perform testing.
+- name: "[Provsioning] : Edit post install sspl script"
+  ansible.builtin.replace:
+    path: /opt/seagate/cortx/sspl/conf/sspl.post-install.tmpl.1-node
+    regexp: "{{ item.tempval }}"
+    replace: "{{ item.val }}"
+  with_items:
+    - { tempval: "TMPL_MACHINE_ID", val: "{{ MACHINE_ID }}" }
+    - { tempval: "TMPL_BMC_IP", val: "" }
+    - { tempval: "TMPL_BMC_SECRET", val: "" }
+    - { tempval: "TMPL_BMC_USER", val: "" }
+    - { tempval: "TMPL_HOSTNAME", val: "{{ ansible_nodename }}" }
+    - { tempval: "TMPL_NODE_NAME", val: "srvnode-1" }
+    - { tempval: "TMPL_ENCLOSURE_ID", val: "enc30512e5ae6df9f1ea02327bab45e499d" }
+    - { tempval: "TMPL_SERVER_NODE_TYPE", val: "virtual" }
+    - { tempval: "TMPL_CONTROLLER_SECRET", val: "!manage" }
+    - { tempval: "TMPL_PRIMARY_CONTROLLER_IP", val: "10.0.0.2" }
+    - { tempval: "TMPL_PRIMARY_CONTROLLER_PORT", val: "22" }
+    - { tempval: "TMPL_SECONDARY_CONTROLLER_IP", val: "10.0.0.3" }
+    - { tempval: "TMPL_SECONDARY_CONTROLLER_PORT", val: "22" }
+    - { tempval: "TMPL_CONTROLLER_TYPE", val: "Gallium" }
+    - { tempval: "TMPL_CONTROLLER_USER", val: "manage" }
+
+- name: "[Provsioning] : Edit prepare install sspl script"
+  ansible.builtin.replace:
+    path: 
+      - /opt/seagate/cortx/sspl/conf/sspl.prepare.tmpl.1-node
+      - /opt/seagate/cortx/sspl/conf/sspl.config.tmpl.1-node
+      - /opt/seagate/cortx/sspl/conf/sspl.init.tmpl.1-node 
+    regexp: "{{ item.tempval }}"
+    replace: "{{ item.val }}"
+  with_items:
+    - { tempval: "TMPL_MACHINE_ID", val: "{{ MACHINE_ID }}" }
+    - { tempval: "TMPL_BMC_IP", val: "" }
+    - { tempval: "TMPL_BMC_SECRET", val: "" }
+    - { tempval: "TMPL_BMC_USER", val: "" }
+    - { tempval: "TMPL_CLUSTER_ID", val: "CC01" }
+    - { tempval: "TMPL_HOSTNAME", val: "{{ ansible_nodename }}" }
+    - { tempval: "TMPL_NODE_NAME", val: "srvnode-1" }
+    - { tempval: "TMPL_DATA_PRIVATE_FQDN", val: "localhost" }
+    - { tempval: "TMPL_DATA_PRIVATE_INTERFACE", val: "" }
+    - { tempval: "TMPL_DATA_PUBLIC_FQDN", val: "localhost" }
+    - { tempal: "TMPL_DATA_PUBLIC_INTERFACE", val: "" }
+    - { tempval: "TMPL_MGMT_INTERFACE", val: "eth0" }
+    - { tempval: "TMPL_MGMT_PUBLIC_FQDN", val: "localhost" }
+    - { tempval: "TMPL_NODE_ID", val: "SN01" }
+    - { tempval: "TMPL_RACK_ID", val: "RC01" }
+    - { tempval: "TMPL_SITE_ID", val: "DC01" }
+    - { tempval: "TMPL_ENCLOSURE_ID", val: "enc30512e5ae6df9f1ea02327bab45e499d" }
+    - { tempval: "TMPL_SERVER_NODE_TYPE", val: "virtual" }
+    - { tempval: "TMPL_CONTROLLER_SECRET", val: "!manage" }
+    - { tempval: "TMPL_PRIMARY_CONTROLLER_IP", val: "10.0.0.2" }
+    - { tempval: "TMPL_PRIMARY_CONTROLLER_PORT", val: "22" }
+    - { tempval: "TMPL_SECONDARY_CONTROLLER_IP", val: "10.0.0.3" }
+    - { tempval: "TMPL_SECONDARY_CONTROLLER_PORT", val: "22" }
+    - { tempval: "TMPL_CONTROLLER_TYPE", val: "Gallium" }
+    - { tempval: "TMPL_CONTROLLER_USER", val: "manage" }
+    - { tempval: "TMPL_ENCLOSURE_NAME", val: "manage" }
+    - { tempval: "TMPL_ENCLOSURE_TYPE", val: "virtual" }
