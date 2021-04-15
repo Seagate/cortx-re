@@ -230,7 +230,7 @@ pipeline {
 
     post {
         always {
-            //script  {
+            /*script  {*/
         	sh label: 'Remove artifacts', script: '''rm -rf "${DESTINATION_RELEASE_LOCATION}"'''
 
          /*       if(env.ghprbPullLink){
