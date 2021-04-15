@@ -41,12 +41,12 @@
     state: present
 
 
-- name: "[install_prereq] : Copy utils config"
+- name: "[install_prereq] : Update Utils config Template"
   ansible.builtin.replace:
     path: /opt/seagate/cortx/utils/conf/utils.config.tmpl.1-node
     regexp: "{{ item.tempval }}"
     replace: "{{ item.val }}"
   with_items:
     - { tempval: "TMPL_KAFKA_SERVER1_FQDN", val: "{{ NODE1 }}" }
-    - { tempval: "TMPL_KAFKA_SERVER1_PORT", val: " 9092 " }
+    - { tempval: "TMPL_KAFKA_SERVER1_PORT", val: "9092" }
 
