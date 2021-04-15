@@ -81,13 +81,6 @@ pipeline {
                         echo "VERSION:$VERSION"
                         ./jenkins/build.sh -v $VERSION -l DEBUG
                     '''
-
-                    sh label: 'Copy RPMS', script: '''
-                        rm -rf /root/SSPL_RPMS
-                        mkdir -p /root/SSPL_RPMS
-                        cp /root/rpmbuild/RPMS/x86_64/*.rpm /root/SSPL_RPMS
-                        cp /root/rpmbuild/RPMS/noarch/*.rpm /root/SSPL_RPMS
-                    '''
                 }
             }
         }
@@ -160,14 +153,14 @@ pipeline {
 
                 '''
 
-                sh label: 'RPM Signing', script: '''
+                sh label: 'Create Repo', script: '''
                     pushd ${CORTX_ISO_LOCATION}
                         rpm -qi createrepo || yum install -y createrepo
                         createrepo .
                     popd
                 '''
 
-                sh label: 'RPM Signing', script: '''
+                sh label: 'Release info generation', script: '''
                     pushd cortx-re/scripts/release_support
                         sh build_release_info.sh -v ${VERSION} -l ${CORTX_ISO_LOCATION} -t ${THIRD_PARTY_LOCATION}
                         sh build_readme.sh "${DESTINATION_RELEASE_LOCATION}"
