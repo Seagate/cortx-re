@@ -30,7 +30,9 @@ pipeline {
 
         // Control to skip/run stages - (used for trublshooting purpose)
         STAGE_00_PREPARE_ENV = "yes"
-        STAGE_02_DEPLOY = "yes"
+        STAGE_01_PREREQUESITE = "yes"
+	STAGE_02_MINI_PROVISIONING = "yes"
+	STAGE_04_VALIDATE = "yes"
     }
 
     options {
@@ -84,15 +86,44 @@ pipeline {
         }
 
        
-        // Install cortx-pyutils from the provided build
-        stage('02. Deploy') {
-            when { expression { env.STAGE_02_DEPLOY == "yes" } }
+        // Install cortx-pyutils Prerequisites
+        stage('01. Prerequisite') {
+            when { expression { env.STAGE_01_PREREQUESITE == "yes" } }
             steps {
                 script {
                     
-                    info("Running '02. Deploy' Stage")
+                    info("Running '01. Prerequisite' Stage")
 
-                    runAnsible("01_DEPLOY")
+                    runAnsible("01_PREREQ")
+
+                }
+            } 
+        }
+		
+		// Install cortx-pyutils Mini Provisioning
+        stage('02. Mini Provisioning') {
+            when { expression { env.STAGE_02_MINI_PROVISIONING == "yes" } }
+            steps {
+                script {
+                    
+                    info("Running '02. Mini Provisioning' Stage")
+
+                    runAnsible("02_MINI_PROV")
+
+                }
+            } 
+        }
+		
+		
+		// cortx-pyutils Validate and Test
+        stage('04. Validate') {
+            when { expression { env.STAGE_04_VALIDATE == "yes" } }
+            steps {
+                script {
+                    
+                    info("Running '04. Validate' Stage")
+
+                    runAnsible("04_VALIDATE")
 
                 }
             } 
@@ -207,3 +238,4 @@ def getCurrentNode(nodeName) {
   }
   throw new Exception("No node for $nodeName")
 }
+
