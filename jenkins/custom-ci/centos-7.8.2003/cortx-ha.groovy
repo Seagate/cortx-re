@@ -70,11 +70,8 @@ EOF
 			steps {
 				script { build_stage = env.STAGE_NAME }
 				sh label: '', script: '''
-				cat <<EOF >/etc/pip.conf
-[global]
-timeout: 120
-trusted-host: pypi.org files.pythonhosted.org
-EOF
+					pip3 config --global set global.trusted-host "pypi.org files.pythonhosted.org"
+					
 					if [ "$version" == "1.0.0" ]; then
 						yum-config-manager --disable cortx-C7.7.1908
 						yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/cortx-1.0/$os_version/last_successful/

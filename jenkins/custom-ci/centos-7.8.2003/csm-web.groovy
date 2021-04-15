@@ -47,11 +47,7 @@ pipeline {
 				script { build_stage = env.STAGE_NAME }
 				sh label: '', script: '''
 					yum install -y cortx-py-utils cortx-prvsnr
-					cat <<EOF >/etc/pip.conf
-[global]
-timeout: 120
-trusted-host: pypi.org files.pythonhosted.org
-EOF
+					pip3 config --global set global.trusted-host "pypi.org files.pythonhosted.org"
 					pip3.6 install pyinstaller==3.5
 				'''
 			}
