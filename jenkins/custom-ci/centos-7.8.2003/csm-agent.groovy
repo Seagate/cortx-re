@@ -51,6 +51,7 @@ pipeline {
 				script { build_stage = env.STAGE_NAME }
 
 				sh label: 'Install cortx-prereq package', script: """
+				    pip3 config --global set global.trusted-host "pypi.org files.pythonhosted.org"
 					pip3 uninstall pip -y && yum install python3-pip -y && ln -s /usr/bin/pip3 /usr/local/bin/pip3
 					sh ./cortx-re/scripts/third-party-rpm/install-cortx-prereq.sh
 				"""
@@ -69,7 +70,6 @@ pipeline {
 				"""
 
 				sh label: 'Install packages', script: """
-					pip3 config --global set global.trusted-host "pypi.org files.pythonhosted.org"
 					pip3.6 install pyinstaller==3.5
 				"""
 			}
