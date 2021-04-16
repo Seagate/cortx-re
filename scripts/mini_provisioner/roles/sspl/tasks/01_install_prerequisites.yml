@@ -85,7 +85,7 @@
     - { tempval: "TMPL_DATA_PRIVATE_FQDN", val: "localhost" }
     - { tempval: "TMPL_DATA_PRIVATE_INTERFACE", val: "" }
     - { tempval: "TMPL_DATA_PUBLIC_FQDN", val: "localhost" }
-    - { tempal: "TMPL_DATA_PUBLIC_INTERFACE", val: "" }
+    - { tempval: "TMPL_DATA_PUBLIC_INTERFACE", val: "" }
     - { tempval: "TMPL_MGMT_INTERFACE", val: "eth0" }
     - { tempval: "TMPL_MGMT_PUBLIC_FQDN", val: "localhost" }
     - { tempval: "TMPL_NODE_ID", val: "SN01" }
