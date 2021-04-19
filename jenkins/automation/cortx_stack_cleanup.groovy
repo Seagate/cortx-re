@@ -1,14 +1,16 @@
 #!/usr/bin/env groovy
 pipeline { 
     agent {
+        
         node {
             // This job runs on vm deployment controller node to execute vm cleanup for the deployment configured host
-            label "vm_deployment_1n_user_host"
+            label params.HOST.isEmpty() ? "${NODE_LABEL} && cleanup_req" : "vm_deployment_1n_user_host"
         }
     }
 	
     // Accept node label as parameter
     parameters {
+        string(name: 'NODE_LABEL', description: 'Optional : Node Label',  trim: true)
         string(name: 'HOST', description: 'Host FQDN',  trim: true)
         password(name: 'HOST_PASS', description: 'Host machine root user password')
     }
@@ -19,8 +21,8 @@ pipeline {
         // Credentials used to SSH node
         NODE_DEFAULT_SSH_CRED = credentials("${NODE_DEFAULT_SSH_CRED}")
         NODE_USER = "${NODE_DEFAULT_SSH_CRED_USR}"
-        NODE1_HOST = "${HOST}"
-        NODE_PASS = "${HOST_PASS}"
+        NODE_PASS = "${params.HOST.isEmpty() ? NODE_DEFAULT_SSH_CRED_PSW : HOST_PASS}"
+        NODE1_HOST = "${params.HOST.isEmpty() ? NODE1_HOST : HOST }"
     }
 
     options {
@@ -41,7 +43,7 @@ pipeline {
 
                     // Clone cortx-re repo
                     dir('cortx-re') {
-                        checkout([$class: 'GitSCM', branches: [[name: '*/cortx-stack-cleanup-job']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/gauravchaudhari02/cortx-re.git']]])                
+                        checkout([$class: 'GitSCM', branches: [[name: '*/mini-provisioner-dev']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re.git']]])                
                     }
 
                 }
@@ -49,64 +51,33 @@ pipeline {
         }
         stage('Cleanup Node') {
             steps {
-                retry(count: 2) {   
-                    script {
-                        
-                        withCredentials([usernamePassword(credentialsId: "${NODE_UN_PASS_CRED_ID}", passwordVariable: 'SERVICE_PASS', usernameVariable: 'SERVICE_USER'), usernameColonPassword(credentialsId: "${CLOUDFORM_TOKEN_CRED_ID}", variable: 'CLOUDFORM_API_CRED')]) {
-                            dir("cortx-re/scripts/mini_provisioner") {
-                                ansiblePlaybook(
-                                    playbook: 'host_cleanup.yml',
-                                    inventory: 'inventories/hosts',
-                                    extraVars: [
-                                        "NODE1"                 : [value: "${NODE1_HOST}", hidden: false],
-                                        "CLUSTER_PASS"          : [value: "${NODE_PASS}", hidden: false]
-                                    ],
-                                    extras: '-v',
-                                    colorized: true
-                                )
-                            }                        
-                        }
-
-                        def remoteHost = getTestMachine("${NODE1_HOST}", "${NODE_USER}", "${NODE_PASS}")
-
-                        // Validate Cleanup
-                        sshCommand remote: remoteHost, command: '''
-                            set +x
-                            if [[ ! $(ls -1 '/root') ]]; then
-                                echo "[ reimage_validation ] : OK - No Files in '/root' location";
-                            else 
-                                echo "[ reimage_validation ] : NOT_OK - Files found in /root";
-                                exit 1
-                            fi
-                            for folder in "/var/log/seagate" "/opt/seagate";
-                            do
-                                if [[ ! -d "${folder}" ]]; then
-                                    echo "[ reimage_validation ] : OK - Folder does not exists ( ${folder} )";
-                                else 
-                                    echo "[ reimage_validation ] : NOT_OK - Folder exists ${folder}";
-                                    exit 1
-                                fi
-                            done
-                            if [[ ! $(yum list installed | grep "cortx") ]]; then
-                                echo "[ reimage_validation ] : OK - No cortx component get installed";
-                            else
-                                echo "[ reimage_validation ] : NOT_OK - cortx component already installed";
-                                exit 1
-                            fi 
-                        '''
-                    }
+                script {
+                    dir("cortx-re/scripts/mini_provisioner") {
+                        ansiblePlaybook(
+                            playbook: 'host_cleanup.yml',
+                            inventory: 'inventories/hosts',
+                            tags: '00_PREP_ENV,01_CLEANUP',
+                            extraVars: [
+                                "NODE1"                 : [value: "${NODE1_HOST}", hidden: false],
+                                "CLUSTER_PASS"          : [value: "${NODE_PASS}", hidden: false]
+                            ],
+                            extras: '-v',
+                            colorized: true
+                        )
+                    }                        
                 }
             }
-        }    
+        }
     }
 
     post {
         failure {
             script {
-                // On cleanup failure take node offline
-                markNodeOffline(" VM Clean-Up Issue  - Automated offline")
+                if( params.HOST.isEmpty() ) {
+                    markNodeOffline("VM Cleanup Failure - Automated offline")
+                }    
             }
-        }
+        }    
         success {
             script {
                 // remove cleanup label from the node
@@ -159,3 +130,4 @@ def getCurrentNode(nodeName) {
   }
   throw new Exception("No node for $nodeName")
 }
+
