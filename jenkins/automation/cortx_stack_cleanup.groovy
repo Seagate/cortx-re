@@ -73,7 +73,7 @@ pipeline {
     post {
         failure {
             script {
-                if( params.HOST.isEmpty() ) {
+                if ( params.HOST.isEmpty() ) {
                     markNodeOffline("VM Cleanup Failure - Automated offline")
                 }    
             }
