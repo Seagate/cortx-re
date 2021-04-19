@@ -2,14 +2,14 @@
 %define _prefix /opt
 
 Name:           kafka
-Version:        2.13_2.7.0
+Version:        %{_kafka_version}_%{_kafka_release}
 Release:        %{?dist:el7}
 Summary:        Apache Kafka is publish-subscribe messaging rethought as a distributed commit log.
 
 Group:          Applications
 License:        Apache License, Version 2.0
 URL:            https://kafka.apache.org/
-Source0		https://mirrors.estointernet.in/apache/kafka/2.7.0/kafka_2.13-2.7.0.tgz
+Source0:	kafka_%{_kafka_version}-%{_kafka_release}.tgz
 Source1:	kafka.service
 Source2:	kafka-zookeeper.service
 Requires:	java-1.8.0-openjdk-headless
@@ -20,7 +20,7 @@ Kafka is designed to allow a single cluster to serve as the central data backbon
 %global debug_package %{nil}
 
 %prep
-%setup -n kafka_2.13-2.7.0
+%setup -n kafka_%{_kafka_version}-%{_kafka_release}
 
 %build
 rm -f libs/{kafka_*-javadoc.jar,kafka_*-scaladoc.jar,kafka_*-sources.jar,*.asc}
