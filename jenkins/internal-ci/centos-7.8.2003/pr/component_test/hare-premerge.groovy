@@ -68,9 +68,10 @@ pipeline {
                     def remote = getTestMachine(VM_FQDN)
                     def commandResult = sshCommand remote: remote, command: """
                         echo "Clean up VM before use"
-                        yum remove cortx-hare cortx-motr{,-devel} consul -y 
+                        yum remove cortx-hare cortx-motr{,-devel} cortx-py-utils consul -y 
                         rm -rf /var/crash/* /var/log/seagate/* /var/log/hare/* /var/log/motr/* /var/lib/hare/* /var/motr/* /etc/motr/*
                         rm -rf /root/.cache/dhall* /root/rpmbuild
+                        rm -rf /etc/yum.repos.d/motr_last_successful.repo /etc/yum.repos.d/motr_uploads.repo /etc/yum.repos.d/lustre_release.repo
                         """
                         echo "Result: " + commandResult
                 }    
@@ -119,8 +120,10 @@ pipeline {
                                 script {
                                     def remote = getTestMachine(VM_FQDN)
                                     def commandResult = sshCommand remote: remote, command: """
-                                    yum install cortx-motr{,-devel} -y
                                     yum install python3 python3-devel gcc rpm-build -y
+                                    yum install cortx-py-utils -y
+                                    yum install consul-1.9.1 -y
+                                    yum install cortx-motr{,-devel} -y                                    
                                     """
                                     echo "Result: " + commandResult
                                 }
