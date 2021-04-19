@@ -35,13 +35,10 @@
     name: "*cortx*"
     state: absent
 
-- name: Remove leaf packages
-  yum: 
-    autoremove: yes
-
-- name: Clear yum cache
+- name: Clear leaf packages and yum cache
   command: "{{ item }}"
   with_items:
+    - "yum autoremove"
     - "yum clean all"
     - "rm -rf /var/cache/yum"
 
