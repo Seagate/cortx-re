@@ -59,6 +59,7 @@
     - "rm -rf /opt/seagate"
     - "rm -rf /root/*.*"
     - "rm -rf /etc/yum.repos.d/*"
+    - "rm -rf /etc/hosts"
 
 - name: Cleanup directories if exists
   shell: "test -e {{ item }} && rm -rf {{ item }} || true"
@@ -85,3 +86,12 @@
     - "/etc/lustre"
     - "/etc/pacemaker"
     - "/etc/sspl_global_config_copy.yaml"
+
+- name: Reset hosts file
+  blockinfile:
+    path: /etc/hosts
+    block: |
+      127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+      ::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+    create: yes
+    mode: 0644
