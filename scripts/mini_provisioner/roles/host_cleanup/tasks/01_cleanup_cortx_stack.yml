@@ -28,6 +28,7 @@
       - salt-api
       - python36-m2crypto
       - python36-cortx-prvsnr
+      - uds-pyi
     state: absent
 
 - name: Remove cortx rpm packages
@@ -58,11 +59,29 @@
     - "rm -rf /opt/seagate"
     - "rm -rf /root/*.*"
     - "rm -rf /etc/yum.repos.d/*"
-    - "test -e /var/lib/seagate && rm -rf /var/lib/seagate || true"
-    - "test -e /srv/glusterfs && rm -rf /srv/glusterfs || true"
-    - "test -e /var/cache/salt && rm -rf /var/cache/salt || true"
-    - "test -e /etc/salt && rm -rf /etc/salt || true"
-    - "test -e /opt/isos && rm -rf /opt/isos || true"
-    - "test -e /root/.provisioner && rm -rf /root/.provisioner || true"
-    - "test -e /etc/yum.repos.d/RELEASE_FACTORY.INFO && rm -f /etc/yum.repos.d/RELEASE_FACTORY.INFO || true"
-    - "test -e /root/.ssh && rm -rf /root/.ssh || true"
+
+- name: Cleanup directories if exists
+  shell: "test -e "{{ item }}" && rm -rf "{{ item }}" || true"
+  with_items:  
+    - "/var/lib/seagate"
+    - "/srv/glusterfs"
+    - "/var/cache/salt"
+    - "/etc/salt"
+    - "/opt/isos"
+    - "/root/.provisioner"
+    - "/etc/yum.repos.d/RELEASE_FACTORY.INFO"
+    - "/root/.ssh"
+    - "/var/motr"
+    - "/var/cortx"
+    - "/var/lib/cortx"
+    - "/var/lib/uds"
+    - "/var/lib/zookeeper"
+    - "/var/log/seagate"
+    - "/opt/consul"
+    - "/opt/kafka"
+    - "/opt/uds-pyi"
+    - "/etc/cortx"
+    - "/etc/csm"
+    - "/etc/lustre"
+    - "/etc/pacemaker"
+    - "/etc/sspl_global_config_copy.yaml"
