@@ -300,3 +300,13 @@ def getCurrentNode(nodeName) {
   }
   throw new Exception("No node for $nodeName")
 }
+
+// Make failed node offline
+def markNodeOffline(message) {
+    node = getCurrentNode(env.NODE_NAME)
+    computer = node.toComputer()
+    computer.setTemporarilyOffline(true)
+    computer.doChangeOfflineCause(message)
+    computer = null
+    node = null
+}
