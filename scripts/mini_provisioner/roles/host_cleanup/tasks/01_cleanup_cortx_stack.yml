@@ -61,7 +61,7 @@
     - "rm -rf /etc/yum.repos.d/*"
 
 - name: Cleanup directories if exists
-  shell: "test -e "{{ item }}" && rm -rf "{{ item }}" || true"
+  shell: "test -e {{ item }} && rm -rf {{ item }} || true"
   with_items:  
     - "/var/lib/seagate"
     - "/srv/glusterfs"
