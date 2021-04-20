@@ -88,10 +88,9 @@
     - "/etc/sspl_global_config_copy.yaml"
 
 - name: Reset hosts file
-  blockinfile:
+  copy:
     path: /etc/hosts
-    block: |
-      127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
-      ::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
-    create: yes
+    content: |
+      '127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+      ::1         localhost localhost.localdomain localhost6 localhost6.localdomain6'
     mode: 0644
