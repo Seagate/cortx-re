@@ -93,7 +93,7 @@
     MACHINE_ID: "{{ machineid_out.stdout }}"
 
 - name: "[install_cortx_manager] : Get Secret Key" 
-  shell: python3 -W "ignore" -c "from cortx.utils.security.cipher import Cipher; key = Cipher.generate_key('bae4b468-565d-49df-9495-a43a5d89babc','system');print((Cipher.encrypt(key, b'Seagate@1')).decode('utf-8'))"
+  shell: python3 -W "ignore" -c "from cortx.utils.security.cipher import Cipher; key = Cipher.generate_key('bae4b468-565d-49df-9495-a43a5d89babc','cortx');print((Cipher.encrypt(key, b'Seagate@1')).decode('utf-8'))"
   register: secretkey_out
 
 - set_fact:
