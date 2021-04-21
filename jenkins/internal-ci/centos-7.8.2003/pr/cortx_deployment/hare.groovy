@@ -87,7 +87,7 @@ pipeline {
                         sed '/baseurl/d' /etc/yum.repos.d/motr_current_build.repo
                         echo "baseurl=http://cortx-storage.colo.seagate.com/releases/cortx/components/github/${BRANCH}/${OS_VERSION}/dev/motr/current_build/"  >> /etc/yum.repos.d/motr_current_build.repo
                         yum clean all;rm -rf /var/cache/yum
-                        yum install cortx-motr{,-devel} -y
+                        yum install cortx-py-utils cortx-motr{,-devel} -y
                     """
 
                     sh label: 'Build', script: '''
