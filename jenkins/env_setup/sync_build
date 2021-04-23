@@ -2,7 +2,7 @@ pipeline {
     agent {
         // Defining the Jenkins node where to run this Job
         node {
-            label 'ssc-vm-3421'
+            label 'pun-artifact-sync-node-ssc-vm-3421'
         }
     }
     parameters {
@@ -50,4 +50,4 @@ pipeline {
 
 }
 
-}
+}s
