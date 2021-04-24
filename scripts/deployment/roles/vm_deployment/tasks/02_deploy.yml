@@ -1,0 +1,103 @@
+---
+
+- name: "[ Deploy Cortx Stack ] : Get available VM devices"
+  shell: "lsblk -nd -o NAME -e 11|grep -v sda|sed 's|sd|/dev/sd|g'|paste -s -d, -"
+  register: available_devices
+
+- set_fact:
+    NODE_COUNT: "{% if SETUP_TYPE=='single' %}1{% elif SETUP_TYPE=='3_node'%}3{% else %}1{% endif %}"
+    REQUIRED_DEVICES: "{% if SETUP_TYPE=='single' %}2{% elif SETUP_TYPE=='3_node'%}6{% else %}2{% endif %}"
+    VM_DEVICES: "{{ available_devices.stdout }}"
+    
+- set_fact:
+    DATA_DEVICES: "{{ ','.join(VM_DEVICES.split(',')[1:REQUIRED_DEVICES|int]) }}"
+    METADATA_DEVICES: "{{ VM_DEVICES.split(',')[0] }}"
+    SNS_DATA: "{{ 4 if REQUIRED_DEVICES|int >= 6 else 1  }}"
+    SNS_PARITY: "{{ 2 if REQUIRED_DEVICES|int >= 6 else 0 }}"
+    SNS_SPARE: "{{ 2 if REQUIRED_DEVICES|int >= 6 else 0 }}"
+
+- name: "[ Deploy Cortx Stack ] : Create provisioner config file & bootstrap script"
+  template:
+    src: "{{ item.source_tmpl }}"
+    dest: "{{ item. dest_file }}"
+    mode: '0754'
+  with_items:
+    - { source_tmpl: "config.ini.j2", dest_file: "/root/cortx_deployment/config/config.ini" }
+    - { source_tmpl: "provisioner_bootsrap.sh.j2", dest_file: "/root/cortx_deployment/script/provisioner_bootsrap.sh" }
+
+- name: "[ Deploy Cortx Stack ] : Start Deployment"
+  block:
+    - name: "[ Deploy Cortx Stack ] : 1. Provisioner Bootstrap" 
+      shell: "bash /root/cortx_deployment/script/provisioner_bootsrap.sh 2>&1 | tee -a /root/cortx_deployment/log/01_provisioner_bootstrap.log"
+      register: deploy_vm
+      failed_when: "\"Success: Node Validation done\" not in deploy_vm.stdout and \"Confstore copied across all nodes of cluster\" not in deploy_vm.stdout"
+
+    - name: "[ Deploy Cortx Stack ] : Validate Provisioner Bootstrap" 
+      shell: "{{ item }} 2>&1 | tee -a /root/cortx_deployment/log/01_provisioner_bootstrap_validation.log"
+      with_items:
+        - salt '*' test.ping
+        - salt "*" service.stop puppet
+        - salt "*" service.disable puppet
+        - salt '*' pillar.get release
+        - salt '*' grains.get node_id
+        - salt '*' grains.get cluster_id
+        - salt '*' grains.get roles
+
+    - name: "[ Deploy Cortx Stack ] : 2. Platform setup" 
+      shell: "provisioner deploy_vm --states system --setup-type {{ SETUP_TYPE }} 2>&1 | tee -a /root/cortx_deployment/log/02_system_state.log"
+      register: deploy_vm
+      failed_when: "\"Deploy VM - Done\" not in deploy_vm.stdout"
+
+    - name: "[ Deploy Cortx Stack ] : 3. 3rd Party Software Deployment" 
+      shell: "provisioner deploy_vm --states prereq --setup-type {{ SETUP_TYPE }} 2>&1 | tee -a /root/cortx_deployment/log/03_prereq_state.log"
+      register: deploy_vm
+      failed_when: "\"Deploy VM - Done\" not in deploy_vm.stdout"
+
+    - name: "[ Deploy Cortx Stack ] : 4. Foundation Deployment" 
+      shell: "provisioner deploy_vm --states utils --setup-type {{ SETUP_TYPE }} 2>&1 | tee -a /root/cortx_deployment/log/04_utils_state.log"
+      register: deploy_vm
+      failed_when: "\"Deploy VM - Done\" not in deploy_vm.stdout"
+
+    - name: "[ Deploy Cortx Stack ] : 5. Data Path States Deployment" 
+      shell: "provisioner deploy_vm --states iopath --setup-type {{ SETUP_TYPE }} 2>&1 | tee -a /root/cortx_deployment/log/05_iopath_state.log"
+      register: deploy_vm
+      failed_when: "\"Deploy VM - Done\" not in deploy_vm.stdout"
+
+    - name: "[ Deploy Cortx Stack ] : 6. Control Stack States Deployment" 
+      shell: "provisioner deploy_vm --states controlpath --setup-type {{ SETUP_TYPE }} 2>&1 | tee -a /root/cortx_deployment/log/06_controlpath_state.log"
+      register: deploy_vm
+      failed_when: "\"Deploy VM - Done\" not in deploy_vm.stdout"
+
+    - name: "[ Deploy Cortx Stack ] : 7. HA States Deployment" 
+      shell: "provisioner deploy_vm --states ha --setup-type {{ SETUP_TYPE }} 2>&1 | tee -a /root/cortx_deployment/log/07_ha_state.log"
+      register: deploy_vm
+      failed_when: "\"Deploy VM - Done\" not in deploy_vm.stdout"
+  always:
+    - name: "[ Deploy Cortx Stack ] : Get installed rpm info"
+      shell: yum list installed | grep 'cortx' 2>&1 | tee -a /root/cortx_deployment/log/installed_cortx_rpm_list.log
+    
+    - name: "[ Deploy Cortx Stack ] : Write Latest Deployment log to file" 
+      shell: |
+        echo '{{ deploy_vm.stdout }}' > /root/cortx_deployment/log/deploymet_latest.log
+        echo '{{ deploy_vm.stderr }}' >> /root/cortx_deployment/log/deploymet_latest.log
+
+    - name: "[ Deploy Cortx Stack ] : Validate Deployment" 
+      shell: |
+        SETUP_LOG_FILE="/root/cortx_deployment/log/deploymet_latest.log"
+        DEPLOYMENT_STATUS_FILE="/root/cortx_deployment/log/deployment_status.log"
+        FAILED_COMPONENT_FILE="/root/cortx_deployment/log/failed_component.log"
+        IS_FAILED=$(grep -i 'Salt client command failed' ${SETUP_LOG_FILE})
+        IS_SUCCESS=$(grep -i 'Deploy VM - Done' ${SETUP_LOG_FILE})
+        if [[ ${IS_SUCCESS} ]]; then
+            DEPLOYMENT_STATUS="Cortx Stack VM Deployment 'Success'."
+        elif [[ ${IS_FAILED} ]]; then
+            LAST_APPLIED_COMPONENT=$(cat ${SETUP_LOG_FILE} | grep 'Applying' | tail -1 | cut -d" " -f7)
+            LOG_DATA=$(cat ${SETUP_LOG_FILE})
+            DEPLOYMENT_STATUS="Cortx Stack VM Deployment 'Failed' in '${LAST_APPLIED_COMPONENT}'. Please check setup log for more info. \n Log :\n -----\n\n ${LOG_DATA}\n -----\n"
+            echo ${LAST_APPLIED_COMPONENT} >> "${FAILED_COMPONENT_FILE}"
+        else
+            DEPLOYMENT_STATUS="Cortx Stack VM Deployment 'Failed'. Please check setup log for more info."
+            echo 'bootstrap' >> "${FAILED_COMPONENT_FILE}"
+        fi
+        echo -en "Deployment Status :\n \t ${DEPLOYMENT_STATUS} \n" 2>&1 | tee -a "${DEPLOYMENT_STATUS_FILE}"
+

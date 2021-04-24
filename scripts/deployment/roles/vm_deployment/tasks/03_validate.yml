@@ -1,0 +1,40 @@
+- pause:
+    seconds: 20
+
+- name: "[ Validate Deployment] : Start cluster"
+  command: cortx cluster start
+
+# Wait for services to start
+- name: "[ Validate Deployment] : Check cluster status"
+  command: "hctl status"
+  register: hctl_status
+  until:
+    - "'[started]  hax' in hctl_status.stdout"
+    - "'[started]  confd' in hctl_status.stdout"
+    - "'[started]  ioservice' in hctl_status.stdout"
+    - "'[started]  s3server' in hctl_status.stdout"
+  retries: 5
+  delay: 30
+  ignore_errors: true
+
+- name: "[ Validate Deployment] : Update Deployment status"
+  shell: echo -e "Cortx Stack VM Deployment 'Failed' in hctl status check. \n \t {{ hctl_status.stdout }}" > /root/cortx_deployment/log/deployment_status.log
+  when: "\"[started]  ioservice\" not in hctl_status.stdout"
+
+- name: "[ Validate Deployment] :  Validate Deployment - hctl status"
+  fail: msg="Deployment failed. 'hctl status' returns unhealthy response"
+  when: "\"[started]  ioservice\" not in hctl_status.stdout"
+
+- name: "[ Validate Deployment] : Check service status"
+  shell: "{{ item }} 2>&1 | tee -a /root/cortx_deployment/log/service_status.log"
+  register: service_status
+  with_items:
+    - systemctl status rabbitmq-server
+    - systemctl status elasticsearch
+    - systemctl status haproxy
+    - systemctl status s3authserver
+    - systemctl status sspl-ll
+    - systemctl status csm_agent
+    - systemctl status csm_web
+  ignore_errors: true
+ 

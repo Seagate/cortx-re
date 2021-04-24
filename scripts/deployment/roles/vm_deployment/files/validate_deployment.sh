@@ -18,9 +18,9 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
-SETUP_LOG_FILE="/var/log/seagate/provisioner/setup.log"
-DEPLOYMENT_STATUS_FILE="/root/deployment_status.log"
-FAILED_COMPONENT_FILE="/root/failed_component.log"
+SETUP_LOG_FILE="$1"
+DEPLOYMENT_STATUS_FILE="/root/cortx_deployment/log/deployment_status.log"
+FAILED_COMPONENT_FILE="/root/cortx_deployment/log/failed_component.log"
 IS_FAILED=$(grep -i 'Salt client command failed' ${SETUP_LOG_FILE})
 IS_SUCCESS=$(grep -i 'Deploy VM - Done' ${SETUP_LOG_FILE})
 IS_PROVISIONER_ERROR=$(grep -i 'PROVISIONER FAILED' ${SETUP_LOG_FILE})

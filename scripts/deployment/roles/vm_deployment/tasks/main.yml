@@ -4,3 +4,6 @@
 
 - include: 02_deploy.yml
   tags: ['02_DEPLOY']
+
+- include: 03_validate.yml
+  tags: ['03_VALIDATE']

@@ -9,27 +9,29 @@
 ##########################################################################################
 
 # Install required tools
-- name: "[prepare] : Install tools [expect, curl, bc, jq] on localhost"
+- name: "[ Prepare ] : Install tools [expect, curl, bc, jq] on localhost"
   yum:
     name: [ 'expect', 'ipmitool', 'curl', 'bc', 'jq']
     state: latest
     update_cache: yes
 
-# Update hostfile with node hostname (dynamic host)
-- name: "[prepare] : Update host files for node connect"
-  script: files/update_hosts.sh {{ NODE1 }}
+- name: "[ Prepare ] : Generate host file"
+  template:
+    src: hosts_srvnode.j2
+    dest: inventories/vm_deployment/hosts_srvnodes
+    mode: '0754'
 
 # Refresh inventory for hostfile changes
 - meta: refresh_inventory
 
 # Refresh known hosts
-- name: "[prepare] : Refreshing 'known hosts'"
+- name: "[ Prepare ] : Refreshing 'known hosts'"
   command: sed -i "/{{ hostvars[item]['ansible_host'] }}/d" /root/.ssh/known_hosts
-  with_items: "{{ groups['nodes'] }}"
+  with_items: "{{ groups['srvnodes'] }}"
   ignore_unreachable: True
 
 # Execute passwordless ssh script to copy ket to destination host
-- name: "[prepare] : Enable passwordless authentication for ansible->node connection"
+- name: "[ Prepare ] : Enable passwordless authentication for ansible->node connection"
   script: files/passwordless_ssh.sh {{ hostvars[item]['ansible_user'] }} {{ hostvars[item]['ansible_host'] }} '{{ CLUSTER_PASS }}'
-  with_items: "{{ groups['nodes'] }}"
+  with_items: "{{ groups['srvnodes'] }}"
   ignore_unreachable: True

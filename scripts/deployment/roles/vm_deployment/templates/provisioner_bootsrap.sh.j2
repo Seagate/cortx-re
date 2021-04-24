@@ -16,16 +16,22 @@
 # For any questions about this software or licensing,
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
-
-BUILD_URL="$1"
-NODE1="$2"
-CLUSTER_PASS="$3"
-
-sshpass -p "${CLUSTER_PASS}" provisioner auto_deploy_vm \
-    --console-formatter full \
+{% set node_count =  HOST.count(",") + 1  %}
+{% set counter = 1 %}
+export SSHPASS={{ CLUSTER_PASS }}
+provisioner setup_provisioner \
     --logfile \
     --logfile-filename /var/log/seagate/provisioner/setup.log \
-    --source rpm --config-path /root/config.ini \
-    --dist-type bundle  \
-    --target-build "${BUILD_URL}"  \
-    srvnode-1:"${NODE1}"
+    --source rpm \
+    --config-path /root/cortx_deployment/config/config.ini \
+    --dist-type bundle \
+    --target-build {{ CORTX_BUILD }} \
+{% if node_count > 1 %}
+    --ha \
+{% endif %}
+    {% for node in  HOST.split(',') %}srvnode-{{ counter }}:{{ node }} {% set counter = counter + 1 %}{% endfor %}
+
+
+provisioner configure_setup /root/cortx_deployment/config/config.ini {{ NODE_COUNT }}
+salt-call state.apply components.system.config.pillar_encrypt
+provisioner confstore_export

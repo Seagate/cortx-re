@@ -14,12 +14,12 @@
       tags: ['00_PREPARE']
 
 - name: Prepare Environment 
-  hosts: srvnode-1
+  hosts: srvnode-1 # Assuming 00_PREPARE creates host entries
   gather_facts: yes
   vars_files:
-    - roles/vm_deployment_1node/vars/config.yml 
+    - roles/vm_deployment/vars/config.yml 
   roles:
-    - vm_deployment_1node
+    - vm_deployment
 
 
 

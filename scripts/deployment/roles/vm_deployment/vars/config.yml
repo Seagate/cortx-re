@@ -1,0 +1,7 @@
+---
+
+required_vars:
+  - NODE
+  - CORTX_BUILD
+  - CLUSTER_PASS
+  - SETUP_TYPE
