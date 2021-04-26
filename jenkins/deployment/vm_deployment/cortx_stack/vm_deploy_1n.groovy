@@ -349,7 +349,7 @@ def getBuild(buildURL) {
     buildbranch = "Build"
     if ( buildURL.contains("/cortx/github/main/") ) {
         buildbranch="Main"
-    }else if ( buildURL.contains("/cortx/github/stable/") ) {
+    } else if ( buildURL.contains("/cortx/github/stable/") ) {
         buildbranch="Stable"
     }else if ( buildURL.contains("/cortx/github/integration-custom-ci/")) {
         buildbranch="Custom-CI"
@@ -410,17 +410,17 @@ def getFailedComponentName(String failedStage) {
     component = "RE"
     if (failedStage.contains('components.system') || failedStage.contains('components.misc_pkgs') || failedStage.contains('bootstrap')) {
         component = "Provisioner"
-    } else if(failedStage.contains('components.motr')) {
+    } else if (failedStage.contains('components.motr')) {
         component = "Motr"
-    } else if(failedStage.contains('components.s3server')) {
+    } else if (failedStage.contains('components.s3server')) {
         component = "S3Server"
-    } else if(failedStage.contains('components.hare')) {
+    } else if (failedStage.contains('components.hare')) {
         component = "hare"
-    } else if(failedStage.contains('components.ha')) {
+    } else if (failedStage.contains('components.ha')) {
         component = "HA"
-    } else if(failedStage.contains('components.sspl')) {
+    } else if (failedStage.contains('components.sspl')) {
         component = "Monitor"
-    } else if(failedStage.contains('components.csm')) {
+    } else if (failedStage.contains('components.csm')) {
         component = "CSM"
     }
 
