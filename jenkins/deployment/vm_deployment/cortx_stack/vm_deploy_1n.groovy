@@ -55,7 +55,7 @@ pipeline {
             steps {
                 script {
 				
-                    if( "${HOST}" == "-" ) {
+                    if ( "${HOST}" == "-" ) {
 					    markNodeforCleanup()
                     }
                     
@@ -152,9 +152,9 @@ pipeline {
                 }
 
                 // Cleanup VM Based on 'DEBUG' & 'HOST' values
-                if( "${HOST}" == "-" ) {
+                if ( "${HOST}" == "-" ) {
                     
-                    if( params.DEBUG ) {  
+                    if ( params.DEBUG ) {  
                         // Take Node offline for debugging  
                         markNodeOffline("R2 VM Deployment Debug Mode Enabled on This Host - ${BUILD_URL}")
                     } else {
@@ -177,7 +177,7 @@ pipeline {
                     STATUS = "FAILURE"
 
                     // Failure component name and Cause can be retrived from deployment status log
-                    if (fileExists('deployment_status.log')){
+                    if (fileExists('deployment_status.log')) {
                         try {
                            
                             // Failed Stage
@@ -198,7 +198,7 @@ pipeline {
                             // 1. Jira issue should be created only when 'CREATE_JIRA_ISSUE_ON_FAILURE' option is enabled
                             // 2. Jira issue should be created only when 'previous build is success' (To avoid Multiple jira tickets)
                             // FIXME - LOGIC NEED TO BE IMPROVED TO QUERY JIRA TO IDENTIFY EXSITING TICKETS FOR THE SAME ISSUE
-                            if( params.CREATE_JIRA_ISSUE_ON_FAILURE && ( !params.AUTOMATED || "SUCCESS".equals(currentBuild.previousBuild.result))) {
+                            if ( params.CREATE_JIRA_ISSUE_ON_FAILURE && ( !params.AUTOMATED || "SUCCESS".equals(currentBuild.previousBuild.result))) {
                                 
                                 jiraIssue = createJiraIssue(failed_component_stage.trim(), failed_component_name, deployment_status.trim())
 
@@ -214,10 +214,10 @@ pipeline {
                 }
 
                 // This env vars used in email templates to get the log path
-                if (fileExists('setup.log')){
+                if (fileExists('setup.log')) {
                     env.setup_log = "${BUILD_URL}/artifact/setup.log"
                 }
-                if (fileExists('hctl_status.log')){
+                if (fileExists('hctl_status.log')) {
                     env.cluster_status = "${BUILD_URL}/artifact/hctl_status.log"
                 }
 
@@ -347,11 +347,11 @@ def getBuild(buildURL) {
 
     buildID = sh(script: "curl -s  $buildURL/RELEASE.INFO  | grep BUILD | cut -d':' -f2 | tr -d '\"' | xargs", returnStdout: true).trim()
     buildbranch = "Build"
-    if( buildURL.contains("/cortx/github/main/") ) {
+    if ( buildURL.contains("/cortx/github/main/") ) {
         buildbranch="Main"
-    }else if( buildURL.contains("/cortx/github/stable/") ) {
+    }else if ( buildURL.contains("/cortx/github/stable/") ) {
         buildbranch="Stable"
-    }else if ( buildURL.contains("/cortx/github/integration-custom-ci/")){
+    }else if ( buildURL.contains("/cortx/github/integration-custom-ci/")) {
         buildbranch="Custom-CI"
     }
 
@@ -359,14 +359,14 @@ def getBuild(buildURL) {
 }
 
 // Get email notification list based on argument
-def getNotificationList(String notificationType){
+def getNotificationList(String notificationType) {
 
     toEmail=""
-    if ( notificationType == "DevOps.RE" ){
+    if ( notificationType == "DevOps.RE" ) {
         toEmail = "CORTX.DevOps.RE@seagate.com"
-    } else if ( notificationType == "Ujwal" ){
+    } else if ( notificationType == "Ujwal" ) {
         toEmail = "ujjwal.lanjewar@seagate.com, amit.kapil@seagate.com, priyank.p.dalal@seagate.com,amol.j.kongre@seagate.com,gowthaman.chinnathambi@seagate.com"
-    } else if ( notificationType == "MGMT" ){
+    } else if ( notificationType == "MGMT" ) {
         toEmail = "manoj.management.team@seagate.com, cortx.sme@seagate.com"
     } else {
         toEmail = "gowthaman.chinnathambi@seagate.com"
@@ -377,7 +377,7 @@ def getNotificationList(String notificationType){
 }
 
 // Create jira issues on failure and input parameter 
-def createJiraIssue(String failedStage, String failedComponent, String failureLog){
+def createJiraIssue(String failedStage, String failedComponent, String failureLog) {
 
     def issue = [
                     fields: [ 
@@ -405,22 +405,22 @@ def createJiraIssue(String failedStage, String failedComponent, String failureLo
   return newIssue.data.key
 }
 
-def getFailedComponentName(String failedStage){
+def getFailedComponentName(String failedStage) {
     
     component = "RE"
-    if (failedStage.contains('components.system') || failedStage.contains('components.misc_pkgs') || failedStage.contains('bootstrap')){
+    if (failedStage.contains('components.system') || failedStage.contains('components.misc_pkgs') || failedStage.contains('bootstrap')) {
         component = "Provisioner"
-    } else if(failedStage.contains('components.motr')){
+    } else if(failedStage.contains('components.motr')) {
         component = "Motr"
-    } else if(failedStage.contains('components.s3server')){
+    } else if(failedStage.contains('components.s3server')) {
         component = "S3Server"
-    } else if(failedStage.contains('components.hare')){
+    } else if(failedStage.contains('components.hare')) {
         component = "hare"
-    } else if(failedStage.contains('components.ha')){
+    } else if(failedStage.contains('components.ha')) {
         component = "HA"
-    } else if(failedStage.contains('components.sspl')){
+    } else if(failedStage.contains('components.sspl')) {
         component = "Monitor"
-    } else if(failedStage.contains('components.csm')){
+    } else if(failedStage.contains('components.csm')) {
         component = "CSM"
     }
 
