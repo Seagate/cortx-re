@@ -122,6 +122,11 @@ _cloudform(){
             response=$(_do_rest "${CF_VM_SNAPSHOT_ENDPOINT}" "${CF_CRED}" "POST" "$POST_DATA")
             response=$(_get_response "${response}" 'message')
         ;;
+        REFRESH_VM)
+            POST_DATA="--data {\"action\":\"refresh\"}"
+            response=$(_do_rest "${CF_VM_ENDPOINT}" "${CF_CRED}" "POST" "$POST_DATA")
+            response=$(_get_response "${response}" 'message')
+        ;;
         GET_API)
             response=$(_do_rest "${CF_API_ENDPOINT}" "${CF_CRED}" "GET" "")
         ;;
@@ -258,12 +263,20 @@ _validate_vm_access(){
     fi
 }
 
+# Refresh VM to solve power state issue
+_refresh_vm(){
+    refresh_vm_response=$(_cloudform 'REFRESH_VM')
+    _console_log " [ _refresh_vm ] : Refresh VM Request Message - ${refresh_vm_response}"
+    sleep 30
+}
+
 # Print failure message of exit 1
 failure_trap() {
     _console_log " [ FAILED ] : Unable to Provision Cloudform VM"
+    _refresh_vm
 }
 
-
+# Validate input paramater
 _validate_input_params(){
 
 
@@ -272,7 +285,7 @@ _validate_input_params(){
 
     if [ -z "${VM_NAME}" ] || [ -z "${CF_CRED}" ]
     then
-        _console_log "[ _validate_input_params ] : ** Please provide valid arguments -h <HOST> & -x <CRED_TOKEN>"
+        _console_log "[ _validate_input_params ] : ** Please provide valid arguments -h <HOST> & -x <CF_CRED>"
         exit 1
     fi
 
@@ -318,6 +331,7 @@ if [ -z "${CF_VM_ENDPOINT}" ] || [ -z "${CF_VM_SNAPSHOT_ENDPOINT}" ]
     echo "** Something went wrong, _preload params are not valid"
     exit 1
 fi
+
 
 _console_log "[2] - Stop VM Initiated : ${VM_NAME}" 0
 _change_vm_state "off" "1"
