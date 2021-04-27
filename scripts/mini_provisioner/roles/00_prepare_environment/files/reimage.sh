@@ -332,6 +332,7 @@ if [ -z "${CF_VM_ENDPOINT}" ] || [ -z "${CF_VM_SNAPSHOT_ENDPOINT}" ]
     exit 1
 fi
 
+_refresh_vm
 
 _console_log "[2] - Stop VM Initiated : ${VM_NAME}" 0
 _change_vm_state "off" "1"
