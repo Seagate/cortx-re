@@ -9,10 +9,10 @@ pipeline {
     }
 	
     parameters {
-        string(name: 'CORTX_BUILD', defaultValue: 'http://cortx-storage.colo.seagate.com/releases/cortx/github/stable/centos-7.8.2003/136/prod/', description: 'Build URL',  trim: true)
+        string(name: 'CORTX_BUILD', defaultValue: 'http://cortx-storage.colo.seagate.com/releases/cortx/github/stable/centos-7.8.2003/155/prod/', description: 'Build URL',  trim: true)
         string(name: 'HOST', defaultValue: '-', description: 'Host FQDN',  trim: true)
         password(name: 'HOST_PASS', defaultValue: '-', description: 'Host machine root user password')
-        choice(name: 'NOTIFICATION', choices: ["DevOps.RE", "None", "Ujwal", "MGMT"], description: 'Notification group ')
+        choice(name: 'NOTIFICATION', choices: ["MGMT", "DevOps.RE", "None", "Ujwal"], description: 'Notification group ')
         booleanParam(name: 'DEBUG', defaultValue: false, description: 'Select this if you want to preserve the VM temporarily for troublshooting')
         booleanParam(name: 'CREATE_JIRA_ISSUE_ON_FAILURE', defaultValue: false, description: 'Select this if you want to create Jira issue on failure')
         booleanParam(name: 'AUTOMATED', defaultValue: false, description: 'Only for Internal RE Use')
@@ -74,7 +74,7 @@ pipeline {
                         echo "-----------------------------------------------------------"
                     """
                     dir('cortx-re') {
-                        checkout([$class: 'GitSCM', branches: [[name: '*/r2_vm_deployment_deprecated']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/gowthamchinna/cortx-re']]])                
+                        checkout([$class: 'GitSCM', branches: [[name: '*/r2_vm_deployment']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/gowthamchinna/cortx-re']]])                
                     }
                 }
             }
@@ -267,7 +267,7 @@ def getTestMachine(host, user, pass) {
     remote.user =  user
     remote.password = pass
     remote.allowAnyHosts = true
-    remote.fileTransfer = 'scp'
+    remote.setfileTransfer('scp')
     return remote
 }
 
