@@ -267,7 +267,7 @@ def getTestMachine(host, user, pass) {
     remote.user =  user
     remote.password = pass
     remote.allowAnyHosts = true
-    remote.setfileTransfer('scp')
+    remote.fileTransfer = scp
     return remote
 }
 
