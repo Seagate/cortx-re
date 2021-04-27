@@ -39,36 +39,57 @@
   with_items: "{{ groups['srvnodes'] }}"
   ignore_errors: true
   
-- name: "[ Deploy Prerequisite ] : Install Prereq tools & Provisioner API (Async)"
+- name: "[ Deploy Prerequisite ] : Create Deployment log/script/config Dir"
   shell: |
-    CORTX_RELEASE_REPO="{{ CORTX_BUILD }}"
+    rm -rf "{{ CORXT_DEPLOYMENT_PATH }}"
+    mkdir -p "{{ CORXT_DEPLOYMENT_LOG_PATH }}"
+    mkdir -p "{{ CORXT_DEPLOYMENT_CONFIG_PATH }}"
+    mkdir -p "{{ CORXT_DEPLOYMENT_SCRIPT_PATH }}"
+    touch {{ CORXT_DEPLOYMENT_LOG_PATH }}/deploymet_latest.log
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['srvnodes'] }}"
 
-    yum install -y yum-utils
-    yum-config-manager --add-repo "${CORTX_RELEASE_REPO}/3rd_party/"
-    yum-config-manager --add-repo "${CORTX_RELEASE_REPO}/cortx_iso/"
+- name: "[ Deploy Prerequisite ] : Get available VM devices"
+  shell: "lsblk -nd -o NAME -e 11|grep -v sda|sed 's|sd|/dev/sd|g'|paste -s -d, -"
+  register: available_devices
 
-    cat <<EOF >/etc/pip.conf
-    [global]
-    timeout: 60
-    index-url: $CORTX_RELEASE_REPO/python_deps/
-    trusted-host: $(echo $CORTX_RELEASE_REPO | awk -F '/' '{print $3}')
-    EOF
+- set_fact:
+    NODE_COUNT: "{% if SETUP_TYPE=='single' %}1{% elif SETUP_TYPE=='3_node'%}3{% else %}1{% endif %}"
+    REQUIRED_DEVICES: "{% if SETUP_TYPE=='single' %}2{% elif SETUP_TYPE=='3_node'%}6{% else %}2{% endif %}"
+    VM_DEVICES: "{{ available_devices.stdout }}"
+    
+- set_fact:
+    DATA_DEVICES: "{{ ','.join(VM_DEVICES.split(',')[1:REQUIRED_DEVICES|int]) }}"
+    METADATA_DEVICES: "{{ VM_DEVICES.split(',')[0] }}"
+    SNS_DATA: "{{ 4 if REQUIRED_DEVICES|int >= 6 else 1  }}"
+    SNS_PARITY: "{{ 2 if REQUIRED_DEVICES|int >= 6 else 0 }}"
+    SNS_SPARE: "{{ 2 if REQUIRED_DEVICES|int >= 6 else 0 }}"
 
-    # Cortx Pre-requisites
-    yum install --nogpgcheck -y java-1.8.0-openjdk-headless
-    yum install --nogpgcheck -y python3 cortx-prereq sshpass
-    # Pre-reqs for Provisioner
-    yum install --nogpgcheck -y python36-m2crypto salt salt-master salt-minion
-    # Provisioner API
-    yum install --nogpgcheck -y python36-cortx-prvsnr
+- name: "[ Deploy Prerequisite ] : Create provisioner config file & bootstrap script on primary node"
+  template:
+    src: "{{ item.source_tmpl }}"
+    dest: "{{ item. dest_file }}"
+    mode: '0754'
+  with_items:
+    - { source_tmpl: "config.ini.j2", dest_file: "{{ CORXT_DEPLOYMENT_CONFIG_PATH }}/config.ini" }
+    - { source_tmpl: "provisioner_bootsrap.sh.j2", dest_file: "{{ CORXT_DEPLOYMENT_SCRIPT_PATH }}/provisioner_bootsrap.sh" }
 
-    # Cleanup temporary repos
-    rm -rf /etc/yum.repos.d/*3rd_party*.repo
-    rm -rf /etc/yum.repos.d/*cortx_iso*.repo
-    yum clean all
-    rm -rf /var/cache/yum/
-    rm -rf /etc/pip.conf
-  async: 6000
+- name: "[ Deploy Prerequisite ] : Copy deployment validation script to primary node"
+  copy:
+    src: validate_deployment.sh
+    dest: "{{ CORXT_DEPLOYMENT_SCRIPT_PATH }}/validate_deployment.sh"
+
+- name: "[ Deploy Prerequisite ] : Create provisioner prereq script on all node"
+  template:
+    src: "cortx_deploy_prereq.sh.j2"
+    dest: "{{ CORXT_DEPLOYMENT_SCRIPT_PATH }}/cortx_deploy_prereq.sh"
+    mode: '0754'
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['srvnodes'] }}"
+
+- name: "[ Deploy Prerequisite ] : Install Prereq tools & Provisioner API (Async)"
+  shell: "bash {{ CORXT_DEPLOYMENT_SCRIPT_PATH }}/cortx_deploy_prereq.sh 2>&1 | tee -a {{ CORXT_DEPLOYMENT_LOG_PATH }}/00_cortx_deploy_prereq.log"
+  async: 1800
   poll: 0
   register: cortx_deploy_prereq_async
   delegate_to: "{{ item }}"
@@ -79,13 +100,7 @@
     jid: "{{  cortx_deploy_prereq_async['results'][item.0]['ansible_job_id'] }}"
   register: job_result
   until: job_result.finished
-  retries: 30
+  retries: 60
   delay: 30
   delegate_to: "{{ item.1 }}"
   with_indexed_items: "{{ groups['srvnodes'] }}"
-
-- name: "[ Deploy Prerequisite ] : Create Log Dir"
-  shell: |
-    mkdir -p /root/cortx_deployment/script
-    mkdir -p /root/cortx_deployment/log
-    mkdir -p /root/cortx_deployment/config

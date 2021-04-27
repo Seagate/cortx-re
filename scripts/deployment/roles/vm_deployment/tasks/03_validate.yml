@@ -1,11 +1,15 @@
+
+- name: "[ Validate Deployment ] : Validate Deployment" 
+  shell: "bash {{ CORXT_DEPLOYMENT_SCRIPT_PATH }}/validate_deployment.sh {{ CORXT_DEPLOYMENT_LOG_PATH }}/07_ha_state.log"
+
 - pause:
     seconds: 20
 
-- name: "[ Validate Deployment] : Start cluster"
+- name: "[ Validate Deployment ] : Start cluster"
   command: cortx cluster start
 
 # Wait for services to start
-- name: "[ Validate Deployment] : Check cluster status"
+- name: "[ Validate Deployment ] : Check cluster status"
   command: "hctl status"
   register: hctl_status
   until:
@@ -17,16 +21,16 @@
   delay: 30
   ignore_errors: true
 
-- name: "[ Validate Deployment] : Update Deployment status"
-  shell: echo -e "Cortx Stack VM Deployment 'Failed' in hctl status check. \n \t {{ hctl_status.stdout }}" > /root/cortx_deployment/log/deployment_status.log
+- name: "[ Validate Deployment ] : Update Deployment status"
+  shell: echo -e "Cortx Stack VM Deployment 'Failed' in hctl status check. \n \t {{ hctl_status.stdout }}" > "{{ CORXT_DEPLOYMENT_LOG_PATH }}/deployment_status.log"
   when: "\"[started]  ioservice\" not in hctl_status.stdout"
 
-- name: "[ Validate Deployment] :  Validate Deployment - hctl status"
+- name: "[ Validate Deployment ] :  Validate Deployment - hctl status"
   fail: msg="Deployment failed. 'hctl status' returns unhealthy response"
   when: "\"[started]  ioservice\" not in hctl_status.stdout"
 
-- name: "[ Validate Deployment] : Check service status"
-  shell: "{{ item }} 2>&1 | tee -a /root/cortx_deployment/log/service_status.log"
+- name: "[ Validate Deployment ] : Check service status"
+  shell: "{{ item }} 2>&1 | tee -a {{ CORXT_DEPLOYMENT_LOG_PATH }}/service_status.log"
   register: service_status
   with_items:
     - systemctl status rabbitmq-server

@@ -22,6 +22,8 @@ pipeline {
         // NODE1_HOST - Env variables added in the node configurations
         build_id = getBuild("${CORTX_BUILD}")
 
+        CORTX_BUILD = getActualBuild("${CORTX_BUILD}")
+
         NODE_DEFAULT_SSH_CRED =  credentials("${NODE_DEFAULT_SSH_CRED}")
         NODE_USER = "${NODE_DEFAULT_SSH_CRED_USR}"
         
@@ -65,6 +67,10 @@ pipeline {
                     dir('cortx-re') {
                         checkout([$class: 'GitSCM', branches: [[name: '*/r2_vm_deployment_multinode']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/gowthamchinna/cortx-re']]])                
                     }
+
+                    if( NODE1.isEmpty() ) {
+					    markNodeforCleanup()
+                    }
                 }
             }
         }
@@ -93,14 +99,79 @@ pipeline {
             } 
         }
 
-        stage('02. Deploy Cortx Stack') {
-            when { expression { env.STAGE_02_DEPLOY == "yes" } }
+        stage('02.1 Bootstarp Provisioner') {
             steps {
                 script {
                     
-                    info("Running '02. Deploy Cortx Stack' Stage")
+                    info("Running '02.1 Bootstarp Provisioner' Stage")
 
-                    runAnsible("02_DEPLOY")
+                    runAnsible("02_1_PRVSNR_BOOTSTRAP,02_DEPLOY_VALIDATE")
+                }
+            } 
+        }
+
+        stage('02.2 Platform Setup') {
+            steps {
+                script {
+                    
+                    info("Running '02.2 Platform Setup' Stage")
+
+                    runAnsible("02_2_PLATFORM_SETUP, 02_DEPLOY_VALIDATE")
+                }
+            } 
+        }
+
+        stage('02.3 3party Tools Setup') {
+            steps {
+                script {
+                    
+                    info("Running '02.3 Prereq/Configuration 3party tools")
+
+                    runAnsible("02_3_PREREQ,02_DEPLOY_VALIDATE")
+                }
+            } 
+        }
+
+        stage('02.4 Cortx Utils Setup') {
+            steps {
+                script {
+                    
+                    info("Running '02.4 Cortx Utils Setup' Stage")
+
+                    runAnsible("02_4_UTILS, 02_DEPLOY_VALIDATE")
+                }
+            } 
+        }
+
+        stage('02.5 IO Path Setup') {
+            steps {
+                script {
+                    
+                    info("Running '02.5 IO Path Setup' Stage")
+
+                    runAnsible("02_5_IO_PATH,02_DEPLOY_VALIDATE")
+                }
+            } 
+        }
+
+        stage('02.6 Control Path Setup') {
+            steps {
+                script {
+                    
+                    info("Running '02.6 Control Path Setup' Stage")
+
+                    runAnsible("02_DEPLOY_VALIDATE, 02_6_CONTROL_PATH")
+                }
+            } 
+        }
+
+        stage('02.7 HA Setup') {
+            steps {
+                script {
+                    
+                    info("Running '02.7 HA Setup' Stage")
+
+                    runAnsible("02_DEPLOY_VALIDATE,02_7_HA")
                 }
             } 
         }
@@ -125,52 +196,69 @@ pipeline {
                 // Download Log files from Deployment Machine
                 try {
                     sh label: 'download_log_files', returnStdout: true, script: """ 
-                        mkdir -p archive 
-                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/log/seagate/cortx/ha artifacts/ &>/dev/null || true
-                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/log/cluster artifacts/ &>/dev/null || true
-                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/log/pacemaker.log artifacts/ &>/dev/null || true
-                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/log/pcsd/pcsd.log artifacts/ &>/dev/null || true
-                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/log/seagate/provisioner/ artifacts/ &>/dev/null || true
-                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/opt/seagate/cortx_configs/provisioner_cluster.json artifacts/ &>/dev/null || true
-                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/lib/hare/cluster.yaml artifacts/ &>/dev/null || true
-                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/root/cortx_deployment/ artifacts/ &>/dev/null || true
+                        mkdir -p artifacts/srvnode1 
+                        mkdir -p artifacts/srvnode2 
+                        mkdir -p artifacts/srvnode3 
+                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/log/seagate/cortx/ha artifacts/srvnode1 &>/dev/null || true
+                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/log/cluster artifacts/srvnode1 &>/dev/null || true
+                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/log/pacemaker.log artifacts/srvnode1 &>/dev/null || true
+                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/log/pcsd/pcsd.log artifacts/srvnode1 &>/dev/null || true
+                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/log/seagate/provisioner artifacts/srvnode1 &>/dev/null || true
+                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/opt/seagate/cortx_configs/provisioner_cluster.json artifacts/srvnode1 &>/dev/null || true
+                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/lib/hare/cluster.yaml artifacts/srvnode1 &>/dev/null || true
+                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/root/cortx_deployment artifacts/srvnode1 &>/dev/null || true
+
+                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE2_HOST}:/root/cortx_deployment artifacts/srvnode2 &>/dev/null || true
+
+                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE3_HOST}:/root/cortx_deployment artifacts/srvnode3 &>/dev/null || true
                     """
                 } catch (err) {
                     echo err.getMessage()
                 }
 
-                archiveArtifacts artifacts: "artifacts/*", onlyIfSuccessful: false, allowEmptyArchive: true 
+                archiveArtifacts artifacts: "artifacts/**/*.*", onlyIfSuccessful: false, allowEmptyArchive: true 
+
+                if(NODE1.isEmpty()) {
+                    if( params.DEBUG ) {  
+                        // Take Node offline for debugging  
+                        markNodeOffline("R2 - 3N VM Deployment Debug Mode Enabled on This Host - ${BUILD_URL}")
+                    } else {
+                        // Trigger cleanup VM
+                        build job: 'Release_Engineering/Cortx-Automation/cortx-deployment-cleanup/cleanup_deployment', wait: false, parameters: [string(name: 'DEPLOYMENT_NODE_LABEL', value: "${env.NODE_NAME}")]                    
+
+                    }
+                }
                 
                 // Assume Deployment Status Based on log results
                 hctlStatus = ""
                 if ( fileExists('hctl_status.log') && currentBuild.currentResult == "SUCCESS" ) {
                     hctlStatus = readFile(file: 'hctl_status.log')
-                    MESSAGE = "Cortx Stack VM Deployment Success for the build ${build_id}"
+                    MESSAGE = "3N - Cortx Stack VM Deployment Success for the build ${build_id}"
                     ICON = "accept.gif"
                     STATUS = "SUCCESS"
                 } else {
                     manager.buildFailure()
-                    MESSAGE = "Cortx Stack VM Deployment Failed for the build ${build_id}"
+                    MESSAGE = "3N - Cortx Stack VM Deployment Failed for the build ${build_id}"
                     ICON = "error.gif"
                     STATUS = "FAILURE"
 
                     // Failure component name and Cause can be retrived from deployment status log
-                    if (fileExists('deployment_status.log')){
+                    if (fileExists('artifacts/srvnode1/cortx_deployment/log/deployment_status.log')){
                         try {
                            
                             // Failed Stage
-                            failed_component_stage = readFile(file: 'failed_component.log').trim()
+                            failed_component_stage = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/failed_component.log').trim()
                             
                             // Failed Component from Failed Stage
                             failed_component_name = getFailedComponentName(failed_component_stage.trim())
 
                             // Short Failure Log
-                            deployment_status = readFile(file: 'deployment_status.log').trim()
+                            deployment_status = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/deployment_status.log').trim()
                             env.failure_cause = deployment_status
 
-                            MESSAGE = "Cortx Stack VM-Deployment Failed in ${failed_component_name} for the build ${build_id}"
+                            MESSAGE = "3N - Cortx Stack VM-Deployment Failed in ${failed_component_name} for the build ${build_id}"
 
-                            echo "Previous Job build status : ${currentBuild.previousBuild.result}"
+                            manager.addHtmlBadge("<br /> <b>Status :</b> <a href='${BUILD_URL}/artifact/artifacts/srvnode1/cortx_deployment/log/deployment_status.log'><b>Failed in '${failed_component_name}'</a>")
 
                         } catch (err) {
                             echo err.getMessage()
@@ -179,11 +267,11 @@ pipeline {
                 }
 
                 // This env vars used in email templates to get the log path
-                if (fileExists('setup.log')){
-                    env.setup_log = "${BUILD_URL}/artifact/setup.log"
+                if (fileExists('artifacts/srvnode1/cortx_deployment/log/setup.log')){
+                    env.setup_log = "${BUILD_URL}/artifact/artifacts/srvnode1/cortx_deployment/log/setup.log"
                 }
-                if (fileExists('hctl_status.log')){
-                    env.cluster_status = "${BUILD_URL}/artifact/hctl_status.log"
+                if (fileExists('artifacts/srvnode1/cortx_deployment/log/hctl_status.log')){
+                    env.cluster_status = "${BUILD_URL}/artifact/artifacts/srvnode1/cortx_deployment/log/hctl_status.log"
                 }
 
                 // Create Jenkins Summary page with deployment info
@@ -201,7 +289,7 @@ pipeline {
                     body: '''${SCRIPT, template="vm-deployment-email.template"}''',
                     mimeType: 'text/html',
                     subject: "${MESSAGE}",
-                    to: "gowthaman.chinnathambi@seagate.com",
+                    to: "gowthaman.chinnathambi@seagate.com, priyank.p.dalal@seagate.com",
                     recipientProviders: [[$class: 'RequesterRecipientProvider']]
                 )
 
@@ -250,6 +338,23 @@ def getBuild(buildURL) {
  return "$buildbranch#$buildID"   
 }
 
+// Get build id from build url
+def getActualBuild(buildURL) {
+
+    buildRoot = "http://cortx-storage.colo.seagate.com/releases/cortx/github"
+    buildID = sh(script: "curl -s  $buildURL/RELEASE.INFO  | grep BUILD | cut -d':' -f2 | tr -d '\"' | xargs", returnStdout: true).trim()
+    buildbranch = "Build"
+    if( buildURL.contains("/cortx/github/main/") ) {
+        buildURL="${buildRoot}/main/centos-7.8.2003/${buildID}/prod"
+    }else if( buildURL.contains("/cortx/github/stable/") ) {
+        buildURL="${buildRoot}/main/centos-7.8.2003/${buildID}/prod"
+    }else if ( buildURL.contains("/cortx/github/integration-custom-ci/")){
+        buildURL="${buildRoot}/integration-custom-ci/centos-7.8.2003/${buildID}"
+    }
+
+ return buildURL  
+}
+
 
 def getFailedComponentName(String failedStage){
     
@@ -268,6 +373,8 @@ def getFailedComponentName(String failedStage){
         component = "Monitor"
     } else if(failedStage.contains('components.csm')){
         component = "CSM"
+    } else if(failedStage.contains('components.cortx_utils')){
+        component = "Foundation"
     }
 
     return component
@@ -302,4 +409,34 @@ def success(msg) {
     echo "--------------------------------------------------------------"
     echo "\033[1;32m[Success] : ${msg} \033[0m"
     echo "--------------------------------------------------------------"
+}
+
+// Make failed node offline
+def markNodeOffline(message) {
+    node = getCurrentNode(env.NODE_NAME)
+    computer = node.toComputer()
+    computer.setTemporarilyOffline(true)
+    computer.doChangeOfflineCause(message)
+    computer = null
+    node = null
+}
+
+// Get current Node
+def getCurrentNode(nodeName) {
+  for (node in Jenkins.instance.nodes) {
+      if (node.getNodeName() == nodeName) {
+        echo "Found node for $nodeName"
+        return node
+    }
+  }
+  throw new Exception("No node for $nodeName")
+}
+
+// Add 'cleanup_req' label to VM to identify unclean vm
+def markNodeforCleanup() {
+	nodeLabel = "cleanup_req"
+    node = getCurrentNode(env.NODE_NAME)
+	node.setLabelString(node.getLabelString() + " " + nodeLabel)
+	node.save()
+    node = null
 }

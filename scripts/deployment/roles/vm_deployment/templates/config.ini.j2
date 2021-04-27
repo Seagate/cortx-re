@@ -15,12 +15,17 @@ storage.durability.sns.spare={{ SNS_SPARE }}
 {% for node in HOST.split(',') %}
 [srvnode-{{ node_count }}]
 hostname={{ node }}
+{% if node_count == 1 %}
 roles=primary,openldap_server,kafka_server
+{% else %}
+roles=secondary,openldap_server,kafka_server
+{% endif %}
 
 {% set node_count = node_count + 1 %}
 {% endfor %}
 [enclosure_default]
 type=virtual
+controller.type=virtual
 
 {% set node_count = 1 %}
 {% for node in  HOST.split(',') %}
