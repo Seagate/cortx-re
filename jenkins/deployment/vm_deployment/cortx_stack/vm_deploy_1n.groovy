@@ -198,7 +198,7 @@ pipeline {
                             // 1. Jira issue should be created only when 'CREATE_JIRA_ISSUE_ON_FAILURE' option is enabled
                             // 2. Jira issue should be created only when 'previous build is success' (To avoid Multiple jira tickets)
                             // FIXME - LOGIC NEED TO BE IMPROVED TO QUERY JIRA TO IDENTIFY EXSITING TICKETS FOR THE SAME ISSUE
-                            if ( params.CREATE_JIRA_ISSUE_ON_FAILURE && ( !params.AUTOMATED || SUCCESS == (currentBuild.previousBuild.result))) {
+                            if ( params.CREATE_JIRA_ISSUE_ON_FAILURE && ( !params.AUTOMATED || "SUCCESS" == (currentBuild.previousBuild.result))) {
                                 
                                 jiraIssue = makeJiraIssue(failed_component_stage.trim(), failed_component_name, deployment_status.trim())
 
@@ -232,7 +232,7 @@ pipeline {
                 env.host = "${NODE1_HOST}"
                 env.deployment_status = "${MESSAGE}"
 
-                if ( FAILURE == (currentBuild.currentResult) && params.AUTOMATED ) {
+                if ( "FAILURE" == (currentBuild.currentResult) && params.AUTOMATED ) {
                     toEmail = getNotificationList("${NOTIFICATION}")
                     toEmail = "${toEmail}, priyank.p.dalal@seagate.com, shailesh.vaidya@seagate.com, mukul.malhotra@seagate.com"
                 } else {
