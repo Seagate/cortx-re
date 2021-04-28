@@ -108,16 +108,19 @@ _cloudform(){
             response=$(_get_response "${response}" 'power_state')
         ;;
         START_VM) 
+            _refresh_vm
             POST_DATA="--data {\"action\":\"start\"}"
             response=$(_do_rest "${CF_VM_ENDPOINT}" "${CF_CRED}" "POST" "$POST_DATA")
             response=$(_get_response "${response}" 'message')
         ;;
         STOP_VM)
+            _refresh_vm
             POST_DATA="--data {\"action\":\"stop\"}"
             response=$(_do_rest "${CF_VM_ENDPOINT}" "${CF_CRED}" "POST" "$POST_DATA")
             response=$(_get_response "${response}" 'message')
         ;;
         REVERT_VM_SNAPSHOT)
+            _refresh_vm
             POST_DATA="--data {\"action\":\"revert\"}"
             response=$(_do_rest "${CF_VM_SNAPSHOT_ENDPOINT}" "${CF_CRED}" "POST" "$POST_DATA")
             response=$(_get_response "${response}" 'message')
@@ -226,7 +229,7 @@ _change_vm_state(){
 _revert_vm_snapshot(){
     revert_snapshot_response=$(_cloudform 'REVERT_VM_SNAPSHOT')
     _console_log " [ _revert_vm_snapshot ] : Revert Request Message - ${revert_snapshot_response}"
-    sleep 240
+    sleep 600
 
 }
 
