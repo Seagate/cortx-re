@@ -54,32 +54,8 @@
   register: command_result
   failed_when: "'ERROR' in command_result.stdout"
 
-<<<<<<< HEAD:scripts/ova-r2-release/roles/vm-provisioner/tasks/main.yml
-<<<<<<< HEAD
-#provisioner fix for sms1 only
-- name: Edit csm config file
-  shell: "sed -i 's/host:.*/host: 127.0.0.1/g' /etc/csm/database.yaml"
-
-- name: Restart csm_agent
-  shell: systemctl restart csm_agent
-
-- name: Close port on management interface
-  shell: firewall-cmd --zone=public --remove-port=443/tcp --permanent
-
-- name: open port on management interface
-  shell: "{{ item }}"
-  with_items:
-    - "salt '*' cmd.run 'firewall-cmd --zone=public-data-zone --add-port=80/tcp --permanent'"
-    - "salt '*' cmd.run 'firewall-cmd --zone=public-data-zone --add-port=28100/tcp --permanent'"
-    - "salt '*' cmd.run 'firewall-cmd --reload'"
-=======
 - name: Start cluster
   shell: "cortx cluster start"
->>>>>>> feat: add r2 ova updates
-=======
-- name: Start cluster
-  shell: "cortx cluster start"
->>>>>>> d7428526e9b2e3fbc3cfaccaf9bb0871e49473b3:scripts/ova-release/roles/vm-provisioner/tasks/main.yml
 
 #csm fix
 #- name: CSM fix
@@ -90,19 +66,23 @@
 #    - "csm_setup post_install"
 #    - "csm_setup config --uds-public-ip {{ ansible_host }}"
 #    - "csm_setup init"
- 
+
+- name: Close port on management interface
+  shell: firewall-cmd --zone=public --remove-port=443/tcp --permanent
+
+- name: open port on management interface
+  shell: "{{ item }}"
+  with_items:
+    - "salt '*' cmd.run 'firewall-cmd --zone=public-data-zone --add-port=80/tcp --permanent'"
+    - "salt '*' cmd.run 'firewall-cmd --zone=public-data-zone --add-port=28100/tcp --permanent'"
+    - "salt '*' cmd.run 'firewall-cmd --reload'"
+
 #s3server fix
 - name: Edit s3 config file
   shell: "sed -i 's/S3_MOTR_MAX_UNITS_PER_REQUEST: 32/S3_MOTR_MAX_UNITS_PER_REQUEST: 8/g' /opt/seagate/cortx/s3/conf/s3config.yaml" 
 
 - name: Restart s3 service
   shell: systemctl restart s3server@0x7200000000000001:0x16
-
-- name: Remove stale cert alerts
-  shell: "{{ item }}"
-  with_items:
-    - "curl -X DELETE 'localhost:9200/alerts?pretty'"
-    - "curl -X DELETE 'localhost:9200/alerts-history?pretty'"
 
 - name: Restart csm_agent
   shell: systemctl restart csm_agent
