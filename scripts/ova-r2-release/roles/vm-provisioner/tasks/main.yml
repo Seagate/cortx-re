@@ -35,12 +35,6 @@
     group: root
     mode: '0754'
 
-#provisoner fix      
-#- name: Add srvnode-1 in hosts
-#  lineinfile:
-#    dest: /etc/hosts
-#    line: "127.0.0.2 srvnode-1"
-
 - name: Check /etc/hosts file data
   shell: "cat /etc/hosts"
   register: hostsdata
@@ -54,18 +48,15 @@
   register: command_result
   failed_when: "'ERROR' in command_result.stdout"
 
+#s3server fix
+#- name: Edit s3 config file
+#  shell: "sed -i 's/S3_MOTR_MAX_UNITS_PER_REQUEST: 32/S3_MOTR_MAX_UNITS_PER_REQUEST: 8/g' /opt/seagate/cortx/s3/conf/s3config.yaml"
+
+#- name: Restart s3 service
+#  shell: systemctl restart s3server@0x7200000000000001:0x16
+
 - name: Start cluster
   shell: "cortx cluster start"
-
-#csm fix
-#- name: CSM fix
-#  shell: "{{ item }}"
-#  with_items:
-#    - "usermod -a -G certs,prvsnrusers csm"
-#    - "mkdir -p /var/lib/uds/.uds"
-#    - "csm_setup post_install"
-#    - "csm_setup config --uds-public-ip {{ ansible_host }}"
-#    - "csm_setup init"
 
 - name: Close port on management interface
   shell: firewall-cmd --zone=public --remove-port=443/tcp --permanent
@@ -76,16 +67,6 @@
     - "salt '*' cmd.run 'firewall-cmd --zone=public-data-zone --add-port=80/tcp --permanent'"
     - "salt '*' cmd.run 'firewall-cmd --zone=public-data-zone --add-port=28100/tcp --permanent'"
     - "salt '*' cmd.run 'firewall-cmd --reload'"
-
-#s3server fix
-- name: Edit s3 config file
-  shell: "sed -i 's/S3_MOTR_MAX_UNITS_PER_REQUEST: 32/S3_MOTR_MAX_UNITS_PER_REQUEST: 8/g' /opt/seagate/cortx/s3/conf/s3config.yaml" 
-
-- name: Restart s3 service
-  shell: systemctl restart s3server@0x7200000000000001:0x16
-
-- name: Restart csm_agent
-  shell: systemctl restart csm_agent
 
 - name: Install vmware-tools
   yum: name=open-vm-tools state=present
