@@ -35,7 +35,7 @@ pipeline {
         //////////////////////////////// BUILD VARS //////////////////////////////////////////////////
 
         COMPONENT_NAME = "cortx-utils".trim()
-        BRANCH = "${ghprbTargetBranch != null ? ghprbTargetBranch : 'stable'}"
+        BRANCH = "main"
         OS_VERSION = "centos-7.8.2003"
         THIRD_PARTY_VERSION = "centos-7.8.2003-2.0.0-latest"
         PASSPHARASE = credentials('rpm-sign-passphrase')
