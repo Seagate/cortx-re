@@ -296,7 +296,11 @@ Recommended VM specification:
     post {
         always {
             script  {
-                sh label: 'Remove artifacts', script: '''rm -rf "${DESTINATION_RELEASE_LOCATION}"'''
+                
+                sh label: 'Delete Old Builds', script: '''
+                    set +x
+                    find /mnt/bigstorage/releases/cortx/github/pr-build/${COMPONENT_NAME}/* -maxdepth 0 -mtime +30 -type d -exec rm -rf {} \\;
+				'''
 
                 if(env.ghprbPullLink){
                     env.pr_id = "${ghprbPullLink}"
@@ -348,7 +352,8 @@ def runAnsible(tags) {
             extraVars: [
                 "NODE1"                 : [value: "${NODE1_HOST}", hidden: false],
                 "CORTX_BUILD"           : [value: "${CORTX_BUILD}", hidden: false] ,
-                "CLUSTER_PASS"          : [value: "${NODE_PASS}", hidden: false]            ],
+                "CLUSTER_PASS"          : [value: "${NODE_PASS}", hidden: false]            
+            ],
             extras: '-v',
             colorized: true
         )
