@@ -79,3 +79,7 @@
   set_fact: 
     ansible_nodename: "{{ OVA_HOSTNAME }}"
   when: "{{ 'localhost' in host.stdout }}"
+
+- name: Disable SELinux
+  selinux:
+    state: disabled
