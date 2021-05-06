@@ -33,11 +33,11 @@
   register: s3cipher_key
 
 - name: "[Pre-Requisites] : 7. (ii) Openldap credentials" 
-  shell:  s3cipher encrypt --data "seagate1" --key '{{ s3cipher_key.stdout }}'
+  shell:  s3cipher encrypt --data "{{ TEST_DATA_OPEN_LDAP_PASS_ROOT }}" --key '{{ s3cipher_key.stdout }}'
   register: s3cipher_encrypted_root
 
 - name: "[Pre-Requisites] : 7. (iii) Openldap credentials" 
-  shell:  s3cipher encrypt --data "seagate2" --key '{{ s3cipher_key.stdout }}'
+  shell:  s3cipher encrypt --data "{{ TEST_DATA_OPEN_LDAP_PASS_SGIAM }}" --key '{{ s3cipher_key.stdout }}'
   register: s3cipher_encrypted_sgiam
 
 - set_fact:
@@ -61,7 +61,8 @@
         s/TMPL_CLUSTER_ID/{{ TMPL_CLUSTER_ID }}/g; \
         s/TMPL_MACHINE_ID/{{ TMPL_MACHINE_ID }}/g;" /opt/seagate/cortx/s3/conf/s3.init.tmpl.1-node
 
-    sed -i "s/TMPL_SGIAM_SECRET_KEY/{{ TMPL_SGIAM_SECRET_KEY }}/g;" /opt/seagate/cortx/s3/conf/s3.test.tmpl.1-node
+    sed -i "s/TMPL_SGIAM_SECRET_KEY/{{ TMPL_SGIAM_SECRET_KEY }}/g; \
+          s/TMPL_SGIAM_PLAINTEXT_PASSWORD/{{ TEST_DATA_OPEN_LDAP_PASS_SGIAM }}/g;" /opt/seagate/cortx/s3/conf/s3.test.tmpl.1-node
 
 - name: "[Pre-Requisites] : Update host entry" 
   shell:  |
