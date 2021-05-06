@@ -170,6 +170,8 @@ pipeline {
 
                             MESSAGE = "Cortx Stack VM-Deployment Failed in ${failed_component_name} for the build ${build_id}"
 
+                            manager.addHtmlBadge("<br /> <b>Status :</b> <a href='${BUILD_URL}/artifact/deployment_status.log'><b>Failed in '${failed_component_name}'</a>")
+
                             echo "Previous Job build status : ${currentBuild.previousBuild.result}"
 
                             // Create JIRA if deployment failed and create Jira true
@@ -397,6 +399,8 @@ def getFailedComponentName(String failedStage){
         component = "Monitor"
     } else if(failedStage.contains('components.csm')){
         component = "CSM"
+    } else if(failedStage.contains('components.cortx_utils')){
+        component = "Foundation"
     }
 
     return component
