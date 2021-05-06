@@ -67,7 +67,7 @@ pipeline {
                         checkout([$class: 'GitSCM', branches: [[name: '*/mini-provisioner-dev']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])                
                     }
                     
-                    if( "${HOST}" == "-" ) {
+                    if ( "${HOST}" == "-" ) { 
                         markNodeforCleanup()
                     }
                 }
@@ -159,8 +159,8 @@ pipeline {
                     echo err.getMessage()
                 }
 
-                if( "${HOST}" == "-" ) {
-                    if( "${DEBUG}" == "yes" ) {  
+                if ( "${HOST}" == "-" ) {
+                    if ( "${DEBUG}" == "yes" ) {  
                         markNodeOffline("Motr Debug Mode Enabled on This Host  - ${BUILD_URL}")
                     } else {
                         build job: 'Cortx-Automation/Deployment/VM-Cleanup', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${env.NODE_NAME}")]                    
@@ -173,7 +173,7 @@ pipeline {
                     hctl_status = readFile(file: 'hctl_status.log')
                     MESSAGE = "Motr Deployment Completed"
                     ICON = "accept.gif"
-                }else {
+                } else {
                     manager.buildFailure()
                     MESSAGE = "Motr Deployment Failed"
                     ICON = "error.gif"

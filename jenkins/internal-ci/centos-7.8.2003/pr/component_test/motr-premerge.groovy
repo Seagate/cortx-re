@@ -30,7 +30,7 @@ pipeline {
 
 	stages {
 
-        stage('Trigger VM Test'){
+        stage('Trigger VM Test') {
             when { expression { false } }
             steps{
                 build job: '../Motr/Motr-PR-Test-VM', propagate: false, wait: false, parameters: [string(name: 'MOTR_URL', value: "${MOTR_URL}"), string(name: 'MOTR_BRANCH', value: "${MOTR_BRANCH}"), , string(name: 'MOTR_REFSEPEC', value: "${MOTR_PR_REFSEPEC}")]
@@ -41,19 +41,19 @@ pipeline {
             when { expression { true } }
             steps {
                 cleanWs()
-                dir('motr'){
+                dir('motr') {
                     checkout([$class: 'GitSCM', branches: [[name: "*/${MOTR_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog'], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${MOTR_URL}", name: 'origin', refspec: "${MOTR_PR_REFSEPEC}"]]])
                 }
-                dir('xperior'){
+                dir('xperior') {
                     git credentialsId: 'cortx-admin-github', url: "https://github.com/Seagate/xperior.git", branch: "main"
                 }
-                dir('xperior-perl-libs'){
+                dir('xperior-perl-libs') {
                     git credentialsId: 'cortx-admin-github', url: "https://github.com/Seagate/xperior-perl-libs.git", branch: "main"
                 }
-                dir('seagate-ci'){
+                dir('seagate-ci') {
                     git credentialsId: 'cortx-admin-github', url: "https://github.com/Seagate/seagate-ci", branch: "main"
                 }
-                dir('seagate-eng-tools'){
+                dir('seagate-eng-tools') {
                     git credentialsId: 'cortx-admin-github', url: "https://github.com/Seagate/seagate-eng-tools.git", branch: "main"
                 }
             }
@@ -92,7 +92,7 @@ pipeline {
         stage('Run Test') {
             when { expression { false } }
             steps {
-                script{
+                script {
                     sh '''
                         set -ae
                         set
@@ -126,7 +126,7 @@ pipeline {
                         archiveArtifacts artifacts: 'workdir/**/*.*, build*.*, artifacts/*.*', fingerprint: true, allowEmptyArchive: true
                         summary = junit testResults: '**/junit/*.junit', allowEmptyResults : true, testDataPublishers: [[$class: 'AttachmentPublisher']]     
 
-                        if ("${ghprbPullId}"){
+                        if ("${ghprbPullId}") {
                             try {
                                 postGithubComment(summary, readFile('cppcheck_Result').trim())
                             } catch (err) {
@@ -163,7 +163,7 @@ def postGithubComment(junitSummary, cppcheckSummary) {
         githubComment+="<tr><td>:heavy_check_mark:Passed</td><td>${junitSummary.passCount}</td><td><details><summary>:file_folder:</summary><p>${passedTest}</p></details></td></tr>"
         githubComment+="<tr><td>Total</td><td>${junitSummary.totalCount}</td><td><a href=\'${testURL}\'>:link:</a></td></tr></table>"
 
-        if(cppcheckSummary){
+        if (cppcheckSummary) {
             githubComment+="<h2> CppCheck Summary</h2><p> &emsp;&emsp;&emsp;${cppcheckSummary} :thumbsup:</p>"
         }
         githubAPIAddComments(githubComment)
@@ -171,7 +171,7 @@ def postGithubComment(junitSummary, cppcheckSummary) {
 }
 
 // method to call gitub post comment api to add comments
-def githubAPIAddComments(text_pr){
+def githubAPIAddComments(text_pr) {
 
     withCredentials([usernamePassword(credentialsId: "cortx-admin-github", passwordVariable: 'GITHUB_TOKEN', usernameVariable: 'USER')]) {
         sh """

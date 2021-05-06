@@ -65,7 +65,7 @@ pipeline {
         stage('Build') {
             steps {
 				script { build_stage = env.STAGE_NAME }
-                script { manager.addHtmlBadge("&emsp;<b>Target Branch : ${BRANCH}</b>&emsp;<br />")}
+                script { manager.addHtmlBadge("&emsp;<b>Target Branch : ${BRANCH}</b>&emsp;<br />") }
 
                 sh """
                     set +x
@@ -202,7 +202,7 @@ pipeline {
                     // Cleanup Workspace
                     cleanWs()
 
-                    if( "${HOST}" == "-" ) {
+                    if ( "${HOST}" == "-" ) {
                         markNodeforCleanup()
                     }
 
@@ -220,8 +220,8 @@ pipeline {
                     }
 
                     // Trigger cleanup VM
-                    if( "${HOST}" == "-" ) {
-                        if( "${DEBUG}" == "yes" ) {  
+                    if ( "${HOST}" == "-" ) {
+                        if ( "${DEBUG}" == "yes" ) {  
                             markNodeOffline("Debug Mode Enabled on This Host  - ${BUILD_URL}")
                         } else {
                             build job: 'Cortx-Automation/Deployment/VM-Cleanup', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${env.NODE_NAME}")]                    

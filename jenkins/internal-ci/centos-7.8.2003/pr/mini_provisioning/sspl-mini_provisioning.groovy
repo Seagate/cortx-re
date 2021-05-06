@@ -198,7 +198,7 @@ pipeline {
                     // Cleanup Workspace
                     cleanWs()
 
-                    if( "${HOST}" == "-" ) {
+                    if ( "${HOST}" == "-" ) {
                         markNodeforCleanup()
                     }
                     manager.addHtmlBadge("&emsp;<b>Deployment Host :</b><a href='${JENKINS_URL}/computer/${env.NODE_NAME}'> ${NODE1_HOST}</a>&emsp;")
@@ -231,8 +231,8 @@ pipeline {
                     }
 
                     // Trigger cleanup VM
-                    if( "${HOST}" == "-" ) {
-                        if( "${DEBUG}" == "yes" ) {
+                    if ( "${HOST}" == "-" ) {
+                        if ( "${DEBUG}" == "yes" ) {
                             markNodeOffline("Debug Mode Enabled on This Host  - ${BUILD_URL}")
                         } else {
                             build job: 'Cortx-Automation/Deployment/VM-Cleanup', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${env.NODE_NAME}")]       

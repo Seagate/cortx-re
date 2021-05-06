@@ -46,7 +46,7 @@ pipeline {
                     try { 
                         sh label: '', returnStatus: true, script: 'test 200 == $(curl -ksI ${CORTX_BUILD}/RELEASE.INFO|grep "HTTP/1.1" | cut -d " " -f 2)'
                         echo "Valid build URL. Check Successful!"
-                    } catch(Exception ex) {
+                    } catch (ex) {
                         error 'Please provide Valid Build URL'
                     }
 
@@ -54,7 +54,7 @@ pipeline {
                     try { 
                         sshCommand remote: remote, command: "exit"
                         echo "Able to perform SSH. Check Successful!"
-                    } catch(Exception ex) {
+                    } catch (ex) {
                         error 'Please check the SSH credentials & Host status'
                     }
 
@@ -64,14 +64,14 @@ pipeline {
                             test 2 == \$(lsblk -d|grep -E 'sdb|sdc'|wc -l)
                         """
                         echo "The VM has exactly 2 nos. of attached disks. Check Successful!"
-                    } catch(Exception ex) {
+                    } catch (ex) {
                         error 'The VM should have exactly 2 attached disks. Kindly provide a VM with exactly 2 attached disks.'
                     }
                 }
             }
         }
 
-        stage('Prepare config.ini'){
+        stage('Prepare config.ini') {
             steps {
                 
                 sshCommand remote: remote, command: "wget -q https://raw.githubusercontent.com/Seagate/cortx-prvsnr/main/pillar/samples/config_vm.ini -O /root/config.ini"

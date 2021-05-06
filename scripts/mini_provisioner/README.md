@@ -70,93 +70,186 @@ Clone cortx-re repo and navigate to mini-provisioner folder
 #### Directory Structure
 
 ```
-├── README.md
-├── ansible.cfg
-├── inventories
-│   └── hosts
-├── motr_deploy.yml
-├── s3server_deploy.yml
-├── hare_deploy.yml
-├── csm_deploy.yml
-|── sspl_deploy.yml
-├── prepare.yml
-├── pyutils_deploy.yml
-└── roles
-    ├── 00_prepare_environment
-    │   ├── files
-    │   │   ├── passwordless_ssh.sh
-    │   │   ├── reimage.sh
-    │   │   └── update_hosts.sh
-    │   └── tasks
-    │       ├── 01_prepare_env.yml
-    │       ├── 02_reimage.yml
-    │       ├── main.yml
-    │       └── passwordless_authentication.yml
-    ├── csm
-    │   ├── tasks
-    │   │   └── main.yml
-    │   ├── templates
-    │   │   └── cortx.repo.j2
-    │   └── vars
-    │       └── config.yml
-    ├── hare
-    │   ├── files
-    │   │   └── lnet.conf
-    │   ├── tasks
-    │   │   ├── 01_install_prerequisites.yml
-    │   │   ├── 02_mini_provisioning.yml
-    │   │   └── main.yml
-    │   ├── templates
-    │   │   ├── confstore.json.j2
-    │   │   └── cortx.repo.j2
-    │   └── vars
-    │       └── config.yml
-    ├── motr
-    │   ├── files
-    │   │   ├── reset_machineid.sh
-    │   │   └── run_io_tests.sh
-    │   ├── tasks
-    │   │   ├── 01_install_prerequisites.yml
-    │   │   ├── 02_mini_provisioning.yml
-    │   │   ├── 03_bootstrap_cluster..yml
-    │   │   ├── 04_validate.yml
-    │   │   └── main.yml
-    │   ├── templates
-    │   │   ├── confstore.json.j2
-    │   │   ├── cortx.repo.j2
-    │   │   └── singlenode.yml.j2
-    │   └── vars
-    │       └── config.yml
-    ├── pyutils
-    │   ├── files
-    │   │   └── install_kafka.sh
-    │   ├── tasks
-    │   │   └── main.yml
-    │   ├── templates
-    │   │   ├── confstore.json.j2
-    │   │   └── cortx.repo.j2
-    │   └── vars
-    │       └── config.yml
-    ├── s3server
-    │   ├── files
-    │   │   ├── lnet.conf
-    │   │   └── install_configure_kafka.sh
-    │   ├── tasks
-    │   │   ├── 01_install_prerequisites.yml
-    │   │   ├── 02_install_s3server.yml
-    │   │   ├── 03_mini_provisioning.yml
-    │   │   ├── 04_start_s3server.yml
-    │   │   ├── 05_validate.yml
-    │   │   └── main.yml
-    │   ├── templates
-    │   │   ├── confstore.json.j2
-    │   │   ├── cortx.repo.j2
-    │   │   └── singlenode.yml.j2
-    │   └── vars
-    │       └── config.yml
-    └── sspl
-        ├── tasks
-        │   └── main.yml
-        └── vars
-           └── config.yml
+│   ansible.cfg
+│   csm_deploy.yml
+│   hare_deploy.yml
+│   host_cleanup.yml
+│   motr_deploy.yml
+│   prepare.yml
+│   provisioner_deploy.yml
+│   pyutils_deploy.yml
+│   README.md
+│   s3server_deploy.yml
+│   sspl_deploy.yml
+│
+├───inventories
+│       hosts
+│
+└───roles
+    ├───00_prepare_environment
+    │   │   README.md
+    │   │
+    │   ├───files
+    │   │       passwordless_ssh.sh
+    │   │       reimage.sh
+    │   │       update_hosts.sh
+    │   │
+    │   └───tasks
+    │           01_prepare_env.yml
+    │           02_reimage.yml
+    │           main.yml
+    │           passwordless_authentication.yml
+    │
+    ├───csm
+    │   │   README.md
+    │   │
+    │   ├───tasks
+    │   │       01_install_prerequisites.yml
+    │   │       02_mini_provisioning.yml
+    │   │       03_start_csm.yml
+    │   │       04_validate.yml
+    │   │       main.yml
+    │   │
+    │   ├───templates
+    │   │       cortx.repo.j2
+    │   │       utils_config.j2
+    │   │
+    │   └───vars
+    │           config.yml
+    │
+    ├───ha
+    │   │   README.md
+    │   │
+    │   ├───tasks
+    │   │       main.yml
+    │   │
+    │   ├───templates
+    │   │       confstore.json.j2
+    │   │       cortx.repo.j2
+    │   │
+    │   └───vars
+    │           config.yml
+    │
+    ├───hare
+    │   │   README.md
+    │   │
+    │   ├───files
+    │   │       lnet.conf
+    │   │
+    │   ├───tasks
+    │   │       01_install_prerequisites.yml
+    │   │       02_mini_provisioning.yml
+    │   │       04_validate.yml
+    │   │       main.yml
+    │   │
+    │   ├───templates
+    │   │       cortx.repo.j2
+    │   │
+    │   └───vars
+    │           config.yml
+    │
+    ├───host_cleanup
+    │   ├───tasks
+    │   │       01_cleanup_cortx_stack.yml
+    │   │       main.yml
+    │   │
+    │   └───vars
+    │           config.yml
+    │
+    ├───motr
+    │   │   README.md
+    │   │
+    │   ├───files
+    │   │       reset_machineid.sh
+    │   │       run_io_tests.sh
+    │   │
+    │   ├───tasks
+    │   │       01_install_prerequisites.yml
+    │   │       02_mini_provisioning.yml
+    │   │       03_bootstrap_cluster..yml
+    │   │       04_validate.yml
+    │   │       main.yml
+    │   │
+    │   ├───templates
+    │   │       cortx.repo.j2
+    │   │       singlenode.yml.j2
+    │   │
+    │   └───vars
+    │           config.yml
+    │
+    ├───provisioner
+    │   │   README.md
+    │   │
+    │   ├───files
+    │   │       setup_provisioner.sh
+    │   │
+    │   ├───tasks
+    │   │       01_deploy_prereq.yml
+    │   │       02_deploy.yml
+    │   │       03_platform_setup.yml
+    │   │       main.yml
+    │   │
+    │   ├───templates
+    │   │       config.ini.j2
+    │   │
+    │   └───vars
+    │           config.yml
+    │
+    ├───pyutils
+    │   │   README.md
+    │   │
+    │   ├───files
+    │   │       install_kafka.sh
+    │   │
+    │   ├───tasks
+    │   │       01_install_prerequisites.yml
+    │   │       02_mini_provisioning.yml
+    │   │       04_validate.yml
+    │   │       main.yml
+    │   │
+    │   ├───templates
+    │   │       cortx.repo.j2
+    │   │
+    │   └───vars
+    │           config.yml
+    │
+    ├───s3server
+    │   │   README.md
+    │   │
+    │   ├───files
+    │   │       lnet.conf
+    │   │       start_service.sh
+    │   │       test_s3server.sh
+    │   │
+    │   ├───tasks
+    │   │       01_install_prerequisites.yml
+    │   │       02_mini_provisioning.yml
+    │   │       03_start_s3server.yml
+    │   │       04_validate.yml
+    │   │       main.yml
+    │   │
+    │   ├───templates
+    │   │       cortx.repo.j2
+    │   │       singlenode.yml.j2
+    │   │       utils_confstore.json.j2
+    │   │
+    │   └───vars
+    │           config.yml
+    │
+    └───sspl
+        │   README.md
+        │
+        ├───tasks
+        │       01_install_prerequisites.yml
+        │       02_mini_provisioning.yml
+        │       03_start_sspl.yml
+        │       04_validate.yml
+        │       main.yml
+        │
+        ├───templates
+        │       cortx.repo.j2
+        │       utils_config.j2
+        │
+        └───vars
+                config.yml
 ```

@@ -66,7 +66,7 @@ pipeline {
         stage('Build') {
             steps {
 				script { build_stage = env.STAGE_NAME }
-                script { manager.addHtmlBadge("&emsp;<b>Target Branch : ${BRANCH}</b>&emsp;<br />")}
+                script { manager.addHtmlBadge("&emsp;<b>Target Branch : ${BRANCH}</b>&emsp;<br />") }
 
                 sh """
                     set +x
@@ -240,7 +240,7 @@ pipeline {
                         MESSAGE = "Cortx Stack VM Deployment Success"
                         ICON = "accept.gif"
                         STATUS = "SUCCESS"
-                    }else {
+                    } else {
                         manager.buildFailure()
                         MESSAGE = "Cortx Stack VM Deployment Failed"
                         ICON = "error.gif"
@@ -251,8 +251,8 @@ pipeline {
                     tableSummary = "<table border='1' cellspacing='0' cellpadding='0' width='400' align='left'> <tr> <td align='center'>Branch/Commit</td><td align='center'>${PY_UTILS_BRANCH}</td></tr><tr> <td align='center'>Deploy VM</td><td align='center'>${NODE1_HOST}</td></tr></table>"
                     manager.createSummary("${ICON}").appendText("<h3>${MESSAGE}.</h3><p>Please check <a href=\"${BUILD_URL}/artifact/setup.log\">setup.log</a> for more info <br /><br /><h4>Test Details:</h4> ${tableSummary} <br /><br /><br /><h4>Cluster Status:${hctlStatusHTML}</h4> ", false, false, false, "red")
 
-                    if( "${HOST}" == "-" ) {
-                        if( "${DEBUG}" == "yes" ) {  
+                    if ( "${HOST}" == "-" ) {
+                        if ( "${DEBUG}" == "yes" ) {  
                             markNodeOffline("Motr Debug Mode Enabled on This Host  - ${BUILD_URL}")
                         } else {
                             build job: 'Cortx-Automation/Deployment/VM-Cleanup', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${env.NODE_NAME}")]                    
@@ -349,13 +349,13 @@ def getBuild(buildURL) {
 
     buildID = sh(script: "curl -s  $buildURL/RELEASE.INFO  | grep BUILD | cut -d':' -f2 | tr -d '\"' | xargs", returnStdout: true).trim()
     buildbranch = "Build"
-    if( buildURL.contains("/cortx/github/main/") ) {
+    if ( buildURL.contains("/cortx/github/main/") ) { 
         buildbranch="Main"
-    }else if( buildURL.contains("/cortx/github/stable/") ) {
+    } else if ( buildURL.contains("/cortx/github/stable/") ) { 
         buildbranch="Stable"
-    }else if ( buildURL.contains("/cortx/github/integration-custom-ci/")){
+    } else if ( buildURL.contains("/cortx/github/integration-custom-ci/")) { 
         buildbranch="Custom-CI"
-    }
+    } 
 
  return "$buildbranch#$buildID"   
 }

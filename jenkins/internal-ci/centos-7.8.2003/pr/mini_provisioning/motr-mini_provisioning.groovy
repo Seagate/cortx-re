@@ -238,7 +238,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 script {
 
-                    if( "${HOST}" == "-" ) {
+                    if ( "${HOST}" == "-" ) {
                         markNodeforCleanup()
                     }
 
@@ -271,15 +271,15 @@ pipeline {
                     archiveArtifacts artifacts: "*.log, *.json", onlyIfSuccessful: false, allowEmptyArchive: true 
 
                     // Trigger cleanup VM
-                    if( "${HOST}" == "-" ) {
-                        if( "${DEBUG}" == "yes" ) {  
+                    if ( "${HOST}" == "-" ) {
+                        if ( "${DEBUG}" == "yes" ) {  
                             markNodeOffline("Debug Mode Enabled on This Host  - ${BUILD_URL}")
                         } else {
                             build job: 'Cortx-Automation/Deployment/VM-Cleanup', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${env.NODE_NAME}")]                    
                         }
                     }
                     // Create Summary
-                    createSummary()
+                    addSummary()
 
                     // Cleanup Workspace
                     cleanWs()
@@ -333,14 +333,14 @@ def runAnsible(tags) {
 }
 
 // Create Summary
-def createSummary() {
+def addSummary() {
 
     hctl_status = ""
     if (fileExists ('hctl_status.log')) {
         hctl_status = readFile(file: 'hctl_status.log')
         MESSAGE = "Motr Deployment Completed"
         ICON = "accept.gif"
-    }else {
+    } else {
         manager.buildFailure()
         MESSAGE = "Motr Deployment Failed"
         ICON = "error.gif"

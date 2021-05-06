@@ -92,7 +92,7 @@ Recommended VM specification:
                         checkout([$class: 'GitSCM', branches: [[name: '*/mini-provisioner-dev']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])                
                     }
                     
-                    if( "${HOST}" == "-" ) {
+                    if ( "${HOST}" == "-" ) {
                         markNodeforCleanup()
                     }
                 }
@@ -196,9 +196,9 @@ Recommended VM specification:
 
                 archiveArtifacts artifacts: "artifacts/*", onlyIfSuccessful: false, allowEmptyArchive: true 
 
-                if( "${HOST}" == "-" ) {
+                if ( "${HOST}" == "-" ) {
 
-                    if( "${DEBUG}" == "yes" ) {  
+                    if ( "${DEBUG}" == "yes" ) {  
                         markNodeOffline("S3 Debug Mode Enabled on This Host  - ${BUILD_URL}")
                     } else {
                         build job: 'Cortx-Automation/Deployment/VM-Cleanup', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${env.NODE_NAME}")]                    
@@ -206,11 +206,11 @@ Recommended VM specification:
 
                     // Define build status based on hctl command
                     hctl_status = ""
-                    if (fileExists ('artifacts/hctl_status.log')) {
+                    if (fileExists ('artifacts/hctl_status.log')) { 
                         hctl_status = readFile(file: 'artifacts/hctl_status.log')
                         MESSAGE = "S3Server Deployment Completed"
                         ICON = "accept.gif"
-                    }else {
+                    } else {
                         manager.buildFailure()
                         MESSAGE = "S3Server Deployment Failed"
                         ICON = "error.gif"

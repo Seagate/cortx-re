@@ -231,7 +231,7 @@ Recommended VM specification:
                     // Cleanup Workspace
                     cleanWs()
 
-                    if( "${HOST}" == "-" ) {
+                    if ( "${HOST}" == "-" ) {
                         markNodeforCleanup()
                     }
 
@@ -244,7 +244,7 @@ Recommended VM specification:
                             checkout([$class: 'GitSCM', branches: [[name: '*/mini-provisioner-dev']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 1, honorRefspec: true, noTags: true, reference: '', shallow: true], [$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
                         }
 
-                        if( "${HOST}" == "-" ) {
+                        if ( "${HOST}" == "-" ) {
                             runAnsible("00_PREP_ENV, 01_PREREQ, 02_MINI_PROV, 03_START_S3SERVER, 04_VALIDATE")
 
                         } else {
@@ -275,15 +275,15 @@ Recommended VM specification:
                             archiveArtifacts artifacts: "artifacts/*", onlyIfSuccessful: false, allowEmptyArchive: true 
                     }
 
-                    if( "${HOST}" == "-" ) {
-                        if( "${DEBUG}" == "yes" ) {  
+                    if ( "${HOST}" == "-" ) {
+                        if ( "${DEBUG}" == "yes" ) {  
                             markNodeOffline("S3 Debug Mode Enabled on This Host  - ${BUILD_URL}")
                         } else {
                             build job: 'Cortx-Automation/Deployment/VM-Cleanup', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${env.NODE_NAME}")]                    
                         }
 
                         // Create Summary
-                        createSummary()
+                        addSummary()
                     }
                     
                     // Cleanup Workspace
@@ -302,9 +302,9 @@ Recommended VM specification:
                     find /mnt/bigstorage/releases/cortx/github/pr-build/${COMPONENT_NAME}/* -maxdepth 0 -mtime +30 -type d -exec rm -rf {} \\;
 				'''
 
-                if(env.ghprbPullLink){
+                if (env.ghprbPullLink) {
                     env.pr_id = "${ghprbPullLink}"
-                }else{
+                } else {
                     env.branch_name = "${S3_BRANCH}"
                     env.repo_url = "${S3_URL}"
                 }
@@ -361,14 +361,14 @@ def runAnsible(tags) {
 }
 
 // Create Summary
-def createSummary() {
+def addSummary() {
 
     hctl_status = ""
     if (fileExists ('artifacts/hctl_status.log')) {
         hctl_status = readFile(file: 'artifacts/hctl_status.log')
         MESSAGE = "S3Server Deployment Completed"
         ICON = "accept.gif"
-    }else {
+    } else {
         manager.buildFailure()
         MESSAGE = "S3Server Deployment Failed"
         ICON = "error.gif"
