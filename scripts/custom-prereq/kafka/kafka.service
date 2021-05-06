@@ -9,7 +9,9 @@ Type=simple
 User=kafka
 Group=kafka
 ExecStart=/opt/kafka/bin/kafka-server-start.sh /opt/kafka/config/server.properties
+ExecStartPost=for i in $( seq 1 10 ); do test 1 -le $(ps ax | grep ' kafka\.Kafka ' | grep java | grep -v grep | awk '{print $1}' | wc -l) && break || ( sleep 2; continue ); done
 ExecStop=/opt/kafka/bin/kafka-server-stop.sh
+ExecStopPost=for i in $( seq 1 20 ); do test 0 -eq $(ps ax | grep ' kafka\.Kafka ' | grep java | grep -v grep | awk '{print $1}' | wc -l) && break || ( sleep 2; continue ); done
 
 [Install]
 WantedBy=multi-user.target
