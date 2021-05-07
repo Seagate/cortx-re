@@ -1,4 +1,7 @@
 #!/usr/bin/env groovy
+
+properties([[$class: 'ThrottleJobProperty', categories: [], limitOneJobWithMatchingParams: true, maxConcurrentPerNode: 5, maxConcurrentTotal: 5, paramsToUseForLimit: '', throttleEnabled: true, throttleOption: 'project']])
+
 pipeline { 
     agent {
         node {
