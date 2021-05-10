@@ -2,7 +2,7 @@ SETUP_LOG_FILE="$1"
 DEPLOYMENT_STATUS_FILE="/root/cortx_deployment/log/deployment_status.log"
 FAILED_COMPONENT_FILE="/root/cortx_deployment/log/failed_component.log"
 IS_FAILED=$(grep -i 'Salt client command failed' ${SETUP_LOG_FILE})
-IS_SUCCESS=$(grep -i 'Deploy VM - Done|Confstore copied across all nodes of cluster' ${SETUP_LOG_FILE})
+IS_SUCCESS=$(grep -iE 'Deploy VM - Done|Confstore copied across all nodes of cluster' ${SETUP_LOG_FILE})
 
 if [[ ${IS_SUCCESS} ]]; then
     DEPLOYMENT_STATUS="Cortx Stack VM Deployment 'Success'."

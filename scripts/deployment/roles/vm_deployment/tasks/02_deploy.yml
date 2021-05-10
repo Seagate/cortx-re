@@ -57,7 +57,23 @@
       tags: ['02_7_HA']
       
   rescue:    
-    - name: "[ Deploy Cortx Stack ] : Write Latest Deployment log to file" 
+
+    - name: "[ Validate Deployment ] : Get journalctl Log" 
+      shell: "journalctl 2>&1 > {{ CORXT_DEPLOYMENT_LOG_PATH }}/journalctl.log"
+      ignore_errors: true
+      tags: ['02_DEPLOY_VALIDATE']
+
+    - name: "[ Validate Deployment ] : Get installed rpm package info"
+      shell: yum list installed | grep 'cortx' 2>&1 > {{ CORXT_DEPLOYMENT_LOG_PATH }}/installed_cortx_rpm_list.log
+      ignore_errors: true
+      tags: ['02_DEPLOY_VALIDATE']
+
+    - name: "[ Validate Deployment ] : Get installed pip package info"
+      shell: pip3 freeze 2>&1 > {{ CORXT_DEPLOYMENT_LOG_PATH }}/installed_pip_packages_list.log
+      ignore_errors: true
+      tags: ['02_DEPLOY_VALIDATE']
+
+    - name: "[ Validate Deployment ] : Write Latest Deployment log to file" 
       lineinfile:
         dest: "{{ CORXT_DEPLOYMENT_LOG_PATH }}/deploymet_latest.log"
         line: "{{ item }}"
@@ -67,7 +83,7 @@
         - "{{ deploy_vm.stderr }}"
       tags: ['02_DEPLOY_VALIDATE']
 
-    - name: "[ Deploy Cortx Stack ] : Validate Deployment" 
+    - name: "[ Validate Deployment ] : Validate Deployment" 
       shell: "bash {{ CORXT_DEPLOYMENT_SCRIPT_PATH }}/validate_deployment.sh {{ CORXT_DEPLOYMENT_LOG_PATH }}/deploymet_latest.log"
       failed_when: "\"Deploy VM - Done\" not in deploy_vm.stdout"
       tags: ['02_DEPLOY_VALIDATE']

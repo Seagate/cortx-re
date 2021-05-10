@@ -33,12 +33,7 @@ pipeline {
         NODE3_HOST = "${NODE3.isEmpty() ? NODE3_HOST : NODE3 }"
         NODES = "${NODE1_HOST},${NODE2_HOST},${NODE3_HOST}"
 
-        SETUP_TYPE = '3_node' 
-
-        STAGE_00_PREPARE = "yes"
-        STAGE_01_DEPLOY_PREREQ = "yes"
-        STAGE_02_DEPLOY = "yes"
-        
+        SETUP_TYPE = '3_node'         
     }
 
     options {
@@ -76,7 +71,6 @@ pipeline {
         }
 
         stage('00. Prepare Environment') {
-            when { expression { env.STAGE_00_PREPARE == "yes" } }
             steps {
                 script {
                     
@@ -88,7 +82,6 @@ pipeline {
         }
 
         stage('01. Deploy Prereq') {
-            when { expression { env.STAGE_01_DEPLOY_PREREQ == "yes" } }
             steps {
                 script {
                     
@@ -177,7 +170,6 @@ pipeline {
         }
 
         stage('03. Validate') {
-            when { expression { env.STAGE_03_VALIDATE == "yes" } }
             steps {
                 script {
                     
@@ -231,14 +223,14 @@ pipeline {
                 
                 // Assume Deployment Status Based on log results
                 hctlStatus = ""
-                if ( fileExists('hctl_status.log') && currentBuild.currentResult == "SUCCESS" ) {
-                    hctlStatus = readFile(file: 'hctl_status.log')
-                    MESSAGE = "3N - Cortx Stack VM Deployment Success for the build ${build_id}"
+                if ( fileExists('artifacts/srvnode1/cortx_deployment/log/hctl_status.log') && currentBuild.currentResult == "SUCCESS" ) {
+                    hctlStatus = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/hctl_status.log')
+                    MESSAGE = "3 Node - Cortx Stack VM Deployment Success for the build ${build_id}"
                     ICON = "accept.gif"
                     STATUS = "SUCCESS"
                 } else {
                     manager.buildFailure()
-                    MESSAGE = "3N - Cortx Stack VM Deployment Failed for the build ${build_id}"
+                    MESSAGE = "3 Node - Cortx Stack VM Deployment Failed for the build ${build_id}"
                     ICON = "error.gif"
                     STATUS = "FAILURE"
 
@@ -256,7 +248,7 @@ pipeline {
                             deployment_status = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/deployment_status.log').trim()
                             env.failure_cause = deployment_status
 
-                            MESSAGE = "3N - Cortx Stack VM-Deployment Failed in ${failed_component_name} for the build ${build_id}"
+                            MESSAGE = "3 Node - Cortx Stack VM-Deployment Failed in ${failed_component_name} for the build ${build_id}"
 
                             manager.addHtmlBadge("<br /> <b>Status :</b> <a href='${BUILD_URL}/artifact/artifacts/srvnode1/cortx_deployment/log/deployment_status.log'><b>Failed in '${failed_component_name}'</a>")
 
@@ -277,7 +269,7 @@ pipeline {
                 // Create Jenkins Summary page with deployment info
                 hctlStatusHTML = "<textarea rows=20 cols=200 readonly style='margin: 0px; height: 392px; width: 843px;'>${hctlStatus}</textarea>"
                 tableSummary = "<table border='1' cellspacing='0' cellpadding='0' width='400' align='left'> <tr> <td align='center'>Build</td><td align='center'><a href=${CORTX_BUILD}>${build_id}</a></td></tr><tr> <td align='center'>Test VM</td><td align='center'><a href='${JENKINS_URL}/computer/${env.NODE_NAME}'><b>${NODE1_HOST}</b></a></td></tr></table>"
-                manager.createSummary("${ICON}").appendText("<h3>Cortx Stack VM-Deployment ${currentBuild.currentResult} for the build <a href=\"${CORTX_BUILD}\">${build_id}.</a></h3><p>Please check <a href=\"${BUILD_URL}/artifact/setup.log\">setup.log</a> for more info <br /><br /><h4>Test Details:</h4> ${tableSummary} <br /><br /><br /><h4>Cluster Status:${hctlStatusHTML}</h4> ", false, false, false, "red")
+                manager.createSummary("${ICON}").appendText("<h3>Cortx Stack VM-Deployment ${currentBuild.currentResult} for the build <a href=\"${CORTX_BUILD}\">${build_id}.</a></h3><p>Please check <a href=\"${BUILD_URL}/artifact/setup.log\">setup.log</a> for more info <br /><br /><h4>Test Details:</h4> ${tableSummary} <br /><br /><br /><h4>Cluster Status:</h4>${hctlStatusHTML}", false, false, false, "red")
                      
                 // Send Email about deployment status
                 env.build_id = build_id
