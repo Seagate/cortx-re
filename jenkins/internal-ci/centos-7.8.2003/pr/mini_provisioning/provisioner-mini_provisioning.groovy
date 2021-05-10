@@ -224,9 +224,9 @@ pipeline {
             script {       
                 manager.addShortText("${build_stage} Failed")
 
-                sh label: 'Remove artifacts', script: '''
-                    rm -rf "${DESTINATION_RELEASE_LOCATION}"
-                '''
+                // sh label: 'Remove artifacts', script: '''
+                //     rm -rf "${DESTINATION_RELEASE_LOCATION}"
+                // '''
             }
         }
     }
