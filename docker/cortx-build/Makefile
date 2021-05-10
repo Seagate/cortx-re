@@ -15,6 +15,13 @@ help : Makefile
 	@echo
 	@echo targets:
 	@sed -n 's/^##/   /p' $<
+	
+## checkout: checkout specified branch/tag code
+checkout:
+	@echo "*************** checkout code *********************"
+	pushd cortx-workspace && \
+		for component in $$(ls -1d cortx-* | grep -Evx 'cortx-experiments||cortx-posix'); do pushd $$component; git pull -p --all; git checkout $$BRANCH || exit 1; popd ; done  && \
+	popd || (echo "ERROR: Failed to checkout specified branch/tag Exiting..."; exit 1)
 
 ## clean: remove existing /var/artifacts/0 directory. 
 clean:
@@ -114,6 +121,7 @@ _s3_build:
 		export build_number=${BUILD_ID} && \
 		./rpms/s3/buildrpm.sh -S ${RELEASE_VERSION} -G $$(git rev-parse --short HEAD) && \
 		./rpms/s3iamcli/buildrpm.sh -S ${RELEASE_VERSION} -G $$(git rev-parse --short HEAD) && \
+		./rpms/s3test/buildrpm.sh -S ${RELEASE_VERSION} -G $$(git rev-parse --short HEAD) && \
 		rm -rf {RPM_DIR}/cortx-s3*.rpm && \
 		mv /root/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
        	mv /root/rpmbuild/RPMS/noarch/*.rpm ${RPM_DIR} && \
