@@ -241,7 +241,10 @@ pipeline {
 
     post {
         always {
-            sh label: 'Remove artifacts', script: '''rm -rf "${DESTINATION_RELEASE_LOCATION}"'''
+            sh label: 'Delete Old Builds', script: '''
+                set +x
+                find /mnt/bigstorage/releases/cortx/github/pr-build/${COMPONENT_NAME}/* -maxdepth 0 -mtime +30 -type d -exec rm -rf {} \\;
+            '''
         }
         failure {
             script {
