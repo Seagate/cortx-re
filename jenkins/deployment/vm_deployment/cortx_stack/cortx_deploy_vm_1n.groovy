@@ -216,12 +216,12 @@ pipeline {
                 hctlStatus = ""
                 if ( fileExists('artifacts/srvnode1/cortx_deployment/log/hctl_status.log') && currentBuild.currentResult == "SUCCESS" ) {
                     hctlStatus = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/hctl_status.log')
-                    MESSAGE = "1N - Cortx Stack VM Deployment Success for the build ${build_id}"
+                    MESSAGE = "Single Node Cortx Stack VM Deployment Success for the build ${build_id}"
                     ICON = "accept.gif"
                     STATUS = "SUCCESS"
                 } else {
                     manager.buildFailure()
-                    MESSAGE = "1N - Cortx Stack VM Deployment Failed for the build ${build_id}"
+                    MESSAGE = "Single Node Cortx Stack VM Deployment Failed for the build ${build_id}"
                     ICON = "error.gif"
                     STATUS = "FAILURE"
 
@@ -239,7 +239,7 @@ pipeline {
                             deployment_status = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/deployment_status.log').trim()
                             env.failure_cause = deployment_status
 
-                            MESSAGE = "1N - Cortx Stack VM-Deployment Failed in ${failed_component_name} for the build ${build_id}"
+                            MESSAGE = "Single Node Cortx Stack VM-Deployment Failed in ${failed_component_name} for the build ${build_id}"
 
                             manager.addHtmlBadge("<br /> <b>Status :</b> <a href='${BUILD_URL}/artifact/artifacts/srvnode1/cortx_deployment/log/deployment_status.log'><b>Failed in '${failed_component_name}'</a>")
 

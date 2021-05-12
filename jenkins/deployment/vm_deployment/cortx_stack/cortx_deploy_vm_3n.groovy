@@ -14,6 +14,7 @@ pipeline {
         string(name: 'NODE2', defaultValue: '', description: 'Node 2 Host FQDN',  trim: true)
         string(name: 'NODE3', defaultValue: '', description: 'Node 3 Host FQDN',  trim: true)
         string(name: 'NODE_PASS', defaultValue: '', description: 'Host machine root user password',  trim: true)
+        string(name: 'NODE_MGMT_VIP', defaultValue: '', description: 'The floating static VIP for management network interface.',  trim: true)
         booleanParam(name: 'DEBUG', defaultValue: false, description: 'Select this if you want to preserve the VM temporarily for troublshooting')
     }
 
@@ -27,11 +28,12 @@ pipeline {
         NODE_DEFAULT_SSH_CRED =  credentials("${NODE_DEFAULT_SSH_CRED}")
         NODE_USER = "${NODE_DEFAULT_SSH_CRED_USR}"
         
-        NODE_PASS = "${NODE_PASS.isEmpty() ? NODE_DEFAULT_SSH_CRED_PSW : NODE_PASS}"
-        NODE1_HOST = "${NODE1.isEmpty() ? NODE1_HOST : NODE1 }"
-        NODE2_HOST = "${NODE2.isEmpty() ? NODE2_HOST : NODE2 }"
-        NODE3_HOST = "${NODE3.isEmpty() ? NODE3_HOST : NODE3 }"
-        NODES = "${NODE1_HOST},${NODE2_HOST},${NODE3_HOST}"
+        NODE_PASS   = "${NODE_PASS.isEmpty() ? NODE_DEFAULT_SSH_CRED_PSW : NODE_PASS}"
+        NODE1_HOST  = "${NODE1.isEmpty() ? NODE1_HOST : NODE1 }"
+        NODE2_HOST  = "${NODE2.isEmpty() ? NODE2_HOST : NODE2 }"
+        NODE3_HOST  = "${NODE3.isEmpty() ? NODE3_HOST : NODE3 }"
+        MGMT_VIP    = "${NODE_MGMT_VIP.isEmpty() ? MGMT_VIP : NODE_MGMT_VIP }"
+        NODES       = "${NODE1_HOST},${NODE2_HOST},${NODE3_HOST}"
 
         SETUP_TYPE = '3_node'         
     }
@@ -306,6 +308,7 @@ def runAnsible(tags) {
                 "CORTX_BUILD"   : [value: "${CORTX_BUILD}", hidden: false] ,
                 "CLUSTER_PASS"  : [value: "${NODE_PASS}", hidden: false],
                 "SETUP_TYPE"    : [value: "${SETUP_TYPE}", hidden: false],
+                "MGMT_VIP"      : [value: "${MGMT_VIP}", hidden: false],
             ],
             extras: '-v',
             colorized: true
