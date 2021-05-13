@@ -293,16 +293,14 @@ pipeline {
                 if ( "FAILURE".equals(currentBuild.currentResult) && params.AUTOMATED && env.component_email ) {
                     toEmail = "${env.component_email}, priyank.p.dalal@seagate.com, gowthaman.chinnathambi@seagate.com"
                 } else {
-                    toEmail = "priyank.p.dalal@seagate.com, gowthaman.chinnathambi@seagate.com"
+                    toEmail = "gowthaman.chinnathambi@seagate.com"
                 }
-
-                print(toEmail)
                 
                 emailext (
                     body: '''${SCRIPT, template="vm-deployment-email.template"}''',
                     mimeType: 'text/html',
                     subject: "${MESSAGE}",
-                    to: "gowthaman.chinnathambi@seagate.com",
+                    to: toEmail,
                     recipientProviders: [[$class: 'RequesterRecipientProvider']]
                 )
 
@@ -453,11 +451,8 @@ def createJiraIssue(String failedStage, String failedComponent, String failureLo
                 ]
 
 
-    //def newIssue = jiraNewIssue issue: issue, site: 'SEAGATE_JIRA'
-    //return newIssue.data.key
-
-    print(issue)
-    return "TEST-123"    
+    def newIssue = jiraNewIssue issue: issue, site: 'SEAGATE_JIRA'
+    return newIssue.data.key
 }
 
 // Get failed component name

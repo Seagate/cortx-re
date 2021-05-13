@@ -223,7 +223,7 @@ pipeline {
                         markNodeOffline("R2 - 3N VM Deployment Debug Mode Enabled on This Host - ${BUILD_URL}")
                     } else {
                         // Trigger cleanup VM
-                        build job: 'Release_Engineering/Cortx-Automation/cortx-deployment-cleanup/cleanup_deployment', wait: false, parameters: [string(name: 'DEPLOYMENT_NODE_LABEL', value: "${env.NODE_NAME}")]                    
+                        build job: 'Cortx-Automation/Deployment/VM-Cleanup-MultiNode', wait: false, parameters: [string(name: 'DEPLOYMENT_NODE_LABEL', value: "${env.NODE_NAME}")]                    
 
                     }
                 }
@@ -303,16 +303,14 @@ pipeline {
                 if ( "FAILURE".equals(currentBuild.currentResult) && params.AUTOMATED && env.component_email ) {
                     toEmail = "${env.component_email}, priyank.p.dalal@seagate.com, gowthaman.chinnathambi@seagate.com"
                 } else {
-                    toEmail = "priyank.p.dalal@seagate.com, gowthaman.chinnathambi@seagate.com"
+                    toEmail = "gowthaman.chinnathambi@seagate.com"
                 }
-
-                print(toEmail)
                 
                 emailext (
                     body: '''${SCRIPT, template="vm-deployment-email.template"}''',
                     mimeType: 'text/html',
                     subject: "${MESSAGE}",
-                    to: "gowthaman.chinnathambi@seagate.com",
+                    to: toEmail,
                     recipientProviders: [[$class: 'RequesterRecipientProvider']]
                 )
 
@@ -485,9 +483,6 @@ def createJiraIssue(String failedStage, String failedComponent, String failureLo
                 ]
 
 
-    //def newIssue = jiraNewIssue issue: issue, site: 'SEAGATE_JIRA'
-    //return newIssue.data.key
-
-    print(issue)
-    return "TEST-123"    
+    def newIssue = jiraNewIssue issue: issue, site: 'SEAGATE_JIRA'
+    return newIssue.data.key
 }
