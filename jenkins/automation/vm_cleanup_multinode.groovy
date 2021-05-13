@@ -37,7 +37,7 @@ pipeline {
 
                     // Clone cortx-re repo
                     dir('cortx-re') {
-                        checkout([$class: 'GitSCM', branches: [[name: '*/r2_vm_deployment_multinode']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/gowthamchinna/cortx-re']]])                
+                        checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])                
                     }
 
                 }
@@ -56,9 +56,9 @@ pipeline {
                     } 
                     
                     cleanup_nodes = [:]
-                    srvnodes.each { n ->
-                        cleanup_nodes[n] = {        
-                            runCleanup(n)  
+                    srvnodes.eachWithIndex{n,index ->
+                        cleanup_nodes[n] = {
+                            runCleanup(n, (1+index)*30) 
                         }
                     }
 
@@ -86,8 +86,10 @@ pipeline {
 }	
 
 
-def runCleanup(host) {
+def runCleanup(host, sleepCount) {
     
+    sleep(sleepCount)
+
     withCredentials([usernameColonPassword(credentialsId: "${CLOUDFORM_TOKEN_CRED_ID}", variable: 'CLOUDFORM_API_CRED')]) {
         dir("cortx-re/scripts/mini_provisioner") {
             ansiblePlaybook(

@@ -31,6 +31,7 @@ _do_rest(){
     echo "${response}"
 }
 
+
 # Verify/install the required dependency before execution
 _check_dependencies(){
 
@@ -122,9 +123,7 @@ _cloudform(){
             _refresh_vm
             POST_DATA="--data {\"action\":\"revert\"}"
             response=$(_do_rest "${CF_VM_SNAPSHOT_ENDPOINT}" "${CF_CRED}" "POST" "$POST_DATA")
-        ;;
-        REVERT_VM_SNAPSHOT_STATUS)
-            response=$(_do_rest "${CF_VM_SNAPSHOT_STATUS_ENDPOINT}" "${CF_CRED}" "GET" "")
+            response=$(_get_response "${response}" 'message')
         ;;
         REFRESH_VM)
             POST_DATA="--data {\"action\":\"refresh\"}"
@@ -210,6 +209,10 @@ _change_vm_state(){
             if [ "${retry_on_fail}" == "1" ];then
                
                 _console_log "[ _change_vm_state ] : Retry Initated current VM State - ${current_vm_state}"
+                
+                # TEMP FIX for VM Issue
+                _cloudform 'STOP_VM'
+                _cloudform 'START_VM'
 
                 _change_vm_state "${change_vm_state}"
             else
@@ -224,36 +227,9 @@ _change_vm_state(){
 
 # Revert VM Sanpshot by calling cloudform rest api
 _revert_vm_snapshot(){
-    
     revert_snapshot_response=$(_cloudform 'REVERT_VM_SNAPSHOT')
-    CF_VM_SNAPSHOT_STATUS_ENDPOINT=$(_get_response "${revert_snapshot_response}" 'task_href')
-    revert_snapshot_task_response=$(_cloudform 'REVERT_VM_SNAPSHOT_STATUS')
-
-    revert_snapshot_task_state==$(_get_response "${revert_snapshot_task_response}" 'state')
-    revert_snapshot_task_status==$(_get_response "${revert_snapshot_task_response}" 'status')
-
-    n=0
-    _console_log " [ _wait_for_revert_vm_snapshot ] :" 1
- 
-    # wait for ~ 20 mins
-    while [ "$n" -lt 45 ] && [ "Finished" != "${revert_snapshot_task_state}" ] && [ "Ok" != "${revert_snapshot_task_status}" ]; do
-        
-        revert_snapshot_task_response=$(_cloudform 'REVERT_VM_SNAPSHOT_STATUS')
-        revert_snapshot_task_state==$(_get_response "${revert_snapshot_task_response}" 'state')
-        revert_snapshot_task_status==$(_get_response "${revert_snapshot_task_response}" 'status')
-        
-        _console_log "=>" 1
-        n=$(( n + 1 ))
-        sleep 30
-    done
-    _console_log "Done"
-
-    if [ "Finished" == "${revert_snapshot_task_state}" ] && [ "Ok" == "${revert_snapshot_task_status}" ] ;then
-        _console_log " [ _revert_vm_snapshot ] : Snapshot Reverted Successfully"
-    else
-        _console_log " [ _revert_vm_snapshot ] : Snapshot Revert Failed => ${revert_snapshot_task_response}"
-        exit 1
-    fi
+    _console_log " [ _revert_vm_snapshot ] : Revert Request Message - ${revert_snapshot_response}"
+    sleep 600
 
 }
 
@@ -318,7 +294,7 @@ _validate_input_params(){
 
     cloudform_api_response=$(_cloudform 'GET_API')
     if [[ "${cloudform_api_response}" == *"unauthorized"* ]]; then
-        _console_log " [ _validate_input_params ] : ERROR - Invalid Cloudform Auth Token, Please check the credentials and retry it again => ${cloudform_api_response}"
+        _console_log " [ _validate_input_params ] : ERROR - Invalid Cloudform Auth Token, Please check the credentials and retry it again"
         exit 1
     fi
 
