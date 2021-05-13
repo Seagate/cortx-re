@@ -13,6 +13,8 @@ pipeline {
         string(name: 'NODE1', defaultValue: '', description: 'Node 1 Host FQDN',  trim: true)
         string(name: 'NODE_PASS', defaultValue: '', description: 'Host machine root user password',  trim: true)
         booleanParam(name: 'DEBUG', defaultValue: false, description: 'Select this if you want to preserve the VM temporarily for troublshooting')
+        booleanParam(name: 'CREATE_JIRA_ISSUE_ON_FAILURE', defaultValue: false, description: 'Internal Use : Select this if you want to create Jira issue on failure')
+        booleanParam(name: 'AUTOMATED', defaultValue: false, description: 'Internal Use : Only for Internal RE workflow')
     }
 
 	environment {
@@ -181,7 +183,9 @@ pipeline {
         always {
             script {
                 
-                // Download Log files from Deployment Machine
+                // POST ACTIONS
+
+                // 1. Download Log files from Deployment Machine
                 try {
                     sh label: 'download_log_files', returnStdout: true, script: """ 
                         mkdir -p artifacts/srvnode1 
@@ -200,8 +204,10 @@ pipeline {
                     echo err.getMessage()
                 }
 
+                // 2. Archive Deployment artifacts in jenkins build
                 archiveArtifacts artifacts: "artifacts/**/*.*", onlyIfSuccessful: false, allowEmptyArchive: true 
 
+                // 3. Trigger Cleanup Deployment Nodes
                 if (NODE1.isEmpty()) {
                     if ( params.DEBUG ) {  
                         // Take Node offline for debugging  
@@ -212,61 +218,85 @@ pipeline {
                     }
                 }
                 
-                // Assume Deployment Status Based on log results
+                // 4. Assume Deployment Status Based on log results
                 hctlStatus = ""
                 if ( fileExists('artifacts/srvnode1/cortx_deployment/log/hctl_status.log') && currentBuild.currentResult == "SUCCESS" ) {
                     hctlStatus = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/hctl_status.log')
-                    MESSAGE = "Single Node Cortx Stack VM Deployment Success for the build ${build_id}"
+                    MESSAGE = "1 Node - Cortx Stack VM Deployment Success for the build ${build_id}"
                     ICON = "accept.gif"
                     STATUS = "SUCCESS"
                 } else {
                     manager.buildFailure()
-                    MESSAGE = "Single Node Cortx Stack VM Deployment Failed for the build ${build_id}"
+                    MESSAGE = "1 Node - Cortx Stack VM Deployment Failed for the build ${build_id}"
                     ICON = "error.gif"
                     STATUS = "FAILURE"
 
                     // Failure component name and Cause can be retrived from deployment status log
-                    if (fileExists('artifacts/srvnode1/cortx_deployment/log/deployment_status.log')) {
+                    if (fileExists('artifacts/srvnode1/cortx_deployment/log/deployment_status.log')
+                        && fileExists('artifacts/srvnode1/cortx_deployment/log/failed_component.log') ) {
                         try {
                            
-                            // Failed Stage
+                            deployment_status_log = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/deployment_status.log').trim()
                             failed_component_stage = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/failed_component.log').trim()
-                            
+                            failed_component_stage = failed_component_stage.trim().replaceAll("'","")
+
                             // Failed Component from Failed Stage
-                            failed_component_name = getFailedComponentName(failed_component_stage.trim())
+                            component_info_map = getComponentInfo(failed_component_stage)
+                            component_name = component_info_map["name"]
+                            component_email = component_info_map["email"] 
 
-                            // Short Failure Log
-                            deployment_status = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/deployment_status.log').trim()
-                            env.failure_cause = deployment_status
+                            env.failure_cause = deployment_status_log
+                            env.deployment_status_log = deployment_status_log
+                            env.failed_component_stage = failed_component_stage
+                            env.component_name = component_name
+                            env.component_email = component_email
 
-                            MESSAGE = "Single Node Cortx Stack VM-Deployment Failed in ${failed_component_name} for the build ${build_id}"
-
-                            manager.addHtmlBadge("<br /> <b>Status :</b> <a href='${BUILD_URL}/artifact/artifacts/srvnode1/cortx_deployment/log/deployment_status.log'><b>Failed in '${failed_component_name}'</a>")
-
+                            MESSAGE = "1 Node - Cortx Stack VM-Deployment Failed in ${component_name} for the build ${build_id}"
+                            manager.addHtmlBadge("<br /> <b>Status :</b> <a href='${BUILD_URL}/artifact/artifacts/srvnode1/cortx_deployment/log/deployment_status.log'><b>Failed in '${component_name}'</a>")
+                        
                         } catch (err) {
                             echo err.getMessage()
                         }
                     }
                 }
 
-                // This env vars used in email templates to get the log path
-                if (fileExists('artifacts/srvnode1/cortx_deployment/log/setup.log')) {
-                    env.setup_log = "${BUILD_URL}/artifact/artifacts/srvnode1/cortx_deployment/log/setup.log"
+                // 5. Create JIRA on Failure - Create JIRA if deployment failed and create Jira true
+                //  - Jira issue should be created only when 'CREATE_JIRA_ISSUE_ON_FAILURE' option is enabled
+                //  - Jira issue should be created only when 'previous build is success' (To avoid Multiple jira tickets)
+                //  FIXME - LOGIC NEED TO BE IMPROVED TO QUERY JIRA TO IDENTIFY EXSITING TICKETS FOR THE SAME ISSUE
+                if( params.CREATE_JIRA_ISSUE_ON_FAILURE 
+                    && "FAILURE".equals(currentBuild.currentResult)
+                    && ( !params.AUTOMATED || "SUCCESS".equals(currentBuild.previousBuild.result))
+                    &&  env.failed_component_stage && env.component_name && env.deployment_status_log ) {
+                    
+                    jiraIssue = createJiraIssue(env.failed_component_stage, env.component_name, env.deployment_status_log)
+
+                    manager.addHtmlBadge(" <br /><b>Jira Issue :</b> <a href='https://jts.seagate.com/browse/${jiraIssue}'><b>${jiraIssue}</b></a>")
+
+                    env.jira_issue="https://jts.seagate.com/browse/${jiraIssue}"
                 }
+
+                // 5. Create Jenkins Summary page with deployment info
+                hctlStatusHTML = "<pre>${hctlStatus}</pre>"
+                tableSummary = "<table border='1' cellspacing='0' cellpadding='0' width='400' align='left'> <tr> <td align='center'>Build</td><td align='center'><a href=${CORTX_BUILD}>${build_id}</a></td></tr><tr> <td align='center'>Test VM</td><td align='center'><a href='${JENKINS_URL}/computer/${env.NODE_NAME}'><b>${NODE1_HOST}</b></a></td></tr></table>"
+                manager.createSummary("${ICON}").appendText("<h3>Cortx Stack VM-Deployment ${currentBuild.currentResult} for the build <a href=\"${CORTX_BUILD}\">${build_id}.</a></h3><p>Please check <a href=\"${BUILD_URL}/artifact/setup.log\">setup.log</a> for more info <br /><br /><h4>Test Details:</h4> ${tableSummary} <br /><br /><br /><h4>Cluster Status:</h4>${hctlStatusHTML}", false, false, false, "red")
+                     
+                // 6. Send Email about deployment status
+                env.build_id = build_id
+                env.build_location = "${CORTX_BUILD}"
+                env.host = "${NODES}"
+                env.deployment_status = "${MESSAGE}"
                 if (fileExists('artifacts/srvnode1/cortx_deployment/log/hctl_status.log')) {
                     env.cluster_status = "${BUILD_URL}/artifact/artifacts/srvnode1/cortx_deployment/log/hctl_status.log"
                 }
+                
+                if ( "FAILURE".equals(currentBuild.currentResult) && params.AUTOMATED && env.component_email ) {
+                    toEmail = "${env.component_email}, priyank.p.dalal@seagate.com, gowthaman.chinnathambi@seagate.com"
+                } else {
+                    toEmail = "priyank.p.dalal@seagate.com, gowthaman.chinnathambi@seagate.com"
+                }
 
-                // Create Jenkins Summary page with deployment info
-                hctlStatusHTML = "<textarea rows=20 cols=200 readonly style='margin: 0px; height: 392px; width: 843px;'>${hctlStatus}</textarea>"
-                tableSummary = "<table border='1' cellspacing='0' cellpadding='0' width='400' align='left'> <tr> <td align='center'>Build</td><td align='center'><a href=${CORTX_BUILD}>${build_id}</a></td></tr><tr> <td align='center'>Test VM</td><td align='center'><a href='${JENKINS_URL}/computer/${env.NODE_NAME}'><b>${NODE1_HOST}</b></a></td></tr></table>"
-                manager.createSummary("${ICON}").appendText("<h3>Cortx Stack VM-Deployment ${currentBuild.currentResult} for the build <a href=\"${CORTX_BUILD}\">${build_id}.</a></h3><p>Please check <a href=\"${BUILD_URL}/artifact/setup.log\">setup.log</a> for more info <br /><br /><h4>Test Details:</h4> ${tableSummary} <br /><br /><br /><h4>Cluster Status:${hctlStatusHTML}</h4> ", false, false, false, "red")
-                     
-                // Send Email about deployment status
-                env.build_id = build_id
-                env.build_location = "${CORTX_BUILD}"
-                env.host = "${NODE1_HOST}"
-                env.deployment_status = "${MESSAGE}"
+                print(toEmail)
                 
                 emailext (
                     body: '''${SCRIPT, template="vm-deployment-email.template"}''',
@@ -304,7 +334,6 @@ def runAnsible(tags) {
     }
 }
 
-
 // Get build id from build url
 def getBuild(buildURL) {
 
@@ -337,32 +366,6 @@ def getActualBuild(buildURL) {
 
  return buildURL  
 }
-
-
-def getFailedComponentName(String failedStage) {
-    
-    component = "RE"
-    if (failedStage.contains('components.system') || failedStage.contains('components.misc_pkgs') || failedStage.contains('bootstrap')) {
-        component = "Provisioner"
-    } else if (failedStage.contains('components.motr')) {
-        component = "Motr"
-    } else if (failedStage.contains('components.s3server')) {
-        component = "S3Server"
-    } else if (failedStage.contains('components.hare')) {
-        component = "hare"
-    } else if (failedStage.contains('components.ha')) {
-        component = "HA"
-    } else if (failedStage.contains('components.sspl')) {
-        component = "Monitor"
-    } else if (failedStage.contains('components.csm')) {
-        component = "CSM"
-    } else if (failedStage.contains('components.cortx_utils')) {
-        component = "Foundation"
-    }
-
-    return component
-}
-
 
 // Method returns VM Host Information ( host, ssh cred)
 def getTestMachine(host, user, pass) {
@@ -422,4 +425,59 @@ def markNodeforCleanup() {
 	node.setLabelString(node.getLabelString() + " " + nodeLabel)
 	node.save()
     node = null
+}
+
+// Create jira issues on failure and input parameter 
+def createJiraIssue(String failedStage, String failedComponent, String failureLog){
+
+    def issue = [
+                    fields: [ 
+                        project: [key: 'EOS'],
+                        issuetype: [name: 'Bug'],
+                        priority: [name: "Blocker"],
+                        versions: [[name: "LDR-R2"]],
+                        labels: ["PI-1"],
+                        components: [[name: "${failedComponent}"]],
+                        summary: "1N VM-Deployment Failed in ${failedComponent} for the build ${build_id}",
+                        description: "{panel}VM Deployment is failed in ${failedStage} for the build [${build_id}|${CORTX_BUILD}]. Please check Jenkins console log and deployment log for more info.\n"+
+                                    "\n h4. Deployment Info \n"+
+                                    "|Cortx build|[${build_id}|${CORTX_BUILD}]|\n"+
+                                    "|Jenkins build|[${JOB_BASE_NAME}#${BUILD_NUMBER} |${BUILD_URL}]|\n"+
+                                    "|Failed Component |*${failedComponent}*|\n"+
+                                    "|Deployment Host|${NODE1_HOST}|\n"+
+                                    "|Deployment Log|[${JOB_BASE_NAME}/${BUILD_NUMBER}/artifact|${BUILD_URL}artifact]|\n"+
+                                    "\n\n"+
+                                    "h4. Failure Log\n"+
+                                    "{code:java}${failureLog}{code} \n {panel}"
+                    ]
+                ]
+
+
+    //def newIssue = jiraNewIssue issue: issue, site: 'SEAGATE_JIRA'
+    //return newIssue.data.key
+
+    print(issue)
+    return "TEST-123"    
+}
+
+// Get failed component name
+def getComponentInfo(String stage) {
+    
+    stage = stage.count(".") > 1 ? stage.tokenize(".")[0]+"."+stage.tokenize(".")[1] : stage
+
+    def defaultComponentMap = [ name : "RE", email : "CORTX.DevOps.RE@seagate.com"]
+    def componentInfoMap = [
+        "bootstrap"                 : [ name : "Provisioner",   email : "CORTX.Provisioner.Re@seagate.com" ],
+        "components.system"         : [ name : "Provisioner",   email : "CORTX.Provisioner.Re@seagate.com" ],
+        "components.misc_pkgs"      : [ name : "Provisioner",   email : "CORTX.Provisioner.Re@seagate.com" ],
+        "components.motr"           : [ name : "Motr",          email : "cortx.motr@seagate.com" ],
+        "components.s3server"       : [ name : "S3Server",      email : "CORTX.s3@seagate.com" ],
+        "components.hare"           : [ name : "hare",          email : "CORTX.Hare@seagate.com" ],
+        "components.ha"             : [ name : "HA",            email : "CORTX.HA@seagate.com" ],
+        "components.sspl"           : [ name : "Monitor",       email : "CORTX.monitor@seagate.com" ],
+        "components.csm"            : [ name : "CSM",           email : "CORTX.CSM@seagate.com" ],
+        "components.cortx_utils"    : [ name : "Foundation",    email : "CORTX.Foundation@seagate.com" ]
+    ]
+
+    return componentInfoMap[stage] ? componentInfoMap[stage] : defaultComponentMap
 }
