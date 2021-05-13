@@ -28,7 +28,7 @@ done
 
 partprobe
 for partition in $( ls -1 /dev/disk/by-id/scsi-*|grep part1 | rev | cut -c7- | rev ); do
-    if parted ${partition} print; then 
+    if parted "${partition}" print; then 
         echo "Removing partition 2 from ${partition}"
         echo "Ignore" | parted "${partition}" rm 2
     fi

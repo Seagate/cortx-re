@@ -86,7 +86,7 @@ pipeline {
 }	
 
 
-def runCleanup(host){
+def runCleanup(host) {
     
     withCredentials([usernameColonPassword(credentialsId: "${CLOUDFORM_TOKEN_CRED_ID}", variable: 'CLOUDFORM_API_CRED')]) {
         dir("cortx-re/scripts/mini_provisioner") {

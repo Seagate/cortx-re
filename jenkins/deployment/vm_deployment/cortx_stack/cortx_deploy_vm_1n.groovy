@@ -59,7 +59,7 @@ pipeline {
                         checkout([$class: 'GitSCM', branches: [[name: '*/r2_vm_deployment_multinode']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/gowthamchinna/cortx-re']]])                
                     }
 
-                    if( NODE1.isEmpty() ) {
+                    if ( NODE1.isEmpty() ) {
 					    markNodeforCleanup()
                     }
                 }
@@ -202,8 +202,8 @@ pipeline {
 
                 archiveArtifacts artifacts: "artifacts/**/*.*", onlyIfSuccessful: false, allowEmptyArchive: true 
 
-                if(NODE1.isEmpty()) {
-                    if( params.DEBUG ) {  
+                if (NODE1.isEmpty()) {
+                    if ( params.DEBUG ) {  
                         // Take Node offline for debugging  
                         markNodeOffline("R2 - 1N VM Deployment Debug Mode Enabled on This Host - ${BUILD_URL}")
                     } else {
@@ -226,7 +226,7 @@ pipeline {
                     STATUS = "FAILURE"
 
                     // Failure component name and Cause can be retrived from deployment status log
-                    if (fileExists('artifacts/srvnode1/cortx_deployment/log/deployment_status.log')){
+                    if (fileExists('artifacts/srvnode1/cortx_deployment/log/deployment_status.log')) {
                         try {
                            
                             // Failed Stage
@@ -250,10 +250,10 @@ pipeline {
                 }
 
                 // This env vars used in email templates to get the log path
-                if (fileExists('artifacts/srvnode1/cortx_deployment/log/setup.log')){
+                if (fileExists('artifacts/srvnode1/cortx_deployment/log/setup.log')) {
                     env.setup_log = "${BUILD_URL}/artifact/artifacts/srvnode1/cortx_deployment/log/setup.log"
                 }
-                if (fileExists('artifacts/srvnode1/cortx_deployment/log/hctl_status.log')){
+                if (fileExists('artifacts/srvnode1/cortx_deployment/log/hctl_status.log')) {
                     env.cluster_status = "${BUILD_URL}/artifact/artifacts/srvnode1/cortx_deployment/log/hctl_status.log"
                 }
 
@@ -310,11 +310,11 @@ def getBuild(buildURL) {
 
     buildID = sh(script: "curl -s  $buildURL/RELEASE.INFO  | grep BUILD | cut -d':' -f2 | tr -d '\"' | xargs", returnStdout: true).trim()
     buildbranch = "Build"
-    if( buildURL.contains("/cortx/github/main/") ) {
+    if ( buildURL.contains("/cortx/github/main/") ) {
         buildbranch="Main"
-    }else if( buildURL.contains("/cortx/github/stable/") ) {
+    } else if ( buildURL.contains("/cortx/github/stable/") ) {
         buildbranch="Stable"
-    }else if ( buildURL.contains("/cortx/github/integration-custom-ci/")){
+    } else if ( buildURL.contains("/cortx/github/integration-custom-ci/")) {
         buildbranch="Custom-CI"
     }
 
@@ -327,36 +327,36 @@ def getActualBuild(buildURL) {
     buildRoot = "http://cortx-storage.colo.seagate.com/releases/cortx/github"
     buildID = sh(script: "curl -s  $buildURL/RELEASE.INFO  | grep BUILD | cut -d':' -f2 | tr -d '\"' | xargs", returnStdout: true).trim()
     buildbranch = "Build"
-    if( buildURL.contains("/cortx/github/main/") ) {
-        buildURL="${buildRoot}/main/centos-7.8.2003/${buildID}/prod"
-    }else if( buildURL.contains("/cortx/github/stable/") ) {
-        buildURL="${buildRoot}/stable/centos-7.8.2003/${buildID}/prod"
-    }else if ( buildURL.contains("/cortx/github/integration-custom-ci/")){
-        buildURL="${buildRoot}/integration-custom-ci/centos-7.8.2003/${buildID}"
+    if ( buildURL.contains("/cortx/github/main/") ) {
+        buildURL = "${buildRoot}/main/centos-7.8.2003/${buildID}/prod"
+    } else if ( buildURL.contains("/cortx/github/stable/") ) {
+        buildURL = "${buildRoot}/stable/centos-7.8.2003/${buildID}/prod"
+    } else if ( buildURL.contains("/cortx/github/integration-custom-ci/")) {
+        buildURL = "${buildRoot}/integration-custom-ci/centos-7.8.2003/${buildID}"
     }
 
  return buildURL  
 }
 
 
-def getFailedComponentName(String failedStage){
+def getFailedComponentName(String failedStage) {
     
     component = "RE"
-    if (failedStage.contains('components.system') || failedStage.contains('components.misc_pkgs') || failedStage.contains('bootstrap')){
+    if (failedStage.contains('components.system') || failedStage.contains('components.misc_pkgs') || failedStage.contains('bootstrap')) {
         component = "Provisioner"
-    } else if(failedStage.contains('components.motr')){
+    } else if (failedStage.contains('components.motr')) {
         component = "Motr"
-    } else if(failedStage.contains('components.s3server')){
+    } else if (failedStage.contains('components.s3server')) {
         component = "S3Server"
-    } else if(failedStage.contains('components.hare')){
+    } else if (failedStage.contains('components.hare')) {
         component = "hare"
-    } else if(failedStage.contains('components.ha')){
+    } else if (failedStage.contains('components.ha')) {
         component = "HA"
-    } else if(failedStage.contains('components.sspl')){
+    } else if (failedStage.contains('components.sspl')) {
         component = "Monitor"
-    } else if(failedStage.contains('components.csm')){
+    } else if (failedStage.contains('components.csm')) {
         component = "CSM"
-    } else if(failedStage.contains('components.cortx_utils')){
+    } else if (failedStage.contains('components.cortx_utils')) {
         component = "Foundation"
     }
 
