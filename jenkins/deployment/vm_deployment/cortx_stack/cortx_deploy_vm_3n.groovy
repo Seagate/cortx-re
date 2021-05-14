@@ -369,7 +369,7 @@ def getActualBuild(buildURL) {
     } else if ( buildURL.contains("/cortx/github/stable/") ) {
         buildURL = "${buildRoot}/stable/centos-7.8.2003/${buildID}/prod"
     } else if ( buildURL.contains("/cortx/github/integration-custom-ci/")) {
-        buildURL = "${buildRoot}/integration-custom-ci/centos-7.8.2003/${buildID}"
+        buildURL = "${buildRoot}/integration-custom-ci/centos-7.8.2003/custom-build-${buildID}"
     }
 
  return buildURL  
