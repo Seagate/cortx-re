@@ -264,7 +264,7 @@ pipeline {
                 //  - Jira issue should be created only when 'CREATE_JIRA_ISSUE_ON_FAILURE' option is enabled
                 //  - Jira issue should be created only when 'previous build is success' (To avoid Multiple jira tickets)
                 //  FIXME - LOGIC NEED TO BE IMPROVED TO QUERY JIRA TO IDENTIFY EXSITING TICKETS FOR THE SAME ISSUE
-                if( params.CREATE_JIRA_ISSUE_ON_FAILURE 
+                if ( params.CREATE_JIRA_ISSUE_ON_FAILURE 
                     && "FAILURE".equals(currentBuild.currentResult)
                     && ( !params.AUTOMATED || "SUCCESS".equals(currentBuild.previousBuild.result))
                     &&  env.failed_component_stage && env.component_name && env.deployment_status_log ) {
@@ -336,16 +336,16 @@ def runAnsible(tags) {
 def getBuild(buildURL) {
 
     buildID = sh(script: "curl -s  $buildURL/RELEASE.INFO  | grep BUILD | cut -d':' -f2 | tr -d '\"' | xargs", returnStdout: true).trim()
-    buildbranch = "Build"
+    buildBranch = "Build"
     if ( buildURL.contains("/cortx/github/main/") ) {
-        buildbranch="Main"
+        buildBranch = "Main"
     } else if ( buildURL.contains("/cortx/github/stable/") ) {
-        buildbranch="Stable"
+        buildBranch = "Stable"
     } else if ( buildURL.contains("/cortx/github/integration-custom-ci/")) {
-        buildbranch="Custom-CI"
+        buildBranch = "Custom-CI"
     }
 
- return "$buildbranch#$buildID"   
+ return "$buildBranch#$buildID"   
 }
 
 // Get build id from build url
@@ -353,7 +353,6 @@ def getActualBuild(buildURL) {
 
     buildRoot = "http://cortx-storage.colo.seagate.com/releases/cortx/github"
     buildID = sh(script: "curl -s  $buildURL/RELEASE.INFO  | grep BUILD | cut -d':' -f2 | tr -d '\"' | xargs", returnStdout: true).trim()
-    buildbranch = "Build"
     if ( buildURL.contains("/cortx/github/main/") ) {
         buildURL = "${buildRoot}/main/centos-7.8.2003/${buildID}/prod"
     } else if ( buildURL.contains("/cortx/github/stable/") ) {
@@ -426,7 +425,7 @@ def markNodeforCleanup() {
 }
 
 // Create jira issues on failure and input parameter 
-def createJiraIssue(String failedStage, String failedComponent, String failureLog){
+def createJiraIssue(String failedStage, String failedComponent, String failureLog) {
 
     def issue = [
                     fields: [ 

@@ -56,7 +56,7 @@ pipeline {
                     } 
                     
                     cleanup_nodes = [:]
-                    srvnodes.eachWithIndex{n,index ->
+                    srvnodes.eachWithIndex { n, index ->
                         cleanup_nodes[n] = {
                             runCleanup(n, (1+index)*30) 
                         }
