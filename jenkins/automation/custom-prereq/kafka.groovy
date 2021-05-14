@@ -42,7 +42,7 @@ pipeline {
 				rm -rf /etc/yum.repos.d/CentOS-*
 				pushd ./scripts/custom-prereq/kafka/
                     yum-builddep -y kafka.spec
-                    wget https://mirrors.estointernet.in/apache/kafka/$kafka_release/kafka_$kafka_version-kafka_release.tgz
+                    wget https://mirrors.estointernet.in/apache/kafka/$kafka_release/kafka_$kafka_version-$kafka_release.tgz
                     cp kafka* /root/rpmbuild/SOURCES/
                     rpmbuild -ba kafka.spec --define "_kafka_version $kafka_version" --define "_kafka_release $kafka_release"
                 popd
