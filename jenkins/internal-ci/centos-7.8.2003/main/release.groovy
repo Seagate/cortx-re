@@ -213,12 +213,12 @@ pipeline {
 		        sh label: 'Generate ISO Image', script:'''
 		        rpm -q genisoimage || yum install genisoimage -y
 
-                mkdir -p $cortx_build_dir/$release_tag/sw-upgrade/{3rd_party,cortx_iso,python_deps}
-				pushd $cortx_build_dir/$release_tag/sw-upgrade/cortx_iso
-				cp -r $integration_dir/$release_tag/prod/* .
+                mkdir -p $cortx_build_dir/$release_tag/sw_upgrade/{3rd_party,cortx_iso,python_deps}
+		pushd $cortx_build_dir/$release_tag/sw_upgrade/cortx_iso
+		cp -r $integration_dir/$release_tag/prod/* .
 				
                 mkdir -p $cortx_build_dir/$release_tag/cortx_iso
-				pushd $cortx_build_dir/$release_tag/cortx_iso
+		pushd $cortx_build_dir/$release_tag/cortx_iso
                 mv $integration_dir/$release_tag/prod/* . 
 				
                 popd
