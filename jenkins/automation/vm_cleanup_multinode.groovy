@@ -23,6 +23,7 @@ pipeline {
         timestamps()
         ansiColor('xterm') 
         buildDiscarder(logRotator(numToKeepStr: "30"))
+        parallelsAlwaysFailFast()
     }
 
     stages {
