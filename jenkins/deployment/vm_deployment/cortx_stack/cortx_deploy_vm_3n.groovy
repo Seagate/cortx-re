@@ -15,16 +15,12 @@ pipeline {
         string(name: 'NODE3', defaultValue: '', description: 'Node 3 Host FQDN',  trim: true)
         string(name: 'NODE_PASS', defaultValue: '', description: 'Host machine root user password',  trim: true)
         string(name: 'NODE_MGMT_VIP', defaultValue: '', description: 'The floating static VIP for management network interface.',  trim: true)
-		string(name: 'EMAIL_NOTIFICATION', defaultValue: '', description: 'Email Notification list', trim: true)
+	string(name: 'EMAIL_NOTIFICATION', defaultValue: '', description: 'Email Notification list', trim: true)
         booleanParam(name: 'DEBUG', defaultValue: false, description: 'Select this if you want to preserve the VM temporarily for troublshooting')
         booleanParam(name: 'CREATE_JIRA_ISSUE_ON_FAILURE', defaultValue: true, description: 'Internal Use : Select this if you want to create Jira issue on failure')
         booleanParam(name: 'AUTOMATED', defaultValue: false, description: 'Internal Use : Only for Internal RE workflow')
     }
-	
-	triggers {
-        cron('30 2 * * *')
-	}
-	
+    
 	environment {
 
         // NODE1_HOST - Env variables added in the node configurations
@@ -69,7 +65,7 @@ pipeline {
                         echo "-----------------------------------------------------------"
                     """
                     dir('cortx-re') {
-                        checkout([$class: 'GitSCM', branches: [[name: '*/r2_vm_deployment_multinode']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/gowthamchinna/cortx-re']]])                
+                        checkout([$class: 'GitSCM', branches: [[name: '*main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])                
                     }
 
                     if ( NODE1.isEmpty() ) {
@@ -306,13 +302,13 @@ pipeline {
                 }
                 
                 if ( "FAILURE".equals(currentBuild.currentResult) && params.AUTOMATED && env.component_email ) {
-                    toEmail = "${EMAIL_NOTIFICATION},${env.component_email}, priyank.p.dalal@seagate.com, gowthaman.chinnathambi@seagate.com"
+                    toEmail = "${env.EMAIL_NOTIFICATION}, ${env.component_email}, CORTX.DevOps.RE@seagate.com, priyank.p.dalal@seagate.com, gowthaman.chinnathambi@seagate.com"
                 } else {
-                    toEmail = "${EMAIL_NOTIFICATION},gowthaman.chinnathambi@seagate.com"
+                    toEmail = "${env.EMAIL_NOTIFICATION}, CORTX.DevOps.RE@seagate.com, gowthaman.chinnathambi@seagate.com"
                 }
                 
                 emailext (
-                    body: '''${SCRIPT, template="vm-deployment-email.template"} , ${FILE,path="${BUILD_URL}/artifact/artifacts/srvnode1/cortx_deployment/log/hctl_status.log"} ''',
+                    body: '''${SCRIPT, template="vm-deployment-email.template"} , ${FILE,path="artifacts/srvnode1/cortx_deployment/log/hctl_status.log"} ''',
                     mimeType: 'text/html',
                     subject: "${MESSAGE}",
                     to: toEmail,
