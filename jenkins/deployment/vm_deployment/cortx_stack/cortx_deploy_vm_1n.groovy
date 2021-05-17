@@ -311,20 +311,22 @@ pipeline {
             }
         }
         cleanup {
-            // Archive Deployment artifacts in jenkins build
-            archiveArtifacts artifacts: "artifacts/**/*.*, *.log, *.json, *.ini, *.yaml, *.tar, *tar.gz, *tar.xz", onlyIfSuccessful: false, allowEmptyArchive: true 
+            script {
+                // Archive Deployment artifacts in jenkins build
+                archiveArtifacts artifacts: "artifacts/**/*.*, *.log, *.json, *.ini, *.yaml, *.tar, *tar.gz, *tar.xz", onlyIfSuccessful: false, allowEmptyArchive: true 
 
-            // Trigger Cleanup Deployment Nodes
-            if (NODE1.isEmpty()) {
-                if ( params.DEBUG ) {  
-                    // Take Node offline for debugging  
-                    markNodeOffline("R2 - 1N VM Deployment Debug Mode Enabled on This Host - ${BUILD_URL}")
-                } else {
-                    // Trigger cleanup VM
-                    build job: 'Cortx-Automation/Deployment/VM-Cleanup', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${env.NODE_NAME}")] 
+                // Trigger Cleanup Deployment Nodes
+                if (NODE1.isEmpty()) {
+                    if ( params.DEBUG ) {  
+                        // Take Node offline for debugging  
+                        markNodeOffline("R2 - 1N VM Deployment Debug Mode Enabled on This Host - ${BUILD_URL}")
+                    } else {
+                        // Trigger cleanup VM
+                        build job: 'Cortx-Automation/Deployment/VM-Cleanup', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${env.NODE_NAME}")] 
+                    }
                 }
-            }
-            cleanWs()
+                cleanWs()
+            }    
         }        
     }
 }	
