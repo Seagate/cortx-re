@@ -12,6 +12,18 @@ pipeline {
                 description: 'Build number to sync pune server',
                 trim: true
             )
+			string(
+                defaultValue: 'centos-7.8.2003',
+                name: 'os_version',
+                description: 'OS version of the build',
+                trim: true
+            )
+			string(
+                defaultValue: 'cortx-1.0',
+                name: 'branch_name',
+                description: 'Branch name of the build',
+                trim: true
+            )
     }
     stages {
         stage('Checking the cortx server mount') {
@@ -42,12 +54,9 @@ pipeline {
 		}
 		stage('Syncing the folder'){
 		    steps {
-		        sh "/mnt/source_code/cortx-re/scripts/env_setup/sync_build.sh -s /mnt/cortx/cortx_builds/centos-7.8.2003/${build_no} -d /mnt/pune/cortx_builds/centos-7.8.2003"
-		        sh "/mnt/source_code/cortx-re/scripts/env_setup/sync_build.sh -s /mnt/cortx/cortx/github/cortx-1.0/centos-7.8.2003/${build_no} -d /mnt/pune/cortx/github/cortx-1.0/centos-7.8.2003"
+		        sh "/mnt/source_code/cortx-re/scripts/env_setup/sync_build.sh -s /mnt/cortx/cortx_builds/${os_version}/${build_no} -d /mnt/pune/cortx_builds/${os_version}"
+		        sh "/mnt/source_code/cortx-re/scripts/env_setup/sync_build.sh -s /mnt/cortx/cortx/github/${branch_name}/${os_version}/${build_no} -d /mnt/pune/cortx/github/${branch_name}/${os_version}"
 		    }
-
 		}
-
+	}
 }
-
-}s
