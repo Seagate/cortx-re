@@ -57,7 +57,7 @@
       tags: ['02_7_HA']
       
   rescue:    
-    - name: "[ Validate Deployment ] : Get journalctl Logs" 
+    - name: "[ Validate Deployment ] : Get journalctl Log" 
       shell: "journalctl 2>&1 > {{ CORXT_DEPLOYMENT_LOG_PATH }}/journalctl.log"
       ignore_errors: true
       tags: ['02_DEPLOY_VALIDATE']
