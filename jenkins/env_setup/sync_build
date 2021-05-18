@@ -26,32 +26,6 @@ pipeline {
             )
     }
     stages {
-        stage('Checking the cortx server mount') {
-            steps {
-                sh label: 'Cortx server Mount Check', script: '''
-                #!/bin/bash
-                DIRCOUNT="$(find /mnt/cortx/cortx_builds -maxdepth 1 -type d -printf x | wc -c)"
-                if [ $DIRCOUNT -gt 0 ]; then
-					echo "Cortx build server is mounted.."
-				else
-					echo "Cortx build server is not mounted.."
-				fi
-				'''
-			}
-		}
-		stage('Checking the pune server mount') {
-            steps {
-                sh label: 'Pune server Mount Check', script: '''
-                #!/bin/bash
-                DIRCOUNT="$(find /mnt/pune/cortx_builds -maxdepth 1 -type d -printf x | wc -c)"
-                if [ $DIRCOUNT -gt 0 ]; then
-					echo "Pune build server is mounted.."
-				else
-					echo "Pune build server is not mounted.."
-				fi
-				'''
-			}
-		}
 		stage('Syncing the folder'){
 		    steps {
 		        sh "/mnt/source_code/cortx-re/scripts/env_setup/sync_build.sh -s /mnt/cortx/cortx_builds/${os_version}/${build_no} -d /mnt/pune/cortx_builds/${os_version}"
