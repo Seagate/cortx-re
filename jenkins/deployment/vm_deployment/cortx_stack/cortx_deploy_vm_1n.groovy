@@ -292,28 +292,10 @@ pipeline {
                 
             }
         }
-        failure {
-            script {
-                try {
-                    sh label: 'download_support_bundles', returnStdout: true, script: """ 
-                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/root/sspl/* artifacts/srvnode1 || true
-                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/root/s3/* artifacts/srvnode1 || true
-                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/root/motr/* artifacts/srvnode1 || true
-                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/root/hare/* artifacts/srvnode1 || true
-                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/root/provisioner/* artifacts/srvnode1 || true
-                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/root/ha/* artifacts/srvnode1 || true
-                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/root/manifest/* artifacts/srvnode1 || true
-                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/root/csm/* artifacts/srvnode1 || true
-                    """
-                } catch (err) {
-                    echo err.getMessage()
-                }
-            }
-        }
         cleanup {
             script {
                 // Archive Deployment artifacts in jenkins build
-                archiveArtifacts artifacts: "artifacts/**/*.*, *.log, *.json, *.ini, *.yaml, *.tar, *tar.gz, *tar.xz", onlyIfSuccessful: false, allowEmptyArchive: true 
+                archiveArtifacts artifacts: "artifacts/**/*.*", onlyIfSuccessful: false, allowEmptyArchive: true 
 
                 // Trigger Cleanup Deployment Nodes
                 if (NODE1.isEmpty()) {
