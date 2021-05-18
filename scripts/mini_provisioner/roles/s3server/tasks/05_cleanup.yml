@@ -1,0 +1,9 @@
+# Reference : https://github.com/Seagate/cortx-s3server/wiki/S3server-provisioning-on-single-node-VM-cluster:-Manual#s3server-mini-provisioning
+
+- name: "[S3server Mini Provisioning] : S3:Reset" 
+  shell: /opt/seagate/cortx/s3/bin/s3_setup reset --config "yaml:///opt/seagate/cortx/s3/conf/s3.reset.tmpl.1-node"
+  tags: ['05_MINI_PROV_RESET']
+
+- name: "[S3server Mini Provisioning] : S3:Cleanup" 
+  shell: /opt/seagate/cortx/s3/bin/s3_setup cleanup --config "yaml:///opt/seagate/cortx/s3/conf/s3.cleanup.tmpl.1-node"
+  tags: ['05_MINI_PROV_CLEANUP']
