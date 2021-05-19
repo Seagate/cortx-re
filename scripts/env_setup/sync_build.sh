@@ -38,6 +38,16 @@ do
    esac
 done
 
+supported_path=("/mnt/cortx/cortx/third-party-deps/python-packages" "/mnt/cortx/cortx/third-party-deps/centos" \
+        "/mnt/cortx/cortx/github/cortx-1.0/centos-7.8.2003" "/mnt/cortx/cortx_builds/centos-7.8.2003")
+
+# todo (need to support stable and main branch)
+if [[ ! " ${supported_path[@]} " =~ " ${source} " ]]; then
+    echo "Sync will support only cortx-1.0 branch.."
+    echo "Supported paths are ${supported_path[@]}"
+    exit 1
+fi
+
 # Print helpFunction in case parameters are empty
 if [ -z "$source" ] || [ -z "$destination" ]
 then
