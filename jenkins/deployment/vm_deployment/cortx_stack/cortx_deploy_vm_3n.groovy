@@ -15,11 +15,12 @@ pipeline {
         string(name: 'NODE3', defaultValue: '', description: 'Node 3 Host FQDN',  trim: true)
         string(name: 'NODE_PASS', defaultValue: '', description: 'Host machine root user password',  trim: true)
         string(name: 'NODE_MGMT_VIP', defaultValue: '', description: 'The floating static VIP for management network interface.',  trim: true)
+		choice(name: 'NOTIFICATION', choices: ["DevOps.RE", "MGMT", "None", "Ujwal"], description: 'Notification group ')
         booleanParam(name: 'DEBUG', defaultValue: false, description: 'Select this if you want to preserve the VM temporarily for troublshooting')
         booleanParam(name: 'CREATE_JIRA_ISSUE_ON_FAILURE', defaultValue: false, description: 'Internal Use : Select this if you want to create Jira issue on failure')
         booleanParam(name: 'AUTOMATED', defaultValue: false, description: 'Internal Use : Only for Internal RE workflow')
     }
-
+    
 	environment {
 
         // NODE1_HOST - Env variables added in the node configurations
@@ -61,10 +62,11 @@ pipeline {
                         echo "NODES                         = ${NODES}"
                         echo "CORTX_BUILD                   = ${CORTX_BUILD}"
                         echo "DEBUG                         = ${DEBUG}"
+						echo "NOTIFICATION                  = ${NOTIFICATION}"
                         echo "-----------------------------------------------------------"
                     """
                     dir('cortx-re') {
-                        checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
+                        checkout([$class: 'GitSCM', branches: [[name: '*main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])                
                     }
 
                     if ( NODE1.isEmpty() ) {
@@ -298,18 +300,20 @@ pipeline {
                 env.deployment_status = "${MESSAGE}"
                 if (fileExists('artifacts/srvnode1/cortx_deployment/log/hctl_status.log')) {
                     env.cluster_status = "${BUILD_URL}/artifact/artifacts/srvnode1/cortx_deployment/log/hctl_status.log"
+					env.hctl_status = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/hctl_status.log').trim()
+					
                 }
                 
                 if ( "FAILURE".equals(currentBuild.currentResult) && params.AUTOMATED && env.component_email ) {
-                    toEmail = "${env.component_email}, priyank.p.dalal@seagate.com, gowthaman.chinnathambi@seagate.com"
+                    toEmail = "getNotificationList("${NOTIFICATION}"), ${env.component_email}, priyank.p.dalal@seagate.com, gowthaman.chinnathambi@seagate.com"
                 } else {
-                    toEmail = "gowthaman.chinnathambi@seagate.com"
+                    toEmail = "getNotificationList("${NOTIFICATION}"), balaji.ramachandran@seagate.com, gowthaman.chinnathambi@seagate.com"
                 }
                 
                 emailext (
                     body: '''${SCRIPT, template="vm-deployment-email.template"}''',
                     mimeType: 'text/html',
-                    subject: "${MESSAGE}",
+                    subject: "Nightly ${MESSAGE}",
                     to: toEmail,
                     recipientProviders: [[$class: 'RequesterRecipientProvider']]
                 )
@@ -454,6 +458,24 @@ def markNodeforCleanup() {
 	node.setLabelString(node.getLabelString() + " " + nodeLabel)
 	node.save()
     node = null
+}
+
+// Get email notification list based on argument
+def getNotificationList(String notificationType) {
+
+    toEmail=""
+    if ( notificationType == "DevOps.RE" ) {
+        toEmail = "CORTX.DevOps.RE@seagate.com"
+    } else if ( notificationType == "Ujwal" ) {
+        toEmail = "ujjwal.lanjewar@seagate.com, amit.kapil@seagate.com, priyank.p.dalal@seagate.com,amol.j.kongre@seagate.com,gowthaman.chinnathambi@seagate.com"
+    } else if ( notificationType == "MGMT" ) {
+        toEmail = "manoj.management.team@seagate.com, cortx.sme@seagate.com"
+    } else {
+        toEmail = "gowthaman.chinnathambi@seagate.com"
+    }
+
+    //toEmail = "gowthaman.chinnathambi@seagate.com"
+    return toEmail
 }
 
 // Create jira issues on failure and input parameter 
