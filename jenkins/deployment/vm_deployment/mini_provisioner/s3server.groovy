@@ -252,11 +252,11 @@ Recommended VM specification:
         cleanup {
             script {
 
-                if ( params.MINI_PROV_END_STEP == "05_MINI_PROV_RESET" ){
+                if ( params.MINI_PROV_END_STEP == "Reset" ||  params.MINI_PROV_END_STEP == "Cleanup") {
                     runAnsible("05_MINI_PROV_RESET")
                 } 
 
-                if ( params.MINI_PROV_END_STEP == "05_MINI_PROV_CLEANUP" ){
+                if ( params.MINI_PROV_END_STEP == "Cleanup" ) {
                     runAnsible("05_MINI_PROV_CLEANUP")
                 } 
                 
