@@ -3,7 +3,7 @@ pipeline {
 	 	 
     agent {
 		node {
-			label 'docker-cp-centos-7.8.2003-node'
+			label 'docker-image-centos-7.8.2003-node'
 		}
 	}
 	
@@ -48,7 +48,7 @@ pipeline {
         stage('Checkout Release scripts') {
 			steps {
         	    script { build_stage = env.STAGE_NAME }
-                checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re.git']]])
+                checkout([$class: 'GitSCM', branches: [[name: 'upgrade-iso']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/shailesh-vaidya/cortx-re.git']]])
 			}
 		}
 			
@@ -249,6 +249,8 @@ pipeline {
                 cp $integration_dir/$release_tag/prod/*/*.INFO $integration_dir/$release_tag/prod
                 		
                 rm -rf "$cortx_build_dir/$release_tag"
+
+                ls -la $integration_dir/$release_tag/prod/iso/
 		        '''
 		    }
 		}
@@ -296,7 +298,7 @@ pipeline {
                 env.release_build = "${env.release_tag}"
                 env.build_stage = "${build_stage}"
 
-                def toEmail = "shailesh.vaidya@seagate.com, priyank.p.dalal@seagate.com, mukul.malhotra@seagate.com, amol.j.kongre@seagate.com, gowthaman.chinnathambi@seagate.com, gaurav.chaudhari@seagate.com"
+                def toEmail = "shailesh.vaidya@seagate.com"
                 
                 emailext ( 
                         body: '''${SCRIPT, template="release-email.template"}''',
