@@ -303,7 +303,6 @@ _cortx-monitor_prereq:
 	@echo "***************  Installing sspl Prereqsites *********************"
 
 	pushd cortx-workspace/cortx-monitor && \
-
 		yum localinstall -y ${RPM_DIR}/cortx-py-utils*noarch.rpm && \
 		yum install sudo python-Levenshtein libtool doxygen python-pep8 openssl-devel graphviz check-devel -y && \
 	popd || (echo "ERROR: cortx-monitor source code is not available in cortx-workspace. Exiting..."; exit 1)
