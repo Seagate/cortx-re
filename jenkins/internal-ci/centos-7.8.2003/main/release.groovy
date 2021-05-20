@@ -216,12 +216,18 @@ pipeline {
                 mkdir -p $cortx_build_dir/$release_tag/sw_upgrade/{3rd_party,cortx_iso,python_deps}
 		pushd $cortx_build_dir/$release_tag/sw_upgrade/cortx_iso
 		cp -r $integration_dir/$release_tag/prod/* .
+		popd
+		
+                pushd $cortx_build_dir/$release_tag/3rd_party
+                for dir_name in $(ls -d */) ; do mkdir -p $cortx_build_dir/$release_tag/sw_upgrade/3rd_party/$dir_name ; done
+                touch $cortx_build_dir/$release_tag/sw_upgrade/3rd_party/THIRD_PARTY_RELEASE.INFO
+                createrepo $cortx_build_dir/$release_tag/sw_upgrade/3rd_party
+                popd
 				
                 mkdir -p $cortx_build_dir/$release_tag/cortx_iso
 		pushd $cortx_build_dir/$release_tag/cortx_iso
-                mv $integration_dir/$release_tag/prod/* . 
-				
-                popd
+                mv $integration_dir/$release_tag/prod/* .
+		popd
 
                 mkdir -p $integration_dir/$release_tag/prod/iso
                 pushd $integration_dir/$release_tag/prod/iso
@@ -238,7 +244,7 @@ pipeline {
 
                 popd
                            
-                
+                rm -rf "$cortx_build_dir/$release_tag/sw_upgrade"
                 mv $cortx_build_dir/$release_tag/* $integration_dir/$release_tag/prod
                 cp $integration_dir/$release_tag/prod/3rd_party/THIRD_PARTY_RELEASE.INFO $integration_dir/$release_tag/prod
                 cp $integration_dir/$release_tag/prod/cortx_iso/RELEASE.INFO $integration_dir/$release_tag/prod
