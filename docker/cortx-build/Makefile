@@ -206,8 +206,9 @@ _cortx-py-utils_build:
 _cortx-py-utils_install:
 	@echo "***************  Installing cortx-py-utils package *********************"
 	pushd cortx-workspace/cortx-utils/py-utils && \
-		yum install python3-pip gcc  python3-devel -y && \
+		yum install python3-pip gcc python3-devel -y && \
 		pip3 install -r requirements.txt && \
+		yum erase python36-PyYAML -y && \
 		yum localinstall -y ${RPM_DIR}/cortx-py-utils*noarch.rpm && \
 	popd || (echo "ERROR: Failed to install cortx-utils package. Exiting..."; exit 1) 	
 
@@ -221,8 +222,8 @@ _cortx-py-utils_install:
 _cortx-management-portal_prereq:
 	@echo "***************  Installing cortx-management-portal Prereqsites *********************"
 	pushd cortx-workspace/cortx-management-portal && \
-		yum localinstall -y ${RPM_DIR}/cortx-py-utils*noarch.rpm ${RPM_DIR}/cortx-prvsnr*.rpm ${RPM_DIR}/python36-cortx-prvsnr*.rpm  && \
-        pip3.6 install  pyinstaller==3.5 && \
+		yum localinstall ${RPM_DIR}/cortx-prvsnr*.rpm ${RPM_DIR}/python36-cortx-prvsnr*.rpm  && \
+        pip3.6 install pyinstaller==3.5 && \
 	popd || (echo "ERROR: cortx-management-portal source code is not available in cortx-workspace. Exiting..."; exit 1)
 
 _cortx-management-portal_build:
@@ -249,9 +250,7 @@ _cortx-manager_prereq:
 	@echo "***************  Installing cortx-manager Prereqsites *********************"
 
 	pushd cortx-workspace/cortx-manager && \
-		yum install python3-pip gcc python3-devel -y && \
-		pip3 install -r ../cortx-utils/py-utils/requirements.txt && \
-		yum localinstall -y ${RPM_DIR}/cortx-py-utils*noarch.rpm ${RPM_DIR}/cortx-prvsnr*.rpm ${RPM_DIR}/python36-cortx-prvsnr*.rpm && \
+		yum localinstall -y ${RPM_DIR}/cortx-prvsnr*.rpm ${RPM_DIR}/python36-cortx-prvsnr*.rpm && \
         pip3.6 install  pyinstaller==3.5 && \
 	popd || (echo "ERROR: cortx-manager source code is not available in cortx-workspace. Exiting..."; exit 1)
 
