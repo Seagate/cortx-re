@@ -266,11 +266,16 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
 				script {
-                    build job: 'Main Deploy', propagate: false, wait: false, parameters: [
+                    build job: 'Main Deploy 1N', propagate: false, wait: false, parameters: [
                             string(name: 'CORTX_BUILD', value: "http://cortx-storage.colo.seagate.com/releases/cortx/github/${branch}/${os_version}/${env.release_tag}/prod"),
                             booleanParam(name: 'CREATE_JIRA_ISSUE_ON_FAILURE', value: true),
                             booleanParam(name: 'AUTOMATED', value: true)
-                        ]     
+                        ]
+                    build job: 'Main Deploy 3N', propagate: false, wait: false, parameters: [
+                            string(name: 'CORTX_BUILD', value: "http://cortx-storage.colo.seagate.com/releases/cortx/github/${branch}/${os_version}/${env.release_tag}/prod"),
+                            booleanParam(name: 'CREATE_JIRA_ISSUE_ON_FAILURE', value: true),
+                            booleanParam(name: 'AUTOMATED', value: true)
+                        ]         
 				}
             }
         }
@@ -286,7 +291,7 @@ pipeline {
                 env.release_build = "${env.release_tag}"
                 env.build_stage = "${build_stage}"
 
-                def toEmail = "shailesh.vaidya@seagate.com, priyank.p.dalal@seagate.com, mukul.malhotra@seagate.com, amol.j.kongre@seagate.com, gowthaman.chinnathambi@seagate.com"
+                def toEmail = "shailesh.vaidya@seagate.com, priyank.p.dalal@seagate.com, mukul.malhotra@seagate.com, amol.j.kongre@seagate.com, gowthaman.chinnathambi@seagate.com, gaurav.chaudhari@seagate.com"
                 
                 emailext ( 
                         body: '''${SCRIPT, template="release-email.template"}''',
