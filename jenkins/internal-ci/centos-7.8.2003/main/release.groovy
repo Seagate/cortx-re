@@ -3,7 +3,7 @@ pipeline {
 	 	 
     agent {
 		node {
-			label 'upgrade-iso-test'
+			label 'docker-cp-centos-7.8.2003-node'
 		}
 	}
 	
