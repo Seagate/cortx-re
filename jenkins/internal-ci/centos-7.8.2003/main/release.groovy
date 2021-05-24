@@ -3,7 +3,7 @@ pipeline {
 	 	 
     agent {
 		node {
-			label 'docker-cp-centos-7.8.2003-node'
+			label 'upgrade-iso-test'
 		}
 	}
 	
@@ -231,6 +231,13 @@ pipeline {
                 rm -rf $cortx_build_dir/$release_tag/sw_upgrade
                 
                 '''
+                sh label: "Sign ISO files", script: '''
+                pushd scripts/rpm-signing
+                    sh file-sign.sh ${passphrase} $integration_dir/$release_tag/prod/iso/cortx-$version-$BUILD_NUMBER-upgrade.iso 
+                    sh file-sign.sh ${passphrase} $integration_dir/$release_tag/prod/iso/cortx-$version-$BUILD_NUMBER-single.iso 
+
+                '''
+
 		        sh label: 'Additional Files', script:'''
                 cortx_prvsnr_preq=$(ls "$cortx_build_dir/$release_tag/cortx_iso" | grep "python36-cortx-prvsnr" | cut -d- -f5 | cut -d_ -f2 | cut -d. -f1 | sed s/"git"//)
                     
