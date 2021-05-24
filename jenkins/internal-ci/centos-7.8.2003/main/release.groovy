@@ -3,7 +3,7 @@ pipeline {
 	 	 
     agent {
 		node {
-			label 'upgrade-iso-test'
+			label 'docker-image-centos-7.8.2003-node'
 		}
 	}
 	
@@ -235,7 +235,7 @@ pipeline {
                 pushd scripts/rpm-signing
                     ./file-sign.sh ${passphrase} $integration_dir/$release_tag/prod/iso/cortx-$version-$BUILD_NUMBER-upgrade.iso 
                     ./file-sign.sh ${passphrase} $integration_dir/$release_tag/prod/iso/cortx-$version-$BUILD_NUMBER-single.iso 
-
+                popd
                 '''
 
 		        sh label: 'Additional Files', script:'''
