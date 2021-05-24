@@ -233,8 +233,8 @@ pipeline {
                 '''
                 sh label: "Sign ISO files", script: '''
                 pushd scripts/rpm-signing
-                    sh file-sign.sh ${passphrase} $integration_dir/$release_tag/prod/iso/cortx-$version-$BUILD_NUMBER-upgrade.iso 
-                    sh file-sign.sh ${passphrase} $integration_dir/$release_tag/prod/iso/cortx-$version-$BUILD_NUMBER-single.iso 
+                    ./file-sign.sh ${passphrase} $integration_dir/$release_tag/prod/iso/cortx-$version-$BUILD_NUMBER-upgrade.iso 
+                    ./file-sign.sh ${passphrase} $integration_dir/$release_tag/prod/iso/cortx-$version-$BUILD_NUMBER-single.iso 
 
                 '''
 
