@@ -4,17 +4,17 @@
   when: item not in vars
   with_items: "{{ REQUIRED_VARS }}"
 
-- name: Teardown Cortx Stack
-  shell: /opt/seagate/cortx/provisioner/cli/destroy-vm --ctrlpath-states --iopath-states --prereq-states --system-states --ha-states || true
+- name: Unmount gluster volumes and Reclaim data storage
+  script: reclaim-storage.sh
 
-- name: Stop Salt services
+- name: Stop services
   shell: "{{ item }}"
   with_items:
-    - "systemctl status glustersharedstorage >/dev/null && systemctl stop glustersharedstorage || true"
-    - "systemctl status glusterfsd >/dev/null && systemctl stop glusterfsd || true"
-    - "systemctl status glusterd >/dev/null && systemctl stop glusterd || true"
-    - "systemctl status salt-minion >/dev/null && systemctl stop salt-minion || true"
-    - "systemctl status salt-master >/dev/null && systemctl stop salt-master || true"
+    - "systemctl status glustersharedstorage >/dev/null 2>&1 && systemctl stop glustersharedstorage"
+    - "systemctl status glusterfsd>/dev/null 2>&1 && systemctl stop glusterfsd"
+    - "systemctl status glusterd>/dev/null 2>&1 && systemctl stop glusterd"
+    - "systemctl status salt-minion >/dev/null 2>&1 && systemctl stop salt-minion"
+    - "systemctl status salt-master >/dev/null 2>&1 && systemctl stop salt-master"
 
 - name: Remove provisioner and salt packages
   yum:
@@ -22,7 +22,8 @@
       - cortx-prvsnr
       - cortx-prvsnr-cli
       - gluster-fuse
-      - gluster-server
+      - glusterfs-server
+      - glusterfs 
       - salt-minion
       - salt-master
       - salt-api
@@ -54,24 +55,32 @@
 - name: Cleanup directories
   shell: "{{ item }}"
   with_items:
-    - "rm -rf /opt/seagate/cortx"
-    - "rm -rf /opt/seagate/cortx_configs"
-    - "rm -rf /opt/seagate"
-    - "rm -rf /root/*.*"
-    - "rm -rf /etc/yum.repos.d/*"
-    - "rm -rf /etc/hosts"
+    - "rm -rf "
+    - "rm -rf "
+    - "rm -rf "
+    - "rm -rf "
+    - "rm -rf "
+    - "rm -rf "
 
 - name: Cleanup directories if exists
   shell: "test -e {{ item }} && rm -rf {{ item }} || true"
-  with_items:  
+  with_items: 
+    - "/opt/seagate/cortx_configs"
+    - "/opt/seagate/cortx"
+    - "/opt/seagate"
+    - "/etc/csm"
     - "/var/lib/seagate"
     - "/srv/glusterfs"
+    - "/var/lib/glusterd"
     - "/var/cache/salt"
     - "/etc/salt"
+    - "/etc/yum.repos.d/RELEASE_FACTORY.INFO"
     - "/opt/isos"
     - "/root/.provisioner"
-    - "/etc/yum.repos.d/RELEASE_FACTORY.INFO"
     - "/root/.ssh"
+    - "/etc/hosts"
+    - "/etc/yum.repos.d/*"
+    - "/root/*.*"
     - "/var/motr"
     - "/var/cortx"
     - "/var/lib/cortx"
@@ -82,7 +91,6 @@
     - "/opt/kafka"
     - "/opt/uds-pyi"
     - "/etc/cortx"
-    - "/etc/csm"
     - "/etc/lustre"
     - "/etc/pacemaker"
     - "/etc/sspl_global_config_copy.yaml"
