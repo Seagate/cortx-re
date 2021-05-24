@@ -219,7 +219,8 @@ pipeline {
 		popd
 		
                 pushd $cortx_build_dir/$release_tag/3rd_party
-                for dir_name in $(ls -d */) ; do mkdir -p $cortx_build_dir/$release_tag/sw_upgrade/3rd_party/$dir_name ; done
+                for dir_name in $(ls -d */) ; do abs_path="$cortx_build_dir/$release_tag/sw_upgrade/3rd_party/$dir_name"; \
+			mkdir -p $abs_path ; createrepo $abs_path; done
                 touch $cortx_build_dir/$release_tag/sw_upgrade/3rd_party/THIRD_PARTY_RELEASE.INFO
                 createrepo $cortx_build_dir/$release_tag/sw_upgrade/3rd_party
                 popd
