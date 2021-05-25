@@ -279,8 +279,8 @@ Recommended VM specification:
                         script { build_stage = env.STAGE_NAME }
                         script {
                             
-                            runAnsible("01_PREREQ")
-                            
+                            runAnsible("01_PREREQ")    
+                        
                         }
                     } 
                 }
