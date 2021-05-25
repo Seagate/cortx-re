@@ -18,7 +18,6 @@ pipeline {
         release_tag = "$BUILD_NUMBER"
         BUILD_TO_DELETE = ""
         passphrase = credentials('rpm-sign-passphrase')
-        token = credentials('shailesh-github-token')
         ARTIFACT_LOCATION = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version"
         thrid_party_dir = "$release_dir/third-party-deps/centos/centos-7.8.2003-$thrid_party_version/"
 		python_deps = "$release_dir/third-party-deps/python-deps/python-packages-2.0.0-latest"
@@ -249,6 +248,8 @@ pipeline {
                 cp $integration_dir/$release_tag/prod/*/*.INFO $integration_dir/$release_tag/prod
                 		
                 rm -rf "$cortx_build_dir/$release_tag"
+
+                ls -la $integration_dir/$release_tag/prod/iso/
 		        '''
 		    }
 		}
