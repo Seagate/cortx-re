@@ -229,7 +229,7 @@ _change_vm_state(){
 _revert_vm_snapshot(){
     revert_snapshot_response=$(_cloudform 'REVERT_VM_SNAPSHOT')
     _console_log " [ _revert_vm_snapshot ] : Revert Request Message - ${revert_snapshot_response}"
-    sleep 600
+    sleep 1800
 
 }
 
