@@ -48,6 +48,9 @@ pipeline {
 		string(name: 'SSPL_URL', defaultValue: 'https://github.com/Seagate/cortx-monitor.git', description: 'SSPL Repository URL', trim: true)
 		string(name: 'CORTX_UTILS_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX Utils', trim: true)
 		string(name: 'CORTX_UTILS_URL', defaultValue: 'https://github.com/Seagate/cortx-utils', description: 'CORTX Utils Repository URL', trim: true)
+		string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX Utils', trim: true)
+		string(name: 'CORTX_RE_URL', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'CORTX Utils Repository URL', trim: true)
+
 
 		choice(
 			name: 'THIRD_PARTY_VERSION',
@@ -110,6 +113,25 @@ pipeline {
 								error "Failed to Build Motr, Hare and S3Server"
 							}
 						}										
+					}
+				}
+
+				stage ("Build cortx-prereq") {
+					steps {
+						script { build_stage = env.STAGE_NAME }
+                                                script {
+                                                        try {
+								def prvsnrbuild = build job: 'cortx-prereq-custom-build', wait: true,
+								                  parameters: [
+									            	string(name: 'CORTX_RE_URL', value: "${CORTX_RE_URL}"),
+											        string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
+													string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}")
+							        	          ]
+							} catch (err) {
+								build_stage = env.STAGE_NAME
+								error "Failed to Build cortx-prereq"
+							}
+						}
 					}
 				}
 
