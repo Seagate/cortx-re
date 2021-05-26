@@ -121,7 +121,7 @@ pipeline {
 						script { build_stage = env.STAGE_NAME }
                                                 script {
                                                         try {
-								def prvsnrbuild = build job: 'cortx-prereq-custom-build', wait: true,
+								def prereqbuild = build job: 'cortx-prereq-custom-build', wait: true,
 								                  parameters: [
 									            	string(name: 'CORTX_RE_URL', value: "${CORTX_RE_URL}"),
 											        string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
