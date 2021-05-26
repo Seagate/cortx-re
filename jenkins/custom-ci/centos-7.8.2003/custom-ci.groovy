@@ -252,7 +252,7 @@ pipeline {
 					CUSTOM_COMPONENT_NAME="motr|s3server|hare|cortx-ha|provisioner|csm-agent|csm-web|sspl"
 
 					pushd $RPM_COPY_PATH
-					for component in `ls -1 | grep -E -v "$CUSTOM_COMPONENT_NAME" | grep -E -v 'luster|halon|mero|motr|csm|cortx-extension|nfs|cortx-utils'`
+					for component in `ls -1 | grep -E -v "$CUSTOM_COMPONENT_NAME" | grep -E -v 'luster|halon|mero|motr|csm|cortx-extension|nfs|cortx-utils|cortx-prereq'`
 					do
 						echo -e "Copying RPM's for $component"
 						if ls $component/last_successful/*.rpm 1> /dev/null 2>&1; then
