@@ -231,9 +231,9 @@ _change_vm_state(){
 # Revert VM Sanpshot by calling cloudform rest api
 _revert_vm_snapshot(){
     CF_TASK_ENDPOINT=$(_cloudform 'REVERT_VM_SNAPSHOT')
-    expected_vm_state="Finished"
+    expected_task_state="Finished"
     n=0
-    while [ "$n" -lt 30 ] && [ "${expected_vm_state}" != "${current_vm_state}" ]; do
+    while [ "$n" -lt 30 ] && [ "${expected_task_state}" != "${current_task_state}" ]; do
         task_response=$(_cloudform 'GET_TASK_STATUS')
         current_task_state=$(_get_response "${task_response}" 'state')
         n=$(( n + 5 ))
