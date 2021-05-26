@@ -135,7 +135,6 @@ _cloudform(){
         ;;
         GET_TASK_STATUS)
             response=$(_do_rest "${CF_TASK_ENDPOINT}" "${CF_CRED}" "GET" "")
-            response=$(_get_response "${response}" 'message')
         ;;    
     esac 
 
@@ -232,9 +231,17 @@ _change_vm_state(){
 # Revert VM Sanpshot by calling cloudform rest api
 _revert_vm_snapshot(){
     CF_TASK_ENDPOINT=$(_cloudform 'REVERT_VM_SNAPSHOT')
-    sleep 1800
-    revert_snapshot_task_response=$(_cloudform 'GET_TASK_STATUS')
-    _console_log " [ _revert_vm_snapshot ] : Revert Request Status - ${revert_snapshot_task_response}"
+    expected_vm_state="Finished"
+    n=0
+    while [ "$n" -lt 30 ] && [ "${expected_vm_state}" != "${current_vm_state}" ]; do
+        task_response=$(_cloudform 'GET_TASK_STATUS')
+        current_task_state=$(_get_response "${task_response}" 'state')
+        n=$(( n + 5 ))
+        sleep 300
+    done
+    task_response=$(_cloudform 'GET_TASK_STATUS')
+    revert_snapshot_task_response=$(_get_response "${task_response}" 'message')
+    _console_log " [ _revert_vm_snapshot ] : Revert Request Message - ${revert_snapshot_task_response}"
 }
 
 # Validate VM access by ping and ssh connection check
