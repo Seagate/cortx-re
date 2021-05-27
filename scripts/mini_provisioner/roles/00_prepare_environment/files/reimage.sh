@@ -238,8 +238,8 @@ _revert_vm_snapshot(){
         task_response=$(_cloudform 'GET_TASK_STATUS')
         current_task_state=$(_get_response "${task_response}" 'state')
         current_task_status=$(_get_response "${task_response}" 'status')
-        mins=$(( mins + 5 ))
-        sleep 300
+        mins=$(( mins + 1 ))
+        sleep 60
     done
     task_response=$(_cloudform 'GET_TASK_STATUS')
     revert_snapshot_task_response=$(_get_response "${task_response}" 'message')
