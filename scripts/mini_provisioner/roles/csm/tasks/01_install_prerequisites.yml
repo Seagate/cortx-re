@@ -108,7 +108,7 @@
 
 - name: "[install_prereq] : Copy utils post install config"
   ansible.builtin.template:
-    src: utils_config.j2
+    src: utils_post_install.j2
     dest: /opt/seagate/cortx/utils/conf/utils.post_install.tmpl.1-node
     mode: '0774'    
 
