@@ -233,12 +233,12 @@ _revert_vm_snapshot(){
     CF_TASK_ENDPOINT=$(_cloudform 'REVERT_VM_SNAPSHOT')
     expected_task_state="Finished"
     expected_task_status="Ok"
-    n=0
-    while [ "$n" -lt 30 ] && [ "${expected_task_state}" != "${current_task_state}" ] && [ "${expected_task_status}" != "${current_task_status}" ]; do
+    mins=0
+    while [ "$mins" -lt 30 ] && [ "${expected_task_state}" != "${current_task_state}" ] && [ "${expected_task_status}" != "${current_task_status}" ]; do
         task_response=$(_cloudform 'GET_TASK_STATUS')
         current_task_state=$(_get_response "${task_response}" 'state')
         current_task_status=$(_get_response "${task_response}" 'status')
-        n=$(( n + 5 ))
+        mins=$(( mins + 5 ))
         sleep 300
     done
     task_response=$(_cloudform 'GET_TASK_STATUS')
