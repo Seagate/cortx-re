@@ -104,7 +104,7 @@
 - name: "[install_prereq] : Generate native key material"
   sudo: true
   sudo_user: cortxub
-  shell: "umask 0177 && openssl req -x509 -newkey rsa:4096 -keyout /var/csm/tls/native.key -nodes -out /var/csm/tls/native.crt -days 365 -subj '/C=/ST=/L=/O=/OU=/CN=/'"
+  shell: (umask 0177 && openssl req -x509 -newkey rsa:4096 -keyout /var/csm/tls/native.key -nodes -out /var/csm/tls/native.crt -days 365 -subj '/C=/ST=/L=/O=/OU=/CN=/')
 
 - name: "[install_prereq] : Copy utils post install config"
   ansible.builtin.template:
