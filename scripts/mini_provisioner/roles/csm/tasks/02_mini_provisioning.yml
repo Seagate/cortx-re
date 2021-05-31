@@ -50,7 +50,7 @@
   rescue:
     - name: Display USL config templates
       debug: var=item
-      with_files:
+      with_file:
         - "/opt/seagate/cortx/csm/conf/usl.post_install.tmpl.1-node"
         - "/opt/seagate/cortx/csm/conf/usl.prepare.tmpl.1-node"
         - "/opt/seagate/cortx/csm/conf/usl.config.tmpl.1-node"
