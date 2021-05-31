@@ -98,18 +98,6 @@
     state: directory
     mode: '0755'
 
-- name: "[install_prereq] : Copy utils post install config"
-  ansible.builtin.template:
-    src: utils_post_install.j2
-    dest: /opt/seagate/cortx/utils/conf/utils.post_install.tmpl.1-node
-    mode: '0774'    
-
-- name: "[install_prereq] : Copy utils config"
-  ansible.builtin.template:
-    src: utils_config.j2
-    dest: /opt/seagate/cortx/utils/conf/utils.config.tmpl.1-node
-    mode: '0774'
-
 - name: "[install_cortx_manager] : Get Machine ID" 
   shell: cat /etc/machine-id
   register: machineid_out
@@ -123,6 +111,18 @@
 
 - set_fact:
     SECRET_KEY: "{{ secretkey_out.stdout }}"
+
+- name: "[install_prereq] : Copy utils post install config"
+  ansible.builtin.template:
+    src: utils_post_install.j2
+    dest: /opt/seagate/cortx/utils/conf/utils.post_install.tmpl.1-node
+    mode: '0774'    
+
+- name: "[install_prereq] : Copy utils config"
+  ansible.builtin.template:
+    src: utils_config.j2
+    dest: /opt/seagate/cortx/utils/conf/utils.config.tmpl.1-node
+    mode: '0774'
 
 - name: "[install_cortx_manager] : Update post_install configuration template"
   ansible.builtin.replace:
