@@ -60,6 +60,8 @@
     - name: "[ Validate Deployment ] : Get journalctl Log" 
       shell: "journalctl 2>&1 > {{ CORXT_DEPLOYMENT_LOG_PATH }}/journalctl.log"
       ignore_errors: true
+      delegate_to: "{{ item }}"
+      with_items: "{{ groups['srvnodes'] }}"
       tags: ['02_DEPLOY_VALIDATE']
 
     - name: "[ Validate Deployment ] : Get installed rpm package info"
