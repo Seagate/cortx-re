@@ -36,6 +36,14 @@
 
 - name: "[mini_provisioning] : Execute USL scripts"
   block:
+    - name: "[mini_provisioning] : Create directory for key material storage"
+      shell: install -d -m 0700 -o csm -g csm /var/csm/tls
+
+    - name: "[mini_provisioning] : Generate native key material"
+      become: true
+      become_user: csm
+      shell: umask 0177 && openssl req -x509 -newkey "rsa:4096" -keyout "/var/csm/tls/native.key" -nodes -out "/var/csm/tls/native.crt" -days 365 -subj "{{ CERT_PARAM }}"
+    
     - name: "[mini_provisioning] : USL Post Install"
       shell: usl_setup post_install --config json:///opt/seagate/cortx/csm/conf/usl.post_install.tmpl.1-node
 
