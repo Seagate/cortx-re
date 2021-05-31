@@ -102,8 +102,8 @@
   shell: install -d -m 0700 -o cortxub -g cortxub /var/csm/tls
 
 - name: "[install_prereq] : Generate native key material"
-  sudo: true
-  sudo_user: cortxub
+  become: true
+  become_user: cortxub
   shell: umask 0177 && openssl req -x509 -newkey "rsa:4096" -keyout "/var/csm/tls/native.key" -nodes -out "/var/csm/tls/native.crt" -days 365 -subj "{{ CERT_PARAM }}"
 
 - name: "[install_prereq] : Copy utils post install config"
