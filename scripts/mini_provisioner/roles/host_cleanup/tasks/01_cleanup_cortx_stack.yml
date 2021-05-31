@@ -4,11 +4,30 @@
   when: item not in vars
   with_items: "{{ REQUIRED_VARS }}"
 
-- name: "[host_cleanup] : Stop cluster services"
-  shell: cortx cluster stop --all 
+- name: "[host_cleanup] : Teardown HA states"
+  shell: provisioner destroy --states ha
 
-- name: "[host_cleanup] : Teardown cortx setup"
-  shell: provisioner destroy
+- name: "[host_cleanup] : Teardown Control-path states"
+  shell: provisioner destroy --states controlpath
+
+- name: "[host_cleanup] : Teardown IO-path states"
+  shell: provisioner destroy --states iopath
+
+- name: "[host_cleanup] : Teardown Foundation states"
+  shell: provisioner destroy --states utils
+
+- name: "[host_cleanup] : Teardown 3rd Party states"
+  shell: provisioner destroy --states prereq
+
+- name: "[host_cleanup] : Teardown Platform states"
+  shell: provisioner destroy --states system
+
+- name: "[host_cleanup] : Teardown Provisioner Bootstrapped Environment"
+  shell: "{{ item }}"
+  with_items:
+    - "provisioner destroy --states bootstrap"
+    - "rm -rf /root/.ssh"
+
 
 # - name: Unmount gluster volumes and Reclaim data storage
 #   script: reclaim-storage.sh
