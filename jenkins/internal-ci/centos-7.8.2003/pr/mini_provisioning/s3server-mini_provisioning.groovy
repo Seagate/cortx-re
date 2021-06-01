@@ -280,6 +280,7 @@ Recommended VM specification:
                         script {
                             
                             runAnsible("01_PREREQ")
+
                         }
                     } 
                 }
