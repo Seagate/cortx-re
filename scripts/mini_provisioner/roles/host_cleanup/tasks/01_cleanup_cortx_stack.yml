@@ -4,6 +4,11 @@
   when: item not in vars
   with_items: "{{ REQUIRED_VARS }}"
 
+- name: Install Pre-requisites
+  yum:
+    name: salt
+    state: present     
+
 - name: "[host_cleanup] : Teardown HA states"
   shell: provisioner destroy --states ha
 
