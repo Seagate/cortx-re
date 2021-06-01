@@ -5,9 +5,9 @@ cortx:
     kafka:
       servers:
       # Value should be in format <FQDN>:<port>. Port is optional
-      - "{{ ansible_nodename }}":9092
+      - {{ ansible_nodename }}:9092
 server_node:
-  "{{ MACHINE_ID }}":
+  {{ MACHINE_ID }}:
     site_id: 0
     rack_id: 0
     node_id: 0
