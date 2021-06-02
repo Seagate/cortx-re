@@ -89,8 +89,7 @@
 
 - name: "[install_prereq] : Install csm agent, csm web, cortx-py-utils, python36-cortx-prvsnr and cli"
   yum: 
-    name: 
-      - ["cortx-cli", "cortx-csm_agent", "cortx-csm_web", "cortx-py-utils", "python36-cortx-prvsnr"]
+    name: ["cortx-cli", "cortx-csm_agent", "cortx-csm_web", "cortx-py-utils", "python36-cortx-prvsnr"]
     state: present
 
 - name: "[install_prereq] : Install UDS dependency packages"
