@@ -4,7 +4,7 @@ pipeline {
         
         node {
             // This job runs on vm deployment controller node to execute vm cleanup for the deployment configured host
-            label params.HOST.isEmpty() ? "${NODE_LABEL}" : "vm_deployment_1n_user_host"
+            label params.HOST.isEmpty() ? "${NODE_LABEL} && cleanup_req" : "vm_deployment_1n_user_host"
         }
     }
 	

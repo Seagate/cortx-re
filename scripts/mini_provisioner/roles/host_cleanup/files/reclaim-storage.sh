@@ -1,5 +1,7 @@
 #!/bin/bash
-
+# Used for Manual Teardown. Currently not in use
+# Referenece Document - https://seagate-systems.atlassian.net/wiki/spaces/PUB/pages/344556369/CORTX%2BTeardown%2BNode%2Bs
+ 
 MOUNT_ENDPOINT=$(mount -l | grep gluster | cut -d ' ' -f3)
 [[ -n "${MOUNT_ENDPOINT"} ]] && umount "${MOUNT_ENDPOINT"}
 
