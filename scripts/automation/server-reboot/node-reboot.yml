@@ -83,7 +83,7 @@
     
   - name: Add config line to lnet.conf
     lineinfile:
-      line: "options lnet networks=tcp(eth0)"
+      line: "options lnet networks=tcp(eth0) config_on_load=1"
       dest: "/etc/modprobe.d/lnet.conf"
       state: present
     tags: lnet
