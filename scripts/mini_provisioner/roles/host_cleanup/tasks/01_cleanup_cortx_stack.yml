@@ -4,7 +4,7 @@
   when: item not in vars
   with_items: "{{ REQUIRED_VARS }}"
 
-- name: Install Pre-requisites
+- name: "[host_cleanup] : Install Pre-requisites"
   yum:
     name: salt
     state: present     
@@ -32,7 +32,7 @@
   with_items:
     - "provisioner destroy --states bootstrap"
 
-- name: Clear leaf packages and yum cache
+- name: "[host_cleanup] : Clear leaf packages and yum cache"
   command: "{{ item }}"
   with_items:
     - "yum erase -y *cortx*"
@@ -40,7 +40,7 @@
     - "yum clean all"
     - "rm -rf /var/cache/yum"
 
-- name: Cleanup directories if exists
+- name: "[host_cleanup] : Cleanup directories if exists"
   shell: "test -e {{ item }} && rm -rf {{ item }} || true"
   with_items: 
     - "/opt/seagate/cortx_configs"
@@ -73,7 +73,7 @@
     - "/etc/pacemaker"
     - "/etc/sspl_global_config_copy.yaml"
 
-- name: Reset hosts file
+- name: "[host_cleanup] : Reset hosts file"
   copy:
     dest: /etc/hosts
     content: |
