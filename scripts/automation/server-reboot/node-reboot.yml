@@ -66,14 +66,6 @@
     register: lnetfilestat
     tags: lnet
     
-  - name: Check lnet.conf file contents
-    lineinfile:
-      path: /etc/modprobe.d/lnet.conf
-      line: "options lnet networks=tcp(eth0)"
-      state: present
-    when: lnetfilestat.stat.exists
-    tags: lnet
-    
   - name: Create lnet.conf file if it does not exist
     file:
       path: /etc/modprobe.d/lnet.conf
@@ -81,10 +73,10 @@
     when: lnetfilestat.stat.exists == False
     tags: lnet
     
-  - name: Add config line to lnet.conf
+  - name: Check lnet.conf file contents
     lineinfile:
+      path: /etc/modprobe.d/lnet.conf
       line: "options lnet networks=tcp(eth0) config_on_load=1"
-      dest: "/etc/modprobe.d/lnet.conf"
       state: present
     tags: lnet
     
