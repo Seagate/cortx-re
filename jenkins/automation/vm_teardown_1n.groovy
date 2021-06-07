@@ -3,7 +3,7 @@ pipeline {
     agent {
         
         node {
-            // This job runs on vm deployment controller node to execute vm cleanup for the deployment configured host
+            // This job runs on vm deployment controller node to execute vm teardown for the deployment configured host
             label params.HOST.isEmpty() ? "${NODE_LABEL} && teardown_req" : "vm_deployment_1n_user_host"
         }
     }
@@ -80,8 +80,8 @@ pipeline {
         }    
         success {
             script {
-                // remove cleanup label from the node
-                removeCleanupLabel()
+                // remove teardown label from the node
+                removeTeardownLabel()
             }
         }
     }
@@ -110,11 +110,11 @@ def markNodeOffline(message) {
     node = null
 }
 
-def removeCleanupLabel() {
-	nodeLabel = "cleanup_req"
+def removeTeardownLabel() {
+	nodeLabel = "teardown_req"
     node = getCurrentNode(env.NODE_NAME)
 	node.setLabelString(node.getLabelString().replaceAll(nodeLabel, ""))
-    echo "[ ${env.NODE_NAME} ] : Cleanup label removed. The current node labels are ( ${node.getLabelString()} )"
+    echo "[ ${env.NODE_NAME} ] : Teardown label removed. The current node labels are ( ${node.getLabelString()} )"
 	node.save()
     node = null
     
