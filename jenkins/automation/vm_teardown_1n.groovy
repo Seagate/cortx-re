@@ -11,8 +11,8 @@ pipeline {
     // Accept node label as parameter
     parameters {
         string(name: 'NODE_LABEL', description: 'Optional : Node Label',  trim: true)
-        string(name: 'HOST', description: 'Host FQDN',  trim: true)
-        password(name: 'HOST_PASS', description: 'Host machine root user password')
+        string(name: 'HOST', defaultValue: '', description: 'Host FQDN',  trim: true)
+        password(name: 'HOST_PASS', defaultValue: '', description: 'Host machine root user password')
     }
 
 	environment {
