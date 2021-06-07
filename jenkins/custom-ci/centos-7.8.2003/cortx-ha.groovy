@@ -78,6 +78,7 @@ EOF
 					yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/$os_version/$release_tag/cortx_iso/
 					yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
 					
+					yum clean all && rm -rf /var/cache/yum
 					pushd $component
 						yum erase python36-PyYAML -y
 						bash jenkins/cicd/cortx-ha-dep.sh
