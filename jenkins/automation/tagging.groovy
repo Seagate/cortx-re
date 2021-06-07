@@ -7,11 +7,12 @@ pipeline {
         }
 
         parameters {
-                string(name: 'RELEASE_INFO_URL', defaultValue: 'http://cortx-storage.colo.seagate.com/releases/cortx_builds/centos-7.8.2003/552/RELEASE.INFO', description: 'RELEASE BUILD')
-                string(name: 'THIRD_PARTY_RELEASE_INFO_URL', defaultValue: 'http://cortx-storage.colo.seagate.com/releases/cortx_builds/centos-7.8.2003/552/THIRD_PARTY_RELEASE.INFO', description: 'THIRD PARTY RELEASE BUILD')
+                string(name: 'RELEASE_INFO_URL', defaultValue: '', description: 'RELEASE BUILD')
+                //string(name: 'THIRD_PARTY_RELEASE_INFO_URL', defaultValue: '', description: 'THIRD PARTY RELEASE BUILD')
 				string(name: 'GIT_TAG', defaultValue: '', description: 'Release Tag')
 				string(name: 'USER_NAME', defaultValue: '', description: 'User Name')
 				string(name: 'PASSWD', defaultValue: '', description: 'Token')
+				string(name: 'USER_EMAIL', defaultValue: '', description: 'User Email')
         }
 		
 		
@@ -24,8 +25,6 @@ pipeline {
                 COMMIT_HASH_CORTX_PRVSNR = get_commit_hash("cortx-prvsnr", "${RELEASE_INFO_URL}")
                 COMMIT_HASH_CORTX_S3SERVER = get_commit_hash("cortx-s3server", "${RELEASE_INFO_URL}")
                 COMMIT_HASH_CORTX_SSPL = get_commit_hash("cortx-sspl", "${RELEASE_INFO_URL}")
-                THIRD_PARTY_RELEASE_VERSION = get_version("${THIRD_PARTY_RELEASE_INFO_URL}")
-                RELEASE_BUILD_NUMBER = get_build("${RELEASE_INFO_URL}")
             }
 
         stages {
@@ -58,7 +57,6 @@ pipeline {
 						[cortx-sspl]="https://$PASSWD@github.com/$USER_NAME/cortx-monitor.git"
 						[cortx-csm_agent]="https://$PASSWD@github.com/$USER_NAME/cortx-manager.git"
 						[cortx-csm_web]="https://$PASSWD@github.com/$USER_NAME/cortx-management-portal.git"
-						#[cortx-fs]="https://$PASSWD@github.com/$USER_NAME/cortx-posix.git"
 					)
 
 					wget -q $RELEASE_INFO_URL -O RELEASE.INFO
@@ -83,8 +81,11 @@ pipeline {
 
 						echo "Component: $component , Repo:  ${COMPONENT_LIST[$component]}, Commit Hash: ${COMMIT_HASH}"
 						pushd $dir
-							git tag "$GIT_TAG" "${COMMIT_HASH}"
+							git config --global user.email "USER_EMAIL"
+							git config --global user.name "$USER_NAME"
+							git tag -a "$GIT_TAG" "${COMMIT_HASH}"
 							git push origin "$GIT_TAG"
+							echo "Component: $component , Tag: git tag -l $GIT_TAG is Tagged Successfully"
 						popd
 						
 					done
@@ -114,18 +115,5 @@ def get_commit_hash(String component, String release_info) {
 			""", returnStdout: true).trim()
 }
 
-def get_version(String THIRD_PARTY_RELEASE_INFO_URL) {
-   return sh(script: """
-       wget $THIRD_PARTY_RELEASE_INFO_URL -O THIRD_PARTY_RELEASE_INFO ;
-       echo \$(grep THIRD_PARTY_VERSION THIRD_PARTY_RELEASE_INFO  | awk '{print \$2}' | cut -b 18-24);
-    """, returnStdout:true).trim()
-}
-
-def get_build(String RELEASE_INFO_URL) {
-   return sh(script: """
-       wget $RELEASE_INFO_URL -O RELEASE_INFO ;
-       echo \$(grep BUILD RELEASE_INFO | awk -F "[a-z=&\\"]*" '{print \$2}');
-   """, returnStdout:true).trim()
-}
 
 
