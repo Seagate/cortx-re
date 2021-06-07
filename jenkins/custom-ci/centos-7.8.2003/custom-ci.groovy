@@ -16,9 +16,11 @@ pipeline {
 		integration_dir = "$release_dir/github/integration-custom-ci/$os_version/"
 		release_tag = "custom-build-$BUILD_ID"
 		passphrase = credentials('rpm-sign-passphrase')
-		python_deps = "$release_dir/third-party-deps/python-deps/python-packages-2.0.0-latest"
+
+		python_deps = "${THIRD_PARTY_PYTHON_VERSION == 'cortx-2.0' ? "$release_dir/third-party-deps/python-deps/python-packages-2.0.0-latest" : THIRD_PARTY_PYTHON_VERSION == 'cortx-1.0' ?  "$release_dir/third-party-deps/python-packages" : "$release_dir/third-party-deps/python-deps/python-packages-2.0.0-custom"}"
+
 		cortx_os_iso = "/mnt/bigstorage/releases/cortx_builds/custom-os-iso/cortx-os-1.0.0-23.iso"
-		third_party_dir = "${THIRD_PARTY_VERSION == 'cortx-2.0' ? "$release_dir/third-party-deps/centos/centos-7.8.2003-2.0.0-latest" : THIRD_PARTY_VERSION == 'cortx-1.0' ?  "$release_dir/third-party-deps/centos/centos-7.8.2003-1.0.0-1" : "$release_dir/third-party-deps/centos/centos-7.8.2003-custom"}"
+		third_party_dir = "${THIRD_PARTY_RPM_VERSION == 'cortx-2.0' ? "$release_dir/third-party-deps/centos/centos-7.8.2003-2.0.0-latest" : THIRD_PARTY_RPM_VERSION == 'cortx-1.0' ?  "$release_dir/third-party-deps/centos/centos-7.8.2003-1.0.0-1" : "$release_dir/third-party-deps/centos/centos-7.8.2003-custom"}"
 	}
 
 	options {
@@ -48,11 +50,20 @@ pipeline {
 		string(name: 'SSPL_URL', defaultValue: 'https://github.com/Seagate/cortx-monitor.git', description: 'SSPL Repository URL', trim: true)
 		string(name: 'CORTX_UTILS_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX Utils', trim: true)
 		string(name: 'CORTX_UTILS_URL', defaultValue: 'https://github.com/Seagate/cortx-utils', description: 'CORTX Utils Repository URL', trim: true)
+		string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX Utils', trim: true)
+		string(name: 'CORTX_RE_URL', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'CORTX Utils Repository URL', trim: true)
+
 
 		choice(
-			name: 'THIRD_PARTY_VERSION',
+			name: 'THIRD_PARTY_RPM_VERSION',
 			choices: ['cortx-2.0', 'cortx-1.0', 'custom'],
-			description: 'Third Party Version to use.'
+			description: 'Third Party RPM Version to use.'
+		)
+
+		choice(
+			name: 'THIRD_PARTY_PYTHON_VERSION',
+			choices: ['cortx-2.0', 'cortx-1.0', 'custom'],
+			description: 'Third Party Python Version to use.'
 		)
 	}
 
@@ -110,6 +121,25 @@ pipeline {
 								error "Failed to Build Motr, Hare and S3Server"
 							}
 						}										
+					}
+				}
+
+				stage ("Build cortx-prereq") {
+					steps {
+						script { build_stage = env.STAGE_NAME }
+                                                script {
+                                                        try {
+								def prereqbuild = build job: 'cortx-prereq-custom-build', wait: true,
+								                  parameters: [
+									            	string(name: 'CORTX_RE_URL', value: "${CORTX_RE_URL}"),
+											        string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
+													string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}")
+							        	          ]
+							} catch (err) {
+								build_stage = env.STAGE_NAME
+								error "Failed to Build cortx-prereq"
+							}
+						}
 					}
 				}
 
@@ -221,7 +251,7 @@ pipeline {
 			steps {
 				script { build_stage = env.STAGE_NAME }
 				sh label: 'Copy RPMS', script:'''
-					if [ "$THIRD_PARTY_VERSION" == "cortx-2.0" ]; then
+					if [ "$THIRD_PARTY_RPM_VERSION" == "cortx-2.0" ]; then
 						RPM_COPY_PATH="/mnt/bigstorage/releases/cortx/components/github/main/$os_version/dev/"
 					else
 						RPM_COPY_PATH="/mnt/bigstorage/releases/cortx/components/github/cortx-1.0/$os_version/dev/"
@@ -230,7 +260,7 @@ pipeline {
 					CUSTOM_COMPONENT_NAME="motr|s3server|hare|cortx-ha|provisioner|csm-agent|csm-web|sspl"
 
 					pushd $RPM_COPY_PATH
-					for component in `ls -1 | grep -E -v "$CUSTOM_COMPONENT_NAME" | grep -E -v 'luster|halon|mero|motr|csm|cortx-extension|nfs|cortx-utils'`
+					for component in `ls -1 | grep -E -v "$CUSTOM_COMPONENT_NAME" | grep -E -v 'luster|halon|mero|motr|csm|cortx-extension|nfs|cortx-utils|cortx-prereq'`
 					do
 						echo -e "Copying RPM's for $component"
 						if ls $component/last_successful/*.rpm 1> /dev/null 2>&1; then
@@ -258,7 +288,7 @@ pipeline {
 					if [ "${CSM_BRANCH}" == "Cortx-v1.0.0_Beta" ] || [ "${HARE_BRANCH}" == "Cortx-v1.0.0_Beta" ] || [ "${MOTR_BRANCH}" == "Cortx-v1.0.0_Beta" ] || [ "${PRVSNR_BRANCH}" == "Cortx-v1.0.0_Beta" ] || [ "${S3_BRANCH}" == "Cortx-v1.0.0_Beta" ] || [ "${SSPL_BRANCH}" == "Cortx-v1.0.0_Beta" ]; then
 							mero_rpm=$(ls -1 | grep "eos-core" | grep -E -v "eos-core-debuginfo|eos-core-devel|eos-core-tests")
 						else
-							mero_rpm=$(ls -1 | grep "cortx-motr" | grep -E -v "cortx-motr-debuginfo|cortx-motr-devel|cortx-motr-tests")
+							mero_rpm=$(ls -1 | grep "cortx-motr" | grep -E -v "cortx-motr-debuginfo|cortx-motr-devel|cortx-motr-tests|cortx-motr-ivt")
 						fi
                     mero_rpm_release=`rpm -qp ${mero_rpm} --qf '%{RELEASE}' | tr -d '\040\011\012\015'`
                     mero_rpm_version=`rpm -qp ${mero_rpm} --qf '%{VERSION}' | tr -d '\040\011\012\015'`
