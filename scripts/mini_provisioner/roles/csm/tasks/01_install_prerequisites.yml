@@ -89,16 +89,8 @@
 
 - name: "[install_prereq] : Install csm agent, csm web, cortx-py-utils, python36-cortx-prvsnr and cli"
   yum: 
-    name: ["cortx-cli", "cortx-csm_agent", "cortx-csm_web", "cortx-py-utils", "python36-cortx-prvsnr"]
+    name: ["cortx-cli", "cortx-csm_agent", "cortx-csm_web", "cortx-py-utils", "python36-cortx-prvsnr", "udx-discovery", "uds-pyi"]
     state: present
-
-- name: "[install_prereq] : Install UDS dependency packages"
-  yum:
-    name:
-      - http://cortx-storage.colo.seagate.com/releases/cortx/github/stable/centos-7.8.2003/206/prod/cortx_iso/udx-discovery-0.1.2-3.el7.x86_64.rpm
-      - http://cortx-storage.colo.seagate.com/releases/cortx/github/stable/centos-7.8.2003/206/prod/cortx_iso/uds-pyi-1.3.0-1.r10.el7.x86_64.rpm
-    state: present
-
 
 - name: "[install_prereq] : Create a cortx directory if does not exist"
   ansible.builtin.file:
