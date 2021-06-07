@@ -12,7 +12,7 @@ pipeline {
 				string(name: 'GIT_TAG', defaultValue: '', description: 'Release Tag')
 				string(name: 'USER_NAME', defaultValue: '', description: 'User Name')
 				string(name: 'PASSWD', defaultValue: '', description: 'Token')
-				string(name: 'USER_EMAIL', defaultValue: '', description: 'User Email')
+				
         }
 		
 		
@@ -58,9 +58,12 @@ pipeline {
 						[cortx-csm_agent]="https://$PASSWD@github.com/$USER_NAME/cortx-manager.git"
 						[cortx-csm_web]="https://$PASSWD@github.com/$USER_NAME/cortx-management-portal.git"
 					)
-
+					
+					git config --global user.email "cortx-application@seagate.com"
+					git config --global user.name "$cortx-admin"
 					wget -q $RELEASE_INFO_URL -O RELEASE.INFO
 					for component in "${!COMPONENT_LIST[@]}"
+					
 					do
 						dir=$(echo ${COMPONENT_LIST[$component]} |  awk -F'/' '{print $NF}')
 						git clone --quiet ${COMPONENT_LIST[$component]} $dir > /dev/null
@@ -81,9 +84,7 @@ pipeline {
 
 						echo "Component: $component , Repo:  ${COMPONENT_LIST[$component]}, Commit Hash: ${COMMIT_HASH}"
 						pushd $dir
-							git config --global user.email "USER_EMAIL"
-							git config --global user.name "$USER_NAME"
-							git tag -a "$GIT_TAG" "${COMMIT_HASH}"
+							git tag -a "$GIT_TAG" "${COMMIT_HASH}" -m "Latest Release"
 							git push origin "$GIT_TAG"
 							echo "Component: $component , Tag: git tag -l $GIT_TAG is Tagged Successfully"
 						popd
