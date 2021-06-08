@@ -119,7 +119,6 @@ EOF
 				sh label: 'Copy RPMS', script: '''
 					mkdir -p $build_upload_dir
 					cp $WORKSPACE/cortx-ha/dist/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir
-					createrepo -v --update $build_upload_dir
 				'''
 			}
 		}
