@@ -60,6 +60,9 @@ index-url: http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps
 trusted-host: cortx-storage.colo.seagate.com
 EOF
 					pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/stable/py-utils/requirements.txt
+					python3 -m pip install types-requests
+					python3 -m pip install types-simplejson
+					python3 -m pip install types-pkg_resources
 					rm -rf /etc/pip.conf
                 '''
 				sh label: 'Configure yum repositories', script: '''
