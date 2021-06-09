@@ -54,11 +54,7 @@ pipeline {
 				sh label: 'Install cortx-prereq', script: '''
 					yum erase python36-PyYAML -y
 					pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/stable/py-utils/requirements.txt
-					python3 -m pip install types-requests
-					python3 -m pip install types-simplejson
-					python3 -m pip install types-pkg_resources
-					python3 -m pip install types-PyYAML
-					rm -rf /etc/pip.conf
+					
                 '''
 				sh label: 'Configure yum repositories', script: '''
 					set +x
