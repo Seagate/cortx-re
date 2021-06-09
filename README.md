@@ -11,7 +11,7 @@ Release Engineering team is responsible for the followings
 
 ## Repo Structure
 
-An overview of folder structure in cortx-rerepo
+An handicapped overview of folder structure in cortx-rerepo
 ```console
 ├───docker
 ├───jenkins
