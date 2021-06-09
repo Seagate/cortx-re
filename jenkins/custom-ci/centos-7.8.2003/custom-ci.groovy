@@ -420,8 +420,13 @@ pipeline {
                 ln -s $cortx_os_iso $integration_dir/$release_tag/iso/$(basename $cortx_os_iso)
  
                 '''
-
-
+				sh label: "Sign ISO files", script: '''
+                pushd scripts/rpm-signing
+                    ./file-sign.sh ${passphrase} $integration_dir/$release_tag/iso/cortx-$version-$release_tag-upgrade.iso
+                    pkill gpg-agent
+                    ./file-sign.sh ${passphrase} $integration_dir/$release_tag/iso/cortx-$version-$release_tag-single.iso 
+                popd
+                '''
 				sh label: 'Print Release Build and ISO location', script:'''
 				echo "Custom Release Build and ISO is available at,"
 					echo "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/$os_version/$release_tag/"
