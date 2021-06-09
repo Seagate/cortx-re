@@ -53,12 +53,6 @@ pipeline {
 
 				sh label: 'Install cortx-prereq', script: '''
 					yum erase python36-PyYAML -y
-                    cat <<EOF >>/etc/pip.conf
-[global]
-timeout: 60
-index-url: http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/python-packages-2.0.0-latest/
-trusted-host: cortx-storage.colo.seagate.com
-EOF
 					pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/stable/py-utils/requirements.txt
 					python3 -m pip install types-requests
 					python3 -m pip install types-simplejson
