@@ -14,7 +14,7 @@ pipeline {
 		os_version = "centos-7.8.2003"
 		release_dir = "/mnt/bigstorage/releases/cortx"
 		integration_dir = "$release_dir/github/integration-custom-ci/$os_version/"
-		release_tag = "custom-build-$BUILD_ID"
+		release_tag = "test-custom-build-$BUILD_ID"
 		passphrase = credentials('rpm-sign-passphrase')
 
 		python_deps = "${THIRD_PARTY_PYTHON_VERSION == 'cortx-2.0' ? "$release_dir/third-party-deps/python-deps/python-packages-2.0.0-latest" : THIRD_PARTY_PYTHON_VERSION == 'cortx-1.0' ?  "$release_dir/third-party-deps/python-packages" : "$release_dir/third-party-deps/python-deps/python-packages-2.0.0-custom"}"
@@ -393,23 +393,34 @@ pipeline {
 		
 		stage ('Generate ISO Image') {
 		    steps {
-				
-				sh label: 'Generate Single ISO Image', script:'''
-		        mkdir $integration_dir/$release_tag/iso && pushd $integration_dir/$release_tag/iso
-					genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -publisher Seagate -o cortx-$release_tag-single.iso $integration_dir/$release_tag/
-					sed -i '/BUILD/d' $integration_dir/$release_tag/3rd_party/THIRD_PARTY_RELEASE.INFO
 
-					ln -s $cortx_os_iso $(basename $cortx_os_iso)
-					cortx_prvsnr_preq=$(ls "$integration_dir/$release_tag/cortx_iso" | grep "python36-cortx-prvsnr" | cut -d- -f5 | cut -d_ -f2 | cut -d. -f1 | sed s/"git"//)
-                	wget -O cortx-prep-$release_tag.sh https://raw.githubusercontent.com/Seagate/cortx-prvsnr/$cortx_prvsnr_preq/cli/src/cortx_prep.sh
-			
+				sh label: 'Release ISO', script: '''
+				mkdir -p $integration_dir/$release_tag/iso && pushd $integration_dir/$release_tag/iso
+            		genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -publisher Seagate -o $integration_dir/$release_tag/prod/iso/cortx-$version-$release_tag-single.iso $integration_dir/$release_tag
+					sed -i '/BUILD/d' $integration_dir/$release_tag/3rd_party/THIRD_PARTY_RELEASE.INFO
 				popd
-				'''
-				sh label: 'Generate ISO Image', script:'''
-		         pushd $integration_dir/$release_tag/iso
-					genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -publisher Seagate -o $release_tag.iso $integration_dir/$release_tag/cortx_iso/
-				popd
-				'''			
+                '''
+				
+                sh label: 'Upgrade ISO', script: '''
+                mkdir -p $integration_dir/$release_tag/sw_upgrade/{3rd_party,cortx_iso,python_deps}
+                createrepo -v $integration_dir/$release_tag/sw_upgrade/3rd_party/
+                find $integration_dir/$release_tag/3rd_party/ -not -path '*repodata*' -type d  -printf '%P\n' | xargs -t -I % sh -c '{ mkdir -p $integration_dir/$release_tag/sw_upgrade/3rd_party/%; createrepo -v $integration_dir/$release_tag/sw_upgrade/3rd_party/%; }'
+		        cp -r $integration_dir/$release_tag/cortx_iso/* $integration_dir/$release_tag/sw_upgrade/cortx_iso
+                cp $integration_dir/$release_tag/3rd_party/THIRD_PARTY_RELEASE.INFO $integration_dir/$release_tag/sw_upgrade/3rd_party
+                
+                genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -publisher Seagate -o $integration_dir/$release_tag/iso/cortx-$version-$release_tag-upgrade.iso $integration_dir/$release_tag/sw_upgrade
+                rm -rf $integration_dir/$release_tag/sw_upgrade
+                
+                '''
+				sh label: 'Additional Files', script:'''
+                cortx_prvsnr_preq=$(ls "$cortx_build_dir/$release_tag/cortx_iso" | grep "python36-cortx-prvsnr" | cut -d- -f5 | cut -d_ -f2 | cut -d. -f1 | sed s/"git"//)
+                    
+                wget -O $integration_dir/$release_tag/prod/iso/cortx-prep-$version-$BUILD_NUMBER.sh https://raw.githubusercontent.com/Seagate/cortx-prvsnr/$cortx_prvsnr_preq/cli/src/cortx_prep.sh
+
+                ln -s $cortx_os_iso $integration_dir/$release_tag/prod/iso/$(basename $cortx_os_iso)
+ 
+                '''
+
 
 				sh label: 'Print Release Build and ISO location', script:'''
 				echo "Custom Release Build and ISO is available at,"
