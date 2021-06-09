@@ -57,6 +57,7 @@ pipeline {
 					python3 -m pip install types-requests
 					python3 -m pip install types-simplejson
 					python3 -m pip install types-pkg_resources
+					python3 -m pip install types-PyYAML
 					rm -rf /etc/pip.conf
                 '''
 				sh label: 'Configure yum repositories', script: '''
