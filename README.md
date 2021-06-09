@@ -15,6 +15,8 @@ An overview of folder structure in cortx-rerepo
 ```console
 ├───docker
 ├───jenkins
+├───handicapped
+├───suicide
 └───scripts
 ```
 ### Docker
