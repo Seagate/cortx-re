@@ -74,7 +74,9 @@ pipeline {
         failure {
             script {
                 if ( params.HOST.isEmpty() ) {
-                    markNodeOffline("VM Teardown Failure - Automated offline")
+                    // add cleanup_req label to node and trigger cleanup job
+                    updateLabel()
+                    build job: 'Cortx-Automation/Deployment/VM-Cleanup', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${env.NODE_NAME}")]
                 }    
             }
         }    
@@ -108,6 +110,17 @@ def markNodeOffline(message) {
     computer.doChangeOfflineCause(message)
     computer = null
     node = null
+}
+
+def updateLabel() {
+    oldNodeLabel = "teardown_req"
+    newNodeLabel = "cleanup_req"
+    node = getCurrentNode(env.NODE_NAME)
+	node.setLabelString(node.getLabelString().replaceAll(oldNodeLabel, ""))
+    node.setLabelString(node.getLabelString() + " " + newNodeLabel)
+    echo "[ ${env.NODE_NAME} ] : Teardown label removed. The current node labels are ( ${node.getLabelString()} )"
+	node.save()
+    node = null 
 }
 
 def removeTeardownLabel() {
