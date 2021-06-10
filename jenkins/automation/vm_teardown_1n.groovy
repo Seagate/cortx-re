@@ -3,8 +3,8 @@ pipeline {
     agent {
         
         node {
-            // This job runs on vm deployment controller node to execute vm teardown for the deployment configured host
-            label params.HOST.isEmpty() ? "${NODE_LABEL} && teardown_req" : "vm_deployment_1n_user_host"
+            // This job runs on vm deployment controller node to execute vm cleanup for the deployment configured host
+            label params.HOST.isEmpty() ? "${NODE_LABEL} && cleanup_req" : "vm_deployment_1n_user_host"
         }
     }
 	
@@ -43,7 +43,7 @@ pipeline {
 
                     // Clone cortx-re repo
                     dir('cortx-re') {
-                        checkout([$class: 'GitSCM', branches: [[name: '*/main-teardown']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/gauravchaudhari02/cortx-re.git']]])                
+                        checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re.git']]])                
                     }
 
                 }
@@ -74,17 +74,15 @@ pipeline {
         failure {
             script {
                 if ( params.HOST.isEmpty() ) {
-                    // add cleanup_req label to node and trigger cleanup job
-                    removeLabel("teardown_req")
-                    addLabel("cleanup_req")
+                    // trigger snapshot-based cleanup job
                     build job: 'Cortx-Automation/Deployment/VM-Cleanup', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${env.NODE_NAME}")]
                 }    
             }
         }    
         success {
             script {
-                // remove teardown label from the node
-                removeLabel("teardown_req")
+                // remove cleanup label from the node
+                removeLabel("cleanup_req")
             }
         }
     }
@@ -101,14 +99,6 @@ def getTestMachine(host, user, pass) {
     remote.password = pass
     remote.allowAnyHosts = true
     return remote
-}
-
-def addLabel(nodeLabel) {
-    node = getCurrentNode(env.NODE_NAME)
-	node.setLabelString(node.getLabelString() + " " + nodeLabel)
-    echo "[ ${env.NODE_NAME} ] : ${nodeLabel} label added. The current node labels are ( ${node.getLabelString()} )"
-	node.save()
-    node = null
 }
 
 def removeLabel(nodeLabel) {

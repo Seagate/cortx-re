@@ -3,7 +3,7 @@ pipeline {
     agent {
         node {
             // Run deployment on mini_provisioner nodes (vm deployment nodes)
-            label params.NODE1.isEmpty() ? "(main_vm_deployment_1n || vm_deployment_1n) && !teardown_req" : "vm_deployment_1n_controller"
+            label params.NODE1.isEmpty() ? "(main_vm_deployment_1n || vm_deployment_1n) && !cleanup_req" : "vm_deployment_1n_controller"
             customWorkspace "/var/jenkins/cortx_deployment_vm/${JOB_NAME}_${BUILD_NUMBER}"
         }
     }
@@ -62,7 +62,7 @@ pipeline {
                     }
 
                     if ( NODE1.isEmpty() ) {
-					    markNodeforTeardown()
+					    markNodeforCleanup()
                     }
                 }
             }
@@ -297,14 +297,19 @@ pipeline {
                 // Archive Deployment artifacts in jenkins build
                 archiveArtifacts artifacts: "artifacts/**/*.*", onlyIfSuccessful: false, allowEmptyArchive: true 
 
-                // Trigger Teardown Deployment Nodes
+                // Trigger Cleanup Deployment Nodes
                 if (NODE1.isEmpty()) {
                     if ( params.DEBUG ) {  
                         // Take Node offline for debugging  
                         markNodeOffline("R2 - 1N VM Deployment Debug Mode Enabled on This Host - ${BUILD_URL}")
                     } else {
-                        // Trigger teardown VM
-                        build job: 'Cortx-Automation/Deployment/VM-Teardown', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${env.NODE_NAME}")] 
+                        if ( NODES.contains("ssc-vm-rhev4") ) {
+                            // Trigger Cleanup VM
+                            build job: 'Cortx-Automation/Deployment/VM-Cleanup', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${env.NODE_NAME}")]         
+                        } else {
+                            // Trigger Teardown VM        
+                            build job: 'Cortx-Automation/Deployment/VM-Teardown', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${env.NODE_NAME}")] 
+                        }
                     }
                 }
                 cleanWs()
@@ -417,9 +422,9 @@ def getCurrentNode(nodeName) {
   throw new Exception("No node for $nodeName")
 }
 
-// Add 'teardown_req' label to VM to identify unclean vm
-def markNodeforTeardown() {
-	nodeLabel = "teardown_req"
+// Add 'cleanup_req' label to VM to identify unclean vm
+def markNodeforCleanup() {
+	nodeLabel = "cleanup_req"
     node = getCurrentNode(env.NODE_NAME)
 	node.setLabelString(node.getLabelString() + " " + nodeLabel)
 	node.save()
