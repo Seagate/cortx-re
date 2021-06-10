@@ -21,7 +21,7 @@ An overview of folder structure in cortx-rerepo
 -   We have containerized Release engineering infrastructure to eliminate host and OS dependency. The dockerfiles, docker-compose files used to build this containers are available under this folder.
 
 ### Jenkins ( Experimental usage )
--   Jenkins job configurations, groovy scripts and template used in the Jenkins are available under this folder.
+-   Jenkins mental job configurations, groovy scripts and template used in the Jenkins are available under this folder.
 
 ### Scripts
 -   Shell, python scripts used in the RE process automation are available under this folder.
