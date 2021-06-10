@@ -60,7 +60,7 @@ trusted-host: cortx-storage.colo.seagate.com
 EOF
 				pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/main/py-utils/python_requirements.txt
 				pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/main/py-utils/python_requirements.ext.txt
-					rm -rf /etc/pip.conf
+				rm -rf /etc/pip.conf
 				fi	
 			'''		
 			}
