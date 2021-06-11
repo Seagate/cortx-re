@@ -15,7 +15,7 @@ haproxy
 hdparm == 9.43
 hiredis
 ipmitool == 1.8.18
-isa-l
+isa-l == 2.30.0
 jq
 kibana-oss == 6.8.8
 libaio
