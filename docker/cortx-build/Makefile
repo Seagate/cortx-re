@@ -208,7 +208,7 @@ _cortx-py-utils_install:
 	pushd cortx-workspace/cortx-utils/py-utils && \
 		yum install python3-pip gcc python3-devel -y && \
 		yum erase python36-PyYAML -y && \
-		pip3 install -r requirements.txt && \
+		pip3 install -r python_requirements.txt && \
 		yum localinstall -y ${RPM_DIR}/cortx-py-utils*noarch.rpm && \
 	popd || (echo "ERROR: Failed to install cortx-utils package. Exiting..."; exit 1) 	
 
