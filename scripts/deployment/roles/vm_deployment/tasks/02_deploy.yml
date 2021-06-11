@@ -56,7 +56,13 @@
       failed_when: "\"Deploy VM - Done\" not in deploy_vm.stdout"
       tags: ['02_7_HA']
       
-  rescue:    
+  rescue:
+    - name: Print servers
+      debug: 
+        msg: "{{ item }}"
+      delegate_to: "{{ hostvars[item]['ansible_host'] }}"
+      loop: "{{ groups['srvnodes'] }}"
+       
     - name: "[ Validate Deployment ] : Get journalctl Log" 
       shell: "journalctl 2>&1 > {{ CORXT_DEPLOYMENT_LOG_PATH }}/journalctl.log"
       ignore_errors: true
