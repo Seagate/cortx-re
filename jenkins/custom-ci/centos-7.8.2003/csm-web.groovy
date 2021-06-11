@@ -54,6 +54,7 @@ pipeline {
 					sh ./cortx-re/scripts/third-party-rpm/install-cortx-prereq.sh
 				"""
 				sh label: 'Install Utils and Provisionr', script: '''
+					yum clean all && rm -rf /var/cache/yum
 					yum install -y cortx-py-utils cortx-prvsnr
 					pip3.6 install  pyinstaller==3.5
 				'''
@@ -85,6 +86,5 @@ pipeline {
 				'''
 			}
 		}	
-
 	}
 }	
