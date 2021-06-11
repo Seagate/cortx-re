@@ -83,6 +83,18 @@ pipeline {
 
                     checkout([$class: 'GitSCM', branches: [[name: "${HARE_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 0, noTags: false, reference: '', shallow: false, timeout: 15], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false, timeout: 15]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${HARE_URL}",  name: 'origin', refspec: "${HARE_PR_REFSPEC}"]]])
 
+                    sh label: '', script: '''
+					yum erase python36-PyYAML -y
+                    cat <<EOF >>/etc/pip.conf
+[global]
+timeout: 60
+index-url: http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/python-packages-2.0.0-latest/
+trusted-host: cortx-storage.colo.seagate.com
+EOF
+					pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/$BRANCH/py-utils/python_requirements.txt
+					rm -rf /etc/pip.conf
+                    '''
+
                     sh label: 'prepare build env', script: """
                         sed '/baseurl/d' /etc/yum.repos.d/motr_current_build.repo
                         echo "baseurl=http://cortx-storage.colo.seagate.com/releases/cortx/components/github/${BRANCH}/${OS_VERSION}/dev/motr/current_build/"  >> /etc/yum.repos.d/motr_current_build.repo
@@ -194,7 +206,7 @@ pipeline {
         stage('Deploy') {
             agent { 
                 node { 
-                    label params.HOST == "-" ? "vm_deployment_1n && !cleanup_req" : "vm_deployment_1n_user_host"
+                    label params.HOST == "-" ? "vm_deployment_1n && !teardown_req" : "vm_deployment_1n_user_host"
                     customWorkspace "/var/jenkins/mini_provisioner/${JOB_NAME}_${BUILD_NUMBER}"
                 } 
             }
@@ -265,7 +277,7 @@ pipeline {
                         if ( "${DEBUG}" == "yes" ) {  
                             markNodeOffline("Motr Debug Mode Enabled on This Host  - ${BUILD_URL}")
                         } else {
-                            build job: 'Cortx-Automation/Deployment/VM-Cleanup', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${env.NODE_NAME}")]                    
+                            build job: 'Cortx-Automation/Deployment/VM-Teardown', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${env.NODE_NAME}")]                    
                         }
                     }
 
@@ -328,7 +340,7 @@ def runAnsible(tags) {
     }
 }
 def markNodeforCleanup() {
-	nodeLabel = "cleanup_req"
+	nodeLabel = "teardown_req"
     node = getCurrentNode(env.NODE_NAME)
 	node.setLabelString(node.getLabelString() + " " + nodeLabel)
 	node.save()
