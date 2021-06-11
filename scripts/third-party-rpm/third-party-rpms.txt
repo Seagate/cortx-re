@@ -27,6 +27,9 @@ log4cxx_cortx-devel
 lshw == B.02.18
 openldap-clients
 openldap-servers
+symas-openldap-clients == 2.4.58
+symas-openldap-servers == 2.4.58
+symas-openldap == 2.4.58
 openssl
 pacemaker
 pcs
