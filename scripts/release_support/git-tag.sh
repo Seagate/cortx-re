@@ -9,7 +9,7 @@ declare -A COMPONENT_LIST=(
 			[cortx-sspl]="https://$PASSWD@github.com/Seagate/cortx-monitor.git"
 			[cortx-csm_agent]="https://$PASSWD@github.com/Seagate/cortx-manager.git"
 			[cortx-csm_web]="https://$PASSWD@github.com/Seagate/cortx-management-portal.git"
-	        	)
+        	)
 					
 			git config --global user.email "cortx-application@seagate.com"
 			git config --global user.name "cortx admin"
