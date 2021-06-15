@@ -45,7 +45,7 @@ pipeline {
 		stage('Checkout Script') {
             steps {             
                 script {
-                    checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])                
+                    checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin', url: 'https://github.com/balajiramachandran-seagate/cortx-re']]])                
                 }
             }
         }
@@ -53,7 +53,7 @@ pipeline {
 			steps {
 				script { build_stage=env.STAGE_NAME }
 					script { 
-						withCredentials([usernamePassword(credentialsId: 'cortx-admin-github', passwordVariable: 'PASSWD', usernameVariable: 'USER_NAME')]) {
+						withCredentials([usernamePassword(credentialsId: 'cortx-admin', passwordVariable: 'PASSWD', usernameVariable: 'USER_NAME')]) {
 						sh """ bash scripts/release_support/git-tag.sh """
 					}
 				}			
