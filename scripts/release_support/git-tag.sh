@@ -9,10 +9,10 @@ declare -A COMPONENT_LIST=(
 			[cortx-sspl]="https://$PASSWD@github.com/Seagate/cortx-monitor.git"
 			[cortx-csm_agent]="https://$PASSWD@github.com/Seagate/cortx-manager.git"
 			[cortx-csm_web]="https://$PASSWD@github.com/Seagate/cortx-management-portal.git"
-		)
+	        	)
 					
 			git config --global user.email "cortx-application@seagate.com"
-			git config --global user.name "cortx-admin"
+			git config --global user.name "cortx admin"
 			wget -q $RELEASE_INFO_URL -O RELEASE.INFO
 	
 	for component in "${!COMPONENT_LIST[@]}"
