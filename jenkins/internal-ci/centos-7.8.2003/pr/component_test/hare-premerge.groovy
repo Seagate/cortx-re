@@ -115,7 +115,7 @@ pipeline {
                                 script {
                                         try {
                                             def remote = getTestMachine(VM_FQDN)
-                                            def commandResult = sshCommand remote: remote, FailOnError: true, command: """
+                                            def commandResult = sshCommand remote: remote, failOnError: true, command: """
                                             pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/main/py-utils/python_requirements.txt
 					                        pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/main/py-utils/python_requirements.ext.txt                                
                                             yum install python3 python3-devel gcc rpm-build -y
