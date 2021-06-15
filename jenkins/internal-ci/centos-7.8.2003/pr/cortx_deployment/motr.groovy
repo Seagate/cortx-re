@@ -115,7 +115,8 @@ timeout: 60
 index-url: http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/python-packages-2.0.0-latest/
 trusted-host: cortx-storage.colo.seagate.com
 EOF
-					pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/$BRANCH/py-utils/requirements.txt
+					pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/$BRANCH/py-utils/python_requirements.txt
+                    pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/$BRANCH/py-utils/python_requirements.ext.txt
 					rm -rf /etc/pip.conf
                 '''
 
@@ -240,7 +241,7 @@ EOF
         stage('Deploy') {
             agent { 
                 node { 
-                    label params.HOST == "-" ? "vm_deployment_1n && !cleanup_req" : "vm_deployment_1n_user_host"
+                    label params.HOST == "-" ? "vm_deployment_1n && !teardown_req" : "vm_deployment_1n_user_host"
                     customWorkspace "/var/jenkins/mini_provisioner/${JOB_NAME}_${BUILD_NUMBER}"
                 } 
             }
@@ -312,7 +313,7 @@ EOF
                         if ( "${DEBUG}" == "yes" ) {  
                             markNodeOffline("Motr Debug Mode Enabled on This Host  - ${BUILD_URL}")
                         } else {
-                            build job: 'Cortx-Automation/Deployment/VM-Cleanup', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${env.NODE_NAME}")]                    
+                            build job: 'Cortx-Automation/Deployment/VM-Teardown', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${env.NODE_NAME}")]                    
                         }
                     }
                     
@@ -375,7 +376,7 @@ def runAnsible(tags) {
     }
 }
 def markNodeforCleanup() {
-	nodeLabel = "cleanup_req"
+	nodeLabel = "teardown_req"
     node = getCurrentNode(env.NODE_NAME)
 	node.setLabelString(node.getLabelString() + " " + nodeLabel)
 	node.save()
