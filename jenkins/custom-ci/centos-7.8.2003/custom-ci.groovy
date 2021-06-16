@@ -270,6 +270,8 @@ pipeline {
 						fi
 					done
 
+					createrepo -v --update $integration_dir/$release_tag/cortx_iso/
+
 				'''
 			}
 		}
