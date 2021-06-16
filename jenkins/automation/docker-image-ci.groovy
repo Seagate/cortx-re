@@ -1,7 +1,7 @@
 pipeline {
     agent {
         node {
-            label 'docker-image-centos-7.8.2003-node'
+            label 'docker-image-build-centos-7.8'
         }
     }
     
