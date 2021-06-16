@@ -58,6 +58,7 @@ EOF
 				#Use main branch for cortx-py-utils
 				sed -i 's/stable/main/'  /etc/yum.repos.d/cortx.repo
 				yum clean all && rm -rf /var/cache/yum
+			'''	
 
 			}
 		}
