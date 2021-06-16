@@ -49,18 +49,10 @@ pipeline {
 			steps {
 				script { build_stage = env.STAGE_NAME }
 
-				sh label: 'Install cortx-prereq package', script: """
-					pip3 uninstall pip -y && yum install python3-pip -y && ln -s /usr/bin/pip3 /usr/local/bin/pip3
-					sh ./cortx-re/scripts/third-party-rpm/install-cortx-prereq.sh
-				"""
-				sh label: 'Install Utils and Provisionr', script: '''
+				sh label: 'Install Provisionr', script: '''
 					yum clean all && rm -rf /var/cache/yum
-					yum install -y cortx-py-utils cortx-prvsnr
+					yum install -y  cortx-prvsnr
 					pip3.6 install  pyinstaller==3.5
-
-					#Use main branch for cortx-py-utils
-					sed -i 's/stable/main/'  /etc/yum.repos.d/cortx.repo
-					yum clean all && rm -rf /var/cache/yum
 				'''
 			}
 		}	

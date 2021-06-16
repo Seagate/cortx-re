@@ -43,10 +43,6 @@ pipeline {
 				sh label: '', script: '''
 					yum install -y cortx-prvsnr
 					pip3.6 install  pyinstaller==3.5
-
-					#Use main branch for cortx-py-utils
-					sed -i 's/stable/main/'  /etc/yum.repos.d/cortx.repo
-					yum clean all && rm -rf /var/cache/yum
 				'''
 			}
 		}	
