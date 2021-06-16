@@ -12,7 +12,7 @@ declare -A COMPONENT_LIST=(
         	)
 					
 			git config --global user.email "cortx-applications@seagate.com"
-			git config --global --reset-all user.name "cortx admin"
+			git config --global user.name "cortx admin"
 			wget -q "$RELEASE_INFO_URL" -O RELEASE.INFO
 	
 	for component in "${!COMPONENT_LIST[@]}"
