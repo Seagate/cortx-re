@@ -11,8 +11,8 @@ declare -A COMPONENT_LIST=(
 			[cortx-csm_web]="https://$PASSWD@github.com/Seagate/cortx-management-portal.git"
         	)
 					
-			git config --global user.email "balaji.ramachandran@seagate.com"
-			git config --global --reset-all user.name "Balaji Ramachandran"
+			git config --global user.email "cortx-applications@seagate.com"
+			git config --global --reset-all user.name "cortx admin"
 			wget -q "$RELEASE_INFO_URL" -O RELEASE.INFO
 	
 	for component in "${!COMPONENT_LIST[@]}"
