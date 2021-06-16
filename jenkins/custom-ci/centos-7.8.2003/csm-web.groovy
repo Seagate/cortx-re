@@ -50,7 +50,7 @@ pipeline {
 				script { build_stage = env.STAGE_NAME }
 
 				sh label: 'Configure yum repositories', script: """
-				if [ "${CSM_AGENT_BRANCH}" == "cortx-1.0" ]; then
+				if [ "${CSM_WEB_BRANCH}" == "cortx-1.0" ]; then
 					yum-config-manager --disable cortx-C7.7.1908
 					yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/cortx-1.0/$os_version/last_successful/
 				else
