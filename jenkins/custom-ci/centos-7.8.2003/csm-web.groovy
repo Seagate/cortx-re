@@ -49,9 +49,22 @@ pipeline {
 			steps {
 				script { build_stage = env.STAGE_NAME }
 
+				sh label: 'Configure yum repositories', script: """
+				if [ "${CSM_AGENT_BRANCH}" == "cortx-1.0" ]; then
+					yum-config-manager --disable cortx-C7.7.1908
+					yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/cortx-1.0/$os_version/last_successful/
+				else
+					yum-config-manager --disable cortx-C7.7.1908,cortx-uploads
+					yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/main/$os_version/last_successful/
+				fi
+				yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/$os_version/$release_tag/cortx_iso/
+				yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
+				yum clean all && rm -rf /var/cache/yum
+				"""
+
 				sh label: 'Install Provisionr', script: '''
 					yum clean all && rm -rf /var/cache/yum
-					yum install -y  cortx-prvsnr
+					yum install -y cortx-prvsnr
 					pip3.6 install  pyinstaller==3.5
 				'''
 			}
