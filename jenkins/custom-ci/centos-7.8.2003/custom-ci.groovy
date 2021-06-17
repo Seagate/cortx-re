@@ -403,14 +403,20 @@ pipeline {
                 '''
 				
                 sh label: 'Upgrade ISO', script: '''
-                mkdir -p $integration_dir/$release_tag/sw_upgrade/{3rd_party,cortx_iso,python_deps}
+                #Create upgrade directorty structure
+				mkdir -p $integration_dir/$release_tag/sw_upgrade/{3rd_party,cortx_iso,python_deps}
                 createrepo -v $integration_dir/$release_tag/sw_upgrade/3rd_party/
-                find $integration_dir/$release_tag/3rd_party/ -not -path '*repodata*' -type d  -printf '%P\n' | xargs -t -I % sh -c '{ mkdir -p $integration_dir/$release_tag/sw_upgrade/3rd_party/%; createrepo -v $integration_dir/$release_tag/sw_upgrade/3rd_party/%; }'
+                find $integration_dir/$release_tag/3rd_party/ -not -path '*repodata*' -type d  -printf '%P\n' | xargs -t -I % sh -c '{ mkdir -p $integration_dir/$release_tag/sw_upgrade/3rd_party/%; createrepo -q $integration_dir/$release_tag/sw_upgrade/3rd_party/%; }'
+
+				#Copy all component packages
 		        cp -r $integration_dir/$release_tag/cortx_iso/* $integration_dir/$release_tag/sw_upgrade/cortx_iso/
-				cp -r $integration_dir/$release_tag/python_deps/* $integration_dir/$release_tag/sw_upgrade/python_deps/
-                cp $integration_dir/$release_tag/3rd_party/THIRD_PARTY_RELEASE.INFO $integration_dir/$release_tag/sw_upgrade/3rd_party
-				cp $integration_dir/$release_tag/cortx_iso/RELEASE.INFO $integration_dir/$release_tag/sw_upgrade/
+				
+				#Copy RELEASE.INFO, Third Party RPM and Python index files. 
+				cp $integration_dir/$release_tag/3rd_party/THIRD_PARTY_RELEASE.INFO $integration_dir/$release_tag/sw_upgrade/3rd_party
+				sed -i -e /tar/d -e /rpm/d -e /tgz/d $integration_dir/$release_tag/sw_upgrade/3rd_party/THIRD_PARTY_RELEASE.INFO
 				cp $integration_dir/$release_tag/python_deps/index.html $integration_dir/$release_tag/sw_upgrade/python_deps/index.html
+				sed -i /href/d $integration_dir/$release_tag/sw_upgrade/python_deps/index.html
+				cp $integration_dir/$release_tag/cortx_iso/RELEASE.INFO $integration_dir/$release_tag/sw_upgrade/
                 
                 genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -hide-rr-moved -publisher Seagate -o $integration_dir/$release_tag/iso/cortx-$version-$release_tag-upgrade.iso $integration_dir/$release_tag/sw_upgrade
                 rm -rf $integration_dir/$release_tag/sw_upgrade
