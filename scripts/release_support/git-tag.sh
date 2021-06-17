@@ -37,9 +37,14 @@ declare -A COMPONENT_LIST=(
 
 		echo "Component: "$component" , Repo:  "${COMPONENT_LIST[$component]}", Commit Hash: "${COMMIT_HASH}""
 		pushd "$dir"
-			git tag -a "$GIT_TAG" "${COMMIT_HASH}" -m "Latest Release"
-			git push origin "$GIT_TAG"
-			echo "Component: "$component" , Tag: git tag -l "$GIT_TAG" is Tagged Successfully"
+		if [ "$GIT_TAG != "" ]; then
+			git tag -a "$GIT_TAG" "${COMMIT_HASH}" -m "Latest Release";
+			git push origin "$GIT_TAG";
+			echo "Component: "$component" , Tag: git tag -l "$GIT_TAG" is Tagged Successfully";
+		else
+			echo "Tag is not successful. Please pass value to GIT_TAG";
+		fi
+
 			git push origin --delete "$GIT_TAG"
 		popd
 	
