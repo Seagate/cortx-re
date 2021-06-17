@@ -41,7 +41,7 @@ declare -A COMPONENT_LIST=(
 			git tag -a "$GIT_TAG" "${COMMIT_HASH}" -m "Latest Release";
 			git push origin "$GIT_TAG";
 			echo "Component: $component , Tag: $GIT_TAG is Tagged Successfully";
-			git show "$GIT_TAG";
+			git tag -l "$GIT_TAG";
 		else
 			echo "Tag is not successful. Please pass value to GIT_TAG";
 		fi
