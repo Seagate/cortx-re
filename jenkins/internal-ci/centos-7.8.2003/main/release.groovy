@@ -174,8 +174,8 @@ pipeline {
 					pushd $cortx_build_dir
                         test -d $release_tag && rm -f $release_tag
                         mkdir $release_tag && pushd $release_tag
-                            ln -s $thrid_party_dir 3rd_party
-							ln -s $python_deps python_deps
+                            ln -s $(readlink -f $third_party_dir) 3rd_party
+                            ln -s $(readlink -f $python_deps) python_deps
                         popd
                     popd
                 '''
