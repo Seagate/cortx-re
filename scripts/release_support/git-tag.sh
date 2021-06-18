@@ -9,8 +9,8 @@ declare -A COMPONENT_LIST=(
                         [cortx-sspl]="https://$PASSWD@github.com/Seagate/cortx-monitor.git"
                         [cortx-csm_agent]="https://$PASSWD@github.com/Seagate/cortx-manager.git"
                         [cortx-csm_web]="https://$PASSWD@github.com/Seagate/cortx-management-portal.git"
-						[cortx-py-utils]="https://$PASSWD@github.com/Seagate/cortx-utils.git"
-						[cortx-prereq]="https://$PASSWD@github.com/Seagate/cortx-re.git"
+			[cortx-py-utils]="https://$PASSWD@github.com/Seagate/cortx-utils.git"
+			[cortx-prereq]="https://$PASSWD@github.com/Seagate/cortx-re.git"
                 )
 
                         git config --global user.email "cortx-applications@seagate.com"
@@ -42,7 +42,8 @@ declare -A COMPONENT_LIST=(
                 if [ "$GIT_TAG" != "" ]; then
                         git tag -a "$GIT_TAG" "${COMMIT_HASH}" -m "Latest Release";
                         git push origin "$GIT_TAG";
-                        echo "Component: "$component" , Tag: git tag -l "$GIT_TAG" is Tagged Successfully";
+                        echo "Component: $component , Tag: git tag -l $GIT_TAG is Tagged Successfully";
+			git tag -l "$GIT_TAG";
                 else
                         echo "Tag is not successful. Please pass value to GIT_TAG";
                 fi
