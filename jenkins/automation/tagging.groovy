@@ -67,7 +67,7 @@ def get_commit_hash(String component, String release_info) {
 
     return sh(script: """
             set +x
-            if [ $component == cortx-hare ] || [ $component == cortx-sspl ] || [ $component == cortx-ha ] || [ $component == cortx-fs ]; then
+            if [ $component == cortx-hare ] || [ $component == cortx-sspl ] || [ $component == cortx-ha ] || [ $component == cortx-fs ] || [ "$component" == cortx-py-utils ] || [ "$component" == cortx-prereq ]; then
                     echo \$(curl -s $release_info | grep $component | head -1 | awk -F['_'] '{print \$2}' | cut -d. -f1 |  sed 's/git//g');
 					
             elif [ "$component" == "cortx-csm_agent" ] || [ "$component" == "cortx-csm_web" ]; then
