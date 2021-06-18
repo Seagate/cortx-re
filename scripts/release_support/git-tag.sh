@@ -47,6 +47,11 @@ declare -A COMPONENT_LIST=(
                 else
                         echo "Tag is not successful. Please pass value to GIT_TAG";
                 fi
+		if [ params.DEBUG ]; then
+                    git push origin --delete "$GIT_TAG";
+		else 
+		    echo "Run in Debug mode if current Git tag needs to be deleted.";
+		fi		
                 popd
 
         done
