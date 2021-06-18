@@ -398,7 +398,6 @@ pipeline {
 				sh label: 'Release ISO', script: '''
 				mkdir -p $integration_dir/$release_tag/iso && pushd $integration_dir/$release_tag/iso
             		genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -hide-rr-moved -publisher Seagate -o $integration_dir/$release_tag/iso/cortx-$version-$release_tag-single.iso $integration_dir/$release_tag
-					sed -i '/BUILD/d' $integration_dir/$release_tag/3rd_party/THIRD_PARTY_RELEASE.INFO
 				popd
                 '''
 				
@@ -423,11 +422,15 @@ pipeline {
                 
                 '''
 				sh label: 'Additional Files', script:'''
-                cortx_prvsnr_preq=$(ls "$integration_dir/$release_tag/cortx_iso" | grep "python36-cortx-prvsnr" | cut -d- -f5 | cut -d_ -f2 | cut -d. -f1 | sed s/"git"//)
-                    
+				#Add cortx-prep.sh
+                cortx_prvsnr_preq=$(ls "$integration_dir/$release_tag/cortx_iso" | grep "python36-cortx-prvsnr" | cut -d- -f5 | cut -d_ -f2 | cut -d. -f1 | sed s/"git"//)                 
                 wget -O $integration_dir/$release_tag/iso/cortx-prep-$version-$BUILD_NUMBER.sh https://raw.githubusercontent.com/Seagate/cortx-prvsnr/$cortx_prvsnr_preq/cli/src/cortx_prep.sh
 
+				#Add custom-os ISO
                 ln -s $cortx_os_iso $integration_dir/$release_tag/iso/$(basename $cortx_os_iso)
+
+				#Remove Build details from THIRD_PARTY_RELEASE.INFO
+				sed -i '/BUILD/d' $integration_dir/$release_tag/3rd_party/THIRD_PARTY_RELEASE.INFO
  
                 '''
 				sh label: "Sign ISO files", script: '''
