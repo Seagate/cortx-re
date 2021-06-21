@@ -49,9 +49,9 @@ declare -A COMPONENT_LIST=(
                 fi
 		if [ params.DEBUG == true ]; then
                     git push origin --delete "$GIT_TAG";
+		fi
 		else 
 		    echo "Run in Debug mode if current Git tag needs to be deleted.";
-		fi		
                 popd
 
         done
