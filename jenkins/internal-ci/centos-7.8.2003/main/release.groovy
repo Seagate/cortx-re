@@ -216,7 +216,7 @@ pipeline {
 		        mv $integration_dir/$release_tag/prod/* $cortx_build_dir/$release_tag/cortx_iso
                 mkdir -p $integration_dir/$release_tag/prod/iso
                 
-                genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -publisher Seagate -o $integration_dir/$release_tag/prod/iso/cortx-$version-$BUILD_NUMBER-single.iso $cortx_build_dir/$release_tag
+                genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -hide-rr-moved -publisher Seagate -o $integration_dir/$release_tag/prod/iso/cortx-$version-$BUILD_NUMBER-single.iso $cortx_build_dir/$release_tag
                 '''
 
                 sh label: 'Upgrade ISO', script: '''
@@ -235,7 +235,7 @@ pipeline {
 				sed -i /href/d $cortx_build_dir/$release_tag/sw_upgrade/python_deps/index.html
 				cp $cortx_build_dir/$release_tag/cortx_iso/RELEASE.INFO $cortx_build_dir/$release_tag/sw_upgrade/
                 
-                genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -publisher Seagate -o $integration_dir/$release_tag/prod/iso/cortx-$version-$BUILD_NUMBER-upgrade.iso $cortx_build_dir/$release_tag/sw_upgrade
+                genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -hide-rr-moved -publisher Seagate -o $integration_dir/$release_tag/prod/iso/cortx-$version-$BUILD_NUMBER-upgrade.iso $cortx_build_dir/$release_tag/sw_upgrade
                 rm -rf $cortx_build_dir/$release_tag/sw_upgrade
                 
                 '''
