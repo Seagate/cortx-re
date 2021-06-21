@@ -19,6 +19,7 @@
       - firewalld-0.6.3-8.el7
       - python3
       - expect
+      - s3cmd
     state: present
 
 - name: Copy a config file
@@ -29,6 +30,14 @@
     group: root
     mode: '0644'
 
+- name: Copy s3sanity config script
+  copy:
+    src: files/s3cfg
+    dest: /root/.s3cfg
+    owner: root
+    group: root
+    mode: '0754'
+
 - name: Copy a autodeploy execution script
   template:
     src: script.j2
@@ -36,14 +45,6 @@
     owner: root
     group: root
     mode: '0750'
-
-- name: Copy provisioner script
-  copy:
-    src: files/provisioner.sh
-    dest: provisioner.sh
-    owner: root
-    group: root
-    mode: '0754'
 
 #provisoner fix      
 - name: Add srvnode-1 in hosts
@@ -71,14 +72,11 @@
 - name: Restart csm_agent
   shell: systemctl restart csm_agent
 
-- name: Close port on management interface
-  shell: firewall-cmd --zone=public --remove-port=443/tcp --permanent
-
 - name: open port on management interface
   shell: "{{ item }}"
   with_items:
-    - "salt '*' cmd.run 'firewall-cmd --zone=public-data-zone --add-port=80/tcp --permanent'"
-    - "salt '*' cmd.run 'firewall-cmd --zone=public-data-zone --add-port=28100/tcp --permanent'"
+    - "salt '*' cmd.run 'firewall-cmd --zone=public --add-port=80/tcp --permanent'"
+    - "salt '*' cmd.run 'firewall-cmd --zone=public --add-port=443/tcp --permanent'"
     - "salt '*' cmd.run 'firewall-cmd --reload'"
 
 #csm fix
@@ -95,8 +93,22 @@
 - name: Edit s3 config file
   shell: "sed -i 's/S3_MOTR_MAX_UNITS_PER_REQUEST: 32/S3_MOTR_MAX_UNITS_PER_REQUEST: 8/g' /opt/seagate/cortx/s3/conf/s3config.yaml" 
 
+- name: Update s3authserver service
+  blockinfile:
+    path: /lib/systemd/system/s3authserver.service
+    insertafter: '^Description='
+    block: |
+      Requires=slapd.service
+      After=slapd.service
+
 - name: Restart s3 service
-  shell: systemctl restart s3server@0x7200000000000001:0x16
+  shell: systemctl restart s3*
+
+#csm patch
+- name: Add serial number file
+  copy:
+    content: 12345678905432109876
+    dest: /opt/seagate/lr-serial-number
 
 - name: Remove stale cert alerts
   shell: "{{ item }}"
@@ -121,8 +133,8 @@
 - include_role:
     name: vm-service-checker 
  
-- name: Change hostname
-  shell: "hostnamectl set-hostname --static --transient --pretty localhost"
+#- name: Change hostname
+#  shell: "hostnamectl set-hostname --static --transient --pretty localhost"
 
 - name: Delete horizontal line in hosts file
   lineinfile:
@@ -130,10 +142,16 @@
     state: absent
     regexp: '^--'
 
+- name: Get the .repo files list
+  find:
+    paths: /etc/yum.repos.d
+    patterns: "*.repo"
+  register: repos_files_to_delete
 - name: Cleanup yum repo files
   file:
-    path: /etc/yum.repos.d/*.repo 
+    path: "{{ item.path }}"
     state: absent
+  with_items: "{{ repos_files_to_delete.files }}"
 
 - name: Clean bash history
   shell: cat /dev/null > /root/.bash_history
@@ -171,3 +189,14 @@
     path: /etc/hosts
     state: absent
     line: "{{ ansible_default_ipv4.address }} {{ OVA_HOSTNAME }}"
+
+- name: Remove authorized keys
+  ansible.builtin.file:
+    path: /root/.ssh/authorized_keys
+    state: absent
+
+#- name: Disable root login
+#  ansible.builtin.replace:
+#    path: /etc/passwd
+#    regexp: 'root:x:0:0:root:/root:/bin/bash'
+#    replace: 'root:x:0:0:root:/root:/sbin/nologin'
