@@ -305,7 +305,7 @@ pipeline {
                 env.release_build = "${env.release_tag}"
                 env.build_stage = "${build_stage}"
 
-                def toEmail = "shailesh.vaidya@seagate.com, priyank.p.dalal@seagate.com, mukul.malhotra@seagate.com, amol.j.kongre@seagate.com, gowthaman.chinnathambi@seagate.com, gaurav.chaudhari@seagate.com"
+                def toEmail = "shailesh.vaidya@seagate.com"
                 
                 emailext ( 
                         body: '''${SCRIPT, template="release-email.template"}''',
