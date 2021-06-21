@@ -230,10 +230,10 @@ pipeline {
                 
                 #Copy RELEASE.INFO, Third Party RPM and Python index files.
                 cp $cortx_build_dir/$release_tag/3rd_party/THIRD_PARTY_RELEASE.INFO $cortx_build_dir/$release_tag/sw_upgrade/3rd_party
-                sed -i -e /tar/d -e /rpm/d -e /tgz/d $integration_dir/$release_tag/sw_upgrade/3rd_party/THIRD_PARTY_RELEASE.INFO
-				cp $integration_dir/$release_tag/python_deps/index.html $integration_dir/$release_tag/sw_upgrade/python_deps/index.html
-				sed -i /href/d $integration_dir/$release_tag/sw_upgrade/python_deps/index.html
-				cp $integration_dir/$release_tag/cortx_iso/RELEASE.INFO $integration_dir/$release_tag/sw_upgrade/
+                sed -i -e /tar/d -e /rpm/d -e /tgz/d $cortx_build_dir/$release_tag/sw_upgrade/3rd_party/THIRD_PARTY_RELEASE.INFO
+				cp $cortx_build_dir/$release_tag/python_deps/index.html $cortx_build_dir/$release_tag/sw_upgrade/python_deps/index.html
+				sed -i /href/d $cortx_build_dir/$release_tag/sw_upgrade/python_deps/index.html
+				cp $cortx_build_dir/$release_tag/cortx_iso/RELEASE.INFO $cortx_build_dir/$release_tag/sw_upgrade/
                 
                 genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -publisher Seagate -o $integration_dir/$release_tag/prod/iso/cortx-$version-$BUILD_NUMBER-upgrade.iso $cortx_build_dir/$release_tag/sw_upgrade
                 rm -rf $cortx_build_dir/$release_tag/sw_upgrade
