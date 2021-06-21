@@ -11,10 +11,10 @@
 - debug:
     msg: "{{ ansible_host }}"
 
-- include_role:
+- include_role: 
     name: vm-ssh-setup
-    apply:
-      delegate_to: "{{ ansible_host }}"
+    apply: 
+      delegate_to: "{{ ansible_host }}"  
 
 - name: Validate {{ MGMT_ITF }} interface
   lineinfile:
@@ -54,11 +54,11 @@
   delegate_to: "{{ ansible_host }}"
 
 - name: Set hostname
-  shell: hostnamectl set-hostname --static --transient --pretty "cortx-ova.seagate.com"
+  shell: sudo hostnamectl set-hostname --static --transient --pretty "cortx-ova.seagate.com"
   delegate_to: "{{ ansible_host }}"
 
 - name: Bootstrap cluster
-  shell: "sh /opt/seagate/cortx/provisioner/cli/virtual_appliance/bootstrap.sh"
+  shell: "sudo sh /opt/seagate/cortx/provisioner/cli/virtual_appliance/bootstrap.sh"
   delegate_to: "{{ ansible_host }}"
 
 - include_role:
@@ -66,9 +66,13 @@
     apply:
       delegate_to: "{{ ansible_host }}"
 
-- name: open a port
-  shell: "{{ item }}"
-  with_items:
-    - "salt '*' cmd.run 'firewall-cmd --zone=public-data-zone --add-port=80/tcp --permanent'"
-    - "salt '*' cmd.run 'firewall-cmd --reload'"
+#- name: open a port
+#  shell: "{{ item }}"
+#  with_items:
+#    - "salt '*' cmd.run 'firewall-cmd --zone=public-data-zone --add-port=80/tcp --permanent'"
+#    - "salt '*' cmd.run 'firewall-cmd --reload'"
+#  delegate_to: "{{ ansible_host }}"
+
+- name: Execute s3 sanity tests
+  shell: sudo sh /opt/seagate/cortx/s3/scripts/s3-sanity-test.sh -e 127.0.0.1
   delegate_to: "{{ ansible_host }}"

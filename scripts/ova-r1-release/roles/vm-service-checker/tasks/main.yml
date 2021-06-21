@@ -58,6 +58,14 @@
   shell: "systemctl restart csm_web"
   when: csm_web_status.stdout != "active"
 
+- name: Check consul status
+  shell: "systemctl status hare-consul-agent | grep Active | awk -F' ' '{ print $2 }'"
+  register: consul_status
+
+- name: Restart consul if inactive
+  shell: "systemctl restart hare-consul-agent"
+  when: consul_status.stdout != "active"
+
 - name: Verify cortx cluster status
   command: "hctl status"
   register: hctl_status
