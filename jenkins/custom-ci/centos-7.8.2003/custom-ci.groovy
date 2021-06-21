@@ -421,6 +421,15 @@ pipeline {
                 rm -rf $integration_dir/$release_tag/sw_upgrade
                 
                 '''
+
+				sh label: "Sign ISO files", script: '''
+                pushd scripts/rpm-signing
+                    ./file-sign.sh ${passphrase} $integration_dir/$release_tag/iso/cortx-$version-$release_tag-upgrade.iso
+                    pkill gpg-agent
+                    ./file-sign.sh ${passphrase} $integration_dir/$release_tag/iso/cortx-$version-$release_tag-single.iso 
+                popd
+                '''
+
 				sh label: 'Additional Files', script:'''
 				#Add cortx-prep.sh
                 cortx_prvsnr_preq=$(ls "$integration_dir/$release_tag/cortx_iso" | grep "python36-cortx-prvsnr" | cut -d- -f5 | cut -d_ -f2 | cut -d. -f1 | sed s/"git"//)                 
@@ -431,14 +440,6 @@ pipeline {
 
 				#Remove Build details from THIRD_PARTY_RELEASE.INFO
 				sed -i '/BUILD/d' $integration_dir/$release_tag/3rd_party/THIRD_PARTY_RELEASE.INFO
- 
-                '''
-				sh label: "Sign ISO files", script: '''
-                pushd scripts/rpm-signing
-                    ./file-sign.sh ${passphrase} $integration_dir/$release_tag/iso/cortx-$version-$release_tag-upgrade.iso
-                    pkill gpg-agent
-                    ./file-sign.sh ${passphrase} $integration_dir/$release_tag/iso/cortx-$version-$release_tag-single.iso 
-                popd
                 '''
 				sh label: 'Print Release Build and ISO location', script:'''
 				echo "Custom Release Build and ISO is available at,"
