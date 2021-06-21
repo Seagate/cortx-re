@@ -33,13 +33,17 @@ pipeline {
      parameters {
         string(name: 'HARE_REPO', defaultValue: 'https://github.com/Seagate/cortx-hare', description: 'Repo to be used for Hare build.')
         string(name: 'HARE_BRANCH', defaultValue: 'main', description: 'Branch to be used for Hare build.')
+        string(name: 'VM_FQDN', defaultValue: 'ssc-vm-3370.colo.seagate.com', description: 'VM to be used for premerge test.')
+        string(name: 'VM_CRED_USR', defaultValue: 'root', description: 'VM user.')
+        password(name: 'VM_CRED_PSW', defaultValue: 'seagate', description: 'password.')
+         
     }
     environment {
         REPO_NAME = 'cortx-hare'
         // Updates :
         //   - Need new VM with clean state snapshot for HARE CI : https://jts.seagate.com/browse/EOS-18463
-        VM_FQDN = 'ssc-vm-3370.colo.seagate.com' // SSC VM used for Hare CI 
-        VM_CRED = credentials('node-user') // To connect SSC VM over SSH
+        // VM_FQDN = 'ssc-vm-3370.colo.seagate.com' // SSC VM used for Hare CI 
+        // VM_CRED = credentials('node-user') // To connect SSC VM over SSH
         GITHUB_TOKEN = credentials('cortx-admin-github') // To clone cortx-hare repo
         GPR_REPO = "https://github.com/${ghprbGhRepository}"
         HARE_REPO = "${ghprbGhRepository != null ? GPR_REPO : HARE_REPO}"
@@ -58,14 +62,13 @@ pipeline {
                 //sh 'VERBOSE=true WAIT_TIMEOUT=40 jenkins/vm-reset'
                 script {
                     def remote = getTestMachine(VM_FQDN)
-                    def commandResult = sshCommand remote: remote, command: """
-                        echo "Clean up VM before use"                         
-                        yum remove cortx-hare cortx-motr{,-devel} cortx-py-utils consul -y 
+                    def commandResult = sshCommand remote: remote, sudo: true, command: """
+                        echo "Clean up VM before use"
+                        losetup -D                         
+                        yum remove cortx-hare cortx-motr{,-devel} cortx-py-utils consul -y                         
                         rm -rf /var/crash/* /var/log/seagate/* /var/log/hare/* /var/log/motr/* /var/lib/hare/* /var/motr/* /etc/motr/*
                         rm -rf /root/.cache/dhall* /root/rpmbuild
-                        rm -rf /etc/yum.repos.d/motr_last_successful.repo /etc/yum.repos.d/motr_uploads.repo /etc/yum.repos.d/lustre_release.repo
-                        loop_devices=$(losetup -a | grep -o "/dev/loop[0-9]*")
-                        [[ ! -z "$loop_devices" ]] && losetup -d $loop_devices
+                        rm -rf /etc/yum.repos.d/motr_last_successful.repo /etc/yum.repos.d/motr_uploads.repo /etc/yum.repos.d/lustre_release.repo                        
                         """
                         echo "Result: " + commandResult
                 }    
@@ -141,7 +144,7 @@ pipeline {
         }
         stage('Bootstrap singlenode') {
             options {
-                timeout(time: 2, unit: 'MINUTES')
+                timeout(time: 10, unit: 'MINUTES')
             }
             steps {
                 script {
@@ -185,7 +188,7 @@ pipeline {
         }
         stage('I/O test with m0crate') {
             options {
-                timeout(time: 15, unit: 'MINUTES')
+                timeout(time: 20, unit: 'MINUTES')
             }
             steps {
                 script {
@@ -204,6 +207,12 @@ pipeline {
     post {
         always {
             script {
+                def remote = getTestMachine(VM_FQDN)
+                def commandResult = sshCommand remote: remote, command: """
+                    cluster_status=\$(( hctl status ) 2>&1)
+                    if [ "\$cluster_status" != "Cluster is not running" ]; then hctl shutdown; fi
+                    """
+                echo "Result: " + commandResult                
                 echo 'Cleanup Workspace.'
                 cleanWs() /* clean up workspace */
             }
