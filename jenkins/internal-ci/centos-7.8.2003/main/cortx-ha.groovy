@@ -49,9 +49,17 @@ timeout: 60
 index-url: http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/python-packages-2.0.0-latest/
 trusted-host: cortx-storage.colo.seagate.com
 EOF
-					pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/$branch/py-utils/requirements.txt
+					pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/$branch/py-utils/python_requirements.txt
+					pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/$branch/py-utils/python_requirements.ext.txt
 					rm -rf /etc/pip.conf
 			'''		
+
+				sh label: '', script: '''
+				#Use main branch for cortx-py-utils
+				sed -i 's/stable/main/'  /etc/yum.repos.d/cortx.repo
+				yum clean all && rm -rf /var/cache/yum
+			'''	
+
 			}
 		}
 		
