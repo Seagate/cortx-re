@@ -3,7 +3,7 @@ attr
 compat-lua-libs
 consul >= 1.7.0, consul < 1.10.0
 corosync
-facter >= 3.14.8
+puppet-agent >= 6.13.0
 fence-agents-ipmilan
 findutils
 gdb
