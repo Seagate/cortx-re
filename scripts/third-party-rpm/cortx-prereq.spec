@@ -27,16 +27,16 @@ rm -rf %{buildroot}
 
 %install
 mkdir -p %{buildroot}/opt/seagate/cortx/python-deps
-cp -R python_requirements.txt python_requirements.ext.txt %{buildroot}/opt/seagate/cortx/python-deps
+cp -R python-requirements.txt python-requirements.ext.txt %{buildroot}/opt/seagate/cortx/python-deps
 
 %files
-/opt/seagate/cortx/python-deps/python_requirements.txt
-/opt/seagate/cortx/python-deps/python_requirements.ext.txt
+/opt/seagate/cortx/python-deps/python-requirements.txt
+/opt/seagate/cortx/python-deps/python-requirements.ext.txt
 
 %post
 echo -e "\n Installing CORTX prerequisite Python packages. \n"
-pip3 install -r /opt/seagate/cortx/python-deps/python_requirements.ext.txt
-pip3 install -r /opt/seagate/cortx/python-deps/python_requirements.txt
+pip3 install -r /opt/seagate/cortx/python-deps/python-requirements.ext.txt
+pip3 install -r /opt/seagate/cortx/python-deps/python-requirements.txt
 
 %clean
 rm -rf %{buildroot}
