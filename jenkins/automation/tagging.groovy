@@ -9,6 +9,7 @@ pipeline {
         parameters {
                 string(name: 'RELEASE_INFO_URL', defaultValue: '', description: 'RELEASE BUILD')
                 string(name: 'GIT_TAG', defaultValue: '', description: 'Release Tag')
+		string(name: 'TAG_MESSAGE', defaultValue: '', description: 'Tag Message')
 		booleanParam(name: 'DEBUG', defaultValue: false, description: 'Select this if you want to Delete the current Tag')
             }
 		
