@@ -38,11 +38,11 @@
 - name: Check /etc/hosts file data
   shell: "cat /etc/hosts"
   register: hostsdata
-  
+
 - name: Display /etc/hosts file data
   debug:
     msg: "{{ hostsdata }}"
-    
+
 - name: Execute provisioner script
   script: "files/provisioner.sh {{ BUILD_URL }}"
   register: command_result
@@ -78,12 +78,9 @@
 - name: Print db data
   debug:
     msg: "{{ firstdbresult }}"
- 
+
 - include_role:
-    name: vm-service-checker 
- 
-- name: Change hostname
-  shell: "hostnamectl set-hostname --static --transient --pretty localhost"
+    name: vm-service-checker
 
 - name: Delete horizontal line in hosts file
   lineinfile:
@@ -91,10 +88,17 @@
     state: absent
     regexp: '^--'
 
+- name: Get the .repo files list
+  find:
+    paths: /etc/yum.repos.d
+    patterns: "*.repo"
+  register: repos_files_to_delete
+
 - name: Cleanup yum repo files
   file:
-    path: /etc/yum.repos.d/*.repo 
+    path: "{{ item.path }}"
     state: absent
+  with_items: "{{ repos_files_to_delete.files }}"
 
 - name: Clean bash history
   shell: cat /dev/null > /root/.bash_history
@@ -106,7 +110,7 @@
 - name: Check database.yml file data
   shell: "cat /etc/csm/database.yaml"
   register: dbconfig
-  
+
 - name: Check ip addresses
   shell: "ip a"
   register: ipaddrinfo

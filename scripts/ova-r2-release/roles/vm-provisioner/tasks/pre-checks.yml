@@ -22,16 +22,6 @@
   notify:
     - Restart network
 
-- name: Validate {{ PBDATA2_ITF }} interface
-  lineinfile:
-    path: /etc/sysconfig/network-scripts/ifcfg-{{ PBDATA2_ITF }}
-    state: present
-    regexp: '^ONBOOT='
-    line: 'ONBOOT=yes'
-  when: ansible_{{ PBDATA2_ITF }}.ipv4.address is not defined
-  notify:
-    - Restart network
-
 - name: Validate {{ PVDATA1_ITF }} interface
   lineinfile:
     path: /etc/sysconfig/network-scripts/ifcfg-{{ PVDATA1_ITF }}
@@ -39,16 +29,6 @@
     regexp: '^ONBOOT='
     line: 'ONBOOT=yes'
   when: ansible_{{ PVDATA1_ITF }}.ipv4.address is not defined
-  notify:
-    - Restart network
-
-- name: Validate {{ PVDATA2_ITF }} interface
-  lineinfile:
-    path: /etc/sysconfig/network-scripts/ifcfg-{{ PVDATA2_ITF }}
-    state: present
-    regexp: '^ONBOOT='
-    line: 'ONBOOT=yes'
-  when: ansible_{{ PVDATA2_ITF }}.ipv4.address is not defined
   notify:
     - Restart network
 
@@ -76,7 +56,7 @@
   when: "{{ 'localhost' in host.stdout }}"
 
 - name: set hostname fact
-  set_fact: 
+  set_fact:
     ansible_nodename: "{{ OVA_HOSTNAME }}"
   when: "{{ 'localhost' in host.stdout }}"
 
