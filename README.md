@@ -3,6 +3,9 @@
 # Cortx Release Engineering
 The purpose of this repository is to keep the scripts, tools, and other configuration used in the Release Engineering. 
 
+Sex
+Handicapped
+
 Release Engineering team is responsible for the followings
 
 -   Cortx Project CI Build Process.
