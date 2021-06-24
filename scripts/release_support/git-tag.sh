@@ -63,7 +63,9 @@ declare -A COMPONENT_LIST=(
 				
 		#if [ "$REL_TAG" != "" ]; then
 		#	echo "Release will be set for all the components";
-		if [ "$REL_TAG" != "" ] || [ "$component" == cortx-hare ] || [ "$component" == cortx-sspl ] || [ "$component" == cortx-ha ] || [ "$component" == cortx-fs ] || [ "$component" == cortx-py-utils ] || [ "$component" == cortx-prereq ] || [ "$component" == "cortx-csm_agent" ] || [ "$component" == "cortx-csm_web" ]; then				curl -H "Accept: application/vnd.github.v3+json"  "${REPO_LIST[$component]}" -d '{"tag_name":"Cred-Test4", "name":"Release4"}';                        
+		if [ "$REL_TAG" != "" ] || [ "$component" == cortx-hare ] || [ "$component" == cortx-sspl ] || [ "$component" == cortx-ha ] || [ "$component" == cortx-fs ] || [ "$component" == cortx-py-utils ] || [ "$component" == cortx-prereq ] || [ "$component" == "cortx-csm_agent" ] || [ "$component" == "cortx-csm_web" ]; then
+			echo "Component: "$component" , Repo:  "${REPO_LIST[$component]}";
+			curl -H "Accept: application/vnd.github.v3+json"  "${REPO_LIST[$component]}" -d '{"tag_name":"Cred-Test4", "name":"Release4"}';                        
                 else
                         echo "Release is not successful. Please pass value to REL_TAG";
 		fi
