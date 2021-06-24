@@ -76,5 +76,5 @@ declare -A COMPONENT_LIST=(
 			echo "Run in Debug mode if current Git tag needs to be deleted";
                 fi
 				
-	popd
-done
+		popd
+	done
