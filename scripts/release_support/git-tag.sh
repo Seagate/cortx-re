@@ -13,7 +13,7 @@ declare -A COMPONENT_LIST=(
                         [cortx-prereq]="https://$PASSWD@github.com/Seagate/cortx-re.git"
                 )
 				
-			REPO_LIST=(
+		REPO_LIST=(
                         [cortx-s3server]="https://$PASSWD@github.com/Seagate/cortx-s3server/releases"
                         [cortx-motr]="https://$PASSWD@github.com/Seagate/cortx-motr/releases"
                         [cortx-hare]="https://$PASSWD@github.com/Seagate/cortx-hare/releases"
@@ -53,7 +53,7 @@ declare -A COMPONENT_LIST=(
                 echo "Component: "$component" , Repo:  "${COMPONENT_LIST[$component]}", Commit Hash: "${COMMIT_HASH}""
                 pushd "$dir"
                 if [ "$GIT_TAG" != "" ]; then
-						git tag -a "$GIT_TAG" "${COMMIT_HASH}" -m "$TAG_MESSAGE";
+			git tag -a "$GIT_TAG" "${COMMIT_HASH}" -m "$TAG_MESSAGE";
                         git push origin "$GIT_TAG";
                         echo "Component: $component , Tag: git tag -l $GIT_TAG is Tagged Successfully";
                         git tag -l "$GIT_TAG";
@@ -67,7 +67,8 @@ declare -A COMPONENT_LIST=(
 			curl -H "Accept: application/vnd.github.v3+json"  "${REPO_LIST[$component]}" -d '{"tag_name":"Cred-Test4", "name":"Release4"}';                        
                 else
                         echo "Release is not successful. Please pass value to REL_TAG";
-						
+		fi
+				
                 if [ "$DEBUG" = true ]; then
 			git push origin --delete "$GIT_TAG";
                 else
