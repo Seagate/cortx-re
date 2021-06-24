@@ -14,16 +14,16 @@ declare -A COMPONENT_LIST=(
                 )
 				
 		REPO_LIST=(
-                        [cortx-s3server]="https://$PASSWD@github.com/Seagate/cortx-s3server/releases"
-                        [cortx-motr]="https://$PASSWD@github.com/Seagate/cortx-motr/releases"
-                        [cortx-hare]="https://$PASSWD@github.com/Seagate/cortx-hare/releases"
-                        [cortx-ha]="https://$PASSWD@github.com/Seagate/cortx-ha/releases"
-                        [cortx-prvsnr]="https://$PASSWD@github.com/Seagate/cortx-prvsnr/releases"
-                        [cortx-sspl]="https://$PASSWD@github.com/Seagate/cortx-monitor/releases"
-                        [cortx-csm_agent]="https://$PASSWD@github.com/Seagate/cortx-manager/releases"
-                        [cortx-csm_web]="https://$PASSWD@github.com/Seagate/cortx-management-portal/releases"
-                        [cortx-py-utils]="https://$PASSWD@github.com/Seagate/cortx-utils/releases"
-                        [cortx-prereq]="https://$PASSWD@github.com/Seagate/cortx-re/releases"
+                        [cortx-s3server]="https://$PASSWD@api.github.com/repos/Seagate/cortx-s3server/releases"
+                        [cortx-motr]="https://$PASSWD@api.github.com/repos/Seagate/cortx-motr/releases"
+                        [cortx-hare]="https://$PASSWD@api.github.com/repos/Seagate/cortx-hare/releases"
+                        [cortx-ha]="https://$PASSWD@api.github.com/repos/Seagate/cortx-ha/releases"
+                        [cortx-prvsnr]="https://$PASSWD@api.github.com/repos/Seagate/cortx-prvsnr/releases"
+                        [cortx-sspl]="https://$PASSWD@api.github.com/repos/Seagate/cortx-monitor/releases"
+                        [cortx-csm_agent]="https://$PASSWD@api.github.com/repos/Seagate/cortx-manager/releases"
+                        [cortx-csm_web]="https://$PASSWD@api.github.com/repos/Seagate/cortx-management-portal/releases"
+                        [cortx-py-utils]="https://$PASSWD@api.github.com/repos/Seagate/cortx-utils/releases"
+                        [cortx-prereq]="https://$PASSWD@api.github.com/repos/Seagate/cortx-re/releases"
                 )	
 
                         git config --global user.email "cortx-applications@seagate.com"
