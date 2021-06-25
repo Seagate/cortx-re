@@ -69,7 +69,7 @@ declare -A REPO_LIST=(
 		do				
 			if [ "$component" == cortx-hare ] || [ "$component" == cortx-sspl ] || [ "$component" == cortx-ha ] || [ "$component" == cortx-fs ] || [ "$component" == cortx-py-utils ] || [ "$component" == cortx-prereq ] || [ "$component" == "cortx-csm_agent" ] || [ "$component" == "cortx-csm_web" ]; then
 			echo "Component: "$component" , Repo:  "${REPO_LIST[$component]}"";
-			curl -H "Accept: application/vnd.github.v3+json"  "${REPO_LIST[$component]}" -d '{"tag_name":"Cred-Test4", "name":"Release4"}';                        
+			curl -H "Accept: application/vnd.github.v3+json"  "${REPO_LIST[$component]}" -d '{"tag_name":"$GIT_TAG", "name":"$REL_NAME"}';                        
                 	else
                         echo "Release is not successfully created.";
 			fi
