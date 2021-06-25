@@ -81,7 +81,7 @@ declare -A REPO_LIST=(
 		fi
 		if [ "$DEBUG" = true ]; then
 			git push origin --delete "$GIT_TAG";
-			curl -X DELETE -H "Accept: application/vnd.github.v3+json"  "${REPO_LIST[$component]}/"$REL_ID";
+			curl -X DELETE -H "Accept: application/vnd.github.v3+json"  "${REPO_LIST[$component]}"/"$REL_ID";
                 else
 			echo "Run in Debug mode if Git tag and Release needs to be deleted";
                 fi
