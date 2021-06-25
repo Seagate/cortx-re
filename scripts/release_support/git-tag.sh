@@ -73,7 +73,6 @@ declare -A REPO_LIST=(
                 	else
                         echo "Release is not successfully created.";
 			fi
-		done			
                 
 		else
 			echo "Please pass value to Release";
@@ -85,6 +84,6 @@ declare -A REPO_LIST=(
                 else
 			echo "Run in Debug mode if Git tag and Release needs to be deleted";
                 fi
-				
+		done			
 	popd
 done
