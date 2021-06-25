@@ -61,7 +61,7 @@ declare -A REPO_LIST=(
                         echo "Tag is not successful. Please pass value to GIT_TAG";
                 fi
 		
-		if [ "$REL_TAG" != "" ]; then
+		if [ "$REL_NAME" != "" ]; then
 			echo "Release will be set for all the components";
 
 		for component in "${!REPO_LIST[@]}"
