@@ -13,7 +13,7 @@ declare -A COMPONENT_LIST=(
                         [cortx-prereq]="https://$PASSWD@github.com/Seagate/cortx-re.git"
                 )
 				
-		REPO_LIST=(
+declare -A REPO_LIST=(
                         [cortx-s3server]="https://$PASSWD@api.github.com/repos/Seagate/cortx-s3server/releases"
                         [cortx-motr]="https://$PASSWD@api.github.com/repos/Seagate/cortx-motr/releases"
                         [cortx-hare]="https://$PASSWD@api.github.com/repos/Seagate/cortx-hare/releases"
