@@ -71,10 +71,13 @@ declare -A COMPONENT_LIST=(
 			echo "Component: "$component" , Repo:  "${REPO_LIST[$component]}"";
 			curl -H "Accept: application/vnd.github.v3+json"  "${REPO_LIST[$component]}" -d '{"tag_name":"Cred-Test4", "name":"Release4"}';                        
                 	else
-                        echo "Release is not successful. Please pass value to REL_TAG";
+                        echo "Release is not successfully created.";
 			fi
 		done			
                 
+		else
+			echo "Please pass value to Release";
+
 		fi
 		if [ "$DEBUG" = true ]; then
 			git push origin --delete "$GIT_TAG";
