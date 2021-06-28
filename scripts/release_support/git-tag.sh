@@ -78,16 +78,10 @@ declare -A REPO_LIST=(
 		for component in "${!REPO_LIST[@]}"
 	
 		do				
-		dir="$(echo "${REPO_LIST[$component]}" |  awk -F'/' '{print $NF}')"
-                git clone --quiet "${REPO_LIST["$component"]}" "$dir" > /dev/null
-
-                rc=$?
-                if [ "$rc" -ne 0 ]; then
-                        echo "ERROR:git clone failed for "$component""
-                exit 1
-                fi
 			if [ "$component" == cortx-hare ] || [ "$component" == cortx-sspl ] || [ "$component" == cortx-ha ] || [ "$component" == cortx-fs ] || [ "$component" == cortx-py-utils ] || [ "$component" == cortx-prereq ] || [ "$component" == "cortx-csm_agent" ] || [ "$component" == "cortx-csm_web" ]; then
+			
 			echo "Component: "$component" , Repo:  "${REPO_LIST[$component]}"";
+			
 			curl -H "Accept: application/vnd.github.v3+json"  "${REPO_LIST[$component]}" -d '{"tag_name":"$GIT_TAG", "name":"$REL_NAME"}';                        
                 	else
                         echo "Release is not successfully created.";
