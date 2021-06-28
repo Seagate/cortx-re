@@ -74,9 +74,6 @@ declare -A REPO_LIST=(
                         echo "Release is not successfully created.";
 			fi
                 
-		else
-			echo "Please pass value to Release";
-
 		fi
 		if [ "$DEBUG" = true ]; then
 			git push origin --delete "$GIT_TAG";
