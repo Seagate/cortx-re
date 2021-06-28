@@ -60,7 +60,9 @@ declare -A REPO_LIST=(
                 else
                         echo "Tag is not successful. Please pass value to GIT_TAG";
                 fi
-		
+		popd
+	done
+	
 		if [ "$REL_NAME" != "" ]; then
 			echo "Release will be set for all the components";
 
@@ -84,5 +86,4 @@ declare -A REPO_LIST=(
 		else
 			echo "Please pass the value of Release";	
 		fi
-	popd
-done
+
