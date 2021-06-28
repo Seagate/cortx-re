@@ -83,5 +83,6 @@ declare -A REPO_LIST=(
 		done
 		else
 			echo "Please pass the value of Release";	
+		fi
 	popd
 done
