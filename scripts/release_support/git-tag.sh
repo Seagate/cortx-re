@@ -82,13 +82,13 @@ declare -A REPO_LIST=(
 			
 			echo "Component: "$component" , Repo:  "${REPO_LIST[$component]}"";
 			
-			curl -H "Accept: application/vnd.github.v3+json"  "${REPO_LIST[$component]}" -d '{"tag_name":"$GIT_TAG", "name":"$REL_NAME"}';                        
+			curl -H "Accept: application/vnd.github.v3+json"  "${REPO_LIST[$component]}" -d '{"tag_name":""$GIT_TAG"", "name":""$REL_NAME""}';                        
                 	else
                         echo "Release is not successfully created.";
 			fi
                 
 		if [ "$DEBUG" = true ]; then
-			curl -X DELETE -H "Accept: application/vnd.github.v3+json"  "${REPO_LIST[$component]}"/"$REL_ID";
+			curl -X DELETE -H "Accept: application/vnd.github.v3+json"  "${REPO_LIST[$component]}"/""$REL_ID"";
                 else
 			echo "Run in Debug mode if Release needs to be deleted";
                 fi
