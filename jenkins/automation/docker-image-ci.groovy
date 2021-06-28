@@ -60,7 +60,7 @@ pipeline {
 				echo -e "Running on $HOSTNAME"
                         #Clean Up
                 		echo 'y' | docker image prune
-                        docker rm -f $(docker ps -a -q)
+                        docker rm -f \$(docker ps -a -q)
 		                if [ $ENVIRONMENT == "internal-ci" ]; then
                 	    	docker-compose -f docker/cortx-build/docker-compose.yml build --force-rm  --compress --build-arg GIT_HASH="$(git rev-parse --short HEAD)" cortx-build-internal-$OS_VERSION
 		                else
