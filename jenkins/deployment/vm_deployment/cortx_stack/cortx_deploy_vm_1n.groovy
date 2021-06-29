@@ -212,16 +212,14 @@ pipeline {
                     ICON = "accept.gif"
                     STATUS = "SUCCESS"
                 } else {
-                    manager.buildFailure()
-                    MESSAGE = "1 Node - Cortx Stack VM Deployment Failed for the build ${build_id}"
-                    ICON = "error.gif"
-                    STATUS = "FAILURE"
-
                     // Failure component name and Cause can be retrived from deployment status log
                     if (fileExists('artifacts/srvnode1/cortx_deployment/log/deployment_status.log')
                         && fileExists('artifacts/srvnode1/cortx_deployment/log/failed_component.log') ) {
                         try {
-                           
+                            manager.buildFailure()
+                            MESSAGE = "1 Node - Cortx Stack VM Deployment Failed for the build ${build_id}"
+                            ICON = "error.gif"
+                            STATUS = "FAILURE"
                             deployment_status_log = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/deployment_status.log').trim()
                             failed_component_stage = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/failed_component.log').trim()
                             failed_component_stage = failed_component_stage.trim().replaceAll("'","")
@@ -247,7 +245,11 @@ pipeline {
                             echo err.getMessage()
                         }
                     } else {
-                        currentBuild.result = "UNSTABLE"
+                        manager.buildUnstable()
+                        MESSAGE = "1 Node - Cortx Stack VM Deployment Failed for the build ${build_id}"
+                        ICON = "yellow.gif"
+                        STATUS = "UNSTABLE"
+                        currentBuild.currentResult = "UNSTABLE"
                     }
                 }
 
