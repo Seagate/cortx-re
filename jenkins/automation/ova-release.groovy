@@ -36,8 +36,7 @@ pipeline {
                             doGenerateSubmoduleConfigurations: false,
                             extensions: [],
                             submoduleCfg: [],
-                            userRemoteConfigs: [[credentialsId: 'github-access', url: 'https://github.com/Seagate/cortx-re.git']]
-
+                            userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re.git']]
                         ])
                     }
                 }
@@ -68,11 +67,11 @@ pipeline {
             steps {
                 sleep time: 60, unit: 'SECONDS' 
                 script {
-		    executeAnsiblePlaybook("ovabuild")
-		}
+		            executeAnsiblePlaybook("ovabuild")
+		        }
             }
         }
-	stage('Create OVA VM') {
+	    stage('Create OVA VM') {
             when { expression { params.CREATE_VM == 'true' } }
             steps {
                 sleep time: 30, unit: 'SECONDS'
@@ -96,7 +95,7 @@ pipeline {
 def executeAnsiblePlaybook(tags) {
     withCredentials([usernamePassword(credentialsId: 'vsphere_creds', passwordVariable: 'VSPHERE_PASSWORD', usernameVariable: 'VSPHERE_USERNAME'), usernamePassword(credentialsId: 'cortx_test_setup_creds', passwordVariable: 'TEST_PASS', usernameVariable: 'TEST_USER')]) {
 
-        dir('cortx-re/scripts/ova-release') {
+        dir('cortx-re/ova/release-1.0.4') {
             ansiblePlaybook(
                 playbook: 'cortx_ova_release.yml',
                 inventory: 'inventories/development/hosts',
@@ -125,7 +124,7 @@ def executeAnsiblePlaybook(tags) {
 def executeOVATesterPlaybook() {
     withCredentials([usernamePassword(credentialsId: 'vsphere_creds', passwordVariable: 'VSPHERE_PASSWORD', usernameVariable: 'VSPHERE_USERNAME'), usernamePassword(credentialsId: 'cortx_test_setup_creds', passwordVariable: 'TEST_PASS', usernameVariable: 'TEST_USER')]) {
 
-        dir('cortx-re/ova/') {
+        dir('cortx-re/ova/release-1.0.4') {
             ansiblePlaybook(
                 playbook: 'cortx_ova_release.yml',
                 inventory: 'inventories/development/hosts',
