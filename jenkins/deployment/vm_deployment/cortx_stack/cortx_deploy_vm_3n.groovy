@@ -77,10 +77,14 @@ pipeline {
         stage('00. Prepare Environment') {
             steps {
                 script {
-                    
-                    info("Running '00. Prepare Environment' Stage")  
+                    try {
+                        info("Running '00. Prepare Environment' Stage")  
 
-                    runAnsible("00_PREPARE")
+                        runAnsible("00_PREPARE")
+                    }
+                    catch (err) {
+                        currentBuild.result = 'UNSTABLE'
+                    }
                 }
             }
         }
@@ -88,10 +92,14 @@ pipeline {
         stage('01. Deploy Prereq') {
             steps {
                 script {
-                    
-                    info("Running '01. Deploy Prereq' Stage")
+                    try {
+                        info("Running '01. Deploy Prereq' Stage")
 
-                    runAnsible("01_DEPLOY_PREREQ")
+                        runAnsible("01_DEPLOY_PREREQ")
+                    }
+                    catch (err) {
+                        currentBuild.result = 'UNSTABLE'
+                    }
                 }
             } 
         }
@@ -276,7 +284,6 @@ pipeline {
                     } else {
                         echo "Inside Unstable"
                         manager.buildUnstable()
-                        currentBuild.result = 'UNSTABLE'
                         MESSAGE = "3 Node - Cortx Stack VM Deployment Failed for the build ${build_id}"
                         ICON = "yellow.gif"
                         STATUS = "UNSTABLE"
