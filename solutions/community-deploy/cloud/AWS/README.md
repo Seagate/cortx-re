@@ -38,7 +38,7 @@ This file consists of the procedure to compile complete CORTX stack and Deploy o
 
    Content of `user.tfvars` file should look like as below,
 ```
-   [root@ssc-vm-3256 AWS]# cat user.tfvars
+   [root@cortx-test AWS]# cat user.tfvars
    region              = "ap-south-1"
    security_group_cidr = "134.204.222.36/32"
 ```
