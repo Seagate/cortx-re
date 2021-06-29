@@ -64,7 +64,7 @@ pipeline {
                         echo "-----------------------------------------------------------"
                     """
                     dir('cortx-re') {
-                        checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
+                        checkout([$class: 'GitSCM', branches: [[name: '*/vm-deployment-updates']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/gauravchaudhari02/cortx-re']]])
                     }
 
                     if ( NODE1.isEmpty() ) {
@@ -236,16 +236,10 @@ pipeline {
                     ICON = "accept.gif"
                     STATUS = "SUCCESS"
                 } else {
-                    manager.buildFailure()
-                    MESSAGE = "3 Node - Cortx Stack VM Deployment Failed for the build ${build_id}"
-                    ICON = "error.gif"
-                    STATUS = "FAILURE"
-
                     // Failure component name and Cause can be retrived from deployment status log
                     if (fileExists('artifacts/srvnode1/cortx_deployment/log/deployment_status.log')
                         && fileExists('artifacts/srvnode1/cortx_deployment/log/failed_component.log') ) {
-                        try {
-                           
+                        try {   
                             deployment_status_log = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/deployment_status.log').trim()
                             failed_component_stage = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/failed_component.log').trim()
                             failed_component_stage = failed_component_stage.trim().replaceAll("'","")
@@ -254,7 +248,16 @@ pipeline {
                             component_info_map = getComponentInfo(failed_component_stage)
                             component_name = component_info_map["name"]
                             component_email = component_info_map["email"] 
-
+                            if ("RE".equals(component_name)) {
+                                MESSAGE = "3 Node - Cortx Stack VM Deployment Failed for the build ${build_id}"
+                                ICON = "yellow.gif"
+                                STATUS = "UNSTABLE"
+                                currentBuild.currentResult = "UNSTABLE"
+                            }
+                            manager.buildFailure()
+                            MESSAGE = "3 Node - Cortx Stack VM Deployment Failed for the build ${build_id}"
+                            ICON = "error.gif"
+                            STATUS = "FAILURE"
                             env.failure_cause = deployment_status_log
                             env.deployment_status_log = deployment_status_log
                             env.failed_component_stage = failed_component_stage
@@ -267,6 +270,13 @@ pipeline {
                         } catch (err) {
                             echo err.getMessage()
                         }
+                    }
+                    else {
+                        manager.buildUnstable()
+                        MESSAGE = "3 Node - Cortx Stack VM Deployment Failed for the build ${build_id}"
+                        ICON = "yellow.gif"
+                        STATUS = "UNSTABLE"
+                        currentBuild.currentResult = "UNSTABLE"
                     }
                 }
 
