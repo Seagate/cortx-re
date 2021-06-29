@@ -270,8 +270,7 @@ pipeline {
                         } catch (err) {
                             echo err.getMessage()
                         }
-                    }
-                    else {
+                    } else {
                         manager.buildUnstable()
                         MESSAGE = "3 Node - Cortx Stack VM Deployment Failed for the build ${build_id}"
                         ICON = "yellow.gif"
