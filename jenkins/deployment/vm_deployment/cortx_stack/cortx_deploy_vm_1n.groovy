@@ -229,7 +229,10 @@ pipeline {
                             // Failed Component from Failed Stage
                             component_info_map = getComponentInfo(failed_component_stage)
                             component_name = component_info_map["name"]
-                            component_email = component_info_map["email"] 
+                            component_email = component_info_map["email"]
+                            if ("RE".equals(component_name)) {
+                                currentBuild.result = "UNSTABLE"
+                            } 
 
                             env.failure_cause = deployment_status_log
                             env.deployment_status_log = deployment_status_log
