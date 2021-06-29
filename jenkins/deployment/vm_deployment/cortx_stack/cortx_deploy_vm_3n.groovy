@@ -249,15 +249,16 @@ pipeline {
                             component_name = component_info_map["name"]
                             component_email = component_info_map["email"] 
                             if ("RE".equals(component_name)) {
+                                manager.buildUnstable()
                                 MESSAGE = "3 Node - Cortx Stack VM Deployment Failed for the build ${build_id}"
                                 ICON = "yellow.gif"
                                 STATUS = "UNSTABLE"
-                                currentBuild.currentResult = "UNSTABLE"
+                            } else {
+                                manager.buildFailure()
+                                MESSAGE = "3 Node - Cortx Stack VM Deployment Failed for the build ${build_id}"
+                                ICON = "error.gif"
+                                STATUS = "FAILURE"
                             }
-                            manager.buildFailure()
-                            MESSAGE = "3 Node - Cortx Stack VM Deployment Failed for the build ${build_id}"
-                            ICON = "error.gif"
-                            STATUS = "FAILURE"
                             env.failure_cause = deployment_status_log
                             env.deployment_status_log = deployment_status_log
                             env.failed_component_stage = failed_component_stage
@@ -275,7 +276,6 @@ pipeline {
                         MESSAGE = "3 Node - Cortx Stack VM Deployment Failed for the build ${build_id}"
                         ICON = "yellow.gif"
                         STATUS = "UNSTABLE"
-                        currentBuild.currentResult = "UNSTABLE"
                     }
                 }
 
