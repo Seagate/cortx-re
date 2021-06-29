@@ -76,6 +76,7 @@ pipeline {
         }
 
         stage('00. Prepare Environment') {
+            when { expression { SKIP_STAGE == "no"  } }
             steps {
                 script {
                     try {
@@ -112,7 +113,6 @@ pipeline {
             when { expression { SKIP_STAGE == "no"  } }
             steps {
                 script {
-                    echo env.SKIP_STAGE
                     
                     info("Running '02.1 Bootstarp Provisioner' Stage")
 
