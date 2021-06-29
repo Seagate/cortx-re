@@ -236,10 +236,12 @@ pipeline {
                     ICON = "accept.gif"
                     STATUS = "SUCCESS"
                 } else {
+                    echo "Inside non-hctl"
                     // Failure component name and Cause can be retrived from deployment status log
-                    if (fileExists('artifacts/srvnode1/cortx_deployment/log/deployment_status.log')
+                    if ( fileExists('artifacts/srvnode1/cortx_deployment/log/deployment_status.log')
                         && fileExists('artifacts/srvnode1/cortx_deployment/log/failed_component.log') ) {
-                        try {   
+                        try {
+                            echo "Inside Failure"   
                             deployment_status_log = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/deployment_status.log').trim()
                             failed_component_stage = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/failed_component.log').trim()
                             failed_component_stage = failed_component_stage.trim().replaceAll("'","")
@@ -248,7 +250,7 @@ pipeline {
                             component_info_map = getComponentInfo(failed_component_stage)
                             component_name = component_info_map["name"]
                             component_email = component_info_map["email"] 
-                            if ("RE".equals(component_name)) {
+                            if ( "RE".equals(component_name) ) {
                                 manager.buildUnstable()
                                 MESSAGE = "3 Node - Cortx Stack VM Deployment Failed for the build ${build_id}"
                                 ICON = "yellow.gif"
@@ -272,10 +274,12 @@ pipeline {
                             echo err.getMessage()
                         }
                     } else {
+                        echo "Inside Unstable"
                         manager.buildUnstable()
                         MESSAGE = "3 Node - Cortx Stack VM Deployment Failed for the build ${build_id}"
                         ICON = "yellow.gif"
                         STATUS = "UNSTABLE"
+                        echo "${currentBuild.currentResult}"
                     }
                 }
 
