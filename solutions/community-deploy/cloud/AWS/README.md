@@ -31,8 +31,8 @@ This file consists of the procedure to compile complete CORTX stack and Deploy o
    If you are not aware of Public IP . Use `curl ipinfo.io/ip `  to identify your Public IP
    It should show output as,
 ```
-   [root@ssc-vm-3256 AWS]# curl ipinfo.io/ip
-   134.204.222.36[root@ssc-vm-3256 AWS]#
+   [root@cortx-test AWS]# curl ipinfo.io/ip
+   134.204.222.36[root@cortx-test AWS]#
 ```
    Calculate CIDR for IP using Subnet Calculator from https://mxtoolbox.com/subnetcalculator.aspx 
 
