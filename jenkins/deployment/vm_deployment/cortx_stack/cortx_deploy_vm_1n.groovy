@@ -246,6 +246,8 @@ pipeline {
                         } catch (err) {
                             echo err.getMessage()
                         }
+                    } else {
+                        currentBuild.result = "UNSTABLE"
                     }
                 }
 
