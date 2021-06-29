@@ -37,7 +37,8 @@ pipeline {
         MGMT_VIP    = "${NODE_MGMT_VIP.isEmpty() ? MGMT_VIP : NODE_MGMT_VIP }"
         NODES       = "${NODE1_HOST},${NODE2_HOST},${NODE3_HOST}"
 
-        SETUP_TYPE = '3_node'         
+        SETUP_TYPE = '3_node'
+        SKIP_STAGE = "no"
     }
 
     options {
@@ -84,12 +85,14 @@ pipeline {
                     }
                     catch (err) {
                         currentBuild.result = 'UNSTABLE'
+                        SKIP_STAGE = "yes"
                     }
                 }
             }
         }
 
         stage('01. Deploy Prereq') {
+            when { expression { SKIP_STAGE == "no"  } }
             steps {
                 script {
                     try {
@@ -99,14 +102,17 @@ pipeline {
                     }
                     catch (err) {
                         currentBuild.result = 'UNSTABLE'
+                        SKIP_STAGE = "yes"
                     }
                 }
             } 
         }
 
         stage('02.1 Bootstarp Provisioner') {
+            when { expression { SKIP_STAGE == "no"  } }
             steps {
                 script {
+                    echo env.SKIP_STAGE
                     
                     info("Running '02.1 Bootstarp Provisioner' Stage")
 
@@ -116,6 +122,7 @@ pipeline {
         }
 
         stage('02.2 Platform Setup') {
+            when { expression { SKIP_STAGE == "no"  } }
             steps {
                 script {
                     
@@ -127,6 +134,7 @@ pipeline {
         }
 
         stage('02.3 3party Tools Setup') {
+            when { expression { SKIP_STAGE == "no"  } }
             steps {
                 script {
                     
@@ -138,6 +146,7 @@ pipeline {
         }
 
         stage('02.4 Cortx Utils Setup') {
+            when { expression { SKIP_STAGE == "no"  } }
             steps {
                 script {
                     
@@ -149,6 +158,7 @@ pipeline {
         }
 
         stage('02.5 IO Path Setup') {
+            when { expression { SKIP_STAGE == "no"  } }
             steps {
                 script {
                     
@@ -160,6 +170,7 @@ pipeline {
         }
 
         stage('02.6 Control Path Setup') {
+            when { expression { SKIP_STAGE == "no"  } }
             steps {
                 script {
                     
@@ -171,6 +182,7 @@ pipeline {
         }
 
         stage('02.7 HA Setup') {
+            when { expression { SKIP_STAGE == "no"  } }
             steps {
                 script {
                     
@@ -182,6 +194,7 @@ pipeline {
         }
 
         stage('03. Validate') {
+            when { expression { SKIP_STAGE == "no"  } }
             steps {
                 script {
                     
@@ -243,13 +256,15 @@ pipeline {
                     MESSAGE = "3 Node - Cortx Stack VM Deployment Success for the build ${build_id}"
                     ICON = "accept.gif"
                     STATUS = "SUCCESS"
-                } else {
-                    echo "Inside non-hctl"
+                } else if ( currentBuild.currentResult == "FAILURE" ) {
+                    manager.buildFailure()
+                    MESSAGE = "3 Node - Cortx Stack VM Deployment Failed for the build ${build_id}"
+                    ICON = "error.gif"
+                    STATUS = "FAILURE"
                     // Failure component name and Cause can be retrived from deployment status log
                     if ( fileExists('artifacts/srvnode1/cortx_deployment/log/deployment_status.log')
                         && fileExists('artifacts/srvnode1/cortx_deployment/log/failed_component.log') ) {
-                        try {
-                            echo "Inside Failure"   
+                        try {   
                             deployment_status_log = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/deployment_status.log').trim()
                             failed_component_stage = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/failed_component.log').trim()
                             failed_component_stage = failed_component_stage.trim().replaceAll("'","")
@@ -258,17 +273,7 @@ pipeline {
                             component_info_map = getComponentInfo(failed_component_stage)
                             component_name = component_info_map["name"]
                             component_email = component_info_map["email"] 
-                            if ( "RE".equals(component_name) ) {
-                                manager.buildUnstable()
-                                MESSAGE = "3 Node - Cortx Stack VM Deployment Failed for the build ${build_id}"
-                                ICON = "yellow.gif"
-                                STATUS = "UNSTABLE"
-                            } else {
-                                manager.buildFailure()
-                                MESSAGE = "3 Node - Cortx Stack VM Deployment Failed for the build ${build_id}"
-                                ICON = "error.gif"
-                                STATUS = "FAILURE"
-                            }
+                    
                             env.failure_cause = deployment_status_log
                             env.deployment_status_log = deployment_status_log
                             env.failed_component_stage = failed_component_stage
@@ -281,14 +286,12 @@ pipeline {
                         } catch (err) {
                             echo err.getMessage()
                         }
-                    } else {
-                        echo "Inside Unstable"
-                        manager.buildUnstable()
-                        MESSAGE = "3 Node - Cortx Stack VM Deployment Failed for the build ${build_id}"
-                        ICON = "yellow.gif"
-                        STATUS = "UNSTABLE"
-                        echo "${currentBuild.currentResult}"
                     }
+                } else {
+                    manager.buildUnstable()
+                    MESSAGE = "3 Node - Cortx Stack VM Deployment is Unstable"
+                    ICON = "warning.gif"
+                    STATUS = "UNSTABLE"
                 }
 
                 // 5. Create JIRA on Failure - Create JIRA if deployment failed and create Jira true
@@ -307,33 +310,33 @@ pipeline {
                     env.jira_issue="https://jts.seagate.com/browse/${jiraIssue}"
                 }
 
-                // // 5. Create Jenkins Summary page with deployment info
-                // hctlStatusHTML = "<pre>${hctlStatus}</pre>"
-                // tableSummary = "<table border='1' cellspacing='0' cellpadding='0' width='400' align='left'> <tr> <td align='center'>Build</td><td align='center'><a href=${CORTX_BUILD}>${build_id}</a></td></tr><tr> <td align='center'>Test VM</td><td align='center'><a href='${JENKINS_URL}/computer/${env.NODE_NAME}'><b>${NODE1_HOST}</b></a></td></tr></table>"
-                // manager.createSummary("${ICON}").appendText("<h3>Cortx Stack VM-Deployment ${currentBuild.currentResult} for the build <a href=\"${CORTX_BUILD}\">${build_id}.</a></h3><p>Please check <a href=\"${BUILD_URL}/artifact/setup.log\">setup.log</a> for more info <br /><br /><h4>Test Details:</h4> ${tableSummary} <br /><br /><br /><h4>Cluster Status:</h4>${hctlStatusHTML}", false, false, false, "red")
+                // 5. Create Jenkins Summary page with deployment info
+                hctlStatusHTML = "<pre>${hctlStatus}</pre>"
+                tableSummary = "<table border='1' cellspacing='0' cellpadding='0' width='400' align='left'> <tr> <td align='center'>Build</td><td align='center'><a href=${CORTX_BUILD}>${build_id}</a></td></tr><tr> <td align='center'>Test VM</td><td align='center'><a href='${JENKINS_URL}/computer/${env.NODE_NAME}'><b>${NODE1_HOST}</b></a></td></tr></table>"
+                manager.createSummary("${ICON}").appendText("<h3>Cortx Stack VM-Deployment ${currentBuild.currentResult} for the build <a href=\"${CORTX_BUILD}\">${build_id}.</a></h3><p>Please check <a href=\"${BUILD_URL}/artifact/setup.log\">setup.log</a> for more info <br /><br /><h4>Test Details:</h4> ${tableSummary} <br /><br /><br /><h4>Cluster Status:</h4>${hctlStatusHTML}", false, false, false, "red")
                      
-                // // 6. Send Email about deployment status
-                // env.build_id = build_id
-                // env.build_location = "${CORTX_BUILD}"
-                // env.host = "${NODES}"
-                // env.deployment_status = "${MESSAGE}"
-                // if (fileExists('artifacts/srvnode1/cortx_deployment/log/hctl_status.log')) {
-                //     env.cluster_status = "${BUILD_URL}/artifact/artifacts/srvnode1/cortx_deployment/log/hctl_status.log"
-                // }
+                // 6. Send Email about deployment status
+                env.build_id = build_id
+                env.build_location = "${CORTX_BUILD}"
+                env.host = "${NODES}"
+                env.deployment_status = "${MESSAGE}"
+                if (fileExists('artifacts/srvnode1/cortx_deployment/log/hctl_status.log')) {
+                    env.cluster_status = "${BUILD_URL}/artifact/artifacts/srvnode1/cortx_deployment/log/hctl_status.log"
+                }
                 
-                // if ( "FAILURE".equals(currentBuild.currentResult) && params.AUTOMATED && env.component_email ) {
-                //     toEmail = "${env.component_email}, priyank.p.dalal@seagate.com, gaurav.chaudhari@seagate.com"
-                // } else {
-                //     toEmail = "gaurav.chaudhari@seagate.com"
-                // }
+                if ( "FAILURE".equals(currentBuild.currentResult) && params.AUTOMATED && env.component_email ) {
+                    toEmail = "${env.component_email}, priyank.p.dalal@seagate.com, gaurav.chaudhari@seagate.com"
+                } else {
+                    toEmail = "gaurav.chaudhari@seagate.com"
+                }
                 
-                // emailext (
-                //     body: '''${SCRIPT, template="vm-deployment-email.template"}''',
-                //     mimeType: 'text/html',
-                //     subject: "${MESSAGE}",
-                //     to: toEmail,
-                //     recipientProviders: [[$class: 'RequesterRecipientProvider']]
-                // )
+                emailext (
+                    body: '''${SCRIPT, template="vm-deployment-email.template"}''',
+                    mimeType: 'text/html',
+                    subject: "${MESSAGE}",
+                    to: toEmail,
+                    recipientProviders: [[$class: 'RequesterRecipientProvider']]
+                )
 
                  // 7. Archive all log generated by Test
                 cleanWs()
