@@ -107,7 +107,8 @@ pipeline {
 				script {
 					try {
 						sh label: 'download_log_files', returnStdout: true, script: """ 
-							# pip3 install json2html							
+							export PYTHONPATH=$PATH_TO_MODULE:$PYTHONPATH
+							pip3 install json2html							
 							python3 CodacyCodeCoverage.py cortx-s3server ${CODACYTOKEN} > s3server.html
 						"""
 					} catch (err) {
