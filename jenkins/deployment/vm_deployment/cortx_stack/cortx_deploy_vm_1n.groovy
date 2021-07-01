@@ -3,7 +3,7 @@ pipeline {
     agent {
         node {
             // Run deployment on mini_provisioner nodes (vm deployment nodes)
-            label params.NODE1.isEmpty() ? "(test_vm_deployment_1n || vm_deployment_1n) && !cleanup_req" : "vm_deployment_1n_controller"
+            label params.NODE1.isEmpty() ? "test_vm_deployment_1n && !cleanup_req" : "vm_deployment_1n_controller"
             customWorkspace "/var/jenkins/cortx_deployment_vm/${JOB_NAME}_${BUILD_NUMBER}"
         }
     }
@@ -59,7 +59,7 @@ pipeline {
                         echo "-----------------------------------------------------------"
                     """
                     dir('cortx-re') {
-                        checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re.git']]])
+                        checkout([$class: 'GitSCM', branches: [[name: '*/deployment-job-update']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/gauravchaudhari02/cortx-re.git']]])
                     }
 
                     if ( NODE1.isEmpty() ) {
