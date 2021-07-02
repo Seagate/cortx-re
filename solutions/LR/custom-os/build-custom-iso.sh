@@ -21,7 +21,7 @@ mkdir -p $ISO_MOUNT_PATH && mount -t iso9660 -o loop $ISO_PATH/$ISO_VERSION $ISO
 
 #Install required packages 
 echo -e "-------------------------[ Install required package ]------------------------------------------------------" 
-yum install pykickstart createrepo genisoimage isomd5sum -y
+yum install syslinux pykickstart createrepo genisoimage isomd5sum yum-utils -y
 
 #create local folder and copy ISO folders
 rm -rf $LOCAL_BOOT_PATH
@@ -52,7 +52,8 @@ cp isolinux.cfg $LOCAL_BOOT_PATH/isolinux/isolinux.cfg
 while read -r line
 do
 echo -e "-------------------------[ Downloading $line package along with dependencies ]--------------------------------" 
-yumdownloader --disablerepo=EOS_CentOS-7_CentOS-7-Updates --installroot=/mnt/custom-iso/install-root  --destdir=/mnt/custom-iso/custom-packages --resolve "$line"
+yumdownloader --installroot=/mnt/custom-iso/install-root  --destdir=/mnt/custom-iso/custom-packages --resolve "$line"
+#yumdownloader --disablerepo=EOS_CentOS-7_CentOS-7-Updates --installroot=/mnt/custom-iso/install-root  --destdir=/mnt/custom-iso/custom-packages --resolve "$line"
 #rm -rf /mnt/custom-iso/"$line"-install-root
 cp -n /mnt/custom-iso/custom-packages/* $LOCAL_BOOT_PATH/Packages/.
 ls -ltr $LOCAL_BOOT_PATH/Packages/"$line"*
