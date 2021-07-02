@@ -11,7 +11,7 @@ pipeline {
 
 
     options {
-		timeout(time: 120, unit: 'MINUTES')
+		timeout(time: 240, unit: 'MINUTES')
 		timestamps()
 		disableConcurrentBuilds()
         buildDiscarder(logRotator(daysToKeepStr: '30', numToKeepStr: '30'))
@@ -57,9 +57,11 @@ pipeline {
 			steps {
 				script { build_stage = env.STAGE_NAME }
 				sh label: 'Build Docker image', script: '''
-				echo -e "Running on $HOST_HOSTNAME"
+				echo -e "Running on $HOSTNAME"
+                        #Clean Up
                 		echo 'y' | docker image prune
-		                if [ $ENVIRONMENT == "internal-ci" ]; then
+                		if [ ! -z \$(docker ps -a -q) ]; then docker rm -f \$(docker ps -a -q); fi
+                        if [ $ENVIRONMENT == "internal-ci" ]; then
                 	    	docker-compose -f docker/cortx-build/docker-compose.yml build --force-rm  --compress --build-arg GIT_HASH="$(git rev-parse --short HEAD)" cortx-build-internal-$OS_VERSION
 		                else
                 		    docker-compose -f docker/cortx-build/docker-compose.yml build --force-rm  --compress --build-arg GIT_HASH="$(git rev-parse --short HEAD)" cortx-build-$OS_VERSION
@@ -101,5 +103,25 @@ pipeline {
                 '''
 			}
 		}
+    }
+
+	post {
+
+		always {
+			script {
+
+				def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
+                
+                def mailRecipients = "CORTX.DevOps.RE@seagate.com"
+                emailext ( 
+                    body: '''${SCRIPT, template="release-email.template"}''',
+                    mimeType: 'text/html',
+                    subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
+                    attachLog: true,
+                    to: "${mailRecipients}",
+					recipientProviders: recipientProvidersClass
+                )
+            }
+        }
     }
 }
