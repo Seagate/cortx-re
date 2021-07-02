@@ -249,3 +249,5 @@ device-mapper
 systemd-python
 libgudev1
 sos
+cairo
+cairo-gobject
