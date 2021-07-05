@@ -85,7 +85,45 @@ pipeline {
 					}
 				}                        
 			}
-		}	
+		}
+
+		stage ("Build cortx-prereq") {
+			steps {
+				script { build_stage = env.STAGE_NAME }
+						script {
+							try {
+							def prereqbuild = build job: 'cortx-prereq-custom-build', wait: true,
+											parameters: [
+											string(name: 'CORTX_RE_URL', value: "${CORTX_RE_URL}"),
+											string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
+											string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}")
+											]
+					} catch (err) {
+						build_stage = env.STAGE_NAME
+						error "Failed to Build cortx-prereq"
+					}
+				}
+			}
+		}
+
+		stage ("Build Provisioner") {
+			steps {
+				script { build_stage = env.STAGE_NAME }
+										script {
+												try {
+						def prvsnrbuild = build job: 'prvsnr-custom-build', wait: true,
+											parameters: [
+											string(name: 'PRVSNR_URL', value: "${PRVSNR_URL}"),
+											string(name: 'PRVSNR_BRANCH', value: "${PRVSNR_BRANCH}"),
+											string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}")
+											]
+					} catch (err) {
+						build_stage = env.STAGE_NAME
+						error "Failed to Build Provisioner"
+					}
+				}
+			}
+		}
 
 		stage ("Trigger Component Jobs") {
 			parallel {
@@ -120,44 +158,6 @@ pipeline {
 								error "Failed to Build Motr, Hare and S3Server"
 							}
 						}										
-					}
-				}
-
-				stage ("Build cortx-prereq") {
-					steps {
-						script { build_stage = env.STAGE_NAME }
-                                                script {
-                                                        try {
-								def prereqbuild = build job: 'cortx-prereq-custom-build', wait: true,
-								                  parameters: [
-									            	string(name: 'CORTX_RE_URL', value: "${CORTX_RE_URL}"),
-											        string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
-													string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}")
-							        	          ]
-							} catch (err) {
-								build_stage = env.STAGE_NAME
-								error "Failed to Build cortx-prereq"
-							}
-						}
-					}
-				}
-
-				stage ("Build Provisioner") {
-					steps {
-						script { build_stage = env.STAGE_NAME }
-                                                script {
-                                                        try {
-								def prvsnrbuild = build job: 'prvsnr-custom-build', wait: true,
-								                  parameters: [
-									            	string(name: 'PRVSNR_URL', value: "${PRVSNR_URL}"),
-											        string(name: 'PRVSNR_BRANCH', value: "${PRVSNR_BRANCH}"),
-													string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}")
-							        	          ]
-							} catch (err) {
-								build_stage = env.STAGE_NAME
-								error "Failed to Build Provisioner"
-							}
-						}
 					}
 				}
 
