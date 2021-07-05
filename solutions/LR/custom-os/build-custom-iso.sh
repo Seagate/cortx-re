@@ -78,14 +78,6 @@ ls -ltr $LOCAL_BOOT_PATH/Packages/"$line"*
 echo -e "----------------------------------------------[ Done ]---------------------------------------------------------" 
 done < packages.txt
 
-#Copy files. 
-#while read -r line
-#do
-#echo "Copying $line package along with dependencies"
-#find  $CORTX_DEPS_PATH/os -name "$line*" -exec cp "{}" $LOCAL_BOOT_PATH/Packages/ \;
-#ls -ltr $LOCAL_BOOT_PATH/Packages/"$line"*
-#done < custom-packages.txt
-
 #Copy Mellanox Packages
 cp $CORTX_DEPS_PATH/$OS/$OS_VERSION/performance/linux.mellanox.com/public/repo/mlnx_ofed/4.9-0.1.7.0/rhel7.8/x86_64/MLNX_LIBS/*.rpm $LOCAL_BOOT_PATH/Packages/
 
@@ -99,8 +91,6 @@ mv ./*-c7-minimal-x86_64-comps.xml comps.xml
 createrepo -g comps.xml .
 popd
 
-#generate custom iso file
-#cd $LOCAL_BOOT_PATH && mkisofs -o $ISO_PATH/$CUSTOM_ISO_VERSION -b isolinux.bin -c boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -V "CentOS 7 x86_64" -R -J -v -T isolinux/. .
 pushd $LOCAL_BOOT_PATH
 genisoimage -J -R -o $ISO_PATH/$CUSTOM_ISO_VERSION -c isolinux/boot.cat -b isolinux/isolinux.bin -no-emul-boot -boot-load-size 4 -boot-info-table -eltorito-alt-boot -e images/efiboot.img -no-emul-boot -V CORTX_OS `pwd`
 popd
