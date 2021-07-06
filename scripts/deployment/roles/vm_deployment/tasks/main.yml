@@ -5,4 +5,4 @@
 - include: 02_deploy.yml
 
 - include: 03_validate.yml
-  tags: ['03_VALIDATE'  ]
+  tags: ['03_VALIDATE']
