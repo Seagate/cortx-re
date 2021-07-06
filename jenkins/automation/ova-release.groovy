@@ -29,7 +29,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                script{
+                script {
                     dir('cortx-re') {
                         checkout([$class: 'GitSCM',
                             branches: [[name: '*/cortx-1.0']],
