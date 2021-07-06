@@ -1,3 +1,4 @@
+#!/usr/bin/env groovy
 pipeline {
 
         agent {
@@ -8,11 +9,11 @@ pipeline {
 
         parameters {
                 string(name: 'RELEASE_INFO_URL', defaultValue: '', description: 'RELEASE BUILD')
-                string(name: 'GIT_TAG', defaultValue: '', description: 'Release Tag')
-		string(name: 'REL_NAME', defaultValue: '', description: 'Release Name')
-		string(name: 'REL_ID', defaultValue: '', description: 'Release Id')
-		string(name: 'TAG_MESSAGE', defaultValue: '', description: 'Tag Message')
-		booleanParam(name: 'DEBUG', defaultValue: false, description: 'Select this if you want to Delete the current Tag')
+                string(name: 'GIT_TAG', defaultValue: '', description: 'Tag Name')
+				string(name: 'TAG_MESSAGE', defaultValue: '', description: 'Tag Message')
+				string(name: 'REL_NAME', defaultValue: '', description: 'Release Name')
+				string(name: 'REL_ID', defaultValue: '', description: 'Release Id')
+				booleanParam(name: 'DEBUG', defaultValue: false, description: 'Select this if you want to Delete the current Tag')
             }
 		
 		
@@ -25,8 +26,8 @@ pipeline {
                 COMMIT_HASH_CORTX_PRVSNR = get_commit_hash("cortx-prvsnr", "${RELEASE_INFO_URL}")
                 COMMIT_HASH_CORTX_S3SERVER = get_commit_hash("cortx-s3server", "${RELEASE_INFO_URL}")
                 COMMIT_HASH_CORTX_SSPL = get_commit_hash("cortx-sspl", "${RELEASE_INFO_URL}")
-		COMMIT_HASH_CORTX_UTILS = get_commit_hash("cortx-py-utils", "${RELEASE_INFO_URL}")
-		COMMIT_HASH_CORTX_RE = get_commit_hash("cortx-prereq", "${RELEASE_INFO_URL}")
+				COMMIT_HASH_CORTX_UTILS = get_commit_hash("cortx-py-utils", "${RELEASE_INFO_URL}")
+				COMMIT_HASH_CORTX_RE = get_commit_hash("cortx-prereq", "${RELEASE_INFO_URL}")
             }
 
         stages {
@@ -42,24 +43,24 @@ pipeline {
                 echo "COMMIT_HASH_CORTX_PRVSNR = $COMMIT_HASH_CORTX_PRVSNR"
                 echo "COMMIT_HASH_CORTX_S3SERVER = $COMMIT_HASH_CORTX_S3SERVER"
                 echo "COMMIT_HASH_CORTX_SSPL = $COMMIT_HASH_CORTX_SSPL"
-		echo "COMMIT_HASH_CORTX_UTILS = $COMMIT_HASH_CORTX_UTILS"
-		echo "COMMIT_HASH_CORTX_RE = $COMMIT_HASH_CORTX_RE"
-		}
+				echo "COMMIT_HASH_CORTX_UTILS = $COMMIT_HASH_CORTX_UTILS"
+				echo "COMMIT_HASH_CORTX_RE = $COMMIT_HASH_CORTX_RE"
+			}
         }
 		
-	stage('Checkout Script') {
+		stage('Checkout Script') {
             steps {             
                 script {
                     checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/balajiramachandran-seagate/cortx-re']]])                
                 }
             }
         }
-	stage ("Tagging") {
-	     steps {
-	        script { build_stage=env.STAGE_NAME }
-			script { 
-				withCredentials([usernamePassword(credentialsId: 'cortx-admin-github', passwordVariable: 'PASSWD', usernameVariable: 'USER_NAME')]) {
-				sh """ bash scripts/release_support/git-tag.sh """    
+		stage ("Tagging") {
+			steps {
+				script { build_stage=env.STAGE_NAME }
+					script { 
+						withCredentials([usernamePassword(credentialsId: 'cortx-admin-github', passwordVariable: 'PASSWD', usernameVariable: 'USER_NAME')]) {
+						sh """ bash scripts/release_support/git-tag.sh """    
 					}
 				}			
 			}
@@ -71,16 +72,18 @@ def get_commit_hash(String component, String release_info) {
 
     return sh(script: """
             set +x
-            if [ $component == cortx-hare ] || [ $component == cortx-sspl ] || [ $component == cortx-ha ] || [ $component == cortx-fs ] || [ "$component" == cortx-py-utils ] || [ "$component" == cortx-prereq ]; then
-                    echo \$(curl -s $release_info | grep $component | head -1 | awk -F['_'] '{print \$2}' | cut -d. -f1 |  sed 's/git//g');
+            if [ "$component" == "cortx-hare" ] || [ "$component" == "cortx-sspl" ] || [ "$component" == "cortx-ha" ] || [ "$component" == "cortx-fs" ] || [ "$component" == "cortx-py-utils" ] || [ "$component" == "cortx-prereq" ]; then
+                
+                echo \$(curl -s $release_info | grep -w '*.rpm\\|$component\\|uniq' | awk '!/debuginfo*/' | awk -F['_'] '{print \$2}' | cut -d. -f1 |  sed 's/git//g' | grep -v ^[[:space:]]*\$);
 					
             elif [ "$component" == "cortx-csm_agent" ] || [ "$component" == "cortx-csm_web" ]; then
-                    echo \$(curl -s $release_info | grep $component | head -1 | awk -F['_'] '{print \$3}' |  cut -d. -f1);
-					
+                
+		echo \$(curl -s $release_info | grep -w '*.rpm\\|$component\\|uniq' | awk '!/debuginfo*/' | awk -F['_'] '{print \$3}' | cut -d. -f1 |  sed 's/git//g' | grep -v ^[[:space:]]*\$);	
             else
-                    echo \$(curl -s $release_info | grep $component | head -1 | awk -F['_'] '{print \$2}' | sed 's/git//g');
-					
+                
+		echo \$(curl -s $release_info | grep -w '*.rpm\\|$component\\|uniq' | awk '!/debuginfo*/' | awk -F['_'] '{print \$2}' | cut -d. -f1 |  sed 's/git//g' | grep -v ^[[:space:]]*\$);	
             fi
 			
-		""", returnStdout: true).trim()
+	""", returnStdout: true).trim()
 }
+
