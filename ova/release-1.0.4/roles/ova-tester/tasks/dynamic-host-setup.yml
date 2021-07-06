@@ -17,9 +17,9 @@
   debug:
     msg: "{{ VM_UUID }}"
 
-- name: Sleep for 30 seconds and continue with play
+- name: Sleep for 60 seconds and continue with play
   wait_for:
-    timeout: 30
+    timeout: 60
 
 - name: Get test VM ip address
   script: "files/pyvm.py {{ VSPHERE_HOSTNAME }} {{ VSPHERE_USERNAME }} {{ VSPHERE_PASSWORD }} {{ VM_UUID }} {{ NODE_USER }} {{ NODE_SSH_PASS }}"
@@ -30,3 +30,6 @@
 - name: Set ip variable
   set_fact:
     ansible_host: "{{ ip_info.stdout_lines[0] }}"
+
+- debug:
+    msg: "{{ ansible_host }}"
