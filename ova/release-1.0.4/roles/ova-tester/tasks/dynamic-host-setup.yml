@@ -26,6 +26,9 @@
   args:
     executable: python
   register: ip_info
+  until: ip_info.stdout | ipaddr
+  retries: 5
+  delay: 20
 
 - name: Set ip variable
   set_fact:
