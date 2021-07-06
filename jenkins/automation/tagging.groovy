@@ -26,8 +26,8 @@ pipeline {
                 COMMIT_HASH_CORTX_PRVSNR = get_commit_hash("cortx-prvsnr", "${RELEASE_INFO_URL}")
                 COMMIT_HASH_CORTX_S3SERVER = get_commit_hash("cortx-s3server", "${RELEASE_INFO_URL}")
                 COMMIT_HASH_CORTX_SSPL = get_commit_hash("cortx-sspl", "${RELEASE_INFO_URL}")
-				COMMIT_HASH_CORTX_UTILS = get_commit_hash("cortx-py-utils", "${RELEASE_INFO_URL}")
-				COMMIT_HASH_CORTX_RE = get_commit_hash("cortx-prereq", "${RELEASE_INFO_URL}")
+		COMMIT_HASH_CORTX_UTILS = get_commit_hash("cortx-py-utils", "${RELEASE_INFO_URL}")
+		COMMIT_HASH_CORTX_RE = get_commit_hash("cortx-prereq", "${RELEASE_INFO_URL}")
             }
 
         stages {
@@ -43,12 +43,12 @@ pipeline {
                 echo "COMMIT_HASH_CORTX_PRVSNR = $COMMIT_HASH_CORTX_PRVSNR"
                 echo "COMMIT_HASH_CORTX_S3SERVER = $COMMIT_HASH_CORTX_S3SERVER"
                 echo "COMMIT_HASH_CORTX_SSPL = $COMMIT_HASH_CORTX_SSPL"
-				echo "COMMIT_HASH_CORTX_UTILS = $COMMIT_HASH_CORTX_UTILS"
-				echo "COMMIT_HASH_CORTX_RE = $COMMIT_HASH_CORTX_RE"
-			}
+		echo "COMMIT_HASH_CORTX_UTILS = $COMMIT_HASH_CORTX_UTILS"
+		echo "COMMIT_HASH_CORTX_RE = $COMMIT_HASH_CORTX_RE"
+		}
         }
 		
-		stage('Checkout Script') {
+	stage('Checkout Script') {
             steps {             
                 script {
                     checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/balajiramachandran-seagate/cortx-re']]])                
@@ -79,8 +79,8 @@ def get_commit_hash(String component, String release_info) {
             elif [ "$component" == "cortx-csm_agent" ] || [ "$component" == "cortx-csm_web" ]; then
                 
 		echo \$(curl -s $release_info | grep -w '*.rpm\\|$component\\|uniq' | awk '!/debuginfo*/' | awk -F['_'] '{print \$3}' | cut -d. -f1 |  sed 's/git//g' | grep -v ^[[:space:]]*\$);	
-            else
-                
+            
+	    else
 		echo \$(curl -s $release_info | grep -w '*.rpm\\|$component\\|uniq' | awk '!/debuginfo*/' | awk -F['_'] '{print \$2}' | cut -d. -f1 |  sed 's/git//g' | grep -v ^[[:space:]]*\$);	
             fi
 			
