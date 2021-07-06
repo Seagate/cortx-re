@@ -54,7 +54,7 @@ declare -A REPO_LIST=(
                 pushd "$dir"
                 if [ "$GIT_TAG" != "" ]; then
 			git tag -a "$GIT_TAG" "${COMMIT_HASH}" -m "$TAG_MESSAGE";
-                        git push origin "$GIT_TAG";
+                        git push origin :refs/tags/"$GIT_TAG";
                         echo "Component: $component , Tag: git tag -l $GIT_TAG is Tagged Successfully";
                         git tag -l "$GIT_TAG";
                 else
