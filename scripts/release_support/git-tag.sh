@@ -26,8 +26,8 @@ declare -A REPO_LIST=(
                         [cortx-prereq]="https://$PASSWD@api.github.com/repos/Seagate/cortx-re/releases"
                 )	
 
-                        git config --global user.email "balaji.ramachandran@seagate.com"
-                        git config --global user.name "Balaji Ramachandran"
+                        git config --global user.email "cortx-application@seagate.com"
+                        git config --global user.name "cortx-admin"
                         wget -q "$RELEASE_INFO_URL" -O RELEASE.INFO
 
         for component in "${!COMPONENT_LIST[@]}"
@@ -69,8 +69,8 @@ declare -A REPO_LIST=(
 
 		popd
 	done
-		git config --global user.email "balaji.ramachandran@seagate.com"
-                git config --global user.name "Balaji Ramachandran"
+		git config --global user.email "cortx-application@seagate.com"
+                git config --global user.name "cortx-admin"
 		
 		if [ "$REL_NAME" != "" ]; then
 			echo "Release will be set for all the components";
