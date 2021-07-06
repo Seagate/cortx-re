@@ -1,5 +1,5 @@
 [cluster]
-{% if REQUIRED_HOST == 1 %}
+{% if REQUIRED_HOST == '1' %}
 mgmt_vip=None
 {% else %}
 mgmt_vip={{ MGMT_VIP }}
