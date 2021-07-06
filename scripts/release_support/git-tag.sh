@@ -12,7 +12,7 @@ declare -A COMPONENT_LIST=(
                         [cortx-py-utils]="https://$PASSWD@github.com/Seagate/cortx-utils.git"
                         [cortx-prereq]="https://$PASSWD@github.com/Seagate/cortx-re.git"
                 )
-				
+
 declare -A REPO_LIST=(
                         [cortx-s3server]="https://$PASSWD@api.github.com/repos/Seagate/cortx-s3server/releases"
                         [cortx-motr]="https://$PASSWD@api.github.com/repos/Seagate/cortx-motr/releases"
@@ -24,7 +24,7 @@ declare -A REPO_LIST=(
                         [cortx-csm_web]="https://$PASSWD@api.github.com/repos/Seagate/cortx-management-portal/releases"
                         [cortx-py-utils]="https://$PASSWD@api.github.com/repos/Seagate/cortx-utils/releases"
                         [cortx-prereq]="https://$PASSWD@api.github.com/repos/Seagate/cortx-re/releases"
-                )	
+                )
 
                         git config --global user.email "cortx-application@seagate.com"
                         git config --global user.name "cortx-admin"
@@ -43,57 +43,57 @@ declare -A REPO_LIST=(
                 fi
 
                 if [ "$component" == cortx-hare ] || [ "$component" == cortx-sspl ] || [ "$component" == cortx-ha ] || [ "$component" == cortx-fs ] || [ "$component" == cortx-py-utils ] || [ "$component" == cortx-prereq ]; then
-		COMMIT_HASH="$(grep -w '*.rpm\|$component\|uniq' RELEASE.INFO | awk '!/debuginfo*/' | awk -F['_'] '{print $2}' | cut -d. -f1 |  sed 's/git//g' | grep -v ^[[:space:]]*$)";
+					COMMIT_HASH="$(grep "$component-" RELEASE.INFO | head -1 | awk -F['_'] '{print $2}' | cut -d. -f1 |  sed 's/git//g')";
                 elif [ "$component" == "cortx-csm_agent" ] || [ "$component" == "cortx-csm_web" ]; then
-		COMMIT_HASH="$(grep -w '*.rpm\|$component\|uniq' RELEASE.INFO | awk '!/debuginfo*/' | awk -F['_'] '{print $3}' | cut -d. -f1 |  sed 's/git//g' | grep -v ^[[:space:]]*$)";
+                    COMMIT_HASH="$(grep "$component-" RELEASE.INFO | head -1 | awk -F['_'] '{print $3}' |  cut -d. -f1)";
                 else
-		COMMIT_HASH="$(grep -w '*.rpm\|$component\|uniq' RELEASE.INFO | awk '!/debuginfo*/' | awk -F['_'] '{print $2}' | cut -d. -f1 |  sed 's/git//g' | grep -v ^[[:space:]]*$)";
+                    COMMIT_HASH="$(grep "$component-" RELEASE.INFO | head -1 | awk -F['_'] '{print $2}' | sed 's/git//g')";
                 fi
 
                 echo "Component: "$component" , Repo:  "${COMPONENT_LIST[$component]}", Commit Hash: "${COMMIT_HASH}""
                 pushd "$dir"
                 if [ "$GIT_TAG" != "" ]; then
-			git tag -a $GIT_TAG ${COMMIT_HASH} -m $TAG_MESSAGE;
+                        git tag -a $GIT_TAG ${COMMIT_HASH} -m $TAG_MESSAGE;
                         git push origin $GIT_TAG;
                         echo "Component: $component , Tag: git tag -l $GIT_TAG is Tagged Successfully";
                         git tag -l $GIT_TAG;
                 else
                         echo "Tag is not successful. Please pass value to GIT_TAG";
                 fi
-		 if [ "$DEBUG" = true ]; then
+                 if [ "$DEBUG" = true ]; then
                         git push origin --delete $GIT_TAG;
                  else
                         echo "Run in Debug mode if Git tag needs to be deleted";
 
-		fi
-
-		popd
-	done
-		git config --global user.email "cortx-application@seagate.com"
-                git config --global user.name "cortx-admin"
-		
-		if [ "$REL_NAME" != "" ]; then
-			echo "Release will be set for all the components";
-
-		for component in "${!REPO_LIST[@]}"
-	
-		do				
-			if [ "$component" == cortx-hare ] || [ "$component" == cortx-sspl ] || [ "$component" == cortx-ha ] || [ "$component" == cortx-fs ] || [ "$component" == cortx-py-utils ] || [ "$component" == cortx-prereq ] || [ "$component" == "cortx-csm_agent" ] || [ "$component" == "cortx-csm_web" ]; then
-			
-			echo "Component: "$component" , Repo:  "${REPO_LIST[$component]}"";
-			
-			curl -H "Accept: application/vnd.github.v3+json"  "${REPO_LIST[$component]}" -d '{"tag_name":""$GIT_TAG"", "name":""$REL_NAME""}';                        
-                	else
-                        echo "Release is not successfully created.";
-			fi
-                
-		if [ "$DEBUG" = true ]; then
-			curl -X DELETE -H "Accept: application/vnd.github.v3+json"  "${REPO_LIST[$component]}"/""$REL_ID"";
-                else
-			echo "Run in Debug mode if Release needs to be deleted";
                 fi
-		done
-		else
-			echo "Please pass the value of Release";	
-		fi
+
+                popd
+        done
+                git config --global user.email "cortx-application@seagate.com"
+                git config --global user.name "cortx-admin"
+
+                if [ "$REL_NAME" != "" ]; then
+                        echo "Release will be set for all the components";
+
+                for component in "${!REPO_LIST[@]}"
+
+                do
+                        if [ "$component" == cortx-hare ] || [ "$component" == cortx-sspl ] || [ "$component" == cortx-ha ] || [ "$component" == cortx-fs ] || [ "$component" == cortx-py-utils ] || [ "$component" == cortx-prereq ] || [ "$component" == "cortx-csm_agent" ] || [ "$component" == "cortx-csm_web" ]; then
+
+                        echo "Component: "$component" , Repo:  "${REPO_LIST[$component]}"";
+
+                        curl -H "Accept: application/vnd.github.v3+json"  "${REPO_LIST[$component]}" -d '{"tag_name":""$GIT_TAG"", "name":""$REL_NAME""}';              
+                        else
+                        echo "Release is not successfully created.";
+                        fi
+
+                if [ "$DEBUG" = true ]; then
+                        curl -X DELETE -H "Accept: application/vnd.github.v3+json"  "${REPO_LIST[$component]}"/""$REL_ID"";
+                else
+                        echo "Run in Debug mode if Release needs to be deleted";
+                fi
+                done
+                else
+                        echo "Please pass the value of Release";
+                fi
 
