@@ -10,9 +10,9 @@ pipeline {
         string(name: 'HOST', defaultValue: '10.230.245.7', description: 'IP address of VM deploy host')
         string(name: 'VSPHERE_VM_NAME', defaultValue: 'cortx-sms-ova', description: 'Name VM deploy host')
         string(name: 'VSPHERE_VM_SNAPSHOT_NAME', defaultValue: 'cortx-sms-ova-snap', description: 'Snapshot name of VM deploy host')
-	    choice(name: 'CREATE_VM', choices: [ "false", "true" ], description: 'Create a VM from generated OVA')
-	    string(name: 'OVA_VM_NAME', defaultValue: 'test-ova-vm', description: 'Name for OVA VM. Applicable only if CREATE_VM=true')
-	    choice(name: 'OVA_TESTER', choices: [ "false", "true" ], description: 'Run pre-setup and basic tests on OVA VM. Applicable only if CREATE_VM=true')
+	choice(name: 'CREATE_VM', choices: [ "false", "true" ], description: 'Create a VM from generated OVA')
+	string(name: 'OVA_VM_NAME', defaultValue: 'test-ova-vm', description: 'Name for OVA VM. Applicable only if CREATE_VM=true')
+	choice(name: 'OVA_TESTER', choices: [ "false", "true" ], description: 'Run pre-setup and basic tests on OVA VM. Applicable only if CREATE_VM=true')
     }
     environment {
         DEPLOYMENT_HOST_SSH_KEY = credentials('dev-server-sshkey')
@@ -71,7 +71,7 @@ pipeline {
 		        }
             }
         }
-	    stage('Create OVA VM') {
+	stage('Create OVA VM') {
             when { expression { params.CREATE_VM == 'true' } }
             steps {
                 sleep time: 30, unit: 'SECONDS'
