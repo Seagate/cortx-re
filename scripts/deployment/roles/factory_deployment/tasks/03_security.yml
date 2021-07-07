@@ -4,6 +4,8 @@
 
 - name: Install security certificate
   command: cortx_setup security config --certificate /opt/seagate/cortx/provisioner/srv/components/misc_pkgs/ssl_certs/files/stx.pem
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['srvnodes'] }}" 
 
 #- name: Configure feature get config-key
 #  command: cortx_setup config get --key <config-key>
