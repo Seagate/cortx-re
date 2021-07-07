@@ -17,7 +17,7 @@
 
 - name: "[deploy-prep] : Wait for SSH Connection"
   pause:
-    minutes: 1
+    minutes: 3
 
 - name: Create cortx directory
   shell: mkdir /mnt/cortx
