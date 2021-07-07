@@ -20,9 +20,7 @@
     minutes: 3
 
 - name: Create cortx directory
-  file:
-    path: /mnt/cortx
-    state: directory
+  shell: mkdir /mnt/cortx
 
 - name: Download cortx_prep
   shell: (cd /mnt/cortx && curl -O https://raw.githubusercontent.com/Seagate/cortx-prvsnr/pre-cortx-1.0/srv/components/provisioner/scripts/cortx_prep.sh)
