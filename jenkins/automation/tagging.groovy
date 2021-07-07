@@ -10,10 +10,10 @@ pipeline {
         parameters {
                 string(name: 'RELEASE_INFO_URL', defaultValue: '', description: 'RELEASE BUILD')
                 string(name: 'GIT_TAG', defaultValue: '', description: 'Tag Name')
-				string(name: 'TAG_MESSAGE', defaultValue: '', description: 'Tag Message')
-				string(name: 'REL_NAME', defaultValue: '', description: 'Release Name')
-				string(name: 'REL_ID', defaultValue: '', description: 'Release Id')
-				booleanParam(name: 'DEBUG', defaultValue: false, description: 'Select this if you want to Delete the current Tag')
+		string(name: 'TAG_MESSAGE', defaultValue: '', description: 'Tag Message')
+		string(name: 'REL_NAME', defaultValue: '', description: 'Release Name')
+		string(name: 'REL_ID', defaultValue: '', description: 'Release Id')
+		booleanParam(name: 'DEBUG', defaultValue: false, description: 'Select this if you want to Delete the current Tag')
             }
 		
 		
@@ -51,16 +51,16 @@ pipeline {
 	stage('Checkout Script') {
             steps {             
                 script {
-                    checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/balajiramachandran-seagate/cortx-re']]])                
+                    checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])                
                 }
             }
         }
-		stage ("Tagging") {
-			steps {
-				script { build_stage=env.STAGE_NAME }
-					script { 
-						withCredentials([usernamePassword(credentialsId: 'cortx-admin-github', passwordVariable: 'PASSWD', usernameVariable: 'USER_NAME')]) {
-						sh """ bash scripts/release_support/git-tag.sh """    
+	stage("Tagging") {
+	    steps {
+		script { build_stage=env.STAGE_NAME }
+			script { 
+				withCredentials([usernamePassword(credentialsId: 'cortx-admin-github', passwordVariable: 'PASSWD', usernameVariable: 'USER_NAME')]) {
+				sh """ bash scripts/release_support/git-tag.sh """    
 					}
 				}			
 			}
@@ -72,7 +72,7 @@ def get_commit_hash(String component, String release_info) {
 
     return sh(script: """
             set +x
-            if [ "$component" == "cortx-hare" ] || [ "$component" == "cortx-sspl" ] || [ "$component" == "cortx-ha" ] || [ "$component" == "cortx-fs" ] || [ "$component" == "cortx-py-utils" ] || [ "$component" == "cortx-prereq" ]; then
+            if [ "$component" == "cortx-hare" ] || [ "$component" == "cortx-sspl" ] || [ "$component" == "cortx-ha" ] || [ "$component" == "cortx-py-utils" ] || [ "$component" == "cortx-prereq" ]; then
                 
                 echo \$(curl -s $release_info | grep -w '*.rpm\\|$component\\|uniq' | awk '!/debuginfo*/' | awk -F['_'] '{print \$2}' | cut -d. -f1 |  sed 's/git//g' | grep -v ^[[:space:]]*\$);
 					
