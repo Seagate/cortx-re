@@ -10,15 +10,16 @@ pipeline {
         string(name: 'HOST', defaultValue: '10.230.245.7', description: 'IP address of VM deploy host')
         string(name: 'VSPHERE_VM_NAME', defaultValue: 'cortx-sms-ova', description: 'Name VM deploy host')
         string(name: 'VSPHERE_VM_SNAPSHOT_NAME', defaultValue: 'cortx-sms-ova-snap', description: 'Snapshot name of VM deploy host')
-	choice(name: 'CREATE_VM', choices: [ "false", "true" ], description: 'Create a VM from generated OVA')
-	string(name: 'OVA_VM_NAME', defaultValue: 'test-ova-vm', description: 'Name for OVA VM. Applicable only if CREATE_VM=true')
-	choice(name: 'OVA_TESTER', choices: [ "false", "true" ], description: 'Run pre-setup and basic tests on OVA VM. Applicable only if CREATE_VM=true')
+	    choice(name: 'CREATE_VM', choices: [ "false", "true" ], description: 'Create a VM from generated OVA')
+	    string(name: 'OVA_VM_NAME', defaultValue: 'test-ova-vm', description: 'Name for OVA VM. Applicable only if CREATE_VM=true')
+	    choice(name: 'OVA_TESTER', choices: [ "false", "true" ], description: 'Run pre-setup and basic tests on OVA VM. Applicable only if CREATE_VM=true')
     }
     environment {
         DEPLOYMENT_HOST_SSH_KEY = credentials('dev-server-sshkey')
         S3_SECRET_KEY = credentials('s3-dummy-secret-key')
         NODE_SSH_PASS = credentials('cortx_ova_creds')
-        VSPHERE_HOSTNAME = "10.230.240.78"
+        VSPHERE_HOSTNAME = credentials('vsphere_host_ip')
+        VSPHERE_DOMAIN = credentials('vsphere_domain')
     }
     options {
         timeout(time: 300, unit: 'MINUTES')
@@ -95,7 +96,7 @@ pipeline {
 def executeAnsiblePlaybook(tags) {
     withCredentials([usernamePassword(credentialsId: 'vsphere_creds', passwordVariable: 'VSPHERE_PASSWORD', usernameVariable: 'VSPHERE_USERNAME'), usernamePassword(credentialsId: 'cortx_test_setup_creds', passwordVariable: 'TEST_PASS', usernameVariable: 'TEST_USER')]) {
 
-        dir('cortx-re/ova/release-1.0.4') {
+        dir('cortx-re/solutions/ova/ova-1.0.0') {
             ansiblePlaybook(
                 playbook: 'cortx_ova_release.yml',
                 inventory: 'inventories/development/hosts',
@@ -110,6 +111,7 @@ def executeAnsiblePlaybook(tags) {
                         "VSPHERE_HOSTNAME"          : [value: "${VSPHERE_HOSTNAME}", hidden: true],
                         "VSPHERE_PASSWORD"          : [value: "${VSPHERE_PASSWORD}", hidden: true],
                         "VSPHERE_USERNAME"          : [value: "${VSPHERE_USERNAME}", hidden: true],
+                        "VSPHERE_DOMAIN"            : [value: "${VSPHERE_DOMAIN}", hidden: true],
                         "TEST_PASS"                 : [value: "${TEST_PASS}", hidden: true],
                         "TEST_USER"                 : [value: "${TEST_USER}", hidden: true],
                         "S3_SECRET_KEY"             : [value: "${S3_SECRET_KEY}", hidden: true], 
@@ -124,7 +126,7 @@ def executeAnsiblePlaybook(tags) {
 def executeOVATesterPlaybook() {
     withCredentials([usernamePassword(credentialsId: 'vsphere_creds', passwordVariable: 'VSPHERE_PASSWORD', usernameVariable: 'VSPHERE_USERNAME'), usernamePassword(credentialsId: 'cortx_test_setup_creds', passwordVariable: 'TEST_PASS', usernameVariable: 'TEST_USER')]) {
 
-        dir('cortx-re/ova/release-1.0.4') {
+        dir('cortx-re/solutions/ova/ova-1.0.0') {
             ansiblePlaybook(
                 playbook: 'cortx_ova_release.yml',
                 inventory: 'inventories/development/hosts',
@@ -135,6 +137,7 @@ def executeOVATesterPlaybook() {
                         "VSPHERE_HOSTNAME"          : [value: "${VSPHERE_HOSTNAME}", hidden: true],
                         "VSPHERE_PASSWORD"          : [value: "${VSPHERE_PASSWORD}", hidden: true],
                         "VSPHERE_USERNAME"          : [value: "${VSPHERE_USERNAME}", hidden: true],
+                        "VSPHERE_DOMAIN"            : [value: "${VSPHERE_DOMAIN}", hidden: true],
                         "TEST_PASS"                 : [value: "${TEST_PASS}", hidden: true],
                         "TEST_USER"                 : [value: "${TEST_USER}", hidden: true],
                         "OVA_VM_NAME"               : [value: "${OVA_VM_NAME}", hidden: false]
