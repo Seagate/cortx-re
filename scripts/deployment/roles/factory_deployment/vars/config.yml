@@ -1,0 +1,14 @@
+---
+
+REQUIRED_HOST: 3
+REQUIRED_DEVICES: 64
+CORXT_DEPLOYMENT_LOG_PATH: "/root/cortx_deployment/log/"
+CORXT_DEPLOYMENT_SCRIPT_PATH: "/root/cortx_deployment/script"
+
+required_vars:
+  - NODE1
+  - NODE2
+  - NODE3
+  - CLUSTER_PASS
+  - CHANGE_PASS
+  - CORTX_BUILD_URL

@@ -1,0 +1,35 @@
+---
+
+- name: "[prepare] : Validate the required input arguments for this playbook"
+  fail: msg="Variable '{{ item }}' is not defined"
+  when: item not in vars
+  with_items: "{{required_vars}}"
+
+- name: "[ Prepare ] : Generate host file"
+  template:
+    src: hosts_srvnodes.j2
+    dest: inventories/factory_deployment/hosts_srvnodes
+    mode: '0754'
+
+- meta: refresh_inventory
+
+- include: passwordless_authentication.yml
+
+- name: "[deploy-prep] : Wait for SSH Connection"
+  pause:
+    minutes: 3
+
+- name: Create cortx directory
+  file:
+    path: /mnt/cortx
+    state: directory
+
+- name: Download cortx_prep
+  shell: (cd /mnt/cortx && curl -O https://raw.githubusercontent.com/Seagate/cortx-prvsnr/pre-cortx-1.0/srv/components/provisioner/scripts/cortx_prep.sh)
+
+- name: Changing perm of "/mnt/cortx/cortx_prep.sh", adding "+x"
+  file: dest=/mnt/cortx/cortx_prep.sh mode=a+x
+
+- name: Prepare setup
+  shell: /mnt/cortx/cortx_prep.sh -t {{ CORTX_BUILD_URL }}
+
