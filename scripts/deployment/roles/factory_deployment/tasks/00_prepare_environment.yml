@@ -13,11 +13,11 @@
 
 - meta: refresh_inventory
 
-- include: passwordless_authentication.yml
+#- include: passwordless_authentication.yml
 
-- name: "[deploy-prep] : Wait for SSH Connection"
-  pause:
-    minutes: 3
+#- name: "[deploy-prep] : Wait for SSH Connection"
+#  pause:
+#    minutes: 3
 
 
 
