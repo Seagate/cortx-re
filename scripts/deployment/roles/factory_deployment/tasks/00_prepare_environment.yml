@@ -20,6 +20,9 @@
  
 - debug: var=op_hosts
 
+- debug: var=hostvars[item]['ansible_default_ipv6']['address']
+  with_items: "{{ groups['srvnodes'] }}" 
+
 #- include: passwordless_authentication.yml
 
 #- name: "[deploy-prep] : Wait for SSH Connection"
