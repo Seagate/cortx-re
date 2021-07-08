@@ -38,12 +38,12 @@
   with_items: "{{ groups['srvnodes'] }}" 
 
 - name: "Storage Configuration gallium primary"
-  command: cortx_setup storage config --controller_type gallium --mode primary --ip 10.0.0.2 --port 80 --user manage --password Seagate123$
+  command: cortx_setup storage config --controller gallium --mode primary --ip 10.0.0.2 --port 80 --user manage --password Seagate123$
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}" 
 
 - name: "Storage Configuration gallium secondary"
-  command: cortx_setup storage config --controller_type gallium --mode secondary --ip 10.0.0.3 --port 80 --user manage --password Seagate123$
+  command: cortx_setup storage config --controller gallium --mode secondary --ip 10.0.0.3 --port 80 --user manage --password Seagate123$
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}" 
 
