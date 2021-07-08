@@ -37,20 +37,20 @@
 #  delegate_to: "{{ item }}"
 #  with_items: "{{ groups['srvnodes'] }}" 
 
-- name: "Storage Configuration gallium primary"
-  command: cortx_setup storage config --controller gallium --mode primary --ip 10.0.0.2 --port 80 --user manage --password Seagate123$
-  delegate_to: "{{ item }}"
-  with_items: "{{ groups['srvnodes'] }}" 
+#- name: "Storage Configuration gallium primary"
+#  command: cortx_setup storage config --controller gallium --mode primary --ip 10.0.0.2 --port 80 --user manage --password Seagate123$
+#  delegate_to: "{{ item }}"
+#  with_items: "{{ groups['srvnodes'] }}" 
 
-- name: "Storage Configuration gallium secondary"
-  command: cortx_setup storage config --controller gallium --mode secondary --ip 10.0.0.3 --port 80 --user manage --password Seagate123$
-  delegate_to: "{{ item }}"
-  with_items: "{{ groups['srvnodes'] }}" 
+#- name: "Storage Configuration gallium secondary"
+#  command: cortx_setup storage config --controller gallium --mode secondary --ip 10.0.0.3 --port 80 --user manage --password Seagate123$
+#  delegate_to: "{{ item }}"
+#  with_items: "{{ groups['srvnodes'] }}" 
 
-- name: "Storage Configuration enclosure-1"
-  command: cortx_setup storage config --name enclosure-1 --type RBOD
-  delegate_to: "{{ item }}"
-  with_items: "{{ groups['srvnodes'] }}" 
+#- name: "Storage Configuration enclosure-1"
+#  command: cortx_setup storage config --name enclosure-1 --type RBOD
+#  delegate_to: "{{ item }}"
+#  with_items: "{{ groups['srvnodes'] }}" 
 
 - name: "Storage Configuration cvg 0 data_devices"
   command: cortx_setup storage config --cvg 0 --data_devices /dev/disk/by-id/dm-name-mpathc,/dev/disk/by-id/dm-name-mpathd,/dev/disk/by-id/dm-name-mpathe,/dev/disk/by-id/dm-name-mpathf,/dev/disk/by-id/dm-name-mpathg,/dev/disk/by-id/dm-name-mpathh,/dev/disk/by-id/dm-name-mpathi,/dev/disk/by-id/dm-name-mpathj,/dev/disk/by-id/dm-name-mpathk --metadata_devices /dev/disk/by-id/dm-name-mpathb
