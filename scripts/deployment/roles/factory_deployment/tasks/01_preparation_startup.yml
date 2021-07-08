@@ -1,10 +1,4 @@
 ---
-
-- include: passwordless_authentication.yml
-
-- name: "[deploy-prep] : Wait for SSH Connection"
-  pause:
-    minutes: 1
     
 - name: Display hostname
   shell: echo `hostname`
