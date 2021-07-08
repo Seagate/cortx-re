@@ -1,56 +1,56 @@
 ---
 
-#- name: "Server Configuration srvnode-1"
-#  command: cortx_setup server config --name srvnode-1 --type HW
-#  delegate_to: "srvnode-1"  
+- name: "Server Configuration srvnode-1"
+  command: cortx_setup server config --name srvnode-1 --type HW
+  delegate_to: "srvnode-1"  
 
-#- name: "Server Configuration srvnode-2"
-#  command: cortx_setup server config --name srvnode-2 --type HW
-#  delegate_to: "srvnode-2"
+- name: "Server Configuration srvnode-2"
+  command: cortx_setup server config --name srvnode-2 --type HW
+  delegate_to: "srvnode-2"
 
-#- name: "Server Configuration srvnode-3"
-#  command: cortx_setup server config --name srvnode-3 --type HW
-#  delegate_to: "srvnode-3"
+- name: "Server Configuration srvnode-3"
+  command: cortx_setup server config --name srvnode-3 --type HW
+  delegate_to: "srvnode-3"
 
-#- name: "Network Configuration lnet"
-#  command: cortx_setup network config --transport lnet --mode tcp
-#  delegate_to: "{{ item }}"
-#  with_items: "{{ groups['srvnodes'] }}" 
+- name: "Network Configuration lnet"
+  command: cortx_setup network config --transport lnet --mode tcp
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['srvnodes'] }}" 
 
-#- name: "Network Configuration eno1"
-#  command: cortx_setup network config --interfaces eno1 --type management
-#  delegate_to: "{{ item }}"
-#  with_items: "{{ groups['srvnodes'] }}" 
+- name: "Network Configuration eno1"
+  command: cortx_setup network config --interfaces eno1 --type management
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['srvnodes'] }}" 
 
-#- name: "Network Configuration data"
-#  command: cortx_setup network config --interfaces enp175s0f0 --type data
-#  delegate_to: "{{ item }}"
-#  with_items: "{{ groups['srvnodes'] }}" 
+- name: "Network Configuration data"
+  command: cortx_setup network config --interfaces enp175s0f0 --type data
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['srvnodes'] }}" 
 
-#- name: "Network Configuration private"
-#  command: cortx_setup network config --interfaces enp216s0f0 --type private
-#  delegate_to: "{{ item }}"
-#  with_items: "{{ groups['srvnodes'] }}" 
+- name: "Network Configuration private"
+  command: cortx_setup network config --interfaces enp216s0f0 --type private
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['srvnodes'] }}" 
 
-#- name: "Network Configuration bmc"
-#  command: cortx_setup network config --bmc 10.237.66.164 --user bmcadmin --password adminBMC!
-#  delegate_to: "{{ item }}"
-#  with_items: "{{ groups['srvnodes'] }}" 
+- name: "Network Configuration bmc"
+  command: cortx_setup network config --bmc 10.237.66.164 --user bmcadmin --password adminBMC!
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['srvnodes'] }}" 
 
-#- name: "Storage Configuration gallium primary"
-#  command: cortx_setup storage config --controller gallium --mode primary --ip 10.0.0.2 --port 80 --user manage --password Seagate123$
-#  delegate_to: "{{ item }}"
-#  with_items: "{{ groups['srvnodes'] }}" 
+- name: "Storage Configuration gallium primary"
+  command: cortx_setup storage config --controller gallium --mode primary --ip 10.0.0.2 --port 80 --user manage --password Seagate123$
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['srvnodes'] }}" 
 
-#- name: "Storage Configuration gallium secondary"
-#  command: cortx_setup storage config --controller gallium --mode secondary --ip 10.0.0.3 --port 80 --user manage --password Seagate123$
-#  delegate_to: "{{ item }}"
-#  with_items: "{{ groups['srvnodes'] }}" 
+- name: "Storage Configuration gallium secondary"
+  command: cortx_setup storage config --controller gallium --mode secondary --ip 10.0.0.3 --port 80 --user manage --password Seagate123$
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['srvnodes'] }}" 
 
-#- name: "Storage Configuration enclosure-1"
-#  command: cortx_setup storage config --name enclosure-1 --type RBOD
-#  delegate_to: "{{ item }}"
-#  with_items: "{{ groups['srvnodes'] }}" 
+- name: "Storage Configuration enclosure-1"
+  command: cortx_setup storage config --name enclosure-1 --type RBOD
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['srvnodes'] }}" 
 
 - name: "Storage Configuration cvg 0 data_devices"
   command: cortx_setup storage config --cvg 0 --data_devices /dev/disk/by-id/dm-name-mpathc,/dev/disk/by-id/dm-name-mpathd,/dev/disk/by-id/dm-name-mpathe,/dev/disk/by-id/dm-name-mpathf,/dev/disk/by-id/dm-name-mpathg,/dev/disk/by-id/dm-name-mpathh,/dev/disk/by-id/dm-name-mpathi,/dev/disk/by-id/dm-name-mpathj,/dev/disk/by-id/dm-name-mpathk --metadata_devices /dev/disk/by-id/dm-name-mpathb
