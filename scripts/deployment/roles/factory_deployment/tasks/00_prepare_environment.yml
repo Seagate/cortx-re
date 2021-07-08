@@ -13,6 +13,10 @@
 
 - meta: refresh_inventory
 
+- name: "[prepare] : Refreshing 'known hosts'"
+  command: echo "{{ hostvars[item]['ansible_host'] }}"
+  with_items: "{{ groups['srvnodes'] }}"
+
 #- include: passwordless_authentication.yml
 
 #- name: "[deploy-prep] : Wait for SSH Connection"
