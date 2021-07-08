@@ -14,14 +14,12 @@
 - meta: refresh_inventory
 
 - name: "[prepare] : Refreshing 'known hosts'"
-  command: echo "{{ hostvars[item]['ansible_host'] }}"
+  command: echo "{{ hostvars[item]['ansible_default_ipv6']['address'] }}"
   with_items: "{{ groups['srvnodes'] }}"
   register: op_hosts
  
 - debug: var=op_hosts
 
-- debug: var=hostvars[item]['ansible_default_ipv6']['address']
-  with_items: "{{ groups['srvnodes'] }}" 
 
 #- include: passwordless_authentication.yml
 
