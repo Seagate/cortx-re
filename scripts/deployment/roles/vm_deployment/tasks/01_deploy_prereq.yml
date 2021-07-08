@@ -7,7 +7,7 @@
 
 - set_fact:
     REQUIRED_HOST: "{% if SETUP_TYPE=='single' %}1{% elif SETUP_TYPE=='3_node'%}3{% else %}1{% endif %}"
-    REQUIRED_DEVICES:  "{% if SETUP_TYPE=='single' %}2{% elif SETUP_TYPE=='3_node'%}3{% else %}2{% endif %}"
+    REQUIRED_DEVICES:  "{% if SETUP_TYPE=='single' %}2{% elif SETUP_TYPE=='3_node'%}4{% else %}2{% endif %}"
 
 - name: "[ Pre-Validation ] : Validate the input arguments"
   fail: msg="Provided Host count not matching with setup type"
