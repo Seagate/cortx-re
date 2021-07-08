@@ -16,6 +16,9 @@
 - name: "[prepare] : Refreshing 'known hosts'"
   command: echo "{{ hostvars[item]['ansible_host'] }}"
   with_items: "{{ groups['srvnodes'] }}"
+  register: op_hosts
+ 
+- debug: var=op_hosts
 
 #- include: passwordless_authentication.yml
 
