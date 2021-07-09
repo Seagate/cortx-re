@@ -59,15 +59,15 @@ services:
      - /var/artifacts:/var/artifacts
      - /root/cortx:/cortx-workspace
 
-     cortx-build-internal-centos-7.8.2003:
-      image: ghcr.io/seagate/cortx-re/cortx-build-internal:centos-7.9.2009
-      build:
-        context: ../../
-        dockerfile: ./docker/cortx-build//Dockerfile
-        args:
-         CENTOS_RELEASE: 7.9.2009
-         LUSTRE_VERSION: 2.12.6
-         ENVIRONMENT: internal-ci
-      volumes:
-       - /var/artifacts:/var/artifacts
-       - /root/cortx:/cortx-workspace     
+  cortx-build-internal-centos-7.8.2003:
+    image: ghcr.io/seagate/cortx-re/cortx-build-internal:centos-7.9.2009
+    build:
+      context: ../../
+      dockerfile: ./docker/cortx-build//Dockerfile
+      args:
+        CENTOS_RELEASE: 7.9.2009
+        LUSTRE_VERSION: 2.12.6
+        ENVIRONMENT: internal-ci
+    volumes:
+    - /var/artifacts:/var/artifacts
+    - /root/cortx:/cortx-workspace
