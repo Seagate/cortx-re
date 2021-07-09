@@ -121,8 +121,8 @@ pipeline {
 					env.code_coverage_url = "${CODACY_URL}"
 					def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
 					
-				    def mailRecipients = "priyank.p.dalal@seagate.com,shailesh.vaidya@seagate.com,mukul.malhotra@seagate.com,nilesh.govande@seagate.com,puja.mudaliar@seagate.com"
-                
+				    //def mailRecipients = "priyank.p.dalal@seagate.com,shailesh.vaidya@seagate.com,mukul.malhotra@seagate.com,nilesh.govande@seagate.com,puja.mudaliar@seagate.com"
+                			def mailRecipients = "puja.mudaliar@seagate.com"
 					if (fileExists('s3server.html')){
 						try {
 							file_status = readFile(file: 's3server.html')
