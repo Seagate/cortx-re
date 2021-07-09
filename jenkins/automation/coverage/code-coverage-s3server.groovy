@@ -105,7 +105,7 @@ pipeline {
 		always {
 			withCredentials([string(credentialsId: 'codacy-token', variable: 'CODACYTOKEN')]) {
 				script {
-					try {
+					/*try {
 						sh label: 'download_log_files', returnStdout: true, script: """ 
 							export PYTHONPATH=$PATH_TO_MODULE:$PYTHONPATH
 							pip3 install json2html							
@@ -113,7 +113,7 @@ pipeline {
 						"""
 					} catch (err) {
 						echo err.getMessage()
-					}
+					}*/
 				
 				
 					env.component_name = "${COMPONENT}"
