@@ -21,6 +21,8 @@
 
 - name: Install device-mapper-multipath
   shell: yum install -y device-mapper-multipath
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['srvnodes'] }}" 
     
 - name: Copy multipath configuration
   shell: cp /usr/share/doc/device-mapper-multipath-0.4.9/multipath.conf /etc/multipath.conf
