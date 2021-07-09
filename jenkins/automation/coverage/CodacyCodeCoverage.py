@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import json
 import requests
 from json2html import *
