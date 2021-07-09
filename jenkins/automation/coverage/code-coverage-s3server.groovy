@@ -18,9 +18,9 @@ pipeline {
 
 	environment {  
 		S3_URL = "https://github.com/Seagate/cortx-s3server"
-        S3_BRANCH = "main"
-        CODACY_URL = "https://app.codacy.com/gh/Seagate/cortx-s3server/dashboard"
-        COMPONENT = "CORTX-S3Server"
+        	S3_BRANCH = "main"
+        	CODACY_URL = "https://app.codacy.com/gh/Seagate/cortx-s3server/dashboard"
+        	COMPONENT = "CORTX-S3Server"
 	}
 	
 	stages {	
