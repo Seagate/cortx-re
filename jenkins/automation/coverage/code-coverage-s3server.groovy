@@ -105,7 +105,7 @@ pipeline {
 		always {
 			withCredentials([string(credentialsId: 'codacy-token', variable: 'CODACYTOKEN')]) {
 				script {
-					/*try {
+					try {
 						sh label: 'download_log_files', returnStdout: true, script: """ 
 							export PYTHONPATH=$PATH_TO_MODULE:$PYTHONPATH
 							pip3 install json2html							
@@ -113,7 +113,7 @@ pipeline {
 						"""
 					} catch (err) {
 						echo err.getMessage()
-					}*/
+					}
 				
 				
 					env.component_name = "${COMPONENT}"
@@ -123,7 +123,7 @@ pipeline {
 					
 				    def mailRecipients = "priyank.p.dalal@seagate.com,shailesh.vaidya@seagate.com,mukul.malhotra@seagate.com,nilesh.govande@seagate.com,puja.mudaliar@seagate.com"
                 
-					/*if (fileExists('s3server.html')){
+					if (fileExists('s3server.html')){
 						try {
 							file_status = readFile(file: 's3server.html')
 							env.failure_cause = file_status
@@ -131,12 +131,11 @@ pipeline {
 						} catch (err) {
 							echo err.getMessage()
 						}
-					}*/
+					}
                 
 					emailext (
                     
-						//body: '''${SCRIPT, template="code-coverage-email.template"} , ${FILE,path="s3server.html"} ''',
-						body: '''${SCRIPT, template="code-coverage-email.template"} ''',
+						body: '''${SCRIPT, template="code-coverage-email.template"} , ${FILE,path="s3server.html"} ''',
 						mimeType: 'text/html',
 						subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME} Status",
 						attachLog: true,
