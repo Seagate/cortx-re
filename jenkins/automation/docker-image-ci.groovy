@@ -25,7 +25,7 @@ pipeline {
 
         choice (
             name: 'OS_VERSION', 
-            choices: ['centos-7.8.2003', 'centos-7.9'],
+            choices: ['centos-7.8.2003', 'centos-7.9.2009'],
             description: 'OS Version'
         )
 
