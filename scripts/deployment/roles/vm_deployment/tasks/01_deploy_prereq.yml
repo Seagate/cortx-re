@@ -52,12 +52,34 @@
   shell: "lsblk -nd -o NAME -e 11|grep -v sda|sed 's|sd|/dev/sd|g'|paste -s -d, -"
   register: available_devices
 
+- name: "[ Deploy Prerequisite ] : Get CVG-0 devices"
+  shell: "lsblk -n -o NAME {{ available_devices.stdout.split(',')[0] }} | tail -n 4 |grep -v sda| cut -c3- | sed 's|sd|/dev/sd|g'|paste -s -d, -"
+  register: available_cvg0_devices
+  when: SETUP_TYPE == 'single'
+
+- name: "[ Deploy Prerequisite ] : Get CVG-1 devices"
+  shell: "lsblk -n -o NAME {{ available_devices.stdout.split(',')[1] }} | tail -n 4 |grep -v sda| cut -c3- | sed 's|sd|/dev/sd|g'|paste -s -d, -"
+  register: available_cvg1_devices
+  when: SETUP_TYPE == 'single'
+
 - set_fact:
-    VM_DEVICES: "{{ available_devices.stdout }}"
+    CVG0_DEVICES: "{{ available_cvg0_devices.stdout }}"
+    CVG1_DEVICES: "{{ available_cvg1_devices.stdout }}"
+  when: SETUP_TYPE == 'single'  
     
 - set_fact:
-    DATA_DEVICES: "{{ ','.join(VM_DEVICES.split(',')[1:REQUIRED_DEVICES|int]) }}"
-    METADATA_DEVICES: "{{ VM_DEVICES.split(',')[0] }}"
+    CVG0_DATA_DEVICES: "{{ ','.join(CVG0_DEVICES.split(',')[1:REQUIRED_DEVICES|int]) }}"
+    CVG0_METADATA_DEVICES: "{{ CVG0_DEVICES.split(',')[0] }}"
+    CVG1_DATA_DEVICES: "{{ ','.join(CVG1_DEVICES.split(',')[1:REQUIRED_DEVICES|int]) }}"
+    CVG1_METADATA_DEVICES: "{{ CVG1_DEVICES.split(',')[0] }}"
+  when: SETUP_TYPE == 'single'
+   
+- set_fact:
+    CVG0_DATA_DEVICES: "{{ available_devices.stdout.split(',')[1] }}"
+    CVG0_METADATA_DEVICES: "{{ available_devices.stdout.split(',')[0] }}"
+    CVG0_DATA_DEVICES: "{{ available_devices.stdout.split(',')[3] }}"
+    CVG0_METADATA_DEVICES: "{{ available_devices.stdout.split(',')[2] }}"
+  when: SETUP_TYPE == '3_node'  
 
 - name: "[ Deploy Prerequisite ] : Create provisioner config file & bootstrap script on primary node"
   template:
