@@ -99,7 +99,11 @@ pipeline {
 				script { build_stage = env.STAGE_NAME }
 				sh label: 'Build Docker image', script: '''
                 docker login ghcr.io -u ${GITHUB_CRED_USR} -p ${GITHUB_CRED_PSW}
-                docker-compose -f docker/internal-ci/docker-compose.yml push cortx-build-internal-$OS_VERSION
+                if [ $ENVIRONMENT == "internal-ci" ]; then
+                    docker-compose -f docker/cortx-build/docker-compose.yml push cortx-build-internal-$OS_VERSION
+                else
+                    docker-compose -f docker/cortx-build/docker-compose.yml push cortx-build-$OS_VERSION
+                fi    
                 '''
 			}
 		}
