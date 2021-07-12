@@ -12,4 +12,27 @@
   
 - include: 04_node_configuration.yml
   tags: ['04_NODE_CONFIGURATION']
-
+  
+- include: 05_prepare_node.yml
+  tags: ['05_PREPARE_NODE']
+  
+- include: 06_network_config.yml
+  tags: ['06_NETWORK_CONFIG']
+  
+- include: 07_system_config.yml
+  tags: ['07_SYSTEM_CONFIG']
+  
+- include: 08_cluster_config.yml
+  tags: ['08_CLUSTER_CONFIG']
+  
+- include: 09_add_network.yml
+  tags: ['09_ADD_NETWORK']
+  
+- include: 10_storage_set.yml
+  tags: ['10_STORAGE_NETWORK']
+  
+- include: 11_prepare_configure_cluster.yml
+  tags: ['11_PREAPRE_CONFIGURE']
+  
+- include: 12_start_cluster.yml
+  tags: ['12_START_CLUSTER']
