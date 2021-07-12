@@ -10,9 +10,10 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import yaml
 
+
 class CSM_boarding(unittest.TestCase):
     def setUp(self):
-        #self.driver = webdriver.Firefox()
+        # self.driver = webdriver.Firefox()
         chrome_options = Options()
         chrome_options.add_argument('--start-maximized')
         chrome_options.add_argument('--no-sandbox')
@@ -33,7 +34,7 @@ class CSM_boarding(unittest.TestCase):
             ele.click()
             ele = self.get_element(By.ID, loc.Preboarding.terms_btn)
             ele.click()
-            ele = self.get_element(By.ID,loc.Preboarding.accept_btn)
+            ele = self.get_element(By.ID, loc.Preboarding.accept_btn)
             ele.click()
             ele = self.get_element(By.ID, loc.Preboarding.username_ip)
             ele.send_keys(self.cfg['preboarding']['username'])
@@ -49,67 +50,85 @@ class CSM_boarding(unittest.TestCase):
             print("Admin user is created")
         except Exception as e:
             print(e)
-            self.assertTrue(False,"ERROR: Failed to create Admin User")
+            self.driver.save_screenshot(
+                "".join(["Failure-Preboarding-Screenshot", str(time.strftime("-%Y%m%d-%H%M%S")), ".png"]))
+            self.assertTrue(False, "ERROR: Failed to create Admin User")
 
     def test_onboarding(self):
         try:
             browser = self.driver
             browser.get(self.cfg['onboarding']['url'])
+            print("URL:", self.cfg['onboarding']['url'])
+            print("Username: ", self.cfg['onboarding']['username'])
             ele = self.get_element(By.ID, loc.Onboarding.username_ip)
             self.clear_send(ele, self.cfg['onboarding']['username'])
+            print("Password: ", self.cfg['onboarding']['password'])
             ele = self.get_element(By.ID, loc.Onboarding.password_ip)
             self.clear_send(ele, self.cfg['onboarding']['password'])
+            print("Clicking login button...")
             ele = self.get_element(By.ID, loc.Onboarding.login_btn)
             ele.click()
+            print("System Name: ", self.cfg['onboarding']['system'])
             ele = self.get_element(By.ID, loc.Onboarding.sys_ip)
             self.clear_send(ele, self.cfg['onboarding']['system'])
             ele = self.get_element(By.XPATH, loc.Onboarding.continue_btn)
             ele.click()
             ele = self.get_element(By.XPATH, loc.Onboarding.continue_btn)
             ele.click()
-            ele  = self.get_element(By.ID,loc.Onboarding.dns_server_ip)
+            print("DNS IP", self.cfg['onboarding']['dns'])
+            ele = self.get_element(By.ID, loc.Onboarding.dns_server_ip)
             self.clear_send(ele, self.cfg['onboarding']['dns'])
-            ele  = self.get_element(By.ID,loc.Onboarding.dns_search_ip)
+            print("DNS search: ", self.cfg['onboarding']['search'])
+            ele = self.get_element(By.ID, loc.Onboarding.dns_search_ip)
             self.clear_send(ele, self.cfg['onboarding']['search'])
             ele = self.get_element(By.XPATH, loc.Onboarding.continue_btn)
             ele.click()
-            ele  = self.get_element(By.ID,loc.Onboarding.ntp_server_ip)
+            print("NTP Server : ", self.cfg['onboarding']['ntp'])
+            ele = self.get_element(By.ID, loc.Onboarding.ntp_server_ip)
             self.clear_send(ele, self.cfg['onboarding']['ntp'])
             ele = self.get_element(By.XPATH, loc.Onboarding.continue_btn)
             ele.click()
-            ele  = self.get_element(By.XPATH,loc.Onboarding.skip_step_chk)
+            print("Skip the email notification...")
+            ele = self.get_element(By.XPATH, loc.Onboarding.skip_step_chk)
             ele.click()
             ele = self.get_element(By.XPATH, loc.Onboarding.continue_btn)
             ele.click()
             ele = self.get_element(By.XPATH, loc.Onboarding.continue_btn)
             ele.click()
-            ele  = self.get_element(By.ID,loc.Onboarding.confirm_btn)
+            print("Confirm the onboarding...")
+            ele = self.get_element(By.ID, loc.Onboarding.confirm_btn)
             ele.click()
-            ele  = self.get_element(By.ID,loc.Onboarding.finish_btn)
+            print("Finish the on boarding...")
+            ele = self.get_element(By.ID, loc.Onboarding.finish_btn, waittime=200)
             ele.click()
             print("Onboarding completed!")
         except Exception as e:
             print(e)
-            self.assertTrue(False,"ERROR: Onboarding Failed")
-			
-    def get_element(self, by, loc):
+            self.driver.save_screenshot(
+                "".join(["Failure-Onboarding-Screenshot", str(time.strftime("-%Y%m%d-%H%M%S")), ".png"]))
+            self.assertTrue(False, "ERROR: Onboarding Failed")
+
+    def get_element(self, by, loc, waittime=30):
         time.sleep(2)
-        ele = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((by,loc)))
+        print("Trying to find element : ", loc)
+        ele = WebDriverWait(self.driver, waittime).until(EC.presence_of_element_located((by, loc)))
         return ele
 
     def clear_send(self, ele, txt):
         time.sleep(2)
         ele.click()
+        print("Writing : ", txt)
         ele.send_keys(Keys.CONTROL + "a")
         ele.send_keys(Keys.DELETE)
         ele.send_keys(txt)
 
     def is_element_present(self, how, what):
-        try: self.driver.find_element(by=how, value=what)
-        except NoSuchElementException: return False
+        try:
+            self.driver.find_element(by=how, value=what)
+        except NoSuchElementException:
+            return False
         return True
-    
 
-    
+
 if __name__ == "__main__":
     unittest.main()

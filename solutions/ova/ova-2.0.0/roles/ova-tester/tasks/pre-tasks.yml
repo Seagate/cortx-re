@@ -1,4 +1,8 @@
 ---
+- name: Sleep for 30 seconds and continue with play
+  wait_for:
+    timeout: 30
+
 - name: Add host to group
   add_host:
     name: '{{ ansible_host }}'
@@ -27,38 +31,38 @@
     - Restart network
   delegate_to: "{{ ansible_host }}"
 
-- name: Validate {{ PBDATA1_ITF }} interface
+- name: Validate {{ PBDATA_ITF }} interface
   lineinfile:
-    path: /etc/sysconfig/network-scripts/ifcfg-{{ PBDATA1_ITF }}
+    path: /etc/sysconfig/network-scripts/ifcfg-{{ PBDATA_ITF }}
     state: present
     regexp: '^ONBOOT='
     line: 'ONBOOT=yes'
-  when: ansible_{{ PBDATA1_ITF }}.ipv4.address is not defined
+  when: ansible_{{ PBDATA_ITF }}.ipv4.address is not defined
   notify:
     - Restart network
   delegate_to: "{{ ansible_host }}"
 
-#- name: Validate {{ PVDATA1_ITF }} interface
-#  lineinfile:
-#    path: /etc/sysconfig/network-scripts/ifcfg-{{ PVDATA1_ITF }}
-#    state: present
-#    regexp: '^ONBOOT='
-#    line: 'ONBOOT=yes'
-#  when: ansible_{{ PVDATA1_ITF }}.ipv4.address is not defined
-#  notify:
-#    - Restart network
-#  delegate_to: "{{ ansible_host }}"
+- name: Validate {{ PVDATA_ITF }} interface
+  lineinfile:
+    path: /etc/sysconfig/network-scripts/ifcfg-{{ PVDATA_ITF }}
+    state: present
+    regexp: '^ONBOOT='
+    line: 'ONBOOT=yes'
+  when: ansible_{{ PVDATA_ITF }}.ipv4.address is not defined
+  notify:
+    - Restart network
+  delegate_to: "{{ ansible_host }}"
 
 - name: Refresh network service
   meta: flush_handlers
   delegate_to: "{{ ansible_host }}"
 
 - name: Set hostname
-  shell: hostnamectl set-hostname --static --transient --pretty "cortx-ova.seagate.com"
+  shell: sudo hostnamectl set-hostname --static --transient --pretty "cortx-ova.seagate.com"
   delegate_to: "{{ ansible_host }}"
 
 - name: Bootstrap cluster
-  shell: "sh /opt/seagate/cortx/provisioner/cli/virtual_appliance/bootstrap.sh"
+  shell: "sudo sh /opt/seagate/cortx/provisioner/cli/virtual_appliance/bootstrap.sh"
   delegate_to: "{{ ansible_host }}"
 
 - include_role:
@@ -66,9 +70,13 @@
     apply:
       delegate_to: "{{ ansible_host }}"
 
-- name: open a port
-  shell: "{{ item }}"
-  with_items:
-    - "salt '*' cmd.run 'firewall-cmd --zone=public-data-zone --add-port=80/tcp --permanent'"
-    - "salt '*' cmd.run 'firewall-cmd --reload'"
-  delegate_to: "{{ ansible_host }}"
+#- name: open a port
+#  shell: "{{ item }}"
+#  with_items:
+#    - "salt '*' cmd.run 'firewall-cmd --zone=public-data-zone --add-port=80/tcp --permanent'"
+#    - "salt '*' cmd.run 'firewall-cmd --reload'"
+#  delegate_to: "{{ ansible_host }}"
+
+#- name: Execute s3 sanity tests
+#  shell: sudo sh /opt/seagate/cortx/s3/scripts/s3-sanity-test.sh -e 127.0.0.1
+#  delegate_to: "{{ ansible_host }}"
