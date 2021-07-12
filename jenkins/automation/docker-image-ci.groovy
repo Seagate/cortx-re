@@ -1,7 +1,7 @@
 pipeline {
     agent {
         node {
-            label 'docker-image-build-centos-7.8'
+           label "docker-image-build-${OS_VERSION}"
         }
     }
     
@@ -25,7 +25,7 @@ pipeline {
 
         choice (
             name: 'OS_VERSION', 
-            choices: ['centos-7.8.2003'],
+            choices: ['centos-7.8.2003', 'centos-7.9'],
             description: 'OS Version'
         )
 
