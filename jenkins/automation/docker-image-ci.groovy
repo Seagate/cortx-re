@@ -57,7 +57,7 @@ pipeline {
 			steps {
 				script { build_stage = env.STAGE_NAME }
 				sh label: 'Build Docker image', script: '''
-				echo -e "Running on $HOSTNAME"
+				echo -e "Running on $HOSTNAME with Operating System as $(cat /etc/redhat-release)"
                         #Clean Up
                 		echo 'y' | docker image prune
                 		if [ ! -z \$(docker ps -a -q) ]; then docker rm -f \$(docker ps -a -q); fi
