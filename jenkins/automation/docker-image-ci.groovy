@@ -61,6 +61,7 @@ pipeline {
                         #Clean Up
                 		echo 'y' | docker image prune
                 		if [ ! -z \$(docker ps -a -q) ]; then docker rm -f \$(docker ps -a -q); fi
+                        mkdir -p /mnt/docker/tmp
                         if [ $ENVIRONMENT == "internal-ci" ]; then
                 	    	docker-compose -f docker/cortx-build/docker-compose.yml build --force-rm  --compress --build-arg GIT_HASH="$(git rev-parse --short HEAD)" cortx-build-internal-$OS_VERSION
 		                else
