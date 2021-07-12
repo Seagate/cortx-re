@@ -61,17 +61,12 @@
   shell: "lsblk -n -o NAME {{ available_devices.stdout.split(',')[1] }} | tail -n 4 |grep -v sda| cut -c3- | sed 's|sd|/dev/sd|g'|paste -s -d, -"
   register: available_cvg1_devices
   when: SETUP_TYPE == 'single'
-
-- set_fact:
-    CVG0_DEVICES: "{{ available_cvg0_devices.stdout }}"
-    CVG1_DEVICES: "{{ available_cvg1_devices.stdout }}"
-  when: SETUP_TYPE == 'single'  
     
 - set_fact:
-    CVG0_DATA_DEVICES: "{{ ','.join(CVG0_DEVICES.split(',')[1:REQUIRED_DEVICES|int]) }}"
-    CVG0_METADATA_DEVICES: "{{ CVG0_DEVICES.split(',')[0] }}"
-    CVG1_DATA_DEVICES: "{{ ','.join(CVG1_DEVICES.split(',')[1:REQUIRED_DEVICES|int]) }}"
-    CVG1_METADATA_DEVICES: "{{ CVG1_DEVICES.split(',')[0] }}"
+    CVG0_DATA_DEVICES: "{{ ','.join(available_cvg0_devices.stdout.split(',')[1:4]) }}"
+    CVG0_METADATA_DEVICES: "{{ available_cvg0_devices.stdout.split(',')[0] }}"
+    CVG1_DATA_DEVICES: "{{ ','.join(available_cvg1_devices.stdout.split(',')[1:4]) }}"
+    CVG1_METADATA_DEVICES: "{{ available_cvg1_devices.stdout.split(',')[0] }}"
   when: SETUP_TYPE == 'single'
    
 - set_fact:
