@@ -27,14 +27,15 @@
   environment:
     CORTX_RELEASE_REPO: {{ CORTX_BUILD_URL }}
   
-- include: 09_add_network.yml
-  tags: ['09_ADD_NETWORK']
+- include: 09_storage_set.yml
+  tags: ['09_STORAGE_NETWORK']
+  environment:
+    CORTX_RELEASE_REPO: {{ CORTX_BUILD_URL }}
   
-- include: 10_storage_set.yml
-  tags: ['10_STORAGE_NETWORK']
+- include: 10_prepare_configure_cluster.yml
+  tags: ['10_PREAPRE_CONFIGURE']
+  environment:
+    CORTX_RELEASE_REPO: {{ CORTX_BUILD_URL }}
   
-- include: 11_prepare_configure_cluster.yml
-  tags: ['11_PREAPRE_CONFIGURE']
-  
-- include: 12_start_cluster.yml
-  tags: ['12_START_CLUSTER']
+- include: 11_start_cluster.yml
+  tags: ['11_START_CLUSTER']
