@@ -24,6 +24,8 @@
   
 - include: 08_cluster_config.yml
   tags: ['08_CLUSTER_CONFIG']
+  environment:
+    CORTX_RELEASE_REPO: {{ CORTX_BUILD_URL }}
   
 - include: 09_add_network.yml
   tags: ['09_ADD_NETWORK']
