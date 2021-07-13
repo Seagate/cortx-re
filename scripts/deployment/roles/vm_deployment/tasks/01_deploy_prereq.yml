@@ -61,6 +61,14 @@
   shell: "lsblk -n -o NAME {{ available_devices.stdout.split(',')[1] }} | tail -n 4 |grep -v sda| cut -c3- | sed 's|sd|/dev/sd|g'|paste -s -d, -"
   register: available_cvg1_devices
   when: SETUP_TYPE == 'single'
+
+- name: "[ Deploy Prerequisite ] : Validate primary partitions"
+  fail: msg="Primary device partitions are not matching the requirement"
+  when: "SETUP_TYPE == 'single' && available_cvg0_devices.count(',') + 1 < REQUIRED_PARTITION|int"
+
+- name: "[ Deploy Prerequisite ] : Validate secondary partitions"
+  fail: msg="Secondary device partitions are not matching the requirement"
+  when: "SETUP_TYPE == 'single' && available_cvg1_devices.count(',') + 1 < REQUIRED_PARTITION|int"
     
 - set_fact:
     CVG0_DATA_DEVICES: "{{ ','.join(available_cvg0_devices.stdout.split(',')[1:4]) }}"
