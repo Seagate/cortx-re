@@ -64,11 +64,11 @@
 
 - name: "[ Deploy Prerequisite ] : Validate primary partitions"
   fail: msg="Primary device partitions are not matching the requirement"
-  when: "SETUP_TYPE == 'single' and available_cvg0_devices.count(',') + 1 < REQUIRED_PARTITION|int"
+  when: "SETUP_TYPE == 'single' and available_cvg0_devices.stdout.count(',') + 1 < REQUIRED_PARTITION|int"
 
 - name: "[ Deploy Prerequisite ] : Validate secondary partitions"
   fail: msg="Secondary device partitions are not matching the requirement"
-  when: "SETUP_TYPE == 'single' and available_cvg1_devices.count(',') + 1 < REQUIRED_PARTITION|int"
+  when: "SETUP_TYPE == 'single' and available_cvg1_devices.stdout.count(',') + 1 < REQUIRED_PARTITION|int"
     
 - set_fact:
     CVG0_DATA_DEVICES: "{{ ','.join(available_cvg0_devices.stdout.split(',')[1:4]) }}"
