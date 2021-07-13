@@ -1,0 +1,115 @@
+---
+- name: Take nodes offline
+  hosts: localhost
+
+  vars:
+    jenkins_host: eos-jenkins.mero.colo.seagate.com
+
+  tasks:
+  - name: Take node offline
+    uri:
+      url: http://{{ jenkins_host }}/computer/{{ item }}/toggleOffline?offlineMessage=Rebooting
+      url_username: "{{ jenkins_user }}"
+      url_password: "{{ jenkins_password }}"
+      method: POST
+      force_basic_auth: yes
+      status_code: 302
+    with_items: "{{ groups['all'] }}"
+    tags: jenkins-offline
+
+- name: reboot servers
+  hosts: all
+  remote_user: root
+
+  tasks:
+
+  - name: save an LNet configuration
+    shell: lnetctl export > lnetconfig.yaml
+    tags: reboot
+
+  - name: Reboot host and wait for it to restart
+    reboot:
+      msg: "Reboot initiated by Ansible"
+      connect_timeout: 5
+      reboot_timeout: 600
+      pre_reboot_delay: 0
+      post_reboot_delay: 30
+      test_command: whoami
+    tags: reboot
+
+- name: Take nodes online
+  hosts: localhost
+
+  vars:
+    jenkins_host: eos-jenkins.mero.colo.seagate.com
+
+  tasks:
+  - name: Take node online
+    uri:
+      url: http://{{ jenkins_host }}/computer/{{ item }}/toggleOffline
+      url_username: "{{ jenkins_user }}"
+      url_password: "{{ jenkins_password }}"
+      method: POST
+      force_basic_auth: yes
+      status_code: 302
+    with_items: "{{ groups['all'] }}"
+    tags: jenkins-online
+
+- name: Lnet configuration
+  hosts: all
+  remote_user: root
+  
+  tasks:
+  - name: Check lnet.conf exists in /etc/modprobe.d
+    stat:
+      path: /etc/modprobe.d/lnet.conf
+    register: lnetfilestat
+    tags: lnet
+    
+  - name: Create lnet.conf file if it does not exist
+    file:
+      path: /etc/modprobe.d/lnet.conf
+      state: touch
+    when: lnetfilestat.stat.exists == False
+    tags: lnet
+    
+  - name: Check lnet.conf file contents
+    lineinfile:
+      path: /etc/modprobe.d/lnet.conf
+      line: "options lnet networks=tcp(eth0) config_on_load=1"
+      state: present
+    tags: lnet
+    
+  - name: Import LNet configuration
+    shell: lnetctl import < lnetconfig.yaml
+ 
+  - name: Restart service lnet, if not running
+    shell: systemctl restart lnet
+    tags: lnet
+    
+  - name: Verify output of lctl list_nids
+    shell: lctl list_nids
+    register: output_list_nids
+    tags: lnet   
+    
+  - debug: 
+      var: output_list_nids
+    tags: lnet
+    
+  - name: Restart service lnet, if not running
+    shell: systemctl restart lnet
+    until: output_list_nids.stdout != 0
+    retries: 3
+    delay: 1
+    tags: lnet
+    
+  - name: Verify output of lctl list_nids
+    shell: lctl list_nids
+    register: output_list_nids
+    tags: lnet
+    
+  - name: lctl list_nids output is empty
+    fail:
+      msg: "lctl list_nids output is empty even after restarting lnet service three times"
+    when: output_list_nids.stdout == 0
+    tags: lnet   

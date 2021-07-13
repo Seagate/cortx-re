@@ -18,20 +18,82 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
-BUILD_LOCATION=$1
-EXCLUDE_PACKAGES="cortx-motr-devel\|cortx-motr-tests-ut\|cortx-libsspl_sec-devel\|cortx-libsspl_sec-method_pki\|cortx-prvsnr-cli\|cortx-sspl-cli\|cortx-s3iamcli-devel"
+usage() { echo "Usage: $0 [-l build location] [-b branch] [-v version] [ -t third party location]" 1>&2; exit 1; }
+
+while getopts ":l:v:t:b:" o; do
+    case "${o}" in
+        l)
+            BUILD_LOCATION=${OPTARG}
+            ;;
+        t)
+            THIRD_PARTY_LOCATION=${OPTARG}
+            ;;    
+        v)
+            VERSION=${OPTARG}
+            ;;
+        b)
+            BRANCH=${OPTARG}
+            ;;
+        *)
+            usage
+            ;;
+    esac
+done
+shift $((OPTIND-1))
+
+if [ -z "${BUILD_LOCATION}" ] || [ -z "${BRANCH}" ] || [ -z "${VERSION}" ] || [ -z "${THIRD_PARTY_LOCATION}" ]; then
+    usage
+fi
+
+if [ -z "${BUILD_NUMBER}" ]; then
+BUILD_NUMBER="0"
+fi
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 echo -e "Generating RELEASE.INFO file"
+
+EXCLUDE_PACKAGES="cortx-motr-devel\|cortx-motr-tests-ut\|cortx-libsspl_sec-devel\|cortx-libsspl_sec-method_pki\|cortx-prvsnr-cli\|cortx-sspl-cli\|cortx-s3iamcli-devel\|cortx-sspl-test"
 pushd "$BUILD_LOCATION" || exit
 cat <<EOF > RELEASE.INFO
 ---
 NAME: "CORTX"
-VERSION: "1.0.0"
+VERSION: "$VERSION"
+BRANCH: "$BRANCH"
+THIRD_PARTY_VERSION: $(readlink -f "$THIRD_PARTY_LOCATION" | awk -F '/' '{print $NF}' | sed -e 's/^/\"/g' -e 's/$/\"/g')
 BUILD: $(echo "$BUILD_NUMBER" | sed -e 's/^/\"/g' -e 's/$/\"/g')
 OS: $(cat /etc/redhat-release | sed -e 's/ $//g' -e 's/^/\"/g' -e 's/$/\"/g')
 DATETIME: $(date +"%d-%b-%Y %H:%M %Z" | sed -e 's/^/\"/g' -e 's/$/\"/g')
 KERNEL: $(ls cortx-motr-[0-9]*.rpm | sed -e  's/.*3/3/g' -e 's/.x86_64.rpm//g' -e 's/^/\"/g' -e 's/$/\"/g')
+REQUIRES:
+$(sed 's/^/    /g' "$SCRIPT_DIR"/../versioning/compatibility.info)
 COMPONENTS:
 $(ls -1 ./*.rpm | sed 's/\.\///g' | grep -v "$EXCLUDE_PACKAGES" |  awk '{ print "    - \""$1"\""}')
 EOF
 popd || exit
+
+echo -e "Generating THIRD_PARTY_RELEASE.INFO file"
+
+pushd "$THIRD_PARTY_LOCATION"
+cat <<EOF > THIRD_PARTY_RELEASE.INFO
+---
+NAME: "CORTX"
+VERSION: "$VERSION"
+BUILD: $(echo "$BUILD_NUMBER" | sed -e 's/^/\"/g' -e 's/$/\"/g')
+OS: $(cat /etc/redhat-release | sed -e 's/ $//g' -e 's/^/\"/g' -e 's/$/\"/g')
+DATETIME: $(date +"%d-%b-%Y %H:%M %Z" | sed -e 's/^/\"/g' -e 's/$/\"/g')
+THIRD_PARTY_VERSION: $(readlink -f "$THIRD_PARTY_LOCATION" | awk -F '/' '{print $NF}' | sed -e 's/^/\"/g' -e 's/$/\"/g')
+THIRD_PARTY_COMPONENTS:
+EOF
+popd
+
+pushd "$THIRD_PARTY_LOCATION"
+for dir in $(ls -1 | grep -E -v "repodata|THIRD_PARTY_RELEASE.INFO")
+do
+echo "Adding rpms from $dir"
+cat <<EOF >> THIRD_PARTY_RELEASE.INFO
+    "$dir":
+$(find -L ./"$dir" -type f -not -path "./lustre/custom/tcp/*" -name '*.rpm' -or -name '*.tar.xz' -or -name '*.tgz' | awk -F '/' '{print $NF}' | awk '{ print "       - \""$1"\""}')
+EOF
+done
+popd
 
