@@ -1,0 +1,7 @@
+- name: Cluster definition
+  shell: cortx_setup cluster create {{ primary_host }} {{ secondary_host1 }} {{ secondary_host2 }} --name cortx_cluster --site_count 1 --storageset_count 1
+  delegate_to: "srvnode-1"
+  
+- name: Add network details
+  shell: cortx_setup cluster config network --dns_servers {{ dns_server1 }} {{ dns_server2 }} --virtual_host {{ mngmt_vip }} --search_domains {{ search_domain1 }} {{ search_domain2 }}
+  delegate_to: "srvnode-1"
