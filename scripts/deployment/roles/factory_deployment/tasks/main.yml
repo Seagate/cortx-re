@@ -30,8 +30,6 @@
   
 - include: 10_prepare_configure_cluster.yml
   tags: ['10_PREPARE_CONFIGURE']
-  environment:
-    CORTX_RELEASE_REPO: {{ CORTX_BUILD_URL }}
   
 - include: 11_start_cluster.yml
   tags: ['11_START_CLUSTER']
