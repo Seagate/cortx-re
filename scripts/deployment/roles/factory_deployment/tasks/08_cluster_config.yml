@@ -2,10 +2,10 @@
   shell: cortx_setup cluster create {{ PRIMARY_HOST }} {{ SECONDARY_HOST1 }} {{ SECONDARY_HOST2 }} --name cortx_cluster --site_count 1 --storageset_count 1
   delegate_to: "srvnode-1"
   environment:
-    CORTX_RELEASE_REPO: {{ CORTX_BUILD_URL }}
+    CORTX_RELEASE_REPO: "{{ CORTX_BUILD_URL }}"
   
 - name: Add network details
   shell: ccortx_setup cluster config network --virtual_host {{ MGMT_VIP }}
   delegate_to: "srvnode-1"
   environment:
-    CORTX_RELEASE_REPO: {{ CORTX_BUILD_URL }}
+    CORTX_RELEASE_REPO: "{{ CORTX_BUILD_URL }}"
