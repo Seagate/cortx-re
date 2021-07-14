@@ -1,5 +1,5 @@
 - name: Configure hostname
-  shell: cortx_setup node prepare network --hostname $(hostname -f)
+  shell: cortx_setup node prepare network --hostname $(hostname -f) --search_domains {{ SEARCH_DOMAIN1 }} {{ SEARCH_DOMAIN2 }} --dns_servers {{ DNS_SERVER1 }} {{ DNS_SERVER2 }} 
  
 - name: Node1 Static Config
   shell: cortx_setup node prepare network --type {{item}} --ip_address {{ IP_ADD_NODE1 }} --netmask {{ NETMASK_NODE1 }} --gateway {{ GATEWAY_NODE1 }}
