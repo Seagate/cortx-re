@@ -3,5 +3,5 @@
   delegate_to: "srvnode-1"
   
 - name: Add network details
-  shell: cortx_setup cluster config network --dns_servers {{ DNS_SERVER1 }} {{ DNS_SERVER2 }} --virtual_host {{ MGMT_VIP }} --search_domains {{ SEARCH_DOMAIN1 }} {{ SEARCH_DOMAIN2 }}
+  shell: ccortx_setup cluster config network --virtual_host {{ MGMT_VIP }}
   delegate_to: "srvnode-1"
