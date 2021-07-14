@@ -69,10 +69,8 @@ pipeline {
                         done
                         popd
                     done
-
                     mkdir -p $integration_dir/$release_tag/prod
                     cp -n -r $integration_dir/$release_tag/dev/* $integration_dir/$release_tag/prod/
-
                     pushd $integration_dir/$release_tag/prod
                         rm -f *-debuginfo-*.rpm 
                         rm -f cortx-s3iamcli*.rpm
@@ -153,7 +151,6 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
         
                 sh label: 'Repo Creation', script: '''
-
                     for env in "dev" "prod";
                     do
                         pushd $integration_dir/$release_tag/$env/
@@ -242,7 +239,7 @@ pipeline {
                 sh label: "Sign ISO files", script: '''
                 pushd scripts/rpm-signing
                     ./file-sign.sh ${passphrase} $integration_dir/$release_tag/prod/iso/cortx-$version-$BUILD_NUMBER-upgrade.iso
-                    pkill gpg-agent
+                    sleep 5
                     ./file-sign.sh ${passphrase} $integration_dir/$release_tag/prod/iso/cortx-$version-$BUILD_NUMBER-single.iso 
                 popd
                 '''
@@ -251,7 +248,6 @@ pipeline {
                 cortx_prvsnr_preq=$(ls "$cortx_build_dir/$release_tag/cortx_iso" | grep "python36-cortx-prvsnr" | cut -d- -f5 | cut -d_ -f2 | cut -d. -f1 | sed s/"git"//)
                     
                 wget -O $integration_dir/$release_tag/prod/iso/cortx-prep-$version-$BUILD_NUMBER.sh https://raw.githubusercontent.com/Seagate/cortx-prvsnr/$cortx_prvsnr_preq/cli/src/cortx_prep.sh
-
                 ln -s $cortx_os_iso $integration_dir/$release_tag/prod/iso/$(basename $cortx_os_iso)
  
                 mv $cortx_build_dir/$release_tag/* $integration_dir/$release_tag/prod
@@ -289,7 +285,17 @@ pipeline {
                             string(name: 'CORTX_BUILD', value: "http://cortx-storage.colo.seagate.com/releases/cortx/github/${branch}/${os_version}/${env.release_tag}/prod"),
                             booleanParam(name: 'CREATE_JIRA_ISSUE_ON_FAILURE', value: true),
                             booleanParam(name: 'AUTOMATED', value: true)
-                        ]         
+                        ]
+                    build job: 'Partition Main Deploy 1N', propagate: false, wait: false, parameters: [
+                            string(name: 'CORTX_BUILD', value: "http://cortx-storage.colo.seagate.com/releases/cortx/github/${branch}/${os_version}/${env.release_tag}/prod"),
+                            booleanParam(name: 'CREATE_JIRA_ISSUE_ON_FAILURE', value: true),
+                            booleanParam(name: 'AUTOMATED', value: true)
+                        ]
+                    build job: 'Partition Main Deploy 3N', propagate: false, wait: false, parameters: [
+                            string(name: 'CORTX_BUILD', value: "http://cortx-storage.colo.seagate.com/releases/cortx/github/${branch}/${os_version}/${env.release_tag}/prod"),
+                            booleanParam(name: 'CREATE_JIRA_ISSUE_ON_FAILURE', value: true),
+                            booleanParam(name: 'AUTOMATED', value: true)
+                        ]             
 				}
             }
         }
