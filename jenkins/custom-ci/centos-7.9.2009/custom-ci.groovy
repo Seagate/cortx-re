@@ -422,9 +422,9 @@ pipeline {
 
 				sh label: "Sign ISO files", script: '''
                 pushd scripts/rpm-signing
-                    ./file-sign.sh ${passphrase} $integration_dir/$release_tag/iso/cortx-$version-$release_tag-upgrade.iso
+                    gpg --output $integration_dir/$release_tag/iso/cortx-$version-$release_tag-upgrade.iso.sig --detach-sig $integration_dir/$release_tag/iso/cortx-$version-$release_tag-upgrade.iso
 					sleep 5
-                    ./file-sign.sh ${passphrase} $integration_dir/$release_tag/iso/cortx-$version-$release_tag-single.iso 
+                    gpg --output $integration_dir/$release_tag/iso/cortx-$version-$release_tag-single.iso.sig --detach-sig $integration_dir/$release_tag/iso/cortx-$version-$release_tag-single.iso 
                 popd
                 '''
 
