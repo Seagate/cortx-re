@@ -2,7 +2,7 @@
   shell: cortx_setup node prepare network --hostname $(hostname -f)
  
 - name: Node1 Static Config
-  shell: cortx_setup node prepare network --type {{item}} --ip_address {{ ip_add_node1 }} --netmask {{ netmask_node1 }} --gateway {{ gateway_node1 }}
+  shell: cortx_setup node prepare network --type {{item}} --ip_address {{ IP_ADD_NODE1 }} --netmask {{ NETMASK_NODE1 }} --gateway {{ GATEWAY_NODE1 }}
   delegate_to: "srvnode-1" 
   loop: 
     - management
@@ -10,7 +10,7 @@
     - private
   
 - name: Node2 Static Config
-  shell: cortx_setup node prepare network --type {{item}} --ip_address {{ ip_add_node2 }} --netmask {{ netmask_node2 }} --gateway {{ gateway_node2 }}
+  shell: cortx_setup node prepare network --type {{item}} --ip_address {{ IP_ADD_NODE2 }} --netmask {{ NETMASK_NODE2 }} --gateway {{ GATEWAY_NODE2 }}
   delegate_to: "srvnode-2"
   loop: 
     - management
@@ -18,7 +18,7 @@
     - private
 
 - name: Node2 Static Config
-  shell: cortx_setup node prepare network --type {{item}} --ip_address {{ ip_add_node3 }} --netmask {{ netmask_node3 }} --gateway {{ gateway_node3 }}
+  shell: cortx_setup node prepare network --type {{item}} --ip_address {{ IP_ADD_NODE3 }} --netmask {{ NETMASK_NODE3 }} --gateway {{ GATEWAY_NODE3 }}
   delegate_to: "srvnode-3"
   loop: 
     - management
