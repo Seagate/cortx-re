@@ -24,7 +24,7 @@ yum install libtool kernel kernel-devel libyaml-devel zlib-devel mock rpm-build 
 
 rm -rf lustre
 lustre_repo=https://github.com/Cray/lustre.git
-lustre_branch=cray-2.12-int
+lustre_branch=cray-2.12.4.3
 mock_cfg=/etc/mock/lustre/epel-7.7-x86_64.cfg
 
 case "$*" in
