@@ -88,7 +88,7 @@ best=1
 name=CentOS-$releasever - Base
 mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=os&infra=$infra
 #baseurl=http://mirror.centos.org/centos/$releasever/os/$basearch/
-gpgcheck=1
+gpgcheck=0
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
 enabled = 1
 
@@ -97,7 +97,7 @@ enabled = 1
 name=CentOS-$releasever - Updates
 mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=updates&infra=$infra
 #baseurl=http://mirror.centos.org/centos/$releasever/updates/$basearch/
-gpgcheck=1
+gpgcheck=0
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
 enabled = 0
 
@@ -106,7 +106,7 @@ enabled = 0
 name=CentOS-$releasever - Extras
 mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=extras&infra=$infra
 #baseurl=http://mirror.centos.org/centos/$releasever/extras/$basearch/
-gpgcheck=1
+gpgcheck=0
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
 enabled = 1
 
@@ -125,12 +125,19 @@ mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=testing-epel7&arch=x
 failovermethod=priority
 skip_if_unavailable=False
 
-[mlnx_ofed_4.9]
-name=Mellanox Technologies rhel7.7-$basearch mlnx_ofed 4.7
-baseurl=https://linux.mellanox.com/public/repo/mlnx_ofed/4.9-0.1.7.0/rhel7.8/x86_64/UPSTREAM_LIBS/
+[mlnx_ofed_5.1-2.5.8.0_base]
+name=Mellanox Technologies rhel7.9-$basearch mlnx_ofed 5.1-2.5.8.0 GA
+baseurl=http://linux.mellanox.com/public/repo/mlnx_ofed/5.1-2.5.8.0/rhel7.9/$basearch
 enabled=1
 gpgkey=http://www.mellanox.com/downloads/ofed/RPM-GPG-KEY-Mellanox
 gpgcheck=0
+
+#[mlnx_ofed_4.9]
+#name=Mellanox Technologies rhel7.7-$basearch mlnx_ofed 4.7
+#baseurl=https://linux.mellanox.com/public/repo/mlnx_ofed/4.9-0.1.7.0/rhel7.8/x86_64/UPSTREAM_LIBS/
+#enabled=1
+#gpgkey=http://www.mellanox.com/downloads/ofed/RPM-GPG-KEY-Mellanox
+#gpgcheck=0
 
 
 
@@ -197,7 +204,7 @@ cat > patch <<"END_PATCH"
  %{_sbindir}/*
 END_PATCH
 
-git apply patch
+#git apply patch
 
 log 'Configuring Lustre'
 bash autogen.sh
@@ -210,11 +217,11 @@ make srpm
 log 'Preparing mock environment'
 mock -r ${mock_cfg} clean
 mock -r ${mock_cfg} install \
-    kernel-3.10.0-1127.el7.x86_64 \
-    kernel-devel-3.10.0-1127.el7.x86_64 \
+    kernel-3.10.0-1160.el7.x86_64 \
+    kernel-devel-3.10.0-1160.el7.x86_64 \
     ${use_o2ib:+mlnx-ofa_kernel-devel}
 
-_KERNEL='3.10.0-1127.el7'
+_KERNEL='3.10.0-1160.el7'
 K_ARCH='x86_64'
 
 log "Building Lustre rpms ${use_o2ib:+with o2ib support}"
