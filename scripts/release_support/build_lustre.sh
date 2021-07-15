@@ -147,6 +147,7 @@ END_MOCK_CFG
 log "Cloning Lustre from $lustre_repo"
 git clone --branch $lustre_branch --recursive $lustre_repo
 
+
 log 'Patching Lustre'
 cd lustre
 cat > patch <<"END_PATCH"
@@ -162,49 +163,9 @@ cat > patch <<"END_PATCH"
 
 -echo $VN
 +echo $VN | sed -e 's/cray_//g' -e 's/_dirty//g'
---- a/lustre.spec.in
-+++ b/lustre.spec.in
-@@ -381,6 +381,18 @@
- clients in order to run
- %endif
-
-+%package devel
-+Summary: Lustre include headers
-+Group: Development/Kernel
-+Provides: %{lustre_name}-devel = %{version}
-+Requires: %{requires_kmod_name} = %{requires_kmod_version}
-+BuildRequires: rsync
-+Conflicts: %{lustre_name}-dkms
-+
-+%description devel
-+This package contains headers required to build ancillary kernel modules that
-+work closely with the standard lustre modules.
-+
- %if 0%{?suse_version}
- %debug_package
- %endif
-@@ -572,6 +584,18 @@
- fi
- %endif
-
-+%define lustre_src_dir %{_prefix}/src/%{lustre_name}-%{version}
-+
-+:> lustre-devel.files
-+mkdir -p $RPM_BUILD_ROOT%{lustre_src_dir}
-+cp Module.symvers config.h $RPM_BUILD_ROOT%{lustre_src_dir}
-+rsync -a libcfs/include            $RPM_BUILD_ROOT%{lustre_src_dir}/libcfs/
-+rsync -a lnet/include              $RPM_BUILD_ROOT%{lustre_src_dir}/lnet/
-+rsync -a lustre/include            $RPM_BUILD_ROOT%{lustre_src_dir}/lustre/
-+find $RPM_BUILD_ROOT -path "$RPM_BUILD_ROOT%{lustre_src_dir}/*" -fprintf lustre-devel.files '/%%P\n'
-+
-+%files devel -f lustre-devel.files
-+
- %files -f lustre.files
- %defattr(-,root,root)
- %{_sbindir}/*
 END_PATCH
 
-#git apply patch
+git apply patch
 
 log 'Configuring Lustre'
 bash autogen.sh
