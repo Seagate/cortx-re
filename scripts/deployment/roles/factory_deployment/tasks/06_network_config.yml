@@ -1,6 +1,8 @@
 - name: Configure hostname
   shell: cortx_setup node prepare network --hostname $(hostname -f) --search_domains {{ SEARCH_DOMAIN1 }} {{ SEARCH_DOMAIN2 }} --dns_servers {{ DNS_SERVER1 }} {{ DNS_SERVER2 }} 
- 
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['srvnodes'] }}" 
+  
 - name: Node1 Static Config
   shell: cortx_setup node prepare network --type management --ip_address {{ MGMT_IP_ADD_NODE1 }} --netmask {{ MGMT_NETMASK_NODE1 }} --gateway {{ MGMT_GATEWAY_NODE1 }}
   delegate_to: "srvnode-1" 
