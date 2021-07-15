@@ -1,6 +1,6 @@
 - name: Copy firewall config
   copy:
-    src: ~/firewall_config.yaml   
+    src: files/firewall_config.yaml   
     dest: /root 
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}" 
