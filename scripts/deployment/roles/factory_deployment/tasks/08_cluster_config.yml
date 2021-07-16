@@ -1,4 +1,10 @@
-
+- name: Install pexpect using pip
+  when:
+    - ansible_system == 'Linux'
+  pip:
+    name: pexpect
+    state: latest
+    
 - name: Cluster definition
   expect:
     command: cortx_setup cluster create {{ PRIMARY_HOST }} {{ SECONDARY_HOST1 }} {{ SECONDARY_HOST2 }} --name cortx_cluster --site_count 1 --storageset_count 1
