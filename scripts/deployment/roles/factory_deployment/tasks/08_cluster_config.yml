@@ -7,9 +7,9 @@
   expect:
     command: cortx_setup cluster create {{ PRIMARY_HOST }} {{ SECONDARY_HOST1 }} {{ SECONDARY_HOST2 }} --name cortx_cluster --site_count 1 --storageset_count 1
     responses:
-      Password: "seagate1"
-      Password: "seagate1"
-      Password: "seagate1"
+      'Password:': seagate1
+      'Password:': seagate1
+      'Password:': seagate1
   environment:
     CORTX_RELEASE_REPO: "{{ CORTX_BUILD_URL }}"
   delegate_to: "srvnode-1"
