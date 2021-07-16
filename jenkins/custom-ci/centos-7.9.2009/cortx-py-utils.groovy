@@ -45,13 +45,8 @@ pipeline {
 				sh label: 'Build', script: '''
 				yum install python36-devel -y
 				pushd py-utils
-                    if [ "${CORTX_UTILS_BRANCH}" == "cortx-1.0" ]; then
-                        python3 setup.py bdist_rpm --post-install utils-post-install --pre-uninstall utils-pre-uninstall --release="${BUILD_NUMBER}_$(git rev-parse --short HEAD)"
-                    else   
                         ../jenkins/build.sh -v $version -b $BUILD_NUMBER
-                    fi    
-				popd
-				
+                popd
 				./statsd-utils/jenkins/build.sh -v $version -b $BUILD_NUMBER
 	        '''	
 			}

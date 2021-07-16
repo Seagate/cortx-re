@@ -27,7 +27,7 @@ pipeline {
 		
 		choice(
             name: 'MOTR_BRANCH', 
-            choices: ['custom-ci', 'stable', 'Cortx-v1.0.0_Beta'],
+            choices: ['custom-ci', 'stable'],
             description: 'Branch name to pick-up Motr components rpms'
         )
 

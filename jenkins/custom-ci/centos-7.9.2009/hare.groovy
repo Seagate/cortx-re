@@ -66,17 +66,12 @@ EOF
                 '''
 				sh label: 'Configure yum repositories', script: '''
 					set +x
-					yum-config-manager --disable cortx-C7.7.1908 motr_current_build
 					yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/$os_version/$release_tag/cortx_iso/
 					yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
 					yum clean all;rm -rf /var/cache/yum
 				'''	
 				sh label: 'Install packages', script: '''	
-					if [ "${HARE_BRANCH}" == "Cortx-v1.0.0_Beta" ]; then
-						yum install eos-core{,-devel} -y
-					else
-						yum install cortx-py-utils cortx-motr{,-devel} -y
-					fi
+					yum install cortx-py-utils cortx-motr{,-devel} -y
 				'''
 			}
 		}

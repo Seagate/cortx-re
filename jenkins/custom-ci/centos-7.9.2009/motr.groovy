@@ -49,16 +49,9 @@ pipeline {
 						export build_number=${BUILD_ID}
 						kernel_src=$(ls -1rd /lib/modules/*/build | head -n1)
 						
-						
-						if [ "${MOTR_BRANCH}" == "Cortx-v1.0.0_Beta" ]; then
-						cp mero.spec.in mero.spec
-						sed -i 's/@.*@/111/g' mero.spec
-						yum-builddep -y mero.spec 
-						else
 						cp cortx-motr.spec.in cortx-motr.spec
 						sed -i 's/@.*@/111/g' cortx-motr.spec
 						yum-builddep -y cortx-motr.spec
-						fi
 					'''	
 			}
 		}
