@@ -1,6 +1,4 @@
 - name: Install pexpect using pip
-  when:
-    - ansible_system == 'Linux'
   pip:
     name: pexpect
     state: latest
