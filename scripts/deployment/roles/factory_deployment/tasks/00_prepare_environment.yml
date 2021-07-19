@@ -13,9 +13,6 @@
 
 - meta: refresh_inventory
 
-- name: Display hostname of srvnode1
-  shell: echo `hostname`
-  delegate_to: "srvnode-1"
 
 #- include: passwordless_authentication.yml
 
