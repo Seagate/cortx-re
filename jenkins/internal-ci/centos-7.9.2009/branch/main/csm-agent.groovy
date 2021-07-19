@@ -72,10 +72,12 @@ pipeline {
 			steps {
 				script { build_stage = env.STAGE_NAME }
 				sh label: 'Build', script: '''
+				pushd cortx-csm-agent
 					BUILD=$(git rev-parse --short HEAD)
 					echo "Executing build script"
 					echo "Python:$(python --version)"
-					./cortx-csm-agent/cicd/build.sh -v $version -b $BUILD_NUMBER -t
+					./cicd/build.sh -v $version -b $BUILD_NUMBER -t -n ldr -l $WORKSPACE/seagate-ldr
+				popd	
 				'''	
 			}
 		}
