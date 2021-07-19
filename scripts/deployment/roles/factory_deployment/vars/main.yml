@@ -6,6 +6,7 @@ CORXT_DEPLOYMENT_LOG_PATH: "/root/cortx_deployment/log/"
 CORXT_DEPLOYMENT_SCRIPT_PATH: "/root/cortx_deployment/script"
 REQUIRED_HOST: 3
 REQUIRED_DEVICES: 64
+host_password: seagate1
 
 required_vars:
   - NODES
