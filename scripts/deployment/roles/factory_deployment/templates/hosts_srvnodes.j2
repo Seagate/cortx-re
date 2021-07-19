@@ -4,8 +4,9 @@ ansible_user=root
 ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 
 [srvnodes] 
-{% set node_count = 3 %}
+{% set node_count = 1 %}
 {% for node in NODES.split(',') %}
-srvnode-{{ node_count }} ansible_host={{ node }}
-{% set node_count = node_count + 1 %}
+  srvnode-{{ node_count }} ansible_host={{ node }}
+  {{ node_count }}
+  {% set node_count = node_count + 1 %}
 {% endfor %}
