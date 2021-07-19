@@ -17,6 +17,7 @@ pipeline {
         branch = "main"
         os_version = "centos-7.9.2009"
         release_dir = "/mnt/bigstorage/releases/cortx"
+		release_tag = "last_successful_prod"
         build_upload_dir = "$release_dir/components/github/$branch/$os_version/$env/$component"
     }
 
@@ -40,6 +41,13 @@ pipeline {
 		stage('Install Dependencies') {
 			steps {
 				script { build_stage = env.STAGE_NAME }
+
+				sh label: 'Configure yum repositories', script: """
+					yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/$release_tag/cortx_iso/
+					yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
+					yum clean all && rm -rf /var/cache/yum
+				"""
+
 				sh label: '', script: '''
 					yum install -y cortx-prvsnr
 					pip3.6 install  pyinstaller==3.5

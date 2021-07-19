@@ -17,6 +17,7 @@ pipeline {
         branch = "main"
         os_version = "centos-7.9.2009"
         release_dir = "/mnt/bigstorage/releases/cortx"
+		release_tag = "last_successful_prod"
         build_upload_dir = "$release_dir/components/github/$branch/$os_version/$env/$component"
     }
 
@@ -35,7 +36,13 @@ pipeline {
 				script { build_stage = env.STAGE_NAME }
 
 				dir ('cortx-csm-agent') {
-					checkout([$class: 'GitSCM', branches: [[name: "*/${branch}"]], doGenerateSubmoduleConfigurations: false,  extensions: [[$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-manager']]])
+					checkout([$class: 'GitSCM', branches: [[name: "${branch}"]], doGenerateSubmoduleConfigurations: false,  extensions: [[$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-manager']]])
+				}
+				dir('seagate-ldr') {
+				    checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/seagate-ldr.git']]])
+				}
+				dir ('cortx-re') {
+					checkout changelog: false, poll: false, scm: [$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', noTags: true, reference: '', shallow: true]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]]
 				}
 			}
 		}
@@ -44,30 +51,26 @@ pipeline {
 			steps {
 				script { build_stage = env.STAGE_NAME }
 
-				dir ('cortx-re') {
-					checkout changelog: false, poll: false, scm: [$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', noTags: true, reference: '', shallow: true]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]]
-				}
-
-				sh label: '', script: '''
-				#Use main branch for cortx-py-utils
-				sed -i 's/stable/main/'  /etc/yum.repos.d/cortx.repo
-				yum clean all && rm -rf /var/cache/yum
-
-				# Install cortx-prereq package
-					pip3 uninstall pip -y && yum install python3-pip -y && ln -s /usr/bin/pip3 /usr/local/bin/pip3
+				sh label: 'Install cortx-prereq package', script: """
+					pip3 uninstall pip -y && yum reinstall python3-pip -y && ln -s /usr/bin/pip3 /usr/local/bin/pip3
 					sh ./cortx-re/scripts/third-party-rpm/install-cortx-prereq.sh
+				"""
+				
+				sh label: 'Configure yum repositories', script: """
+					yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/$release_tag/cortx_iso/
+					yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
 					yum clean all && rm -rf /var/cache/yum
+				"""
 
-				# Install pyinstaller	
-				pip3.6 install  pyinstaller==3.5
-				'''
+				sh label: 'Install pyinstaller', script: """
+						pip3.6 install  pyinstaller==3.5
+				"""
 			}
-		}	
+		}		
 		
 		stage('Build') {
 			steps {
 				script { build_stage = env.STAGE_NAME }
-				// Exclude return code check for csm_setup and csm_test
 				sh label: 'Build', script: '''
 					BUILD=$(git rev-parse --short HEAD)
 					echo "Executing build script"
