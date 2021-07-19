@@ -8,7 +8,7 @@
 - name: "[ Prepare ] : Generate host file"
   template:
     src: hosts_srvnodes.j2
-    dest: inventories/factory_deployment/hosts_srvnodes
+    dest: inventories/hw_deployment/hosts_srvnodes
     mode: '0754'
 
 - meta: refresh_inventory
