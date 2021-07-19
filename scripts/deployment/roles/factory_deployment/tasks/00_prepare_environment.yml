@@ -17,11 +17,11 @@
   debug:
     msg: "{{ lookup('template', './hosts_srvnodes.j2') }}"
 
+- meta: refresh_inventory
+
 - name: Display hostname of srvnode1
   shell: echo `hostname`
   delegate_to: "srvnode-1"
-  register: primary_hostname
-  
 
 #- include: passwordless_authentication.yml
 
