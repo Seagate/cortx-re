@@ -1,4 +1,4 @@
-- name: Run expect to wait for a successful PXE boot via out-of-band CIMC
+- name: Cluster Create
   shell: |
     cortx_setup cluster create {{ PRIMARY_HOST }} {{ SECONDARY_HOST1 }} {{ SECONDARY_HOST2 }} --name cortx_cluster --site_count 1 --storageset_count 1
 
