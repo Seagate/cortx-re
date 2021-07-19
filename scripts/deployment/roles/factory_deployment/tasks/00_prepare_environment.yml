@@ -13,6 +13,10 @@
 
 - meta: refresh_inventory
 
+- name: show templating results
+  debug:
+    msg: "{{ lookup('template', './hosts_srvnodes.j2') }}"
+
 
 #- include: passwordless_authentication.yml
 
