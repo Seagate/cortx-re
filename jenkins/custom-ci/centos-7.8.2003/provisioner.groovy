@@ -47,7 +47,7 @@ pipeline {
                 """
                 sh encoding: 'UTF-8', label: 'cortx-setup', script: """
                 if [ -f "./devops/rpms/node_cli/node_cli_buildrpm.sh" ]; then
-                    ./devops/rpms/node_cli/node_cli_buildrpm.sh -g \$(git rev-parse --short HEAD) -e 2.0.0 -b ${CUSTOM_CI_BUILD_ID}
+                    sh ./devops/rpms/node_cli/node_cli_buildrpm.sh -g \$(git rev-parse --short HEAD) -e 2.0.0 -b ${CUSTOM_CI_BUILD_ID}
                 else
                     echo "node_cli package creation is not implemented"
                 fi
