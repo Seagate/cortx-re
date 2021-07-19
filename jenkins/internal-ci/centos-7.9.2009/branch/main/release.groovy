@@ -19,7 +19,7 @@ pipeline {
         BUILD_TO_DELETE = ""
         passphrase = credentials('rpm-sign-passphrase')
         ARTIFACT_LOCATION = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version"
-        third_party_dir = "$release_dir/third-party-deps/centos/centos-7.8.2003-$third_party_version/"
+        third_party_dir = "$release_dir/third-party-deps/centos/$os_version-$third_party_version/"
 		python_deps = "$release_dir/third-party-deps/python-deps/python-packages-2.0.0-latest"
         cortx_os_iso = "/mnt/bigstorage/releases/cortx_builds/custom-os-iso/cortx-2.0.0/cortx-os-2.0.0-7.iso"
         // WARNING : 'rm' command where used in this dir path, be conscious while changing the value  
@@ -241,9 +241,9 @@ pipeline {
                 '''
                 sh label: "Sign ISO files", script: '''
                 pushd scripts/rpm-signing
-                    ./file-sign.sh ${passphrase} $integration_dir/$release_tag/prod/iso/cortx-$version-$BUILD_NUMBER-upgrade.iso
+                    gpg --output $integration_dir/$release_tag/prod/iso/cortx-$version-$BUILD_NUMBER-upgrade.iso.sig --detach-sig $integration_dir/$release_tag/prod/iso/cortx-$version-$BUILD_NUMBER-upgrade.iso 
                     sleep 5
-                    ./file-sign.sh ${passphrase} $integration_dir/$release_tag/prod/iso/cortx-$version-$BUILD_NUMBER-single.iso 
+                    gpg --output $integration_dir/$release_tag/prod/iso/cortx-$version-$BUILD_NUMBER-single.iso.sig --detach-sig $integration_dir/$release_tag/prod/iso/cortx-$version-$BUILD_NUMBER-single.iso 
                 popd
                 '''
 
@@ -275,32 +275,6 @@ pipeline {
                 '''
 			}
 		}
-
-        stage ("Deploy") {
-            steps {
-                script { build_stage = env.STAGE_NAME }
-				script {
-                    build job: 'Main Deploy 1N', propagate: false, wait: false, parameters: [
-                            string(name: 'CORTX_BUILD', value: "http://cortx-storage.colo.seagate.com/releases/cortx/github/${branch}/${os_version}/${env.release_tag}/prod"),
-                            booleanParam(name: 'CREATE_JIRA_ISSUE_ON_FAILURE', value: true),
-                            booleanParam(name: 'AUTOMATED', value: true)
-                        ]
-                    build job: 'Main Deploy 3N', propagate: false, wait: false, parameters: [
-                            string(name: 'CORTX_BUILD', value: "http://cortx-storage.colo.seagate.com/releases/cortx/github/${branch}/${os_version}/${env.release_tag}/prod"),
-                            booleanParam(name: 'CREATE_JIRA_ISSUE_ON_FAILURE', value: true),
-                            booleanParam(name: 'AUTOMATED', value: true)
-                        ]
-                    build job: 'Partition Main Deploy 1N', propagate: false, wait: false, parameters: [
-                            string(name: 'CORTX_BUILD', value: "http://cortx-storage.colo.seagate.com/releases/cortx/github/${branch}/${os_version}/${env.release_tag}/prod"),
-                            booleanParam(name: 'AUTOMATED', value: true)
-                        ]
-                    build job: 'Partition Main Deploy 3N', propagate: false, wait: false, parameters: [
-                            string(name: 'CORTX_BUILD', value: "http://cortx-storage.colo.seagate.com/releases/cortx/github/${branch}/${os_version}/${env.release_tag}/prod"),
-                            booleanParam(name: 'AUTOMATED', value: true)
-                        ]       
-				}
-            }
-        }
 	}
 	
 	post {

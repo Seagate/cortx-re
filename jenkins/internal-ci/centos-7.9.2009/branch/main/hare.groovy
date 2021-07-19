@@ -17,6 +17,7 @@ pipeline {
         branch = "main"
         os_version = "centos-7.9.2009"
         release_dir = "/mnt/bigstorage/releases/cortx"
+		release_tag = "last_successful_prod"
         build_upload_dir = "$release_dir/components/github/$branch/$os_version/$env/$component"
     }
 	
@@ -45,7 +46,7 @@ pipeline {
                         script { build_stage = env.STAGE_NAME }
                         script {
                             sh label: '', script: '''
-                                yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/components/github/$branch/$os_version/dev/motr/last_successful/"
+                                yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/components/github/$branch/$os_version/dev/motr/last_successful/
                                
                             '''
                         }
@@ -57,7 +58,7 @@ pipeline {
                         script { build_stage = env.STAGE_NAME }
                         script {
                             sh label: '', script: '''
-                                yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/components/github/$branch/$os_version/dev/motr/current_build/"
+                                yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/components/github/$branch/$os_version/dev/motr/current_build/
                             '''
                         }
                     }
@@ -83,6 +84,7 @@ EOF
                 '''
 
 				sh label: '', script: '''
+					yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/$release_tag/cortx_iso/
 					yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
                     yum clean all;rm -rf /var/cache/yum
 					yum install cortx-py-utils cortx-motr{,-devel} -y
@@ -197,7 +199,7 @@ EOF
 				def toEmail = ""
 				def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
 				if( manager.build.result.toString() == "FAILURE" ) {
-					toEmail = "CORTX.Hare@seagate.com,shailesh.vaidya@seagate.com"
+					toEmail = "shailesh.vaidya@seagate.com"
 					recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'],[$class: 'RequesterRecipientProvider']]
 				}
 

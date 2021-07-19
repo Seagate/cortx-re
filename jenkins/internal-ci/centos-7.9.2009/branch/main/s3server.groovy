@@ -46,7 +46,7 @@ pipeline {
                         script { build_stage = env.STAGE_NAME }
                         script {
                             sh label: '', script: '''
-                                yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/components/github/$branch/$os_version/dev/motr/last_successful/"
+                                yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/components/github/$branch/$os_version/dev/motr/last_successful/
                                
                             '''
                         }
@@ -58,7 +58,7 @@ pipeline {
                         script { build_stage = env.STAGE_NAME }
                         script {
                             sh label: '', script: '''
-                                yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/components/github/$branch/$os_version/dev/motr/current_build/"
+                                yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/components/github/$branch/$os_version/dev/motr/current_build/
                             '''
                         }
                     }
