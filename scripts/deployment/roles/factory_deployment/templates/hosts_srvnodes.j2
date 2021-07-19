@@ -5,8 +5,7 @@ ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 
 [srvnodes] 
 {% set count = namespace(value=1) %}
-{% for node in NODES.split(',') %}
-  {% set node-count = count.value  %}
-  srvnode-{{ node-count }} ansible_host={{ node }}
+{% for node in NODES.split(',') %}  
+  srvnode-{{ count.value }} ansible_host={{ node }}
   {% set count.value = count.value + 1 %}  
 {% endfor %}
