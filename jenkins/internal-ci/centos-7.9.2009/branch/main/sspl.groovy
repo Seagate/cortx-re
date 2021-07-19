@@ -38,15 +38,6 @@ pipeline {
             }
         }
         
-        stage('Install Dependencies') {
-            steps {
-                script { build_stage = env.STAGE_NAME }
-                sh label: '', script: '''
-                    yum install sudo python-Levenshtein libtool doxygen python-pep8 openssl-devel graphviz check-devel -y
-                '''
-            }
-        }
-
         stage('Build') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -83,7 +74,8 @@ pipeline {
         stage ('Tag last_successful') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Tag last_successful', script: '''pushd $build_upload_dir/
+                sh label: 'Tag last_successful', script: '''
+                pushd $build_upload_dir/
                     test -d $build_upload_dir/last_successful && rm -f last_successful
                     ln -s $build_upload_dir/$BUILD_NUMBER last_successful
                     popd
@@ -148,8 +140,6 @@ pipeline {
 	post {
 		always {
 			script  {    	
-				echo 'Cleanup Workspace.'
-				deleteDir() /* clean up our workspace */
 
 				env.release_build = (env.release_build != null) ? env.release_build : "" 
 				env.release_build_location = (env.release_build_location != null) ? env.release_build_location : ""
