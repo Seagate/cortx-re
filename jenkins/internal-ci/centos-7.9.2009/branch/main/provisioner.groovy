@@ -35,14 +35,6 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
-            steps {
-				script { build_stage = env.STAGE_NAME }
-                sh encoding: 'utf-8', label: 'Install Python', returnStdout: true, script: 'yum install -y python'
-                sh encoding: 'utf-8', label: 'Cleanup', returnStdout: true, script: 'test -d /root/rpmbuild && rm -rf /root/rpmbuild || echo "/root/rpmbuild absent. Skipping cleanup..."'
-            }
-        }
-
         stage('Build') {
             steps {
 				script { build_stage = env.STAGE_NAME }
