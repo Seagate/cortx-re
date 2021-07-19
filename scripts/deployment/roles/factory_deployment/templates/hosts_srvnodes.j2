@@ -8,5 +8,5 @@ ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 {% for node in NODES.split(',') %}
   {{ count.value }}
   {% set count.value = count.value + 1 %}
-  srvnode-{{ node_count }} ansible_host={{ node }}
+  srvnode-{{ count }} ansible_host={{ node }}
 {% endfor %}
