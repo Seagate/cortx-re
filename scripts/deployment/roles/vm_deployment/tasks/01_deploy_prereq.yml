@@ -64,11 +64,11 @@
 
 - name: "[ Deploy Prerequisite ] : Create primary partitions"
   script: files/mk_partition.sh {{ available_devices.stdout.split(',')[0] }}
-  when: "SETUP_TYPE == 'single' and available_cvg0_devices.stdout.count(',') + 1 == 0"
+  when: "SETUP_TYPE == 'single' and available_cvg0_devices.stdout.count(',') == 0"
 
 - name: "[ Deploy Prerequisite ] : Create secondary partitions"
   script: files/mk_partition.sh {{ available_devices.stdout.split(',')[1] }}
-  when: "SETUP_TYPE == 'single' and available_cvg1_devices.stdout.count(',') + 1 == 0"
+  when: "SETUP_TYPE == 'single' and available_cvg1_devices.stdout.count(',') == 0"
 
 - name: "[ Deploy Prerequisite ] : Validate primary partitions"
   fail: msg="Primary device partitions are not matching the requirement"
