@@ -1,17 +1,17 @@
 - name: Display hostname of srvnode1
   shell: echo `hostname`
   register: primary_hostname
-  delegate_to: srvnode-1
+  delegate_to: "srvnode-1"
   
 - name: Display hostname of srvnode2
   shell: echo `hostname`
   register: secondary_hostname1
-  delegate_to: srvnode-2
+  delegate_to: "srvnode-2"
 
 - name: Display hostname of srvnode3
   shell: echo `hostname`
   register: secondary_hostname2
-  delegate_to: srvnode-3
+  delegate_to: "srvnode-3"
   
 - set_fact:
     primary_host: "{{ primary_hostname.stdout }}"
