@@ -21,7 +21,8 @@
 
 - name: Display hostname of srvnode1
   shell: echo `hostname`
-  delegate_to: "srvnode-1"
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['srvnodes'] }}" 
 
 #- include: passwordless_authentication.yml
 
