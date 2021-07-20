@@ -17,6 +17,7 @@ pipeline {
         branch = "main"
         os_version = "centos-7.9.2009"
         release_dir = "/mnt/bigstorage/releases/cortx"
+        release_tag = "last_successful_prod"
         build_upload_dir = "$release_dir/components/github/$branch/$os_version/$env/$component"
     }
     
@@ -53,19 +54,19 @@ EOF
                     pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/$branch/py-utils/python_requirements.ext.txt
                     rm -rf /etc/pip.conf
             '''        
-
-                sh label: '', script: '''
-                #Use main branch for cortx-py-utils
-                sed -i 's/stable/main/'  /etc/yum.repos.d/cortx.repo
-                yum clean all && rm -rf /var/cache/yum
-            '''    
-
             }
         }
         
         stage('Install Dependencies') {
             steps {
                 script { build_stage = env.STAGE_NAME }
+
+                sh label: 'Configure yum repositories', script: """
+                    yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/$release_tag/cortx_iso/
+                    yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
+                    yum clean all && rm -rf /var/cache/yum
+                """
+
                 sh label: '', script: '''
                     pushd $component
                         yum clean all;rm -rf /var/cache/yum
