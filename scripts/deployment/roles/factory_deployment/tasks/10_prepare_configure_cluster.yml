@@ -1,10 +1,6 @@
 - name: Prepare cluster
   shell: cortx_setup cluster prepare
   delegate_to: "srvnode-1"
-   
-- name: Configure cluster
-  shell: cortx_setup cluster config
-  delegate_to: "srvnode-1"
   
 - name: Deploy foundation
   shell: cortx_setup cluster config component --type foundation
