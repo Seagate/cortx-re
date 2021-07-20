@@ -28,23 +28,29 @@
     secondary_host2: "{{ secondary_hostname2.stdout }}"
 
 - name: Cluster Create
-  shell: |
-    cortx_setup cluster create {{ primary_host }} {{ secondary_host1 }} {{ secondary_host2 }} --name cortx_cluster --site_count 1 --storageset_count 1
-
-    expect "Password:"
-    send "{{ host_password }}\n"
-
-    expect "Password:"
-    send "{{ host_password }}\n"
-
-    expect "Password:"
-    send "{{ host_password }}\n"
-    
-  args:
-    executable: /usr/bin/expect
+  shell: cortx_setup cluster create {{ primary_host }} {{ secondary_host1 }} {{ secondary_host2 }} --name cortx_cluster --site_count 1 --storageset_count 1
   environment:
     CORTX_RELEASE_REPO: "{{ CORTX_BUILD_URL }}"
   delegate_to: srvnode-1
+  
+#- name: Cluster Create
+#  shell: |
+#    cortx_setup cluster create {{ primary_host }} {{ secondary_host1 }} {{ secondary_host2 }} --name cortx_cluster --site_count 1 --storageset_count 1
+
+#    expect "Password:"
+#    send "{{ host_password }}\n"
+
+#    expect "Password:"
+#    send "{{ host_password }}\n"
+
+#    expect "Password:"
+#    send "{{ host_password }}\n"
+    
+ # args:
+ #   executable: /usr/bin/expect
+ # environment:
+ #   CORTX_RELEASE_REPO: "{{ CORTX_BUILD_URL }}"
+ # delegate_to: srvnode-1
   
 - name: Add network details
   shell: cortx_setup cluster config network --virtual_host {{ MGMT_VIP }}
