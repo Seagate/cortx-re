@@ -1,3 +1,8 @@
+- name: "[prepare] : Install tools [expect, curl, bc, jq] on localhost"
+  shell: yum install -y expect
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['srvnodes'] }}"
+
 - name: Display hostname of srvnode1
   shell: echo `hostname`
   delegate_to: "srvnode-1" 
