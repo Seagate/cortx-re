@@ -111,11 +111,12 @@ EOF
                 '''
             }
         }
-    
+
         stage ('Tag last_successful') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Tag last_successful', script: '''pushd $build_upload_dir/
+                sh label: 'Tag last_successful', script: '''
+                pushd $build_upload_dir/
                     test -d $build_upload_dir/last_successful && rm -f last_successful
                     ln -s $build_upload_dir/$BUILD_NUMBER last_successful
                     popd
@@ -123,7 +124,7 @@ EOF
             }
         }
 
-        stage ("Release") {
+        stage ('Release') {
             when { triggeredBy 'SCMTrigger' }
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -134,6 +135,7 @@ EOF
                 }
             }
         }
+
         stage('Update Jira') {
             when { expression { return env.release_build != null } }
             steps {
@@ -159,14 +161,14 @@ EOF
                         )
                     }
                 }
+            }
         }
-    }
 
     }
     
     post {
         always {
-            script {        
+            script {
                 echo 'Cleanup Workspace.'
                 deleteDir() /* clean up our workspace */
 
