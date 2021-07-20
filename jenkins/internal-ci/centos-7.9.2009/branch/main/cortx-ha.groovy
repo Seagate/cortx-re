@@ -38,12 +38,13 @@ pipeline {
             }
         }
 
-        // Install third-party dependencies. This needs to be removed once components move away from self-contained binaries 
-      stage('Install python packages') {
+        
+        stage('Install Dependencies') {
             steps {
                 script { build_stage = env.STAGE_NAME }
+
+                // Install third-party dependencies. This needs to be removed once components move away from self-contained binaries 
                 sh label: '', script: '''
-                    yum erase python36-PyYAML -y
                     cat <<EOF >>/etc/pip.conf
 [global]
 timeout: 60
@@ -53,13 +54,7 @@ EOF
                     pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/$branch/py-utils/python_requirements.txt
                     pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/$branch/py-utils/python_requirements.ext.txt
                     rm -rf /etc/pip.conf
-            '''        
-            }
-        }
-        
-        stage('Install Dependencies') {
-            steps {
-                script { build_stage = env.STAGE_NAME }
+            ''' 
 
                 sh label: 'Configure yum repositories', script: """
                     yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/$release_tag/cortx_iso/
@@ -69,8 +64,6 @@ EOF
 
                 sh label: '', script: '''
                     pushd $component
-                        yum clean all;rm -rf /var/cache/yum
-                        yum erase python36-PyYAML -y
                         bash jenkins/cicd/cortx-ha-dep.sh
                         pip3 install numpy
                     popd
@@ -90,7 +83,7 @@ EOF
                 '''    
             }
         }
-        
+
         stage('Test') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -225,4 +218,3 @@ def getAuthor(issue) {
     response = "* Author: "+author+"\n"
     return response
 }
-
