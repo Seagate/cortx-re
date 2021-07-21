@@ -33,6 +33,7 @@ pipeline {
             steps {
             sh encoding: 'utf-8', label: 'Provisioner RPMS', returnStdout: true, script: """
                 echo $branch
+                echo $build_branch
                 exit 1
             """  
             }
