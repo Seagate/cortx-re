@@ -107,7 +107,10 @@ pipeline {
                         script { build_stage = env.STAGE_NAME }
                         script {
                             try {
-                                def s3Build = build job: 's3server', wait: true
+                                def s3Build = build job: 's3server', wait: true,
+                                parameters: [
+                                    string(name: 'branch', value: "${branch}")
+                                ]
                                 env.S3_BUILD_NUMBER = s3Build.number
                             }catch (err) {
                                 build_stage = env.STAGE_NAME
@@ -122,7 +125,10 @@ pipeline {
                         script { build_stage = env.STAGE_NAME }
                         script {
                             try {
-                                def hareBuild = build job: 'hare', wait: true
+                                def hareBuild = build job: 'hare', wait: true,
+                                parameters: [
+                                    string(name: 'branch', value: "${branch}")
+                                ]
                                 env.HARE_BUILD_NUMBER = hareBuild.number
                             }catch (err){
                                 build_stage = env.STAGE_NAME
