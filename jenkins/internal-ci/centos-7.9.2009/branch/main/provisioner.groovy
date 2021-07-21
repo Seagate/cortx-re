@@ -14,7 +14,6 @@ pipeline {
         version = "2.0.0"
         env = "dev"
         component = "provisioner"
-        branch = "main"
         os_version = "centos-7.9.2009"
         release_dir = "/mnt/bigstorage/releases/cortx"
         build_upload_dir = "$release_dir/components/github/$branch/$os_version/$env/$component"
@@ -28,16 +27,6 @@ pipeline {
     }
     
     stages {
-
-       stage('variable test') {
-            steps {
-            sh encoding: 'utf-8', label: 'Provisioner RPMS', returnStdout: true, script: """
-                echo $branch
-                echo $build_branch
-                exit 1
-            """  
-            }
-       }
 
         stage('Checkout') {
             steps {
