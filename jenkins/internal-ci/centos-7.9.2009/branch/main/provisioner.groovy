@@ -28,10 +28,18 @@ pipeline {
     }
     
     stages {
+
+       stage('variable test') {
+            sh encoding: 'utf-8', label: 'Provisioner RPMS', returnStdout: true, script: """
+            echo $branch
+            exit 1
+        """  
+       }
+
         stage('Checkout') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                    checkout([$class: 'GitSCM', branches: [[name: "*/${branch}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-prvsnr.git']]])
+                    checkout([$class: 'GitSCM', branches: [[name: "${branch}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-prvsnr.git']]])
             }
         }
 
