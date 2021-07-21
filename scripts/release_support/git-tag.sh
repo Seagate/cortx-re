@@ -68,7 +68,7 @@ declare -A REPO_LIST=(
                 COMMIT_HASH="$(grep -w '*.rpm\|$component\|uniq' RELEASE.INFO | awk '!/debuginfo*/' | awk -F['_'] '{print $2}' | cut -d. -f1 |  sed 's/git//g' | grep -v ^[[:space:]]*$)";
                 fi
 
-                echo "Component: "$component" , Repo:  "${COMPONENT_LIST[$component]}", Commit Hash: "$COMMIT_HASH""
+                echo "Component1: "$component" , Repo:  "${COMPONENT_LIST[$component]}", Commit Hash: $COMMIT_HASH"
                 pushd "$dir"
                 if [ "$GIT_TAG" != "" ]; then
                         git tag -a $GIT_TAG $COMMIT_HASH -m $TAG_MESSAGE;
