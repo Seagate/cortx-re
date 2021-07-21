@@ -138,7 +138,7 @@ EOF
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
-                    def releaseBuild = build job: 'Main Release', propagate: true
+                    def releaseBuild = build job: 'Release', propagate: true
                      env.release_build = releaseBuild.number
                     env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/${env.release_build}"
                 }
