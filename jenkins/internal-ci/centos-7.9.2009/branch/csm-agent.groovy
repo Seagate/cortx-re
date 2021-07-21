@@ -14,7 +14,6 @@ pipeline {
         version = "2.0.0"     
         env = "dev"
         component = "csm-agent"
-        branch = "main"
         os_version = "centos-7.9.2009"
         release_dir = "/mnt/bigstorage/releases/cortx"
         release_tag = "last_successful_prod"
