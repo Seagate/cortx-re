@@ -30,10 +30,12 @@ pipeline {
     stages {
 
        stage('variable test') {
+            steps {
             sh encoding: 'utf-8', label: 'Provisioner RPMS', returnStdout: true, script: """
-            echo $branch
-            exit 1
-        """  
+                echo $branch
+                exit 1
+            """  
+            }
        }
 
         stage('Checkout') {
