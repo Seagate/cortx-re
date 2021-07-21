@@ -2,7 +2,7 @@
 pipeline {
     agent {
         node {
-            label 'docker-centos-7.9.2009-node'
+            label "docker-${os_version}-node"
         }
     }
     
@@ -15,7 +15,6 @@ pipeline {
         version = "2.0.0"    
         env = "dev"
         component = "motr"
-        os_version = "centos-7.9.2009"
         release_dir = "/mnt/bigstorage/releases/cortx"
         build_upload_dir = "$release_dir/components/github/$branch/$os_version/$env/$component"
 

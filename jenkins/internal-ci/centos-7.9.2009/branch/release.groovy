@@ -3,7 +3,7 @@ pipeline {
           
     agent {
         node {
-            label 'docker-centos-7.9.2009-node'
+            label "docker-${os_version}-node"
         }
     }
     
