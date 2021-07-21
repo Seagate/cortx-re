@@ -18,7 +18,12 @@
   shell: echo `hostname`
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}" 
-  
+ 
+- name: Create cortx directory
+  shell: rm -rf /mnt/cortx
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['srvnodes'] }}" 
+
 - name: Create cortx directory
   shell: mkdir /mnt/cortx
   delegate_to: "{{ item }}"
