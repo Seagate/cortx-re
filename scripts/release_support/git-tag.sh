@@ -84,8 +84,8 @@ declare -A REPO_LIST=(
                 else
                         echo "Tag is not successful. Please pass value to GIT_TAG";
                 fi
-		exit 1
-                 if [ "$DEBUG" = true ]; then
+                 
+		if [ "$DEBUG" = true ]; then
                         git push origin --delete $GIT_TAG;
                  else
                         echo "Run in Debug mode if Git tag needs to be deleted";
