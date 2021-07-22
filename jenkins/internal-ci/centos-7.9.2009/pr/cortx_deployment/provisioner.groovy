@@ -197,9 +197,11 @@ pipeline {
                 NODE_DEFAULT_SSH_CRED =  credentials("${NODE_DEFAULT_SSH_CRED}")
                 NODE_USER = "${NODE_DEFAULT_SSH_CRED_USR}"
                 NODE1_HOST = "${HOST == '-' ? NODE1_HOST : HOST }"
+                NODES = "${NODE1_HOST}"
                 NODE_PASS = "${HOST_PASS == '-' ? NODE_DEFAULT_SSH_CRED_PSW : HOST_PASS}"
 
                 NODE_UN_PASS_CRED_ID = "mini-prov-change-pass"
+                SETUP_TYPE = "single"
             }
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -296,27 +298,23 @@ def getTestMachine(host, user, pass) {
 }
 
 
-// Used Jenkins ansible plugin to execute ansible command
+// Run Ansible playbook to perform deployment
 def runAnsible(tags) {
-    withCredentials([usernamePassword(credentialsId: "${NODE_UN_PASS_CRED_ID}", passwordVariable: 'SERVICE_PASS', usernameVariable: 'SERVICE_USER')]) {
-        
-        dir("cortx-re/scripts/deployment") {
-            ansiblePlaybook(
-                playbook: 'cortx_deploy_vm_1node.yml',
-                inventory: 'inventories/vm_deployment/hosts_1node',
-                tags: "${tags}",
-                extraVars: [
-                    "NODE1"                 : [value: "${NODE1_HOST}", hidden: false],
-                    "BUILD_URL"             : [value: "${CORTX_BUILD}", hidden: false] ,
-                    "CLUSTER_PASS"          : [value: "${NODE_PASS}", hidden: false],
-                    "SERVICE_USER"          : [value: "${SERVICE_USER}", hidden: true],
-                    "SERVICE_PASS"          : [value: "${SERVICE_PASS}", hidden: true],
-                    "CHANGE_PASS"           : [value: "no", hidden: false]
-                ],
-                extras: '-v',
-                colorized: true
-            )
-        }
+    
+    dir("cortx-re/scripts/deployment") {
+        ansiblePlaybook(
+            playbook: 'cortx_deploy_vm.yml',
+            inventory: 'inventories/vm_deployment/hosts_srvnodes',
+            tags: "${tags}",
+            extraVars: [
+                "HOST"          : [value: "${NODES}", hidden: false],
+                "CORTX_BUILD"   : [value: "${CORTX_BUILD}", hidden: false] ,
+                "CLUSTER_PASS"  : [value: "${NODE_PASS}", hidden: false],
+                "SETUP_TYPE"    : [value: "${SETUP_TYPE}", hidden: false],
+            ],
+            extras: '-v',
+            colorized: true
+        )
     }
 }
 def markNodeforCleanup() {
