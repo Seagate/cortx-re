@@ -34,7 +34,7 @@ pipeline {
         //////////////////////////////// BUILD VARS //////////////////////////////////////////////////
 
         COMPONENT_NAME = "csm-web".trim()
-        BRANCH = "${ghprbTargetBranch != null ? ghprbTargetBranch : 'main'}"
+        BRANCH = "${ghprbTargetBranch != null ? ghprbTargetBranch : 'stable'}"
         OS_VERSION = "centos-7.9.2009"
         THIRD_PARTY_VERSION = "centos-7.9.2009-2.0.0-latest"
         VERSION = "2.0.0"
