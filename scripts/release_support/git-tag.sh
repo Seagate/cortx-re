@@ -60,14 +60,20 @@ declare -A REPO_LIST=(
                 exit 1
                 fi
 
-                if [ "$component" == cortx-hare ] || [ "$component" == cortx-sspl ] || [ "$component" == cortx-ha ] || [ "$component" == cortx-py-utils ] || [ "$component" == cortx-prereq ]; then
-                COMMIT_HASH=echo $(curl -s $RELEASE_INFO_URL | grep -w '*.rpm\|$component\|uniq' | awk '!/debuginfo*/' | awk -F['_'] '{print $2}' | cut -d. -f1 |  sed 's/git//g' | grep -v ^[[:space:]]*$);
+                if [ $component == "cortx-hare" ] || [ $component == "cortx-sspl" ] || [ $component == "cortx-ha" ] || [ $component == "cortx-py-utils" ] || [ "$component" == "cortx-prereq" ]; then
+                        COMMIT_HASH=$(grep "$component-" RELEASE.INFO | head -1 | awk -F['_'] '{print $2}' | cut -d. -f1 |  sed 's/git//g'); echo "$COMMIT_HASH"
+                       
                 elif [ "$component" == "cortx-csm_agent" ] || [ "$component" == "cortx-csm_web" ]; then
-                COMMIT_HASH=grep -w '*.rpm\|$component\|uniq' RELEASE.INFO | awk '!/debuginfo*/' | awk -F['_'] '{print $3}' | cut -d. -f1 |  sed 's/git//g' | grep -v ^[[:space:]]*$;
+                        COMMIT_HASH=$(grep "$component-" RELEASE.INFO | head -1 | awk -F['_'] '{print $3}' |  cut -d. -f1); echo "$COMMIT_HASH"
+                        
+                elif [ "$component" == "cortx-prvsnr" ]; then
+                        COMMIT_HASH=$(grep "$component-" RELEASE.INFO | tail -1 | awk -F['_'] '{print $2}' | sed 's/git//g' | cut -d. -f1); echo "$COMMIT_HASH"
+                        
                 else
-                COMMIT_HASH=grep -w '*.rpm\|$component\|uniq' RELEASE.INFO | awk '!/debuginfo*/' | awk -F['_'] '{print $2}' | cut -d. -f1 |  sed 's/git//g' | grep -v ^[[:space:]]*$;
+                        COMMIT_HASH=$(grep "$component-" RELEASE.INFO | head -1 | awk -F['_'] '{print $2}' | sed 's/git//g'); echo "$COMMIT_HASH"
+                        
                 fi
-
+				exit 1
                 echo "Component1: "$component" , Repo:  "${COMPONENT_LIST[$component]}", Commit Hash: $COMMIT_HASH"
                 pushd "$dir"
                 if [ "$GIT_TAG" != "" ]; then
@@ -100,7 +106,7 @@ declare -A REPO_LIST=(
 
                         echo "Component: "$component" , Repo:  "${REPO_LIST[$component]}"";
 
-                        curl -H "Accept: application/vnd.github.v3+json"  "${REPO_LIST[$component]}" -d '{"tag_name":""$GIT_TAG"", "name":""$REL_NAME""}';              
+                        curl -H "Accept: application/vnd.github.v3+json"  "${REPO_LIST[$component]}" -d '{"tag_name":""$GIT_TAG"", "name":""$REL_NAME""}';
                         else
                         echo "Release is not created.";
                         fi
