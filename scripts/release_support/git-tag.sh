@@ -73,7 +73,6 @@ declare -A REPO_LIST=(
                         COMMIT_HASH=$(grep "$component-" RELEASE.INFO | head -1 | awk -F['_'] '{print $2}' | sed 's/git//g'); echo "$COMMIT_HASH"
                         
                 fi
-				exit 1
                 echo "Component1: "$component" , Repo:  "${COMPONENT_LIST[$component]}", Commit Hash: $COMMIT_HASH"
                 pushd "$dir"
                 if [ "$GIT_TAG" != "" ]; then
