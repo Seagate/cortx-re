@@ -61,11 +61,11 @@ declare -A REPO_LIST=(
                 fi
 
                 if [ "$component" == cortx-hare ] || [ "$component" == cortx-sspl ] || [ "$component" == cortx-ha ] || [ "$component" == cortx-py-utils ] || [ "$component" == cortx-prereq ]; then
-                COMMIT_HASH="$(grep -w '*.rpm\|$component\|uniq' RELEASE.INFO | awk '!/debuginfo*/' | awk -F['_'] '{print $2}' | cut -d. -f1 |  sed 's/git//g' | grep -v ^[[:space:]]*$)";
+                COMMIT_HASH=grep -w '*.rpm\|$component\|uniq' RELEASE.INFO | awk '!/debuginfo*/' | awk -F['_'] '{print $2}' | cut -d. -f1 |  sed 's/git//g' | grep -v ^[[:space:]]*$;
                 elif [ "$component" == "cortx-csm_agent" ] || [ "$component" == "cortx-csm_web" ]; then
-                COMMIT_HASH="$(grep -w '*.rpm\|$component\|uniq' RELEASE.INFO | awk '!/debuginfo*/' | awk -F['_'] '{print $3}' | cut -d. -f1 |  sed 's/git//g' | grep -v ^[[:space:]]*$)";
+                COMMIT_HASH=grep -w '*.rpm\|$component\|uniq' RELEASE.INFO | awk '!/debuginfo*/' | awk -F['_'] '{print $3}' | cut -d. -f1 |  sed 's/git//g' | grep -v ^[[:space:]]*$;
                 else
-                COMMIT_HASH="$(grep -w '*.rpm\|$component\|uniq' RELEASE.INFO | awk '!/debuginfo*/' | awk -F['_'] '{print $2}' | cut -d. -f1 |  sed 's/git//g' | grep -v ^[[:space:]]*$)";
+                COMMIT_HASH=grep -w '*.rpm\|$component\|uniq' RELEASE.INFO | awk '!/debuginfo*/' | awk -F['_'] '{print $2}' | cut -d. -f1 |  sed 's/git//g' | grep -v ^[[:space:]]*$;
                 fi
 
                 echo "Component1: "$component" , Repo:  "${COMPONENT_LIST[$component]}", Commit Hash: ${COMMIT_HASH}"
