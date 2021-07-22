@@ -2,7 +2,7 @@
 pipeline { 
     agent {
         node {
-            label 'docker-cp-centos-7.8.2003-node'
+            label 'docker-centos-7.9.2009-node'
         }
     }
     
@@ -15,7 +15,7 @@ pipeline {
 	environment {
         component = "provisioner"
         branch = "custom-ci"
-        os_version = "centos-7.8.2003"
+        os_version = "centos-7.9.2009"
         release_dir = "/mnt/bigstorage/releases/cortx"
         release_tag = "custom-build-$CUSTOM_CI_BUILD_ID"
 		build_upload_dir = "$release_dir/github/integration-custom-ci/$os_version/$release_tag/cortx_iso"
@@ -45,6 +45,7 @@ pipeline {
                 sh encoding: 'utf-8', label: 'Provisioner CLI RPMS', returnStdout: true, script: """
 				    sh ./cli/buildrpm.sh -g \$(git rev-parse --short HEAD) -e 2.0.0 -b ${CUSTOM_CI_BUILD_ID}
                 """
+
                 sh encoding: 'UTF-8', label: 'cortx-setup', script: """
                 if [ -f "./devops/rpms/node_cli/node_cli_buildrpm.sh" ]; then
                     sh ./devops/rpms/node_cli/node_cli_buildrpm.sh -g \$(git rev-parse --short HEAD) -e 2.0.0 -b ${CUSTOM_CI_BUILD_ID}
@@ -52,9 +53,11 @@ pipeline {
                     echo "node_cli package creation is not implemented"
                 fi
                 """
+				
 				sh encoding: 'UTF-8', label: 'api', script: '''
 					bash ./devops/rpms/api/build_python_api.sh -vv --out-dir /root/rpmbuild/RPMS/x86_64/ --pkg-ver ${CUSTOM_CI_BUILD_ID}_git$(git rev-parse --short HEAD)
 				'''
+
                 sh encoding: 'UTF-8', label: 'cortx-setup', script: '''
                 if [ -f "./devops/rpms/lr-cli/build_python_cortx_setup.sh" ]; then
 					bash ./devops/rpms/lr-cli/build_python_cortx_setup.sh -vv --out-dir /root/rpmbuild/RPMS/x86_64/ --pkg-ver ${CUSTOM_CI_BUILD_ID}_git$(git rev-parse --short HEAD)
