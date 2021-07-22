@@ -2,7 +2,7 @@
 pipeline { 
     agent {
         node {
-            label 'docker-centos-7.9.2009-node'
+            label "docker-${OS_VERSION}-node"
         }
     }
 
@@ -28,12 +28,14 @@ pipeline {
         PROVISIONER_GPR_REFSPEC = "+refs/pull/${ghprbPullId}/*:refs/remotes/origin/pr/${ghprbPullId}/*"
         PROVISIONER_BRANCH_REFSEPEC = "+refs/heads/*:refs/remotes/origin/*"
         PROVISIONER_PR_REFSPEC = "${ghprbPullId != null ? PROVISIONER_GPR_REFSPEC : PROVISIONER_BRANCH_REFSEPEC}"
+        
+        //////////////////////////////// BUILD VARS //////////////////////////////////////////////////
+        // OS_VERSION and COMPONENTS_BRANCH are manually created parameters in jenkins job.
 
         VERSION = "2.0.0"
         COMPONENT_NAME = "provisioner".trim()
-        BRANCH = "${ghprbTargetBranch != null ? ghprbTargetBranch : 'stable'}"
-        OS_VERSION = "centos-7.9.2009"
-        THIRD_PARTY_VERSION = "centos-7.9.2009-2.0.0-latest"
+        BRANCH = "${ghprbTargetBranch != null ? ghprbTargetBranch : COMPONENTS_BRANCH}"
+        THIRD_PARTY_VERSION = "${OS_VERSION}-2.0.0-latest"
         PASSPHARASE = credentials('rpm-sign-passphrase')
 		
 	    // Artifacts root location
@@ -214,7 +216,7 @@ pipeline {
                     catchError {
                         
                         dir('cortx-re') {
-                            checkout([$class: 'GitSCM', branches: [[name: '*/r2_vm_deployment']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 1, honorRefspec: true, noTags: true, reference: '', shallow: true], [$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
+                            checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 1, honorRefspec: true, noTags: true, reference: '', shallow: true], [$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
                         }
 
                         runAnsible("00_PREPARE, 01_DEPLOY_PREREQ, 02_DEPLOY")

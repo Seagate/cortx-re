@@ -3,7 +3,7 @@
 pipeline { 
     agent {
         node {
-            label 'docker-centos-7.9.2009-node'
+            label "docker-${OS_VERSION}-node"
         }
     }
 
@@ -35,11 +35,11 @@ pipeline {
         SSPL_PR_REFSEPEC = "${ghprbPullId != null ? SSPL_GPR_REFSEPEC : SSPL_BRANCH_REFSEPEC}"
         
         //////////////////////////////// BUILD VARS //////////////////////////////////////////////////
+        // OS_VERSION and COMPONENTS_BRANCH are manually created parameters in jenkins job.
 
         COMPONENT_NAME = "sspl".trim()
-        BRANCH = "${ghprbTargetBranch != null ? ghprbTargetBranch : 'stable'}"
-        OS_VERSION = "centos-7.9.2009"
-        THIRD_PARTY_VERSION = "centos-7.9.2009-2.0.0-latest"
+        BRANCH = "${ghprbTargetBranch != null ? ghprbTargetBranch : COMPONENTS_BRANCH}"
+        THIRD_PARTY_VERSION = "${OS_VERSION}-2.0.0-latest"
         VERSION = "2.0.0"
         PASSPHARASE = credentials('rpm-sign-passphrase')
 
@@ -224,7 +224,7 @@ pipeline {
                     catchError {
                         
                         dir('cortx-re') {
-                            checkout([$class: 'GitSCM', branches: [[name: '*/r2_vm_deployment']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 1, honorRefspec: true, noTags: true, reference: '', shallow: true], [$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
+                            checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 1, honorRefspec: true, noTags: true, reference: '', shallow: true], [$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
                         }
 
                         runAnsible("00_PREPARE, 01_DEPLOY_PREREQ, 02_DEPLOY")
