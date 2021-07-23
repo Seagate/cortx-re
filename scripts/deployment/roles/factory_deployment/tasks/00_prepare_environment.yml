@@ -13,6 +13,12 @@
 
 - meta: refresh_inventory
 
+- include: passwordless_authentication.yml
+
+- name: "[deploy-prep] : Wait for SSH Connection"
+  pause:
+    minutes: 3
+
 - name: show templating results
   debug:
     msg: "{{ lookup('template', './hosts_srvnodes.j2') }}"    
@@ -20,11 +26,5 @@
 - name: Display hostname of srvnode1
   shell: echo `hostname`
   delegate_to: "{{ item }}"
-  with_items: "{{ groups['srvnodes'] }}" 
-
-#- include: passwordless_authentication.yml
-
-#- name: "[deploy-prep] : Wait for SSH Connection"
-#  pause:
-#    minutes: 1
+  with_items: "{{ groups['srvnodes'] }}"
 
