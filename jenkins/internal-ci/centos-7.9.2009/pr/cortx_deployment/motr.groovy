@@ -41,6 +41,7 @@ pipeline {
         BRANCH = "${ghprbTargetBranch != null ? ghprbTargetBranch : COMPONENTS_BRANCH}"
         THIRD_PARTY_VERSION = "${OS_VERSION}-2.0.0-latest"
         VERSION = "2.0.0"
+        RELEASE_TAG = "last_successful_prod"
         PASSPHARASE = credentials('rpm-sign-passphrase')
 
         // 'WARNING' - rm -rf command used on this path please careful when updating this value
@@ -85,11 +86,12 @@ pipeline {
                     checkout([$class: 'GitSCM', branches: [[name: "${MOTR_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog'], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${MOTR_URL}",  name: 'origin', refspec: "${MOTR_PR_REFSEPEC}"]]])
                 
                     sh label: '', script: '''
+                        yum install kernel-devel -y
                         export build_number=${BUILD_ID}
-						kernel_src=$(ls -1rd /lib/modules/*/build | head -n1)
-						cp cortx-motr.spec.in cortx-motr.spec
-						sed -i 's/@.*@/111/g' cortx-motr.spec
-						yum-builddep -y cortx-motr.spec
+                        kernel_src=$(ls -1rd /lib/modules/*/build | head -n1)
+                        cp cortx-motr.spec.in cortx-motr.spec
+                        sed -i 's/@.*@/111/g' cortx-motr.spec
+                        yum-builddep -y cortx-motr.spec
 					'''
 
                     sh label: '', script: '''
@@ -123,6 +125,8 @@ EOF
                 // Build Hare
                 sh label: '', script: '''
                     pushd /root/build_rpms
+                        yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/$BRANCH/$OS_VERSION/$RELEASE_TAG/cortx_iso/
+                        yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
                         yum clean all;rm -rf /var/cache/yum
                         yum install cortx-py-utils -y
                         yum --disablerepo=* localinstall cortx-motr-1*.rpm cortx-motr-2*.rpm cortx-motr-devel*.rpm -y
