@@ -48,6 +48,9 @@ declare -A REPO_LIST=(
                         git config --global user.name "cortx-admin"
 			RELEASE_INFO_URL=$1
 			echo ${RELEASE_INFO_URL}
+			echo TESTING1
+			echo $RELEASE_INFO_URL	
+			echo TESTING2
 			echo $1
 			exit 1
                         wget -q "$RELEASE_INFO_URL" -O RELEASE.INFO
