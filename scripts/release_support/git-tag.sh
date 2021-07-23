@@ -47,6 +47,7 @@ declare -A REPO_LIST=(
                         git config --global user.email "cortx-application@seagate.com"
                         git config --global user.name "cortx-admin"
                         wget -q "$RELEASE_INFO_URL" -O RELEASE.INFO
+			wget --version;
 			cat RELEASE.INFO;
 			exit 1	
         for component in "${!COMPONENT_LIST[@]}"
