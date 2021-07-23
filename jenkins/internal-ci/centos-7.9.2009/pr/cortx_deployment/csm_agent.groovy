@@ -79,7 +79,7 @@ pipeline {
                     yum clean all && rm -rf /var/cache/yum
 
                     # Install cortx-prereq package
-                    pip3 uninstall pip -y && yum install python3-pip -y && ln -s /usr/bin/pip3 /usr/local/bin/pip3
+                    pip3 uninstall pip -y && yum reinstall python3-pip -y && ln -s /usr/bin/pip3 /usr/local/bin/pip3
                     sh ./cortx-re/scripts/third-party-rpm/install-cortx-prereq.sh
 
                     # Install pyinstaller	
