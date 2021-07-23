@@ -1,6 +1,10 @@
 - include: 00_prepare_environment.yml
   tags: ['00_PREPARE']
 
+- include: system_reimage.yml
+  when: DEPLOY_TYPE == "REIMAGE" or DEPLOY_TYPE == "DEPLOY-WITH-REIMAGE" 
+  tags: ['REIMAGE']
+
 - include: 01_preparation_startup.yml
   tags: ['01_PREPARE_STARTUP']
   
