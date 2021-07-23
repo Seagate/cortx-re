@@ -262,7 +262,7 @@ pipeline {
 
                     if ( "${HOST}" == "-" ) {
                         if ( "${DEBUG}" == "yes" ) {  
-                            markNodeOffline("Debug Mode Enabled on This Host  - ${BUILD_URL}")
+                            markNodeOffline("Provisioner Debug Mode Enabled on This Host  - ${BUILD_URL}")
                         } else {
                             build job: 'Cortx-Automation/Deployment/VM-Teardown', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${env.NODE_NAME}")]                    
                         }

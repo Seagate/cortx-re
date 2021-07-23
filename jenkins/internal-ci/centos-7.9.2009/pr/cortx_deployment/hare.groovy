@@ -217,9 +217,11 @@ EOF
                 NODE_DEFAULT_SSH_CRED =  credentials("${NODE_DEFAULT_SSH_CRED}")
                 NODE_USER = "${NODE_DEFAULT_SSH_CRED_USR}"
                 NODE1_HOST = "${HOST == '-' ? NODE1_HOST : HOST }"
+                NODES = "${NODE1_HOST}"
                 NODE_PASS = "${HOST_PASS == '-' ? NODE_DEFAULT_SSH_CRED_PSW : HOST_PASS}"
 
                 NODE_UN_PASS_CRED_ID = "mini-prov-change-pass"
+                SETUP_TYPE = "single"
             }
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -239,7 +241,7 @@ EOF
                             checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 1, honorRefspec: true, noTags: true, reference: '', shallow: true], [$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
                         }
 
-                        runAnsible("00_PREPARE, 01_DEPLOY_PREREQ, 02_DEPLOY")
+                        runAnsible("00_PREPARE, 01_DEPLOY_PREREQ, 02_1_PRVSNR_BOOTSTRAP, 02_2_PLATFORM_SETUP, 02_3_PREREQ, 02_4_UTILS, 02_5_IO_PATH, 02_6_CONTROL_PATH, 02_7_HA, 02_DEPLOY_VALIDATE, 03_VALIDATE")
 
                     }
 
@@ -247,19 +249,23 @@ EOF
                     catchError {
 
                         sh label: 'download_log_files', returnStdout: true, script: """ 
-                            sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/log/seagate/provisioner/*.log . &>/dev/null || true
-                            sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/opt/seagate/cortx_configs/provisioner_cluster.json . &>/dev/null || true
-                            sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/root/config.ini . &>/dev/null || true
-                            sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/root/*.log . &>/dev/null || true
-                            sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/lib/hare/cluster.yaml . &>/dev/null || true
+                        mkdir -p artifacts/srvnode1 
+                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/log/seagate/cortx/ha artifacts/srvnode1 &>/dev/null || true
+                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/log/cluster artifacts/srvnode1 &>/dev/null || true
+                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/log/pacemaker.log artifacts/srvnode1 &>/dev/null || true
+                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/log/pcsd/pcsd.log artifacts/srvnode1 &>/dev/null || true
+                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/log/seagate/provisioner artifacts/srvnode1 &>/dev/null || true
+                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/opt/seagate/cortx_configs/provisioner_cluster.json artifacts/srvnode1 &>/dev/null || true
+                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/lib/hare/cluster.yaml artifacts/srvnode1 &>/dev/null || true
+                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/root/cortx_deployment artifacts/srvnode1 &>/dev/null || true
                         """
                         
-                        archiveArtifacts artifacts: "*.log, *.json, *.ini, *.yaml", onlyIfSuccessful: false, allowEmptyArchive: true 
+                        archiveArtifacts artifacts: "artifacts/**/*.*", onlyIfSuccessful: false, allowEmptyArchive: true 
                     }
 
                     hctlStatus = ""
-                    if ( fileExists('hctl_status.log') && currentBuild.currentResult == "SUCCESS" ) {
-                        hctlStatus = readFile(file: 'hctl_status.log')
+                    if ( fileExists('artifacts/srvnode1/cortx_deployment/log/hctl_status.log') && currentBuild.currentResult == "SUCCESS" ) {
+                        hctlStatus = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/hctl_status.log')
                         MESSAGE = "Cortx Stack VM Deployment Success"
                         ICON = "accept.gif"
                         STATUS = "SUCCESS"
@@ -276,7 +282,7 @@ EOF
 
                     if ( "${HOST}" == "-" ) {
                         if ( "${DEBUG}" == "yes" ) {  
-                            markNodeOffline("Motr Debug Mode Enabled on This Host  - ${BUILD_URL}")
+                            markNodeOffline("Hare Debug Mode Enabled on This Host  - ${BUILD_URL}")
                         } else {
                             build job: 'Cortx-Automation/Deployment/VM-Teardown', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${env.NODE_NAME}")]                    
                         }
@@ -319,25 +325,21 @@ def getTestMachine(host, user, pass) {
 
 // Used Jenkins ansible plugin to execute ansible command
 def runAnsible(tags) {
-    withCredentials([usernamePassword(credentialsId: "${NODE_UN_PASS_CRED_ID}", passwordVariable: 'SERVICE_PASS', usernameVariable: 'SERVICE_USER')]) {
-        
-        dir("cortx-re/scripts/deployment") {
-            ansiblePlaybook(
-                playbook: 'cortx_deploy_vm_1node.yml',
-                inventory: 'inventories/vm_deployment/hosts_1node',
-                tags: "${tags}",
-                extraVars: [
-                    "NODE1"                 : [value: "${NODE1_HOST}", hidden: false],
-                    "BUILD_URL"             : [value: "${CORTX_BUILD}", hidden: false] ,
-                    "CLUSTER_PASS"          : [value: "${NODE_PASS}", hidden: false],
-                    "SERVICE_USER"          : [value: "${SERVICE_USER}", hidden: true],
-                    "SERVICE_PASS"          : [value: "${SERVICE_PASS}", hidden: true],
-                    "CHANGE_PASS"           : [value: "no", hidden: false]
-                ],
-                extras: '-v',
-                colorized: true
-            )
-        }
+    
+    dir("cortx-re/scripts/deployment") {
+        ansiblePlaybook(
+            playbook: 'cortx_deploy_vm.yml',
+            inventory: 'inventories/vm_deployment/hosts_srvnodes',
+            tags: "${tags}",
+            extraVars: [
+                "HOST"          : [value: "${NODES}", hidden: false],
+                "CORTX_BUILD"   : [value: "${CORTX_BUILD}", hidden: false] ,
+                "CLUSTER_PASS"  : [value: "${NODE_PASS}", hidden: false],
+                "SETUP_TYPE"    : [value: "${SETUP_TYPE}", hidden: false],
+            ],
+            extras: '-v',
+            colorized: true
+        )
     }
 }
 def markNodeforCleanup() {
