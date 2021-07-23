@@ -1,0 +1,15 @@
+#!/bin/expect -f
+# ./passwordless_ssh.sh node username pass
+spawn cortx_setup cluster create [lindex $argv 0] [lindex $argv 1] [lindex $argv 2] --name cortx_cluster --site_count 1 --storageset_count 1 
+set timeout 20
+expect {
+    timeout {
+        puts "Connection timed out"
+        exit 1
+    }
+
+    "assword:" {
+        send -- "[lindex $argv 3]\r"
+        exp_continue
+    }
+}
