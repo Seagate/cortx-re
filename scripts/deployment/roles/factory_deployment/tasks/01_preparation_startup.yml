@@ -34,12 +34,12 @@
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}"
 
-- name: Changing perm of "/mnt/cortx/cortx_prep.sh", adding "+x"
-  file: dest=/mnt/cortx/cortx_prep.sh mode=a+x
+- name: Changing perm of "/mnt/cortx/cortx-prep.sh", adding "+x"
+  file: dest=/mnt/cortx/cortx-prep.sh mode=a+x
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}" 
 
 - name: Prepare setup
-  shell: /mnt/cortx/cortx_prep.sh -t {{ CORTX_BUILD_URL }}
+  shell: /mnt/cortx/cortx-prep.sh -t {{ CORTX_BUILD_URL }}
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}" 
