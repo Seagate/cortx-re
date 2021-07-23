@@ -9,6 +9,7 @@ REQUIRED_DEVICES: 64
 host_password: seagate1
 
 required_vars:
+  - DEPLOY_TYPE
   - NODES
   - CONFIG_URL
   - CORTX_BUILD_URL

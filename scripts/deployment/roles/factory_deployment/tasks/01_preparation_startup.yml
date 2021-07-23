@@ -1,4 +1,13 @@
 ---
+
+- meta: refresh_inventory
+
+- include: passwordless_authentication.yml
+
+- name: "[deploy-prep] : Wait for SSH Connection"
+  pause:
+    minutes: 5
+    
 - name: Install device-mapper-multipath
   shell: yum install -y device-mapper-multipath
   delegate_to: "{{ item }}"
