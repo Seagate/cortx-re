@@ -46,11 +46,9 @@ declare -A REPO_LIST=(
 
                         git config --global user.email "cortx-application@seagate.com"
                         git config --global user.name "cortx-admin"
-                        wget -q "$RELEASE_INFO_URL" -O RELEASE.INFO
-			wget --version;
-			cat RELEASE.INFO;
-			exit 1	
-        for component in "${!COMPONENT_LIST[@]}"
+                        wget -q $RELEASE_INFO_URL -O RELEASE.INFO
+        
+	for component in "${!COMPONENT_LIST[@]}"
 
         do
                 dir="$(echo "${COMPONENT_LIST[$component]}" |  awk -F'/' '{print $NF}')"
@@ -63,16 +61,15 @@ declare -A REPO_LIST=(
                 fi
 
                 if [ $component == "cortx-hare" ] || [ $component == "cortx-sspl" ] || [ $component == "cortx-ha" ] || [ $component == "cortx-py-utils" ] || [ "$component" == "cortx-prereq" ]; then
-                        COMMIT_HASH=$(grep "$component-" RELEASE.INFO | head -1 | awk -F['_'] '{print $2}' | cut -d. -f1 |  sed 's/git//g'); echo "$COMMIT_HASH"
-                       
+                        COMMIT_HASH=$(grep "$component-" RELEASE.INFO | head -1 | awk -F['_'] '{print $2}' | cut -d. -f1 |  sed 's/git//g'); echo $COMMIT_HASH                       
                 elif [ "$component" == "cortx-csm_agent" ] || [ "$component" == "cortx-csm_web" ]; then
                         COMMIT_HASH=$(grep "$component-" RELEASE.INFO | head -1 | awk -F['_'] '{print $3}' |  cut -d. -f1); echo "$COMMIT_HASH"
                         
                 elif [ "$component" == "cortx-prvsnr" ]; then
-                        COMMIT_HASH=$(grep "$component-" RELEASE.INFO | tail -1 | awk -F['_'] '{print $2}' | sed 's/git//g' | cut -d. -f1); echo "$COMMIT_HASH"
+                        COMMIT_HASH=$(grep "$component-" RELEASE.INFO | tail -1 | awk -F['_'] '{print $2}' | sed 's/git//g' | cut -d. -f1); echo $COMMIT_HASH
                         
                 else
-                        COMMIT_HASH=$(grep "$component-" RELEASE.INFO | head -1 | awk -F['_'] '{print $2}' | sed 's/git//g'); echo "$COMMIT_HASH"
+                        COMMIT_HASH=$(grep "$component-" RELEASE.INFO | head -1 | awk -F['_'] '{print $2}' | sed 's/git//g'); echo $COMMIT_HASH
                         
                 fi
                 echo "Component2: "$component" , Repo:  "${COMPONENT_LIST[$component]}", Commit Hash: "$COMMIT_HASH""
