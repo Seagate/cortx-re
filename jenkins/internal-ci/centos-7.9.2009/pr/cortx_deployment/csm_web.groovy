@@ -38,6 +38,7 @@ pipeline {
         BRANCH = "${ghprbTargetBranch != null ? ghprbTargetBranch : COMPONENTS_BRANCH}"
         THIRD_PARTY_VERSION = "${OS_VERSION}-2.0.0-latest"
         VERSION = "2.0.0"
+        RELEASE_TAG = "last_successful_prod"
         PASSPHARASE = credentials('rpm-sign-passphrase')
 
         // Artifacts root location
@@ -81,9 +82,8 @@ pipeline {
                     checkout([$class: 'GitSCM', branches: [[name: "${CSM_BRANCH}"]], doGenerateSubmoduleConfigurations: false,  extensions: [[$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${CSM_URL}",  name: 'origin', refspec: "${CSM_PR_REFSEPEC}"]]])
 
                     sh label: '', script: '''
-                        sed -i 's/gpgcheck=1/gpgcheck=0/' /etc/yum.conf
-                        yum-config-manager --add http://cortx-storage.colo.seagate.com/releases/cortx/github/$BRANCH/$OS_VERSION/last_successful/
-                        yum-config-manager --add http://cortx-storage.colo.seagate.com/releases/cortx/components/github/$BRANCH/$OS_VERSION/dev/cortx-utils/last_successful/
+                        yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/$BRANCH/$OS_VERSION/$RELEASE_TAG/cortx_iso/
+                    yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
                         yum clean all && rm -rf /var/cache/yum
                         pip3.6 install  pyinstaller==3.5
                     '''

@@ -97,8 +97,8 @@ EOF
                     '''
 
                     sh label: 'prepare build env', script: """
-                        sed '/baseurl/d' /etc/yum.repos.d/motr_current_build.repo
-                        echo "baseurl=http://cortx-storage.colo.seagate.com/releases/cortx/components/github/${BRANCH}/${OS_VERSION}/dev/motr/current_build/"  >> /etc/yum.repos.d/motr_current_build.repo
+                        yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/components/github/$BRANCH/$OS_VERSION/dev/motr/current_build/
+                        yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
                         yum clean all;rm -rf /var/cache/yum
                         yum install cortx-py-utils cortx-motr{,-devel} -y
                     """

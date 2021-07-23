@@ -38,6 +38,7 @@ pipeline {
         BRANCH = "${ghprbTargetBranch != null ? ghprbTargetBranch : COMPONENTS_BRANCH}"
         THIRD_PARTY_VERSION = "${OS_VERSION}-2.0.0-latest"
         VERSION = "2.0.0"
+        RELEASE_TAG = "last_successful_prod"
         PASSPHARASE = credentials('rpm-sign-passphrase')
 
         // Artifacts root location
@@ -73,7 +74,8 @@ pipeline {
 
                 sh label: '', script: '''
                     #Use main branch for cortx-py-utils
-                    sed -i 's/stable/main/'  /etc/yum.repos.d/cortx.repo
+                    yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/$BRANCH/$OS_VERSION/$RELEASE_TAG/cortx_iso/
+                    yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
                     yum clean all && rm -rf /var/cache/yum
 
                     # Install cortx-prereq package
