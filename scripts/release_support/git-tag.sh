@@ -74,7 +74,6 @@ declare -A REPO_LIST=(
                         
                 fi
                 echo "Component2: "$component" , Repo:  "${COMPONENT_LIST[$component]}", Commit Hash: "$COMMIT_HASH""
-		exit 1
                 pushd "$dir"
                 if [ "$GIT_TAG" != "" ]; then
                         git tag -a $GIT_TAG $COMMIT_HASH -m $TAG_MESSAGE;
