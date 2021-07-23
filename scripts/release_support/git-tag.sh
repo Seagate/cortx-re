@@ -46,14 +46,8 @@ declare -A REPO_LIST=(
 
                         git config --global user.email "cortx-application@seagate.com"
                         git config --global user.name "cortx-admin"
-			echo ${RELEASE_INFO_URL}
-			echo TESTING1
-			echo $RELEASE_INFO_URL	
-			echo TESTING2
-			echo $1
-			exit 1
                         wget -q "$RELEASE_INFO_URL" -O RELEASE.INFO
-
+			
         for component in "${!COMPONENT_LIST[@]}"
 
         do
