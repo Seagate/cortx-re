@@ -206,7 +206,7 @@ pipeline {
         stage('Deploy') {
             agent { 
                 node { 
-                    label params.HOST == "-" ? "vm_deployment_1n_7_9 && !teardown_req" : "vm_deployment_1n_user_host"
+                    label params.HOST == "-" ? "mini_provisioner_s3_7_9 && !teardown_req" : "vm_deployment_1n_user_host"
                     customWorkspace "/var/jenkins/mini_provisioner/${JOB_NAME}_${BUILD_NUMBER}"
                 } 
             }
