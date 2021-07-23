@@ -244,8 +244,8 @@ pipeline {
                     }
 
                     hctlStatus = ""
-                    if ( fileExists('hctl_status.log') && currentBuild.currentResult == "SUCCESS" ) {
-                        hctlStatus = readFile(file: 'hctl_status.log')
+                    if ( fileExists('artifacts/srvnode1/cortx_deployment/log/hctl_status.log') && currentBuild.currentResult == "SUCCESS" ) {
+                        hctlStatus = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/hctl_status.log')
                         MESSAGE = "Cortx Stack VM Deployment Success"
                         ICON = "accept.gif"
                         STATUS = "SUCCESS"
