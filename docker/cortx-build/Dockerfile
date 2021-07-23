@@ -27,9 +27,12 @@ ARG ENVIRONMENT
 ARG GIT_HASH
 
 LABEL maintainer="cortx.opensource@seagate.com" \
-      Description="This image is used to build CORTX components" \
+      org.opencontainers.image.title="CORTX Build Image" \
       org.opencontainers.image.revision=$GIT_HASH \
-      org.opencontainers.image.source="https://github.com/Seagate/cortx/blob/main/doc/Release_Build_Creation.rst"
+      org.opencontainers.image.vendor="Seagate" \
+      org.opencontainers.image.description="This image is used to build CORTX components. For detailed steps refer https://github.com/Seagate/cortx/blob/main/doc/community-build/Building-CORTX-From-Source-for-SingleNode.md" \
+      org.opencontainers.image.source="https://github.com/Seagate/cortx/"
+      
 
 ENV BASH_ENV "/etc/profile"
 ENV GIT_HASH $GIT_HASH
