@@ -30,7 +30,7 @@ LABEL maintainer="cortx.opensource@seagate.com" \
       org.opencontainers.image.title="CORTX Build Image" \
       org.opencontainers.image.revision=$GIT_HASH \
       org.opencontainers.image.vendor="Seagate" \
-      org.opencontainers.image.description="This image is used to build CORTX components. For detailed steps refer https://github.com/Seagate/cortx/blob/main/doc/community-build/Building-CORTX-From-Source-for-SingleNode.md" \
+      org.opencontainers.image.description="CORTX Build image is used to compile rpm packages from source code for CORTX stack components" \
       org.opencontainers.image.source="https://github.com/Seagate/cortx/"
       
 
