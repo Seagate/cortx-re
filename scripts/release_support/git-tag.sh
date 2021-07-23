@@ -46,8 +46,8 @@ declare -A REPO_LIST=(
 
                         git config --global user.email "cortx-application@seagate.com"
                         git config --global user.name "cortx-admin"
-			$1=RELEASE_INFO_URL
-			echo $1
+			RELEASE_INFO_URL=$1
+			echo $RELEASE_INFO_URL
 			exit 1
                         wget -q "$RELEASE_INFO_URL" -O RELEASE.INFO
 
