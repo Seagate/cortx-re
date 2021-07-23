@@ -102,12 +102,9 @@ EOF
                         yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
                         yum clean all && rm -rf /var/cache/yum
                     """    
-                    sh label: '', script: """
-                        pushd $COMPONENT_NAME
-                            bash jenkins/cicd/cortx-ha-dep.sh
-                            pip3 install numpy
-                        popd
-                        
+                    sh label: '', script: """   
+                        bash jenkins/cicd/cortx-ha-dep.sh
+                        pip3 install numpy   
                     """
 
                     sh label: 'Build', returnStatus: true, script: '''
