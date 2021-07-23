@@ -66,7 +66,7 @@ data "aws_ami" "centos_7-8-2003" {
 
   filter {
     name   = "name"
-    values = ["CentOS 7.8.2003 *"]
+    values = [var.os_version]
   }
 
   filter {

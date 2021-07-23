@@ -3,6 +3,13 @@ variable "security_group_cidr" {
   type        = string
 }
 
+
+variable "os_version" {
+  description = "OS Version"
+  type        = string
+}
+
+
 variable "region" {
   description = "Region"
   type        = string
