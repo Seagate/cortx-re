@@ -2,7 +2,7 @@
 pipeline { 
     agent {
         node {
-            label 'docker-centos-7.9.2009-node'
+            label "docker-${OS_VERSION}-node"
         }
     }
 
@@ -21,7 +21,7 @@ pipeline {
     }
     environment {
 	//PR vars
-	// Hare Repo Info
+	// OS_VERSION and COMPONENTS_BRANCH are manually created parameters in jenkins job.
 
         GPR_REPO = "https://github.com/${ghprbGhRepository}"
         PROVISIONER_URL = "${ghprbGhRepository != null ? GPR_REPO : PROVISIONER_URL}"
@@ -33,9 +33,8 @@ pipeline {
         ////
         VERSION = "2.0.0"
         COMPONENT_NAME = "provisioner".trim()
-        BRANCH = "main"
-        OS_VERSION = "centos-7.9.2009"
-        THIRD_PARTY_VERSION = "centos-7.9.2009-2.0.0-latest"
+        BRANCH = "${COMPONENTS_BRANCH}"
+        THIRD_PARTY_VERSION = "${OS_VERSION}-2.0.0-latest"
         PASSPHARASE = credentials('rpm-sign-passphrase')
 		
 	// Artifacts root location
@@ -182,7 +181,7 @@ pipeline {
             agent {
                 node {
                     // Run deployment on mini_provisioner nodes (vm deployment nodes)
-                    label params.HOST == "-" ? "mini_provisioner && !cleanup_req" : "mini_provisioner_user_host"
+                    label params.HOST == "-" ? "mini_provisioner_7_9 && !cleanup_req" : "mini_provisioner_user_host"
                     customWorkspace "/var/jenkins/mini_provisioner/${JOB_NAME}_${BUILD_NUMBER}"
                 }
             }
