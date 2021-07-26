@@ -86,7 +86,7 @@ pipeline {
                     pip3.6 install  pyinstaller==3.5
                 '''
                  
-                dir("cortx-csm-agent") {
+                dir("cortx-manager") {
 
                     checkout([$class: 'GitSCM', branches: [[name: "${CSM_BRANCH}"]], doGenerateSubmoduleConfigurations: false,  extensions: [[$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${CSM_URL}",  name: 'origin', refspec: "${CSM_PR_REFSEPEC}"]]])
                     // Exclude return code check for csm_setup and csm_test
@@ -96,7 +96,7 @@ pipeline {
                         echo "Executing build script"
                         echo "VERSION:$VERSION"
                         echo "Python:$(python --version)"
-                        ./cortx-manager/cicd/build.sh -v $VERSION -b $BUILD_NUMBER -t
+                        sh ./cortx-manager/cicd/build.sh -v $VERSION -b $BUILD_NUMBER -t
                     '''
 
                     sh label: 'Collect Release Artifacts', script: '''
