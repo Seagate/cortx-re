@@ -6,7 +6,7 @@
 
 - name: "[deploy-prep] : Wait for SSH Connection"
   pause:
-    minutes: 5
+    minutes: 2
     
 - name: Create cortx directory
   shell: rm -rf /mnt/cortx
@@ -18,12 +18,12 @@
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}" 
 
-- name: Download cortx_prep
+- name: Download install.sh
   shell: (cd /mnt/cortx && curl -O https://raw.githubusercontent.com/Seagate/cortx-prvsnr/stable/srv/components/provisioner/scripts/install.sh)
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}"
 
-- name: Changing perm of "/mnt/cortx/cortx-prep.sh", adding "+x"
+- name: Changing perm of "/mnt/cortx/install.sh", adding "+x"
   file: dest=/mnt/cortx/install.sh mode=a+x
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}" 
