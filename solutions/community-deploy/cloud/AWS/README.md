@@ -73,11 +73,11 @@ This file consists of the procedure to compile complete CORTX stack and Deploy o
 
 ### 1. CORTX Build
 
-   We will use [cortx-build](https://github.com/Seagate/cortx/pkgs/container/cortx-build) docker image to compile entire CORTX stack. Please follow [CORTX compilation](https://github.com/Seagate/cortx/blob/main/doc/Release_Build_Creation.rst#procedure-for-build-steps) steps for compilation.
+   We will use [cortx-build](https://github.com/Seagate/cortx/pkgs/container/cortx-build) docker image to compile entire CORTX stack. Please follow [CORTX compilation](https://github.com/Seagate/cortx/blob/main/doc/community-build/Generate-Cortx-Build-Stack.md) steps for compilation.
 
 ### 2. CORTX Deployment
 
-   After CORTX build is ready follow [CORTX Deployment](https://github.com/Seagate/cortx/blob/main/doc/ProvisionReleaseBuild.md) to deploy CORTX on AWS instance. Please exclude SELINUX and Hostname setup steps.
+   After CORTX build is ready follow [CORTX Deployment](https://github.com/Seagate/cortx/blob/main/doc/community-build/ProvisionReleaseBuild.md) to deploy CORTX on AWS instance. Please exclude SELINUX and Hostname setup steps.
 
 ### 3. OnBoarding 
 
