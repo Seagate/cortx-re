@@ -66,13 +66,37 @@
   command: cortx_setup storage config --name enclosure-1 --type RBOD
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}" 
-
-- name: "Storage Configuration cvg 0 data_devices"
-  command: cortx_setup storage config --cvg 0 --data_devices /dev/disk/by-id/dm-name-mpathc,/dev/disk/by-id/dm-name-mpathd,/dev/disk/by-id/dm-name-mpathe,/dev/disk/by-id/dm-name-mpathf,/dev/disk/by-id/dm-name-mpathg,/dev/disk/by-id/dm-name-mpathh,/dev/disk/by-id/dm-name-mpathi,/dev/disk/by-id/dm-name-mpathj,/dev/disk/by-id/dm-name-mpathk --metadata_devices /dev/disk/by-id/dm-name-mpathb
-  delegate_to: "{{ item }}"
-  with_items: "{{ groups['srvnodes'] }}" 
   
-- name: "Storage Configuration cvg 1 data_devices"
-  command: cortx_setup storage config --cvg 1 --data_devices /dev/disk/by-id/dm-name-mpatha,/dev/disk/by-id/dm-name-mpathl,/dev/disk/by-id/dm-name-mpathn,/dev/disk/by-id/dm-name-mpatho,/dev/disk/by-id/dm-name-mpathp,/dev/disk/by-id/dm-name-mpathq,/dev/disk/by-id/dm-name-mpathr,/dev/disk/by-id/dm-name-mpaths,/dev/disk/by-id/dm-name-mpatht  --metadata_devices /dev/disk/by-id/dm-name-mpathm
-  delegate_to: "{{ item }}"
-  with_items: "{{ groups['srvnodes'] }}" 
+- name: "cvg0 data device list"
+  script: files/cvg0_datalist.py
+  register: cvg0_data_list
+ 
+- debug: var=cvg0_data_list
+
+- name: "cvg0 meta device list"
+  script: files/cvg0_metalist.py
+  register: cvg0_meta_list
+ 
+- debug: var=cvg0_meta_list
+
+- name: "cvg1 data device list"
+  script: files/cvg1_datalist.py
+  register: cvg1_data_list
+ 
+- debug: var=cvg1_data_list
+
+- name: "cvg1 meta device list"
+  script: files/cvg1_metalist.py
+  register: cvg1_meta_list
+ 
+- debug: var=cvg1_meta_list
+
+#- name: "Storage Configuration cvg 0 data_devices"
+#  command: cortx_setup storage config --cvg 0 --data_devices /dev/disk/by-id/dm-name-mpathc,/dev/disk/by-id/dm-name-mpathd,/dev/disk/by-id/dm-name-mpathe,/dev/disk/by-id/dm-name-mpathf,/dev/disk/by-id/dm-name-mpathg,/dev/disk/by-id/dm-name-mpathh,/dev/disk/by-id/dm-name-mpathi,/dev/disk/by-id/dm-name-mpathj,/dev/disk/by-id/dm-name-mpathk --metadata_devices /dev/disk/by-id/dm-name-mpathb
+#  delegate_to: "{{ item }}"
+#  with_items: "{{ groups['srvnodes'] }}" 
+  
+#- name: "Storage Configuration cvg 1 data_devices"
+#  command: cortx_setup storage config --cvg 1 --data_devices /dev/disk/by-id/dm-name-mpatha,/dev/disk/by-id/dm-name-mpathl,/dev/disk/by-id/dm-name-mpathn,/dev/disk/by-id/dm-name-mpatho,/dev/disk/by-id/dm-name-mpathp,/dev/disk/by-id/dm-name-mpathq,/dev/disk/by-id/dm-name-mpathr,/dev/disk/by-id/dm-name-mpaths,/dev/disk/by-id/dm-name-mpatht  --metadata_devices /dev/disk/by-id/dm-name-mpathm
+#  delegate_to: "{{ item }}"
+#  with_items: "{{ groups['srvnodes'] }}" 
