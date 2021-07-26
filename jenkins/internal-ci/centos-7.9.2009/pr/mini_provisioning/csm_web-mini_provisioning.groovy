@@ -69,12 +69,20 @@ pipeline {
 
                     checkout([$class: 'GitSCM', branches: [[name: "${CSM_BRANCH}"]], doGenerateSubmoduleConfigurations: false,  extensions: [[$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${CSM_URL}",  name: 'origin', refspec: "${CSM_PR_REFSEPEC}"]]])
 
-                    sh label: '', script: '''
+                    sh label: 'Install Pre-requisites', script: '''
                         sed -i 's/gpgcheck=1/gpgcheck=0/' /etc/yum.conf
                         yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/$BRANCH/$OS_VERSION/$RELEASE_TAG/cortx_iso/
                         yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
                         yum clean all && rm -rf /var/cache/yum
                         pip3.6 install  pyinstaller==3.5
+                        wget  https://nodejs.org/dist/v12.13.0/node-v12.13.0-linux-x64.tar.xz
+                        tar -xvf node-v12.13.0-linux-x64.tar.xz
+                        mkdir /opt/nodejs
+                        cp -r node-v12.13.0-linux-x64 /opt/nodejs/
+                        mkdir -p /var/log/seagate/csm
+                        mkdir -p /etc/ssl/stx
+                        wget https://raw.githubusercontent.com/Seagate/cortx-manager/main/cicd/auxiliary/stx.pem
+                        mv stx.pem /etc/ssl/stx
                     '''
 
                     sh label: 'Build', returnStatus: true, script: '''
