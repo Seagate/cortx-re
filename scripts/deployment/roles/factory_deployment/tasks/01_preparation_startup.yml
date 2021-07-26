@@ -8,7 +8,7 @@
   pause:
     minutes: 2
     
-- name: Create cortx directory
+- name: Remove old cortx directory
   shell: rm -rf /mnt/cortx
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}" 
