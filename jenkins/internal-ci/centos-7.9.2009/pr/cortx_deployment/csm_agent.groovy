@@ -96,7 +96,7 @@ pipeline {
                         echo "Executing build script"
                         echo "VERSION:$VERSION"
                         echo "Python:$(python --version)"
-                        ./cortx-csm-agent/cicd/build.sh -v $VERSION -b $BUILD_NUMBER -t
+                        ./cortx-manager/cicd/build.sh -v $VERSION -b $BUILD_NUMBER -t
                     '''
 
                     sh label: 'Collect Release Artifacts', script: '''
