@@ -64,10 +64,12 @@ pipeline {
         stage('Build') {
             steps {
 				script { build_stage = env.STAGE_NAME }
-
+                dir('seagate-ldr') {
+                    checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/seagate-ldr.git']]])
+                }
                 dir ('cortx-re') {
-					checkout changelog: false, poll: false, scm: [$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', noTags: true, reference: '', shallow: true]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]]
-				}
+                    checkout changelog: false, poll: false, scm: [$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', noTags: true, reference: '', shallow: true]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]]
+                }
 
                 sh label: '', script: '''
                     #Use main branch for cortx-py-utils
@@ -83,7 +85,7 @@ pipeline {
                     pip3.6 install  pyinstaller==3.5
                 '''
                  
-                dir("csm") {
+                dir("cortx-csm-agent") {
 
                     checkout([$class: 'GitSCM', branches: [[name: "${CSM_BRANCH}"]], doGenerateSubmoduleConfigurations: false,  extensions: [[$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${CSM_URL}",  name: 'origin', refspec: "${CSM_PR_REFSEPEC}"]]])
                     
@@ -94,7 +96,7 @@ pipeline {
                         echo "Executing build script"
                         echo "VERSION:$VERSION"
                         echo "Python:$(python --version)"
-                        ./cicd/build.sh -v $VERSION -b $BUILD_NUMBER -t
+                        ./cicd/build.sh -v $VERSION -b $BUILD_NUMBER -t -n ldr -l $WORKSPACE/seagate-ldr
                     '''
 
                     sh label: 'Collect Release Artifacts', script: '''
