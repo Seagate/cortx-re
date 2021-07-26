@@ -71,7 +71,7 @@ pipeline {
 
                     sh encoding: 'UTF-8', label: 'cortx-setup', script: """
                     if [ -f "./devops/rpms/node_cli/node_cli_buildrpm.sh" ]; then
-                        sh ./devops/rpms/node_cli/node_cli_buildrpm.sh -g \$(git rev-parse --short HEAD) -e $VERSION -b $${BUILD_NUMBER}
+                        sh ./devops/rpms/node_cli/node_cli_buildrpm.sh -g \$(git rev-parse --short HEAD) -e $VERSION -b ${BUILD_NUMBER}
                     else
                         echo "node_cli package creation is not implemented"
                     fi
