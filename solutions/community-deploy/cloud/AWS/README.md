@@ -25,9 +25,12 @@ This file consists of the procedure to compile complete CORTX stack and Deploy o
 
    Modify user.tfvars file with your AWS Details.
 ```
+   os_version          = "<OS VERSION>"
    region              = "<AWS REGION>"
    security_group_cidr = "<YOUR PUBLIC IP CIDR>"
-```  
+```
+   Use `CentOS 7.8.2003 x86_64` or `CentOS 7.9.2009 x86_64` as os_version as required.
+
    If you are not aware of Public IP . Use `curl ipinfo.io/ip `  to identify your Public IP
    It should show output as,
 ```
@@ -39,6 +42,7 @@ This file consists of the procedure to compile complete CORTX stack and Deploy o
    Content of `user.tfvars` file should look like as below,
 ```
    [root@cortx-test AWS]# cat user.tfvars
+   os_version          = "CentOS 7.8.2003 x86_64"
    region              = "ap-south-1"
    security_group_cidr = "134.204.222.36/32"
 ```
