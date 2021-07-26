@@ -74,8 +74,7 @@
   with_items: "{{ groups['srvnodes'] }}" 
 
 - set_fact:
-    cvg0_data: "{{item}}"
-  with_items: "{{ cvg0_data_list.stdout }}"
+    cvg0_data: "{{cvg0_data_list.stdout}}"
     
 - debug: var=cvg0_data
 
@@ -86,8 +85,7 @@
   with_items: "{{ groups['srvnodes'] }}" 
   
 - set_fact:
-    cvg0_meta: "{{item}}"
-  with_items: "{{ cvg0_meta_list.stdout }}" 
+    cvg0_meta: "{{cvg0_meta_list.stdout }}"
  
 - debug: var=cvg0_meta
 
@@ -98,8 +96,7 @@
   with_items: "{{ groups['srvnodes'] }}" 
   
 - set_fact:
-    cvg1_data: "{{item}}"
-  with_items: "{{ cvg1_data_list.stdout }}" 
+    cvg1_data: "{{cvg1_data_list.stdout}}"
  
 - debug: var=cvg1_data
 
@@ -110,8 +107,7 @@
   with_items: "{{ groups['srvnodes'] }}" 
  
 - set_fact:
-    cvg1_meta: "{{item}}"
-  with_items: "{{ cvg1_meta_list.stdout }}" 
+    cvg1_meta: "{{cvg1_meta_list.stdout}}"
   
 - debug: var=cvg1_meta
 
