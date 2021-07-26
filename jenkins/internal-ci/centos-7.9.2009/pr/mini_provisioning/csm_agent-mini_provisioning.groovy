@@ -91,12 +91,14 @@ pipeline {
                     
                     // Exclude return code check for csm_setup and csm_test
                     sh label: 'Build', returnStatus: true, script: '''
+                    pushd cortx-csm-agent
                         BUILD=$(git rev-parse --short HEAD)
                         VERSION=$(cat VERSION)
                         echo "Executing build script"
                         echo "VERSION:$VERSION"
                         echo "Python:$(python --version)"
                         ./cicd/build.sh -v $VERSION -b $BUILD_NUMBER -t -n ldr -l $WORKSPACE/seagate-ldr
+                    popd    
                     '''
 
                     sh label: 'Collect Release Artifacts', script: '''
