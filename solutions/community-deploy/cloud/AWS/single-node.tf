@@ -78,7 +78,7 @@ resource "aws_security_group" "cortx_deploy" {
   tags = local.common_tags
 }
 
-data "aws_ami" "centos_7-8-2003" {
+data "aws_ami" "centos" {
   most_recent = true
   owners      = ["125523088429"]
 
@@ -118,7 +118,7 @@ resource "local_file" "pem_file" {
 
 resource "aws_instance" "cortx_deploy" {
   # https://wiki.centos.org/Cloud/AWS
-  ami                    = data.aws_ami.centos_7-8-2003.id
+  ami                    = data.aws_ami.centos.id
   instance_type          = "c5.large"
   availability_zone      = data.aws_availability_zones.available.names[0]
   key_name               = aws_key_pair.cortx_key.key_name
