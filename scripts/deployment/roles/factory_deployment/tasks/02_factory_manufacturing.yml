@@ -72,24 +72,36 @@
   register: cvg0_data_list
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}" 
- 
-- debug: var=cvg0_data_list
+
+- set_fact:
+    cvg0_data: "{{item}}"
+  with_items: "{{ cvg0_data_list.stdout_lines }}"
+    
+- debug: var=cvg0_data
 
 - name: "cvg0 meta device list"
   script: files/cvg0_metalist.py
   register: cvg0_meta_list
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}" 
+  
+- set_fact:
+    cvg0_meta: "{{item}}"
+  with_items: "{{ cvg0_meta_list.stdout_lines }}" 
  
-- debug: var=cvg0_meta_list
+- debug: var=cvg0_meta
 
 - name: "cvg1 data device list"
   script: files/cvg1_datalist.py
   register: cvg1_data_list
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}" 
+  
+- set_fact:
+    cvg1_data: "{{item}}"
+  with_items: "{{ cvg1_data_list.stdout_lines }}" 
  
-- debug: var=cvg1_data_list
+- debug: var=cvg1_data
 
 - name: "cvg1 meta device list"
   script: files/cvg1_metalist.py
@@ -97,7 +109,11 @@
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}" 
  
-- debug: var=cvg1_meta_list
+- set_fact:
+    cvg1_meta: "{{item}}"
+  with_items: "{{ cvg1_meta_list.stdout_lines }}" 
+  
+- debug: var=cvg1_meta
 
 #- name: "Storage Configuration cvg 0 data_devices"
 #  command: cortx_setup storage config --cvg 0 --data_devices /dev/disk/by-id/dm-name-mpathc,/dev/disk/by-id/dm-name-mpathd,/dev/disk/by-id/dm-name-mpathe,/dev/disk/by-id/dm-name-mpathf,/dev/disk/by-id/dm-name-mpathg,/dev/disk/by-id/dm-name-mpathh,/dev/disk/by-id/dm-name-mpathi,/dev/disk/by-id/dm-name-mpathj,/dev/disk/by-id/dm-name-mpathk --metadata_devices /dev/disk/by-id/dm-name-mpathb
