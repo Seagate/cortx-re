@@ -70,24 +70,32 @@
 - name: "cvg0 data device list"
   script: files/cvg0_datalist.py
   register: cvg0_data_list
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['srvnodes'] }}" 
  
 - debug: var=cvg0_data_list
 
 - name: "cvg0 meta device list"
   script: files/cvg0_metalist.py
   register: cvg0_meta_list
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['srvnodes'] }}" 
  
 - debug: var=cvg0_meta_list
 
 - name: "cvg1 data device list"
   script: files/cvg1_datalist.py
   register: cvg1_data_list
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['srvnodes'] }}" 
  
 - debug: var=cvg1_data_list
 
 - name: "cvg1 meta device list"
   script: files/cvg1_metalist.py
   register: cvg1_meta_list
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['srvnodes'] }}" 
  
 - debug: var=cvg1_meta_list
 
