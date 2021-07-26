@@ -3,7 +3,7 @@
 pipeline { 
     agent {
         node {
-            label 'docker-centos-7.9.2009-node'
+            label "docker-${OS_VERSION}-node"
         }
     }
 
@@ -63,11 +63,10 @@ Recommended VM specification:
         S3_PR_REFSEPEC = "${ghprbPullId != null ? S3_GPR_REFSEPEC : S3_BRANCH_REFSEPEC}"
 
         //////////////////////////////// BUILD VARS //////////////////////////////////////////////////
-
+        // OS_VERSION and COMPONENTS_BRANCH are manually created parameters in jenkins job.
         COMPONENT_NAME = "s3server".trim()
-        BRANCH = "main"
-        OS_VERSION = "centos-7.9.2009"
-        THIRD_PARTY_VERSION = "centos-7.9.2009-2.0.0-latest"
+        BRANCH = "${COMPONENTS_BRANCH}"
+        THIRD_PARTY_VERSION = "${OS_VERSION}-2.0.0-latest"
         VERSION = "2.0.0"
         PASSPHARASE = credentials('rpm-sign-passphrase')
 
@@ -105,8 +104,8 @@ Recommended VM specification:
                     checkout([$class: 'GitSCM', branches: [[name: "${S3_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog'], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false], [$class: 'CloneOption', depth: 1, honorRefspec: true, noTags: true, reference: '', shallow: true]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${S3_URL}",  name: 'origin', refspec: "${S3_PR_REFSEPEC}"]]])
 
                     sh label: 'prepare build env', script: """
-                        sed '/baseurl/d' /etc/yum.repos.d/motr_current_build.repo
-                        echo "baseurl=http://cortx-storage.colo.seagate.com/releases/cortx/components/github/${BRANCH}/${OS_VERSION}/dev/motr/current_build/"  >> /etc/yum.repos.d/motr_current_build.repo
+                        yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/components/github/$BRANCH/$OS_VERSION/dev/motr/current_build/
+                        yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
                         yum clean all;rm -rf /var/cache/yum
                     """
 
@@ -223,7 +222,7 @@ Recommended VM specification:
             agent {
                 node {
                     // Run deployment on mini_provisioner nodes (vm deployment nodes)
-                    label params.HOST == "-" ? "mini_provisioner_s3 && !cleanup_req" : "mini_provisioner_s3_user_host"
+                    label params.HOST == "-" ? "mini_provisioner_s3_7_9 && !cleanup_req" : "mini_provisioner_s3_user_host"
                     customWorkspace "/var/jenkins/mini_provisioner/${JOB_NAME}_${BUILD_NUMBER}"
                 }
             }

@@ -5,7 +5,7 @@ pipeline {
     agent {
         node {
             // Run deployment on mini_provisioner nodes (vm deployment nodes)
-            label 'docker-centos-7.9.2009-node'
+            label "docker-${OS_VERSION}-node"
         }
     }
 
@@ -25,9 +25,8 @@ pipeline {
     }
 
     environment {
-
+        // OS_VERSION and COMPONENTS_BRANCH are manually created parameters in jenkins job.
         COMPONENT_NAME = "sspl".trim()
-        OS_VERSION = "centos-7.9.2009"
         GPR_REPO = "https://github.com/${ghprbGhRepository}"
         SSPL_URL = "${ghprbGhRepository != null ? GPR_REPO : SSPL_URL}"
         SSPL_BRANCH = "${sha1 != null ? sha1 : SSPL_BRANCH}"
@@ -36,8 +35,8 @@ pipeline {
         SSPL_BRANCH_REFSEPEC = "+refs/heads/*:refs/remotes/origin/*"
         SSPL_PR_REFSEPEC = "${ghprbPullId != null ? SSPL_GPR_REFSEPEC : SSPL_BRANCH_REFSEPEC}"
 		
-		BRANCH = "main"
-		THIRD_PARTY_VERSION = "centos-7.9.2009-2.0.0-latest"
+		BRANCH = "${COMPONENTS_BRANCH}"
+		THIRD_PARTY_VERSION = "${OS_VERSION}-2.0.0-latest"
 		VERSION = "2.0.0"
         PASSPHARASE = credentials('rpm-sign-passphrase')
 		
@@ -180,7 +179,7 @@ pipeline {
             agent {
                 node {
                     // Run deployment on mini_provisioner nodes (vm deployment nodes)
-                    label params.HOST == "-" ? "mini_provisioner && !cleanup_req" : "mini_provisioner_user_host"
+                    label params.HOST == "-" ? "mini_provisioner_7_9 && !cleanup_req" : "mini_provisioner_user_host"
                     customWorkspace "/var/jenkins/mini_provisioner/${JOB_NAME}_${BUILD_NUMBER}"
                 }
             }

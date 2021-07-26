@@ -2,7 +2,7 @@
 pipeline { 
     agent {
         node {
-            label 'docker-centos-7.9.2009-node'
+            label "docker-${OS_VERSION}-node"
         }
     }
 
@@ -33,12 +33,12 @@ pipeline {
 
 
         //////////////////////////////// BUILD VARS //////////////////////////////////////////////////
-
+        // OS_VERSION and COMPONENTS_BRANCH are manually created parameters in jenkins job.
         COMPONENT_NAME = "csm-agent".trim()
-        BRANCH = "${ghprbTargetBranch != null ? ghprbTargetBranch : 'main'}"
-        OS_VERSION = "centos-7.9.2009"
-        THIRD_PARTY_VERSION = "centos-7.9.2009-2.0.0-latest"
+        BRANCH = "${ghprbTargetBranch != null ? ghprbTargetBranch : COMPONENTS_BRANCH}"
+        THIRD_PARTY_VERSION = "${OS_VERSION}-2.0.0-latest"
         VERSION = "2.0.0"
+        RELEASE_TAG = "last_successful_prod"
         PASSPHARASE = credentials('rpm-sign-passphrase')
 
         // Artifacts root location
@@ -71,7 +71,8 @@ pipeline {
 
                 sh label: '', script: '''
                     #Use main branch for cortx-py-utils
-                    sed -i 's/stable/main/'  /etc/yum.repos.d/cortx.repo
+                    yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/$BRANCH/$OS_VERSION/$RELEASE_TAG/cortx_iso/
+                    yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
                     yum clean all && rm -rf /var/cache/yum
 
                     # Install cortx-prereq package
@@ -117,7 +118,7 @@ pipeline {
         stage('Release') {
             agent {
                 node {
-                    label 'docker-centos-7.9.2009-node'
+                    label "docker-${OS_VERSION}-node"
                 }
             }
             steps {
@@ -203,7 +204,7 @@ pipeline {
             agent {
                 node {
                     // Run deployment on mini_provisioner nodes (vm deployment nodes)
-                    label params.HOST == "-" ? "mini_provisioner && !cleanup_req" : "mini_provisioner_user_host"
+                    label params.HOST == "-" ? "mini_provisioner_7_9 && !cleanup_req" : "mini_provisioner_user_host"
                     customWorkspace "/var/jenkins/mini_provisioner/${JOB_NAME}_${BUILD_NUMBER}"
                 }
             }
