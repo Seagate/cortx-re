@@ -188,7 +188,7 @@ pipeline {
                 // Credentials used to SSH node
                 NODE_DEFAULT_SSH_CRED =  credentials("${NODE_DEFAULT_SSH_CRED}")
                 NODE_USER = "${NODE_DEFAULT_SSH_CRED_USR}"
-                NODE1_HOST = "${HOST == '-' ? NODE1_HOST : HOST }"
+                NODE1_HOST = "${params.HOST == '-' ? NODE1_HOST : params.HOST }"
                 NODE_PASS = "${HOST_PASS == '-' ? NODE_DEFAULT_SSH_CRED_PSW : HOST_PASS}"
             }
             steps {
@@ -198,7 +198,7 @@ pipeline {
                     // Cleanup Workspace
                     cleanWs()
 
-                    if ( "${HOST}" == "-" ) {
+                    if ( "${params.HOST}" == "-" ) {
                         markNodeforCleanup()
                     }
 
@@ -216,7 +216,7 @@ pipeline {
                     }
 
                     // Trigger cleanup VM
-                    if ( "${HOST}" == "-" ) {
+                    if ( "${params.HOST}" == "-" ) {
                         if ( "${DEBUG}" == "yes" ) {  
                             markNodeOffline("Debug Mode Enabled on This Host  - ${BUILD_URL}")
                         } else {

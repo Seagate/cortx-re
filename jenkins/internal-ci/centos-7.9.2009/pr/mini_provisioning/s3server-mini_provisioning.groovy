@@ -230,7 +230,7 @@ Recommended VM specification:
                 // Credentials used to SSH node
                 NODE_DEFAULT_SSH_CRED =  credentials("${NODE_DEFAULT_SSH_CRED}")
                 NODE_USER = "${NODE_DEFAULT_SSH_CRED_USR}"
-                NODE1_HOST = "${HOST == '-' ? NODE1_HOST : HOST }"
+                NODE1_HOST = "${params.HOST == '-' ? NODE1_HOST : params.HOST }"
                 NODE_PASS = "${HOST_PASS == '-' ? NODE_DEFAULT_SSH_CRED_PSW : HOST_PASS}"
             }
             stages {
@@ -255,7 +255,7 @@ Recommended VM specification:
                                 checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])                
                             }
                             
-                            if ( "${HOST}" == "-" ) {
+                            if ( "${params.HOST}" == "-" ) {
                                 markNodeforCleanup()
                             }
                         }
@@ -392,7 +392,7 @@ Recommended VM specification:
                             runAnsible("05_MINI_PROV_CLEANUP")
                         } 
                         
-                        if ( "${HOST}" == "-" ) {
+                        if ( "${params.HOST}" == "-" ) {
 
                             if ( "${DEBUG}" == "yes" ) {  
                                 markNodeOffline("S3 Debug Mode Enabled on This Host  - ${BUILD_URL}")
