@@ -104,7 +104,7 @@ pipeline {
             
                         if [[ ( ! -z `ls ./dist/rpmbuild/RPMS/x86_64/*.rpm `)]]; then
                             mkdir -p "${CORTX_ISO_LOCATION}"
-                            cp ./cortx-csm-agent/dist/rpmbuild/RPMS/x86_64/*.rpm "${CORTX_ISO_LOCATION}"
+                            cp ./dist/rpmbuild/RPMS/x86_64/*.rpm "${CORTX_ISO_LOCATION}"
                         else
                             echo "RPM not exists !!!"
                             exit 1
