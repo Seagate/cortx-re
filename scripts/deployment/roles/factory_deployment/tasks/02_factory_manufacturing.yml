@@ -73,6 +73,8 @@
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}" 
 
+- debug: var=cvg0_data
+
 - set_fact:
     cvg0_data: "{{cvg0_data_list.stdout}}"
     
