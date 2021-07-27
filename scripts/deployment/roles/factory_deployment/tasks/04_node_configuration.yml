@@ -5,10 +5,10 @@
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}" 
 
-- name: Discover resources
-  shell: cortx_setup resource discover
-  delegate_to: "{{ item }}"
-  with_items: "{{ groups['srvnodes'] }}" 
+#- name: Discover resources
+#  shell: cortx_setup resource discover
+#  delegate_to: "{{ item }}"
+#  with_items: "{{ groups['srvnodes'] }}" 
 
 - name: System Resource Manifest
   shell: cortx_setup resource show --manifest [--type=<resource-type-list> --state=<resource-state-list>]
