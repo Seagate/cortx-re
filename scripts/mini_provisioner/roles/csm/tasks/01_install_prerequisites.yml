@@ -87,7 +87,7 @@
     systemctl status kafka-zookeeper.service
     systemctl status kafka.service
 
-- name: "[install_prereq] : Install NodeJS and certs"
+- name: "[install_prereq] : Install NodeJS"
   shell: |
     wget  https://nodejs.org/dist/v12.13.0/node-v12.13.0-linux-x64.tar.xz 
     tar -xvf node-v12.13.0-linux-x64.tar.xz
@@ -95,6 +95,9 @@
     cp -r node-v12.13.0-linux-x64 /opt/nodejs/
     mkdir -p /var/log/seagate/csm
     mkdir -p /etc/ssl/stx
+
+- name: "[install_prereq] : Install certs"
+  shell: |    
     wget https://raw.githubusercontent.com/Seagate/cortx-manager/main/cicd/auxiliary/stx.pem
     mv stx.pem /etc/ssl/stx
 
