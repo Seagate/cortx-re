@@ -18,6 +18,10 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
+RELEASE_INFO_URL=$1
+GIT_TAG=$2
+TAG_MESSAGE=$3
+
 declare -A COMPONENT_LIST=(
                         [cortx-s3server]="https://$PASSWD@github.com/Seagate/cortx-s3server.git"
                         [cortx-motr]="https://$PASSWD@github.com/Seagate/cortx-motr.git"
@@ -59,7 +63,7 @@ declare -A COMPONENT_LIST=(
                         COMMIT_HASH=$(grep "$component-" RELEASE.INFO | head -1 | awk -F['_'] '{print $2}' | sed 's/git//g'); echo $COMMIT_HASH
 
                 fi
-                echo "Component2: "$component" , Repo:  "${COMPONENT_LIST[$component]}", Commit Hash: "$COMMIT_HASH""
+                echo "Component: "$component" , Repo:  "${COMPONENT_LIST[$component]}", Commit Hash: "$COMMIT_HASH""
                 pushd "$dir"
                 if [ "$GIT_TAG" != "" ]; then
                         git tag -a $GIT_TAG $COMMIT_HASH -m $TAG_MESSAGE;
