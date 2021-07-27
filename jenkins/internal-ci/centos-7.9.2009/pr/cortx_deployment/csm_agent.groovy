@@ -91,12 +91,10 @@ pipeline {
                     checkout([$class: 'GitSCM', branches: [[name: "${CSM_BRANCH}"]], doGenerateSubmoduleConfigurations: false,  extensions: [[$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${CSM_URL}",  name: 'origin', refspec: "${CSM_PR_REFSEPEC}"]]])
                     // Exclude return code check for csm_setup and csm_test
                     sh label: 'Build', returnStatus: true, script: '''
-                        pushd cortx-manager
-                            BUILD=$(git rev-parse --short HEAD)
-                            echo "Executing build script"
-                            echo "Python:$(python --version)"
-                            ./cicd/build.sh -v $VERSION -b $BUILD_NUMBER -t
-                        popd     
+                        BUILD=$(git rev-parse --short HEAD)
+                        echo "Executing build script"
+                        echo "Python:$(python --version)"
+                        ./cicd/build.sh -v $VERSION -b $BUILD_NUMBER -t
                     '''
 
                     sh label: 'Collect Release Artifacts', script: '''
