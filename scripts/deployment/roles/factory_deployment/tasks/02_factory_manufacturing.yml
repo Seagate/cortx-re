@@ -72,9 +72,13 @@
   script: files/cvg0_datalist.py
   register: cvg0_data_list_node1
   delegate_to: "srvnode-1" 
+  
+- debug: var=cvg0_data_list_node1
 
 - set_fact:
     cvg0_data_node1: "{{ cvg0_data_list_node1.stdout_lines }}"
+ 
+- debug: var=cvg0_data_node1
 
 - name: "cvg0 meta device list"
   script: files/cvg0_metalist.py
