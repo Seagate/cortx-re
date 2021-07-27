@@ -66,53 +66,129 @@
   command: cortx_setup storage config --name enclosure-1 --type RBOD
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}" 
-  
+
+  #cvg0 and cvg1 srvnode-1
 - name: "cvg0 data device list"
   script: files/cvg0_datalist.py
-  register: cvg0_data_list
-  delegate_to: "{{ item }}"
-  with_items: "{{ groups['srvnodes'] }}" 
-
-- debug: var=cvg0_data
+  register: cvg0_data_list_node1
+  delegate_to: "srvnode-1" 
 
 - set_fact:
-    cvg0_data: "{{cvg0_data_list.stdout}}"
+    cvg0_data_node1: "{{cvg0_data_list_node1.stdout}}"
     
-- debug: var=cvg0_data
+- debug: var=cvg0_data_node1
 
 - name: "cvg0 meta device list"
   script: files/cvg0_metalist.py
-  register: cvg0_meta_list
-  delegate_to: "{{ item }}"
-  with_items: "{{ groups['srvnodes'] }}" 
+  register: cvg0_meta_list_node1
+  delegate_to: "srvnode-1" 
   
 - set_fact:
-    cvg0_meta: "{{cvg0_meta_list.stdout }}"
+    cvg0_meta_node1: "{{cvg0_meta_list_node1.stdout }}"
  
-- debug: var=cvg0_meta
+- debug: var=cvg0_meta_node1
 
 - name: "cvg1 data device list"
   script: files/cvg1_datalist.py
-  register: cvg1_data_list
-  delegate_to: "{{ item }}"
-  with_items: "{{ groups['srvnodes'] }}" 
+  register: cvg1_data_list_node1
+  delegate_to: "srvnode-1"
   
 - set_fact:
-    cvg1_data: "{{cvg1_data_list.stdout}}"
+    cvg1_data_node1: "{{cvg1_data_list_node1.stdout}}"
  
-- debug: var=cvg1_data
+- debug: var=cvg1_data_node1
 
 - name: "cvg1 meta device list"
   script: files/cvg1_metalist.py
-  register: cvg1_meta_list
-  delegate_to: "{{ item }}"
-  with_items: "{{ groups['srvnodes'] }}" 
+  register: cvg1_meta_list_node1
+  delegate_to: "srvnode-1"
  
 - set_fact:
-    cvg1_meta: "{{cvg1_meta_list.stdout}}"
+    cvg1_meta_node1: "{{cvg1_meta_list_node1.stdout}}"
   
-- debug: var=cvg1_meta
+- debug: var=cvg1_meta_node1
 
+#cvg0 and cvg1 srvnode-2
+- name: "cvg0 data device list"
+  script: files/cvg0_datalist.py
+  register: cvg0_data_list_node2
+  delegate_to: "srvnode-2" 
+
+- set_fact:
+    cvg0_data_node2: "{{cvg0_data_list_node2.stdout}}"
+    
+- debug: var=cvg0_data_node2
+
+- name: "cvg0 meta device list"
+  script: files/cvg0_metalist.py
+  register: cvg0_meta_list_node2
+  delegate_to: "srvnode-2" 
+  
+- set_fact:
+    cvg0_meta_node2: "{{cvg0_meta_list_node2.stdout }}"
+ 
+- debug: var=cvg0_meta_node2
+
+- name: "cvg1 data device list"
+  script: files/cvg1_datalist.py
+  register: cvg1_data_list_node2
+  delegate_to: "srvnode-2"
+  
+- set_fact:
+    cvg1_data_node2: "{{cvg1_data_list_node2.stdout}}"
+ 
+- debug: var=cvg1_data_node2
+
+- name: "cvg1 meta device list"
+  script: files/cvg1_metalist.py
+  register: cvg1_meta_list_node2
+  delegate_to: "srvnode-2"
+ 
+- set_fact:
+    cvg1_meta_node2: "{{cvg1_meta_list_node2.stdout}}"
+  
+- debug: var=cvg1_meta_node2
+
+#cvg0 and cvg1 srvnode-3
+- name: "cvg0 data device list"
+  script: files/cvg0_datalist.py
+  register: cvg0_data_list_node3
+  delegate_to: "srvnode-3" 
+
+- set_fact:
+    cvg0_data_node3: "{{cvg0_data_list_node3.stdout}}"
+    
+- debug: var=cvg0_data_node3
+
+- name: "cvg0 meta device list"
+  script: files/cvg0_metalist.py
+  register: cvg0_meta_list_node3
+  delegate_to: "srvnode-3" 
+  
+- set_fact:
+    cvg0_meta_node3: "{{cvg0_meta_list_node3.stdout }}"
+ 
+- debug: var=cvg0_meta_node3
+
+- name: "cvg1 data device list"
+  script: files/cvg1_datalist.py
+  register: cvg1_data_list_node3
+  delegate_to: "srvnode-3"
+  
+- set_fact:
+    cvg1_data_node3: "{{cvg1_data_list_node3.stdout}}"
+ 
+- debug: var=cvg1_data_node3
+
+- name: "cvg1 meta device list"
+  script: files/cvg1_metalist.py
+  register: cvg1_meta_list_node3
+  delegate_to: "srvnode-3"
+ 
+- set_fact:
+    cvg1_meta_node3: "{{cvg1_meta_list_node3.stdout}}"
+  
+- debug: var=cvg1_meta_node3
 #- name: "Storage Configuration cvg 0 data_devices"
 #  command: cortx_setup storage config --cvg 0 --data_devices /dev/disk/by-id/dm-name-mpathc,/dev/disk/by-id/dm-name-mpathd,/dev/disk/by-id/dm-name-mpathe,/dev/disk/by-id/dm-name-mpathf,/dev/disk/by-id/dm-name-mpathg,/dev/disk/by-id/dm-name-mpathh,/dev/disk/by-id/dm-name-mpathi,/dev/disk/by-id/dm-name-mpathj,/dev/disk/by-id/dm-name-mpathk --metadata_devices /dev/disk/by-id/dm-name-mpathb
 #  delegate_to: "{{ item }}"
