@@ -29,7 +29,7 @@ pipeline {
 		script { build_stage=env.STAGE_NAME }
 			script { 
 				withCredentials([usernamePassword(credentialsId: 'cortx-admin-github', passwordVariable: 'PASSWD', usernameVariable: 'USER_NAME')]) {
-				sh label: 'Git-Tagging', script: '''sh scripts/release_support/git-tag.sh'''  
+				sh label: 'Git-Tagging', script: '''sh scripts/release_support/git-tag.sh $RELEASE_INFO_URL $GIT_TAG $TAG_MESSAGE'''					
 					}
 				}			
 			}
