@@ -7,12 +7,18 @@
 
 - name: Discover resources
   shell: cortx_setup resource discover
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['srvnodes'] }}" 
 
 - name: System Resource Manifest
   shell: cortx_setup resource show --manifest [--type=<resource-type-list> --state=<resource-state-list>]
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['srvnodes'] }}" 
 
 - name: Resource Health Check
   shell: cortx_setup resource show --health [--type=<resource-type-list> --state=<resource-state-list>]
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['srvnodes'] }}" 
 
 - name: Node Signature set config-key
   shell: cortx_setup signature set --key LR_SIGNATURE --value HP1_5U84
@@ -26,3 +32,5 @@
 
 - name: Finalize Node Configuration
   shell: cortx_setup node finalize
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['srvnodes'] }}" 
