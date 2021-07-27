@@ -73,14 +73,14 @@ pipeline {
 				}
 
                 sh label: '', script: '''
+                    # Install cortx-prereq package
+                    pip3 uninstall pip -y && yum reinstall python3-pip -y && ln -s /usr/bin/pip3 /usr/local/bin/pip3
+                    sh ./cortx-re/scripts/third-party-rpm/install-cortx-prereq.sh
+
                     #Use main branch for cortx-py-utils
                     yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/$BRANCH/$OS_VERSION/$RELEASE_TAG/cortx_iso/
                     yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
                     yum clean all && rm -rf /var/cache/yum
-
-                    # Install cortx-prereq package
-                    pip3 uninstall pip -y && yum reinstall python3-pip -y && ln -s /usr/bin/pip3 /usr/local/bin/pip3
-                    sh ./cortx-re/scripts/third-party-rpm/install-cortx-prereq.sh
 
                     # Install pyinstaller	
                     pip3.6 install  pyinstaller==3.5
@@ -91,12 +91,12 @@ pipeline {
                     checkout([$class: 'GitSCM', branches: [[name: "${CSM_BRANCH}"]], doGenerateSubmoduleConfigurations: false,  extensions: [[$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${CSM_URL}",  name: 'origin', refspec: "${CSM_PR_REFSEPEC}"]]])
                     // Exclude return code check for csm_setup and csm_test
                     sh label: 'Build', returnStatus: true, script: '''
-                        BUILD=$(git rev-parse --short HEAD)
-                        VERSION=$(cat VERSION)
-                        echo "Executing build script"
-                        echo "VERSION:$VERSION"
-                        echo "Python:$(python --version)"
-                        ./cicd/build.sh -v $VERSION -b $BUILD_NUMBER -t
+                        pushd cortx-manager
+                            BUILD=$(git rev-parse --short HEAD)
+                            echo "Executing build script"
+                            echo "Python:$(python --version)"
+                            ./cicd/build.sh -v $VERSION -b $BUILD_NUMBER -t
+                        popd     
                     '''
 
                     sh label: 'Collect Release Artifacts', script: '''
