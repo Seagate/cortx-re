@@ -124,12 +124,10 @@ EOF
 
                 // Build Hare
                 sh label: '', script: '''
-                    pushd /root/build_rpms
-                        yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/$BRANCH/$OS_VERSION/$RELEASE_TAG/cortx_iso/
-                        yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
-                        yum clean all;rm -rf /var/cache/yum
-                        yum install cortx-py-utils cortx-motr{,-devel} -y
-                    popd
+                    yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/$BRANCH/$OS_VERSION/$RELEASE_TAG/cortx_iso/
+                    yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
+                    yum clean all;rm -rf /var/cache/yum
+                    yum install cortx-py-utils cortx-motr{,-devel} -y
                 '''
                 dir ('hare') {
                     
@@ -137,11 +135,9 @@ EOF
 
                     sh label: 'Build', returnStatus: true, script: '''
                         set -xe
-                        pushd hare
-                            echo "Executing build script"
-                            export build_number=${BUILD_NUMBER}
-                            make VERSION=$VERSION rpm
-                        popd
+                        echo "Executing build script"
+                        export build_number=${BUILD_NUMBER}
+                        make VERSION=$VERSION rpm
                     '''	
                     sh label: 'Copy RPMS', script: '''
                         cp /root/rpmbuild/RPMS/x86_64/*.rpm /root/build_rpms
