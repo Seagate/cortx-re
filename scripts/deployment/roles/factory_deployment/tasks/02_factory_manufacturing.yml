@@ -76,10 +76,14 @@
 - debug: var=cvg0_data_list_node1
 
 - set_fact:
-    cvg0_data_node1: "{{ cvg0_data_list_node1.stdout_lines }}"
+    cvg0_data_node1: "{{ item }}"
+  with_items: "{{ cvg0_data_list_node1.stdout_lines }}"
  
 - debug: var=cvg0_data_node1
 
+- debug: var=item
+  with_items: "{{ cvg0_data_list_node1.stdout_lines }}"
+  
 - name: "cvg0 meta device list"
   script: files/cvg0_metalist.py
   register: cvg0_meta_list_node1
