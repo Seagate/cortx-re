@@ -31,6 +31,6 @@
   with_items: "{{ groups['srvnodes'] }}" 
 
 - name: Finalize Node Configuration
-  shell: cortx_setup node finalize
+  shell: cortx_setup node finalize --force
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}" 
