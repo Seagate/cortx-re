@@ -74,7 +74,7 @@
   delegate_to: "srvnode-1" 
 
 - set_fact:
-    cvg0_data_node1: "{{cvg0_data_list_node1.stdout}}"
+    cvg0_data_node1: "{{ cvg0_data_list_node1.stdout_lines }}"
 
 - name: "cvg0 meta device list"
   script: files/cvg0_metalist.py
@@ -82,7 +82,7 @@
   delegate_to: "srvnode-1" 
   
 - set_fact:
-    cvg0_meta_node1: "{{cvg0_meta_list_node1.stdout }}"
+    cvg0_meta_node1: "{{ cvg0_meta_list_node1.stdout_lines }}"
 
 - name: "cvg1 data device list"
   script: files/cvg1_datalist.py
@@ -90,7 +90,7 @@
   delegate_to: "srvnode-1"
   
 - set_fact:
-    cvg1_data_node1: "{{cvg1_data_list_node1.stdout}}"
+    cvg1_data_node1: "{{ cvg1_data_list_node1.stdout_lines }}"
  
 - name: "cvg1 meta device list"
   script: files/cvg1_metalist.py
@@ -98,7 +98,7 @@
   delegate_to: "srvnode-1"
  
 - set_fact:
-    cvg1_meta_node1: "{{cvg1_meta_list_node1.stdout}}"
+    cvg1_meta_node1: "{{ cvg1_meta_list_node1.stdout_lines }}"
 
 #cvg0 and cvg1 srvnode-2
 - name: "cvg0 data device list"
@@ -107,7 +107,7 @@
   delegate_to: "srvnode-2" 
 
 - set_fact:
-    cvg0_data_node2: "{{cvg0_data_list_node2.stdout}}"
+    cvg0_data_node2: "{{ cvg0_data_list_node2.stdout_lines }}"
 
 - name: "cvg0 meta device list"
   script: files/cvg0_metalist.py
@@ -115,7 +115,7 @@
   delegate_to: "srvnode-2" 
   
 - set_fact:
-    cvg0_meta_node2: "{{cvg0_meta_list_node2.stdout }}"
+    cvg0_meta_node2: "{{ cvg0_meta_list_node2.stdout_lines }}"
 
 - name: "cvg1 data device list"
   script: files/cvg1_datalist.py
@@ -123,7 +123,7 @@
   delegate_to: "srvnode-2"
   
 - set_fact:
-    cvg1_data_node2: "{{cvg1_data_list_node2.stdout}}"
+    cvg1_data_node2: "{{ cvg1_data_list_node2.stdout_lines }}"
 
 - name: "cvg1 meta device list"
   script: files/cvg1_metalist.py
@@ -131,7 +131,7 @@
   delegate_to: "srvnode-2"
  
 - set_fact:
-    cvg1_meta_node2: "{{cvg1_meta_list_node2.stdout}}"
+    cvg1_meta_node2: "{{ cvg1_meta_list_node2.stdout_lines }}"
   
 #cvg0 and cvg1 srvnode-3
 - name: "cvg0 data device list"
@@ -140,7 +140,7 @@
   delegate_to: "srvnode-3" 
 
 - set_fact:
-    cvg0_data_node3: "{{cvg0_data_list_node3.stdout}}"
+    cvg0_data_node3: "{{ cvg0_data_list_node3.stdout_lines }}"
 
 - name: "cvg0 meta device list"
   script: files/cvg0_metalist.py
@@ -148,7 +148,7 @@
   delegate_to: "srvnode-3" 
   
 - set_fact:
-    cvg0_meta_node3: "{{cvg0_meta_list_node3.stdout }}"
+    cvg0_meta_node3: "{{ cvg0_meta_list_node3.stdout_lines }}"
 
 - name: "cvg1 data device list"
   script: files/cvg1_datalist.py
@@ -156,7 +156,7 @@
   delegate_to: "srvnode-3"
   
 - set_fact:
-    cvg1_data_node3: "{{cvg1_data_list_node3.stdout}}"
+    cvg1_data_node3: "{{ cvg1_data_list_node3.stdout_lines }}"
 
 - name: "cvg1 meta device list"
   script: files/cvg1_metalist.py
@@ -164,7 +164,7 @@
   delegate_to: "srvnode-3"
  
 - set_fact:
-    cvg1_meta_node3: "{{cvg1_meta_list_node3.stdout}}"
+    cvg1_meta_node3: "{{ cvg1_meta_list_node3.stdout_lines }}"
 
 # cvg0 and cvg1 storage config on srvnode-1
 - name: "Storage Configuration cvg 0 data_devices on srvnode-1"
