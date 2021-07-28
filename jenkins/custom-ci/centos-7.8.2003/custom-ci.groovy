@@ -14,7 +14,7 @@ pipeline {
         os_version = "centos-7.8.2003"
         release_dir = "/mnt/bigstorage/releases/cortx"
         integration_dir = "$release_dir/github/integration-custom-ci/$os_version/"
-        release_tag = "custom-build-new-iso-$BUILD_ID"
+        release_tag = "custom-build-$BUILD_ID"
         passphrase = credentials('rpm-sign-passphrase')
 
         python_deps = "${THIRD_PARTY_PYTHON_VERSION == 'cortx-2.0' ? "$release_dir/third-party-deps/python-deps/python-packages-2.0.0-latest" : THIRD_PARTY_PYTHON_VERSION == 'cortx-1.0' ?  "$release_dir/third-party-deps/python-packages" : "$release_dir/third-party-deps/python-deps/python-packages-2.0.0-custom"}"
@@ -269,7 +269,9 @@ pipeline {
                         exit 1    
                         fi
                     done
-
+                    
+                    #Copy packages from cortx_iso folder
+                    cp $integration_dir/$release_tag/cortx_iso/ $integration_dir/$release_tag/sw/cortx/
                     createrepo -v --update $integration_dir/$release_tag/sw/cortx/
 
                 '''
@@ -339,7 +341,7 @@ pipeline {
                     pushd scripts/rpm-signing
                     chmod +x rpm-sign.sh
                     cp RPM-GPG-KEY-Seagate $integration_dir/$release_tag/sw/cortx/
-                    
+
                     for rpm in `ls -1 $integration_dir/$release_tag/sw/cortx/*.rpm`
                     do
                     ./rpm-sign.sh ${passphrase} $rpm
@@ -349,7 +351,7 @@ pipeline {
                 '''
             }
         }
-        
+
         stage ('Repo Creation') {
             steps {
                 script { build_stage = env.STAGE_NAME }
