@@ -249,6 +249,13 @@ pipeline {
         stage ('Collect Component RPMS') {
             steps {
                 script { build_stage = env.STAGE_NAME }
+
+                sh label: 'Create directory structure', script:'''
+                mkdir -p $integration_dir/$release_tag/sw/{cortx,external}
+                mkdir -p $integration_dir/$release_tag/fw/{server/{HBA,nic},storage/5u84}
+                mkdir -p $integration_dir/$release_tag/os/patches
+                '''
+
                 sh label: 'Copy RPMS', script:'''
                     if [ "$THIRD_PARTY_RPM_VERSION" == "cortx-2.0" ]; then
                         RPM_COPY_PATH="/mnt/bigstorage/releases/cortx/components/github/main/$os_version/dev/"
