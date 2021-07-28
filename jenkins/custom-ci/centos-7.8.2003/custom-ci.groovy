@@ -395,7 +395,7 @@ pipeline {
                     
                     cp $integration_dir/$release_tag/README.txt .
                     cp $integration_dir/$release_tag/sw/cortx/RELEASE.INFO .
-                    cp $integration_dir/$release_tag/rpm/THIRD_PARTY_RELEASE.INFO $integration_dir/$release_tag
+                    cp $integration_dir/$release_tag/sw/external/rpm/THIRD_PARTY_RELEASE.INFO $integration_dir/$release_tag
                     cp $integration_dir/$release_tag/sw/cortx/RELEASE.INFO $integration_dir/$release_tag
                 """
             }
