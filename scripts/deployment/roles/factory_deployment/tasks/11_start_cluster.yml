@@ -6,6 +6,9 @@
   shell: cortx cluster start
   delegate_to: "srvnode-1"
   
+- pause:
+    minutes: 5
+  
 - name: PCS status
   shell: pcs status
   delegate_to: "srvnode-1"
