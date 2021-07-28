@@ -36,7 +36,7 @@
     state: absent
 
 - name: "[install_prereq] : Remove opendistro_security configuration"
-  shell: "sed -i '/######## Start/,+23 d' < {{ ELASTICSEARCH_CONFIG_PATH }}"
+  shell: "sed -i '/######## Start/,+23 d' {{ ELASTICSEARCH_CONFIG_PATH }}"
 
 - name: "[install_prereq] : Updated elasticsearch Config"
   lineinfile:
