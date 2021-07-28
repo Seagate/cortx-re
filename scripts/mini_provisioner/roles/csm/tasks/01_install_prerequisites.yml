@@ -23,32 +23,32 @@
   shell: "curl -s -L http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rpm/install-cortx-prereq.sh | bash"
 
 # Setup elasticsearch
-# - name: "[install_prereq] : Collect private ip address"
-#   shell: "ifconfig eth3 | grep 'inet ' | awk -F'[: ]+' '{ print $3 }'"
-#   register: pvt_ip
+- name: "[install_prereq] : Collect private ip address"
+  shell: "ifconfig eth3 | grep 'inet ' | awk -F'[: ]+' '{ print $3 }'"
+  register: pvt_ip
 
-# - set_fact:
-#     PVT_IP_ADDR: "{{ pvt_ip.stdout }}"
+- set_fact:
+    PVT_IP_ADDR: "{{ pvt_ip.stdout }}"
 
-# - name: "[install_prereq] : Delete the opendistro_security plugin"
-#   file:
-#     path: /usr/share/elasticsearch/plugins/opendistro_security
-#     state: absent
+- name: "[install_prereq] : Delete the opendistro_security plugin"
+  file:
+    path: /usr/share/elasticsearch/plugins/opendistro_security
+    state: absent
 
-# - name: "[install_prereq] : Remove opendistro_security configuration"
-#   shell: "sed '/######## Start/,+23 d' < {{ ELASTICSEARCH_CONFIG_PATH }} > {{ ELASTICSEARCH_CONFIG_PATH }}"
+- name: "[install_prereq] : Remove opendistro_security configuration"
+  shell: "sed -i '/######## Start/,+23 d' < {{ ELASTICSEARCH_CONFIG_PATH }}"
 
-# - name: "[install_prereq] : Updated elasticsearch Config"
-#   lineinfile:
-#     path: "{{ ELASTICSEARCH_CONFIG_PATH }}"
-#     line: "{{ item }}"
-#   with_items:
-#     - "cluster.name: odfe-cluster"
-#     - "node.name: srvnode-1"
-#     - "network.bind_host: ['localhost', '{{ PVT_IP_ADDR }}']"
-#     - "network.publish_host: ['{{ PVT_IP_ADDR }}']"
-#     - "discovery.seed_hosts: ['{{ PVT_IP_ADDR }}']"
-#     - "cluster.initial_master_nodes: ['srvnode-1']"
+- name: "[install_prereq] : Updated elasticsearch Config"
+  lineinfile:
+    path: "{{ ELASTICSEARCH_CONFIG_PATH }}"
+    line: "{{ item }}"
+  with_items:
+    - "cluster.name: odfe-cluster"
+    - "node.name: srvnode-1"
+    - "network.bind_host: ['localhost', '{{ PVT_IP_ADDR }}']"
+    - "network.publish_host: ['{{ PVT_IP_ADDR }}']"
+    - "discovery.seed_hosts: ['{{ PVT_IP_ADDR }}']"
+    - "cluster.initial_master_nodes: ['srvnode-1']"
 
 - name: "[install_prereq] : Reload daemon process"
   command: systemctl daemon-reload
