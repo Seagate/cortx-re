@@ -50,8 +50,8 @@ pipeline {
 		string(name: 'SSPL_URL', defaultValue: 'https://github.com/Seagate/cortx-monitor.git', description: 'SSPL Repository URL', trim: true)
 		string(name: 'CORTX_UTILS_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX Utils', trim: true)
 		string(name: 'CORTX_UTILS_URL', defaultValue: 'https://github.com/Seagate/cortx-utils', description: 'CORTX Utils Repository URL', trim: true)
-		string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX Utils', trim: true)
-		string(name: 'CORTX_RE_URL', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'CORTX Utils Repository URL', trim: true)
+		string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX RE', trim: true)
+		string(name: 'CORTX_RE_URL', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'CORTX RE Repository URL', trim: true)
 
 		choice(
 			name: 'THIRD_PARTY_RPM_VERSION',
@@ -85,7 +85,45 @@ pipeline {
 					}
 				}                        
 			}
-		}	
+		}
+
+		stage ("Build cortx-prereq") {
+			steps {
+				script { build_stage = env.STAGE_NAME }
+						script {
+							try {
+							def prereqbuild = build job: 'cortx-prereq-custom-build', wait: true,
+											parameters: [
+											string(name: 'CORTX_RE_URL', value: "${CORTX_RE_URL}"),
+											string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
+											string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}")
+											]
+					} catch (err) {
+						build_stage = env.STAGE_NAME
+						error "Failed to Build cortx-prereq"
+					}
+				}
+			}
+		}
+
+		stage ("Build Provisioner") {
+			steps {
+				script { build_stage = env.STAGE_NAME }
+										script {
+												try {
+						def prvsnrbuild = build job: 'prvsnr-custom-build', wait: true,
+											parameters: [
+											string(name: 'PRVSNR_URL', value: "${PRVSNR_URL}"),
+											string(name: 'PRVSNR_BRANCH', value: "${PRVSNR_BRANCH}"),
+											string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}")
+											]
+					} catch (err) {
+						build_stage = env.STAGE_NAME
+						error "Failed to Build Provisioner"
+					}
+				}
+			}
+		}
 
 		stage ("Trigger Component Jobs") {
 			parallel {
@@ -120,44 +158,6 @@ pipeline {
 								error "Failed to Build Motr, Hare and S3Server"
 							}
 						}										
-					}
-				}
-
-				stage ("Build cortx-prereq") {
-					steps {
-						script { build_stage = env.STAGE_NAME }
-                                                script {
-                                                        try {
-								def prereqbuild = build job: 'cortx-prereq-custom-build', wait: true,
-								                  parameters: [
-									            	string(name: 'CORTX_RE_URL', value: "${CORTX_RE_URL}"),
-											        string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
-													string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}")
-							        	          ]
-							} catch (err) {
-								build_stage = env.STAGE_NAME
-								error "Failed to Build cortx-prereq"
-							}
-						}
-					}
-				}
-
-				stage ("Build Provisioner") {
-					steps {
-						script { build_stage = env.STAGE_NAME }
-                                                script {
-                                                        try {
-								def prvsnrbuild = build job: 'prvsnr-custom-build', wait: true,
-								                  parameters: [
-									            	string(name: 'PRVSNR_URL', value: "${PRVSNR_URL}"),
-											        string(name: 'PRVSNR_BRANCH', value: "${PRVSNR_BRANCH}"),
-													string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}")
-							        	          ]
-							} catch (err) {
-								build_stage = env.STAGE_NAME
-								error "Failed to Build Provisioner"
-							}
-						}
 					}
 				}
 
@@ -425,15 +425,15 @@ pipeline {
 				sh label: "Sign ISO files", script: '''
                 pushd scripts/rpm-signing
                     ./file-sign.sh ${passphrase} $integration_dir/$release_tag/iso/cortx-$version-$release_tag-upgrade.iso
-                    pkill gpg-agent
+					sleep 5
                     ./file-sign.sh ${passphrase} $integration_dir/$release_tag/iso/cortx-$version-$release_tag-single.iso 
                 popd
                 '''
 
 				sh label: 'Additional Files', script:'''
 				#Add cortx-prep.sh
-                cortx_prvsnr_preq=$(ls "$integration_dir/$release_tag/cortx_iso" | grep "python36-cortx-prvsnr" | cut -d- -f5 | cut -d_ -f2 | cut -d. -f1 | sed s/"git"//)                 
-                wget -O $integration_dir/$release_tag/iso/cortx-prep-$version-$BUILD_NUMBER.sh https://raw.githubusercontent.com/Seagate/cortx-prvsnr/$cortx_prvsnr_preq/cli/src/cortx_prep.sh
+                cortx_prvsnr_preq=$(ls "$integration_dir/$release_tag/cortx_iso" | grep "python36-cortx-prvsnr" | cut -d- -f5 | cut -d_ -f2 | cut -d. -f1 | sed s/"git"//)
+				wget -O $integration_dir/$release_tag/iso/install-$version-$BUILD_NUMBER.sh https://raw.githubusercontent.com/Seagate/cortx-prvsnr/$cortx_prvsnr_preq/srv/components/provisioner/scripts/install.sh
 
 				#Add custom-os ISO
                 ln -s $cortx_os_iso $integration_dir/$release_tag/iso/$(basename $cortx_os_iso)
@@ -456,7 +456,7 @@ pipeline {
 		success {
 				sh label: 'Delete Old Builds', script: '''
 				set +x
-				find ${integration_dir}/* -maxdepth 0 -mtime +30 -type d -exec rm -rf {} \\;
+				find ${integration_dir}/* -maxdepth 0 -mtime +15 -type d -exec rm -rf {} \\;
 				'''
 		}
 	

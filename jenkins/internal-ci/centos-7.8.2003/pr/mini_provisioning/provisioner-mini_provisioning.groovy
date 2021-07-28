@@ -69,11 +69,24 @@ pipeline {
 						echo -e "Building Provisioner CLI RPM's"
 						sh ./cli/buildrpm.sh -g \$(git rev-parse --short HEAD) -e $VERSION -b ${BUILD_NUMBER}
 					"""
-				
+
+                    sh encoding: 'UTF-8', label: 'cortx-setup', script: """
+                    if [ -f "./devops/rpms/node_cli/node_cli_buildrpm.sh" ]; then
+                        sh ./devops/rpms/node_cli/node_cli_buildrpm.sh -g \$(git rev-parse --short HEAD) -e $VERSION -b $${BUILD_NUMBER}
+                    else
+                        echo "node_cli package creation is not implemented"
+                    fi
+                    """
+                    
 					sh encoding: 'UTF-8', label: 'api', script: '''
 					    echo -e "Setup Provisioner python API"
 						bash ./devops/rpms/api/build_python_api.sh -vv --out-dir /root/rpmbuild/RPMS/x86_64/ --pkg-ver ${BUILD_NUMBER}_git$(git rev-parse --short HEAD)
 					'''
+
+                    sh encoding: 'UTF-8', label: 'cortx-setup', script: '''
+                        bash ./devops/rpms/lr-cli/build_python_cortx_setup.sh -vv --out-dir /root/rpmbuild/RPMS/x86_64/ --pkg-ver ${BUILD_NUMBER}_git$(git rev-parse --short HEAD)
+                    '''
+                    
 					sh label: 'Repo Creation', script: '''mkdir -p $DESTINATION_RELEASE_LOCATION
 					    pushd $DESTINATION_RELEASE_LOCATION
 						rpm -qi createrepo || yum install -y createrepo
