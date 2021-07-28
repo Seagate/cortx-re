@@ -390,7 +390,7 @@ pipeline {
                 sh label: 'Build MANIFEST', script: """
                     pushd scripts/release_support
                         sh build_release_info.sh -b $branch -v $version -l $integration_dir/$release_tag/sw/cortx/ -t $integration_dir/$release_tag/sw/external/rpm/
-                        sh build_readme.sh
+                        sh build_readme.sh $integration_dir/$release_tag/
                     popd
                     
                     cp $integration_dir/$release_tag/README.txt .
