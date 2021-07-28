@@ -53,11 +53,12 @@
 - name: "[install_prereq] : Reload daemon process"
   command: systemctl daemon-reload
 
+- name: "[install_prereq] : Enable elasticsearch"
+  shell: systemctl enable elasticsearch.service
+  ignore_errors: true
+
 - name: "[install_prereq] : Start elasticsearch"
-  service:
-    name: elasticsearch
-    state: restarted
-    enabled: yes
+  shell: systemctl restart elasticsearch.service
   register: elasticsearch_status
   ignore_errors: true
 
