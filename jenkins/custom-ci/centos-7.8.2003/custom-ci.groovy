@@ -278,7 +278,7 @@ pipeline {
                     done
                     
                     #Copy packages from cortx_iso folder
-                    cp $integration_dir/$release_tag/cortx_iso/ $integration_dir/$release_tag/sw/cortx/
+                    cp $integration_dir/$release_tag/cortx_iso/*.rpm $integration_dir/$release_tag/sw/cortx/
                     createrepo -v --update $integration_dir/$release_tag/sw/cortx/
 
                 '''
