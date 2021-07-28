@@ -331,7 +331,7 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 
-                checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
+                checkout([$class: 'GitSCM', branches: [[name: 'upgrade-iso-structure']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/shailesh-vaidya/cortx-re']]])
                 
                 sh label: 'Generate Key', script: '''
                     set +x
@@ -389,8 +389,8 @@ pipeline {
 
                 sh label: 'Build MANIFEST', script: """
                     pushd scripts/release_support
-                        sh build_release_info.sh -b $branch -v $version -l $integration_dir/$release_tag/sw/cortx/ -t $integration_dir/$release_tag/rpm
-                        sh build_readme.sh $integration_dir/$release_tag
+                        sh build_release_info.sh -b $branch -v $version -l $integration_dir/$release_tag/sw/cortx/ -t $integration_dir/$release_tag/sw/external/rpm/
+                        sh build_readme.sh
                     popd
                     
                     cp $integration_dir/$release_tag/README.txt .

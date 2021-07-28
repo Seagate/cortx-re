@@ -28,7 +28,6 @@ CONTENTS OF THIS FILE
  * Introduction
  * Artifacts
  * Provisioner Guide
- * Known Issues
 
 
 Introduction
@@ -41,25 +40,17 @@ Artifacts
 ------------
 Release Build location:
 
-http://cortx-storage.colo.seagate.com/releases/cortx/github/release/rhel-7.7.1908/$ENV/$BUILD_NUMBER/
+http://cortx-storage.colo.seagate.com/releases/cortx/github/main/centos-7.8.2003/$BUILD_NUMBER/prod
 
 Release Info file location:
 
-http://cortx-storage.colo.seagate.com/releases/cortx/github/release/rhel-7.7.1908/$ENV/$BUILD_NUMBER/RELEASE.INFO
+http://cortx-storage.colo.seagate.com/releases/cortx/github/main/centos-7.8.2003/$BUILD_NUMBER/prod/RELEASE.INFO
 
 Installation
 -----------------
 
 Provisioner Guide
 
-https://github.com/Seagate/cortx-prvsnr/wiki/QuickStart-Guide 
-
-Known Issues
-------------
-
-Known issues are tracked at
-
-https://github.com/Seagate/cortx-prvsnr/wiki/Deploy-Stack#known-deployment-issues
+https://seagate-systems.atlassian.net/wiki/spaces/PUB/pages/213385475/CORTX+Deployment
 
 EOF
-
