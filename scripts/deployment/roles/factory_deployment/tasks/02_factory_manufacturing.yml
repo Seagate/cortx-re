@@ -47,10 +47,17 @@
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}" 
 
-- name: "Network Configuration bmc"
-  command: cortx_setup network config --bmc 10.237.66.164 --user bmcadmin --password adminBMC!
-  delegate_to: "{{ item }}"
-  with_items: "{{ groups['srvnodes'] }}" 
+- name: "Network Configuration bmc srvnode-1"
+  command: cortx_setup network config --bmc 10.237.66.135 --user bmcadmin --password adminBMC!
+  delegate_to: "srvnode-1" 
+  
+- name: "Network Configuration bmc srvnode-2"
+  command: cortx_setup network config --bmc 10.237.65.137 --user bmcadmin --password adminBMC!
+  delegate_to: "srvnode-2" 
+  
+- name: "Network Configuration bmc srvnode-3"
+  command: cortx_setup network config --bmc 10.237.66.9 --user bmcadmin --password adminBMC!
+  delegate_to: "srvnode-3" 
 
 - name: "Storage Configuration gallium primary"
   command: cortx_setup storage config --controller gallium --mode primary --ip 10.0.0.2 --port 80 --user manage --password Seagate123$
