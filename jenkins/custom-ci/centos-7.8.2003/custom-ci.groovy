@@ -254,6 +254,9 @@ pipeline {
                 mkdir -p $integration_dir/$release_tag/sw/{cortx,external}
                 mkdir -p $integration_dir/$release_tag/fw/{server/{HBA,nic},storage/5u84}
                 mkdir -p $integration_dir/$release_tag/os/patches
+                
+                #Copy packages from cortx_iso folder
+                mv $integration_dir/$release_tag/cortx_iso $integration_dir/$release_tag/sw/cortx
                 '''
 
                 sh label: 'Copy RPMS', script:'''
@@ -277,8 +280,7 @@ pipeline {
                         fi
                     done
                     
-                    #Copy packages from cortx_iso folder
-                    mv $integration_dir/$release_tag/cortx_iso $integration_dir/$release_tag/sw/cortx
+
                     createrepo -v --update $integration_dir/$release_tag/sw/cortx/
 
                 '''
