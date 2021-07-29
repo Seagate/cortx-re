@@ -251,7 +251,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
 
                 sh label: 'Create directory structure', script:'''
-                mkdir -p $integration_dir/$release_tag/sw/{cortx,external}
+                mkdir -p $integration_dir/$release_tag/sw/external
                 mkdir -p $integration_dir/$release_tag/fw/{server/{HBA,nic},storage/5u84}
                 mkdir -p $integration_dir/$release_tag/os/patches
                 
