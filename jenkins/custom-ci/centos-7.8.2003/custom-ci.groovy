@@ -278,7 +278,7 @@ pipeline {
                     done
                     
                     #Copy packages from cortx_iso folder
-                    cp $integration_dir/$release_tag/cortx_iso/*.rpm $integration_dir/$release_tag/sw/cortx/
+                    mv $integration_dir/$release_tag/cortx_iso $integration_dir/$release_tag/sw/cortx
                     createrepo -v --update $integration_dir/$release_tag/sw/cortx/
 
                 '''
@@ -426,6 +426,7 @@ pipeline {
 
                 #Remove Build details from THIRD_PARTY_RELEASE.INFO
                 sed -i '/BUILD/d' $integration_dir/$release_tag/sw/external/rpm/THIRD_PARTY_RELEASE.INFO
+                
                 '''
                 sh label: 'Print Release Build and ISO location', script:'''
                 echo "Custom Release Build and ISO is available at,"
