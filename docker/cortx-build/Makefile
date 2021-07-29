@@ -289,7 +289,8 @@ _prvsnr_build:
 		sh ./devops/rpms/buildrpm.sh -g "$$(git rev-parse --short HEAD)" -e ${RELEASE_VERSION} -b "${BUILD_ID}" && \
 		sh ./cli/buildrpm.sh -g "$$(git rev-parse --short HEAD)" -e ${RELEASE_VERSION} -b "${BUILD_ID}" && \
 		bash ./devops/rpms/api/build_python_api.sh -vv --out-dir /root/rpmbuild/RPMS/x86_64/ --pkg-ver ${BUILD_ID}_git$$(git rev-parse --short HEAD) && \
-		cp /root/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
+        if [ -f ./devops/rpms/lr-cli/build_python_cortx_setup.sh ]; then bash ./devops/rpms/lr-cli/build_python_cortx_setup.sh -vv --out-dir /root/rpmbuild/RPMS/x86_64/ --pkg-ver ${BUILD_ID}_git$$(git rev-parse --short HEAD); fi && \
+        cp /root/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
 		createrepo -v ${RPM_DIR} && \
 	popd
 
@@ -372,11 +373,12 @@ release_build:
 		createrepo -v . && \
 	popd && \
 	pushd ${RELEASE_BUILD} && \
-		githubrelease asset seagate/cortx download third-party-deps-${THIRD_PARTY_VERSION} && \
-		mkdir -p 3rd_party && tar -xvzf third-party-centos-7.8.2003-${THIRD_PARTY_VERSION}.tar.gz -C 3rd_party --strip-components=1 && \
+		wget -q https://github.com/Seagate/cortx/releases/download/third-party-deps-${THIRD_PARTY_VERSION}/third-party-$$(rpm -qa centos-release | sed 's/-/./g' | awk -F[.] '{ print $$1"-"$$3"."$$4"."$$5}')-${THIRD_PARTY_VERSION}.tar.gz -O third-party-${THIRD_PARTY_VERSION}.tar.gz && \
+		wget -q https://github.com/Seagate/cortx/releases/download/third-party-deps-${THIRD_PARTY_VERSION}/python-deps-${THIRD_PARTY_VERSION}.tar.gz && \
+		mkdir -p 3rd_party && tar -xvzf third-party-${THIRD_PARTY_VERSION}.tar.gz -C 3rd_party --strip-components=1 && \
 		mkdir -p python_deps && tar -xvzf python-deps-${THIRD_PARTY_VERSION}.tar.gz -C python_deps --strip-components=1 && \
 		cortx_prvsnr_preq=$$(ls /var/artifacts/0/cortx_iso/python36-cortx-prvsnr* | awk -F'_' '{split($$(NF-1), A ,"."); gsub("git", "", A[1]); print A[1]}') && \
-		wget -O cortx-prep-${RELEASE_VERSION}-${BUILD_ID}.sh https://raw.githubusercontent.com/Seagate/cortx-prvsnr/$$cortx_prvsnr_preq/cli/src/cortx_prep.sh && \
+		wget -O install-${RELEASE_VERSION}-${BUILD_ID}.sh https://raw.githubusercontent.com/Seagate/cortx-prvsnr/$$cortx_prvsnr_preq/srv/components/provisioner/scripts/install.sh && \
  		sh /opt/release_support/build_release_info.sh -b ${BRANCH} -v ${RELEASE_VERSION} -l ${RPM_DIR} -t ${RELEASE_BUILD}/3rd_party && \
 	popd
 

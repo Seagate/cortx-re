@@ -45,13 +45,22 @@ pipeline {
                 sh encoding: 'utf-8', label: 'Provisioner CLI RPMS', returnStdout: true, script: """
 				    sh ./cli/buildrpm.sh -g \$(git rev-parse --short HEAD) -e 2.0.0 -b ${CUSTOM_CI_BUILD_ID}
                 """
-				
+                sh encoding: 'UTF-8', label: 'cortx-setup', script: """
+                if [ -f "./devops/rpms/node_cli/node_cli_buildrpm.sh" ]; then
+                    sh ./devops/rpms/node_cli/node_cli_buildrpm.sh -g \$(git rev-parse --short HEAD) -e 2.0.0 -b ${CUSTOM_CI_BUILD_ID}
+                else
+                    echo "node_cli package creation is not implemented"
+                fi
+                """
 				sh encoding: 'UTF-8', label: 'api', script: '''
-				if [ "${PRVSNR_BRANCH}" == "Cortx-v1.0.0_Beta" ]; then
-					echo "No Provisioner API RPMS in Beta Build hence skipping"
-				else
 					bash ./devops/rpms/api/build_python_api.sh -vv --out-dir /root/rpmbuild/RPMS/x86_64/ --pkg-ver ${CUSTOM_CI_BUILD_ID}_git$(git rev-parse --short HEAD)
-				fi
+				'''
+                sh encoding: 'UTF-8', label: 'cortx-setup', script: '''
+                if [ -f "./devops/rpms/lr-cli/build_python_cortx_setup.sh" ]; then
+					bash ./devops/rpms/lr-cli/build_python_cortx_setup.sh -vv --out-dir /root/rpmbuild/RPMS/x86_64/ --pkg-ver ${CUSTOM_CI_BUILD_ID}_git$(git rev-parse --short HEAD)
+                else
+                    echo "cortx-setup package creation is not implemented"
+                fi        
 				'''
             }
         }
