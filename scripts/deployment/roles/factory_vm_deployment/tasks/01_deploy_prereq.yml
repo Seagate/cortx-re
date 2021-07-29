@@ -1,0 +1,95 @@
+---
+
+- name: "[ Pre-Validation ] : Check node SSH connection status"
+  shell: "echo '{{ item }} : SSH Connection Ok'"
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['srvnodes'] }}"
+
+- set_fact:
+    REQUIRED_HOST: "{% if SETUP_TYPE=='single' %}1{% elif SETUP_TYPE=='3_node'%}3{% else %}1{% endif %}"
+    REQUIRED_DEVICES:  "{% if SETUP_TYPE=='single' %}2{% elif SETUP_TYPE=='3_node'%}4{% else %}2{% endif %}"
+
+- name: "[ Pre-Validation ] : Validate the input arguments"
+  fail: msg="Provided Host count not matching with setup type"
+  when: "REQUIRED_HOST|int !=  HOST.count(',') + 1" 
+
+- name: "[ Pre-Validation ] : Check VM has required number of disks"
+  shell: "test {{ REQUIRED_DEVICES }} -le $(lsblk -nd -o NAME -e 11|grep -v sda|wc -l)"
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['srvnodes'] }}"
+
+- name: "[ Pre-Validation ] : Check node provided in clean state"
+  shell: |
+    for folder in "/var/log/seagate" "/opt/seagate";
+    do
+        if [[ ! -d "${folder}" ]]; then
+            echo "OK - Folder does not exists ( ${folder} )";
+        else 
+            echo "NOT_OK - Folder exists ${folder}";
+            exit 1
+        fi
+    done
+    if [[ ! $(yum list installed | grep "cortx" | grep -v "compat-lua-libs") ]]; then
+        echo "OK - System in clean state no cortx component installed";
+    else
+        echo "NOT_OK - Cortx component already installed";
+        exit 1
+    fi 
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['srvnodes'] }}"
+
+- name: "[ Deploy Prerequisite ] : Get available VM devices"
+  shell: "lsblk -nd -o NAME -e 11|grep -v sda|sed 's|sd|/dev/sd|g'|paste -s -d, -"
+  register: available_devices
+
+- name: "[ Deploy Prerequisite ] : Get CVG-0 devices"
+  shell: "lsblk -n -o NAME {{ available_devices.stdout.split(',')[0] }} | tail -n 4 |grep -v sda| cut -c3- | sed 's|sd|/dev/sd|g'|paste -s -d, -"
+  register: available_cvg0_devices
+  when: SETUP_TYPE == 'single'
+
+- name: "[ Deploy Prerequisite ] : Get CVG-1 devices"
+  shell: "lsblk -n -o NAME {{ available_devices.stdout.split(',')[1] }} | tail -n 4 |grep -v sda| cut -c3- | sed 's|sd|/dev/sd|g'|paste -s -d, -"
+  register: available_cvg1_devices
+  when: SETUP_TYPE == 'single'
+
+- name: "[ Deploy Prerequisite ] : Create primary partitions"
+  script: files/mk_partition.sh {{ available_devices.stdout.split(',')[0] }}
+  register: primary_partitions
+  when: "SETUP_TYPE == 'single' and available_cvg0_devices.stdout.count(',') == 0"
+
+- name: "[ Deploy Prerequisite ] : Create secondary partitions"
+  script: files/mk_partition.sh {{ available_devices.stdout.split(',')[1] }}
+  register: secondary_partitions
+  when: "SETUP_TYPE == 'single' and available_cvg1_devices.stdout.count(',') == 0"
+
+- name: "[ Deploy Prerequisite ] : Get CVG-0 devices"
+  shell: "lsblk -n -o NAME {{ available_devices.stdout.split(',')[0] }} | tail -n 4 |grep -v sda| cut -c3- | sed 's|sd|/dev/sd|g'|paste -s -d, -"
+  register: available_cvg0_devices
+  when: "SETUP_TYPE == 'single'"
+
+- name: "[ Deploy Prerequisite ] : Get CVG-1 devices"
+  shell: "lsblk -n -o NAME {{ available_devices.stdout.split(',')[1] }} | tail -n 4 |grep -v sda| cut -c3- | sed 's|sd|/dev/sd|g'|paste -s -d, -"
+  register: available_cvg1_devices
+  when: "SETUP_TYPE == 'single'"
+
+- name: "[ Deploy Prerequisite ] : Validate primary partitions"
+  fail: msg="Primary device partitions are not matching the requirement"
+  when: "SETUP_TYPE == 'single' and available_cvg0_devices.stdout.count(',') + 1 < REQUIRED_PARTITION|int"
+
+- name: "[ Deploy Prerequisite ] : Validate secondary partitions"
+  fail: msg="Secondary device partitions are not matching the requirement"
+  when: "SETUP_TYPE == 'single' and available_cvg1_devices.stdout.count(',') + 1 < REQUIRED_PARTITION|int"
+    
+- set_fact:
+    CVG0_DATA_DEVICES: "{{ ','.join(available_cvg0_devices.stdout.split(',')[1:4]) }}"
+    CVG0_METADATA_DEVICES: "{{ available_cvg0_devices.stdout.split(',')[0] }}"
+    CVG1_DATA_DEVICES: "{{ ','.join(available_cvg1_devices.stdout.split(',')[1:4]) }}"
+    CVG1_METADATA_DEVICES: "{{ available_cvg1_devices.stdout.split(',')[0] }}"
+  when: SETUP_TYPE == 'single'
+   
+- set_fact:
+    CVG0_DATA_DEVICES: "{{ available_devices.stdout.split(',')[1] }}"
+    CVG0_METADATA_DEVICES: "{{ available_devices.stdout.split(',')[0] }}"
+    CVG1_DATA_DEVICES: "{{ available_devices.stdout.split(',')[3] }}"
+    CVG1_METADATA_DEVICES: "{{ available_devices.stdout.split(',')[2] }}"
+  when: SETUP_TYPE == '3_node'
