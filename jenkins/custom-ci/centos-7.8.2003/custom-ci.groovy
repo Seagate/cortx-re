@@ -425,7 +425,7 @@ pipeline {
                 ln -s $cortx_os_iso $integration_dir/$release_tag/iso/$(basename $cortx_os_iso)
 
                 #Remove Build details from THIRD_PARTY_RELEASE.INFO
-                sed -i '/BUILD/d' $integration_dir/$release_tag/rpm/THIRD_PARTY_RELEASE.INFO
+                sed -i '/BUILD/d' $integration_dir/$release_tag/sw/external/rpm/THIRD_PARTY_RELEASE.INFO
                 '''
                 sh label: 'Print Release Build and ISO location', script:'''
                 echo "Custom Release Build and ISO is available at,"
