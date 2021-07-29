@@ -2,4 +2,4 @@
 
 # Execute Hare:Test
 - name: "[mini_provisioning] : Hare Test" 
-  shell: /opt/seagate/cortx/hare/bin/hare_setup test --config 'json:///opt/seagate/cortx/hare/conf/hare.test.conf.tmpl.1-node --plan sanity'
+  shell: /opt/seagate/cortx/hare/bin/hare_setup test --config 'json:///opt/seagate/cortx/hare/conf/hare.test.conf.tmpl.1-node --plan sanitytest'
