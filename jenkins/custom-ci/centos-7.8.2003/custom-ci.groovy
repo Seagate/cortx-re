@@ -1,5 +1,3 @@
-properties([[$class: 'ThrottleJobProperty', categories: [], limitOneJobWithMatchingParams: true, maxConcurrentPerNode: 5, maxConcurrentTotal: 5, paramsToUseForLimit: '', throttleEnabled: true, throttleOption: 'project']])
-
 pipeline {
 
     agent {
@@ -83,7 +81,7 @@ pipeline {
                         build_stage = env.STAGE_NAME
                         error "Failed to Build CORTX Utils"
                     }
-                }                        
+                }
             }
         }
 
@@ -154,10 +152,10 @@ pipeline {
                                                         string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}")
                                                     ]
                             } catch (err) {
-                                build_stage = env.STAGE_NAME             
+                                build_stage = env.STAGE_NAME
                                 error "Failed to Build Motr, Hare and S3Server"
                             }
-                        }                                        
+                        }
                     }
                 }
 
@@ -165,7 +163,7 @@ pipeline {
                     steps {
                         script { build_stage = env.STAGE_NAME }
                         script {
-                            try {                    
+                            try {
                                 sh label: 'Copy RPMS', script:'''
                                 if [ "$HA_BRANCH" == "Cortx-v1.0.0_Beta"  ]; then
                                     echo "cortx-ha does not have Cortx-v1.0.0_Beta branch."
@@ -176,7 +174,7 @@ pipeline {
                                           parameters: [
                                                 string(name: 'HA_URL', value: "${HA_URL}"),
                                                 string(name: 'HA_BRANCH', value: "${HA_BRANCH}"),
-                                              string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}")    
+                                              string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}")
                                           ]
                             } catch (err) {
                                 build_stage = env.STAGE_NAME
@@ -201,15 +199,15 @@ pipeline {
                                 build_stage = env.STAGE_NAME
                                 error "Failed to Build CSM Agent"
                             }
-                        }                        
+                        }
                     }
-                }    
-                    
+                }
+
                 stage ("Build CSM Web") {
                     steps {
-                        script { build_stage = env.STAGE_NAME }    
+                        script { build_stage = env.STAGE_NAME }
                         script {
-                            try {    
+                            try {
                                 def csm_web_build = build job: 'custom-csm-web-build', wait: true,
                                             parameters: [
                                                 string(name: 'CSM_WEB_URL', value: "${CSM_WEB_URL}"),
@@ -228,7 +226,7 @@ pipeline {
                     steps {
                         script { build_stage = env.STAGE_NAME }
                         script {
-                            try {    
+                            try {
                                 def ssplbuild = build job: 'sspl-custom-build', wait: true,
                                         parameters: [
                                             string(name: 'SSPL_URL', value: "${SSPL_URL}"),
@@ -254,7 +252,7 @@ pipeline {
                 mkdir -p $integration_dir/$release_tag/sw/external
                 mkdir -p $integration_dir/$release_tag/fw/{server/{HBA,nic},storage/5u84}
                 mkdir -p $integration_dir/$release_tag/os/patches
-                
+
                 #Copy packages from cortx_iso folder
                 mv $integration_dir/$release_tag/cortx_iso $integration_dir/$release_tag/sw/cortx
                 '''
@@ -264,7 +262,7 @@ pipeline {
                         RPM_COPY_PATH="/mnt/bigstorage/releases/cortx/components/github/main/$os_version/dev/"
                     else
                         RPM_COPY_PATH="/mnt/bigstorage/releases/cortx/components/github/cortx-1.0/$os_version/dev/"
-                    fi        
+                    fi
 
                     CUSTOM_COMPONENT_NAME="motr|s3server|hare|cortx-ha|provisioner|csm-agent|csm-web|sspl"
 
@@ -276,10 +274,10 @@ pipeline {
                             cp $component/last_successful/*.rpm $integration_dir/$release_tag/sw/cortx
                         else
                             echo "Packages not available for $component. Exiting"
-                        exit 1    
+                        exit 1
                         fi
                     done
-                    
+
 
                     createrepo -v --update $integration_dir/$release_tag/sw/cortx/
 
@@ -309,7 +307,7 @@ pipeline {
                     do
                         if [ "${CSM_BRANCH}" == "Cortx-v1.0.0_Beta" ] || [ "${HARE_BRANCH}" == "Cortx-v1.0.0_Beta" ] || [ "${MOTR_BRANCH}" == "Cortx-v1.0.0_Beta" ] || [ "${PRVSNR_BRANCH}" == "Cortx-v1.0.0_Beta" ] || [ "${S3_BRANCH}" == "Cortx-v1.0.0_Beta" ] || [ "${SSPL_BRANCH}" == "Cortx-v1.0.0_Beta" ]; then
                              mero_dep=`echo $(rpm -qpR ${component} | grep -E "eos-core = |mero =") | cut -d= -f2 | tr -d '\040\011\012\015'`
-                        else     
+                        else
                             mero_dep=`echo $(rpm -qpR ${component} | grep -E "cortx-motr = |mero =") | cut -d= -f2 | tr -d '\040\011\012\015'`
                         fi
                         if [ -z "$mero_dep" ]
@@ -332,9 +330,9 @@ pipeline {
         stage ('Sign rpm') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                
+
                 checkout([$class: 'GitSCM', branches: [[name: 'upgrade-iso-structure']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/shailesh-vaidya/cortx-re']]])
-                
+
                 sh label: 'Generate Key', script: '''
                     set +x
                     pushd scripts/rpm-signing
@@ -394,7 +392,7 @@ pipeline {
                         sh build_release_info.sh -b $branch -v $version -l $integration_dir/$release_tag/sw/cortx/ -t $integration_dir/$release_tag/sw/external/rpm/
                         sh build_readme.sh $integration_dir/$release_tag/
                     popd
-                    
+
                     cp $integration_dir/$release_tag/README.txt .
                     cp $integration_dir/$release_tag/sw/cortx/RELEASE.INFO .
                     cp $integration_dir/$release_tag/sw/external/rpm/THIRD_PARTY_RELEASE.INFO $integration_dir/$release_tag
@@ -402,7 +400,7 @@ pipeline {
                 """
             }
         }
-        
+
         stage ('Generate ISO Image') {
             steps {
 
@@ -411,10 +409,10 @@ pipeline {
                     genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -hide-rr-moved -publisher Seagate -o $integration_dir/$release_tag/iso/cortx-$version-$release_tag-single.iso $integration_dir/$release_tag
                 popd
                 '''
-                
+
                 sh label: "Sign ISO files", script: '''
                 pushd scripts/rpm-signing
-                    ./file-sign.sh ${passphrase} $integration_dir/$release_tag/iso/cortx-$version-$release_tag-single.iso 
+                    ./file-sign.sh ${passphrase} $integration_dir/$release_tag/iso/cortx-$version-$release_tag-single.iso
                 popd
                 '''
 
@@ -428,7 +426,7 @@ pipeline {
 
                 #Remove Build details from THIRD_PARTY_RELEASE.INFO
                 sed -i '/BUILD/d' $integration_dir/$release_tag/sw/external/rpm/THIRD_PARTY_RELEASE.INFO
-                
+
                 '''
                 sh label: 'Print Release Build and ISO location', script:'''
                 echo "Custom Release Build and ISO is available at,"
@@ -448,16 +446,16 @@ pipeline {
                 find ${integration_dir}/* -maxdepth 0 -mtime +15 -type d -exec rm -rf {} \\;
                 '''
         }
-    
+
         always {
             script {
                 env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/${env.os_version}/${env.release_tag}"
                 env.release_build = "${env.release_tag}"
                 env.build_stage = "${build_stage}"
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
-                
+
                 def mailRecipients = "shailesh.vaidya@seagate.com"
-                emailext ( 
+                emailext (
                     body: '''${SCRIPT, template="release-email.template"}''',
                     mimeType: 'text/html',
                     subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
