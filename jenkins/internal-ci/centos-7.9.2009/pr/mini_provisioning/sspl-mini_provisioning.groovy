@@ -231,7 +231,7 @@ pipeline {
 
                     // Trigger cleanup VM
                     if ( "${params.HOST}" == "-" ) {
-                        if ( "${DEBUG}" == "yes" ) {
+                        if ( "${params.DEBUG}" == "yes" ) {
                             markNodeOffline("Debug Mode Enabled on This Host  - ${BUILD_URL}")
                         } else {
                             build job: 'Cortx-Automation/Deployment/VM-Cleanup', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${env.NODE_NAME}")]       
