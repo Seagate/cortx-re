@@ -3,7 +3,7 @@
 - name: post_install on all component mini-provisioner
   shell: cortx_setup node initialize
   delegate_to: "{{ item }}"
-  with_items: "{{ groups['srvnodes'] }}" 
+  with_items: groups.all
 
 #- name: Discover resources
 #  shell: cortx_setup resource discover
@@ -18,19 +18,19 @@
 #- name: Resource Health Check
 #  shell: cortx_setup resource show --health [--type=<resource-type-list> --state=<resource-state-list>]
 #  delegate_to: "{{ item }}"
-#  with_items: "{{ groups['srvnodes'] }}" 
+#  with_items: groups.all
 
 - name: Node Signature set config-key
   shell: cortx_setup signature set --key LR_SIGNATURE --value HP1_5U84
   delegate_to: "{{ item }}"
-  with_items: "{{ groups['srvnodes'] }}" 
-
+  with_items: groups.all
+  
 - name: Node Signature get config-key
   shell: cortx_setup signature get --key LR_SIGNATURE
   delegate_to: "{{ item }}"
-  with_items: "{{ groups['srvnodes'] }}" 
+  with_items: groups.all
 
 - name: Finalize Node Configuration
   shell: cortx_setup node finalize --force
   delegate_to: "{{ item }}"
-  with_items: "{{ groups['srvnodes'] }}" 
+  with_items: groups.all
