@@ -393,10 +393,9 @@ pipeline {
                         sh build_readme.sh $integration_dir/$release_tag/
                     popd
 
-                    cp $integration_dir/$release_tag/README.txt .
-                    cp $integration_dir/$release_tag/sw/cortx/RELEASE.INFO .
+                    cp $integration_dir/$release_tag/sw/cortx/CORTX_RELEASE.INFO $integration_dir/$release_tag
                     cp $integration_dir/$release_tag/sw/external/rpm/THIRD_PARTY_RELEASE.INFO $integration_dir/$release_tag
-                    cp $integration_dir/$release_tag/sw/cortx/RELEASE.INFO $integration_dir/$release_tag
+                    cp $integration_dir/$release_tag/sw/external/rpm/RELEASE.INFO $integration_dir/$release_tag
                 """
             }
         }
