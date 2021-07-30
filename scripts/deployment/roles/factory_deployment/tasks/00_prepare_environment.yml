@@ -4,11 +4,17 @@
   fail: msg="Variable '{{ item }}' is not defined"
   when: item not in vars
   with_items: "{{required_vars}}"
+  
+- name: Extract filename from the config path
+  shell: echo '{{CONFIG_NAME}}'
+  register:: op
+
+- debug: var=op
 
 - name: Download inventory file
   get_url:
-    url:  https://raw.githubusercontent.com/pujamudaliar/inventory_files/main/hw_cluster_inventory.ini
-    dest: inventories/factory_deployment/hosts_srvnodes
+    url:  '{{CONFIG}}'
+    dest: inventories/factory_deployment/{{CONFIG_NAME}}
     mode: '0754'
     
 #- name: "[ Prepare ] : Generate host file"
