@@ -3,76 +3,63 @@
 - name: Install device-mapper-multipath
   shell: yum install -y device-mapper-multipath
   delegate_to: "{{ item }}"
-  with_items: "{{ groups['srvnodes'] }}" 
+  with_items: groups.all 
     
 - name: Copy multipath configuration
   shell: cp /usr/share/doc/device-mapper-multipath-0.4.9/multipath.conf /etc/multipath.conf
   delegate_to: "{{ item }}"
-  with_items: "{{ groups['srvnodes'] }}" 
+  with_items: groups.all
  
 - name: Restart multipath service
   shell: systemctl restart multipathd
   delegate_to: "{{ item }}"
-  with_items: "{{ groups['srvnodes'] }}" 
+  with_items: groups.all
   
 - name: "Server Configuration srvnode-1"
-  command: cortx_setup server config --name srvnode-1 --type HW
-  delegate_to: "srvnode-1"  
-
-- name: "Server Configuration srvnode-2"
-  command: cortx_setup server config --name srvnode-2 --type HW
-  delegate_to: "srvnode-2"
-
-- name: "Server Configuration srvnode-3"
-  command: cortx_setup server config --name srvnode-3 --type HW
-  delegate_to: "srvnode-3"
-
+  command: cortx_setup server config --name "{{config_name}}" --type HW
+  delegate_to: "{{ item }}"
+  with_items: groups.all
+  
 - name: "Network Configuration lnet"
   command: cortx_setup network config --transport lnet --mode tcp
   delegate_to: "{{ item }}"
-  with_items: "{{ groups['srvnodes'] }}" 
+  with_items: groups.all
 
-- name: "Network Configuration eno1"
-  command: cortx_setup network config --interfaces eno1 --type management
+- name: "Network Management Configuration"
+  command: cortx_setup network config --interfaces "{{network_mgmt_interfaces}}" --type management
   delegate_to: "{{ item }}"
-  with_items: "{{ groups['srvnodes'] }}" 
+  with_items: groups.all
 
-- name: "Network Configuration data"
-  command: cortx_setup network config --interfaces enp175s0f0 --type data
+- name: "Network Configuration data public interface"
+  command: cortx_setup network config --interfaces "{{network_data_public_interfaces}}" --type data
   delegate_to: "{{ item }}"
-  with_items: "{{ groups['srvnodes'] }}" 
+  with_items: groups.all
 
-- name: "Network Configuration private"
-  command: cortx_setup network config --interfaces enp216s0f0 --type private
+- name: "Network Configuration data private interface srvnode-1"
+  command: cortx_setup network config --interfaces "{{network_data_private_interfaces}}" --type private
   delegate_to: "{{ item }}"
-  with_items: "{{ groups['srvnodes'] }}" 
-
-- name: "Network Configuration bmc srvnode-1"
-  command: cortx_setup network config --bmc 10.237.66.135 --user bmcadmin --password adminBMC!
-  delegate_to: "srvnode-1" 
+  with_items: groups.all
   
-- name: "Network Configuration bmc srvnode-2"
-  command: cortx_setup network config --bmc 10.237.65.137 --user bmcadmin --password adminBMC!
-  delegate_to: "srvnode-2" 
-  
-- name: "Network Configuration bmc srvnode-3"
-  command: cortx_setup network config --bmc 10.237.66.9 --user bmcadmin --password adminBMC!
-  delegate_to: "srvnode-3" 
+- name: "Network Configuration bmc"
+  command: cortx_setup network config --bmc "{{bmc_ip}}" --user "{{bmc_user}}" --password "{{bmc_secret}}"
+  delegate_to: "{{ item }}"
+  with_items: groups.all
 
 - name: "Storage Configuration gallium primary"
-  command: cortx_setup storage config --controller gallium --mode primary --ip 10.0.0.2 --port 80 --user manage --password Seagate123$
+  command: cortx_setup storage config --controller gallium --mode primary --ip "{{controller_primary_ip}}" --port 80 --user "{{controller_user}}" --password "{{controller_secret}}"
   delegate_to: "{{ item }}"
-  with_items: "{{ groups['srvnodes'] }}" 
+  with_items: groups.all
 
 - name: "Storage Configuration gallium secondary"
-  command: cortx_setup storage config --controller gallium --mode secondary --ip 10.0.0.3 --port 80 --user manage --password Seagate123$
+  command: cortx_setup storage config --controller gallium --mode secondary --ip "{{controller_secondary_ip}}" --port 80 --user {{controller_user}}" --password "{{controller_secret}}"
   delegate_to: "{{ item }}"
-  with_items: "{{ groups['srvnodes'] }}" 
+  with_items: groups.all
+  
 
 - name: "Storage Configuration enclosure-1"
-  command: cortx_setup storage config --name enclosure-1 --type RBOD
+  command: cortx_setup storage config --name enclosure-1 --type "{{type}}"
   delegate_to: "{{ item }}"
-  with_items: "{{ groups['srvnodes'] }}" 
+  with_items: groups.all
 
   #cvg0 and cvg1 srvnode-1
 - name: "cvg0 data device list"
@@ -80,15 +67,8 @@
   register: cvg0_data_list_node1
   delegate_to: "srvnode-1" 
   
-- debug: var=cvg0_data_list_node1
-
 - set_fact:
     cvg0_data_node1: "{{ item }}"
-  with_items: "{{ cvg0_data_list_node1.stdout_lines }}"
- 
-- debug: var=cvg0_data_node1
-
-- debug: var=item
   with_items: "{{ cvg0_data_list_node1.stdout_lines }}"
   
 - name: "cvg0 meta device list"
@@ -98,11 +78,6 @@
   
 - set_fact:
     cvg0_meta_node1: "{{ item }}"
-  with_items: "{{ cvg0_meta_list_node1.stdout_lines }}"
-  
-- debug: var=cvg0_meta_node1
-
-- debug: var=item
   with_items: "{{ cvg0_meta_list_node1.stdout_lines }}"
 
 - name: "cvg1 data device list"
@@ -114,11 +89,6 @@
     cvg1_data_node1: "{{ item }}"
   with_items: " {{ cvg1_data_list_node1.stdout_lines }} "  
 
-- debug: var=cvg1_data_node1
-
-- debug: var=item
-  with_items: "{{ cvg1_data_list_node1.stdout_lines }}"
- 
 - name: "cvg1 meta device list"
   script: files/cvg1_metalist.py
   register: cvg1_meta_list_node1
@@ -126,11 +96,6 @@
  
 - set_fact:
     cvg1_meta_node1: "{{ item }}" 
-  with_items: "{{ cvg1_meta_list_node1.stdout_lines }}"
-
-- debug: var=cvg1_meta_node1
-
-- debug: var=item
   with_items: "{{ cvg1_meta_list_node1.stdout_lines }}"
 
 #cvg0 and cvg1 srvnode-2
@@ -143,12 +108,6 @@
     cvg0_data_node2: "{{ item }}"
   with_items: "{{ cvg0_data_list_node2.stdout_lines }}"
 
-- debug: var=cvg0_data_node2
-
-- debug: var=item
-  with_items: "{{ cvg0_data_list_node2.stdout_lines }}"
-
-
 - name: "cvg0 meta device list"
   script: files/cvg0_metalist.py
   register: cvg0_meta_list_node2
@@ -156,11 +115,6 @@
   
 - set_fact:
     cvg0_meta_node2: "{{ item }}"
-  with_items: "{{ cvg0_meta_list_node2.stdout_lines }}"
- 
-- debug: var=cvg0_meta_node2
-
-- debug: var=item
   with_items: "{{ cvg0_meta_list_node2.stdout_lines }}"
 
 - name: "cvg1 data device list"
@@ -172,11 +126,6 @@
     cvg1_data_node2: "{{ item }}"
   with_items: "{{ cvg1_data_list_node2.stdout_lines }}"
   
-- debug: var=cvg1_data_node2
-
-- debug: var=item
-  with_items: "{{ cvg1_data_list_node2.stdout_lines }}"
-
 - name: "cvg1 meta device list"
   script: files/cvg1_metalist.py
   register: cvg1_meta_list_node2
@@ -184,11 +133,6 @@
  
 - set_fact:
     cvg1_meta_node2: "{{ item }}"
-  with_items: "{{ cvg1_meta_list_node2.stdout_lines }}"
-  
-- debug: var=cvg1_meta_node2
-
-- debug: var=item
   with_items: "{{ cvg1_meta_list_node2.stdout_lines }}"
   
 #cvg0 and cvg1 srvnode-3
@@ -200,12 +144,6 @@
 - set_fact:
     cvg0_data_node3: "{{ item }}"
   with_items: "{{ cvg0_data_list_node3.stdout_lines }}"
-  
-- debug: var=cvg0_data_node3
-
-- debug: var=item
-  with_items: "{{ cvg0_data_list_node3.stdout_lines }}"
-  
 
 - name: "cvg0 meta device list"
   script: files/cvg0_metalist.py
@@ -214,11 +152,6 @@
   
 - set_fact:
     cvg0_meta_node3: "{{ item }}"
-  with_items: "{{ cvg0_meta_list_node3.stdout_lines }}"
-  
-- debug: var=cvg0_meta_node3
-
-- debug: var=item
   with_items: "{{ cvg0_meta_list_node3.stdout_lines }}"
 
 - name: "cvg1 data device list"
@@ -229,12 +162,6 @@
 - set_fact:
     cvg1_data_node3: "{{ item }}"
   with_items: "{{ cvg1_data_list_node3.stdout_lines }}"
-  
-- debug: var=cvg1_data_node3
-
-- debug: var=item
-  with_items: "{{ cvg1_data_list_node3.stdout_lines }}"
-
 
 - name: "cvg1 meta device list"
   script: files/cvg1_metalist.py
@@ -243,11 +170,6 @@
  
 - set_fact:
     cvg1_meta_node3: "{{ item }}"
-  with_items: "{{ cvg1_meta_list_node3.stdout_lines }}"
-  
-- debug: var=cvg1_meta_node3
-
-- debug: var=item
   with_items: "{{ cvg1_meta_list_node3.stdout_lines }}"
 
 # cvg0 and cvg1 storage config on srvnode-1
