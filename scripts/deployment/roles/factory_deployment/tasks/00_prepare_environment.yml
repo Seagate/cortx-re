@@ -7,7 +7,7 @@
   
 - name: Extract filename from the config path
   shell: echo '{{CONFIG_NAME}}'
-  register:: op
+  register: op
 
 - debug: var=op
 
