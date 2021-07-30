@@ -49,12 +49,13 @@ if [ -z "${BUILD_NUMBER}" ]; then
 BUILD_NUMBER="0"
 fi
 
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 echo -e "Generating RELEASE.INFO file"
-
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 EXCLUDE_PACKAGES="cortx-motr-devel\|cortx-motr-tests-ut\|cortx-libsspl_sec-devel\|cortx-libsspl_sec-method_pki\|cortx-prvsnr-cli\|cortx-sspl-cli\|cortx-s3iamcli-devel\|cortx-sspl-test"
-pushd "$BUILD_LOCATION" || exit
-cat <<EOF > RELEASE.INFO
+
+create_metadata() {
+FILE_NAME=$1
+cat <<EOF > $FILE_NAME
 ---
 NAME: "CORTX"
 VERSION: "$VERSION"
@@ -63,37 +64,46 @@ THIRD_PARTY_VERSION: $(readlink -f "$THIRD_PARTY_LOCATION" | awk -F '/' '{print 
 BUILD: $(echo "$BUILD_NUMBER" | sed -e 's/^/\"/g' -e 's/$/\"/g')
 OS: $(cat /etc/redhat-release | sed -e 's/ $//g' -e 's/^/\"/g' -e 's/$/\"/g')
 DATETIME: $(date +"%d-%b-%Y %H:%M %Z" | sed -e 's/^/\"/g' -e 's/$/\"/g')
+EOF
+}
+
+cortx_info() {
+FILE_NAME=$1
+cat <<EOF >> $FILE_NAME
 KERNEL: $(ls cortx-motr-[0-9]*.rpm | sed -e  's/.*3/3/g' -e 's/.x86_64.rpm//g' -e 's/^/\"/g' -e 's/$/\"/g')
 REQUIRES:
 $(sed 's/^/    /g' "$SCRIPT_DIR"/../versioning/compatibility.info)
 COMPONENTS:
 $(ls -1 ./*.rpm | sed 's/\.\///g' | grep -v "$EXCLUDE_PACKAGES" |  awk '{ print "    - \""$1"\""}')
 EOF
-popd || exit
+}
 
 echo -e "Generating THIRD_PARTY_RELEASE.INFO file"
 
-pushd "$THIRD_PARTY_LOCATION"
-cat <<EOF > THIRD_PARTY_RELEASE.INFO
----
-NAME: "CORTX"
-VERSION: "$VERSION"
-BUILD: $(echo "$BUILD_NUMBER" | sed -e 's/^/\"/g' -e 's/$/\"/g')
-OS: $(cat /etc/redhat-release | sed -e 's/ $//g' -e 's/^/\"/g' -e 's/$/\"/g')
-DATETIME: $(date +"%d-%b-%Y %H:%M %Z" | sed -e 's/^/\"/g' -e 's/$/\"/g')
-THIRD_PARTY_VERSION: $(readlink -f "$THIRD_PARTY_LOCATION" | awk -F '/' '{print $NF}' | sed -e 's/^/\"/g' -e 's/$/\"/g')
+external_info() {
+FILE_NAME=$1
+cat <<EOF >> $FILE_NAME
 THIRD_PARTY_COMPONENTS:
 EOF
-popd
-
-pushd "$THIRD_PARTY_LOCATION"
-for dir in $(ls -1 | grep -E -v "repodata|THIRD_PARTY_RELEASE.INFO")
+for dir in $(ls -1 | grep -E -v "repodata|*.INFO")
 do
 echo "Adding rpms from $dir"
-cat <<EOF >> THIRD_PARTY_RELEASE.INFO
+cat <<EOF >> $FILE_NAME
     "$dir":
 $(find -L ./"$dir" -type f -not -path "./lustre/custom/tcp/*" -name '*.rpm' -or -name '*.tar.xz' -or -name '*.tgz' | awk -F '/' '{print $NF}' | awk '{ print "       - \""$1"\""}')
 EOF
 done
-popd
+}
+
+pushd "$BUILD_LOCATION" || exit
+create_metadata CORTX_RELEASE.INFO
+cortx_info CORTX_RELEASE.INFO
+cp CORTX_RELEASE.INFO ../external/rpm/RELEASE.INFO
+popd || exit
+
+pushd "$THIRD_PARTY_LOCATION" || exit 
+create_metadata THIRD_PARTY_RELEASE.INFO
+external_info THIRD_PARTY_RELEASE.INFO
+external_info RELEASE.INFO
+popd || exit
 
