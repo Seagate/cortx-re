@@ -23,7 +23,7 @@
 #    dest: inventories/factory_deployment/hosts_srvnodes
 #    mode: '0754'
 
-#- meta: refresh_inventory
+- meta: refresh_inventory
 
 - include: passwordless_authentication.yml
 
