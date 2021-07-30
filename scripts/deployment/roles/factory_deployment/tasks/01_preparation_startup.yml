@@ -1,6 +1,6 @@
 ---
 
-- meta: refresh_inventory
+#- meta: refresh_inventory
 
 - include: passwordless_authentication.yml
 
