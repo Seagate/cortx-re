@@ -5,11 +5,17 @@
   when: item not in vars
   with_items: "{{required_vars}}"
 
-- name: "[ Prepare ] : Generate host file"
-  template:
-    src: hosts_srvnodes.j2
+- name: Download foo.conf
+  get_url:
+    url: hhttps://raw.githubusercontent.com/pujamudaliar/inventory_files/main/hw_cluster_inventory.ini
     dest: inventories/factory_deployment/hosts_srvnodes
     mode: '0754'
+    
+#- name: "[ Prepare ] : Generate host file"
+#  template:
+#    src: hosts_srvnodes.j2
+#    dest: inventories/factory_deployment/hosts_srvnodes
+#    mode: '0754'
 
 - meta: refresh_inventory
 
@@ -19,9 +25,9 @@
   pause:
     minutes: 2
 
-- name: show templating results
-  debug:
-    msg: "{{ lookup('template', './hosts_srvnodes.j2') }}"    
+#- name: show templating results
+#  debug:
+#    msg: "{{ lookup('template', './hosts_srvnodes.j2') }}"    
 
 - name: Display hostname of srvnode1
   shell: echo `hostname`
