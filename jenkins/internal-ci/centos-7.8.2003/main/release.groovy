@@ -9,7 +9,7 @@ pipeline {
     
     environment {
         version = "2.0.0"
-        third_party_version = "2.0.0-new"
+        third_party_version = "2.0.0-latest"
         os_version = "centos-7.8.2003"
         branch = "main"
         release_dir = "/mnt/bigstorage/releases/cortx"
