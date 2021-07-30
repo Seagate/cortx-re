@@ -3,63 +3,63 @@
 - name: Install device-mapper-multipath
   shell: yum install -y device-mapper-multipath
   delegate_to: "{{ item }}"
-  with_items: groups.all 
+  with_items: "{{ groups['srvnodes'] }}" 
     
 - name: Copy multipath configuration
   shell: cp /usr/share/doc/device-mapper-multipath-0.4.9/multipath.conf /etc/multipath.conf
   delegate_to: "{{ item }}"
-  with_items: groups.all
+  with_items: "{{ groups['srvnodes'] }}" 
  
 - name: Restart multipath service
   shell: systemctl restart multipathd
   delegate_to: "{{ item }}"
-  with_items: groups.all
+  with_items: "{{ groups['srvnodes'] }}" 
   
 - name: "Server Configuration srvnode-1"
   command: cortx_setup server config --name "{{config_name}}" --type HW
   delegate_to: "{{ item }}"
-  with_items: groups.all
+  with_items: "{{ groups['srvnodes'] }}" 
   
 - name: "Network Configuration lnet"
   command: cortx_setup network config --transport lnet --mode tcp
   delegate_to: "{{ item }}"
-  with_items: groups.all
+  with_items: "{{ groups['srvnodes'] }}" 
 
 - name: "Network Management Configuration"
   command: cortx_setup network config --interfaces "{{network_mgmt_interfaces}}" --type management
   delegate_to: "{{ item }}"
-  with_items: groups.all
+  with_items: "{{ groups['srvnodes'] }}" 
 
 - name: "Network Configuration data public interface"
   command: cortx_setup network config --interfaces "{{network_data_public_interfaces}}" --type data
   delegate_to: "{{ item }}"
-  with_items: groups.all
+  with_items: "{{ groups['srvnodes'] }}" 
 
 - name: "Network Configuration data private interface srvnode-1"
   command: cortx_setup network config --interfaces "{{network_data_private_interfaces}}" --type private
   delegate_to: "{{ item }}"
-  with_items: groups.all
+  with_items: "{{ groups['srvnodes'] }}" 
   
 - name: "Network Configuration bmc"
   command: cortx_setup network config --bmc "{{bmc_ip}}" --user "{{bmc_user}}" --password "{{bmc_secret}}"
   delegate_to: "{{ item }}"
-  with_items: groups.all
+  with_items: "{{ groups['srvnodes'] }}" 
 
 - name: "Storage Configuration gallium primary"
   command: cortx_setup storage config --controller gallium --mode primary --ip "{{controller_primary_ip}}" --port 80 --user "{{controller_user}}" --password "{{controller_secret}}"
   delegate_to: "{{ item }}"
-  with_items: groups.all
+  with_items: "{{ groups['srvnodes'] }}" 
 
 - name: "Storage Configuration gallium secondary"
   command: cortx_setup storage config --controller gallium --mode secondary --ip "{{controller_secondary_ip}}" --port 80 --user "{{controller_user}}" --password "{{controller_secret}}"
   delegate_to: "{{ item }}"
-  with_items: groups.all
+  with_items: "{{ groups['srvnodes'] }}" 
   
 
 - name: "Storage Configuration enclosure-1"
   command: cortx_setup storage config --name enclosure-1 --type "{{type}}"
   delegate_to: "{{ item }}"
-  with_items: groups.all
+  with_items: "{{ groups['srvnodes'] }}" 
 
   #cvg0 and cvg1 srvnode-1
 - name: "cvg0 data device list"
