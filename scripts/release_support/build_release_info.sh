@@ -90,7 +90,7 @@ do
 echo "Adding rpms from $dir"
 cat <<EOF >> $FILE_NAME
     "$dir":
-$(find -L ./"$dir" -type f -not -path "./lustre/custom/tcp/*" -name '*.rpm' -or -name '*.tar.xz' -or -name '*.tgz' | awk -F '/' '{print $NF}' | awk '{ print "       - \""$1"\""}')
+$(find -L ./"$dir" -type f -not -path "./lustre/tcp/*" -name '*.rpm' -or -name '*.tar.xz' -or -name '*.tgz' | awk -F '/' '{print $NF}' | sort | awk '{ print "       - \""$1"\""}')
 EOF
 done
 }
