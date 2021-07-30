@@ -38,25 +38,25 @@
   with_items: "{{ groups['srvnodes'] }}" 
 
 - name: "Network Configuration data"
-  command: cortx_setup network config --interfaces enp175s0f0 --type data
+  command: cortx_setup network config --interfaces "{{DATA_INTERFACE}}" --type data
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}" 
 
 - name: "Network Configuration private"
-  command: cortx_setup network config --interfaces enp216s0f0 --type private
+  command: cortx_setup network config --interfaces "{{PRIVATE_INTERFACE}}" --type private
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}" 
 
 - name: "Network Configuration bmc srvnode-1"
-  command: cortx_setup network config --bmc 10.237.66.135 --user bmcadmin --password adminBMC!
+  command: cortx_setup network config --bmc "{{BMC_IP_PRIMARY}}" --user bmcadmin --password adminBMC!
   delegate_to: "srvnode-1" 
   
 - name: "Network Configuration bmc srvnode-2"
-  command: cortx_setup network config --bmc 10.237.65.137 --user bmcadmin --password adminBMC!
+  command: cortx_setup network config --bmc "{{BMC_IP_SECONDARY1}}" --user bmcadmin --password adminBMC!
   delegate_to: "srvnode-2" 
   
 - name: "Network Configuration bmc srvnode-3"
-  command: cortx_setup network config --bmc 10.237.66.9 --user bmcadmin --password adminBMC!
+  command: cortx_setup network config --bmc "{{BMC_IP_SECONDARY2}}" --user bmcadmin --password adminBMC!
   delegate_to: "srvnode-3" 
 
 - name: "Storage Configuration gallium primary"
