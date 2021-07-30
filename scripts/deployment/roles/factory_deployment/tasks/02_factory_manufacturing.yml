@@ -51,7 +51,7 @@
   with_items: groups.all
 
 - name: "Storage Configuration gallium secondary"
-  command: cortx_setup storage config --controller gallium --mode secondary --ip "{{controller_secondary_ip}}" --port 80 --user {{controller_user}}" --password "{{controller_secret}}"
+  command: cortx_setup storage config --controller gallium --mode secondary --ip "{{controller_secondary_ip}}" --port 80 --user "{{controller_user}}" --password "{{controller_secret}}"
   delegate_to: "{{ item }}"
   with_items: groups.all
   
