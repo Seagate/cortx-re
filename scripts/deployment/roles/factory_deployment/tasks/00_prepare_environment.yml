@@ -11,11 +11,13 @@
 
 - debug: var=op
 
-- name: Download inventory file
-  get_url:
-    url:  '{{CONFIG}}'
-    dest: inventories/factory_deployment/{{CONFIG_NAME}}
-    mode: '0754'
+- debug: var=CONFIG
+
+#- name: Download inventory file
+#  get_url:
+#    url:  '{{CONFIG}}'
+#    dest: inventories/factory_deployment/
+#    mode: '0754'
     
 #- name: "[ Prepare ] : Generate host file"
 #  template:
