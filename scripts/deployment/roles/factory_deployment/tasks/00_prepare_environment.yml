@@ -31,6 +31,6 @@
 
 - name: Display hostname of srvnode1
   shell: echo `hostname`
-  delegate_to: "{{ item }}"
-  with_items: groups.all
+#  delegate_to: "{{ item }}"
+#  with_items: groups.all
 
