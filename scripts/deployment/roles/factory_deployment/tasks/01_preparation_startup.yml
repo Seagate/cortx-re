@@ -27,6 +27,11 @@
   file: dest=/mnt/cortx/install.sh mode=a+x
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}" 
+  
+- name: LVM cleanup
+  script: files/lvm_cleanup.sh  
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['srvnodes'] }}"
 
 - name: Prepare setup
   shell: /mnt/cortx/install.sh -t {{ CORTX_BUILD_URL }}
