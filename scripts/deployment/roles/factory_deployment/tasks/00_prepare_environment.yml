@@ -5,9 +5,9 @@
   when: item not in vars
   with_items: "{{required_vars}}"
 
-- name: Download foo.conf
+- name: Download inventory file
   get_url:
-    url: hhttps://raw.githubusercontent.com/pujamudaliar/inventory_files/main/hw_cluster_inventory.ini
+    url:  https://raw.githubusercontent.com/pujamudaliar/inventory_files/main/hw_cluster_inventory.ini
     dest: inventories/factory_deployment/hosts_srvnodes
     mode: '0754'
     
@@ -32,5 +32,5 @@
 - name: Display hostname of srvnode1
   shell: echo `hostname`
   delegate_to: "{{ item }}"
-  with_items: "{{ groups['srvnodes'] }}"
+  with_items: groups.all
 
