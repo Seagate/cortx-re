@@ -27,4 +27,9 @@
   shell: echo `hostname`
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}"
+  
+- name: LVM cleanup
+  script: files/lvm_cleanup.sh  
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['srvnodes'] }}"
 
