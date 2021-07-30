@@ -18,5 +18,5 @@ required_vars:
   - SATELLITE_UN
   - SATELLITE_PW
   - MGMT_VIP
-  - CONFIG_NAME				
+  - CONFIG_NAME
   - CONFIG
