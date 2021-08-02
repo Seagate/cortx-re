@@ -98,6 +98,8 @@
   pip:
     name: netifaces
     executable: pip3
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['srvnodes'] }}"  
 
 - name: "[ Deploy Prerequisite ] : Collect NODE1 interfaces information"
   script: files/itfinfo.py
