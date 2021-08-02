@@ -41,6 +41,11 @@
 - name: "[ Deploy Prerequisite ] : Get available VM devices"
   shell: "lsblk -nd -o NAME -e 11|grep -v sda|sed 's|sd|/dev/sd|g'|paste -s -d, -"
   register: available_devices
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['srvnodes'] }}"
+
+- debug:
+    msg: "{{ available_devices.stdout }}"
 
 - name: "[ Deploy Prerequisite ] : Get CVG-0 devices"
   shell: "lsblk -n -o NAME {{ available_devices.stdout.split(',')[0] }} | tail -n 4 |grep -v sda| cut -c3- | sed 's|sd|/dev/sd|g'|paste -s -d, -"
@@ -88,11 +93,28 @@
   when: SETUP_TYPE == 'single'
    
 - set_fact:
-    CVG0_DATA_DEVICES: "{{ available_devices.stdout.split(',')[1] }}"
-    CVG0_METADATA_DEVICES: "{{ available_devices.stdout.split(',')[0] }}"
-    CVG1_DATA_DEVICES: "{{ available_devices.stdout.split(',')[3] }}"
-    CVG1_METADATA_DEVICES: "{{ available_devices.stdout.split(',')[2] }}"
+    NODE1_CVG0_DATA_DEVICES: "{{ available_devices.results[0].stdout.split(',')[1] }}"
+    NODE1_CVG0_METADATA_DEVICES: "{{ available_devices.results[0].stdout.split(',')[0] }}"
+    NODE1_CVG1_DATA_DEVICES: "{{ available_devices.results[0].stdout.split(',')[3] }}"
+    NODE1_CVG1_METADATA_DEVICES: "{{ available_devices.results[0].stdout.split(',')[2] }}"
   when: SETUP_TYPE == '3_node'
+  delegate_to: "srvnode-1"
+
+- set_fact:
+    NODE2_CVG0_DATA_DEVICES: "{{ available_devices.results[1].stdout.split(',')[1] }}"
+    NODE2_CVG0_METADATA_DEVICES: "{{ available_devices.results[1].stdout.split(',')[0] }}"
+    NODE2_CVG1_DATA_DEVICES: "{{ available_devices.results[1].stdout.split(',')[3] }}"
+    NODE2_CVG1_METADATA_DEVICES: "{{ available_devices.results[1].stdout.split(',')[2] }}"
+  when: SETUP_TYPE == '3_node'
+  delegate_to: "srvnode-2"
+
+- set_fact:
+    NODE3_CVG0_DATA_DEVICES: "{{ available_devices.results[2].stdout.split(',')[1] }}"
+    NODE3_CVG0_METADATA_DEVICES: "{{ available_devices.results[2].stdout.split(',')[0] }}"
+    NODE3_CVG1_DATA_DEVICES: "{{ available_devices.results[2].stdout.split(',')[3] }}"
+    NODE3_CVG1_METADATA_DEVICES: "{{ available_devices.results[2].stdout.split(',')[2] }}"
+  when: SETUP_TYPE == '3_node'
+  delegate_to: "srvnode-3"
 
 - name: "[ Deploy Prerequisite ] : Install pre-req python package"
   pip:
