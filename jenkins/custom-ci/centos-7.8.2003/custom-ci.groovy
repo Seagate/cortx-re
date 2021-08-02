@@ -1,3 +1,4 @@
+/* groovylint-disable LineLength */
 pipeline {
 
     agent {
@@ -404,9 +405,9 @@ pipeline {
             steps {
 
                 sh label: 'Release ISO', script: '''
-                mkdir -p $integration_dir/$release_tag/iso && pushd $integration_dir/$release_tag/iso
-                    genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -hide-rr-moved -publisher Seagate -o $integration_dir/$release_tag/iso/cortx-$version-$release_tag-single.iso $integration_dir/$release_tag
-                popd
+                mkdir -p $integration_dir/$release_tag/iso
+                genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -hide-rr-moved -publisher Seagate -o $integration_dir/$release_tag/cortx-$version-$release_tag-single.iso $integration_dir/$release_tag
+                mv $integration_dir/$release_tag/cortx-$version-$release_tag-single.iso $integration_dir/$release_tag/iso/cortx-$version-$release_tag-single.iso
                 '''
 
                 sh label: "Sign ISO files", script: '''
