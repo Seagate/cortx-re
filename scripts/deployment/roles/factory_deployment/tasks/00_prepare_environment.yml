@@ -3,13 +3,11 @@
 - name: "[prepare] : Validate the required input arguments for this playbook"
   fail: msg="Variable '{{ item }}' is not defined"
   when: item not in vars
-  delegate_to: localhost
   with_items: "{{required_vars}}"
   
   
 - name: Extract filename from the config path
   shell: echo '{{CONFIG_NAME}}'
-  delegate_to: localhost
   register: op
 
 - debug: var=op
@@ -29,7 +27,6 @@
 #    mode: '0754'
 
 - meta: refresh_inventory
-  delegate_to: localhost
 
 - include: passwordless_authentication.yml
 
@@ -43,8 +40,8 @@
 
 - name: Display hostname of srvnode1
   shell: echo `hostname`
-#  delegate_to: "{{ item }}"
-#  with_items: "{{ groups['srvnodes'] }}" 
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['srvnodes'] }}" 
   register: host_op
   
 - debug: var=host_op
