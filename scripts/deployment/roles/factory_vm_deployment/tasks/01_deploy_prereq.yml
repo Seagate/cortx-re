@@ -171,6 +171,19 @@
   with_items: "{{ groups['srvnodes'] }}"  
 
 - name: "[ Deploy Prerequisite ] : Execute setup script"
-  shell: "./mnt/cortx/install.sh -t {{ CORTX_BUILD }}"
+  shell: "mnt/cortx/install.sh -t {{ CORTX_BUILD }}"
+  async: 1800
+  poll: 0
+  register: setup_async
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}"
+
+- name: "[ Deploy Prerequisite ] : Wait for Async job to complete"
+  async_status:
+    jid: "{{  setup_async['results'][item.0]['ansible_job_id'] }}"
+  register: job_result
+  until: job_result.finished
+  retries: 60
+  delay: 30
+  delegate_to: "{{ item.1 }}"
+  with_indexed_items: "{{ groups['srvnodes'] }}"  
