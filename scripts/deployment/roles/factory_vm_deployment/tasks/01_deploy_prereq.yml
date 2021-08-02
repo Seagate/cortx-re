@@ -137,7 +137,7 @@
   script: files/itfinfo.py
   register: node3_interface_info
   delegate_to: "srvnode-3"
-  
+
 - set_fact:
     NODE3_MGMT_ITF: "{{ node3_interface_info.stdout_lines[0].split(',')[0] }}"
     NODE3_MGMT_ITF_ADDR: "{{ node3_interface_info.stdout_lines[0].split(',')[1] }}"
@@ -169,6 +169,6 @@
   with_items: "{{ groups['srvnodes'] }}"  
 
 - name: "[ Deploy Prerequisite ] : Execute setup script"
-  shell: "./mnt/cortx/install.sh -t {{ CORTX_BUILD_URL }}"
+  shell: "./mnt/cortx/install.sh -t {{ CORTX_BUILD }}"
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}"
