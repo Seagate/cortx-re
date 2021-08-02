@@ -181,7 +181,7 @@
 
 - name: "[ Deploy Prerequisite ] : Download install.sh script"
   get_url:
-    url: https://raw.githubusercontent.com/Seagate/cortx-prvsnr/pre-cortx-1.0/srv/components/provisioner/scripts/install.sh
+    url: https://raw.githubusercontent.com/Seagate/cortx-prvsnr/stable/srv/components/provisioner/scripts/install.sh
     dest: /mnt/cortx
     mode: 0755
   delegate_to: "{{ item }}"
