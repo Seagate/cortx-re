@@ -92,16 +92,7 @@ pipeline {
             }
         } 
         
-        stage ("Test") {
-            when { triggeredBy 'SCMTrigger' }
-            steps {
-                script { build_stage = env.STAGE_NAME }
-                script {
-                    build job: '../../SSPL/SSPL_Build_Sanity', propagate: false, wait: false,  parameters: [string(name: 'TARGET_BUILD', value: "main:${env.release_build}")]
-                }
-            }
-        }    
-    stage('Update Jira') {
+        stage('Update Jira') {
         when { expression { return env.release_build != null } }
         steps {
             script { build_stage=env.STAGE_NAME }
