@@ -131,12 +131,12 @@ if __name__ == "__main__":
         check_reimage_status(host)
 
     # send build request for both nodes
-    print('* Sending reimage request to both the nodes')
+    print('* Sending reimage request to the nodes')
     for host in hosts:
         send_build_request(host)
 
     # send power cycle for both nodes
-    print('* Power cycling both the nodes')
+    print('* Power cycling the nodes')
     for host in hosts:
         reboot_host(host)
 
@@ -184,5 +184,5 @@ if __name__ == "__main__":
                     print('Host {0} is reachable by ping'.format(host))
                 else:
                     print('Host {0} is not reachable by ping'.format(host))
-            print('Please check status manually from BMC IP.')
-            exit(1)
+    print('Please check status manually from BMC IP.')
+    exit(1)
