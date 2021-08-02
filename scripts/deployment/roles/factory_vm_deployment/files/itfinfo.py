@@ -1,10 +1,10 @@
+#!/usr/bin/python3
 import netifaces as ni
 import re
 
 ipregex = "^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$"
 count = 0
 skipitf = False
-print(ni.interfaces())
 for iface in ni.interfaces():
     if iface == 'lo' or iface.startswith('vbox') or skipitf:
         skipitf = False
