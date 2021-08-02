@@ -7,6 +7,7 @@
   
 - name: Extract filename from the config path
   shell: echo '{{CONFIG_NAME}}'
+  delegate_to: localhost
   register: op
 
 - debug: var=op
