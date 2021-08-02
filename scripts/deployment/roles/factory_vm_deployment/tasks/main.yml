@@ -1,3 +1,6 @@
 ---
 - include: 01_deploy_prereq.yml 
   tags: ['01_DEPLOY_PREREQ']
+
+- include: 02_factory_manufacturing.yml
+  tags: ['02_FACTORY_MANUFACTURING']
