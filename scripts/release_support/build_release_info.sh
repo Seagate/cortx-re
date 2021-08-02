@@ -55,7 +55,7 @@ EXCLUDE_PACKAGES="cortx-motr-devel\|cortx-motr-tests-ut\|cortx-libsspl_sec-devel
 
 create_metadata() {
 FILE_NAME=$1
-cat <<EOF > $FILE_NAME
+cat <<EOF > "$FILE_NAME"
 ---
 NAME: "CORTX"
 VERSION: "$VERSION"
@@ -69,7 +69,7 @@ EOF
 
 cortx_info() {
 FILE_NAME=$1
-cat <<EOF >> $FILE_NAME
+cat <<EOF >> "$FILE_NAME"
 KERNEL: $(ls cortx-motr-[0-9]*.rpm | sed -e  's/.*3/3/g' -e 's/.x86_64.rpm//g' -e 's/^/\"/g' -e 's/$/\"/g')
 REQUIRES:
 $(sed 's/^/    /g' "$SCRIPT_DIR"/../versioning/compatibility.info)
@@ -82,7 +82,7 @@ echo -e "Generating THIRD_PARTY_RELEASE.INFO file"
 
 external_info() {
 FILE_NAME=$1
-cat <<EOF >> $FILE_NAME
+cat <<EOF >> "$FILE_NAME"
 THIRD_PARTY_COMPONENTS:
 EOF
 for dir in $(ls -1 | grep -E -v "repodata|*.INFO")
