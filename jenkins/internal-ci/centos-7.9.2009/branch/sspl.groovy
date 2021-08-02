@@ -94,7 +94,7 @@ pipeline {
             }
             
             stage ('Test') {
-                //when { triggeredBy 'SCMTrigger' }
+                when { triggeredBy 'SCMTrigger' }
                 steps {
                     script { build_stage = env.STAGE_NAME }
                     script {
