@@ -255,7 +255,7 @@ def runAnsible(tags) {
     
     dir("cortx-re/scripts/deployment") {
         ansiblePlaybook(
-            playbook: 'cortx_deploy_vm.yml',
+            playbook: 'cortx_deploy_vm_factory.yml',
             inventory: 'inventories/vm_deployment/hosts_srvnodes',
             tags: "${tags}",
             extraVars: [
