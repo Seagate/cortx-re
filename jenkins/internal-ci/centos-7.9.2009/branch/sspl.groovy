@@ -98,7 +98,7 @@ pipeline {
                 steps {
                     script { build_stage = env.STAGE_NAME }
                     script {
-                        build job: '../../SSPL/SSPL_Build_Sanity_${os_version}', propagate: false, wait: false,  parameters: [string(name: 'TARGET_BUILD', value: "main:${env.release_build}")]
+                        build job: '../../SSPL/SSPL_Build_Sanity_centos-7.9.2009', propagate: false, wait: false,  parameters: [string(name: 'TARGET_BUILD', value: "main:${env.release_build}")]
                     }
                 }
             }
