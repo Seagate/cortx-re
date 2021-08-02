@@ -107,6 +107,17 @@ pipeline {
                     }
                 }
             } 
+        }
+
+        stage('02. Factory Manufacturing') {
+            when { expression { SKIP_STAGE == "no"  } }
+            steps {
+                script {
+                    info("Running '02. Factory Manufacturing' Stage")
+
+                    runAnsible("02_FACTORY_MANUFACTURING")
+                }
+            } 
         }        
 	}
 
