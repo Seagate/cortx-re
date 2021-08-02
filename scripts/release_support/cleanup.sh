@@ -18,7 +18,7 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
-mkdir /mnt/data1/releases
+mkdir -p /mnt/data1/releases
 mount="cortx-storage.colo.seagate.com:/mnt/data1/releases"
 if grep -qs "$mount" /proc/mounts;then
 	echo "cortx-storage.colo.seagate.com:/mnt/data1/releases is mounted.
