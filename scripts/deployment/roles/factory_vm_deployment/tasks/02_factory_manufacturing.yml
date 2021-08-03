@@ -13,10 +13,10 @@
 
 - name: "Configure interfaces"
   shell: |
-    "cortx_setup network config --interfaces {{ item.1 }} --type management"
-    "cortx_setup network config --interfaces {{ item.2 }} --type data"
-    "cortx_setup network config --interfaces {{ item.3 }} --type private"
-    "cortx_setup network config --bmc 127.0.0.1 --user 'admin' --password 'admin'"
+    cortx_setup network config --interfaces "{{ item.1 }}" --type management
+    cortx_setup network config --interfaces "{{ item.2 }}" --type data
+    cortx_setup network config --interfaces "{{ item.3 }}" --type private
+    cortx_setup network config --bmc 127.0.0.1 --user 'admin' --password 'admin'
   delegate_to: "{{ item.0 }}"
   with_together:
     - "{{ groups['srvnodes'] }}"
@@ -24,23 +24,23 @@
     - [ "{{ NODE1_PUB_ITF }}", "{{ NODE2_PUB_ITF }}", "{{ NODE3_PUB_ITF }}" ]
     - [ "{{ NODE1_PVT_ITF }}", "{{ NODE2_PVT_ITF }}", "{{ NODE3_PVT_ITF }}" ]
 
-# - name: "Configure Storage"
-#   shell: |
-#     "cortx_setup storage config --name enclosure-1 --type virtual"
-#     "cortx_setup storage config --controller virtual --mode primary --ip 127.0.0.1 --port 80 --user 'admin' --password 'admin'"
-#     "cortx_setup storage config --controller virtual --mode secondary --ip 127.0.0.1 --port 80 --user 'admin' --password 'admin'"
-#     "cortx_setup storage config --cvg 0 --data_devices {{ item[1] }} --metadata_devices {{ item[2] }}"
-#     "cortx_setup storage config --cvg 1 --data_devices {{ item[3] }} --metadata_devices {{ item[4] }}"
-#   delegate_to: "{{ item[0] }}"
-#   with_nested:
-#     - "{{ groups['srvnodes'] }}"
-#     - [ "{{ NODE1_CVG0_DATA_DEVICES }}", "{{ NODE2_CVG0_DATA_DEVICES }}", "{{ NODE3_CVG0_DATA_DEVICES }}" ]
-#     - [ "{{ NODE1_CVG0_METADATA_DEVICES }}", "{{ NODE2_CVG0_METADATA_DEVICES }}", "{{ NODE3_CVG0_METADATA_DEVICES }}" ]
-#     - [ "{{ NODE1_CVG1_DATA_DEVICES }}", "{{ NODE2_CVG1_DATA_DEVICES }}", "{{ NODE3_CVG1_DATA_DEVICES }}" ]
-#     - [ "{{ NODE1_CVG1_METADATA_DEVICES }}", "{{ NODE2_CVG1_METADATA_DEVICES }}", "{{ NODE3_CVG1_METADATA_DEVICES }}" ]
+- name: "Configure Storage"
+  shell: |
+    cortx_setup storage config --name enclosure-1 --type virtual
+    cortx_setup storage config --controller virtual --mode primary --ip 127.0.0.1 --port 80 --user 'admin' --password 'admin'
+    cortx_setup storage config --controller virtual --mode secondary --ip 127.0.0.1 --port 80 --user 'admin' --password 'admin'
+    cortx_setup storage config --cvg 0 --data_devices "{{ item.1 }}" --metadata_devices "{{ item.2 }}"
+    cortx_setup storage config --cvg 1 --data_devices "{{ item.3 }}" --metadata_devices "{{ item.4 }}"
+  delegate_to: "{{ item.0 }}"
+  with_together:
+    - "{{ groups['srvnodes'] }}"
+    - [ "{{ NODE1_CVG0_DATA_DEVICES }}", "{{ NODE2_CVG0_DATA_DEVICES }}", "{{ NODE3_CVG0_DATA_DEVICES }}" ]
+    - [ "{{ NODE1_CVG0_METADATA_DEVICES }}", "{{ NODE2_CVG0_METADATA_DEVICES }}", "{{ NODE3_CVG0_METADATA_DEVICES }}" ]
+    - [ "{{ NODE1_CVG1_DATA_DEVICES }}", "{{ NODE2_CVG1_DATA_DEVICES }}", "{{ NODE3_CVG1_DATA_DEVICES }}" ]
+    - [ "{{ NODE1_CVG1_METADATA_DEVICES }}", "{{ NODE2_CVG1_METADATA_DEVICES }}", "{{ NODE3_CVG1_METADATA_DEVICES }}" ]
 
-# - name: "Configure Security"
-#   shell: cortx_setup security config --certificate /opt/seagate/cortx/provisioner/srv/components/misc_pkgs/ssl_certs/files/stx.pem
-#   delegate_to: "{{ item }}"
-#   with_items: "{{ groups['srvnodes'] }}" 
+- name: "Configure Security"
+  shell: cortx_setup security config --certificate /opt/seagate/cortx/provisioner/srv/components/misc_pkgs/ssl_certs/files/stx.pem
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['srvnodes'] }}" 
 
