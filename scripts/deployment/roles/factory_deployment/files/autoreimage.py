@@ -166,7 +166,7 @@ if __name__ == "__main__":
             print('Checking if host is reachable by ping')
             connection = False
             connection_status = []
-            t_end = time.time() + 60 * 75
+            t_end = time.time() + 60 * 60
             while time.time() < t_end:
                 # try pinging hosts for 60 minutes, 1 minute interval
                 time.sleep(60)
