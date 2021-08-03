@@ -144,6 +144,7 @@
     NODE1_PVT_ITF_ADDR: "{{ interface_info.results[0].stdout_lines[2].split(',')[1] }}"
     NODE1_PVT_ITF_NETMASK: "{{ interface_info.results[0].stdout_lines[2].split(',')[2] }}"
     cacheable: yes
+  delegate_to: "srvnode-1"  
   when: SETUP_TYPE == '3_node'
 
 - name: "[ Deploy Prerequisite ] : Set interfaces information for NODE2"
@@ -159,6 +160,7 @@
     NODE2_PVT_ITF_ADDR: "{{ interface_info.results[1].stdout_lines[2].split(',')[1] }}"
     NODE2_PVT_ITF_NETMASK: "{{ interface_info.results[1].stdout_lines[2].split(',')[2] }}"
     cacheable: yes
+  delegate_to: "srvnode-2"  
   when: SETUP_TYPE == '3_node'
 
 - name: "[ Deploy Prerequisite ] : Set interfaces information for NODE3"
@@ -174,40 +176,41 @@
     NODE3_PVT_ITF_ADDR: "{{ interface_info.results[2].stdout_lines[2].split(',')[1] }}"
     NODE3_PVT_ITF_NETMASK: "{{ interface_info.results[2].stdout_lines[2].split(',')[2] }}"
     cacheable: yes
+  delegate_to: "srvnode-3"  
   when: SETUP_TYPE == '3_node'
 
-# - name: "[ Deploy Prerequisite ] : Create Cortx directory"
-#   file:
-#     path: /mnt/cortx
-#     state: directory
-#     owner: root
-#     group: root
-#     mode: 0775
-#   delegate_to: "{{ item }}"
-#   with_items: "{{ groups['srvnodes'] }}"  
+- name: "[ Deploy Prerequisite ] : Create Cortx directory"
+  file:
+    path: /mnt/cortx
+    state: directory
+    owner: root
+    group: root
+    mode: 0775
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['srvnodes'] }}"  
 
-# - name: "[ Deploy Prerequisite ] : Download install.sh script"
-#   get_url:
-#     url: https://raw.githubusercontent.com/Seagate/cortx-prvsnr/stable/srv/components/provisioner/scripts/install.sh
-#     dest: /mnt/cortx
-#     mode: 0755
-#   delegate_to: "{{ item }}"
-#   with_items: "{{ groups['srvnodes'] }}"  
+- name: "[ Deploy Prerequisite ] : Download install.sh script"
+  get_url:
+    url: https://raw.githubusercontent.com/Seagate/cortx-prvsnr/stable/srv/components/provisioner/scripts/install.sh
+    dest: /mnt/cortx
+    mode: 0755
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['srvnodes'] }}"  
 
-# - name: "[ Deploy Prerequisite ] : Execute setup script"
-#   shell: "/mnt/cortx/install.sh -t {{ CORTX_BUILD }}"
-#   async: 1800
-#   poll: 0
-#   register: setup_async
-#   delegate_to: "{{ item }}"
-#   with_items: "{{ groups['srvnodes'] }}"
+- name: "[ Deploy Prerequisite ] : Execute setup script"
+  shell: "/mnt/cortx/install.sh -t {{ CORTX_BUILD }}"
+  async: 1800
+  poll: 0
+  register: setup_async
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['srvnodes'] }}"
 
-# - name: "[ Deploy Prerequisite ] : Wait for Async job to complete"
-#   async_status:
-#     jid: "{{  setup_async['results'][item.0]['ansible_job_id'] }}"
-#   register: job_result
-#   until: job_result.finished
-#   retries: 60
-#   delay: 30
-#   delegate_to: "{{ item.1 }}"
-#   with_indexed_items: "{{ groups['srvnodes'] }}"  
+- name: "[ Deploy Prerequisite ] : Wait for Async job to complete"
+  async_status:
+    jid: "{{  setup_async['results'][item.0]['ansible_job_id'] }}"
+  register: job_result
+  until: job_result.finished
+  retries: 60
+  delay: 30
+  delegate_to: "{{ item.1 }}"
+  with_indexed_items: "{{ groups['srvnodes'] }}"  
