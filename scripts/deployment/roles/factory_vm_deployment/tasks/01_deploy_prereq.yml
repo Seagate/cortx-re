@@ -18,166 +18,25 @@
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}"
 
-# - name: "[ Pre-Validation ] : Check node provided in clean state"
-#   shell: |
-#     for folder in "/var/log/seagate" "/opt/seagate" "/mnt/cortx";
-#     do
-#         if [[ ! -d "${folder}" ]]; then
-#             echo "OK - Folder does not exists ( ${folder} )";
-#         else 
-#             echo "NOT_OK - Folder exists ${folder}";
-#             exit 1
-#         fi
-#     done
-#     if [[ ! $(yum list installed | grep "cortx" | grep -v "compat-lua-libs") ]]; then
-#         echo "OK - System in clean state no cortx component installed";
-#     else
-#         echo "NOT_OK - Cortx component already installed";
-#         exit 1
-#     fi 
-#   delegate_to: "{{ item }}"
-#   with_items: "{{ groups['srvnodes'] }}"
-
-- name: "[ Deploy Prerequisite ] : Get available VM devices"
-  shell: "lsblk -nd -o NAME -e 11|grep -v sda|sed 's|sd|/dev/sd|g'|paste -s -d, -"
-  register: available_devices
+- name: "[ Pre-Validation ] : Check node provided in clean state"
+  shell: |
+    for folder in "/var/log/seagate" "/opt/seagate" "/mnt/cortx";
+    do
+        if [[ ! -d "${folder}" ]]; then
+            echo "OK - Folder does not exists ( ${folder} )";
+        else 
+            echo "NOT_OK - Folder exists ${folder}";
+            exit 1
+        fi
+    done
+    if [[ ! $(yum list installed | grep "cortx" | grep -v "compat-lua-libs") ]]; then
+        echo "OK - System in clean state no cortx component installed";
+    else
+        echo "NOT_OK - Cortx component already installed";
+        exit 1
+    fi 
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}"
-
-- name: "[ Deploy Prerequisite ] : Get CVG-0 devices"
-  shell: "lsblk -n -o NAME {{ available_devices.stdout.split(',')[0] }} | tail -n 4 |grep -v sda| cut -c3- | sed 's|sd|/dev/sd|g'|paste -s -d, -"
-  register: available_cvg0_devices
-  when: SETUP_TYPE == 'single'
-
-- name: "[ Deploy Prerequisite ] : Get CVG-1 devices"
-  shell: "lsblk -n -o NAME {{ available_devices.stdout.split(',')[1] }} | tail -n 4 |grep -v sda| cut -c3- | sed 's|sd|/dev/sd|g'|paste -s -d, -"
-  register: available_cvg1_devices
-  when: SETUP_TYPE == 'single'
-
-- name: "[ Deploy Prerequisite ] : Create primary partitions"
-  script: files/mk_partition.sh {{ available_devices.stdout.split(',')[0] }}
-  register: primary_partitions
-  when: "SETUP_TYPE == 'single' and available_cvg0_devices.stdout.count(',') == 0"
-
-- name: "[ Deploy Prerequisite ] : Create secondary partitions"
-  script: files/mk_partition.sh {{ available_devices.stdout.split(',')[1] }}
-  register: secondary_partitions
-  when: "SETUP_TYPE == 'single' and available_cvg1_devices.stdout.count(',') == 0"
-
-- name: "[ Deploy Prerequisite ] : Get CVG-0 devices"
-  shell: "lsblk -n -o NAME {{ available_devices.stdout.split(',')[0] }} | tail -n 4 |grep -v sda| cut -c3- | sed 's|sd|/dev/sd|g'|paste -s -d, -"
-  register: available_cvg0_devices
-  when: "SETUP_TYPE == 'single'"
-
-- name: "[ Deploy Prerequisite ] : Get CVG-1 devices"
-  shell: "lsblk -n -o NAME {{ available_devices.stdout.split(',')[1] }} | tail -n 4 |grep -v sda| cut -c3- | sed 's|sd|/dev/sd|g'|paste -s -d, -"
-  register: available_cvg1_devices
-  when: "SETUP_TYPE == 'single'"
-
-- name: "[ Deploy Prerequisite ] : Validate primary partitions"
-  fail: msg="Primary device partitions are not matching the requirement"
-  when: "SETUP_TYPE == 'single' and available_cvg0_devices.stdout.count(',') + 1 < REQUIRED_PARTITION|int"
-
-- name: "[ Deploy Prerequisite ] : Validate secondary partitions"
-  fail: msg="Secondary device partitions are not matching the requirement"
-  when: "SETUP_TYPE == 'single' and available_cvg1_devices.stdout.count(',') + 1 < REQUIRED_PARTITION|int"
-
-- name: "[ Deploy Prerequisite ] : Set device information"    
-  set_fact:
-    CVG0_DATA_DEVICES: "{{ ','.join(available_cvg0_devices.stdout.split(',')[1:4]) }}"
-    CVG0_METADATA_DEVICES: "{{ available_cvg0_devices.stdout.split(',')[0] }}"
-    CVG1_DATA_DEVICES: "{{ ','.join(available_cvg1_devices.stdout.split(',')[1:4]) }}"
-    CVG1_METADATA_DEVICES: "{{ available_cvg1_devices.stdout.split(',')[0] }}"
-    cacheable: yes
-  when: SETUP_TYPE == 'single'
-   
-- name: "[ Deploy Prerequisite ] : Set device information for NODE1"
-  set_fact:
-    NODE1_CVG0_DATA_DEVICES: "{{ available_devices.results[0].stdout.split(',')[1] }}"
-    NODE1_CVG0_METADATA_DEVICES: "{{ available_devices.results[0].stdout.split(',')[0] }}"
-    NODE1_CVG1_DATA_DEVICES: "{{ available_devices.results[0].stdout.split(',')[3] }}"
-    NODE1_CVG1_METADATA_DEVICES: "{{ available_devices.results[0].stdout.split(',')[2] }}"
-    cacheable: yes
-  when: SETUP_TYPE == '3_node'
-
-- name: "[ Deploy Prerequisite ] : Set device information for NODE2"
-  set_fact:
-    NODE2_CVG0_DATA_DEVICES: "{{ available_devices.results[1].stdout.split(',')[1] }}"
-    NODE2_CVG0_METADATA_DEVICES: "{{ available_devices.results[1].stdout.split(',')[0] }}"
-    NODE2_CVG1_DATA_DEVICES: "{{ available_devices.results[1].stdout.split(',')[3] }}"
-    NODE2_CVG1_METADATA_DEVICES: "{{ available_devices.results[1].stdout.split(',')[2] }}"
-    cacheable: yes
-  when: SETUP_TYPE == '3_node'
-
-- name: "[ Deploy Prerequisite ] : Set device information for NODE3"
-  set_fact:
-    NODE3_CVG0_DATA_DEVICES: "{{ available_devices.results[2].stdout.split(',')[1] }}"
-    NODE3_CVG0_METADATA_DEVICES: "{{ available_devices.results[2].stdout.split(',')[0] }}"
-    NODE3_CVG1_DATA_DEVICES: "{{ available_devices.results[2].stdout.split(',')[3] }}"
-    NODE3_CVG1_METADATA_DEVICES: "{{ available_devices.results[2].stdout.split(',')[2] }}"
-    cacheable: yes
-  when: SETUP_TYPE == '3_node'
-
-- name: "[ Deploy Prerequisite ] : Install pre-req python package"
-  pip:
-    name: netifaces
-    executable: pip3
-  delegate_to: "{{ item }}"
-  with_items: "{{ groups['srvnodes'] }}"  
-
-- name: "[ Deploy Prerequisite ] : Collect interfaces information"
-  script: files/itfinfo.py
-  register: interface_info
-  delegate_to: "{{ item }}"
-  with_items: "{{ groups['srvnodes'] }}"
-
-- name: "[ Deploy Prerequisite ] : Set interfaces information for NODE1"
-  set_fact:
-    NODE1_MGMT_ITF: "{{ interface_info.results[0].stdout_lines[0].split(',')[0] }}"
-    NODE1_MGMT_ITF_ADDR: "{{ interface_info.results[0].stdout_lines[0].split(',')[1] }}"
-    NODE1_MGMT_ITF_NETMASK: "{{ interface_info.results[0].stdout_lines[0].split(',')[2] }}"
-    NODE1_MGMT_ITF_GATEWAY: "{{ interface_info.results[0].stdout_lines[0].split(',')[3] }}"
-    NODE1_PUB_ITF: "{{ interface_info.results[0].stdout_lines[1].split(',')[0] }}"
-    NODE1_PUB_ITF_ADDR: "{{ interface_info.results[0].stdout_lines[1].split(',')[1] }}"
-    NODE1_PUB_ITF_NETMASK: "{{ interface_info.results[0].stdout_lines[1].split(',')[2] }}"
-    NODE1_PVT_ITF: "{{ interface_info.results[0].stdout_lines[2].split(',')[0] }}"
-    NODE1_PVT_ITF_ADDR: "{{ interface_info.results[0].stdout_lines[2].split(',')[1] }}"
-    NODE1_PVT_ITF_NETMASK: "{{ interface_info.results[0].stdout_lines[2].split(',')[2] }}"
-    cacheable: yes
-  delegate_to: "srvnode-1"  
-  when: SETUP_TYPE == '3_node'
-
-- name: "[ Deploy Prerequisite ] : Set interfaces information for NODE2"
-  set_fact:
-    NODE2_MGMT_ITF: "{{ interface_info.results[1].stdout_lines[0].split(',')[0] }}"
-    NODE2_MGMT_ITF_ADDR: "{{ interface_info.results[1].stdout_lines[0].split(',')[1] }}"
-    NODE2_MGMT_ITF_NETMASK: "{{ interface_info.results[1].stdout_lines[0].split(',')[2] }}"
-    NODE2_MGMT_ITF_GATEWAY: "{{ interface_info.results[1].stdout_lines[0].split(',')[3] }}"
-    NODE2_PUB_ITF: "{{ interface_info.results[1].stdout_lines[1].split(',')[0] }}"
-    NODE2_PUB_ITF_ADDR: "{{ interface_info.results[1].stdout_lines[1].split(',')[1] }}"
-    NODE2_PUB_ITF_NETMASK: "{{ interface_info.results[1].stdout_lines[1].split(',')[2] }}"
-    NODE2_PVT_ITF: "{{ interface_info.results[1].stdout_lines[2].split(',')[0] }}"
-    NODE2_PVT_ITF_ADDR: "{{ interface_info.results[1].stdout_lines[2].split(',')[1] }}"
-    NODE2_PVT_ITF_NETMASK: "{{ interface_info.results[1].stdout_lines[2].split(',')[2] }}"
-    cacheable: yes
-  delegate_to: "srvnode-2"  
-  when: SETUP_TYPE == '3_node'
-
-- name: "[ Deploy Prerequisite ] : Set interfaces information for NODE3"
-  set_fact:
-    NODE3_MGMT_ITF: "{{ interface_info.results[2].stdout_lines[0].split(',')[0] }}"
-    NODE3_MGMT_ITF_ADDR: "{{ interface_info.results[2].stdout_lines[0].split(',')[1] }}"
-    NODE3_MGMT_ITF_NETMASK: "{{ interface_info.results[2].stdout_lines[0].split(',')[2] }}"
-    NODE3_MGMT_ITF_GATEWAY: "{{ interface_info.results[2].stdout_lines[0].split(',')[3] }}"
-    NODE3_PUB_ITF: "{{ interface_info.results[2].stdout_lines[1].split(',')[0] }}"
-    NODE3_PUB_ITF_ADDR: "{{ interface_info.results[2].stdout_lines[1].split(',')[1] }}"
-    NODE3_PUB_ITF_NETMASK: "{{ interface_info.results[2].stdout_lines[1].split(',')[2] }}"
-    NODE3_PVT_ITF: "{{ interface_info.results[2].stdout_lines[2].split(',')[0] }}"
-    NODE3_PVT_ITF_ADDR: "{{ interface_info.results[2].stdout_lines[2].split(',')[1] }}"
-    NODE3_PVT_ITF_NETMASK: "{{ interface_info.results[2].stdout_lines[2].split(',')[2] }}"
-    cacheable: yes
-  delegate_to: "srvnode-3"  
-  when: SETUP_TYPE == '3_node'
 
 - name: "[ Deploy Prerequisite ] : Create Cortx directory"
   file:
