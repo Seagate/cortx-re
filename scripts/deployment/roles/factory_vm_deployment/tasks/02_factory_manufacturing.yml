@@ -1,4 +1,10 @@
 ---
+- debug: 
+    msg: "{{ hostvars['srvnode-1']['NODE1_MGMT_ITF'] }}"
+
+- debug:
+    msg: "{{ NODE1_MGMT_ITF }}"
+
 - name: "[Factory Manufacturing ] : Configure Nodes"
   shell: "cortx_setup server config --name  {{ item }} --type VM"
   delegate_to: "{{ item }}"
