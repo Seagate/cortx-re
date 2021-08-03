@@ -4,3 +4,6 @@
 
 - include: 02_factory_manufacturing.yml
   tags: ['02_FACTORY_MANUFACTURING']
+
+- include: 03_field_deployment.yml
+  tags: ['03_FIELD_DEPLOYMENT']
