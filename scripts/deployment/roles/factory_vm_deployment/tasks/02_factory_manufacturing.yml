@@ -1,32 +1,35 @@
 ---
-- debug: 
-    msg: "{{ hostvars['srvnode-1']['NODE1_MGMT_ITF'] }}"
+- name: Print all available facts
+  debug:
+    var: ansible_facts 
 
 - debug:
     msg: "{{ NODE1_MGMT_ITF }}"
 
-- name: "[Factory Manufacturing ] : Configure Nodes"
-  shell: "cortx_setup server config --name  {{ item }} --type VM"
-  delegate_to: "{{ item }}"
-  with_items: "{{ groups['srvnodes'] }}"
+- debug: 
+    msg: "{{ hostvars['srvnode-1']['NODE1_MGMT_ITF'] }}"
+# - name: "[Factory Manufacturing ] : Configure Nodes"
+#   shell: "cortx_setup server config --name  {{ item }} --type VM"
+#   delegate_to: "{{ item }}"
+#   with_items: "{{ groups['srvnodes'] }}"
 
-- name: "Configure lnet"
-  shell: cortx_setup network config --transport lnet --mode tcp
-  delegate_to: "{{ item }}"
-  with_items: "{{ groups['srvnodes'] }}"
+# - name: "Configure lnet"
+#   shell: cortx_setup network config --transport lnet --mode tcp
+#   delegate_to: "{{ item }}"
+#   with_items: "{{ groups['srvnodes'] }}"
 
-- name: "Configure interfaces"
-  shell: |
-    "cortx_setup network config --interfaces {{ hostvars[ item.0 ][ item.1 ] }} --type management"
-    "cortx_setup network config --interfaces {{ hostvars[ item.0 ][ item.2 ] }} --type data"
-    "cortx_setup network config --interfaces {{ hostvars[ item.0 ][ item.3 ] }} --type private"
-    "cortx_setup network config --bmc 127.0.0.1 --user 'admin' --password 'admin'"
-  delegate_to: "{{ item.0 }}"
-  with_together:
-    - "{{ groups['srvnodes'] }}"
-    - [ 'NODE1_MGMT_ITF', 'NODE2_MGMT_ITF', 'NODE3_MGMT_ITF' ]
-    - [ 'NODE1_PUB_ITF', 'NODE2_PUB_ITF', 'NODE3_PUB_ITF' ]
-    - [ 'NODE1_PVT_ITF', 'NODE2_PVT_ITF', 'NODE3_PVT_ITF' ]
+# - name: "Configure interfaces"
+#   shell: |
+#     "cortx_setup network config --interfaces {{ hostvars[ item.0 ][ item.1 ] }} --type management"
+#     "cortx_setup network config --interfaces {{ hostvars[ item.0 ][ item.2 ] }} --type data"
+#     "cortx_setup network config --interfaces {{ hostvars[ item.0 ][ item.3 ] }} --type private"
+#     "cortx_setup network config --bmc 127.0.0.1 --user 'admin' --password 'admin'"
+#   delegate_to: "{{ item.0 }}"
+#   with_together:
+#     - "{{ groups['srvnodes'] }}"
+#     - [ 'NODE1_MGMT_ITF', 'NODE2_MGMT_ITF', 'NODE3_MGMT_ITF' ]
+#     - [ 'NODE1_PUB_ITF', 'NODE2_PUB_ITF', 'NODE3_PUB_ITF' ]
+#     - [ 'NODE1_PVT_ITF', 'NODE2_PVT_ITF', 'NODE3_PVT_ITF' ]
 
 # - name: "Configure Storage"
 #   shell: |

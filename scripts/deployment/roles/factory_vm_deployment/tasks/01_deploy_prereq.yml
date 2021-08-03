@@ -18,25 +18,25 @@
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}"
 
-- name: "[ Pre-Validation ] : Check node provided in clean state"
-  shell: |
-    for folder in "/var/log/seagate" "/opt/seagate" "/mnt/cortx";
-    do
-        if [[ ! -d "${folder}" ]]; then
-            echo "OK - Folder does not exists ( ${folder} )";
-        else 
-            echo "NOT_OK - Folder exists ${folder}";
-            exit 1
-        fi
-    done
-    if [[ ! $(yum list installed | grep "cortx" | grep -v "compat-lua-libs") ]]; then
-        echo "OK - System in clean state no cortx component installed";
-    else
-        echo "NOT_OK - Cortx component already installed";
-        exit 1
-    fi 
-  delegate_to: "{{ item }}"
-  with_items: "{{ groups['srvnodes'] }}"
+# - name: "[ Pre-Validation ] : Check node provided in clean state"
+#   shell: |
+#     for folder in "/var/log/seagate" "/opt/seagate" "/mnt/cortx";
+#     do
+#         if [[ ! -d "${folder}" ]]; then
+#             echo "OK - Folder does not exists ( ${folder} )";
+#         else 
+#             echo "NOT_OK - Folder exists ${folder}";
+#             exit 1
+#         fi
+#     done
+#     if [[ ! $(yum list installed | grep "cortx" | grep -v "compat-lua-libs") ]]; then
+#         echo "OK - System in clean state no cortx component installed";
+#     else
+#         echo "NOT_OK - Cortx component already installed";
+#         exit 1
+#     fi 
+#   delegate_to: "{{ item }}"
+#   with_items: "{{ groups['srvnodes'] }}"
 
 - name: "[ Deploy Prerequisite ] : Get available VM devices"
   shell: "lsblk -nd -o NAME -e 11|grep -v sda|sed 's|sd|/dev/sd|g'|paste -s -d, -"
@@ -176,38 +176,38 @@
     cacheable: yes
   when: SETUP_TYPE == '3_node'
 
-- name: "[ Deploy Prerequisite ] : Create Cortx directory"
-  file:
-    path: /mnt/cortx
-    state: directory
-    owner: root
-    group: root
-    mode: 0775
-  delegate_to: "{{ item }}"
-  with_items: "{{ groups['srvnodes'] }}"  
+# - name: "[ Deploy Prerequisite ] : Create Cortx directory"
+#   file:
+#     path: /mnt/cortx
+#     state: directory
+#     owner: root
+#     group: root
+#     mode: 0775
+#   delegate_to: "{{ item }}"
+#   with_items: "{{ groups['srvnodes'] }}"  
 
-- name: "[ Deploy Prerequisite ] : Download install.sh script"
-  get_url:
-    url: https://raw.githubusercontent.com/Seagate/cortx-prvsnr/stable/srv/components/provisioner/scripts/install.sh
-    dest: /mnt/cortx
-    mode: 0755
-  delegate_to: "{{ item }}"
-  with_items: "{{ groups['srvnodes'] }}"  
+# - name: "[ Deploy Prerequisite ] : Download install.sh script"
+#   get_url:
+#     url: https://raw.githubusercontent.com/Seagate/cortx-prvsnr/stable/srv/components/provisioner/scripts/install.sh
+#     dest: /mnt/cortx
+#     mode: 0755
+#   delegate_to: "{{ item }}"
+#   with_items: "{{ groups['srvnodes'] }}"  
 
-- name: "[ Deploy Prerequisite ] : Execute setup script"
-  shell: "/mnt/cortx/install.sh -t {{ CORTX_BUILD }}"
-  async: 1800
-  poll: 0
-  register: setup_async
-  delegate_to: "{{ item }}"
-  with_items: "{{ groups['srvnodes'] }}"
+# - name: "[ Deploy Prerequisite ] : Execute setup script"
+#   shell: "/mnt/cortx/install.sh -t {{ CORTX_BUILD }}"
+#   async: 1800
+#   poll: 0
+#   register: setup_async
+#   delegate_to: "{{ item }}"
+#   with_items: "{{ groups['srvnodes'] }}"
 
-- name: "[ Deploy Prerequisite ] : Wait for Async job to complete"
-  async_status:
-    jid: "{{  setup_async['results'][item.0]['ansible_job_id'] }}"
-  register: job_result
-  until: job_result.finished
-  retries: 60
-  delay: 30
-  delegate_to: "{{ item.1 }}"
-  with_indexed_items: "{{ groups['srvnodes'] }}"  
+# - name: "[ Deploy Prerequisite ] : Wait for Async job to complete"
+#   async_status:
+#     jid: "{{  setup_async['results'][item.0]['ansible_job_id'] }}"
+#   register: job_result
+#   until: job_result.finished
+#   retries: 60
+#   delay: 30
+#   delegate_to: "{{ item.1 }}"
+#   with_indexed_items: "{{ groups['srvnodes'] }}"  
