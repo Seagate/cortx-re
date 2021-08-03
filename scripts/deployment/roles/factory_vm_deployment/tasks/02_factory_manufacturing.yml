@@ -5,7 +5,6 @@
 
 - name: Re-read facts after adding custom fact
   ansible.builtin.setup:
-    filter: ansible_local
 
 - debug:
     msg: "{{ NODE1_MGMT_ITF }}"
