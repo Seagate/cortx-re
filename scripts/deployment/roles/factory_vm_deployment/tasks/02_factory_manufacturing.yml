@@ -23,7 +23,7 @@
     - [ "{{ NODE1_PVT_ITF }}", "{{ NODE2_PVT_ITF }}", "{{ NODE3_PVT_ITF }}" ]
 
 - name: "Configure Storage"
-  shell:
+  shell: |
     "cortx_setup storage config --name enclosure-1 --type virtual"
     "cortx_setup storage config --controller virtual --mode primary --ip 127.0.0.1 --port 80 --user 'admin' --password 'admin'"
     "cortx_setup storage config --controller virtual --mode secondary --ip 127.0.0.1 --port 80 --user 'admin' --password 'admin'"
