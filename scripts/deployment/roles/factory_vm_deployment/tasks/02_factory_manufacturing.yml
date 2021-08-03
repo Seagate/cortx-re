@@ -20,9 +20,9 @@
   delegate_to: "{{ item.0 }}"
   with_together:
     - "{{ groups['srvnodes'] }}"
-    - [ 'NODE1_MGMT_ITF', 'NODE2_MGMT_ITF', 'NODE3_MGMT_ITF' ]
-    - [ 'NODE1_PUB_ITF', 'NODE2_PUB_ITF', 'NODE3_PUB_ITF' ]
-    - [ 'NODE1_PVT_ITF', 'NODE2_PVT_ITF', 'NODE3_PVT_ITF' ]
+    - [ "{{ NODE1_MGMT_ITF }}", "{{ NODE2_MGMT_ITF }}", "{{ NODE3_MGMT_ITF }}" ]
+    - [ "{{ NODE1_PUB_ITF }}", "{{ NODE2_PUB_ITF }}", "{{ NODE3_PUB_ITF }}" ]
+    - [ "{{ NODE1_PVT_ITF }}", "{{ NODE2_PVT_ITF }}", "{{ NODE3_PVT_ITF }}" ]
 
 # - name: "Configure Storage"
 #   shell: |
