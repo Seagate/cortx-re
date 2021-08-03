@@ -11,9 +11,9 @@
 
 - name: "Configure interfaces"
   shell: |
-    "cortx_setup network config --interfaces hostvars[{{ item[0] }}][{{ item[1] }}] --type management"
-    "cortx_setup network config --interfaces [ {{ item[0] }} ][ {{ item[2] }} ] --type data"
-    "cortx_setup network config --interfaces [ {{ item[0] }} ][ {{ item[3] }} ] --type private"
+    "cortx_setup network config --interfaces hostvars[ {{ item[0] }} ][ {{ item[1] }} ] --type management"
+    "cortx_setup network config --interfaces hostvars[ {{ item[0] }} ][ {{ item[2] }} ] --type data"
+    "cortx_setup network config --interfaces hostvars[ {{ item[0] }} ][ {{ item[3] }} ] --type private"
     "cortx_setup network config --bmc 127.0.0.1 --user 'admin' --password 'admin'"
   delegate_to: "{{ item[0] }}"
   with_nested:
