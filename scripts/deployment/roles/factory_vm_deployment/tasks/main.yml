@@ -7,3 +7,9 @@
 
 - include: 03_field_deployment.yml
   tags: ['03_FIELD_DEPLOYMENT']
+
+- include: 04_component_deployment.yml
+  tags: ['04_COMPONENT_DEPLOYMENT']
+
+- include: 05_validate_cluster.yml
+  tags: ['05_VALIDTAE_CLUSTER']

@@ -1,0 +1,20 @@
+---
+- name: "[ Validate Cluster ] : Start Cluster"
+  shell: cortx cluster start
+  delegate_to: "srvnode-1"
+
+- name: "[ Validate Cluster ] : Check Cluster Status"
+  shell: pcs status
+  register: pcs_status 
+  delegate_to: "srvnode-1"
+
+- name: "[ Validate Cluster ] : Check Cluster Status - Alternate Way"
+  shell: hctl status
+  register: hctl_status
+  delegate_to: "srvnode-1"
+
+- debug:
+    msg: "{{ pcs_status.stdout }}"
+
+- debug:
+    msg: "{{ hctl_status.stdout }}"

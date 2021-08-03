@@ -1,0 +1,18 @@
+---
+- name: "[ Component Deployment ] : Foundation Deployment"
+  shell: cortx_setup cluster config component --type foundation
+  delegate_to: "srvnode-1"
+
+- name: "[ Component Deployment ] : IO-Path Deployment"
+  shell: cortx_setup cluster config component --type iopath
+  delegate_to: "srvnode-1"
+
+- name: "[ Component Deployment ] : Controlpath Deployment"
+  shell: cortx_setup cluster config component --type controlpath
+  delegate_to: "srvnode-1"
+
+- name: "[ Component Deployment ] : HA Deployment"
+  shell: cortx_setup cluster config component --type ha
+  delegate_to: "srvnode-1"
+
+  

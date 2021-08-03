@@ -36,4 +36,22 @@
 - name: "Finalize Node"
   shell: cortx_setup node prepare finalize
   delegate_to: "{{ item }}"
-  with_items: "{{ groups['srvnodes'] }}" 
+  with_items: "{{ groups['srvnodes'] }}"
+
+- name: "Create Cluster Definition"
+  shell: |
+    cortx_setup cluster create "{{ HOST.split(',')[0] }}" "{{ HOST.split(',')[1] }}" "{{ HOST.split(',')[2] }}" --name "{{ CLUSTER_NAME }}" --site_count 1 --storageset_count 1 --virtual_host "{{ MGMT_VIP }}" --target_build "{{ CORTX_BUILD }}" 
+    cortx_setup cluster show
+  delegate_to: "srvnode-1"
+
+- name: "Define Storage Set"
+  shell:
+    cortx_setup storageset create --name storage-set-1 --count 3
+    cortx_setup storageset add node storage-set-1 srvnode-1 srvnode-2 srvnode-3
+    cortx_setup storageset add enclosure storage-set-1 srvnode-1 srvnode-2 srvnode-3
+    cortx_setup storageset config durability storage-set-1 --type sns --data 4 --parity 2 --spare 0
+  delegate_to: "srvnode-1"
+
+- name: "Prepare Cluster"
+  shell: cortx_setup cluster prepare
+  delegate_to: "srvnode-1"
