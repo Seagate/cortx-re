@@ -58,7 +58,7 @@ if [ "$CURRENT" -gt "$THRESHOLD" ] ; then
 else
 	echo -----Please pass exclude builds--------
 						
-	if [ "${BRANCH}" == "main" ] ; then
+	if [ "$BRANCH" == "main" ] ; then
 		echo -----Files to be Deleted from MAIN branch-----
 		fpath=/mnt/data1/releases/cortx/github/main/${OS}
 		find $fpath -type f -mtime +20 ! -name '*.INFO*' -exec ls -lrt {} + > $WORKSPACE/file1.out;
