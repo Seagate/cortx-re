@@ -17,6 +17,7 @@
 - name: show templating results
   debug:
     msg: "{{ lookup('template', './hosts_srvnodes.j2') }}"    
+    
 - include: passwordless_authentication.yml
 
 - name: "[deploy-prep] : Wait for SSH Connection"
