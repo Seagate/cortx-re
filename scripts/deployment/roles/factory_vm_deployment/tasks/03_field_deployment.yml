@@ -39,7 +39,7 @@
   with_items: "{{ groups['srvnodes'] }}"
 
 - name: "Create Cluster Definition"
-  script: files/create_cluster.sh "{{ HOST.split(',')[0] }}" "{{ HOST.split(',')[1] }}" "{{ HOST.split(',')[2] }}" "{{ MGMT_VIP }}" "{{ CORTX_BUILD }}" 
+  script: files/create_cluster.sh "{{ HOST.split(',')[0] }}" "{{ HOST.split(',')[1] }}" "{{ HOST.split(',')[2] }}" "{{ MGMT_VIP }}" "{{ CORTX_BUILD }}" "{{ CLUSTER_PASS }}" 
   delegate_to: "srvnode-1"
 
 - name: "Show Cluster Details"
