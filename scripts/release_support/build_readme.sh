@@ -29,7 +29,6 @@ CONTENTS OF THIS FILE
  * Introduction
  * Artifacts
  * Provisioner Guide
- * Known Issues
 
 
 Introduction
@@ -51,16 +50,13 @@ $BUILD_LOCATION/RELEASE.INFO
 Installation
 -----------------
 
-Provisioner Guide
+Community Build Guide
 
-https://github.com/Seagate/cortx-prvsnr/wiki/QuickStart-Guide 
+https://github.com/Seagate/cortx/blob/main/doc/community-build/Building-CORTX-From-Source-for-SingleNode.md
 
-Known Issues
-------------
+Cortx Deploy Guide
 
-Known issues are tracked at
-
-https://github.com/Seagate/cortx-prvsnr/wiki/Deploy-Stack#known-deployment-issues
+https://github.com/Seagate/cortx/blob/main/doc/community-build/ProvisionReleaseBuild.md
 
 EOF
 
