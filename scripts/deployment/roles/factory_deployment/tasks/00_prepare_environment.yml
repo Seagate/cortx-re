@@ -5,16 +5,10 @@
   when: item not in vars
   with_items: "{{required_vars}}"
   
-  
-- name: Extract filename from the config path
-  shell: echo '{{CONFIG_NAME}}'
-  register: op
+- debug: var=CONFIG_NAME
 
-- debug: var=op
+- debug: msg="the value of CONFIG_NAME is {{lookup('file', 'inventories/factory_deployment/CONFIG_NAME') }}" 
 
-- debug: var=CONFIG
-
-#- name: Download inventory file
 #  get_url:
 #    url:  '{{CONFIG}}'
 #    dest: inventories/factory_deployment/
