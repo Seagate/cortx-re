@@ -39,9 +39,11 @@
   with_items: "{{ groups['srvnodes'] }}"
 
 - name: "Create Cluster Definition"
-  shell: |
-    cortx_setup cluster create "{{ HOST.split(',')[0] }}" "{{ HOST.split(',')[1] }}" "{{ HOST.split(',')[2] }}" --name "{{ CLUSTER_NAME }}" --site_count 1 --storageset_count 1 --virtual_host "{{ MGMT_VIP }}" --target_build "{{ CORTX_BUILD }}" 
-    cortx_setup cluster show
+  shell: files/create_cluster.sh "{{ HOST.split(',')[0] }}" "{{ HOST.split(',')[1] }}" "{{ HOST.split(',')[2] }}" "{{ MGMT_VIP }}" "{{ CORTX_BUILD }}" 
+  delegate_to: "srvnode-1"
+    
+- name: "Show Cluster Details"
+  shell: cortx_setup cluster show
   delegate_to: "srvnode-1"
 
 - name: "Define Storage Set"
