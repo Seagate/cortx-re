@@ -1,49 +1,49 @@
 ---
-- name: "[ Deploy Prerequisite ] : Get available VM devices"
+- name: "[ Node Info ] : Get available VM devices"
   shell: "lsblk -nd -o NAME -e 11|grep -v sda|sed 's|sd|/dev/sd|g'|paste -s -d, -"
   register: available_devices
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}"
 
-- name: "[ Deploy Prerequisite ] : Get CVG-0 devices"
+- name: "[ Node Info ] : Get CVG-0 devices"
   shell: "lsblk -n -o NAME {{ available_devices.stdout.split(',')[0] }} | tail -n 4 |grep -v sda| cut -c3- | sed 's|sd|/dev/sd|g'|paste -s -d, -"
   register: available_cvg0_devices
   when: SETUP_TYPE == 'single'
 
-- name: "[ Deploy Prerequisite ] : Get CVG-1 devices"
+- name: "[ Node Info ] : Get CVG-1 devices"
   shell: "lsblk -n -o NAME {{ available_devices.stdout.split(',')[1] }} | tail -n 4 |grep -v sda| cut -c3- | sed 's|sd|/dev/sd|g'|paste -s -d, -"
   register: available_cvg1_devices
   when: SETUP_TYPE == 'single'
 
-- name: "[ Deploy Prerequisite ] : Create primary partitions"
+- name: "[ Node Info ] : Create primary partitions"
   script: files/mk_partition.sh {{ available_devices.stdout.split(',')[0] }}
   register: primary_partitions
   when: "SETUP_TYPE == 'single' and available_cvg0_devices.stdout.count(',') == 0"
 
-- name: "[ Deploy Prerequisite ] : Create secondary partitions"
+- name: "[ Node Info ] : Create secondary partitions"
   script: files/mk_partition.sh {{ available_devices.stdout.split(',')[1] }}
   register: secondary_partitions
   when: "SETUP_TYPE == 'single' and available_cvg1_devices.stdout.count(',') == 0"
 
-- name: "[ Deploy Prerequisite ] : Get CVG-0 devices"
+- name: "[ Node Info ] : Get CVG-0 devices"
   shell: "lsblk -n -o NAME {{ available_devices.stdout.split(',')[0] }} | tail -n 4 |grep -v sda| cut -c3- | sed 's|sd|/dev/sd|g'|paste -s -d, -"
   register: available_cvg0_devices
   when: "SETUP_TYPE == 'single'"
 
-- name: "[ Deploy Prerequisite ] : Get CVG-1 devices"
+- name: "[ Node Info ] : Get CVG-1 devices"
   shell: "lsblk -n -o NAME {{ available_devices.stdout.split(',')[1] }} | tail -n 4 |grep -v sda| cut -c3- | sed 's|sd|/dev/sd|g'|paste -s -d, -"
   register: available_cvg1_devices
   when: "SETUP_TYPE == 'single'"
 
-- name: "[ Deploy Prerequisite ] : Validate primary partitions"
+- name: "[ Node Info ] : Validate primary partitions"
   fail: msg="Primary device partitions are not matching the requirement"
   when: "SETUP_TYPE == 'single' and available_cvg0_devices.stdout.count(',') + 1 < REQUIRED_PARTITION|int"
 
-- name: "[ Deploy Prerequisite ] : Validate secondary partitions"
+- name: "[ Node Info ] : Validate secondary partitions"
   fail: msg="Secondary device partitions are not matching the requirement"
   when: "SETUP_TYPE == 'single' and available_cvg1_devices.stdout.count(',') + 1 < REQUIRED_PARTITION|int"
 
-- name: "[ Deploy Prerequisite ] : Set device information"    
+- name: "[ Node Info ] : Set device information"    
   set_fact:
     CVG0_DATA_DEVICES: "{{ ','.join(available_cvg0_devices.stdout.split(',')[1:4]) }}"
     CVG0_METADATA_DEVICES: "{{ available_cvg0_devices.stdout.split(',')[0] }}"
@@ -52,7 +52,7 @@
     cacheable: yes
   when: SETUP_TYPE == 'single'
    
-- name: "[ Deploy Prerequisite ] : Set device information for NODE1"
+- name: "[ Node Info ] : Set device information for NODE1"
   set_fact:
     NODE1_CVG0_DATA_DEVICES: "{{ available_devices.results[0].stdout.split(',')[1] }}"
     NODE1_CVG0_METADATA_DEVICES: "{{ available_devices.results[0].stdout.split(',')[0] }}"
@@ -61,7 +61,7 @@
     cacheable: yes
   when: SETUP_TYPE == '3_node'
 
-- name: "[ Deploy Prerequisite ] : Set device information for NODE2"
+- name: "[ Node Info ] : Set device information for NODE2"
   set_fact:
     NODE2_CVG0_DATA_DEVICES: "{{ available_devices.results[1].stdout.split(',')[1] }}"
     NODE2_CVG0_METADATA_DEVICES: "{{ available_devices.results[1].stdout.split(',')[0] }}"
@@ -70,7 +70,7 @@
     cacheable: yes
   when: SETUP_TYPE == '3_node'
 
-- name: "[ Deploy Prerequisite ] : Set device information for NODE3"
+- name: "[ Node Info ] : Set device information for NODE3"
   set_fact:
     NODE3_CVG0_DATA_DEVICES: "{{ available_devices.results[2].stdout.split(',')[1] }}"
     NODE3_CVG0_METADATA_DEVICES: "{{ available_devices.results[2].stdout.split(',')[0] }}"
@@ -79,20 +79,20 @@
     cacheable: yes
   when: SETUP_TYPE == '3_node'
 
-- name: "[ Deploy Prerequisite ] : Install pre-req python package"
+- name: "[ Node Info ] : Install pre-req python package"
   pip:
     name: netifaces
     executable: pip3
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}"  
 
-- name: "[ Deploy Prerequisite ] : Collect interfaces information"
+- name: "[ Node Info ] : Collect interfaces information"
   script: files/itfinfo.py
   register: interface_info
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}"
 
-- name: "[ Deploy Prerequisite ] : Set interfaces information for NODE1"
+- name: "[ Node Info ] : Set interfaces information for NODE1"
   set_fact:
     NODE1_MGMT_ITF: "{{ interface_info.results[0].stdout_lines[0].split(',')[0] }}"
     NODE1_MGMT_ITF_ADDR: "{{ interface_info.results[0].stdout_lines[0].split(',')[1] }}"
@@ -108,7 +108,7 @@
   delegate_to: "srvnode-1"  
   when: SETUP_TYPE == '3_node'
 
-- name: "[ Deploy Prerequisite ] : Set interfaces information for NODE2"
+- name: "[ Node Info ] : Set interfaces information for NODE2"
   set_fact:
     NODE2_MGMT_ITF: "{{ interface_info.results[1].stdout_lines[0].split(',')[0] }}"
     NODE2_MGMT_ITF_ADDR: "{{ interface_info.results[1].stdout_lines[0].split(',')[1] }}"
@@ -124,7 +124,7 @@
   delegate_to: "srvnode-2"  
   when: SETUP_TYPE == '3_node'
 
-- name: "[ Deploy Prerequisite ] : Set interfaces information for NODE3"
+- name: "[ Node Info ] : Set interfaces information for NODE3"
   set_fact:
     NODE3_MGMT_ITF: "{{ interface_info.results[2].stdout_lines[0].split(',')[0] }}"
     NODE3_MGMT_ITF_ADDR: "{{ interface_info.results[2].stdout_lines[0].split(',')[1] }}"
