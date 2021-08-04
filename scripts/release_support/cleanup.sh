@@ -46,7 +46,7 @@ if [ "$CURRENT" -gt "$THRESHOLD" ] ; then
 	echo ----Backup of exclude builds--------
 	build=$(echo $BUILD | sed -e 's/,/ /g' -e 's/"//g')
 	#find ${BUILD1} ${BUILD2} ${BUILD3} -path ${PATH1} -path ${PATH2} -prune -false -o -name '*' -exec cp -R {} /mnt/data1/releases/backups/cortx_build_backup/ \\;
-	find $build -path ${PATH1} -path ${PATH2} -prune -false -o -name '*' -exec cp -R {} /mnt/data1/releases/backups/cortx_build_backup/ \;
+	find $build -path $PATH1 -path $PATH2 -prune -false -o -name '*' -exec cp -R {} /mnt/data1/releases/backups/cortx_build_backup/ \;
 	echo -----Please pass exclude builds--------Test
 else
 	echo -----Please pass exclude builds--------
