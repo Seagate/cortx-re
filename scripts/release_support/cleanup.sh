@@ -54,20 +54,17 @@ if [ "$CURRENT" -gt "$THRESHOLD" ] ; then
 	echo $PATH1
 	echo $BUILD
 	find $build -path $PATH1 -path $PATH2 -prune -false -o -name '*' -exec cp -R {} /mnt/data1/releases/backups/cortx_build_backup/ \;
-	echo -----Please pass exclude builds--------Test
-else
-	echo -----Please pass exclude builds--------
 						
 	if [ "$BRANCH" == "main" ] ; then
 		echo -----Files to be Deleted from MAIN branch-----
 		fpath=/mnt/data1/releases/cortx/github/main/${OS}
 		find $fpath -type f -mtime +20 ! -name '*.INFO*' -exec ls -lrt {} + > $WORKSPACE/file1.out;
-		//#find $fpath -type f -mtime +20 ! -name '*.INFO*' -exec rm -rf {} \\;
+		#find $fpath -type f -mtime +20 ! -name '*.INFO*' -exec rm -rf {} \\;
 	else
 		echo -----Files to be Deleted from STABLE branch-----
 		fpath=/mnt/data1/releases/cortx/github/stable/${OS}
 		find $fpath -type f -mtime +20 ! -name '*.INFO*' -exec ls -lrt {} + > $WORKSPACE/file1.out;
-		//#find $fpath -type f -mtime +20 ! -name '*.INFO*' -exec rm -rf {} \\;
+		#find $fpath -type f -mtime +20 ! -name '*.INFO*' -exec rm -rf {} \\;
 	fi	
 fi
 	
