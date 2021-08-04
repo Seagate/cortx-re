@@ -4,14 +4,6 @@
   fail: msg="Variable '{{ item }}' is not defined"
   when: item not in vars
   with_items: "{{required_vars}}"
-  
-
-#- debug: msg="{{lookup('file', 'inventories/factory_deployment/{{CONFIG_NAME}}') }}" 
-
-#  get_url:
-#    url:  '{{CONFIG}}'
-#    dest: inventories/factory_deployment/
-#    mode: '0754'
     
 - name: "[ Prepare ] : Generate host file"
   template:
