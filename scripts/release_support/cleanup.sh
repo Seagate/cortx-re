@@ -17,6 +17,11 @@
 # For any questions about this software or licensing,
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
+PATH1=$1
+PATH2=$2
+BUILD=$3
+BRANCH=$4
+OS=$5
 sudo tee /etc/sudoers.d/$USER <<END
 END
 mkdir -p /mnt/data1/releases
@@ -47,9 +52,7 @@ if [ "$CURRENT" -gt "$THRESHOLD" ] ; then
 	build=$(echo $BUILD | sed -e 's/,/ /g' -e 's/"//g')
 	#find ${BUILD1} ${BUILD2} ${BUILD3} -path ${PATH1} -path ${PATH2} -prune -false -o -name '*' -exec cp -R {} /mnt/data1/releases/backups/cortx_build_backup/ \\;
 	echo $PATH1
-	echo ${PATH1}
 	echo $BUILD
-	echo ${BUILD}
 	find $build -path $PATH1 -path $PATH2 -prune -false -o -name '*' -exec cp -R {} /mnt/data1/releases/backups/cortx_build_backup/ \;
 	echo -----Please pass exclude builds--------Test
 else
