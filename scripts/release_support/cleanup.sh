@@ -17,7 +17,8 @@
 # For any questions about this software or licensing,
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
-
+sudo tee /etc/sudoers.d/$USER <<END
+END
 mkdir -p /mnt/data1/releases
 mount="cortx-storage.colo.seagate.com:/mnt/data1/releases"
 echo $mount;
