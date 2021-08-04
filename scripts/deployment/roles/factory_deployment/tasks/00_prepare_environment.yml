@@ -5,28 +5,27 @@
   when: item not in vars
   with_items: "{{required_vars}}"
   
-- debug: var=CONFIG_NAME
 
-- debug: msg="{{lookup('file', 'inventories/factory_deployment/{{CONFIG_NAME}}') }}" 
+#- debug: msg="{{lookup('file', 'inventories/factory_deployment/{{CONFIG_NAME}}') }}" 
 
 #  get_url:
 #    url:  '{{CONFIG}}'
 #    dest: inventories/factory_deployment/
 #    mode: '0754'
     
-#- name: "[ Prepare ] : Generate host file"
-#  template:
-#    src: hosts_srvnodes.j2
-#    dest: inventories/factory_deployment/hosts_srvnodes
-#    mode: '0754'
+- name: "[ Prepare ] : Generate host file"
+  template:
+    src: hosts_srvnodes.j2
+    dest: inventories/factory_deployment/hosts_srvnodes
+    mode: '0754'
 
 - meta: refresh_inventory
 
-- include: passwordless_authentication.yml
+#- include: passwordless_authentication.yml
 
-- name: "[deploy-prep] : Wait for SSH Connection"
-  pause:
-    minutes: 2
+#- name: "[deploy-prep] : Wait for SSH Connection"
+#  pause:
+#    minutes: 2
 
 #- name: show templating results
 #  debug:
