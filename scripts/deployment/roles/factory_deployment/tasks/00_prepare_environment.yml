@@ -21,15 +21,15 @@
 
 - meta: refresh_inventory
 
-#- include: passwordless_authentication.yml
+- include: passwordless_authentication.yml
 
-#- name: "[deploy-prep] : Wait for SSH Connection"
-#  pause:
-#    minutes: 2
+- name: "[deploy-prep] : Wait for SSH Connection"
+  pause:
+    minutes: 1
 
-#- name: show templating results
-#  debug:
-#    msg: "{{ lookup('template', './hosts_srvnodes.j2') }}"    
+- name: show templating results
+  debug:
+    msg: "{{ lookup('template', './hosts_srvnodes.j2') }}"    
 
 - name: Display hostname of srvnode1
   shell: echo `hostname`
