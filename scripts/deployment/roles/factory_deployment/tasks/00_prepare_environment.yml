@@ -7,7 +7,7 @@
   
 - debug: var=CONFIG_NAME
 
-- debug: msg="the value of CONFIG_NAME is {{lookup('file', 'inventories/factory_deployment/CONFIG_NAME') }}" 
+- debug: msg="the value of CONFIG_NAME is {{lookup('file', 'inventories/factory_deployment/{{CONFIG_NAME}}') }}" 
 
 #  get_url:
 #    url:  '{{CONFIG}}'
