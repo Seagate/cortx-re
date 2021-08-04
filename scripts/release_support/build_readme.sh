@@ -18,9 +18,10 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
-BUILD_LOCATION=$1
+BUILD_PATH=$1
+BUILD_LOCATION=$2
 echo -e "Generating README.txt file"
-pushd $BUILD_LOCATION
+pushd $BUILD_PATH
 cat <<EOF > README.txt
 CONTENTS OF THIS FILE
 ---------------------
@@ -41,11 +42,11 @@ Artifacts
 ------------
 Release Build location:
 
-http://cortx-storage.colo.seagate.com/releases/cortx/github/release/rhel-7.7.1908/$ENV/$BUILD_NUMBER/
+$BUILD_LOCATION
 
 Release Info file location:
 
-http://cortx-storage.colo.seagate.com/releases/cortx/github/release/rhel-7.7.1908/$ENV/$BUILD_NUMBER/RELEASE.INFO
+$BUILD_LOCATION/RELEASE.INFO
 
 Installation
 -----------------
