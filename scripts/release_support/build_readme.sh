@@ -21,7 +21,7 @@
 BUILD_PATH=$1
 BUILD_LOCATION=$2
 echo -e "Generating README.txt file"
-pushd $BUILD_PATH
+pushd "$BUILD_PATH"
 cat <<EOF > README.txt
 CONTENTS OF THIS FILE
 ---------------------
