@@ -20,8 +20,10 @@
 
 mkdir -p /mnt/data1/releases
 mount="cortx-storage.colo.seagate.com:/mnt/data1/releases"
-if grep -qs "$mount" /proc/mounts;then
-	echo "cortx-storage.colo.seagate.com:/mnt/data1/releases is mounted.
+echo $mount;
+grep -qs "$mount" /proc/mounts;
+if grep -qs "$mount" /proc/mounts; then
+	echo "cortx-storage.colo.seagate.com:/mnt/data1/releases is mounted."
 else
 	echo "cortx-storage.colo.seagate.com:/mnt/data1/releases is not mounted."
 	mount -t nfs4 "$mount" /mnt/data1/releases
@@ -32,7 +34,6 @@ else
 		currentBuild.result = 'ABORTED'
 	fi
 fi
-
 CURRENT=$(df -h | grep /mnt/data1/releases | awk '{print $5}' | sed 's/%//g')
 THRESHOLD=75
 echo "The Current disk space is $CURRENT "
@@ -44,16 +45,21 @@ if [ "$CURRENT" -gt "$THRESHOLD" ] ; then
 	echo ----Backup of exclude builds--------
 	build=$(echo $BUILD | sed -e 's/,/ /g' -e 's/"//g')
 	#find ${BUILD1} ${BUILD2} ${BUILD3} -path ${PATH1} -path ${PATH2} -prune -false -o -name '*' -exec cp -R {} /mnt/data1/releases/backups/cortx_build_backup/ \\;
-	find $build -path ${PATH1} -path ${PATH2} -prune -false -o -name '*' -exec cp -R {} /mnt/data1/releases/backups/cortx_build_backup/ \\;
+	find $build -path ${PATH1} -path ${PATH2} -prune -false -o -name '*' -exec cp -R {} /mnt/data1/releases/backups/cortx_build_backup/ \;
+	echo -----Please pass exclude builds--------Test
+else
+	echo -----Please pass exclude builds--------
 						
-	elif [ "${BRANCH}" == "main" ] ; then
+	if [ "${BRANCH}" == "main" ] ; then
 		echo -----Files to be Deleted from MAIN branch-----
 		fpath=/mnt/data1/releases/cortx/github/main/${OS}
-		find $fpath -type f -mtime +20 ! -name '*.INFO*' -exec ls -lrt {} + > $WORKSPACE/file1.out
-		#find $fpath -type f -mtime +20 ! -name '*.INFO*' -exec rm -rf {} \\;
+		find $fpath -type f -mtime +20 ! -name '*.INFO*' -exec ls -lrt {} + > $WORKSPACE/file1.out;
+		//#find $fpath -type f -mtime +20 ! -name '*.INFO*' -exec rm -rf {} \\;
 	else
 		echo -----Files to be Deleted from STABLE branch-----
 		fpath=/mnt/data1/releases/cortx/github/stable/${OS}
-		find $fpath -type f -mtime +20 ! -name '*.INFO*' -exec ls -lrt {} + > $WORKSPACE/file1.out
-		#find $fpath -type f -mtime +20 ! -name '*.INFO*' -exec rm -rf {} \\;
-fi		
+		find $fpath -type f -mtime +20 ! -name '*.INFO*' -exec ls -lrt {} + > $WORKSPACE/file1.out;
+		//#find $fpath -type f -mtime +20 ! -name '*.INFO*' -exec rm -rf {} \\;
+	fi	
+fi
+	
