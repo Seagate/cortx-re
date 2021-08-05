@@ -25,8 +25,8 @@
     cortx_setup storage config --name enclosure-1 --type virtual
     cortx_setup storage config --controller virtual --mode primary --ip 127.0.0.1 --port 80 --user 'admin' --password 'admin'
     cortx_setup storage config --controller virtual --mode secondary --ip 127.0.0.1 --port 80 --user 'admin' --password 'admin'
-    cortx_setup storage config --cvg 0 --data_devices {{  vars['NODE' + (item.0 + 1) | string + '_CVG0_DATA_DEVICES'] }} --metadata_devices {{  vars['NODE' + (item.0 + 1) | string + '_CVG0_METADATA_DEVICES'] }}
-    cortx_setup storage config --cvg 1 --data_devices {{  vars['NODE' + (item.0 + 1) | string + '_CVG1_DATA_DEVICES'] }} --metadata_devices {{  vars['NODE' + (item.0 + 1) | string + '_CVG1_METADATA_DEVICES'] }}
+    cortx_setup storage config --cvg 0 --data-devices {{  vars['NODE' + (item.0 + 1) | string + '_CVG0_DATA_DEVICES'] }} --metadata-devices {{  vars['NODE' + (item.0 + 1) | string + '_CVG0_METADATA_DEVICES'] }}
+    cortx_setup storage config --cvg 1 --data-devices {{  vars['NODE' + (item.0 + 1) | string + '_CVG1_DATA_DEVICES'] }} --metadata-devices {{  vars['NODE' + (item.0 + 1) | string + '_CVG1_METADATA_DEVICES'] }}
   delegate_to: "{{ item.1 }}"
   with_indexed_items: "{{ groups['srvnodes'] }}"
 
