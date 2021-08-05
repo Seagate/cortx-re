@@ -105,8 +105,7 @@
     NODE1_PVT_ITF_ADDR: "{{ interface_info.results[0].stdout_lines[2].split(',')[1] }}"
     NODE1_PVT_ITF_NETMASK: "{{ interface_info.results[0].stdout_lines[2].split(',')[2] }}"
     cacheable: yes
-  delegate_to: "srvnode-1"  
-  when: SETUP_TYPE == '3_node'
+  delegate_to: "srvnode-1"
 
 - name: "[ Node Info ] : Set interfaces information for NODE2"
   set_fact:

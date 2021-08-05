@@ -9,19 +9,11 @@
 - name: "[Field Deployment] : Configure Network"
   shell: |
     cortx_setup node prepare network --hostname $(hostname -f) --dns_servers 10.230.240.51 10.230.240.52 --search_domains colo.seagate.com cortx.colo.seagate.com
-    cortx_setup node prepare network --type management --ip_address "{{ item.1 }}" --netmask "{{ item.4 }}" --gateway "{{ item.7 }}"
-    cortx_setup node prepare network --type data --ip_address "{{ item.2 }}" --netmask "{{ item.5 }}" --gateway "{{ SECONDARY_GATEWAY }}"
-    cortx_setup node prepare network --type private --ip_address "{{ item.3 }}" --netmask "{{ item.6 }}" --gateway "{{ SECONDARY_GATEWAY }}"
-  delegate_to: "{{ item.0 }}"
-  with_together:
-    - "{{ groups['srvnodes'] }}"
-    - [ "{{ NODE1_MGMT_ITF_ADDR }}", "{{ NODE2_MGMT_ITF_ADDR }}", "{{ NODE3_MGMT_ITF_ADDR }}" ]
-    - [ "{{ NODE1_PUB_ITF_ADDR }}", "{{ NODE2_PUB_ITF_ADDR }}", "{{ NODE3_PUB_ITF_ADDR }}" ]
-    - [ "{{ NODE1_PVT_ITF_ADDR }}", "{{ NODE2_PVT_ITF_ADDR }}", "{{ NODE3_PVT_ITF_ADDR }}" ]
-    - [ "{{ NODE1_MGMT_ITF_NETMASK }}", "{{ NODE2_MGMT_ITF_NETMASK }}", "{{ NODE3_MGMT_ITF_NETMASK }}" ]
-    - [ "{{ NODE1_PUB_ITF_NETMASK }}", "{{ NODE2_PUB_ITF_NETMASK }}", "{{ NODE3_PUB_ITF_NETMASK }}" ]
-    - [ "{{ NODE1_PVT_ITF_NETMASK }}", "{{ NODE2_PVT_ITF_NETMASK }}", "{{ NODE3_PVT_ITF_NETMASK }}" ]
-    - [ "{{ NODE1_MGMT_ITF_GATEWAY }}", "{{ NODE2_MGMT_ITF_GATEWAY }}", "{{ NODE3_MGMT_ITF_GATEWAY }}" ]
+    cortx_setup node prepare network --type management --ip_address {{  vars['NODE' + (item.0 + 1) | string + '_MGMT_ITF_ADDR'] }} --netmask {{  vars['NODE' + (item.0 + 1) | string + '_MGMT_ITF_NETMASK'] }} --gateway {{  vars['NODE' + (item.0 + 1) | string + '_MGMT_ITF_GATEWAY'] }} 
+    cortx_setup node prepare network --type data --ip_address {{  vars['NODE' + (item.0 + 1) | string + '_PUB_ITF_ADDR'] }} --netmask {{  vars['NODE' + (item.0 + 1) | string + '_PUB_ITF_NETMASK'] }} --gateway "{{ SECONDARY_GATEWAY }}"
+    cortx_setup node prepare network --type private --ip_address {{  vars['NODE' + (item.0 + 1) | string + '_PVT_ITF_ADDR'] }} --netmask {{  vars['NODE' + (item.0 + 1) | string + '_PVT_ITF_NETMASK'] }} --gateway "{{ SECONDARY_GATEWAY }}"
+  delegate_to: "{{ item.1 }}"
+  with_indexed_items: "{{ groups['srvnodes'] }}"
 
 - name: "[Field Deployment] : Configure Firewall"
   shell: cortx_setup node prepare firewall --config yaml:///opt/seagate/cortx_configs/firewall_config.yaml
