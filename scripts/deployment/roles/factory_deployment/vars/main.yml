@@ -18,3 +18,4 @@ required_vars:
   - SATELLITE_UN
   - SATELLITE_PW
   - MGMT_VIP
+  - USERS
