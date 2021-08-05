@@ -127,7 +127,8 @@ EOF
                     yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/$BRANCH/$OS_VERSION/$RELEASE_TAG/cortx_iso/
                     yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
                     yum clean all;rm -rf /var/cache/yum
-                    yum install cortx-py-utils cortx-motr{,-devel} -y
+                    yum install cortx-py-utils
+                    yum --disablerepo=* localinstall cortx-motr-*.rpm cortx-motr-devel*.rpm -y
                 '''
                 dir ('hare') {
                     
