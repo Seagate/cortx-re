@@ -13,17 +13,13 @@
 
 - name: "[Factory Manufacturing ] : Configure interfaces"
   shell: |
-    cortx_setup network config --interfaces "{{ item.1 }}" --type management
-    cortx_setup network config --interfaces "{{ item.2 }}" --type data
-    cortx_setup network config --interfaces "{{ item.3 }}" --type private
+    cortx_setup network config --interfaces "{{  vars['NODE' + item.0 | string + '_MGMT_ITF'] }}" --type management
+    cortx_setup network config --interfaces "{{  vars['NODE' + item.0 | string + '_PUB_ITF'] }}" --type data
+    cortx_setup network config --interfaces "{{  vars['NODE' + item.0 | string + '_PVT_ITF'] }}" --type private
     cortx_setup network config --bmc 127.0.0.1 --user 'admin' --password 'admin'
-  delegate_to: "{{ item.0 }}"
-  with_together:
-    - "{{ groups['srvnodes'] }}"
-    - [ "{{ NODE1_MGMT_ITF }}", "{{ NODE2_MGMT_ITF }}", "{{ NODE3_MGMT_ITF }}" ]
-    - [ "{{ NODE1_PUB_ITF }}", "{{ NODE2_PUB_ITF }}", "{{ NODE3_PUB_ITF }}" ]
-    - [ "{{ NODE1_PVT_ITF }}", "{{ NODE2_PVT_ITF }}", "{{ NODE3_PVT_ITF }}" ]
-
+  delegate_to: "{{ item.1 }}"
+  with_indexed_items: "{{ groups['srvnodes'] }}"
+    
 - name: "[Factory Manufacturing ] : Configure Storage"
   shell: |
     cortx_setup storage config --name enclosure-1 --type virtual
