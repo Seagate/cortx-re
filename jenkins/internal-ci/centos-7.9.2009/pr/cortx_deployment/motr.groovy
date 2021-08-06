@@ -132,7 +132,9 @@ EOF
                         yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
                         yum clean all;rm -rf /var/cache/yum
                         yum install cortx-py-utils -y
-                        yum --disablerepo=* localinstall /root/build_rpms/cortx-motr*.rpm -y
+                        pushd /root/build_rpms
+                            yum --disablerepo=* localinstall cortx-motr-1*.rpm cortx-motr-2*.rpm cortx-motr-devel*.rpm -y
+                        popd    
                     '''
 
                         sh label: 'Build', returnStatus: true, script: '''
