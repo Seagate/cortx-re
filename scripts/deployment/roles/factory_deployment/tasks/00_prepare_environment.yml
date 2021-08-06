@@ -53,6 +53,6 @@
   with_items: "{{ groups['srvnodes'] }}" 
   
 - debug: var="{{item}}"
-  with_items: "{{bmc_ip_add.results|map(attribute='item')|list}}"
+  with_items: "{{bmc_ip_add.results|map(attribute='stdout_lines')|list}}
 
 
