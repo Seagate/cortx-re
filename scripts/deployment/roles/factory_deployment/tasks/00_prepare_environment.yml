@@ -60,7 +60,8 @@
   with_items: "{{ groups['srvnodes'] }}"
   
 - name: "IP for network management interface"
-  shell: ifconfig "{{ hostvars[item]['network_mgmt_interfaces'] }}" | grep -w inet |  grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | sed -n '1p' 
+  shell: ifconfig "{{ hostvars[item]['network_mgmt_interfaces'] }}" | grep -w inet |  grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | sed -n '1p'
+  delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}"
   register: mgmt_ip
   
@@ -70,6 +71,7 @@
   
 - name: "Netmask for network management interface" 
   shell: ifconfig "{{ hostvars[item]['network_mgmt_interfaces'] }}" | grep -w inet |  grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | sed -n '2p' 
+  delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}"
   register: netmask
   
