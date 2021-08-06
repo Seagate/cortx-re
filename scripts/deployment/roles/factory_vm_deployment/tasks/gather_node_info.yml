@@ -37,11 +37,11 @@
 
 - name: "[ Node Info ] : Validate primary partitions"
   fail: msg="Primary device partitions are not matching the requirement"
-  when: "SETUP_TYPE == 'single' and available_cvg0_devices.stdout.count(',') + 1 < REQUIRED_PARTITION|int"
+  when: "SETUP_TYPE == 'single' and available_cvg0_devices.stdout.count(',') + 1 < var['REQUIRED_PARTITION']|int"
 
 - name: "[ Node Info ] : Validate secondary partitions"
   fail: msg="Secondary device partitions are not matching the requirement"
-  when: "SETUP_TYPE == 'single' and available_cvg1_devices.stdout.count(',') + 1 < REQUIRED_PARTITION|int"
+  when: "SETUP_TYPE == 'single' and available_cvg1_devices.stdout.count(',') + 1 < vars['REQUIRED_PARTITION']|int"
 
 - name: "[ Node Info ] : Set device information"    
   set_fact:
