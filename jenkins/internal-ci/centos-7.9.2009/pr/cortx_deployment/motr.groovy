@@ -133,7 +133,6 @@ EOF
                         yum clean all;rm -rf /var/cache/yum
                         yum install cortx-py-utils -y
                         yum --disablerepo=* localinstall /root/rpmbuild/RPMS/x86_64/cortx-motr-*.rpm -y
-                        yum --disablerepo=* localinstall /root/rpmbuild/RPMS/x86_64/cortx-motr-devel-*.rpm -y
                     '''
 
                         sh label: 'Build', returnStatus: true, script: '''
