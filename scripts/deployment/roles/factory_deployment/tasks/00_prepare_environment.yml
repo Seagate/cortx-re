@@ -15,13 +15,13 @@
     url: "{{CONFIG_URL}}"
     dest: /root
     
-
-#- shell: cat my.yaml
-#  register: result
+- shell: cat "/root/{{file_name}}"
+  register: result
       
-#- set_fact:
-#  myvar: "{{ result.stdout | from_yaml | to_json }}"
+- set_fact:
+  myvar: "{{ result.stdout | from_yaml | to_json }}"
 
+- debug: var=myvar
 #- copy:
 #    content: "{{ myvar }}"
 #    dest:    my.json
