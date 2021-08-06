@@ -7,6 +7,12 @@
 
 - debug: var=CONFIG_URL
 
+- name: Download config file
+  get_url:
+    url: "{{CONFIG_URL}}"
+    dest: /root
+    
+
 #- shell: cat my.yaml
 #  register: result
       
