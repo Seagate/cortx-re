@@ -26,12 +26,12 @@
   when: "SETUP_TYPE == 'single' and available_cvg1_devices.stdout.count(',') == 0"
 
 - name: "[ Node Info ] : Get CVG-0 devices"
-  shell: "lsblk -n -o NAME {{ available_devices.stdout.split(',')[0] }} | tail -n 4 |grep -v sda| cut -c3- | sed 's|sd|/dev/sd|g'|paste -s -d, -"
+  shell: lsblk -n -o NAME {{ available_devices.stdout.split(',')[0] }} | tail -n 4 |grep -v sda| cut -c3- | sed 's|sd|/dev/sd|g'|paste -s -d, -
   register: available_cvg0_devices
   when: "SETUP_TYPE == 'single'"
 
 - name: "[ Node Info ] : Get CVG-1 devices"
-  shell: "lsblk -n -o NAME {{ available_devices.stdout.split(',')[1] }} | tail -n 4 |grep -v sda| cut -c3- | sed 's|sd|/dev/sd|g'|paste -s -d, -"
+  shell: lsblk -n -o NAME {{ available_devices.stdout.split(',')[1] }} | tail -n 4 |grep -v sda| cut -c3- | sed 's|sd|/dev/sd|g'|paste -s -d, -
   register: available_cvg1_devices
   when: "SETUP_TYPE == 'single'"
 
