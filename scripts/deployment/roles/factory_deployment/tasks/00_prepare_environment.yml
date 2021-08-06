@@ -56,8 +56,11 @@
   shell: echo "{{item}}"
   with_items: "{{bmc_ip_add.results|map(attribute='stdout')|list}}"
 
+- debug: var="{{ hostvars[item]['network_mgmt_interfaces'] }}"
+  with_items: "{{ groups['srvnodes'] }}"
+  
 - name: "IP for network management interface"
-  shell: ifconfig {{ hostvars[item]['network_mgmt_interfaces'] }} | grep -w inet |  grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | sed -n '1p' 
+  shell: ifconfig "{{ hostvars[item]['network_mgmt_interfaces'] }}" | grep -w inet |  grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | sed -n '1p' 
   with_items: "{{ groups['srvnodes'] }}"
   register: mgmt_ip
   
@@ -66,7 +69,7 @@
   with_items: "{{mgmt_ip.results|map(attribute='stdout')|list}}"
   
 - name: "Netmask for network management interface" 
-  shell: ifconfig {{ hostvars[item]['network_mgmt_interfaces'] }} | grep -w inet |  grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | sed -n '2p' 
+  shell: ifconfig "{{ hostvars[item]['network_mgmt_interfaces'] }}" | grep -w inet |  grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | sed -n '2p' 
   with_items: "{{ groups['srvnodes'] }}"
   register: netmask
   
