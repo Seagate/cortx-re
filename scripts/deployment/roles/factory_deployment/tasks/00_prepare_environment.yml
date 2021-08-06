@@ -5,7 +5,11 @@
   when: item not in vars
   with_items: "{{required_vars}}"
 
-- debug: var=CONFIG_URL
+- vars:
+    url: "{{CONFIG_URL}}"
+    file_name: "{{ url | basename }}"
+
+- debug: var=file_name
 
 - name: Download config file
   get_url:
