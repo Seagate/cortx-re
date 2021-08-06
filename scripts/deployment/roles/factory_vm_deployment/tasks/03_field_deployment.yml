@@ -31,8 +31,14 @@
   with_items: "{{ groups['srvnodes'] }}"
 
 - name: "[Field Deployment] : Create Cluster Definition"
-  script: files/create_cluster.sh "{{ HOST.split(',')[0] }}" "{{ HOST.split(',')[1] }}" "{{ HOST.split(',')[2] }}" "{{ MGMT_VIP }}" "{{ CORTX_BUILD }}" "{{ CLUSTER_PASS }}" 
+  script: files/create_3n_cluster.sh "{{ HOST.split(',')[0] }}" "{{ HOST.split(',')[1] }}" "{{ HOST.split(',')[2] }}" "{{ MGMT_VIP }}" "{{ CORTX_BUILD }}" "{{ CLUSTER_PASS }}" 
   delegate_to: "srvnode-1"
+  when: SETUP_TYPE == '3_node'
+
+- name: "[Field Deployment] : Create Cluster Definition"
+  script: files/create_1n_cluster.sh "{{ HOST }}" "{{ CORTX_BUILD }}" "{{ CLUSTER_PASS }}" 
+  delegate_to: "srvnode-1"
+  when: SETUP_TYPE == 'single'
 
 - name: "[Field Deployment] : Show Cluster Details"
   shell: cortx_setup cluster show
@@ -45,6 +51,16 @@
     cortx_setup storageset add enclosure storage-set-1 srvnode-1 srvnode-2 srvnode-3
     cortx_setup storageset config durability storage-set-1 --type sns --data 4 --parity 2 --spare 0
   delegate_to: "srvnode-1"
+  when: SETUP_TYPE == '3_node'
+
+- name: "[Field Deployment] : Define Storage Set"
+  shell: |
+    cortx_setup storageset create --name storage-set-1 --count 1
+    cortx_setup storageset add node storage-set-1 srvnode-1
+    cortx_setup storageset add enclosure storage-set-1 srvnode-1
+    cortx_setup storageset config durability storage-set-1 --type sns --data 4 --parity 2 --spare 0
+  delegate_to: "srvnode-1"
+  when: SETUP_TYPE == 'single'  
 
 - name: "[Field Deployment] : Prepare Cluster"
   shell: cortx_setup cluster prepare
