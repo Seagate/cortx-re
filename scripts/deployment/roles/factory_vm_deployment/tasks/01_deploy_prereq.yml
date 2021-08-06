@@ -46,26 +46,27 @@
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}"
 
-- name: "[ Deploy Prerequisite ] : Create Cortx directory"
-  file:
-    path: /mnt/cortx
-    state: directory
-    owner: root
-    group: root
-    mode: 0775
+- name: "[ Deploy Prerequisite ] : Create Deployment log/script/config Dir"
+  shell: |
+    rm -rf "{{ CORXT_DEPLOYMENT_PATH }}"
+    mkdir -p "{{ CORXT_DEPLOYMENT_LOG_PATH }}"
+    mkdir -p "{{ CORXT_DEPLOYMENT_CONFIG_PATH }}"
+    mkdir -p "{{ CORXT_DEPLOYMENT_SCRIPT_PATH }}"
+    mkdir -p "{{ CORTX_DIR_PATH }}"
+    touch {{ CORXT_DEPLOYMENT_LOG_PATH }}/deploymet_latest.log
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}"  
 
 - name: "[ Deploy Prerequisite ] : Download install.sh script"
   get_url:
     url: https://raw.githubusercontent.com/Seagate/cortx-prvsnr/stable/srv/components/provisioner/scripts/install.sh
-    dest: /mnt/cortx
+    dest: "{{ CORTX_DIR_PATH }}"
     mode: 0755
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}"  
 
 - name: "[ Deploy Prerequisite ] : Execute setup script"
-  shell: "/mnt/cortx/install.sh -t {{ CORTX_BUILD }}"
+  shell: "{{ CORTX_DIR_PATH }}/install.sh -t {{ CORTX_BUILD }} 2>&1 | tee -a {{ CORXT_DEPLOYMENT_LOG_PATH }}/00_cortx_install_script.log"
   async: 1800
   poll: 0
   register: setup_async
