@@ -5,11 +5,11 @@
   when: DEPLOY_TYPE == "REIMAGE" or DEPLOY_TYPE == "DEPLOY-WITH-REIMAGE" 
   tags: ['REIMAGE']
 
-#- include: 01_preparation_startup.yml
-#  tags: ['01_PREPARE_STARTUP']
+- include: 01_preparation_startup.yml
+  tags: ['01_PREPARE_STARTUP']
   
-#- include: 02_factory_manufacturing.yml
-#  tags: ['02_FACTORY_MANUFACTURING']
+- include: 02_factory_manufacturing.yml
+  tags: ['02_FACTORY_MANUFACTURING']
 
 #- include: 03_security.yml 
 #  tags: ['03_SECURITY']
