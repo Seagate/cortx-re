@@ -5,9 +5,8 @@
   when: item not in vars
   with_items: "{{required_vars}}"
 
-- vars:
-    url: "{{CONFIG_URL}}"
-    file_name: "{{ url | basename }}"
+- set_fact:
+    file_name: "{{ CONFIG_URL | basename }}"
 
 - debug: var=file_name
 
