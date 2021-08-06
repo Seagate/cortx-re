@@ -4,7 +4,19 @@
   fail: msg="Variable '{{ item }}' is not defined"
   when: item not in vars
   with_items: "{{required_vars}}"
-    
+
+- debug: var={{CONFIG_URL}}
+
+#- shell: cat my.yaml
+#  register: result
+      
+#- set_fact:
+#  myvar: "{{ result.stdout | from_yaml | to_json }}"
+
+#- copy:
+#    content: "{{ myvar }}"
+#    dest:    my.json
+        
 - name: "[ Prepare ] : Generate host file"
   template:
     src: hosts_srvnodes.j2
