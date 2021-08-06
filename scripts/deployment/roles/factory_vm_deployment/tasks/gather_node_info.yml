@@ -45,10 +45,10 @@
 
 - name: "[ Node Info ] : Set device information"    
   set_fact:
-    CVG0_DATA_DEVICES: "{{ ','.join(available_cvg0_devices.stdout.split(',')[1:4]) }}"
-    CVG0_METADATA_DEVICES: "{{ available_cvg0_devices.stdout.split(',')[0] }}"
-    CVG1_DATA_DEVICES: "{{ ','.join(available_cvg1_devices.stdout.split(',')[1:4]) }}"
-    CVG1_METADATA_DEVICES: "{{ available_cvg1_devices.stdout.split(',')[0] }}"
+    NODE1_CVG0_DATA_DEVICES: "{{ ','.join(available_cvg0_devices.stdout.split(',')[1:4]) }}"
+    NODE1_CVG0_METADATA_DEVICES: "{{ available_cvg0_devices.stdout.split(',')[0] }}"
+    NODE1_CVG1_DATA_DEVICES: "{{ ','.join(available_cvg1_devices.stdout.split(',')[1:4]) }}"
+    NODE1_CVG1_METADATA_DEVICES: "{{ available_cvg1_devices.stdout.split(',')[0] }}"
     cacheable: yes
   when: SETUP_TYPE == 'single'
    
