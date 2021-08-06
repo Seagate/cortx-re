@@ -42,9 +42,9 @@
   pause:
     minutes: 1
 
-- name: show templating results
-  debug:
-    msg: "{{ lookup('template', './hosts_srvnodes.j2') }}"    
+#- name: show templating results
+#  debug:
+#    msg: "{{ lookup('template', './hosts_srvnodes.j2') }}"    
 
 - name: Display hostname of srvnode1
   shell: echo `hostname`
