@@ -16,7 +16,7 @@
   with_items: "{{ groups['srvnodes'] }}" 
   
 - name: "Server Configuration srvnode-1"
-  command: cortx_setup server config --name "{{config_name}}" --type HW
+  command: cortx_setup server config --name "{{item}}" --type HW
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}" 
   
@@ -26,22 +26,28 @@
   with_items: "{{ groups['srvnodes'] }}" 
 
 - name: "Network Management Configuration"
-  command: cortx_setup network config --interfaces "{{network_mgmt_interfaces}}" --type management
+  command: cortx_setup network config --interfaces "{{ hostvars[item]['network_mgmt_interfaces'] }}" --type management
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}" 
 
 - name: "Network Configuration data public interface"
-  command: cortx_setup network config --interfaces "{{network_data_public_interfaces}}" --type data
+  command: cortx_setup network config --interfaces "{{ hostvars[item]['network_data_public_interfaces'] }}" --type data
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}" 
 
-- name: "Network Configuration data private interface srvnode-1"
-  command: cortx_setup network config --interfaces "{{network_data_private_interfaces}}" --type private
+- name: "Network Configuration data private interface"
+  command: cortx_setup network config --interfaces "{{ hostvars[item]['network_data_private_interfaces'] }}" --type private
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['srvnodes'] }}" 
+  
+- name: Extract BMC IP for all nodes
+  shell: ipmitool lan print 1 | grep  'IP Address' | grep -oE '([0-9]{1,3}.){3}[0-9]{1,3}' | sed -n '1p'
+  register: bmc_ip_add
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}" 
   
 - name: "Network Configuration bmc"
-  command: cortx_setup network config --bmc "{{bmc_ip}}" --user "{{bmc_user}}" --password "{{bmc_secret}}"
+  command: cortx_setup network config --bmc "{{bmc_ip}}" --user "{{ hostvars[item]['bmc_user'] }}" --password "{{ hostvars[item]['bmc_secret'] }}"
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}" 
 
