@@ -19,7 +19,7 @@
   register: result
       
 - set_fact:
-  myvar: "{{ result.stdout | from_yaml | to_json }}"
+    myvar: "{{ result.stdout | from_yaml | to_json }}"
 
 - debug: var=myvar
 #- copy:
