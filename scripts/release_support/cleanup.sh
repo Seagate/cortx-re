@@ -17,13 +17,11 @@
 # For any questions about this software or licensing,
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
-PATH1=$1
-PATH2=$2
-BUILD=$3
-BRANCH=$4
-OS=$5
-sudo tee /etc/sudoers.d/$USER <<END
-END
+PATH=$1
+BUILD=$2
+BRANCH=$3
+OS=$4
+
 mkdir -p /mnt/data1/releases
 mount="cortx-storage.colo.seagate.com:/mnt/data1/releases"
 echo $mount;
@@ -50,11 +48,17 @@ if [ "$CURRENT" -gt "$THRESHOLD" ] ; then
 
         echo ----Backup of exclude builds--------
         build=$(echo $BUILD | sed -e 's/,/ /g' -e 's/"//g')
-        find $build -path $PATH1 -path $PATH2 -prune -false -o -name '*' -exec cp -R {} /mnt/data1/releases/backups/cortx_build_backup/ \;
+	paths=$(echo $PATH | sed -e 's/,/ /g' -e 's/"//g')
+	echo $paths
+	exclude_path=()
+	for path in "${paths[@]}"; do
+		find $build -path $path -prune -false -o -name '*' -exec cp -R {} /mnt/data1/releases/backups/cortx_build_backup/ \;
+	done
+        #find $build -path $PATH1 -path $PATH2 -prune -false -o -name '*' -exec cp -R {} /mnt/data1/releases/backups/cortx_build_backup/ \;
 
         if [ "$BRANCH" == "main" ] ; then
                 echo -----Files to be Deleted from MAIN branch-----
-                fpath=/mnt/data1/releases/cortx/github/main/${OS}
+                fpath=/mnt/data1/releases/cortx/github/${BRANCH}/${OS}
                 #find $fpath -type f -mtime +20 ! -name '*.INFO*' -exec ls -lrt {} + > $WORKSPACE/file1.out;
                 #find $fpath -type f -mtime +20 ! -name '*.INFO*' -exec rm -rf {} \;
         else
@@ -64,4 +68,5 @@ if [ "$CURRENT" -gt "$THRESHOLD" ] ; then
                 #find $fpath -type f -mtime +20 ! -name '*.INFO*' -exec rm -rf {} \;
         fi
 fi
+
 
