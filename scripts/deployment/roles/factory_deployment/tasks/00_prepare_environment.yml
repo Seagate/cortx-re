@@ -46,6 +46,11 @@
 #  debug:
 #    msg: "{{ lookup('template', './hosts_srvnodes.j2') }}"    
 
+- name: echo item 
+  shell: echo "{{item}}"
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['srvnodes'] }}"
+  
 - name: BMC IP for all nodes
   shell: ipmitool lan print 1 | grep  'IP Address' | grep -oE '([0-9]{1,3}.){3}[0-9]{1,3}' | sed -n '1p'
   register: bmc_ip_add
