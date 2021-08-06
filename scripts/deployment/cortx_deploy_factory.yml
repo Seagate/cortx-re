@@ -1,5 +1,5 @@
 ---
- - hosts: srvnodes
+ - hosts: localhost
    gather_facts: True
    become: yes 
    roles:
