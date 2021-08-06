@@ -5,7 +5,7 @@
   when: item not in vars
   with_items: "{{required_vars}}"
 
-- debug: var={{CONFIG_URL}}
+- debug: var="{{CONFIG_URL}}"
 
 #- shell: cat my.yaml
 #  register: result
