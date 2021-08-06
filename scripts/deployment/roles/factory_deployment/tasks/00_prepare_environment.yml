@@ -52,7 +52,8 @@
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}" 
   
-- debug: var="{{item}}"
+- name: "Echo bmc_ip"
+  shell: echo "{{item}}"
   with_items: "{{bmc_ip_add.results|map(attribute='stdout')|list}}"
 
 
