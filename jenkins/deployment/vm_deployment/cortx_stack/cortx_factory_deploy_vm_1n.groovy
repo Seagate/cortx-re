@@ -3,7 +3,7 @@ pipeline {
     agent {
         node {
             // Run deployment on mini_provisioner nodes (vm deployment nodes)
-            label params.NODE1.isEmpty() ? "vm_deployment_3n_7_9 && !cleanup_req" : "vm_deployment_3n_controller"
+            label params.NODE1.isEmpty() ? "vm_deployment_1n_7_9_partition && !cleanup_req" : "vm_deployment_3n_controller"
             customWorkspace "/var/jenkins/cortx_deployment_vm/${JOB_NAME}_${BUILD_NUMBER}"
         }
     }
@@ -11,10 +11,7 @@ pipeline {
     parameters {
         string(name: 'CORTX_BUILD', defaultValue: 'http://cortx-storage.colo.seagate.com/releases/cortx/github/main/centos-7.9.2009/last_successful_prod/', description: 'Build URL',  trim: true)
         string(name: 'NODE1', defaultValue: '', description: 'Node 1 Host FQDN',  trim: true)
-        string(name: 'NODE2', defaultValue: '', description: 'Node 2 Host FQDN',  trim: true)
-        string(name: 'NODE3', defaultValue: '', description: 'Node 3 Host FQDN',  trim: true)
         string(name: 'NODE_PASS', defaultValue: '', description: 'Host machine root user password',  trim: true)
-        string(name: 'NODE_MGMT_VIP', defaultValue: '', description: 'The floating static VIP for management network interface.',  trim: true)
         booleanParam(name: 'DEBUG', defaultValue: false, description: 'Select this if you want to preserve the VM temporarily for troublshooting')
         booleanParam(name: 'CREATE_JIRA_ISSUE_ON_FAILURE', defaultValue: false, description: 'Internal Use : Select this if you want to create Jira issue on failure')
         booleanParam(name: 'AUTOMATED', defaultValue: false, description: 'Internal Use : Only for Internal RE workflow')
@@ -32,12 +29,9 @@ pipeline {
         
         NODE_PASS   = "${NODE_PASS.isEmpty() ? NODE_DEFAULT_SSH_CRED_PSW : NODE_PASS}"
         NODE1_HOST  = "${NODE1.isEmpty() ? NODE1_HOST : NODE1 }"
-        NODE2_HOST  = "${NODE2.isEmpty() ? NODE2_HOST : NODE2 }"
-        NODE3_HOST  = "${NODE3.isEmpty() ? NODE3_HOST : NODE3 }"
-        MGMT_VIP    = "${NODE_MGMT_VIP.isEmpty() ? MGMT_VIP : NODE_MGMT_VIP }"
-        NODES       = "${NODE1_HOST},${NODE2_HOST},${NODE3_HOST}"
+        NODES       = "${NODE1_HOST}"
 
-        SETUP_TYPE = '3_node'
+        SETUP_TYPE = 'single'
         SKIP_STAGE = "no"
     }
 
@@ -118,7 +112,40 @@ pipeline {
                     runAnsible("02_FACTORY_MANUFACTURING")
                 }
             } 
-        }        
+        }
+        
+        stage('03. Field Deployment') {
+            when { expression { SKIP_STAGE == "no"  } }
+            steps {
+                script {
+                    info("Running '03. Field Deployment' Stage")
+
+                    runAnsible("03_FIELD_DEPLOYMENT")
+                }
+            } 
+        }
+        
+        stage('04. Component Deployment') {
+            when { expression { SKIP_STAGE == "no"  } }
+            steps {
+                script {
+                    info("Running '04. Component Deployment' Stage")
+
+                    runAnsible("04_COMPONENT_DEPLOYMENT")
+                }
+            } 
+        }
+        
+        stage('05. Validate Cluster') {
+            when { expression { SKIP_STAGE == "no"  } }
+            steps {
+                script {
+                    info("Running '05. Validate Cluster' Stage")
+
+                    runAnsible("05_VALIDTAE_CLUSTER")
+                }
+            } 
+        }
 	}
 
     post { 
@@ -128,26 +155,23 @@ pipeline {
                 // POST ACTIONS
 
                 // 1. Download Log files from Deployment Machine
-                // try {
-                //     sh label: 'download_log_files', returnStdout: true, script: """ 
-                //         mkdir -p artifacts/srvnode1 
-                //         mkdir -p artifacts/srvnode2 
-                //         mkdir -p artifacts/srvnode3 
-                //         sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/log/seagate/cortx/ha artifacts/srvnode1 &>/dev/null || true
-                //         sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/log/cluster artifacts/srvnode1 &>/dev/null || true
-                //         sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/log/pacemaker.log artifacts/srvnode1 &>/dev/null || true
-                //         sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/log/pcsd/pcsd.log artifacts/srvnode1 &>/dev/null || true
-                //         sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/log/seagate/provisioner artifacts/srvnode1 &>/dev/null || true
-                //         sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/opt/seagate/cortx_configs/provisioner_cluster.json artifacts/srvnode1 &>/dev/null || true
-                //         sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/lib/hare/cluster.yaml artifacts/srvnode1 &>/dev/null || true
-                //         sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/root/cortx_deployment artifacts/srvnode1 &>/dev/null || true
-
-                //         sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE2_HOST}:/root/cortx_deployment artifacts/srvnode2 &>/dev/null || true
-                //         sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE3_HOST}:/root/cortx_deployment artifacts/srvnode3 &>/dev/null || true
-                //     """
-                // } catch (err) {
-                //     echo err.getMessage()
-                // }
+                try {
+                    sh label: 'download_log_files', returnStdout: true, script: """ 
+                        mkdir -p artifacts/srvnode1 
+                        mkdir -p artifacts/srvnode2 
+                        mkdir -p artifacts/srvnode3 
+                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/log/seagate/cortx/ha artifacts/srvnode1 &>/dev/null || true
+                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/log/cluster artifacts/srvnode1 &>/dev/null || true
+                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/log/pacemaker.log artifacts/srvnode1 &>/dev/null || true
+                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/log/pcsd/pcsd.log artifacts/srvnode1 &>/dev/null || true
+                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/log/seagate/provisioner artifacts/srvnode1 &>/dev/null || true
+                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/opt/seagate/cortx_configs/provisioner_cluster.json artifacts/srvnode1 &>/dev/null || true
+                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/lib/hare/cluster.yaml artifacts/srvnode1 &>/dev/null || true
+                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/root/cortx_deployment artifacts/srvnode1 &>/dev/null || true
+                    """
+                } catch (err) {
+                    echo err.getMessage()
+                }
 
                 // 2. Archive Deployment artifacts in jenkins build
                 archiveArtifacts artifacts: "artifacts/**/*.*", onlyIfSuccessful: false, allowEmptyArchive: true 
@@ -156,26 +180,26 @@ pipeline {
                 if (NODE1.isEmpty()) {
                     if ( params.DEBUG ) {  
                         // Take Node offline for debugging  
-                        markNodeOffline("R2 - 3N VM Deployment Debug Mode Enabled on This Host - ${BUILD_URL}")
+                        markNodeOffline("R2 - 1N VM Deployment Debug Mode Enabled on This Host - ${BUILD_URL}")
                     } else {
                         // Trigger cleanup VM
-                        build job: 'Cortx-Automation/Deployment/VM-Cleanup-MultiNode', wait: false, parameters: [string(name: 'DEPLOYMENT_NODE_LABEL', value: "${env.NODE_NAME}")]                    
+                        build job: 'Cortx-Automation/Deployment/VM-Cleanup', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${env.NODE_NAME}")]                    
 
                     }
                 }
                 
                 // 4. Assume Deployment Status Based on log results
-                // hctlStatus = ""
-                // if ( fileExists('artifacts/srvnode1/cortx_deployment/log/hctl_status.log') && currentBuild.currentResult == "SUCCESS" ) {
-                //     hctlStatus = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/hctl_status.log')
-                //     MESSAGE = "3 Node - Cortx Stack VM Deployment Success for the build ${build_id}"
-                //     ICON = "accept.gif"
-                //     STATUS = "SUCCESS"
-                // } else if ( currentBuild.currentResult == "FAILURE" ) {
-                //     manager.buildFailure()
-                //     MESSAGE = "3 Node - Cortx Stack VM Deployment Failed for the build ${build_id}"
-                //     ICON = "error.gif"
-                //     STATUS = "FAILURE"
+                hctlStatus = ""
+                if ( fileExists('artifacts/srvnode1/cortx_deployment/log/hctl_status.log') && currentBuild.currentResult == "SUCCESS" ) {
+                    hctlStatus = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/hctl_status.log')
+                    MESSAGE = "1 Node - Cortx Stack VM Deployment Success for the build ${build_id}"
+                    ICON = "accept.gif"
+                    STATUS = "SUCCESS"
+                } else if ( currentBuild.currentResult == "FAILURE" ) {
+                    manager.buildFailure()
+                    MESSAGE = "1 Node - Cortx Stack VM Deployment Failed for the build ${build_id}"
+                    ICON = "error.gif"
+                    STATUS = "FAILURE"
                 //     // Failure component name and Cause can be retrived from deployment status log
                 //     if ( fileExists('artifacts/srvnode1/cortx_deployment/log/deployment_status.log')
                 //         && fileExists('artifacts/srvnode1/cortx_deployment/log/failed_component.log') ) {
@@ -195,19 +219,19 @@ pipeline {
                 //             env.component_name = component_name
                 //             env.component_email = component_email
 
-                //             MESSAGE = "3 Node - Cortx Stack VM-Deployment Failed in ${component_name} for the build ${build_id}"
+                //             MESSAGE = "1 Node - Cortx Stack VM-Deployment Failed in ${component_name} for the build ${build_id}"
                 //             manager.addHtmlBadge("<br /> <b>Status :</b> <a href='${BUILD_URL}/artifact/artifacts/srvnode1/cortx_deployment/log/deployment_status.log'><b>Failed in '${component_name}'</a>")
                         
                 //         } catch (err) {
                 //             echo err.getMessage()
                 //         }
-                //     }
-                // } else {
-                //     manager.buildUnstable()
-                //     MESSAGE = "3 Node - Cortx Stack VM Deployment is Unstable"
-                //     ICON = "warning.gif"
-                //     STATUS = "UNSTABLE"
-                // }
+                //    }
+                } else {
+                    manager.buildUnstable()
+                    MESSAGE = "1 Node - Cortx Stack VM Deployment is Unstable"
+                    ICON = "warning.gif"
+                    STATUS = "UNSTABLE"
+                }
 
                 // 5. Create JIRA on Failure - Create JIRA if deployment failed and create Jira true
                 //  - Jira issue should be created only when 'CREATE_JIRA_ISSUE_ON_FAILURE' option is enabled
@@ -225,33 +249,33 @@ pipeline {
                 //     env.jira_issue="https://jts.seagate.com/browse/${jiraIssue}"
                 // }
 
-                // // 5. Create Jenkins Summary page with deployment info
-                // hctlStatusHTML = "<pre>${hctlStatus}</pre>"
-                // tableSummary = "<table border='1' cellspacing='0' cellpadding='0' width='400' align='left'> <tr> <td align='center'>Build</td><td align='center'><a href=${CORTX_BUILD}>${build_id}</a></td></tr><tr> <td align='center'>Test VM</td><td align='center'><a href='${JENKINS_URL}/computer/${env.NODE_NAME}'><b>${NODE1_HOST}</b></a></td></tr></table>"
-                // manager.createSummary("${ICON}").appendText("<h3>Cortx Stack VM-Deployment ${currentBuild.currentResult} for the build <a href=\"${CORTX_BUILD}\">${build_id}.</a></h3><p>Please check <a href=\"${BUILD_URL}/artifact/setup.log\">setup.log</a> for more info <br /><br /><h4>Test Details:</h4> ${tableSummary} <br /><br /><br /><h4>Cluster Status:</h4>${hctlStatusHTML}", false, false, false, "red")
+                // 5. Create Jenkins Summary page with deployment info
+                hctlStatusHTML = "<pre>${hctlStatus}</pre>"
+                tableSummary = "<table border='1' cellspacing='0' cellpadding='0' width='400' align='left'> <tr> <td align='center'>Build</td><td align='center'><a href=${CORTX_BUILD}>${build_id}</a></td></tr><tr> <td align='center'>Test VM</td><td align='center'><a href='${JENKINS_URL}/computer/${env.NODE_NAME}'><b>${NODE1_HOST}</b></a></td></tr></table>"
+                manager.createSummary("${ICON}").appendText("<h3>Cortx Stack VM-Deployment ${currentBuild.currentResult} for the build <a href=\"${CORTX_BUILD}\">${build_id}.</a></h3><p>Please check <a href=\"${BUILD_URL}/artifact/setup.log\">setup.log</a> for more info <br /><br /><h4>Test Details:</h4> ${tableSummary} <br /><br /><br /><h4>Cluster Status:</h4>${hctlStatusHTML}", false, false, false, "red")
                      
-                // // 6. Send Email about deployment status
-                // env.build_id = build_id
-                // env.build_location = "${CORTX_BUILD}"
-                // env.host = "${NODES}"
-                // env.deployment_status = "${MESSAGE}"
-                // if (fileExists('artifacts/srvnode1/cortx_deployment/log/hctl_status.log')) {
-                //     env.cluster_status = "${BUILD_URL}/artifact/artifacts/srvnode1/cortx_deployment/log/hctl_status.log"
-                // }
+                // 6. Send Email about deployment status
+                env.build_id = build_id
+                env.build_location = "${CORTX_BUILD}"
+                env.host = "${NODES}"
+                env.deployment_status = "${MESSAGE}"
+                if (fileExists('artifacts/srvnode1/cortx_deployment/log/hctl_status.log')) {
+                    env.cluster_status = "${BUILD_URL}/artifact/artifacts/srvnode1/cortx_deployment/log/hctl_status.log"
+                }
                 
-                // if ( "FAILURE".equals(currentBuild.currentResult) && params.AUTOMATED && env.component_email ) {
-                //     toEmail = "${env.component_email}, priyank.p.dalal@seagate.com, gaurav.chaudhari@seagate.com"
-                // } else {
-                //     toEmail = "gaurav.chaudhari@seagate.com"
-                // }
+                if ( "FAILURE".equals(currentBuild.currentResult) && params.AUTOMATED && env.component_email ) {
+                    toEmail = "${env.component_email}, priyank.p.dalal@seagate.com, gaurav.chaudhari@seagate.com"
+                } else {
+                    toEmail = "gaurav.chaudhari@seagate.com"
+                }
                 
-                // emailext (
-                //     body: '''${SCRIPT, template="vm-deployment-email.template"}''',
-                //     mimeType: 'text/html',
-                //     subject: "${MESSAGE}",
-                //     to: toEmail,
-                //     recipientProviders: [[$class: 'RequesterRecipientProvider']]
-                // )
+                emailext (
+                    body: '''${SCRIPT, template="vm-deployment-email.template"}''',
+                    mimeType: 'text/html',
+                    subject: "${MESSAGE}",
+                    to: toEmail,
+                    recipientProviders: [[$class: 'RequesterRecipientProvider']]
+                )
 
                  // 7. Archive all log generated by Test
                 cleanWs()
@@ -273,8 +297,7 @@ def runAnsible(tags) {
                 "HOST"          : [value: "${NODES}", hidden: false],
                 "CORTX_BUILD"   : [value: "${CORTX_BUILD}", hidden: false] ,
                 "CLUSTER_PASS"  : [value: "${NODE_PASS}", hidden: false],
-                "SETUP_TYPE"    : [value: "${SETUP_TYPE}", hidden: false],
-                "MGMT_VIP"      : [value: "${MGMT_VIP}", hidden: false],
+                "SETUP_TYPE"    : [value: "${SETUP_TYPE}", hidden: false]
             ],
             extras: '-v',
             colorized: true
