@@ -50,9 +50,15 @@ if [ "$CURRENT" -gt "$THRESHOLD" ] ; then
         build=$(echo $BUILD | sed -e 's/,/ /g' -e 's/"//g')
 	paths=$(echo $PATHS | sed -e 's/,/ /g' -e 's/"//g')
 	echo $paths
-	for item in "${paths[@]}"; do
-		echo $item
-		find $build -path $item -prune -false -o -name '*' -exec cp -R {} /mnt/data1/releases/backups/cortx_build_backup/ \;
+	#for item in "${paths[@]}"; do
+	#	echo $item
+	#	find $build -path $item -prune -false -o -name '*' -exec cp -R {} /mnt/data1/releases/backups/cortx_build_backup/ \;
+	#done
+	
+	for ((i=0; i<"${#paths[@]}"; i++)) do
+   		echo "${paths[i]}"
+		find $build -path "${paths[i]}" -prune -false -o -name '*' -exec cp -R {} /mnt/data1/releases/backups/cortx_build_backup/ \;
+
 	done
         #find $build -path $PATH1 -path $PATH2 -prune -false -o -name '*' -exec cp -R {} /mnt/data1/releases/backups/cortx_build_backup/ \;
 
