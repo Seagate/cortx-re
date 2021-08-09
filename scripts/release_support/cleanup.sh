@@ -57,15 +57,18 @@ if [ "$CURRENT" -gt "$THRESHOLD" ] ; then
 		echo $os
 	for i in ${!branch[@]}; do
         #for ((i=0; i<"${#branch[@]}"; i++)) do
-		fpath=/mnt/data1/releases/cortx/github/${branch[i]}/${os[i]}
+	for j in ${!os[@]}; do
+	for k in ${!build[@]}; do
+		fpath=/mnt/data1/releases/cortx/github/${branch[i]}/${os[j]}
                 echo $fpath
-                find $fpath/${build[i]} -path $fpath -prune -false -o -name '*' -exec cp -R {} /mnt/data1/releases/backups/cortx_build_backup/ \;
+                find $fpath/${build[k]} -path $fpath -prune -false -o -name '*' -exec cp -R {} /mnt/data1/releases/backups/cortx_build_backup/ \;
                 ls -lrt /mnt/data1/releases/backups/cortx_build_backup/ | grep -w 531
                 ls -lrt /mnt/data1/releases/backups/cortx_build_backup/ | grep -w 561
                 ls -lrt /mnt/data1/releases/backups/cortx_build_backup/ | grep -w 2750
         done
         #find $build -path $PATH1 -path $PATH2 -prune -false -o -name '*' -exec cp -R {} /mnt/data1/releases/backups/cortx_build_backup/ \;
-
+	done
+	done
         if [ "$BRANCH" == "main" ] ; then
                 echo -----Files to be Deleted from MAIN branch-----
                 fpath=/mnt/data1/releases/cortx/github/${BRANCH}/${OS}
