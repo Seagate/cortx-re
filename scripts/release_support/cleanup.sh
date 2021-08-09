@@ -17,10 +17,10 @@
 # For any questions about this software or licensing,
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
-PATHS=$1
-BUILD=$2
-BRANCH=$3
-OS=$4
+
+BUILD=$1
+BRANCH=$2
+OS=$3
 
 mkdir -p /mnt/data1/releases
 mount="cortx-storage.colo.seagate.com:/mnt/data1/releases"
@@ -48,20 +48,21 @@ if [ "$CURRENT" -gt "$THRESHOLD" ] ; then
 
         echo ----Backup of exclude builds--------
         build=$(echo $BUILD | sed -e 's/,/ /g' -e 's/"//g')
-	paths=$(echo $PATHS | sed -e 's/,/ /g' -e 's/"//g')
-	echo $paths
-	#for item in "${paths[@]}"; do
-	#	echo $item
-	#	find $build -path $item -prune -false -o -name '*' -exec cp -R {} /mnt/data1/releases/backups/cortx_build_backup/ \;
-	#done
-	
-	for ((i=0; i<"${#paths[@]}"; i++)) do
-   		echo "${paths[i]}"
-		find $build -path "${paths[i]}" -prune -false -o -name '*' -exec cp -R {} /mnt/data1/releases/backups/cortx_build_backup/ \;
-		ls -lrt /mnt/data1/releases/backups/cortx_build_backup/ | grep -w 531
-		ls -lrt /mnt/data1/releases/backups/cortx_build_backup/ | grep -w 561
-		ls -lrt /mnt/data1/releases/backups/cortx_build_backup/ | grep -w 2750
-	done
+        #paths=$(echo $PATHS | sed -e 's/,/ /g' -e 's/"//g')
+		branch=$(echo $BRANCH | sed -e 's/,/ /g' -e 's/"//g')
+		os=$(echo $BRANCH | sed -e 's/,/ /g' -e 's/"//g')
+        #echo $paths
+		echo $build
+		echo $branch
+		echo $os
+        for ((i=0; i<"${#branch[@]}"; i++)) do
+		fpath=/mnt/data1/releases/cortx/github/"${branch[i]}"/"${os[i]}"
+                echo $fpath
+                find $fpath/"${build[i]}" -path $fpath -prune -false -o -name '*' -exec cp -R {} /mnt/data1/releases/backups/cortx_build_backup/ \;
+                ls -lrt /mnt/data1/releases/backups/cortx_build_backup/ | grep -w 531
+                ls -lrt /mnt/data1/releases/backups/cortx_build_backup/ | grep -w 561
+                ls -lrt /mnt/data1/releases/backups/cortx_build_backup/ | grep -w 2750
+        done
         #find $build -path $PATH1 -path $PATH2 -prune -false -o -name '*' -exec cp -R {} /mnt/data1/releases/backups/cortx_build_backup/ \;
 
         if [ "$BRANCH" == "main" ] ; then
@@ -76,5 +77,4 @@ if [ "$CURRENT" -gt "$THRESHOLD" ] ; then
                 #find $fpath -type f -mtime +20 ! -name '*.INFO*' -exec rm -rf {} \;
         fi
 fi
-
 
