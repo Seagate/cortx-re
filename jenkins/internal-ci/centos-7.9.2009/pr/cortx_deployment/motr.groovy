@@ -133,7 +133,7 @@ EOF
                         yum clean all;rm -rf /var/cache/yum
                         yum install cortx-py-utils -y
                         pushd /root/build_rpms
-                            yum --disablerepo=* localinstall cortx-motr-1*.rpm cortx-motr-2*.rpm cortx-motr-devel*.rpm -y
+                            yum localinstall cortx-motr-1*.rpm cortx-motr-2*.rpm cortx-motr-devel*.rpm -y
                         popd    
                     '''
 
