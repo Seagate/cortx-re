@@ -58,7 +58,9 @@ if [ "$CURRENT" -gt "$THRESHOLD" ] ; then
 	for ((i=0; i<"${#paths[@]}"; i++)) do
    		echo "${paths[i]}"
 		find $build -path "${paths[i]}" -prune -false -o -name '*' -exec cp -R {} /mnt/data1/releases/backups/cortx_build_backup/ \;
-
+		ls -lrt /mnt/data1/releases/backups/cortx_build_backup/ | grep -w 531
+		ls -lrt /mnt/data1/releases/backups/cortx_build_backup/ | grep -w 561
+		ls -lrt /mnt/data1/releases/backups/cortx_build_backup/ | grep -w 2750
 	done
         #find $build -path $PATH1 -path $PATH2 -prune -false -o -name '*' -exec cp -R {} /mnt/data1/releases/backups/cortx_build_backup/ \;
 
