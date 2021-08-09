@@ -50,7 +50,7 @@ if [ "$CURRENT" -gt "$THRESHOLD" ] ; then
         build=$(echo $BUILD | sed -e 's/,/ /g' -e 's/"//g')
         #paths=$(echo $PATHS | sed -e 's/,/ /g' -e 's/"//g')
 		branch=$(echo $BRANCH | sed -e 's/,/ /g' -e 's/"//g')
-		os=$(echo $BRANCH | sed -e 's/,/ /g' -e 's/"//g')
+		os=$(echo $OS | sed -e 's/,/ /g' -e 's/"//g')
         #echo $paths
 		echo $build
 		echo $branch
