@@ -47,10 +47,10 @@ if [ "$CURRENT" -gt "$THRESHOLD" ] ; then
         #source /var/lib/jenkins/workspace/Alert/exclude_build.txt
 
         echo ----Backup of exclude builds--------
-        build=$(echo $BUILD | sed -e 's/,/ /g' -e 's/"//g')
+        build=($(echo $BUILD | sed -e 's/,/ /g' -e 's/"//g'))
         #paths=$(echo $PATHS | sed -e 's/,/ /g' -e 's/"//g')
-		branch=$(echo $BRANCH | sed -e 's/,/ /g' -e 's/"//g')
-		os=$(echo $OS | sed -e 's/,/ /g' -e 's/"//g')
+		branch=($(echo $BRANCH | sed -e 's/,/ /g' -e 's/"//g'))
+		os=($(echo $OS | sed -e 's/,/ /g' -e 's/"//g'))
         #echo $paths
 		echo $build
 		echo $branch
