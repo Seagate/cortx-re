@@ -167,6 +167,7 @@ EOF
                     
                     rm -rf "${DESTINATION_RELEASE_LOCATION}"
                     mkdir -p "${DESTINATION_RELEASE_LOCATION}"
+
                     if [[ ( ! -z `ls /root/build_rpms/*.rpm `)]]; then
                         mkdir -p "${CORTX_ISO_LOCATION}"
                         cp /root/build_rpms/*.rpm "${CORTX_ISO_LOCATION}"
@@ -174,6 +175,7 @@ EOF
                         echo "RPM not exists !!!"
                         exit 1
                     fi 
+
                     pushd ${COMPONENTS_RPM}
                         for component in `ls -1 | grep -E -v "motr|hare"`
                         do
@@ -183,6 +185,7 @@ EOF
                             fi
                         done
                     popd
+
                     # Symlink 3rdparty repo artifacts
                     ln -s "${THIRD_PARTY_DEPS}" "${THIRD_PARTY_LOCATION}"
                         
@@ -198,6 +201,7 @@ EOF
                         gpg --export -a 'Seagate'  > RPM-GPG-KEY-Seagate
                         rpm --import RPM-GPG-KEY-Seagate
                     popd
+
                     pushd cortx-re/scripts/rpm-signing
                         chmod +x rpm-sign.sh
                         cp RPM-GPG-KEY-Seagate ${CORTX_ISO_LOCATION}
@@ -206,6 +210,7 @@ EOF
                             ./rpm-sign.sh ${PASSPHARASE} ${rpm}
                         done
                     popd
+
                 '''
                 
                 sh label: 'RPM Signing', script: '''
@@ -220,8 +225,10 @@ EOF
                         sh build_release_info.sh -v ${VERSION} -l ${CORTX_ISO_LOCATION} -t ${THIRD_PARTY_LOCATION}
                         sh build_readme.sh "${DESTINATION_RELEASE_LOCATION}"
                     popd
+
                     cp "${THIRD_PARTY_LOCATION}/THIRD_PARTY_RELEASE.INFO" "${DESTINATION_RELEASE_LOCATION}"
                     cp "${CORTX_ISO_LOCATION}/RELEASE.INFO" "${DESTINATION_RELEASE_LOCATION}"
+
                     cp "${CORTX_ISO_LOCATION}/RELEASE.INFO" .
                 '''		
 
