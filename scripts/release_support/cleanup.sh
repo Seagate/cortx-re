@@ -17,7 +17,7 @@
 # For any questions about this software or licensing,
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
-PATH=$1
+PATHS=$1
 BUILD=$2
 BRANCH=$3
 OS=$4
@@ -48,7 +48,7 @@ if [ "$CURRENT" -gt "$THRESHOLD" ] ; then
 
         echo ----Backup of exclude builds--------
         build=$(echo $BUILD | sed -e 's/,/ /g' -e 's/"//g')
-	paths=$(echo $PATH | sed -e 's/,/ /g' -e 's/"//g')
+	paths=$(echo $PATHS | sed -e 's/,/ /g' -e 's/"//g')
 	echo $paths
 	for path in "${paths[@]}"; do
 		find $build -path $path -prune -false -o -name '*' -exec cp -R {} /mnt/data1/releases/backups/cortx_build_backup/ \;
