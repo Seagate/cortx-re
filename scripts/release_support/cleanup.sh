@@ -55,10 +55,11 @@ if [ "$CURRENT" -gt "$THRESHOLD" ] ; then
 		echo $build
 		echo $branch
 		echo $os
-        for ((i=0; i<"${#branch[@]}"; i++)) do
-		fpath=/mnt/data1/releases/cortx/github/"${branch[$i]}"/"${os[$i]}"
+	for i in ${!branch[@]}; do
+        #for ((i=0; i<"${#branch[@]}"; i++)) do
+		fpath=/mnt/data1/releases/cortx/github/${branch[i]}/${os[i]}
                 echo $fpath
-                find $fpath/"${build[$i]}" -path $fpath -prune -false -o -name '*' -exec cp -R {} /mnt/data1/releases/backups/cortx_build_backup/ \;
+                find $fpath/${build[i]} -path $fpath -prune -false -o -name '*' -exec cp -R {} /mnt/data1/releases/backups/cortx_build_backup/ \;
                 ls -lrt /mnt/data1/releases/backups/cortx_build_backup/ | grep -w 531
                 ls -lrt /mnt/data1/releases/backups/cortx_build_backup/ | grep -w 561
                 ls -lrt /mnt/data1/releases/backups/cortx_build_backup/ | grep -w 2750
