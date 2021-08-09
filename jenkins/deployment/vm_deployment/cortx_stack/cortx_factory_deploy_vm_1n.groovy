@@ -11,7 +11,7 @@ pipeline {
     parameters {
         string(name: 'CORTX_BUILD', defaultValue: 'http://cortx-storage.colo.seagate.com/releases/cortx/github/main/centos-7.9.2009/last_successful_prod/', description: 'Build URL',  trim: true)
         string(name: 'NODE1', defaultValue: '', description: 'Node 1 Host FQDN',  trim: true)
-        string(name: 'NODE_PASS', defaultValue: '', description: 'Host machine root user password',  trim: true)
+        password(name: 'NODE_PASS', defaultValue: '', description: 'Host machine root user password',  trim: true)
         booleanParam(name: 'DEBUG', defaultValue: false, description: 'Select this if you want to preserve the VM temporarily for troublshooting')
         booleanParam(name: 'CREATE_JIRA_ISSUE_ON_FAILURE', defaultValue: false, description: 'Internal Use : Select this if you want to create Jira issue on failure')
         booleanParam(name: 'AUTOMATED', defaultValue: false, description: 'Internal Use : Only for Internal RE workflow')
@@ -23,13 +23,20 @@ pipeline {
         build_id = getBuild("${CORTX_BUILD}")
 
         CORTX_BUILD = getActualBuild("${CORTX_BUILD}")
-
-        NODE_DEFAULT_SSH_CRED =  credentials("${NODE_DEFAULT_SSH_CRED}")
-        NODE_USER = "${NODE_DEFAULT_SSH_CRED_USR}"
         
+        // Fetch jenkins creds
+        NODE_DEFAULT_SSH_CRED =  credentials("${NODE_DEFAULT_SSH_CRED}")
+        DNS_SERVER1 = credentials("DNS_SERVER1")
+        DNS_SERVER2 = credentials("DNS_SERVER2")
+        SEARCH_DOMAIN1 = credentials("SEARCH_DOMAIN1")
+        SEARCH_DOMAIN2 = credentials("SEARCH_DOMAIN2")
+        
+        NODE_USER = "${NODE_DEFAULT_SSH_CRED_USR}"
         NODE_PASS   = "${NODE_PASS.isEmpty() ? NODE_DEFAULT_SSH_CRED_PSW : NODE_PASS}"
         NODE1_HOST  = "${NODE1.isEmpty() ? NODE1_HOST : NODE1 }"
         NODES       = "${NODE1_HOST}"
+        DNS_SERVERS = "${DNS_SERVER1} + " " + ${DNS_SERVER2}"
+        SEARCH_DOMAINS = "${SEARCH_DOMAIN1} + " " + ${SEARCH_DOMAIN2}"
 
         SETUP_TYPE = 'single'
         SKIP_STAGE = "no"
@@ -294,10 +301,12 @@ def runAnsible(tags) {
             inventory: 'inventories/vm_deployment/hosts_srvnodes',
             tags: "${tags}",
             extraVars: [
-                "HOST"          : [value: "${NODES}", hidden: false],
-                "CORTX_BUILD"   : [value: "${CORTX_BUILD}", hidden: false] ,
-                "CLUSTER_PASS"  : [value: "${NODE_PASS}", hidden: false],
-                "SETUP_TYPE"    : [value: "${SETUP_TYPE}", hidden: false]
+                "HOST"              : [value: "${NODES}", hidden: false],
+                "CORTX_BUILD"       : [value: "${CORTX_BUILD}", hidden: false] ,
+                "CLUSTER_PASS"      : [value: "${NODE_PASS}", hidden: false],
+                "DNS_SERVERS"       : [value: "${DNS_SERVERS}", hidden: false],
+                "SEARCH_DOMAINS"    : [value: "${SEARCH_DOMAINS}", hidden: false],
+                "SETUP_TYPE"        : [value: "${SETUP_TYPE}", hidden: false]
             ],
             extras: '-v',
             colorized: true
@@ -309,14 +318,7 @@ def runAnsible(tags) {
 def getBuild(buildURL) {
 
     buildID = sh(script: "curl -s  $buildURL/RELEASE.INFO  | grep BUILD | cut -d':' -f2 | tr -d '\"' | xargs", returnStdout: true).trim()
-    buildBranch = "Build"
-    if ( buildURL.contains("/cortx/github/main/") ) {
-        buildBranch = "Main"
-    } else if ( buildURL.contains("/cortx/github/stable/") ) {
-        buildBranch = "Stable"
-    } else if ( buildURL.contains("/cortx/github/integration-custom-ci/")) {
-        buildBranch = "Custom-CI"
-    }
+    buildBranch = sh(script: "curl -s  $buildURL/RELEASE.INFO  | grep BRANCH | cut -d':' -f2 | tr -d '\"' | xargs", returnStdout: true).trim()
 
  return "$buildBranch#$buildID"   
 }
@@ -326,9 +328,10 @@ def getActualBuild(buildURL) {
 
     buildRoot = sh(script: "echo $buildURL | cut -d'/' -f1-8", returnStdout: true).trim()  
     buildID = sh(script: "curl -s  $buildURL/RELEASE.INFO  | grep BUILD | cut -d':' -f2 | tr -d '\"' | xargs", returnStdout: true).trim()
-    if ( buildURL.contains("/cortx/github/main/") || buildURL.contains("/cortx/github/stable/") ) {
+    buildBranch = sh(script: "curl -s  $buildURL/RELEASE.INFO  | grep BRANCH | cut -d':' -f2 | tr -d '\"' | xargs", returnStdout: true).trim()
+    if ( buildBranch == "main" || buildBranch == "stable" ) {
         actualBuildURL = "${buildRoot}/${buildID}/prod"
-    } else if ( buildURL.contains("/cortx/github/integration-custom-ci/")) {
+    } else if ( buildBranch == "integration-custom-ci" ) {
         actualBuildURL = "${buildRoot}/custom-build-${buildID}"
     }
 

@@ -8,7 +8,7 @@
 
 - name: "[Field Deployment] : Configure Network"
   shell: |
-    cortx_setup node prepare network --hostname $(hostname -f) --dns_servers 10.230.240.51 10.230.240.52 --search_domains colo.seagate.com cortx.colo.seagate.com
+    cortx_setup node prepare network --hostname $(hostname -f) --dns_servers {{ DNS_SERVERS }} --search_domains {{ SEARCH_DOMAINS }}
     cortx_setup node prepare network --type management --ip_address {{  vars['NODE' + (item.0 + 1) | string + '_MGMT_ITF_ADDR'] }} --netmask {{  vars['NODE' + (item.0 + 1) | string + '_MGMT_ITF_NETMASK'] }} --gateway {{  vars['NODE' + (item.0 + 1) | string + '_MGMT_ITF_GATEWAY'] }} 
     cortx_setup node prepare network --type data --ip_address {{  vars['NODE' + (item.0 + 1) | string + '_PUB_ITF_ADDR'] }} --netmask {{  vars['NODE' + (item.0 + 1) | string + '_PUB_ITF_NETMASK'] }} --gateway "{{ SECONDARY_GATEWAY }}"
     cortx_setup node prepare network --type private --ip_address {{  vars['NODE' + (item.0 + 1) | string + '_PVT_ITF_ADDR'] }} --netmask {{  vars['NODE' + (item.0 + 1) | string + '_PVT_ITF_NETMASK'] }} --gateway "{{ SECONDARY_GATEWAY }}"
