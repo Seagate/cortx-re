@@ -35,8 +35,8 @@ pipeline {
         NODE_PASS   = "${NODE_PASS.isEmpty() ? NODE_DEFAULT_SSH_CRED_PSW : NODE_PASS}"
         NODE1_HOST  = "${NODE1.isEmpty() ? NODE1_HOST : NODE1 }"
         NODES       = "${NODE1_HOST}"
-        DNS_SERVERS = "${DNS_SERVER1} + " " + ${DNS_SERVER2}"
-        SEARCH_DOMAINS = "${SEARCH_DOMAIN1} + " " + ${SEARCH_DOMAIN2}"
+        DNS_SERVERS = "${DNS_SERVER1} ${DNS_SERVER2}"
+        SEARCH_DOMAINS = "${SEARCH_DOMAIN1} ${SEARCH_DOMAIN2}"
 
         SETUP_TYPE = 'single'
         SKIP_STAGE = "no"
@@ -294,24 +294,27 @@ pipeline {
 
 // Run Ansible playbook to perform deployment
 def runAnsible(tags) {
-    
-    dir("cortx-re/scripts/deployment") {
-        ansiblePlaybook(
-            playbook: 'cortx_deploy_vm_factory.yml',
-            inventory: 'inventories/vm_deployment/hosts_srvnodes',
-            tags: "${tags}",
-            extraVars: [
-                "HOST"              : [value: "${NODES}", hidden: false],
-                "CORTX_BUILD"       : [value: "${CORTX_BUILD}", hidden: false] ,
-                "CLUSTER_PASS"      : [value: "${NODE_PASS}", hidden: false],
-                "DNS_SERVERS"       : [value: "${DNS_SERVERS}", hidden: false],
-                "SEARCH_DOMAINS"    : [value: "${SEARCH_DOMAINS}", hidden: false],
-                "SETUP_TYPE"        : [value: "${SETUP_TYPE}", hidden: false]
-            ],
-            extras: '-v',
-            colorized: true
-        )
-    }
+    withCredentials([usernamePassword(credentialsId: 'CONTROLLER_CREDS', passwordVariable: 'CONTROLLER_PASSWORD', usernameVariable: 'CONTROLLER_USERNAME')]) {
+        dir("cortx-re/scripts/deployment") {
+            ansiblePlaybook(
+                playbook: 'cortx_deploy_vm_factory.yml',
+                inventory: 'inventories/vm_deployment/hosts_srvnodes',
+                tags: "${tags}",
+                extraVars: [
+                    "HOST"                  : [value: "${NODES}", hidden: false],
+                    "CORTX_BUILD"           : [value: "${CORTX_BUILD}", hidden: false] ,
+                    "CLUSTER_PASS"          : [value: "${NODE_PASS}", hidden: false],
+                    "DNS_SERVERS"           : [value: "${DNS_SERVERS}", hidden: false],
+                    "SEARCH_DOMAINS"        : [value: "${SEARCH_DOMAINS}", hidden: false],
+                    "CONTROLLER_USERNAME"   : [value: "${CONTROLLER_USERNAME}", hidden: false],
+                    "CONTROLLER_PASSWORD"   : [value: "${CONTROLLER_PASSWORD}", hidden: false],
+                    "SETUP_TYPE"            : [value: "${SETUP_TYPE}", hidden: false]
+                ],
+                extras: '-v',
+                colorized: true
+            )
+        }
+    }    
 }
 
 // Get build id from build url
