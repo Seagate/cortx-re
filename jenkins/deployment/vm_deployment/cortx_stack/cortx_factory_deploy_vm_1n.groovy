@@ -242,7 +242,7 @@ pipeline {
                 //     && ( !params.AUTOMATED || "SUCCESS".equals(currentBuild.previousBuild.result))
                 //     &&  env.failed_component_stage && env.component_name && env.deployment_status_log ) {
                     
-                //     jiraIssue = createJiraIssue(env.failed_component_stage, env.component_name, env.deployment_status_log)
+                //     jiraIssue = logJiraIssue(env.failed_component_stage, env.component_name, env.deployment_status_log)
 
                 //     manager.addHtmlBadge(" <br /><b>Jira Issue :</b> <a href='https://jts.seagate.com/browse/${jiraIssue}'><b>${jiraIssue}</b></a>")
 
@@ -327,18 +327,18 @@ def getActualBuild(buildURL) {
     buildRoot = sh(script: "echo $buildURL | cut -d'/' -f1-8", returnStdout: true).trim()  
     buildID = sh(script: "curl -s  $buildURL/RELEASE.INFO  | grep BUILD | cut -d':' -f2 | tr -d '\"' | xargs", returnStdout: true).trim()
     if ( buildURL.contains("/cortx/github/main/") || buildURL.contains("/cortx/github/stable/") ) {
-        buildURL = "${buildRoot}/${buildID}/prod"
+        actualBuildURL = "${buildRoot}/${buildID}/prod"
     } else if ( buildURL.contains("/cortx/github/integration-custom-ci/")) {
-        buildURL = "${buildRoot}/custom-build-${buildID}"
+        actualBuildURL = "${buildRoot}/custom-build-${buildID}"
     }
 
- return buildURL  
+ return actualBuildURL  
 }
 
 // Get failed component name
-def getComponentInfo(String stage) {
+def getComponentInfo(String failedStage) {
     
-    stage = stage.count(".") > 1 ? stage.tokenize(".")[0]+"."+stage.tokenize(".")[1] : stage
+    stage = failedStage.count(".") > 1 ? failedStage.tokenize(".")[0]+"."+failedStage.tokenize(".")[1] : failedStage
     
     def defaultComponentMap = [ name : "RE", email : "CORTX.DevOps.RE@seagate.com"]
     def componentInfoMap = [
@@ -417,7 +417,7 @@ def markNodeforCleanup() {
 }
 
 // Create jira issues on failure and input parameter 
-def createJiraIssue(String failedStage, String failedComponent, String failureLog) {
+def logJiraIssue(String failedStage, String failedComponent, String failureLog) {
 
     def issue = [
                     fields: [ 
