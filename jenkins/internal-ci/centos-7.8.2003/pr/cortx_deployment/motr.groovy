@@ -122,14 +122,15 @@ EOF
 
                 // Build Hare
                 sh label: '', script: '''
-                    yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/$release_tag/cortx_iso/
-                    yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
-                    yum clean all;rm -rf /var/cache/yum
-                    yum install cortx-py-utils cortx-motr{,-devel} -y
+                    pushd /root/build_rpms
+                        yum clean all;rm -rf /var/cache/yum
+                        yum install cortx-py-utils -y
+                        yum --disablerepo=* localinstall cortx-motr-1*.rpm cortx-motr-2*.rpm cortx-motr-devel*.rpm -y
+                    popd
                 '''
                 dir ('hare') {
                     
-                    checkout([$class: 'GitSCM', branches: [[name: "*/${MOTR_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 0, noTags: false, reference: '', shallow: false,  timeout: 5], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-hare.git']]])
+                    checkout([$class: 'GitSCM', branches: [[name: "*/${BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 0, noTags: false, reference: '', shallow: false,  timeout: 5], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-hare.git']]])
 
                     sh label: 'Build', returnStatus: true, script: '''
                         set -xe
@@ -166,7 +167,6 @@ EOF
                     
                     rm -rf "${DESTINATION_RELEASE_LOCATION}"
                     mkdir -p "${DESTINATION_RELEASE_LOCATION}"
-
                     if [[ ( ! -z `ls /root/build_rpms/*.rpm `)]]; then
                         mkdir -p "${CORTX_ISO_LOCATION}"
                         cp /root/build_rpms/*.rpm "${CORTX_ISO_LOCATION}"
@@ -174,7 +174,6 @@ EOF
                         echo "RPM not exists !!!"
                         exit 1
                     fi 
-
                     pushd ${COMPONENTS_RPM}
                         for component in `ls -1 | grep -E -v "motr|hare"`
                         do
@@ -184,7 +183,6 @@ EOF
                             fi
                         done
                     popd
-
                     # Symlink 3rdparty repo artifacts
                     ln -s "${THIRD_PARTY_DEPS}" "${THIRD_PARTY_LOCATION}"
                         
@@ -200,7 +198,6 @@ EOF
                         gpg --export -a 'Seagate'  > RPM-GPG-KEY-Seagate
                         rpm --import RPM-GPG-KEY-Seagate
                     popd
-
                     pushd cortx-re/scripts/rpm-signing
                         chmod +x rpm-sign.sh
                         cp RPM-GPG-KEY-Seagate ${CORTX_ISO_LOCATION}
@@ -209,7 +206,6 @@ EOF
                             ./rpm-sign.sh ${PASSPHARASE} ${rpm}
                         done
                     popd
-
                 '''
                 
                 sh label: 'RPM Signing', script: '''
@@ -224,10 +220,8 @@ EOF
                         sh build_release_info.sh -v ${VERSION} -l ${CORTX_ISO_LOCATION} -t ${THIRD_PARTY_LOCATION}
                         sh build_readme.sh "${DESTINATION_RELEASE_LOCATION}"
                     popd
-
                     cp "${THIRD_PARTY_LOCATION}/THIRD_PARTY_RELEASE.INFO" "${DESTINATION_RELEASE_LOCATION}"
                     cp "${CORTX_ISO_LOCATION}/RELEASE.INFO" "${DESTINATION_RELEASE_LOCATION}"
-
                     cp "${CORTX_ISO_LOCATION}/RELEASE.INFO" .
                 '''		
 
