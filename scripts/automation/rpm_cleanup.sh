@@ -59,17 +59,17 @@ cortx_pkgs=(
 # Set directive to remove packages with dependencies.
 searchString="clean_requirements_on_remove*"
 conffile="/etc/yum.conf"
-if grep -q "$searchString" $conffile
+if grep -q "$searchString" "$conffile"
 then
-    sed -i "/$searchString/d" $conffile
+    sed -i "/$searchString/d" "$conffile"
 fi
-echo "clean_requirements_on_remove=1" >> $conffile
+echo "clean_requirements_on_remove=1" >> "$conffile"
 
 # Remove cortx packages
 echo "Uninstalling cortx packages"
 for pkg in ${cortx_pkgs[@]}; do
     if rpm -qi --quiet "$pkg"; then
-        yum remove $pkg -y
+        yum remove "$pkg" -y
     else
         echo -e "\t$pkg is not installed"
     fi
@@ -79,7 +79,7 @@ done
 echo "Uninstalling dependency packages"
 for pkg in ${dependency_pkgs[@]}; do
     if rpm -qi --quiet "$pkg"; then
-        yum remove $pkg -y
+        yum remove "$pkg" -y
     else
         echo -e "\t$pkg is not installed"
     fi
