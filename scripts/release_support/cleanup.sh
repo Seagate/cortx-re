@@ -52,7 +52,7 @@ if [ "$CURRENT" -gt "$THRESHOLD" ] ; then
 	echo $paths
 	for item in "${paths[@]}"; do
 		echo $item
-		find $build -path $paths -prune -false -o -name '*' -exec cp -R {} /mnt/data1/releases/backups/cortx_build_backup/ \;
+		find $build -path $item -prune -false -o -name '*' -exec cp -R {} /mnt/data1/releases/backups/cortx_build_backup/ \;
 	done
         #find $build -path $PATH1 -path $PATH2 -prune -false -o -name '*' -exec cp -R {} /mnt/data1/releases/backups/cortx_build_backup/ \;
 
