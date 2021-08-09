@@ -43,42 +43,26 @@ THRESHOLD=75
 echo "The Current disk space is $CURRENT "
 if [ "$CURRENT" -gt "$THRESHOLD" ] ; then
         echo Your /mnt/data1/releases partition remaining free space is critically low. Used: $CURRENT%. Threshold: $THRESHOLD%  So, 30 days older files will be deleted $(date)
-        #fpath=/mnt/data1/releases
-        #source /var/lib/jenkins/workspace/Alert/exclude_build.txt
 
         echo ----Backup of exclude builds--------
         build=($(echo $BUILD | sed -e 's/,/ /g' -e 's/"//g'))
-        #paths=$(echo $PATHS | sed -e 's/,/ /g' -e 's/"//g')
-		branch=($(echo $BRANCH | sed -e 's/,/ /g' -e 's/"//g'))
-		os=($(echo $OS | sed -e 's/,/ /g' -e 's/"//g'))
-        #echo $paths
-		echo $build
-		echo $branch
-		echo $os
+	branch=($(echo $BRANCH | sed -e 's/,/ /g' -e 's/"//g'))
+	os=($(echo $OS | sed -e 's/,/ /g' -e 's/"//g'))
 	for i in ${!branch[@]}; do
-        #for ((i=0; i<"${#branch[@]}"; i++)) do
-	for j in ${!os[@]}; do
-	for k in ${!build[@]}; do
-		fpath=/mnt/data1/releases/cortx/github/${branch[i]}/${os[j]}
-                echo $fpath
-                find $fpath/${build[k]} -path $fpath -prune -false -o -name '*' -exec cp -R {} /mnt/data1/releases/backups/cortx_build_backup/ \;
-                ls -lrt /mnt/data1/releases/backups/cortx_build_backup/ | grep -w 531
+		for j in ${!os[@]}; do
+			for k in ${!build[@]}; do
+				fpath=/mnt/data1/releases/cortx/github/${branch[i]}/${os[j]}
+                		echo $fpath
+		echo ----Backup of exclude builds--------                
+		find $fpath/${build[k]} -path $fpath -prune -false -o -name '*' -exec cp -R {} /mnt/data1/releases/backups/cortx_build_backup/ \;
+                ls -lrt /mnt/data1/releases/backups/cortx_build_backup/ | grep -w ${build[k]}
                 ls -lrt /mnt/data1/releases/backups/cortx_build_backup/ | grep -w 561
                 ls -lrt /mnt/data1/releases/backups/cortx_build_backup/ | grep -w 2750
-        done
-        #find $build -path $PATH1 -path $PATH2 -prune -false -o -name '*' -exec cp -R {} /mnt/data1/releases/backups/cortx_build_backup/ \;
+		echo -----Files to be Deleted from ${build[k]}
+		find $fpath -type f -mtime +30 ! -name '*.INFO*' -exec ls -lrt {} \;        
+	       #find $fpath -type f -mtime +30 ! -name '*.INFO*' -exec rm -rf {} \;
+		done
 	done
-	done
-        if [ "$BRANCH" == "main" ] ; then
-                echo -----Files to be Deleted from MAIN branch-----
-                fpath=/mnt/data1/releases/cortx/github/${BRANCH}/${OS}
-                #find $fpath -type f -mtime +20 ! -name '*.INFO*' -exec ls -lrt {} + > $WORKSPACE/file1.out;
-                #find $fpath -type f -mtime +20 ! -name '*.INFO*' -exec rm -rf {} \;
-        else
-                echo -----Files to be Deleted from STABLE branch-----
-                fpath=/mnt/data1/releases/cortx/github/stable/${OS}
-                #find $fpath -type f -mtime +20 ! -name '*.INFO*' -exec ls -lrt {} + > $WORKSPACE/file1.out;
-                #find $fpath -type f -mtime +20 ! -name '*.INFO*' -exec rm -rf {} \;
-        fi
+done
 fi
 
