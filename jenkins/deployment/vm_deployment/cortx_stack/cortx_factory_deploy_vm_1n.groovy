@@ -131,7 +131,7 @@ pipeline {
                 script {
                     info("Running '04. Component Deployment' Stage")
 
-                    runAnsible("04_COMPONENT_DEPLOYMENT")
+                    runAnsible("04_COMPONENT_DEPLOYMENT,VALIDATE_DEPLOYMENT")
                 }
             } 
         }
