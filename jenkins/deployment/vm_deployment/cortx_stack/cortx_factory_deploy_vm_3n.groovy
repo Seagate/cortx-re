@@ -28,14 +28,20 @@ pipeline {
         CORTX_BUILD = getActualBuild("${CORTX_BUILD}")
 
         NODE_DEFAULT_SSH_CRED =  credentials("${NODE_DEFAULT_SSH_CRED}")
-        NODE_USER = "${NODE_DEFAULT_SSH_CRED_USR}"
+        DNS_SERVER1 = credentials("DNS_SERVER1")
+        DNS_SERVER2 = credentials("DNS_SERVER2")
+        SEARCH_DOMAIN1 = credentials("SEARCH_DOMAIN1")
+        SEARCH_DOMAIN2 = credentials("SEARCH_DOMAIN2")
         
+        NODE_USER = "${NODE_DEFAULT_SSH_CRED_USR}"
         NODE_PASS   = "${NODE_PASS.isEmpty() ? NODE_DEFAULT_SSH_CRED_PSW : NODE_PASS}"
         NODE1_HOST  = "${NODE1.isEmpty() ? NODE1_HOST : NODE1 }"
         NODE2_HOST  = "${NODE2.isEmpty() ? NODE2_HOST : NODE2 }"
         NODE3_HOST  = "${NODE3.isEmpty() ? NODE3_HOST : NODE3 }"
         MGMT_VIP    = "${NODE_MGMT_VIP.isEmpty() ? MGMT_VIP : NODE_MGMT_VIP }"
         NODES       = "${NODE1_HOST},${NODE2_HOST},${NODE3_HOST}"
+        DNS_SERVERS = "${DNS_SERVER1} ${DNS_SERVER2}"
+        SEARCH_DOMAINS = "${SEARCH_DOMAIN1} ${SEARCH_DOMAIN2}"
 
         SETUP_TYPE = '3_node'
         SKIP_STAGE = "no"
@@ -199,8 +205,9 @@ pipeline {
                 
                 // 4. Assume Deployment Status Based on log results
                 hctlStatus = ""
-                if ( fileExists('artifacts/srvnode1/cortx_deployment/log/hctl_status.log') && currentBuild.currentResult == "SUCCESS" ) {
+                if ( fileExists('artifacts/srvnode1/cortx_deployment/log/hctl_status.log') && fileExists('artifacts/srvnode1/cortx_deployment/log/pcs_status.log') && currentBuild.currentResult == "SUCCESS" ) {
                     hctlStatus = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/hctl_status.log')
+                    pcsStatus = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/pcs_status.log')
                     MESSAGE = "3 Node - Cortx Stack VM Deployment Success for the build ${build_id}"
                     ICON = "accept.gif"
                     STATUS = "SUCCESS"
@@ -260,6 +267,7 @@ pipeline {
 
                 // 5. Create Jenkins Summary page with deployment info
                 hctlStatusHTML = "<pre>${hctlStatus}</pre>"
+                pcsStatusHTML = "<pre>${pcsStatus}</pre>"
                 tableSummary = "<table border='1' cellspacing='0' cellpadding='0' width='400' align='left'> <tr> <td align='center'>Build</td><td align='center'><a href=${CORTX_BUILD}>${build_id}</a></td></tr><tr> <td align='center'>Test VM</td><td align='center'><a href='${JENKINS_URL}/computer/${env.NODE_NAME}'><b>${NODE1_HOST}</b></a></td></tr></table>"
                 manager.createSummary("${ICON}").appendText("<h3>Cortx Stack VM-Deployment ${currentBuild.currentResult} for the build <a href=\"${CORTX_BUILD}\">${build_id}.</a></h3><p>Please check <a href=\"${BUILD_URL}/artifact/setup.log\">setup.log</a> for more info <br /><br /><h4>Test Details:</h4> ${tableSummary} <br /><br /><br /><h4>Cluster Status:</h4>${hctlStatusHTML}", false, false, false, "red")
                      
@@ -296,23 +304,28 @@ pipeline {
 
 // Run Ansible playbook to perform deployment
 def runAnsible(tags) {
-    
-    dir("cortx-re/scripts/deployment") {
-        ansiblePlaybook(
-            playbook: 'cortx_deploy_vm_factory.yml',
-            inventory: 'inventories/vm_deployment/hosts_srvnodes',
-            tags: "${tags}",
-            extraVars: [
-                "HOST"          : [value: "${NODES}", hidden: false],
-                "CORTX_BUILD"   : [value: "${CORTX_BUILD}", hidden: false] ,
-                "CLUSTER_PASS"  : [value: "${NODE_PASS}", hidden: false],
-                "SETUP_TYPE"    : [value: "${SETUP_TYPE}", hidden: false],
-                "MGMT_VIP"      : [value: "${MGMT_VIP}", hidden: false],
-            ],
-            extras: '-v',
-            colorized: true
-        )
-    }
+    withCredentials([usernamePassword(credentialsId: 'CONTROLLER_CREDS', passwordVariable: 'CONTROLLER_PASSWORD', usernameVariable: 'CONTROLLER_USERNAME')]) {
+        dir("cortx-re/scripts/deployment") {
+            ansiblePlaybook(
+                playbook: 'cortx_deploy_vm_factory.yml',
+                inventory: 'inventories/vm_deployment/hosts_srvnodes',
+                tags: "${tags}",
+                extraVars: [
+                    "HOST"                  : [value: "${NODES}", hidden: false],
+                    "CORTX_BUILD"           : [value: "${CORTX_BUILD}", hidden: false] ,
+                    "CLUSTER_PASS"          : [value: "${NODE_PASS}", hidden: false],
+                    "DNS_SERVERS"           : [value: "${DNS_SERVERS}", hidden: false],
+                    "SEARCH_DOMAINS"        : [value: "${SEARCH_DOMAINS}", hidden: false],
+                    "CONTROLLER_USERNAME"   : [value: "${env.CONTROLLER_USERNAME}", hidden: false],
+                    "CONTROLLER_PASSWORD"   : [value: "${env.CONTROLLER_PASSWORD}", hidden: false],
+                    "SETUP_TYPE"            : [value: "${SETUP_TYPE}", hidden: false],
+                    "MGMT_VIP"              : [value: "${MGMT_VIP}", hidden: false],
+                ],
+                extras: '-v',
+                colorized: true
+            )
+        }
+    }    
 }
 
 // Get build id from build url
