@@ -13,7 +13,7 @@ pipeline {
         string(name: 'NODE1', defaultValue: '', description: 'Node 1 Host FQDN',  trim: true)
         string(name: 'NODE2', defaultValue: '', description: 'Node 2 Host FQDN',  trim: true)
         string(name: 'NODE3', defaultValue: '', description: 'Node 3 Host FQDN',  trim: true)
-        string(name: 'NODE_PASS', defaultValue: '', description: 'Host machine root user password',  trim: true)
+        password(name: 'NODE_PASS', defaultValue: '', description: 'Host machine root user password')
         string(name: 'NODE_MGMT_VIP', defaultValue: '', description: 'The floating static VIP for management network interface.',  trim: true)
         booleanParam(name: 'DEBUG', defaultValue: false, description: 'Select this if you want to preserve the VM temporarily for troublshooting')
         booleanParam(name: 'CREATE_JIRA_ISSUE_ON_FAILURE', defaultValue: false, description: 'Internal Use : Select this if you want to create Jira issue on failure')

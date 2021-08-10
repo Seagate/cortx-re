@@ -11,7 +11,7 @@ pipeline {
     parameters {
         string(name: 'CORTX_BUILD', defaultValue: 'http://cortx-storage.colo.seagate.com/releases/cortx/github/main/centos-7.9.2009/last_successful_prod/', description: 'Build URL',  trim: true)
         string(name: 'NODE1', defaultValue: '', description: 'Node 1 Host FQDN',  trim: true)
-        password(name: 'NODE_PASS', defaultValue: '', description: 'Host machine root user password',  trim: true)
+        password(name: 'NODE_PASS', defaultValue: '', description: 'Host machine root user password')
         booleanParam(name: 'DEBUG', defaultValue: false, description: 'Select this if you want to preserve the VM temporarily for troublshooting')
         booleanParam(name: 'CREATE_JIRA_ISSUE_ON_FAILURE', defaultValue: false, description: 'Internal Use : Select this if you want to create Jira issue on failure')
         booleanParam(name: 'AUTOMATED', defaultValue: false, description: 'Internal Use : Only for Internal RE workflow')
