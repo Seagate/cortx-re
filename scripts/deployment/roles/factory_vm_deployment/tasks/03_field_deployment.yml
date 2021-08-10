@@ -21,7 +21,7 @@
   with_items: "{{ groups['srvnodes'] }}"
 
 - name: "[Field Deployment] : Configure the Network Time Server"
-  shell: cortx_setup node prepare time --server time.seagate.com --timezone UTC
+  shell: cortx_setup node prepare time --server {{ SEAGATE_TIME_SERVER }} --timezone UTC
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}"
 

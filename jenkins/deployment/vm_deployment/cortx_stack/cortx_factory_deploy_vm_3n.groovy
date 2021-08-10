@@ -32,6 +32,7 @@ pipeline {
         DNS_SERVER2 = credentials("DNS_SERVER2")
         SEARCH_DOMAIN1 = credentials("SEARCH_DOMAIN1")
         SEARCH_DOMAIN2 = credentials("SEARCH_DOMAIN2")
+        SEAGATE_TIME_SERVER = credentials("SEAGATE_TIME_SERVER")
         
         NODE_USER = "${NODE_DEFAULT_SSH_CRED_USR}"
         NODE_PASS   = "${NODE_PASS.isEmpty() ? NODE_DEFAULT_SSH_CRED_PSW : NODE_PASS}"
@@ -318,6 +319,7 @@ def runAnsible(tags) {
                     "SEARCH_DOMAINS"        : [value: "${SEARCH_DOMAINS}", hidden: false],
                     "CONTROLLER_USERNAME"   : [value: "${env.CONTROLLER_USERNAME}", hidden: false],
                     "CONTROLLER_PASSWORD"   : [value: "${env.CONTROLLER_PASSWORD}", hidden: false],
+                    "SEAGATE_TIME_SERVER"   : [value: "${SEAGATE_TIME_SERVER}", hidden: false],
                     "SETUP_TYPE"            : [value: "${SETUP_TYPE}", hidden: false],
                     "MGMT_VIP"              : [value: "${MGMT_VIP}", hidden: false],
                 ],
