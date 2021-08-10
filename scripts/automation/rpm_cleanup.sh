@@ -70,6 +70,10 @@ echo "Uninstalling cortx packages"
 for pkg in ${cortx_pkgs[@]}; do
     if rpm -qi --quiet "$pkg"; then
         yum remove "$pkg" -y
+        if [ $? -ne 0 ]; then
+            echo "Failed to uninstall $pkg"
+            exit 1
+        fi
     else
         echo -e "\t$pkg is not installed"
     fi
@@ -80,6 +84,10 @@ echo "Uninstalling dependency packages"
 for pkg in ${dependency_pkgs[@]}; do
     if rpm -qi --quiet "$pkg"; then
         yum remove "$pkg" -y
+        if [ $? -ne 0 ]; then
+            echo "Failed to uninstall $pkg"
+            exit 1
+        fi
     else
         echo -e "\t$pkg is not installed"
     fi
