@@ -39,7 +39,7 @@
   delegate_to: "srvnode-1"  
 
 - name: "[ Validate Cluster ] : Check Cluster Status"
-  shell: pcs status > {{ CORXT_DEPLOYMENT_LOG_PATH }}/pcs_status.log
+  shell: pcs status --full > {{ CORXT_DEPLOYMENT_LOG_PATH }}/pcs_status.log
   register: pcs_status 
   delegate_to: "srvnode-1"
 
