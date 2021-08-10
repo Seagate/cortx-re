@@ -374,14 +374,7 @@ def markNodeOffline(message) {
 def getBuild(buildURL) {
 
     buildID = sh(script: "curl -s  $buildURL/RELEASE.INFO  | grep BUILD | cut -d':' -f2 | tr -d '\"' | xargs", returnStdout: true).trim()
-    buildbranch = "Build"
-    if ( buildURL.contains("/cortx/github/main/") ) { 
-        buildbranch="Main"
-    } else if ( buildURL.contains("/cortx/github/stable/") ) { 
-        buildbranch="Stable"
-    } else if ( buildURL.contains("/cortx/github/integration-custom-ci/")) { 
-        buildbranch="Custom-CI"
-    } 
+    buildBranch = sh(script: "curl -s  $buildURL/RELEASE.INFO  | grep BRANCH | cut -d':' -f2 | tr -d '\"' | xargs", returnStdout: true).trim()
 
- return "$buildbranch#$buildID"   
+ return "$buildBranch#$buildID"   
 }

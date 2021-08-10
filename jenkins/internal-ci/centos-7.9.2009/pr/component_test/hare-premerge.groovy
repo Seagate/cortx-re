@@ -22,7 +22,7 @@
  * Groovy syntax: http://groovy-lang.org/syntax.html
  */
 pipeline {
-    agent { label 'docker-centos-7.9.2009-node' }
+    agent { label "docker-${OS_VERSION}-node" }
     options {
         timeout(50)  // abort the build after that many minutes
         disableConcurrentBuilds()
@@ -44,6 +44,7 @@ pipeline {
         //   - Need new VM with clean state snapshot for HARE CI : https://jts.seagate.com/browse/EOS-18463
         // VM_FQDN = 'ssc-vm-3370.colo.seagate.com' // SSC VM used for Hare CI 
         // VM_CRED = credentials('node-user') // To connect SSC VM over SSH
+        // OS_VERSION is manually created parameters in jenkins job.
         GITHUB_TOKEN = credentials('cortx-admin-github') // To clone cortx-hare repo
         GPR_REPO = "https://github.com/${ghprbGhRepository}"
         HARE_REPO = "${ghprbGhRepository != null ? GPR_REPO : HARE_REPO}"
