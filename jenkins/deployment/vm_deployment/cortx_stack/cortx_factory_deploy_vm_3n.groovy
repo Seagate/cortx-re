@@ -332,14 +332,7 @@ def runAnsible(tags) {
 def getBuild(buildURL) {
 
     buildID = sh(script: "curl -s  $buildURL/RELEASE.INFO  | grep BUILD | cut -d':' -f2 | tr -d '\"' | xargs", returnStdout: true).trim()
-    buildBranch = "Build"
-    if ( buildURL.contains("/cortx/github/main/") ) {
-        buildBranch = "Main"
-    } else if ( buildURL.contains("/cortx/github/stable/") ) {
-        buildBranch = "Stable"
-    } else if ( buildURL.contains("/cortx/github/integration-custom-ci/")) {
-        buildBranch = "Custom-CI"
-    }
+    buildBranch = sh(script: "curl -s  $buildURL/RELEASE.INFO  | grep BRANCH | cut -d':' -f2 | tr -d '\"' | xargs", returnStdout: true).trim()
 
  return "$buildBranch#$buildID"   
 }
@@ -349,9 +342,10 @@ def getActualBuild(buildURL) {
 
     buildRoot = sh(script: "echo $buildURL | cut -d'/' -f1-8", returnStdout: true).trim()  
     buildID = sh(script: "curl -s  $buildURL/RELEASE.INFO  | grep BUILD | cut -d':' -f2 | tr -d '\"' | xargs", returnStdout: true).trim()
-    if ( buildURL.contains("/cortx/github/main/") || buildURL.contains("/cortx/github/stable/") ) {
+    buildBranch = sh(script: "curl -s  $buildURL/RELEASE.INFO  | grep BRANCH | cut -d':' -f2 | tr -d '\"' | xargs", returnStdout: true).trim()
+    if ( buildBranch == "main" || buildBranch == "stable" ) {
         actualBuildURL = "${buildRoot}/${buildID}/prod"
-    } else if ( buildURL.contains("/cortx/github/integration-custom-ci/")) {
+    } else if ( buildBranch == "integration-custom-ci" ) {
         actualBuildURL = "${buildRoot}/custom-build-${buildID}"
     }
 
