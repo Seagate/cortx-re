@@ -25,14 +25,18 @@ count_service_filter=(
 
 for service in ${service_filter[@]}; do
     service_state=$(grep "${service}" "${pcsStatusFile}" | awk '{print $3}')
-    if [ "${service_state}" != "Started" ]; then
-        echo "Failed Service : ${service}"
-    fi
+    for state in ${service_state}; do
+      if [ "${state}" != "Started" ]; then
+          echo "Failed Service : ${service}"
+      fi
+    done
 done
 
 for service in ${count_service_filter[@]}; do
     service_count=$(grep "${service}" "${pcsStatusFile}" | awk '{print $4}')
-    if [ "${service_count}" -eq 0 ]; then
-        echo "Failed Service : ${service}"
-    fi
+    for count in ${service_count}; do
+      if [ "${count}" -eq 0 ]; then
+          echo "Failed Service : ${service}"
+      fi
+    done
 done

@@ -35,11 +35,11 @@
   ignore_errors: true  
 
 - name: "[ Validate Cluster ] : Check Cluster Status"
-  shell: pcs status --full > {{ CORXT_DEPLOYMENT_LOG_PATH }}/pcs_status.log 
+  shell: pcs status --full 2>&1 | tee -a {{ CORXT_DEPLOYMENT_LOG_PATH }}/pcs_status.log 
   delegate_to: "srvnode-1"
 
 - name: "[ Validate Cluster ] : Check Cluster Status - Alternate Way"
-  shell: hctl status > {{ CORXT_DEPLOYMENT_LOG_PATH }}/hctl_status.log
+  shell: hctl status 2>&1 | tee -a {{ CORXT_DEPLOYMENT_LOG_PATH }}/hctl_status.log
   delegate_to: "srvnode-1"
 
 - name: "[ Validate Cluster ] : Validate Cluster Status"
