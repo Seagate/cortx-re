@@ -197,8 +197,9 @@ pipeline {
                 
                 // 4. Assume Deployment Status Based on log results
                 hctlStatus = ""
-                if ( fileExists('artifacts/srvnode1/cortx_deployment/log/hctl_status.log') && currentBuild.currentResult == "SUCCESS" ) {
+                if ( fileExists('artifacts/srvnode1/cortx_deployment/log/hctl_status.log') && fileExists('artifacts/srvnode1/cortx_deployment/log/pcs_status.log') && currentBuild.currentResult == "SUCCESS" ) {
                     hctlStatus = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/hctl_status.log')
+                    pcsStatus = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/pcs_status.log')
                     MESSAGE = "1 Node - Cortx Stack VM Deployment Success for the build ${build_id}"
                     ICON = "accept.gif"
                     STATUS = "SUCCESS"
@@ -258,6 +259,7 @@ pipeline {
 
                 // 5. Create Jenkins Summary page with deployment info
                 hctlStatusHTML = "<pre>${hctlStatus}</pre>"
+                pcsStatusHTML = "<pre>${pcsStatus}</pre>"
                 tableSummary = "<table border='1' cellspacing='0' cellpadding='0' width='400' align='left'> <tr> <td align='center'>Build</td><td align='center'><a href=${CORTX_BUILD}>${build_id}</a></td></tr><tr> <td align='center'>Test VM</td><td align='center'><a href='${JENKINS_URL}/computer/${env.NODE_NAME}'><b>${NODE1_HOST}</b></a></td></tr></table>"
                 manager.createSummary("${ICON}").appendText("<h3>Cortx Stack VM-Deployment ${currentBuild.currentResult} for the build <a href=\"${CORTX_BUILD}\">${build_id}.</a></h3><p>Please check <a href=\"${BUILD_URL}/artifact/setup.log\">setup.log</a> for more info <br /><br /><h4>Test Details:</h4> ${tableSummary} <br /><br /><br /><h4>Cluster Status:</h4>${hctlStatusHTML}", false, false, false, "red")
                      
@@ -306,8 +308,8 @@ def runAnsible(tags) {
                     "CLUSTER_PASS"          : [value: "${NODE_PASS}", hidden: false],
                     "DNS_SERVERS"           : [value: "${DNS_SERVERS}", hidden: false],
                     "SEARCH_DOMAINS"        : [value: "${SEARCH_DOMAINS}", hidden: false],
-                    "CONTROLLER_USERNAME"   : [value: "${CONTROLLER_USERNAME}", hidden: false],
-                    "CONTROLLER_PASSWORD"   : [value: "${CONTROLLER_PASSWORD}", hidden: false],
+                    "CONTROLLER_USERNAME"   : [value: "${env.CONTROLLER_USERNAME}", hidden: false],
+                    "CONTROLLER_PASSWORD"   : [value: "${env.CONTROLLER_PASSWORD}", hidden: false],
                     "SETUP_TYPE"            : [value: "${SETUP_TYPE}", hidden: false]
                 ],
                 extras: '-v',
