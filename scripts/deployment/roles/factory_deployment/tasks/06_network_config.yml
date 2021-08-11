@@ -52,7 +52,7 @@
   with_items: "{{ groups['srvnodes'] }}"
   register: gateway_mgmt
   
-- name: Node Static Config for all nodes
+- name: Node Static Config for network management interface
   shell: cortx_setup node prepare network --type management --ip_address {{ item.1 }} --netmask {{ item.2 }} --gateway {{ item.3 }}
   delegate_to: "{{ item.0 }}"
   with_together: 
@@ -74,13 +74,22 @@
   with_items: "{{ groups['srvnodes'] }}"
   register: netmask_data
 
-- name: Node1 Static Config
-  shell: cortx_setup node prepare network --type data --ip_address {{ item.1 }} --netmask {{ item.2 }} --gateway {{data_public_gateway }}
+- name: "Gateway for data public interface"
+  shell: route -n | grep -i "{{ hostvars[item.0]['network_data_public_interfaces'] }}" |  grep "{{item.1}}" | awk '{print $2}'
+  delegate_to: "{{ item.0 }}"
+  with_together: 
+    - "{{ groups['srvnodes'] }}" 
+    - "{{netmask_data.results|map(attribute='stdout')|list}}"
+  register: gateway_data
+    
+- name: Node Static Config for data public interface 
+  shell: cortx_setup node prepare network --type data --ip_address {{ item.1 }} --netmask {{ item.2 }} --gateway {{ item.3 }}
   delegate_to: "{{ item.0 }}"
   with_together: 
     - "{{ groups['srvnodes'] }}" 
     - "{{data_ip.results|map(attribute='stdout')|list}}"
     - "{{netmask_data.results|map(attribute='stdout')|list}}" 
+    - "{{gateway_data.results|map(attribute='stdout')|list}}"
 
 #Private Interface configuration
 - name: "IP for date private interface"
@@ -95,11 +104,20 @@
   with_items: "{{ groups['srvnodes'] }}"
   register: netmask_private
   
-- name: Node1 Static Config
-  shell: cortx_setup node prepare network --type private --ip_address {{ item.1 }} --netmask {{ item.2 }} --gateway {{data_private_gateway }}
+- name: "Gateway for data private interface"
+  shell: route -n | grep -i "{{ hostvars[item.0]['network_data_private_interfaces'] }}" |  grep "{{item.1}}" | awk '{print $2}'
+  delegate_to: "{{ item.0 }}"
+  with_together: 
+    - "{{ groups['srvnodes'] }}" 
+    - "{{netmask_data.results|map(attribute='stdout')|list}}"
+  register: gateway_private
+  
+- name: Node Static Config for data private interface
+  shell: cortx_setup node prepare network --type private --ip_address {{ item.1 }} --netmask {{ item.2 }} --gateway {{item.3}}
   delegate_to: "{{ item.0 }}"
   with_together: 
     - "{{ groups['srvnodes'] }}" 
     - "{{private_ip.results|map(attribute='stdout')|list}}"
     - "{{netmask_private.results|map(attribute='stdout')|list}}" 
+    - "{{gateway_private.results|map(attribute='stdout')|list}}" 
   
