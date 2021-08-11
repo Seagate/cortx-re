@@ -11,7 +11,7 @@
   shell: cortx_setup node prepare network --type management --ip_address {{ MGMT_IP_ADD_NODE2 }} --netmask {{ MGMT_NETMASK_NODE2 }} --gateway {{ MGMT_GATEWAY_NODE2 }}
   delegate_to: "srvnode-2"
 
-- name: Node2 Static Config
+- name: Node3 Static Config
   shell: cortx_setup node prepare network --type management --ip_address {{ MGMT_IP_ADD_NODE3 }} --netmask {{ MGMT_NETMASK_NODE3 }} --gateway {{ MGMT_GATEWAY_NODE3 }}
   delegate_to: "srvnode-3"
 
@@ -23,7 +23,7 @@
   shell: cortx_setup node prepare network --type data --ip_address {{ DATA_IP_ADD_NODE2 }} --netmask {{ DATA_NETMASK_NODE2 }} --gateway {{ DATA_GATEWAY_NODE2 }}
   delegate_to: "srvnode-2"
 
-- name: Node2 Static Config
+- name: Node3 Static Config
   shell: cortx_setup node prepare network --type data --ip_address {{ DATA_IP_ADD_NODE3 }} --netmask {{ DATA_NETMASK_NODE3 }} --gateway {{ DATA_GATEWAY_NODE3 }}
   delegate_to: "srvnode-3"
   
@@ -35,7 +35,7 @@
   shell: cortx_setup node prepare network --type private --ip_address {{ PRIVATE_IP_ADD_NODE2 }} --netmask {{ PRIVATE_NETMASK_NODE2 }} --gateway {{ PRIVATE_GATEWAY_NODE2 }}
   delegate_to: "srvnode-2"
 
-- name: Node2 Static Config
+- name: Node3 Static Config
   shell: cortx_setup node prepare network --type private --ip_address {{ PRIVATE_IP_ADD_NODE3 }} --netmask {{ PRIVATE_NETMASK_NODE3 }} --gateway {{ PRIVATE_GATEWAY_NODE3 }}
   delegate_to: "srvnode-3"
   
