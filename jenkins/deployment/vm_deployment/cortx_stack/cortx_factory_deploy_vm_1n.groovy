@@ -3,7 +3,7 @@ pipeline {
     agent {
         node {
             // Run deployment on mini_provisioner nodes (vm deployment nodes)
-            label params.NODE1.isEmpty() ? "vm_deployment_1n_7_9_partition && !cleanup_req" : "vm_deployment_3n_controller"
+            label params.NODE1.isEmpty() ? "vm_deployment_1n_7_9 && !cleanup_req" : "vm_deployment_3n_controller"
             customWorkspace "/var/jenkins/cortx_deployment_vm/${JOB_NAME}_${BUILD_NUMBER}"
         }
     }
