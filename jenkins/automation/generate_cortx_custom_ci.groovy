@@ -1,3 +1,4 @@
+#!/usr/bin/env groovy
 pipeline {
 
         agent {
@@ -9,6 +10,8 @@ pipeline {
         parameters {
                 string(name: 'RELEASE_INFO_URL', defaultValue: 'http://cortx-storage.colo.seagate.com/releases/cortx_builds/centos-7.8.2003/552/RELEASE.INFO', description: 'RELEASE BUILD')
                 string(name: 'THIRD_PARTY_RELEASE_INFO_URL', defaultValue: 'http://cortx-storage.colo.seagate.com/releases/cortx_builds/centos-7.8.2003/552/THIRD_PARTY_RELEASE.INFO', description: 'THIRD PARTY RELEASE BUILD')
+				string(name: 'os_version', defaultValue: 'centos-7.8.2003', description: 'OS Version')
+				
         }
 
     environment {
@@ -20,8 +23,8 @@ pipeline {
                 COMMIT_HASH_CORTX_PRVSNR = get_commit_hash("cortx-prvsnr", "${RELEASE_INFO_URL}")
                 COMMIT_HASH_CORTX_S3SERVER = get_commit_hash("cortx-s3server", "${RELEASE_INFO_URL}")
                 COMMIT_HASH_CORTX_SSPL = get_commit_hash("cortx-sspl", "${RELEASE_INFO_URL}")
-	        THIRD_PARTY_RELEASE_VERSION = get_version("${THIRD_PARTY_RELEASE_INFO_URL}")
-                RELEASE_BUILD_NUMBER = get_build("${RELEASE_INFO_URL}")
+				THIRD_PARTY_RELEASE_VERSION = get_version("${THIRD_PARTY_RELEASE_INFO_URL}")
+				RELEASE_BUILD_NUMBER = get_build("${RELEASE_INFO_URL}")
             }
 
         stages {
@@ -45,6 +48,8 @@ pipeline {
              when { expression { true } }
             steps {
                 script { build_stage=env.STAGE_NAME }
+				sh label: '', script: '''
+				if  [ ${os_version} == "centos-7.8.2003" ] ; then
                 build job: 'cortx-custom-ci', wait: true,
                 parameters: [
                     string(name: 'THIRD_PARTY_RELEASE_VERSION', value: "${THIRD_PARTY_RELEASE_VERSION}"),
@@ -58,10 +63,27 @@ pipeline {
                     string(name: 'SSPL_BRANCH', value: "${COMMIT_HASH_CORTX_SSPL}")
 
                 ]
+				else 
+				build job: 'custom-ci', wait: true,
+                parameters: [
+                    string(name: 'THIRD_PARTY_RELEASE_VERSION', value: "${THIRD_PARTY_RELEASE_VERSION}"),
+                    string(name: 'CSM_AGENT_BRANCH', value: "${COMMIT_HASH_CORTX_CSM_AGENT}"),
+                    string(name: 'CSM_WEB_BRANCH', value: "${COMMIT_HASH_CORTX_CSM_WEB}"),
+                    string(name: 'HARE_BRANCH', value: "${COMMIT_HASH_CORTX_HARE}"),
+                    string(name: 'HA_BRANCH', value: "${COMMIT_HASH_CORTX_HA}"),
+                    string(name: 'MOTR_BRANCH', value: "${COMMIT_HASH_CORTX_MOTR}"),
+                    string(name: 'PRVSNR_BRANCH', value: "${COMMIT_HASH_CORTX_PRVSNR}"),
+                    string(name: 'S3_BRANCH', value: "${COMMIT_HASH_CORTX_S3SERVER}"),
+                    string(name: 'SSPL_BRANCH', value: "${COMMIT_HASH_CORTX_SSPL}")
+
+                ]
+				fi
+				'''
             }
         }
     }
 }
+
 
 
 def get_commit_hash(String component, String release_info) {
