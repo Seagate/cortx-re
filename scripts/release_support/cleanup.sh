@@ -55,9 +55,7 @@ if [ "$CURRENT" -gt "$THRESHOLD" ] ; then
 		echo ----Backup of exclude builds--------                
 		find $fpath/${build[k]} -path $fpath -prune -false -o -name '*' -exec cp -R {} /mnt/data1/releases/backups/cortx_build_backup/ \;
                 ls -lrt /mnt/data1/releases/backups/cortx_build_backup/ | grep -w ${build[k]}
-                ls -lrt /mnt/data1/releases/backups/cortx_build_backup/ | grep -w 561
-                ls -lrt /mnt/data1/releases/backups/cortx_build_backup/ | grep -w 2750
-		echo -----Files to be Deleted from ${branch[i]}
+		echo -----Files to be Deleted------- 
 		find $fpath -type f -mtime +30 ! -name '*.INFO*' -exec ls -lrt {} \;        
 	       #find $fpath -type f -mtime +30 ! -name '*.INFO*' -exec rm -rf {} \;
 		done
