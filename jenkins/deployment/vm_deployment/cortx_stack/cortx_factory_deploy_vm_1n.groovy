@@ -3,18 +3,15 @@ pipeline {
     agent {
         node {
             // Run deployment on mini_provisioner nodes (vm deployment nodes)
-            label params.NODE1.isEmpty() ? "vm_deployment_3n && !cleanup_req" : "vm_deployment_3n_controller"
+            label params.NODE1.isEmpty() ? "vm_deployment_1n_7_9_partition && !cleanup_req" : "vm_deployment_3n_controller"
             customWorkspace "/var/jenkins/cortx_deployment_vm/${JOB_NAME}_${BUILD_NUMBER}"
         }
     }
 	
     parameters {
-        string(name: 'CORTX_BUILD', defaultValue: 'http://cortx-storage.colo.seagate.com/releases/cortx/github/main/centos-7.8.2003/last_successful_prod/', description: 'Build URL',  trim: true)
+        string(name: 'CORTX_BUILD', defaultValue: 'http://cortx-storage.colo.seagate.com/releases/cortx/github/main/centos-7.9.2009/last_successful_prod/', description: 'Build URL',  trim: true)
         string(name: 'NODE1', defaultValue: '', description: 'Node 1 Host FQDN',  trim: true)
-        string(name: 'NODE2', defaultValue: '', description: 'Node 2 Host FQDN',  trim: true)
-        string(name: 'NODE3', defaultValue: '', description: 'Node 3 Host FQDN',  trim: true)
-        string(name: 'NODE_PASS', defaultValue: '', description: 'Host machine root user password',  trim: true)
-        string(name: 'NODE_MGMT_VIP', defaultValue: '', description: 'The floating static VIP for management network interface.',  trim: true)
+        password(name: 'NODE_PASS', defaultValue: '', description: 'Host machine root user password')
         booleanParam(name: 'DEBUG', defaultValue: false, description: 'Select this if you want to preserve the VM temporarily for troublshooting')
         booleanParam(name: 'CREATE_JIRA_ISSUE_ON_FAILURE', defaultValue: false, description: 'Internal Use : Select this if you want to create Jira issue on failure')
         booleanParam(name: 'AUTOMATED', defaultValue: false, description: 'Internal Use : Only for Internal RE workflow')
@@ -26,18 +23,23 @@ pipeline {
         build_id = getBuild("${CORTX_BUILD}")
 
         CORTX_BUILD = getActualBuild("${CORTX_BUILD}")
-
-        NODE_DEFAULT_SSH_CRED =  credentials("${NODE_DEFAULT_SSH_CRED}")
-        NODE_USER = "${NODE_DEFAULT_SSH_CRED_USR}"
         
+        // Fetch jenkins creds
+        NODE_DEFAULT_SSH_CRED =  credentials("${NODE_DEFAULT_SSH_CRED}")
+        DNS_SERVER1 = credentials("DNS_SERVER1")
+        DNS_SERVER2 = credentials("DNS_SERVER2")
+        SEARCH_DOMAIN1 = credentials("SEARCH_DOMAIN1")
+        SEARCH_DOMAIN2 = credentials("SEARCH_DOMAIN2")
+        SEAGATE_TIME_SERVER = credentials("SEAGATE_TIME_SERVER")
+
+        NODE_USER = "${NODE_DEFAULT_SSH_CRED_USR}"
         NODE_PASS   = "${NODE_PASS.isEmpty() ? NODE_DEFAULT_SSH_CRED_PSW : NODE_PASS}"
         NODE1_HOST  = "${NODE1.isEmpty() ? NODE1_HOST : NODE1 }"
-        NODE2_HOST  = "${NODE2.isEmpty() ? NODE2_HOST : NODE2 }"
-        NODE3_HOST  = "${NODE3.isEmpty() ? NODE3_HOST : NODE3 }"
-        MGMT_VIP    = "${NODE_MGMT_VIP.isEmpty() ? MGMT_VIP : NODE_MGMT_VIP }"
-        NODES       = "${NODE1_HOST},${NODE2_HOST},${NODE3_HOST}"
+        NODES       = "${NODE1_HOST}"
+        DNS_SERVERS = "${DNS_SERVER1} ${DNS_SERVER2}"
+        SEARCH_DOMAINS = "${SEARCH_DOMAIN1} ${SEARCH_DOMAIN2}"
 
-        SETUP_TYPE = '3_node'
+        SETUP_TYPE = 'single'
         SKIP_STAGE = "no"
     }
 
@@ -109,103 +111,46 @@ pipeline {
             } 
         }
 
-        stage('02.1 Bootstarp Provisioner') {
+        stage('02. Factory Manufacturing') {
             when { expression { SKIP_STAGE == "no"  } }
             steps {
                 script {
-                    
-                    info("Running '02.1 Bootstarp Provisioner' Stage")
+                    info("Running '02. Factory Manufacturing' Stage")
 
-                    runAnsible("02_1_PRVSNR_BOOTSTRAP,02_DEPLOY_VALIDATE")
+                    runAnsible("02_FACTORY_MANUFACTURING")
                 }
             } 
         }
-
-        stage('02.2 Platform Setup') {
+        
+        stage('03. Field Deployment') {
             when { expression { SKIP_STAGE == "no"  } }
             steps {
                 script {
-                    
-                    info("Running '02.2 Platform Setup' Stage")
+                    info("Running '03. Field Deployment' Stage")
 
-                    runAnsible("02_2_PLATFORM_SETUP, 02_DEPLOY_VALIDATE")
+                    runAnsible("03_FIELD_DEPLOYMENT")
                 }
             } 
         }
-
-        stage('02.3 3party Tools Setup') {
+        
+        stage('04. Component Deployment') {
             when { expression { SKIP_STAGE == "no"  } }
             steps {
                 script {
-                    
-                    info("Running '02.3 Prereq/Configuration 3party tools")
+                    info("Running '04. Component Deployment' Stage")
 
-                    runAnsible("02_3_PREREQ,02_DEPLOY_VALIDATE")
+                    runAnsible("04_COMPONENT_DEPLOYMENT,VALIDATE_DEPLOYMENT")
                 }
             } 
         }
-
-        stage('02.4 Cortx Utils Setup') {
+        
+        stage('05. Validate Cluster') {
             when { expression { SKIP_STAGE == "no"  } }
             steps {
                 script {
-                    
-                    info("Running '02.4 Cortx Utils Setup' Stage")
+                    info("Running '05. Validate Cluster' Stage")
 
-                    runAnsible("02_4_UTILS, 02_DEPLOY_VALIDATE")
-                }
-            } 
-        }
-
-        stage('02.5 IO Path Setup') {
-            when { expression { SKIP_STAGE == "no"  } }
-            steps {
-                script {
-                    
-                    info("Running '02.5 IO Path Setup' Stage")
-
-                    runAnsible("02_5_IO_PATH,02_DEPLOY_VALIDATE")
-                }
-            } 
-        }
-
-        stage('02.6 Control Path Setup') {
-            when { expression { SKIP_STAGE == "no"  } }
-            steps {
-                script {
-                    
-                    info("Running '02.6 Control Path Setup' Stage")
-
-                    runAnsible("02_DEPLOY_VALIDATE, 02_6_CONTROL_PATH")
-                }
-            } 
-        }
-
-        stage('02.7 HA Setup') {
-            when { expression { SKIP_STAGE == "no"  } }
-            steps {
-                script {
-                    
-                    info("Running '02.7 HA Setup' Stage")
-
-                    runAnsible("02_DEPLOY_VALIDATE,02_7_HA")
-                }
-            } 
-        }
-
-        stage('03. Validate') {
-            when { expression { SKIP_STAGE == "no"  } }
-            steps {
-                script {
-                    try {
-                        info("Running '03. Validate Deployment' Stage")
-
-                        runAnsible("03_VALIDATE")
-                    }
-                    catch (err) {
-                        currentBuild.result = 'UNSTABLE'
-                        SKIP_STAGE = "yes"
-                    }                
+                    runAnsible("05_VALIDTAE_CLUSTER")
                 }
             } 
         }
@@ -231,9 +176,6 @@ pipeline {
                         sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/opt/seagate/cortx_configs/provisioner_cluster.json artifacts/srvnode1 &>/dev/null || true
                         sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/lib/hare/cluster.yaml artifacts/srvnode1 &>/dev/null || true
                         sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/root/cortx_deployment artifacts/srvnode1 &>/dev/null || true
-
-                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE2_HOST}:/root/cortx_deployment artifacts/srvnode2 &>/dev/null || true
-                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE3_HOST}:/root/cortx_deployment artifacts/srvnode3 &>/dev/null || true
                     """
                 } catch (err) {
                     echo err.getMessage()
@@ -246,55 +188,56 @@ pipeline {
                 if (NODE1.isEmpty()) {
                     if ( params.DEBUG ) {  
                         // Take Node offline for debugging  
-                        markNodeOffline("R2 - 3N VM Deployment Debug Mode Enabled on This Host - ${BUILD_URL}")
+                        markNodeOffline("R2 - 1N VM Deployment Debug Mode Enabled on This Host - ${BUILD_URL}")
                     } else {
                         // Trigger cleanup VM
-                        build job: 'Cortx-Automation/Deployment/VM-Cleanup-MultiNode', wait: false, parameters: [string(name: 'DEPLOYMENT_NODE_LABEL', value: "${env.NODE_NAME}")]                    
+                        build job: 'Cortx-Automation/Deployment/VM-Cleanup', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${env.NODE_NAME}")]                    
 
                     }
                 }
                 
                 // 4. Assume Deployment Status Based on log results
                 hctlStatus = ""
-                if ( fileExists('artifacts/srvnode1/cortx_deployment/log/hctl_status.log') && currentBuild.currentResult == "SUCCESS" ) {
+                if ( fileExists('artifacts/srvnode1/cortx_deployment/log/hctl_status.log') && fileExists('artifacts/srvnode1/cortx_deployment/log/pcs_status.log') && currentBuild.currentResult == "SUCCESS" ) {
                     hctlStatus = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/hctl_status.log')
-                    MESSAGE = "3 Node - Cortx Stack VM Deployment Success for the build ${build_id}"
+                    pcsStatus = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/pcs_status.log')
+                    MESSAGE = "1 Node - Cortx Stack VM Deployment Success for the build ${build_id}"
                     ICON = "accept.gif"
                     STATUS = "SUCCESS"
                 } else if ( currentBuild.currentResult == "FAILURE" ) {
                     manager.buildFailure()
-                    MESSAGE = "3 Node - Cortx Stack VM Deployment Failed for the build ${build_id}"
+                    MESSAGE = "1 Node - Cortx Stack VM Deployment Failed for the build ${build_id}"
                     ICON = "error.gif"
                     STATUS = "FAILURE"
-                    // Failure component name and Cause can be retrived from deployment status log
-                    if ( fileExists('artifacts/srvnode1/cortx_deployment/log/deployment_status.log')
-                        && fileExists('artifacts/srvnode1/cortx_deployment/log/failed_component.log') ) {
-                        try {   
-                            deployment_status_log = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/deployment_status.log').trim()
-                            failed_component_stage = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/failed_component.log').trim()
-                            failed_component_stage = failed_component_stage.trim().replaceAll("'","")
+                //     // Failure component name and Cause can be retrived from deployment status log
+                //     if ( fileExists('artifacts/srvnode1/cortx_deployment/log/deployment_status.log')
+                //         && fileExists('artifacts/srvnode1/cortx_deployment/log/failed_component.log') ) {
+                //         try {   
+                //             deployment_status_log = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/deployment_status.log').trim()
+                //             failed_component_stage = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/failed_component.log').trim()
+                //             failed_component_stage = failed_component_stage.trim().replaceAll("'","")
                             
-                            // Failed Component from Failed Stage
-                            component_info_map = getComponentInfo(failed_component_stage)
-                            component_name = component_info_map["name"]
-                            component_email = component_info_map["email"] 
+                //             // Failed Component from Failed Stage
+                //             component_info_map = getComponentInfo(failed_component_stage)
+                //             component_name = component_info_map["name"]
+                //             component_email = component_info_map["email"] 
                     
-                            env.failure_cause = deployment_status_log
-                            env.deployment_status_log = deployment_status_log
-                            env.failed_component_stage = failed_component_stage
-                            env.component_name = component_name
-                            env.component_email = component_email
+                //             env.failure_cause = deployment_status_log
+                //             env.deployment_status_log = deployment_status_log
+                //             env.failed_component_stage = failed_component_stage
+                //             env.component_name = component_name
+                //             env.component_email = component_email
 
-                            MESSAGE = "3 Node - Cortx Stack VM-Deployment Failed in ${component_name} for the build ${build_id}"
-                            manager.addHtmlBadge("<br /> <b>Status :</b> <a href='${BUILD_URL}/artifact/artifacts/srvnode1/cortx_deployment/log/deployment_status.log'><b>Failed in '${component_name}'</a>")
+                //             MESSAGE = "1 Node - Cortx Stack VM-Deployment Failed in ${component_name} for the build ${build_id}"
+                //             manager.addHtmlBadge("<br /> <b>Status :</b> <a href='${BUILD_URL}/artifact/artifacts/srvnode1/cortx_deployment/log/deployment_status.log'><b>Failed in '${component_name}'</a>")
                         
-                        } catch (err) {
-                            echo err.getMessage()
-                        }
-                    }
+                //         } catch (err) {
+                //             echo err.getMessage()
+                //         }
+                //    }
                 } else {
                     manager.buildUnstable()
-                    MESSAGE = "3 Node - Cortx Stack VM Deployment is Unstable"
+                    MESSAGE = "1 Node - Cortx Stack VM Deployment is Unstable"
                     ICON = "warning.gif"
                     STATUS = "UNSTABLE"
                 }
@@ -303,20 +246,21 @@ pipeline {
                 //  - Jira issue should be created only when 'CREATE_JIRA_ISSUE_ON_FAILURE' option is enabled
                 //  - Jira issue should be created only when 'previous build is success' (To avoid Multiple jira tickets)
                 //  FIXME - LOGIC NEED TO BE IMPROVED TO QUERY JIRA TO IDENTIFY EXSITING TICKETS FOR THE SAME ISSUE
-                if ( params.CREATE_JIRA_ISSUE_ON_FAILURE 
-                    && "FAILURE".equals(currentBuild.currentResult)
-                    && ( !params.AUTOMATED || "SUCCESS".equals(currentBuild.previousBuild.result))
-                    &&  env.failed_component_stage && env.component_name && env.deployment_status_log ) {
+                // if ( params.CREATE_JIRA_ISSUE_ON_FAILURE 
+                //     && "FAILURE".equals(currentBuild.currentResult)
+                //     && ( !params.AUTOMATED || "SUCCESS".equals(currentBuild.previousBuild.result))
+                //     &&  env.failed_component_stage && env.component_name && env.deployment_status_log ) {
                     
-                    jiraIssue = createJiraIssue(env.failed_component_stage, env.component_name, env.deployment_status_log)
+                //     jiraIssue = logJiraIssue(env.failed_component_stage, env.component_name, env.deployment_status_log)
 
-                    manager.addHtmlBadge(" <br /><b>Jira Issue :</b> <a href='https://jts.seagate.com/browse/${jiraIssue}'><b>${jiraIssue}</b></a>")
+                //     manager.addHtmlBadge(" <br /><b>Jira Issue :</b> <a href='https://jts.seagate.com/browse/${jiraIssue}'><b>${jiraIssue}</b></a>")
 
-                    env.jira_issue="https://jts.seagate.com/browse/${jiraIssue}"
-                }
+                //     env.jira_issue="https://jts.seagate.com/browse/${jiraIssue}"
+                // }
 
                 // 5. Create Jenkins Summary page with deployment info
                 hctlStatusHTML = "<pre>${hctlStatus}</pre>"
+                pcsStatusHTML = "<pre>${pcsStatus}</pre>"
                 tableSummary = "<table border='1' cellspacing='0' cellpadding='0' width='400' align='left'> <tr> <td align='center'>Build</td><td align='center'><a href=${CORTX_BUILD}>${build_id}</a></td></tr><tr> <td align='center'>Test VM</td><td align='center'><a href='${JENKINS_URL}/computer/${env.NODE_NAME}'><b>${NODE1_HOST}</b></a></td></tr></table>"
                 manager.createSummary("${ICON}").appendText("<h3>Cortx Stack VM-Deployment ${currentBuild.currentResult} for the build <a href=\"${CORTX_BUILD}\">${build_id}.</a></h3><p>Please check <a href=\"${BUILD_URL}/artifact/setup.log\">setup.log</a> for more info <br /><br /><h4>Test Details:</h4> ${tableSummary} <br /><br /><br /><h4>Cluster Status:</h4>${hctlStatusHTML}", false, false, false, "red")
                      
@@ -353,37 +297,35 @@ pipeline {
 
 // Run Ansible playbook to perform deployment
 def runAnsible(tags) {
-    
-    dir("cortx-re/scripts/deployment") {
-        ansiblePlaybook(
-            playbook: 'cortx_deploy_vm.yml',
-            inventory: 'inventories/vm_deployment/hosts_srvnodes',
-            tags: "${tags}",
-            extraVars: [
-                "HOST"          : [value: "${NODES}", hidden: false],
-                "CORTX_BUILD"   : [value: "${CORTX_BUILD}", hidden: false] ,
-                "CLUSTER_PASS"  : [value: "${NODE_PASS}", hidden: false],
-                "SETUP_TYPE"    : [value: "${SETUP_TYPE}", hidden: false],
-                "MGMT_VIP"      : [value: "${MGMT_VIP}", hidden: false],
-            ],
-            extras: '-v',
-            colorized: true
-        )
-    }
+    withCredentials([usernamePassword(credentialsId: 'CONTROLLER_CREDS', passwordVariable: 'CONTROLLER_PASSWORD', usernameVariable: 'CONTROLLER_USERNAME')]) {
+        dir("cortx-re/scripts/deployment") {
+            ansiblePlaybook(
+                playbook: 'cortx_deploy_vm_factory.yml',
+                inventory: 'inventories/vm_deployment/hosts_srvnodes',
+                tags: "${tags}",
+                extraVars: [
+                    "HOST"                  : [value: "${NODES}", hidden: false],
+                    "CORTX_BUILD"           : [value: "${CORTX_BUILD}", hidden: false] ,
+                    "CLUSTER_PASS"          : [value: "${NODE_PASS}", hidden: false],
+                    "DNS_SERVERS"           : [value: "${DNS_SERVERS}", hidden: false],
+                    "SEARCH_DOMAINS"        : [value: "${SEARCH_DOMAINS}", hidden: false],
+                    "CONTROLLER_USERNAME"   : [value: "${env.CONTROLLER_USERNAME}", hidden: false],
+                    "CONTROLLER_PASSWORD"   : [value: "${env.CONTROLLER_PASSWORD}", hidden: false],
+                    "SEAGATE_TIME_SERVER"   : [value: "${SEAGATE_TIME_SERVER}", hidden: false],
+                    "SETUP_TYPE"            : [value: "${SETUP_TYPE}", hidden: false]
+                ],
+                extras: '-v',
+                colorized: true
+            )
+        }
+    }    
 }
 
 // Get build id from build url
 def getBuild(buildURL) {
 
     buildID = sh(script: "curl -s  $buildURL/RELEASE.INFO  | grep BUILD | cut -d':' -f2 | tr -d '\"' | xargs", returnStdout: true).trim()
-    buildBranch = "Build"
-    if ( buildURL.contains("/cortx/github/main/") ) {
-        buildBranch = "Main"
-    } else if ( buildURL.contains("/cortx/github/stable/") ) {
-        buildBranch = "Stable"
-    } else if ( buildURL.contains("/cortx/github/integration-custom-ci/")) {
-        buildBranch = "Custom-CI"
-    }
+    buildBranch = sh(script: "curl -s  $buildURL/RELEASE.INFO  | grep BRANCH | cut -d':' -f2 | tr -d '\"' | xargs", returnStdout: true).trim()
 
  return "$buildBranch#$buildID"   
 }
@@ -393,19 +335,20 @@ def getActualBuild(buildURL) {
 
     buildRoot = sh(script: "echo $buildURL | cut -d'/' -f1-8", returnStdout: true).trim()  
     buildID = sh(script: "curl -s  $buildURL/RELEASE.INFO  | grep BUILD | cut -d':' -f2 | tr -d '\"' | xargs", returnStdout: true).trim()
-    if ( buildURL.contains("/cortx/github/main/") || buildURL.contains("/cortx/github/stable/") ) {
-        buildURL = "${buildRoot}/${buildID}/prod"
-    } else if ( buildURL.contains("/cortx/github/integration-custom-ci/")) {
-        buildURL = "${buildRoot}/custom-build-${buildID}"
+    buildBranch = sh(script: "curl -s  $buildURL/RELEASE.INFO  | grep BRANCH | cut -d':' -f2 | tr -d '\"' | xargs", returnStdout: true).trim()
+    if ( buildBranch == "main" || buildBranch == "stable" ) {
+        actualBuildURL = "${buildRoot}/${buildID}/prod"
+    } else if ( buildBranch == "integration-custom-ci" ) {
+        actualBuildURL = "${buildRoot}/custom-build-${buildID}"
     }
 
- return buildURL  
+ return actualBuildURL  
 }
 
 // Get failed component name
-def getComponentInfo(String stage) {
+def getComponentInfo(String failedStage) {
     
-    stage = stage.count(".") > 1 ? stage.tokenize(".")[0]+"."+stage.tokenize(".")[1] : stage
+    stage = failedStage.count(".") > 1 ? failedStage.tokenize(".")[0]+"."+failedStage.tokenize(".")[1] : failedStage
     
     def defaultComponentMap = [ name : "RE", email : "CORTX.DevOps.RE@seagate.com"]
     def componentInfoMap = [
@@ -484,7 +427,7 @@ def markNodeforCleanup() {
 }
 
 // Create jira issues on failure and input parameter 
-def createJiraIssue(String failedStage, String failedComponent, String failureLog) {
+def logJiraIssue(String failedStage, String failedComponent, String failureLog) {
 
     def issue = [
                     fields: [ 
