@@ -28,6 +28,6 @@
     secondary_host2: "{{ secondary_hostname2.stdout }}"
 
 - name: Cluster Create
-  script: files/cluster_create_passwordless_ssh.sh  {{ primary_host }} {{ secondary_host1 }} {{ secondary_host2 }} {{ host_password }} {{ MGMT_VIP }} {{ CORTX_BUILD_URL }}
+  script: files/cluster_create_passwordless_ssh.sh  {{ primary_host }} {{ secondary_host1 }} {{ secondary_host2 }} {{ ansible_ssh_pass }} {{ MGMT_VIP }} {{ CORTX_BUILD_URL }}
   delegate_to: srvnode-1
   
