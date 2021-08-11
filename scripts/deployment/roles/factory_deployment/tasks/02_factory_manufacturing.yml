@@ -15,7 +15,7 @@
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}" 
   
-- name: "Server Configuration srvnode-1"
+- name: "Server Configuration"
   command: cortx_setup server config --name "{{item}}" --type HW
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}" 
