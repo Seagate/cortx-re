@@ -6,7 +6,7 @@
   with_items: "{{ groups['srvnodes'] }}" 
    
 - name: Firewall configuration
-  shell: cortx_setup node prepare firewall --config yaml:///root/firewall_config.yaml
+  shell: cortx_setup node prepare firewall --config yaml:///opt/seagate/cortx_configs/firewall_config.yaml
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}" 
   
