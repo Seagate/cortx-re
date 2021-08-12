@@ -182,29 +182,29 @@
 
 # cvg0 and cvg1 storage config on srvnode-1
 - name: "Storage Configuration cvg 0 data_devices on srvnode-1"
-  command: cortx_setup storage config --cvg 0 --data-devices "{{ cvg0_data_node1 }}" --metadata-devices "{{ cvg0_meta_node1 }}"
+  command: cortx_setup storage config --cvg dg01 --data-devices "{{ cvg0_data_node1 }}" --metadata-devices "{{ cvg0_meta_node1 }}"
   delegate_to: "srvnode-1"
   
 - name: "Storage Configuration cvg 1 data_devices on srvnode-1 "
-  command: cortx_setup storage config --cvg 1 --data-devices "{{ cvg1_data_node1 }}" --metadata-devices "{{ cvg1_meta_node1 }}"
+  command: cortx_setup storage config --cvg dg02 --data-devices "{{ cvg1_data_node1 }}" --metadata-devices "{{ cvg1_meta_node1 }}"
   delegate_to: "srvnode-1"
   
 # cvg0 and cvg1 storage config on srvnode-2
 - name: "Storage Configuration cvg 0 data_devices on srvnode-2"
-  command: cortx_setup storage config --cvg 0 --data-devices "{{ cvg0_data_node2 }}" --metadata-devices "{{ cvg0_meta_node2 }}"
+  command: cortx_setup storage config --cvg dg01 --data-devices "{{ cvg0_data_node2 }}" --metadata-devices "{{ cvg0_meta_node2 }}"
   delegate_to: "srvnode-2"
 
 - name: "Storage Configuration cvg 1 data_devices on srvnode-2 "
-  command: cortx_setup storage config --cvg 1 --data-devices "{{ cvg1_data_node2 }}" --metadata-devices "{{ cvg1_meta_node2 }}"
+  command: cortx_setup storage config --cvg dg02 --data-devices "{{ cvg1_data_node2 }}" --metadata-devices "{{ cvg1_meta_node2 }}"
   delegate_to: "srvnode-2"
 
 # cvg0 storage config on srvnode-3
 - name: "Storage Configuration cvg 0 data_devices on srvnode-3"
-  command: cortx_setup storage config --cvg 0 --data-devices "{{ cvg0_data_node3 }}" --metadata-devices "{{ cvg0_meta_node3 }}"
+  command: cortx_setup storage config --cvg dg01 --data-devices "{{ cvg0_data_node3 }}" --metadata-devices "{{ cvg0_meta_node3 }}"
   delegate_to: "srvnode-3"
   
 - name: "Storage Configuration cvg 1 data_devices on srvnode-3 "
-  command: cortx_setup storage config --cvg 1 --data-devices "{{ cvg1_data_node3 }}" --metadata-devices "{{ cvg1_meta_node3 }}"
+  command: cortx_setup storage config --cvg dg02 --data-devices "{{ cvg1_data_node3 }}" --metadata-devices "{{ cvg1_meta_node3 }}"
   delegate_to: "srvnode-3"
 
 
