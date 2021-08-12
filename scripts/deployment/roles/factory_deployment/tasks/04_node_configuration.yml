@@ -11,12 +11,12 @@
   with_items: "{{ groups['srvnodes'] }}" 
 
 - name: System Resource Manifest
-  shell: cortx_setup resource show --manifest [--type=<resource-type-list> --state=<resource-state-list>]
+  shell: cortx_setup resource show --manifest --resource_type 'node'
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}" 
 
 - name: Resource Health Check
-  shell: cortx_setup resource show --health [--type=<resource-type-list> --state=<resource-state-list>]
+  shell: cortx_setup resource show --health --resource_type 'node'
   delegate_to: "{{ item }}"
   with_items: groups.all
 
