@@ -18,7 +18,7 @@
 - name: Resource Health Check
   shell: cortx_setup resource show --health --resource_type 'node'
   delegate_to: "{{ item }}"
-  with_items: groups.all
+  with_items: "{{ groups['srvnodes'] }}" 
 
 - name: Node Signature set config-key
   shell: cortx_setup signature set --key LR_SIGNATURE --value HP1_5U84
