@@ -5,45 +5,15 @@
   when: item not in vars
   with_items: "{{required_vars}}"
 
-#- set_fact:
-#    file_name: "{{ CONFIG_URL | basename }}"
-
 - name: Download config file
   get_url:
     url: "{{CONFIG_URL}}"
     dest: inventories/factory_deployment/hosts_srvnodes
     
-#- shell: cat "/root/{{file_name}}"
-#  register: result
-      
-#- set_fact:
-#    myvar: "{{ result.stdout | from_yaml | to_json }}"
-
-#- copy:
-#    content: "{{ myvar }}"
-#    dest:    my.json
-        
-#- name: "[ Prepare ] : Generate host file"
-#  template:
-#    src: hosts_srvnodes.j2
-#    dest: inventories/factory_deployment/hosts_srvnodes
-#    mode: '0754'
-
 - meta: refresh_inventory
 
-
-#- name: show templating results
-#  debug:
-#    msg: "{{ lookup('template', './hosts_srvnodes.j2') }}"    
-    
 - include: passwordless_authentication.yml
 
 - name: "[deploy-prep] : Wait for SSH Connection"
   pause:
-    minutes: 1
-
-#- name: show templating results
-#  debug:
-#    msg: "{{ lookup('template', './hosts_srvnodes.j2') }}"    
-
-
+    minutes: 1 
