@@ -9,7 +9,6 @@ REQUIRED_DEVICES: 64
 
 required_vars:
   - DEPLOY_TYPE
-  - NODES
   - CONFIG_URL
   - CORTX_BUILD_URL
   - CORTX_PREP_URL
