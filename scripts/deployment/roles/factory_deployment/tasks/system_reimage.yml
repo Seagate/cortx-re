@@ -1,8 +1,5 @@
 ---
 
-- name: "Display nodes"
-  shell: echo "{{NODES}}"
-  
 - name: "[reimage] : Re-Image nodes using satellite API" 
   command: python3 -u {{ role_path }}/files/autoreimage.py -hw {{ hostvars[item]['ansible_host'] }} -un {{ SATELLITE_UN }} -pw {{ SATELLITE_PW }}
   with_items: "{{ groups['srvnodes'] }}"
