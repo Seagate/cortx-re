@@ -39,9 +39,10 @@ COPY ./docker/cortx-deploy/pip.conf /etc/pip.conf
 RUN yum-config-manager --add-repo ${CORTX_ARTIFACT_REPO}/cortx_iso/ \
     && yum-config-manager --add-repo ${EXTERNAL_ARTIFACT_REPO}
 
-RUN yum install python3-pip --nogpgcheck -y \
+RUN yum install sudo which python3-pip --nogpgcheck -y \
     && pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/main/py-utils/python_requirements.txt \
-    && pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/main/py-utils/python_requirements.ext.txt
+    && pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/main/py-utils/python_requirements.ext.txt \
+    && rm -rf /var/cache/yum
 
 RUN yum install --nogpgcheck -y http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/custom-deps/motr/libfabric/libfabric-1.11.2-1.el7.x86_64.rpm \
     && rm -rf /var/cache/yum
