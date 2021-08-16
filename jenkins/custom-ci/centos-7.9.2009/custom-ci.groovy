@@ -27,6 +27,7 @@ pipeline {
 		ansiColor('xterm')
 		parallelsAlwaysFailFast()
 		quietPeriod(60)
+		buildDiscarder(logRotator(daysToKeepStr: '5', numToKeepStr: '10'))
 	}
 
 	parameters {
