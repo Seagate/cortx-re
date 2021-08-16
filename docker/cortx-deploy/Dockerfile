@@ -45,7 +45,7 @@ RUN yum-config-manager --add-repo ${BUILD_URL}/cortx_iso/ \
 
 RUN yum install --nogpgcheck -y sudo \
      which \
-     python3-pip --nogpgcheck -y \
+     python3-pip \
     && pip3 install  --no-cache-dir --trusted-host $(echo $BUILD_URL | awk -F '/' '{print $3}')  -i $BUILD_URL/python_deps  -r https://raw.githubusercontent.com/Seagate/cortx-utils/main/py-utils/python_requirements.txt -r https://raw.githubusercontent.com/Seagate/cortx-utils/main/py-utils/python_requirements.ext.txt \
     && rm -rf /var/cache/yum
 
