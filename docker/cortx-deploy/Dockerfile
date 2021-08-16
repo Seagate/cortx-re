@@ -25,8 +25,7 @@ FROM centos:${CENTOS_RELEASE}
 ARG CENTOS_RELEASE
 ARG ENVIRONMENT
 ARG GIT_HASH
-ARG CORTX_ARTIFACT_REPO
-ARG EXTERNAL_ARTIFACT_REPO
+ARG BUILD_URL
 
 LABEL maintainer="cortx.opensource@seagate.com" \
       org.opencontainers.image.title="CORTX Image" \
@@ -34,14 +33,12 @@ LABEL maintainer="cortx.opensource@seagate.com" \
 
 ENV GIT_HASH $GIT_HASH
 
-COPY ./docker/cortx-deploy/pip.conf /etc/pip.conf
-
-RUN yum-config-manager --add-repo ${CORTX_ARTIFACT_REPO}/cortx_iso/ \
-    && yum-config-manager --add-repo ${EXTERNAL_ARTIFACT_REPO}
+RUN yum-config-manager --add-repo ${BUILD_URL}/cortx_iso/ \
+    && yum-config-manager --add-repo ${BUILD_URL}/3rd_party \
+    && curl ${BUILD_URL}/RELEASE.INFO -o RELEASE.INFO 
 
 RUN yum install sudo which python3-pip --nogpgcheck -y \
-    && pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/main/py-utils/python_requirements.txt \
-    && pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/main/py-utils/python_requirements.ext.txt \
+    && pip3 install  --no-cache-dir --trusted-host $(echo $BUILD_URL | awk -F '/' '{print $3}')  -i $BUILD_URL/python_deps  -r https://raw.githubusercontent.com/Seagate/cortx-utils/main/py-utils/python_requirements.txt -r https://raw.githubusercontent.com/Seagate/cortx-utils/main/py-utils/python_requirements.ext.txt \
     && rm -rf /var/cache/yum
 
 RUN yum install --nogpgcheck -y http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/custom-deps/motr/libfabric/libfabric-1.11.2-1.el7.x86_64.rpm \
@@ -51,6 +48,8 @@ RUN yum install --nogpgcheck -y cortx-py-utils \
     cortx-hare \
     cortx-motr \ 
     cortx-s3server \
+    cortx-csm_agent \
+    cortx-csm_web \
     && rm -rf /var/cache/yum
 
 RUN rm -rf /etc/yum.repos.d/cortx-storage.colo.seagate.com_releases_cortx_* \

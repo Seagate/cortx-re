@@ -21,13 +21,11 @@ version: "3"
 
 services:
   cortx-all-centos-7.9.2009:
-    image: ghcr.io/seagate/cortx-all:centos-7.9.2009
+    image: ghcr.io/seagate/cortx-all:$TAG
     build:
       context: ../../
       dockerfile: ./docker/cortx-deploy/Dockerfile
       args:
        CENTOS_RELEASE: 7.9.2009
        ENVIRONMENT: internal-ci
-       CORTX_ARTIFACT_REPO: http://cortx-storage.colo.seagate.com/releases/cortx/github/main/centos-7.9.2009/last_successful_prod/
-       EXTERNAL_ARTIFACT_REPO: http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/centos/centos-7.9.2009-2.0.0-latest/
-        
+       BUILD_URL: http://cortx-storage.colo.seagate.com/releases/cortx/github/main/centos-7.9.2009/last_successful_prod/
