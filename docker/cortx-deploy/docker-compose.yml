@@ -20,7 +20,7 @@
 version: "3"
 
 services:
-  cortx-all-centos-7.9.2009:
+  cortx-all:
     image: ghcr.io/seagate/cortx-all:$TAG
     build:
       context: ../../

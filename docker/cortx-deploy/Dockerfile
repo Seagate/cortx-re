@@ -33,6 +33,12 @@ LABEL maintainer="cortx.opensource@seagate.com" \
 
 ENV GIT_HASH $GIT_HASH
 
+#Disable default repositories. 
+RUN rm -rf /etc/yum.repos.d/CentOS-*
+
+#Add Internal and CORTX uploads repository
+COPY ./docker/cortx-build/${ENVIRONMENT}/C${CENTOS_RELEASE}.repo /etc/yum.repos.d/
+
 RUN yum-config-manager --add-repo ${BUILD_URL}/cortx_iso/ \
     && yum-config-manager --add-repo ${BUILD_URL}/3rd_party \
     && curl ${BUILD_URL}/RELEASE.INFO -o RELEASE.INFO 
