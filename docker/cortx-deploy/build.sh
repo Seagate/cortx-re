@@ -20,7 +20,6 @@
 
 set -e -o pipefail
 
-
 usage() { echo "Usage: $0 [-b build url] [ -p push docker-image to GHCR yes/no. Default yes ]" 1>&2; exit 1; }
 
 VERSION=2.0.0
