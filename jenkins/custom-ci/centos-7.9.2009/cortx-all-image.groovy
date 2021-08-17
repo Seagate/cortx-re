@@ -53,7 +53,7 @@ pipeline {
         stage('Build & push Image') {
             steps {
 				script { build_stage = env.STAGE_NAME }
-                sh encoding: 'utf-8', label: 'Build cortx-prereq package', script: """
+                sh encoding: 'utf-8', label: 'Build cortx-all docker image', script: """
                     pushd ./docker/cortx-deploy
                         sh ./build.sh $BUILD_URL
                     popd

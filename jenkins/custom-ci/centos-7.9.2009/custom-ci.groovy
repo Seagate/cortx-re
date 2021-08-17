@@ -62,6 +62,13 @@ pipeline {
 			choices: ['cortx-2.0', 'custom'],
 			description: 'Third Party Python Version to use.'
 		)
+
+		booleanParam(
+			defaultValue: false, 
+			description: 'Build CORTX-ALL Docker Image', 
+			name: 'DOCKER_IMAGE'
+		)
+		
 	}
 
 	stages {
@@ -442,6 +449,26 @@ pipeline {
 					echo "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/$os_version/$release_tag/iso/$release_tag-single.iso"
 		        '''
 		    }
+		}
+
+		stage ("Build cortx-all docker image") {
+			when {  expression { return DOCKER_IMAGE ==~ /(?i)(Y|YES|T|TRUE|ON|RUN)/ } }
+			steps {
+				script { build_stage = env.STAGE_NAME }	
+				script {
+					try {	
+						def csm_web_build = build job: 'cortx-all-docker-image', wait: true,
+									parameters: [
+										string(name: 'CORTX_RE_URL', value: "https://github.com/shailesh-vaidya/cortx-re"),
+										string(name: 'CORTX_RE_BRANCH', value: "k8-patch-2"),
+										string(name: 'BUILD_URL', value: "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/$os_version/$release_tag")
+									]
+					} catch (err) {
+						build_stage = env.STAGE_NAME
+						error "Failed to Build Docker Image"
+					}
+				}
+			}
 		}
 	}
 
