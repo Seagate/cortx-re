@@ -51,5 +51,5 @@ rm -rf RELEASE.INFO
 pushd ../.././
 export TAG=$DOCKER_BUILD_BRANCH-$DOCKER_BUILD_BUILD
 docker-compose -f docker/cortx-deploy/docker-compose.yml build --force-rm  --compress --build-arg GIT_HASH="$(git rev-parse --short HEAD)" --build-arg BUILD_URL=$BUILD_URL  cortx-all
-docker-compose -f docker/cortx-deploy/docker-compose.yml push
+docker-compose -f docker/cortx-deploy/docker-compose.yml push cortx-all
 popd
