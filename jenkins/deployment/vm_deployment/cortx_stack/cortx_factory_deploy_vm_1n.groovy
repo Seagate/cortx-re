@@ -339,7 +339,7 @@ def getActualBuild(buildURL) {
     buildBranch = sh(script: "curl -s  $buildURL/RELEASE.INFO  | grep BRANCH | cut -d':' -f2 | tr -d '\"' | xargs", returnStdout: true).trim()
     if ( buildBranch == "main" || buildBranch == "stable" ) {
         actualBuildURL = "${buildRoot}/${buildID}/prod"
-    } else if ( buildBranch == "integration-custom-ci" ) {
+    } else if ( buildBranch == "custom-ci" ) {
         actualBuildURL = "${buildRoot}/custom-build-${buildID}"
     }
 
