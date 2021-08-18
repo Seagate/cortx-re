@@ -16,7 +16,7 @@
 #
 # For any questions about this software or licensing,
 # please email opensource@seagate.com or cortx-questions@seagate.com.
-#
+
 
 RELEASE_INFO_URL=$1
 GIT_TAG=$2
