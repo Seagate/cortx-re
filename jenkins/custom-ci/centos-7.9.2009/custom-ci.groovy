@@ -457,7 +457,7 @@ pipeline {
 				script { build_stage = env.STAGE_NAME }	
 				script {
 					try {	
-						def csm_web_build = build job: 'cortx-all-docker-image', wait: true,
+						def docker_image_build = build job: 'cortx-all-docker-image', wait: true,
 									parameters: [
 										string(name: 'CORTX_RE_URL', value: "https://github.com/shailesh-vaidya/cortx-re"),
 										string(name: 'CORTX_RE_BRANCH', value: "k8-patch-2"),
