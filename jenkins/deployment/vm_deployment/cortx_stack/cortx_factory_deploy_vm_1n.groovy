@@ -199,6 +199,7 @@ pipeline {
                 
                 // 4. Assume Deployment Status Based on log results
                 hctlStatus = ""
+                pcsStatus = ""
                 if ( fileExists('artifacts/srvnode1/cortx_deployment/log/hctl_status.log') && fileExists('artifacts/srvnode1/cortx_deployment/log/pcs_status.log') && currentBuild.currentResult == "SUCCESS" ) {
                     hctlStatus = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/hctl_status.log')
                     pcsStatus = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/pcs_status.log')
