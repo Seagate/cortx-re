@@ -26,7 +26,6 @@ pipeline {
 		timestamps()
 		ansiColor('xterm')
 		parallelsAlwaysFailFast()
-		quietPeriod(60)
 	}
 
 	parameters {
