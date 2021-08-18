@@ -58,6 +58,7 @@ fi
 docker-compose -f docker/cortx-deploy/docker-compose.yml build --force-rm  --compress --build-arg GIT_HASH="$(git rev-parse --short HEAD)" --build-arg BUILD_URL=$BUILD_URL  cortx-all
 
 if [ $DOCKER_PUSH == "yes" ];then
+        echo "Pushing Docker image to GitHub Container Registry"
 	docker-compose -f docker/cortx-deploy/docker-compose.yml push cortx-all
 else
 	echo "Docker Image push skipped"
