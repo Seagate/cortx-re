@@ -1,16 +1,16 @@
-[base]
+[local-base]
 gpgcheck=0
 enabled=1
 baseurl=http://ssc-satellite1.colo.seagate.com/pulp/repos/EOS/Library/custom/CentOS-7/CentOS-7-OS/
 name=base
 
-[epel]
+[local-epel]
 gpgcheck=0
 enabled=1
 baseurl=http://ssc-satellite1.colo.seagate.com/pulp/repos/EOS/Library/custom/EPEL-7/EPEL-7/
 name=epel
 
-[extras]
+[local-extras]
 gpgcheck=0
 enabled=1
 baseurl=http://ssc-satellite1.colo.seagate.com/pulp/repos/EOS/Library/custom/CentOS-7/CentOS-7-Extras/
