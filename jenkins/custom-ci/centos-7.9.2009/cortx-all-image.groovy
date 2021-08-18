@@ -21,6 +21,12 @@ pipeline {
         string(name: 'CORTX_RE_URL', defaultValue: 'https://github.com/Seagate/cortx-re.git', description: 'Repository URL for cortx-all image build.')
 		string(name: 'CORTX_RE_BRANCH', defaultValue: 'kubernetes', description: 'Branch for cortx-all image build.')
 		string(name: 'BUILD_URL', defaultValue: 'http://cortx-storage.colo.seagate.com/releases/cortx/github/main/centos-7.8.2003/last_successful_prod/', description: 'Build URL for cortx-all docker image')
+
+        choice (
+            choices: ['yes' , 'no'],
+            description: 'Push newly built Docker image to GitHub ',
+            name: 'GITHUB_PUSH'
+        )
 	}	
     
     stages {
@@ -56,7 +62,11 @@ pipeline {
 				script { build_stage = env.STAGE_NAME }
                 sh encoding: 'utf-8', label: 'Build cortx-all docker image', script: """
                     pushd ./docker/cortx-deploy
-                        sh ./build.sh $BUILD_URL
+                        if [ $GITHUB_PUSH == yes ];then
+                            sh ./build.sh -b $BUILD_URL
+                        else
+                            sh ./build.sh -b $BUILD_URL -p no
+                        fi
                     popd
                     docker logout  
                 """
@@ -67,14 +77,16 @@ pipeline {
     post {
 
 		always {
+            cleanWs()
 			script {
-				env.release_build_location = "https://github.com/Seagate/cortx-re/pkgs/container/cortx-all"
+				env.docker_image_location = "https://github.com/Seagate/cortx-re/pkgs/container/cortx-all"
+                env.image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' | head -1", returnStdout: true).trim()
 				env.build_stage = "${build_stage}"
 				def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
                 
                 def mailRecipients = "shailesh.vaidya@seagate.com"
                 emailext ( 
-                    body: '''${SCRIPT, template="release-email.template"}''',
+                    body: '''${SCRIPT, template="docker-image-email.template"}''',
                     mimeType: 'text/html',
                     subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
                     attachLog: true,
