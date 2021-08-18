@@ -84,7 +84,7 @@ pipeline {
 				env.build_stage = "${build_stage}"
 				def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
                 
-                def mailRecipients = "shailesh.vaidya@seagate.com"
+                def mailRecipients = 'cortx.sme@seagate.com, CORTX.SW.Architecture.Team@seagate.com, CORTX.DevOps.RE@seagate.com'
                 emailext ( 
                     body: '''${SCRIPT, template="docker-image-email.template"}''',
                     mimeType: 'text/html',
