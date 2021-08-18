@@ -189,7 +189,7 @@ pipeline {
                     pushd scripts/release_support
                         sh build_release_info.sh -b $branch -v $version -l $integration_dir/$release_tag/dev -t $cortx_build_dir/$release_tag/3rd_party
                         sh build_release_info.sh -b $branch -v $version -l $integration_dir/$release_tag/prod -t $cortx_build_dir/$release_tag/3rd_party
-                        sh build_readme.sh $integration_dir/$release_tag
+                        sh build_readme.sh "$integration_dir/$release_tag"
                     popd
                     
                     cp $integration_dir/$release_tag/README.txt .
@@ -249,7 +249,7 @@ pipeline {
                 sh label: 'Additional Files', script:'''
                 cortx_prvsnr_preq=$(ls "$cortx_build_dir/$release_tag/cortx_iso" | grep "python36-cortx-prvsnr" | cut -d- -f5 | cut -d_ -f2 | cut -d. -f1 | sed s/"git"//)
                     
-                wget -O $integration_dir/$release_tag/prod/iso/cortx-prep-$version-$BUILD_NUMBER.sh https://raw.githubusercontent.com/Seagate/cortx-prvsnr/$cortx_prvsnr_preq/cli/src/cortx_prep.sh
+                wget -O $integration_dir/$release_tag/prod/iso/install-$version-$BUILD_NUMBER.sh https://raw.githubusercontent.com/Seagate/cortx-prvsnr/$cortx_prvsnr_preq/srv/components/provisioner/scripts/install.sh
 
                 ln -s $cortx_os_iso $integration_dir/$release_tag/prod/iso/$(basename $cortx_os_iso)
  

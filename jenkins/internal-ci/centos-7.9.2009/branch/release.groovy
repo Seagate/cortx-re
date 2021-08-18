@@ -248,7 +248,7 @@ pipeline {
                 sh label: 'Additional Files', script:'''
                 cortx_prvsnr_preq=$(ls "$cortx_build_dir/$release_tag/cortx_iso" | grep "python36-cortx-prvsnr" | cut -d- -f5 | cut -d_ -f2 | cut -d. -f1 | sed s/"git"//)
                     
-                wget -O $integration_dir/$release_tag/prod/iso/install-$version-$BUILD_NUMBER.sh https://raw.githubusercontent.com/Seagate/cortx-prvsnr/$cortx_prvsnr_preq/srv/components/provisioner/scripts/cortx_prep.sh
+                wget -O $integration_dir/$release_tag/prod/iso/install-$version-$BUILD_NUMBER.sh https://raw.githubusercontent.com/Seagate/cortx-prvsnr/$cortx_prvsnr_preq/srv/components/provisioner/scripts/install.sh
 
                 ln -s $cortx_os_iso $integration_dir/$release_tag/prod/iso/$(basename $cortx_os_iso)
  
@@ -271,6 +271,24 @@ pipeline {
                     ln -s $integration_dir/$release_tag/prod last_successful_prod
                     popd
                 '''
+            }
+        }
+
+        stage ("Deploy") {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                script {
+                    build job: 'main deploy 1n', propagate: false, wait: false, parameters: [
+                            string(name: 'CORTX_BUILD', value: "http://cortx-storage.colo.seagate.com/releases/cortx/github/${branch}/${os_version}/${env.release_tag}/prod"),
+                            booleanParam(name: 'CREATE_JIRA_ISSUE_ON_FAILURE', value: true),
+                            booleanParam(name: 'AUTOMATED', value: true)
+                    ]
+                    build job: 'main deploy 3n', propagate: false, wait: false, parameters: [
+                            string(name: 'CORTX_BUILD', value: "http://cortx-storage.colo.seagate.com/releases/cortx/github/${branch}/${os_version}/${env.release_tag}/prod"),
+                            booleanParam(name: 'CREATE_JIRA_ISSUE_ON_FAILURE', value: true),
+                            booleanParam(name: 'AUTOMATED', value: true)
+                    ]       
+                }
             }
         }
     }
