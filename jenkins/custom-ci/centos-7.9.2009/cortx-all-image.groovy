@@ -30,6 +30,7 @@ pipeline {
                 sh encoding: 'utf-8', label: 'Validate Docker pre-requisite', script: """
                    systemctl status docker
                    /usr/local/bin/docker-compose --version
+                   echo 'y' | docker image prune
                 """
 			}
 		}
@@ -68,7 +69,6 @@ pipeline {
 		always {
 			script {
 				env.release_build_location = "https://github.com/Seagate/cortx-re/pkgs/container/cortx-all"
-				env.release_build = "${env.release_tag}"
 				env.build_stage = "${build_stage}"
 				def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
                 
