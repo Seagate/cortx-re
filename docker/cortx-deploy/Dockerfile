@@ -59,8 +59,21 @@ RUN yum install --nogpgcheck -y cortx-py-utils \
     cortx-motr \ 
     cortx-s3server \
     cortx-csm_agent \
-    cortx-csm_web \
+    java-1.8.0-openjdk-headless  \
+    ipython3 \ 
+    sshpass \ 
+    python36-m2crypto \
+    salt \ 
+    salt-master \ 
+    salt-minion \
+    glusterfs-server \
+    glusterfs-client \
     python36-cortx-prvsnr \
+    cortx-prvsnr \
+    cortx-prvsnr-cli \
+    python36-cortx-setup \
+    cortx-node-cli \
+    cortx-cli \                 
     && rm -rf /var/cache/yum
 
 RUN yum-config-manager --enable base,extras,updates && rm -rf /etc/yum.repos.d/cortx-storage.colo.seagate.com_releases_cortx_* \
