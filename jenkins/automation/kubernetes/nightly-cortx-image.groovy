@@ -26,7 +26,7 @@ pipeline {
                             string(name: 'CSM_WEB_BRANCH', value: "${COMPONENT_BRANCH}"),
                             string(name: 'HARE_BRANCH', value: "${COMPONENT_BRANCH}"),
                             string(name: 'HA_BRANCH', value: "${COMPONENT_BRANCH}"),
-                            string(name: 'MOTR_BRANCH', value: "${COMPONENT_BRANCH}"),
+                            string(name: 'MOTR_BRANCH', value: "libfabric_integration"),
                             string(name: 'PRVSNR_BRANCH', value: "${COMPONENT_BRANCH}"),
                             string(name: 'S3_BRANCH', value: "${COMPONENT_BRANCH}"),
                             string(name: 'SSPL_BRANCH', value: "${COMPONENT_BRANCH}"),

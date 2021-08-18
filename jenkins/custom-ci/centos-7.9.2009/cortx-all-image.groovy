@@ -62,4 +62,26 @@ pipeline {
             }
         }
 	}
+
+    post {
+
+		always {
+			script {
+				env.release_build_location = "https://github.com/Seagate/cortx-re/pkgs/container/cortx-all"
+				env.release_build = "${env.release_tag}"
+				env.build_stage = "${build_stage}"
+				def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
+                
+                def mailRecipients = "shailesh.vaidya@seagate.com"
+                emailext ( 
+                    body: '''${SCRIPT, template="release-email.template"}''',
+                    mimeType: 'text/html',
+                    subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
+                    attachLog: true,
+                    to: "${mailRecipients}",
+					recipientProviders: recipientProvidersClass
+                )
+            }
+        }
+    }
 }
