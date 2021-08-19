@@ -27,6 +27,12 @@ pipeline {
             description: 'Push newly built Docker image to GitHub ',
             name: 'GITHUB_PUSH'
         )
+
+        choice (
+            choices: ['DEVOPS', 'ALL'],
+            description: 'Email Notification Recipients ',
+            name: 'EMAIL_RECIPIENTS'
+        )
 	}	
     
     stages {
@@ -83,8 +89,14 @@ pipeline {
                 env.image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' | head -1", returnStdout: true).trim()
 				env.build_stage = "${build_stage}"
 				def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
-                
-                def mailRecipients = 'cortx.sme@seagate.com, CORTX.SW.Architecture.Team@seagate.com, CORTX.DevOps.RE@seagate.com'
+                if ( params.EMAIL_RECIPIENTS == "ALL" ) {
+                    mailRecipients = "cortx.sme@seagate.com, CORTX.SW.Architecture.Team@seagate.com, CORTX.DevOps.RE@seagate.com"
+                } else if ( params.EMAIL_RECIPIENTS == "DEVOPS" ) {
+                    mailRecipients = "CORTX.DevOps.RE@seagate.com"
+                } else {
+                    mailRecipients = "shailesh.vaidya@seagate.com"
+                }
+
                 emailext ( 
                     body: '''${SCRIPT, template="docker-image-email.template"}''',
                     mimeType: 'text/html',

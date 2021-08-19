@@ -34,9 +34,30 @@ pipeline {
                             string(name: 'SSPL_BRANCH', value: "${COMPONENT_BRANCH}"),
                             string(name: 'CORTX_UTILS_BRANCH', value: "${COMPONENT_BRANCH}"),
                             string(name: 'CORTX_RE_BRANCH', value: "${COMPONENT_BRANCH}"),
-                         	booleanParam(name: 'DOCKER_IMAGE',value: "true")
                         ]
             }   
         }
+
+        stage ("Build cortx-all docker image") {
+			when {  expression { return DOCKER_IMAGE ==~ /(?i)(Y|YES|T|TRUE|ON|RUN)/ } }
+			steps {
+				script { build_stage = env.STAGE_NAME }	
+				script {
+					try {	
+						def docker_image_build = build job: 'cortx-all-docker-image', wait: true,
+									parameters: [
+										string(name: 'CORTX_RE_URL', value: "https://github.com/shailesh-vaidya/cortx-re"),
+										string(name: 'CORTX_RE_BRANCH', value: "k8-patch-2"),
+										string(name: 'BUILD_URL', value: "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/$os_version/$release_tag"),
+                                        string(name: 'EMAIL_RECIPIENTS', value: "DEVOPS"),
+
+									]
+					} catch (err) {
+						build_stage = env.STAGE_NAME
+						error "Failed to Build Docker Image"
+					}
+				}
+            }
+        }	
     }
 }
