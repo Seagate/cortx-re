@@ -58,7 +58,6 @@ if [ "$CURRENT" -gt "$THRESHOLD" ] ; then
 		echo -----Files to be Deleted------- 
 		find $fpath -type f -mtime +30 ! -name '*.INFO*' -exec ls -lrt {} \;        
 	       #find $fpath -type f -mtime +30 ! -name '*.INFO*' -exec rm -rf {} \;
-		mv /mnt/data1/releases/backups/cortx_build_backup/${build[k]} $fpath/;
 		done
 	done
 done
