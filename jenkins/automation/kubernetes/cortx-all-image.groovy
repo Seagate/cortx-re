@@ -92,7 +92,7 @@ pipeline {
                 if ( params.EMAIL_RECIPIENTS == "ALL" ) {
                     mailRecipients = "cortx.sme@seagate.com, CORTX.SW.Architecture.Team@seagate.com, CORTX.DevOps.RE@seagate.com"
                 } else if ( params.EMAIL_RECIPIENTS == "DEVOPS" ) {
-                    mailRecipients = "CORTX.DevOps.RE@seagate.com"
+                    mailRecipients = "shailesh.vaidya@seagate.co"
                 } else {
                     mailRecipients = "shailesh.vaidya@seagate.com"
                 }
