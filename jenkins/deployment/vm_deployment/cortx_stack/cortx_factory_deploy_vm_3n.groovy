@@ -207,6 +207,7 @@ pipeline {
                 
                 // 4. Assume Deployment Status Based on log results
                 hctlStatus = ""
+                pcsStatus = ""
                 if ( fileExists('artifacts/srvnode1/cortx_deployment/log/hctl_status.log') && fileExists('artifacts/srvnode1/cortx_deployment/log/pcs_status.log') && currentBuild.currentResult == "SUCCESS" ) {
                     hctlStatus = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/hctl_status.log')
                     pcsStatus = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/pcs_status.log')
@@ -218,32 +219,32 @@ pipeline {
                     MESSAGE = "3 Node - Cortx Stack VM Deployment Failed for the build ${build_id}"
                     ICON = "error.gif"
                     STATUS = "FAILURE"
-                //     // Failure component name and Cause can be retrived from deployment status log
-                //     if ( fileExists('artifacts/srvnode1/cortx_deployment/log/deployment_status.log')
-                //         && fileExists('artifacts/srvnode1/cortx_deployment/log/failed_component.log') ) {
-                //         try {   
-                //             deployment_status_log = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/deployment_status.log').trim()
-                //             failed_component_stage = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/failed_component.log').trim()
-                //             failed_component_stage = failed_component_stage.trim().replaceAll("'","")
+                    // Failure component name and Cause can be retrived from deployment status log
+                    if ( fileExists('artifacts/srvnode1/cortx_deployment/log/deployment_status.log')
+                        && fileExists('artifacts/srvnode1/cortx_deployment/log/failed_component.log') ) {
+                        try {   
+                            deployment_status_log = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/deployment_status.log').trim()
+                            failed_component_stage = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/failed_component.log').trim()
+                            failed_component_stage = failed_component_stage.trim().replaceAll("'","")
                             
-                //             // Failed Component from Failed Stage
-                //             component_info_map = getComponentInfo(failed_component_stage)
-                //             component_name = component_info_map["name"]
-                //             component_email = component_info_map["email"] 
+                            // Failed Component from Failed Stage
+                            component_info_map = getComponentInfo(failed_component_stage)
+                            component_name = component_info_map["name"]
+                            component_email = component_info_map["email"] 
                     
-                //             env.failure_cause = deployment_status_log
-                //             env.deployment_status_log = deployment_status_log
-                //             env.failed_component_stage = failed_component_stage
-                //             env.component_name = component_name
-                //             env.component_email = component_email
+                            env.failure_cause = deployment_status_log
+                            env.deployment_status_log = deployment_status_log
+                            env.failed_component_stage = failed_component_stage
+                            env.component_name = component_name
+                            env.component_email = component_email
 
-                //             MESSAGE = "3 Node - Cortx Stack VM-Deployment Failed in ${component_name} for the build ${build_id}"
-                //             manager.addHtmlBadge("<br /> <b>Status :</b> <a href='${BUILD_URL}/artifact/artifacts/srvnode1/cortx_deployment/log/deployment_status.log'><b>Failed in '${component_name}'</a>")
+                            MESSAGE = "3 Node - Cortx Stack VM-Deployment Failed in ${component_name} for the build ${build_id}"
+                            manager.addHtmlBadge("<br /> <b>Status :</b> <a href='${BUILD_URL}/artifact/artifacts/srvnode1/cortx_deployment/log/deployment_status.log'><b>Failed in '${component_name}'</a>")
                         
-                //         } catch (err) {
-                //             echo err.getMessage()
-                //         }
-                //     }
+                        } catch (err) {
+                            echo err.getMessage()
+                        }
+                    }
                 } else {
                     manager.buildUnstable()
                     MESSAGE = "3 Node - Cortx Stack VM Deployment is Unstable"
@@ -255,17 +256,17 @@ pipeline {
                 //  - Jira issue should be created only when 'CREATE_JIRA_ISSUE_ON_FAILURE' option is enabled
                 //  - Jira issue should be created only when 'previous build is success' (To avoid Multiple jira tickets)
                 //  FIXME - LOGIC NEED TO BE IMPROVED TO QUERY JIRA TO IDENTIFY EXSITING TICKETS FOR THE SAME ISSUE
-                // if ( params.CREATE_JIRA_ISSUE_ON_FAILURE 
-                //     && "FAILURE".equals(currentBuild.currentResult)
-                //     && ( !params.AUTOMATED || "SUCCESS".equals(currentBuild.previousBuild.result))
-                //     &&  env.failed_component_stage && env.component_name && env.deployment_status_log ) {
+                if ( params.CREATE_JIRA_ISSUE_ON_FAILURE 
+                    && "FAILURE".equals(currentBuild.currentResult)
+                    && ( !params.AUTOMATED || "SUCCESS".equals(currentBuild.previousBuild.result))
+                    &&  env.failed_component_stage && env.component_name && env.deployment_status_log ) {
                     
-                //     jiraIssue = logJiraIssue(env.failed_component_stage, env.component_name, env.deployment_status_log)
+                    jiraIssue = logJiraIssue(env.failed_component_stage, env.component_name, env.deployment_status_log)
 
-                //     manager.addHtmlBadge(" <br /><b>Jira Issue :</b> <a href='https://jts.seagate.com/browse/${jiraIssue}'><b>${jiraIssue}</b></a>")
+                    manager.addHtmlBadge(" <br /><b>Jira Issue :</b> <a href='https://jts.seagate.com/browse/${jiraIssue}'><b>${jiraIssue}</b></a>")
 
-                //     env.jira_issue="https://jts.seagate.com/browse/${jiraIssue}"
-                // }
+                    env.jira_issue="https://jts.seagate.com/browse/${jiraIssue}"
+                }
 
                 // 5. Create Jenkins Summary page with deployment info
                 hctlStatusHTML = "<pre>${hctlStatus}</pre>"
@@ -348,7 +349,7 @@ def getActualBuild(buildURL) {
     buildBranch = sh(script: "curl -s  $buildURL/RELEASE.INFO  | grep BRANCH | cut -d':' -f2 | tr -d '\"' | xargs", returnStdout: true).trim()
     if ( buildBranch == "main" || buildBranch == "stable" ) {
         actualBuildURL = "${buildRoot}/${buildID}/prod"
-    } else if ( buildBranch == "integration-custom-ci" ) {
+    } else if ( buildBranch == "custom-ci" ) {
         actualBuildURL = "${buildRoot}/custom-build-${buildID}"
     }
 
