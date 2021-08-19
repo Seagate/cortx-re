@@ -22,15 +22,15 @@ BUILD=$1
 BRANCH=$2
 OS=$3
 
-mkdir -p /mnt/data1/releases
-mount="cortx-storage.colo.seagate.com:/mnt/data1/releases"
+mkdir -p /mnt/bigstorage/releases
+mount="cortx-storage.colo.seagate.com:/mnt/bigstorage/releases"
 echo $mount;
 grep -qs "$mount" /proc/mounts;
 if grep -qs "$mount" /proc/mounts; then
-        echo "cortx-storage.colo.seagate.com:/mnt/data1/releases is mounted."
+        echo "cortx-storage.colo.seagate.com:/mnt/bigstorage/releases is mounted."
 else
-        echo "cortx-storage.colo.seagate.com:/mnt/data1/releases is not mounted."
-        sudo mount -t nfs4 "$mount" /mnt/data1/releases
+        echo "cortx-storage.colo.seagate.com:/mnt/bigstorage/releases is not mounted."
+        sudo mount -t nfs4 "$mount" /mnt/bigstorage/releases
         if [ $? -eq 0 ]; then
                 echo "Mount success!"
         else
@@ -38,11 +38,11 @@ else
                 currentBuild.result = 'ABORTED'
         fi
 fi
-CURRENT=$(df -h | grep /mnt/data1/releases | awk '{print $5}' | sed 's/%//g')
+CURRENT=$(df -h | grep /mnt/bigstorage/releases | awk '{print $5}' | sed 's/%//g')
 THRESHOLD=75
 echo "The Current disk space is $CURRENT "
 if [ "$CURRENT" -gt "$THRESHOLD" ] ; then
-        echo Your /mnt/data1/releases partition remaining free space is critically low. Used: $CURRENT%. Threshold: $THRESHOLD%  So, 30 days older files will be deleted $(date)
+        echo Your /mnt/bigstorage/releases partition remaining free space is critically low. Used: $CURRENT%. Threshold: $THRESHOLD%  So, 30 days older files will be deleted $(date)
 
         echo ----Backup of exclude builds--------
         build=($(echo $BUILD | sed -e 's/,/ /g' -e 's/"//g'))
@@ -51,10 +51,10 @@ if [ "$CURRENT" -gt "$THRESHOLD" ] ; then
 	for i in ${!branch[@]}; do
 		for j in ${!os[@]}; do
 			for k in ${!build[@]}; do
-				fpath=/mnt/data1/releases/cortx/github/${branch[i]}/${os[j]}
+				fpath=/mnt/bigstorage/releases/cortx/github/${branch[i]}/${os[j]}
 		echo ----Backup of exclude builds--------                
-		find $fpath/${build[k]} -path $fpath -prune -false -o -name '*' -exec cp -R {} /mnt/data1/releases/backups/cortx_build_backup/ \;
-                ls -lrt /mnt/data1/releases/backups/cortx_build_backup/ | grep -w ${build[k]}
+		find $fpath/${build[k]} -path $fpath -prune -false -o -name '*' -exec cp -R {} /mnt/bigstorage/releases/backups/cortx_build_backup/ \;
+                ls -lrt /mnt/bigstorage/releases/backups/cortx_build_backup/ | grep -w ${build[k]}
 		echo -----Files to be Deleted------- 
 		find $fpath -type f -mtime +30 ! -name '*.INFO*' -exec ls -lrt {} \;        
 	       #find $fpath -type f -mtime +30 ! -name '*.INFO*' -exec rm -rf {} \;
