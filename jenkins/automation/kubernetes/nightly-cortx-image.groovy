@@ -15,6 +15,12 @@ pipeline {
 
 	parameters {  
         string(name: 'COMPONENT_BRANCH', defaultValue: 'kubernetes', description: 'Component Branch.')
+
+        choice (
+            choices: ['ALL','DEVOPS'],
+            description: 'Email Notification Recipients ',
+            name: 'EMAIL_RECIPIENTS'
+        )
 	}	
 
 
@@ -29,7 +35,7 @@ pipeline {
                                 string(name: 'CSM_WEB_BRANCH', value: "${COMPONENT_BRANCH}"),
                                 string(name: 'HARE_BRANCH', value: "${COMPONENT_BRANCH}"),
                                 string(name: 'HA_BRANCH', value: "${COMPONENT_BRANCH}"),
-                                string(name: 'MOTR_BRANCH', value: "libfabric_integration"),
+                                string(name: 'MOTR_BRANCH', value: "${COMPONENT_BRANCH}"),
                                 string(name: 'PRVSNR_BRANCH', value: "${COMPONENT_BRANCH}"),
                                 string(name: 'S3_BRANCH', value: "${COMPONENT_BRANCH}"),
                                 string(name: 'SSPL_BRANCH', value: "${COMPONENT_BRANCH}"),
@@ -51,7 +57,7 @@ pipeline {
 										string(name: 'CORTX_RE_URL', value: "https://github.com/shailesh-vaidya/cortx-re"),
 										string(name: 'CORTX_RE_BRANCH', value: "k8-patch-2"),
 										string(name: 'BUILD_URL', value: "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/centos-7.9.2009/custom-build-${env.custom_ci_build_id}"),
-                                        string(name: 'EMAIL_RECIPIENTS', value: "ALL"),
+                                        string(name: 'EMAIL_RECIPIENTS', value: "${EMAIL_RECIPIENTS}"),
 
 									]
 					} catch (err) {
