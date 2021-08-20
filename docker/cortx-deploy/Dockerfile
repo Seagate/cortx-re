@@ -79,3 +79,6 @@ RUN yum install --nogpgcheck -y cortx-py-utils \
 RUN yum-config-manager --enable base,extras,updates && rm -rf /etc/yum.repos.d/cortx-storage.colo.seagate.com_releases_cortx_* \
     && rm -rf /var/cache/yum
 
+RUN rm -rf /etc/yum.repos.d/cortx-storage.colo.seagate.com_releases_cortx_* \
+    && rm -rf /var/cache/yum
+
