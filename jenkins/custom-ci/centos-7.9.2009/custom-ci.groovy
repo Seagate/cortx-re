@@ -26,7 +26,6 @@ pipeline {
 		timestamps()
 		ansiColor('xterm')
 		parallelsAlwaysFailFast()
-		quietPeriod(60)
 	}
 
 	parameters {
@@ -62,6 +61,7 @@ pipeline {
 			choices: ['cortx-2.0', 'custom'],
 			description: 'Third Party Python Version to use.'
 		)
+	
 	}
 
 	stages {

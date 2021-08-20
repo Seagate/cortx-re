@@ -20,35 +20,47 @@
 
 set -e -o pipefail
 
-usage() { echo "Usage: $0 [-b build url]" 1>&2; exit 1; }
+usage() { echo "Usage: $0 [-b build url] [ -p push docker-image to GHCR yes/no. Default yes ]" 1>&2; exit 1; }
 
-while getopts ":b:" o; do
-    case "${o}" in
-        b)
-            BUILD_URL=${OPTARG}
-            ;;
-        *)
-            usage
-            ;;
+VERSION=2.0.0
+DOCKER_PUSH=yes
+
+while getopts "b:p:" opt; do
+    case $opt in
+        b ) BUILD_URL=$OPTARG;;
+        p ) DOCKER_PUSH=$OPTARG;;
+        h ) usage
+        exit 0;;
+        *) usage
+        exit 1;;
     esac
 done
-shift $((OPTIND-1))
 
 if [ -z "${BUILD_URL}" ] ; then
     usage
 fi
 
-echo $BUILD_URL
-
 curl $BUILD_URL/RELEASE.INFO -o RELEASE.INFO
 
-for i in BRANCH BUILD
+for PARAM in BRANCH BUILD
 do
-export DOCKER_BUILD_$i=$(grep $i RELEASE.INFO | cut -d'"' -f2)
+export DOCKER_BUILD_$PARAM=$(grep $PARAM RELEASE.INFO | cut -d'"' -f2)
 done
 rm -rf RELEASE.INFO
 
 pushd ../.././
-export TAG=$DOCKER_BUILD_BRANCH-$DOCKER_BUILD_BUILD
+if [ "$DOCKER_BUILD_BRANCH" != "stable" ]; then
+	export TAG=$VERSION-$DOCKER_BUILD_BUILD-$DOCKER_BUILD_BRANCH
+else
+	export TAG=$VERSION-$DOCKER_BUILD_BUILD
+fi
+
 docker-compose -f docker/cortx-deploy/docker-compose.yml build --force-rm  --compress --build-arg GIT_HASH="$(git rev-parse --short HEAD)" --build-arg BUILD_URL=$BUILD_URL  cortx-all
+
+if [ $DOCKER_PUSH == "yes" ];then
+        echo "Pushing Docker image to GitHub Container Registry"
+	docker-compose -f docker/cortx-deploy/docker-compose.yml push cortx-all
+else
+	echo "Docker Image push skipped"
+fi
 popd
