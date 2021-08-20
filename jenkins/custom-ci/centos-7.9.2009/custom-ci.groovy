@@ -26,7 +26,8 @@ pipeline {
 		timestamps()
 		ansiColor('xterm')
 		parallelsAlwaysFailFast()
-	}
+		buildDiscarder(logRotator(daysToKeepStr: '5', numToKeepStr: '10'))
+  }
 
 	parameters {
 		string(name: 'CSM_AGENT_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CSM Agent', trim: true)
@@ -450,7 +451,7 @@ pipeline {
 		success {
 				sh label: 'Delete Old Builds', script: '''
 				set +x
-				find ${integration_dir}/* -maxdepth 0 -mtime +15 -type d -exec rm -rf {} \\;
+				find ${integration_dir}/* -maxdepth 0 -mtime +5 -type d -exec rm -rf {} \\;
 				'''
 		}
 	
