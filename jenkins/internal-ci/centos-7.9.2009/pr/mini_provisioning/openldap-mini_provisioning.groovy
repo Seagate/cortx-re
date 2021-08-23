@@ -208,7 +208,6 @@ Recommended VM specification:
                 } 
             }
         }
-	}
 
     // post {
     //     always {
