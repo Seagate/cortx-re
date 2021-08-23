@@ -445,7 +445,7 @@ def logJiraIssue(String failedStage, String failedComponent, String failureLog) 
                         project: [key: 'EOS'],
                         issuetype: [name: 'Bug'],
                         priority: [name: "Blocker"],
-                        versions: [[name: "LDR-R2"]],
+                        versions: [[name: "CORTX-R2"]],
                         labels: ["PI-2"],
                         components: [[name: "${failedComponent}"]],
                         summary: "3N VM-Deployment Failed in ${failedComponent} for the build ${build_id}",
