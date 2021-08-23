@@ -436,7 +436,7 @@ def logJiraIssue(String failedStage, String failedComponent, String failureLog) 
                     fields: [ 
                         project: [key: 'EOS'],
                         issuetype: [name: 'Bug'],
-                        priority: [name: "Blocker"],
+                        priority: [name: "High"],
                         versions: [[name: "CORTX-R2"]],
                         labels: ["PI-2"],
                         components: [[name: "${failedComponent}"]],
