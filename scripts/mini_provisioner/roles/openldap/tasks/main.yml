@@ -1,0 +1,8 @@
+---
+- include: 01_install_prerequisites.yml
+  tags: ['01_PREREQ']
+
+- include: 02_mini_provisioning.yml
+
+- include: 03_validate.yml
+  tags: ['03_VALIDATE']
