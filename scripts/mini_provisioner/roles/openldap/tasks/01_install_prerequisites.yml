@@ -11,7 +11,7 @@
     dest: /etc/yum.repos.d/cortx.repo
 
 - name: "[Pre-Requisites] : Install dependencies"
-  shell: yum install -y gcc jq rpm-build python36 python36-pip python36-devel python36-setuptools openssl-devel libffi-devel python36-dbus
+  shell: yum install -y git gcc jq rpm-build python36 python36-pip python36-devel python36-setuptools openssl-devel libffi-devel python36-dbus
 
 - name: "[Pre-Requisites] : Install py-utils"
   shell: |
