@@ -13,5 +13,5 @@
   tags: ['02_MINI_PROV_CONFIG']
 
 - name: "[OpenLDAP Mini Provisioning] : Init"
-  shell: /opt/seagate/cortx/utils/bin/openldap_setup config --config "yaml:///opt/seagate/cortx/utils/conf/openldap.config.tmpl.3-node"
+  shell: /opt/seagate/cortx/utils/bin/openldap_setup init --config "yaml:///opt/seagate/cortx/utils/conf/openldap.init.tmpl.1-node"
   tags: ['02_MINI_PROV_INIT']
