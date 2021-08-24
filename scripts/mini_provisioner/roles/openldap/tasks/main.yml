@@ -6,3 +6,5 @@
 
 - include: 03_validate.yml
   tags: ['03_VALIDATE']
+
+- include: 04_cleanup.yml

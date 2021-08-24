@@ -1,0 +1,8 @@
+---
+- name: "[OpenLDAP Mini Provisioning] : Reset" 
+  shell: /opt/seagate/cortx/utils/bin/openldap_setup reset --config "yaml:///opt/seagate/cortx/utils/conf/openldap.reset.tmpl"
+  tags: ['04_MINI_PROV_RESET']
+
+- name: "[OpenLDAP Mini Provisioning] : Cleanup" 
+  shell: /opt/seagate/cortx/utils/bin/openldap_setup cleanup --config "yaml:///opt/seagate/cortx/utils/conf/openldap.cleanup.tmpl"
+  tags: ['04_MINI_PROV_CLEANUP']

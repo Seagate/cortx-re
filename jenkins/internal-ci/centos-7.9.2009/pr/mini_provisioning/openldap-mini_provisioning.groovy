@@ -187,11 +187,11 @@ Recommended VM specification:
                 script {
 
                     if ( params.MINI_PROV_END_STEP == "Reset" ||  params.MINI_PROV_END_STEP == "Cleanup") {
-                        runAnsible("05_MINI_PROV_RESET")
+                        runAnsible("04_MINI_PROV_RESET")
                     } 
 
                     if ( params.MINI_PROV_END_STEP == "Cleanup" ) {
-                        runAnsible("05_MINI_PROV_CLEANUP")
+                        runAnsible("04_MINI_PROV_CLEANUP")
                     } 
                     
                     if ( "${params.HOST}" == "-" ) {
