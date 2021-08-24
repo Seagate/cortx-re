@@ -53,13 +53,12 @@ pipeline {
 				script {
 					try {	
 						def docker_image_build = build job: 'cortx-all-docker-image', wait: true,
-									parameters: [
-										string(name: 'CORTX_RE_URL', value: "https://github.com/Seagate/cortx-re"),
-										string(name: 'CORTX_RE_BRANCH', value: "kubernetes"),
-										string(name: 'BUILD_URL', value: "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/centos-7.9.2009/custom-build-${env.custom_ci_build_id}"),
-                                        string(name: 'EMAIL_RECIPIENTS', value: "${EMAIL_RECIPIENTS}"),
-
-									]
+                            parameters: [
+                                string(name: 'CORTX_RE_URL', value: "https://github.com/shailesh-vaidya/cortx-re"),
+                                string(name: 'CORTX_RE_BRANCH', value: "kubernetes"),
+                                string(name: 'BUILD_URL', value: "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/centos-7.9.2009/custom-build-${env.custom_ci_build_id}"),
+                                string(name: 'EMAIL_RECIPIENTS', value: "${EMAIL_RECIPIENTS}"),
+                            ]
 					} catch (err) {
 						build_stage = env.STAGE_NAME
 						error "Failed to Build Docker Image"
