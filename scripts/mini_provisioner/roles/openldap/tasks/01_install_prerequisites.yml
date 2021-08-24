@@ -23,6 +23,7 @@
     ./jenkins/build.sh -v 2.0.0 -b 2
     cd py-utils/dist
     yum install -y cortx-py-utils-*.noarch.rpm
+    yum install -y symas-openldap symas-openldap-servers symas-openldap-clients openldap-devel python36-ldap
 
 - name: "[Pre-Requisites] : Start slapd service"
   shell: systemctl start slapd
