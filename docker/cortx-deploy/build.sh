@@ -70,6 +70,7 @@ popd
 if [ "$TAG_LATEST" == "yes" ];then
 	echo "Tagging generated image as latest"
         docker tag $(docker images ghcr.io/seagate/cortx-all --format='{{.Repository}}:{{.Tag}}' | head -1) ghcr.io/seagate/cortx-all:$(echo $TAG | sed 's|'$DOCKER_BUILD_BUILD'|latest|g')
+        docker push ghcr.io/seagate/cortx-all:$(echo $TAG | sed 's|'$DOCKER_BUILD_BUILD'|latest|g')  
 else 
 	echo "Latest tag creation skipped"
 fi
