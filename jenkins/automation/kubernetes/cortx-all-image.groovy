@@ -69,7 +69,7 @@ pipeline {
                 sh encoding: 'utf-8', label: 'Build cortx-all docker image', script: """
                     pushd ./docker/cortx-deploy
                         if [ $GITHUB_PUSH == yes ];then
-                            sh ./build.sh -b $BUILD_URL
+                            sh ./build.sh -b $BUILD_URL -t yes
                         else
                             sh ./build.sh -b $BUILD_URL -p no
                         fi
