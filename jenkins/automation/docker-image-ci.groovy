@@ -8,6 +8,7 @@ pipeline {
    	environment {
 	    GITHUB_CRED = credentials('shailesh-github')
         SERVICE_NAME = "${ENVIRONMENT == 'internal-ci' ? "cortx-build-internal-$OS_VERSION" : "cortx-build-$OS_VERSION"}"
+        REPO_NAME = "${ENVIRONMENT == 'internal-ci' ? "ghcr.io/seagate/cortx-re" : "ghcr.io/seagate"}"
 	}
 
 
@@ -77,7 +78,7 @@ pipeline {
 
                 sh label: 'Validate Docker image', script: '''
                 IMAGE_NAME=$(echo $SERVICE_NAME | sed 's/-c/:c/g')
-                docker run --rm -v /mnt/workspace:/cortx-workspace -v /mnt/artifacts:/var/artifacts ghcr.io/seagate/cortx-re/$IMAGE_NAME make clean build
+                docker run --rm -v /mnt/workspace:/cortx-workspace -v /mnt/artifacts:/var/artifacts $REPO_NAME/$IMAGE_NAME make clean build
                 echo "CORTX Packages generated..."
                 grep -w "cortx-motr\\|cortx-s3server\\|cortx-hare\\|cortx-csm_agent\\|cortx-csm_web\\|cortx-sspl\\|cortx-s3server\\|cortx-prvsnr" /mnt/artifacts/0/cortx_iso/RELEASE.INFO
                 cat /mnt/artifacts/0/cortx_iso/RELEASE.INFO
