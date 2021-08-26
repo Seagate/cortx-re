@@ -8,7 +8,8 @@ pipeline {
             }
         }
         parameters {  
-	    string(name: 'CORTX_BUILD', defaultValue: 'http://cortx-storage.colo.seagate.com/releases/cortx/github/main/centos-7.9.2009/last_successful_prod/', description: 'Build URL')
+	    string(name: 'CORTX_UTILS_URL', defaultValue: 'https://github.com/Seagate/cortx-utils', description: 'cortx-utils repo url')
+        string(name: 'CORTX_UTILS_BRANCH', defaultValue: 'main', description: 'cortx-utils repo branch')
         choice(name: 'MINI_PROV_END_STEP', choices: ["Cleanup", "Reset", "Test", "Init", "Config", "Prepare", "Post_Install", "Pre_Requisites" ], description: '''<pre>
 
 Cleanup         -> <a href="https://github.com/Seagate/cortx-utils/wiki/OpenLDAP-Setup#cleanup">openldap-provisioning-on-single-node-VM-cluster:-Manual#openldapcleanup</a>
@@ -46,6 +47,7 @@ Recommended VM specification:
             NODE_USER = "${NODE_DEFAULT_SSH_CRED_USR}"
             NODE1_HOST = "${params.HOST == '-' ? NODE1_HOST : params.HOST }"
             NODE_PASS = "${HOST_PASS == '-' ? NODE_DEFAULT_SSH_CRED_PSW : HOST_PASS}"
+            THIRD_PARTY_LOCATION = "http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/centos/centos-7.9.2009-2.0.0-latest/"
         }
         stages {
             stage ('Prerequisite') {
@@ -58,9 +60,11 @@ Recommended VM specification:
 
                         sh """
                             set +x
-                            echo "--------------HW DEPLOYMENT PARAMETERS -------------------"
-                            echo "NODE1             = ${NODE1_HOST}"
-                            echo "CORTX_BUILD       = ${CORTX_BUILD}"
+                            echo "-------------- DEPLOYMENT PARAMETERS -------------------"
+                            echo "NODE1                 = ${NODE1_HOST}"
+                            echo "CORTX_UTILS_URL       = ${CORTX_UTILS_URL}"
+                            echo "CORTX_UTILS_BRANCH    = ${CORTX_UTILS_BRANCH}" 
+                            echo "THIRD_PARTY_LOCATION  = ${THIRD_PARTY_LOCATION}"
                             echo "-----------------------------------------------------------"
                         """
 
@@ -242,19 +246,6 @@ Recommended VM specification:
     // }
 }	
 
-// Method returns VM Host Information ( host, ssh cred)
-def getTestMachine(host, user, pass) {
-
-    def remote = [:]
-    remote.name = 'cortx'
-    remote.host = host
-    remote.user =  user
-    remote.password = pass
-    remote.allowAnyHosts = true
-    remote.fileTransfer = 'scp'
-    return remote
-}
-
 
 // Used Jenkins ansible plugin to execute ansible command
 def runAnsible(tags) {
@@ -267,33 +258,15 @@ def runAnsible(tags) {
             tags: "${tags}",
             extraVars: [
                 "NODE1"                 : [value: "${NODE1_HOST}", hidden: false],
-                "CORTX_BUILD"           : [value: "${CORTX_BUILD}", hidden: false] ,
+                "CORTX_UTILS_URL"       : [value: "${CORTX_UTILS_URL}", hidden: false],
+                "CORTX_UTILS_BRANCH"    : [value: "${CORTX_UTILS_BRANCH}", hidden: false],
+                "THIRD_PARTY_LOCATION"  : [value: "${THIRD_PARTY_LOCATION}", hidden: false] ,
                 "CLUSTER_PASS"          : [value: "${NODE_PASS}", hidden: false]            
             ],
             extras: '-v',
             colorized: true
         )
     }
-}
-
-// Create Summary
-def addSummary() {
-
-    hctl_status = ""
-    if (fileExists ('artifacts/hctl_status.log')) {
-        hctl_status = readFile(file: 'artifacts/hctl_status.log')
-        MESSAGE = "S3Server Deployment Completed"
-        ICON = "accept.gif"
-    } else {
-        manager.buildFailure()
-        MESSAGE = "S3Server Deployment Failed"
-        ICON = "error.gif"
-    }
-
-    hctl_status_html = "<textarea rows=20 cols=200 readonly style='margin: 0px; height: 392px; width: 843px;'>${hctl_status}</textarea>"
-    table_summary = "<table border='1' cellspacing='0' cellpadding='0' width='400' align='left'> <tr> <td align='center'>Build</td><td align='center'><a href=${CORTX_BUILD}>${build_id}</a></td></tr><tr> <td align='center'>Test VM</td><td align='center'>${NODE1_HOST}</td></tr></table>"
-    manager.createSummary("${ICON}").appendText("<h3>${MESSAGE} for the build <a href=\"${CORTX_BUILD}\">${build_id}.</a></h3><br /><br /><h4>Test Details:</h4> ${table_summary} <br /><br /><br /><h4>HCTL Status:${hctl_status_html}</h4> ", false, false, false, "red")
-              
 }
 
 

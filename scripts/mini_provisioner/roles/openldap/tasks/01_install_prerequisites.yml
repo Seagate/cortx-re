@@ -13,18 +13,31 @@
 - name: "[Pre-Requisites] : Install dependencies"
   shell: yum install -y git gcc jq rpm-build python36 python36-pip python36-devel python36-setuptools openssl-devel libffi-devel python36-dbus
 
+- name: "[Pre-Requisites] : Checkout cortx-utils repository"
+  git:
+    repo: "{{ CORTX_UTILS_URL }}"
+    dest: cortx-utils
+    version: "{{ CORTX_UTILS_BRANCH }}"
+
+- name: "[Pre-Requisites] : Install python packages"
+  shell: |
+    pip3 install -r python_requirements.txt
+    pip3 install -r python_requirements.ext.txt
+  args:
+    chdir: cortx-utils/py-utils/
+
+- name: "[Pre-Requisites] : Build py-utils"
+  shell: ./jenkins/build.sh -v 2.0.0 -b 2
+  args:
+    chdir: cortx-utils/   
+
 - name: "[Pre-Requisites] : Install py-utils"
   shell: |
-    git clone --recursive https://github.com/Seagate/cortx-utils -b main
-    cd cortx-utils/py-utils/
-    sudo pip3 install -r python_requirements.txt
-    sudo pip3 install -r python_requirements.ext.txt
-    cd ..
-    ./jenkins/build.sh -v 2.0.0 -b 2
-    cd py-utils/dist
     yum install -y cortx-py-utils-*.noarch.rpm
     yum install -y symas-openldap symas-openldap-servers symas-openldap-clients openldap-devel python36-ldap
-
+  args:
+    chdir: py-utils/dist
+       
 - name: "[Pre-Requisites] : Start slapd service"
   shell: systemctl start slapd
 
