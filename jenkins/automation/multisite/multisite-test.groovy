@@ -45,18 +45,17 @@ pipeline {
 
 		always {
 			script {
-
+                env.branch_name = "${MULTISITE_BRANCH}"
+                env.repo_url = "${MULTISITE_URL}"
+                env.build_stage = "${build_stage}"
 				def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
-                
                 def mailRecipients = "shailesh.vaidya@seagate.com"
-                emailext ( 
-                    body: '''${SCRIPT, template="release-email.template"}''',
-                    mimeType: 'text/html',
-                    subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
-                    attachLog: true,
-                    to: "${mailRecipients}",
-					recipientProviders: recipientProvidersClass
-                )
+
+                emailext body: '''${SCRIPT, template="mini_prov-email.template"}''',
+                mimeType: 'text/html',
+                recipientProviders: [requestor()], 
+                subject: "[Jenkins] Multisite Test : ${currentBuild.currentResult}, ${JOB_BASE_NAME}#${BUILD_NUMBER}",
+                to: "${mailRecipients}"
             }
         }
     }
