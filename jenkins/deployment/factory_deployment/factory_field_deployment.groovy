@@ -8,7 +8,7 @@ pipeline {
 	
     parameters {
         string(name: 'CORTX_BUILD', defaultValue: '', description: 'Build URL', trim: true)
-		string(name: 'MGMT_VIP', defaultValue: '', description: 'Management VIP', trim: true)
+	string(name: 'MGMT_VIP', defaultValue: '', description: 'Management VIP', trim: true)
         string(name: 'HOST', defaultValue: '' , description: 'HW Deploy Host', trim: true)
         string(name: 'CONFIG', defaultValue: '' , description: 'HW config file raw file path', trim: true)
         choice(name: 'DEPLOY_TYPE', choices: [ 'DEPLOY-WITH-REIMAGE','DEPLOY-WITHOUT-REIMAGE','REIMAGE' ], description: 'Deployment Type')
@@ -26,8 +26,8 @@ pipeline {
         CORTX_OS_ISO_NAME = getBuildArtifcatName("${ISO_PARENT_DIR}/", 'cortx-os')
         CORTX_PREP_URL = "${ISO_PARENT_DIR}/${CORTX_PREP_NAME}"
         CORTX_OS_ISO_URL = "${ISO_PARENT_DIR}/${CORTX_OS_ISO_NAME}"
-
-        NODE_UN_PASS_CRED_ID = "736373_manageiq_up"
+	
+	NODE_UN_PASS_CRED_ID = credentials("PassCredID")
         RE_SAT_CRED_ID       = "RE-SAT-CRED"
         NODE_DEFAULT_SSH_CRED  = credentials("hw-deployment-ssh-cred")
         NODE_USER = "${NODE_DEFAULT_SSH_CRED_USR}"
