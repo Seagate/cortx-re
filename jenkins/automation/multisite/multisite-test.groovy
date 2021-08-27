@@ -46,7 +46,7 @@ pipeline {
 		always {
 			script {
                 env.branch_name = "${MULTISITE_BRANCH}"
-                env.repo_url = "${MULTISITE_URL}"
+                env.repo_url = "${MULTISITE_REPO}"
                 env.build_stage = "${build_stage}"
 				def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
                 def mailRecipients = "shailesh.vaidya@seagate.com"
