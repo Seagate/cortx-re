@@ -49,7 +49,7 @@ pipeline {
                 env.repo_url = "${MULTISITE_REPO}"
                 env.build_stage = "${build_stage}"
 				def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
-                def mailRecipients = "shailesh.vaidya@seagate.com"
+                def mailRecipients = "shailesh.vaidya@seagate.com,kaustubh.deorukhkar@seagate.com"
 
                 emailext body: '''${SCRIPT, template="mini_prov-email.template"}''',
                 mimeType: 'text/html',
