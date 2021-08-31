@@ -28,7 +28,8 @@ ARG GIT_HASH
 ARG BUILD_URL
 
 LABEL maintainer="cortx.opensource@seagate.com" \
-      org.opencontainers.image.title="CORTX Image" \
+      org.opencontainers.image.title="CORTX ALL" \
+      org.opencontainers.image.description="CORTX is 100% Open Source, Distributed object storage system designed for great efficiency, massive capacity, and high HDD-utilization" \
       org.opencontainers.image.revision=$GIT_HASH
 
 ENV GIT_HASH $GIT_HASH
