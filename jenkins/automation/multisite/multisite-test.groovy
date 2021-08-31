@@ -33,6 +33,8 @@ pipeline {
 			steps {
 				script { build_stage = env.STAGE_NAME }
 				sh label: 'Execute Test', script: '''
+                #Add s3.seagate.com entry
+                echo "$(awk 'END{print $1}' /etc/hosts)      s3.seagate.com" >> /etc/hosts
                 pushd ./s3/replication
                     sh ./build_and_test.sh
                 popd
