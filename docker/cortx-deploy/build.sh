@@ -57,7 +57,9 @@ else
 	export TAG=$VERSION-$DOCKER_BUILD_BUILD
 fi
 
-docker-compose -f docker/cortx-deploy/docker-compose.yml build --force-rm --no-cache --compress --build-arg GIT_HASH="$(git rev-parse --short HEAD)" --build-arg BUILD_URL=$BUILD_URL  cortx-all
+CREATED_DATE=$(date -u +'%Y-%m-%d %H:%M:%S%:z')
+
+docker-compose -f docker/cortx-deploy/docker-compose.yml build --force-rm --no-cache --compress --build-arg GIT_HASH="$(git rev-parse --short HEAD)" --build-arg CREATED_DATE="$CREATED_DATE" --build-arg BUILD_URL=$BUILD_URL  cortx-all
 
 if [ "$DOCKER_PUSH" == "yes" ];then
         echo "Pushing Docker image to GitHub Container Registry"
