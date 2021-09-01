@@ -63,7 +63,7 @@ Recommended VM specification:
                         sh """
                             set +x
                             echo "-------------- DEPLOYMENT PARAMETERS -------------------"
-                            echo "NODE1                 = ${NODE1_HOST}"
+                            echo "NODES                 = ${NODES}"
                             echo "CORTX_UTILS_URL       = ${CORTX_UTILS_URL}"
                             echo "CORTX_UTILS_BRANCH    = ${CORTX_UTILS_BRANCH}" 
                             echo "THIRD_PARTY_LOCATION  = ${THIRD_PARTY_LOCATION}"
