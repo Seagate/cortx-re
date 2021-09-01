@@ -98,7 +98,7 @@ pipeline {
 	
 	post {
 	
-		success {
+		always {
 				sh label: 'Clean-up', script: '''
 				set +x
 				rm -rf /etc/yum.repos.d/cortx-storage.colo.seagate.com* /etc/pip.conf /root/rpmbuild/RPMS/x86_64/*.rpm
