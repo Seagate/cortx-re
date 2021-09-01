@@ -1,24 +1,24 @@
 pipeline {
     agent {
         node {
-           label "docker-image-build-${OS_VERSION}"
+           label "docker-image-builder-${OS_VERSION}"
         }
     }
     
-   	environment {
-	    GITHUB_CRED = credentials('shailesh-github')
+       environment {
+        GITHUB_CRED = credentials('shailesh-github')
         SERVICE_NAME = "${ENVIRONMENT == 'internal-ci' ? "cortx-build-internal-$OS_VERSION" : "cortx-build-$OS_VERSION"}"
         REPO_NAME = "${ENVIRONMENT == 'internal-ci' ? "ghcr.io/seagate/cortx-re" : "ghcr.io/seagate"}"
-	}
+    }
 
 
     options {
-		timeout(time: 240, unit: 'MINUTES')
-		timestamps()
-		disableConcurrentBuilds()
+        timeout(time: 240, unit: 'MINUTES')
+        timestamps()
+        disableConcurrentBuilds()
         buildDiscarder(logRotator(daysToKeepStr: '30', numToKeepStr: '30'))
-		ansiColor('xterm')
-	}
+        ansiColor('xterm')
+    }
 
     parameters {
 
@@ -27,7 +27,7 @@ pipeline {
 
         choice (
             name: 'OS_VERSION', 
-            choices: ['centos-7.8.2003', 'centos-7.9.2009'],
+            choices: ['centos-7.9.2009', 'centos-7.8.2003'],
             description: 'OS Version'
         )
 
@@ -43,7 +43,7 @@ pipeline {
             name: 'GITHUB_PUSH'
         )
 
-	}	
+    }    
 
     stages {
 
@@ -56,24 +56,24 @@ pipeline {
         }
 
         stage ('Build Docker image') {
-			steps {
-				script { build_stage = env.STAGE_NAME }
-				sh label: 'Build Docker image', script: '''
-				echo -e "Running on $HOSTNAME with Operating System as $(cat /etc/redhat-release)"
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'Build Docker image', script: '''
+                echo -e "Running on $HOSTNAME with Operating System as $(cat /etc/redhat-release)"
                         #Clean Up
-                		echo 'y' | docker image prune
-                		if [ ! -z \$(docker ps -a -q) ]; then docker rm -f \$(docker ps -a -q); fi
+                        echo 'y' | docker image prune
+                        if [ ! -z \$(docker ps -a -q) ]; then docker rm -f \$(docker ps -a -q); fi
                         mkdir -p /mnt/docker/tmp
-                	    docker-compose -f docker/cortx-build/docker-compose.yml build --force-rm --no-cache --compress --build-arg GIT_HASH="$(git rev-parse --short HEAD)" $SERVICE_NAME
-                		echo 'y' | docker image prune
-		                '''
-			   }
-			}
+                        docker-compose -f docker/cortx-build/docker-compose.yml build --force-rm --no-cache --compress --build-arg GIT_HASH="$(git rev-parse --short HEAD)" $SERVICE_NAME
+                        echo 'y' | docker image prune
+                        '''
+               }
+            }
 
         stage ('Validation') {
-			steps {
-				script { build_stage = env.STAGE_NAME }
-				               
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                               
                 checkout changelog: false, poll: false, scm: [$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: '/mnt/workspace/'], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: false, recursiveSubmodules: true, reference: '', shallow: true, trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/Seagate/cortx']]]
 
                 sh label: 'Validate Docker image', script: '''
@@ -84,16 +84,16 @@ pipeline {
                 cat /mnt/artifacts/0/cortx_iso/RELEASE.INFO
                 rm -rf /mnt/artifacts/* /mnt/workspace/*
                 '''
-			}
-		}
+            }
+        }
 
         stage ('Push  Docker image') {
             when {
                 expression { params.GITHUB_PUSH == 'yes' }
             }
-			steps {
-				script { build_stage = env.STAGE_NAME }
-				sh label: 'Build Docker image', script: '''
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'Build Docker image', script: '''
                 docker login ghcr.io -u ${GITHUB_CRED_USR} -p ${GITHUB_CRED_PSW}
                 if [ $ENVIRONMENT == "internal-ci" ]; then
                     docker-compose -f docker/cortx-build/docker-compose.yml push cortx-build-internal-$OS_VERSION
@@ -101,16 +101,16 @@ pipeline {
                     docker-compose -f docker/cortx-build/docker-compose.yml push cortx-build-$OS_VERSION
                 fi    
                 '''
-			}
-		}
+            }
+        }
     }
 
-	post {
+    post {
 
-		always {
-			script {
+        always {
+            script {
 
-				def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
+                def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
                 
                 def mailRecipients = "CORTX.DevOps.RE@seagate.com"
                 emailext ( 
@@ -119,7 +119,7 @@ pipeline {
                     subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
                     attachLog: true,
                     to: "${mailRecipients}",
-					recipientProviders: recipientProvidersClass
+                    recipientProviders: recipientProvidersClass
                 )
             }
         }
