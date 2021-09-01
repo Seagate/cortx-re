@@ -117,6 +117,28 @@ pipeline {
                 fi
                 yum erase cortx-prereq -y
                 '''
+                script {
+
+                env.release_build = (env.release_build != null) ? env.release_build : "" 
+                env.release_build_location = (env.release_build_location != null) ? env.release_build_location : ""
+                env.component = (env.component).toUpperCase()
+                env.build_stage = "${build_stage}"
+
+                def toEmail = ""
+                def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
+                if ( manager.build.result.toString() == "FAILURE") {
+                    toEmail = "shailesh.vaidya@seagate.com"
+                    recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
+                }
+                emailext (
+                    body: '''${SCRIPT, template="component-email.template"}''',
+                    mimeType: 'text/html',
+                    subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
+                    attachLog: true,
+                    to: toEmail,
+                    recipientProviders: recipientProvidersClass
+                )
+            }
         }
     }
 }
