@@ -44,12 +44,18 @@
 - name: "[Pre-Requisites] : Machine-ID of the VM" 
   shell: cat /etc/machine-id
   register: machineid
-  with_items: "{{ groups['srvnodes'] }}"
 
 - name: "[Pre-Requisites] : FQDN of the VM" 
   shell: hostname
   register: hostname
-  with_items: "{{ groups['srvnodes'] }}"
+
+- name: Print machineid var
+  debug: 
+    var: machineid
+
+- name: Print hostname var
+  debug: 
+    var: hostname
 
 - set_fact:
     TMPL_HOSTNAME: "{{ hostname.stdout }}"
@@ -59,10 +65,6 @@
 - set_fact:
     TMPL_HOSTNAME1: "{{ hostname.results[0].stdout }}"
     TMPL_MACHINE_ID1: "{{ machineid.results[0].stdout }}"
-    TMPL_HOSTNAME2: "{{ hostname.results[1].stdout }}"
-    TMPL_MACHINE_ID2: "{{ machineid.results[1].stdout }}"
-    TMPL_HOSTNAME3: "{{ hostname.results[2].stdout }}"
-    TMPL_MACHINE_ID3: "{{ machineid.results[2].stdout }}"
   when: SETUP_TYPE == '3_node' 
 
 - name: "[Pre-Requisites] : Update single node openldap template files" 
