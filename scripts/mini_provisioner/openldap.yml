@@ -8,7 +8,7 @@
     - role: 00_prepare_environment
     
 - name: Deploy OpenLDAP
-  hosts: srvnode-1
+  hosts: srvnodes
   become: true 
   roles:
     - role: openldap

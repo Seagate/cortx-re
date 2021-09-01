@@ -47,7 +47,9 @@ Recommended VM specification:
             NODE_USER = "${NODE_DEFAULT_SSH_CRED_USR}"
             NODE1_HOST = "${params.HOST == '-' ? NODE1_HOST : params.HOST }"
             NODE_PASS = "${HOST_PASS == '-' ? NODE_DEFAULT_SSH_CRED_PSW : HOST_PASS}"
+            NODES = "${NODE1_HOST}"
             THIRD_PARTY_LOCATION = "http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/centos/centos-7.9.2009-2.0.0-latest/"
+            SETUP_TYPE = 'single'
         }
         stages {
             stage ('Prerequisite') {
@@ -257,11 +259,12 @@ def runAnsible(tags) {
             inventory: 'inventories/hosts',
             tags: "${tags}",
             extraVars: [
-                "NODE1"                 : [value: "${NODE1_HOST}", hidden: false],
+                "HOST"                  : [value: "${NODES}", hidden: false],
                 "CORTX_UTILS_URL"       : [value: "${CORTX_UTILS_URL}", hidden: false],
                 "CORTX_UTILS_BRANCH"    : [value: "${CORTX_UTILS_BRANCH}", hidden: false],
                 "THIRD_PARTY_LOCATION"  : [value: "${THIRD_PARTY_LOCATION}", hidden: false] ,
-                "CLUSTER_PASS"          : [value: "${NODE_PASS}", hidden: false]            
+                "CLUSTER_PASS"          : [value: "${NODE_PASS}", hidden: false],
+                "SETUP_TYPE"            : [value: "${SETUP_TYPE}", hidden: false]            
             ],
             extras: '-v',
             colorized: true
