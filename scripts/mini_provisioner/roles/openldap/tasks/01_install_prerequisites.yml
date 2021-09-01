@@ -44,10 +44,12 @@
 - name: "[Pre-Requisites] : Machine-ID of the VM" 
   shell: cat /etc/machine-id
   register: machineid
+  with_items: "{{ groups['srvnodes'] }}"
 
 - name: "[Pre-Requisites] : FQDN of the VM" 
   shell: hostname
   register: hostname
+  with_items: "{{ groups['srvnodes'] }}"
 
 - set_fact:
     TMPL_HOSTNAME: "{{ hostname.stdout }}"
