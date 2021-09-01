@@ -37,7 +37,17 @@ RUN yum-config-manager --add-repo ${BUILD_URL}/cortx_iso/ \
     && yum-config-manager --add-repo ${BUILD_URL}/3rd_party \
     && curl ${BUILD_URL}/RELEASE.INFO -o RELEASE.INFO 
 
-RUN yum install --nogpgcheck -y symas-openldap-clients \
+COPY ./scripts/third-party-rpm/python_requirements*.txt /opt/
+
+RUN yum install --nogpgcheck -y sudo \
+    which \
+    python3-pip \
+    haproxy \ 
+    && pip3 install  --no-cache-dir --trusted-host $(echo $BUILD_URL | awk -F '/' '{print $3}')  -i $BUILD_URL/python_deps -r /opt/python_requirements.txt -r /opt/python_requirements.ext.txt
+
+
+RUN yum install --nogpgcheck -y cortx-py-utils \
+    symas-openldap-clients \
     symas-openldap-servers \
     && rm -rf /var/cache/yum
 
