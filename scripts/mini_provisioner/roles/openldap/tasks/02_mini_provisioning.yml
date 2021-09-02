@@ -16,6 +16,7 @@
 - name: "[OpenLDAP Mini Provisioning] : 3-Node Config"
   shell: /opt/seagate/cortx/utils/bin/openldap_setup config --config "yaml:///opt/seagate/cortx/utils/conf/openldap.config.tmpl.3-node"
   tags: ['02_MINI_PROV_CONFIG']
+  delegate_to: srvnode-1
   when: SETUP_TYPE == '3_node'
 
 - name: "[OpenLDAP Mini Provisioning] : 1-Node Init"
@@ -26,4 +27,5 @@
 - name: "[OpenLDAP Mini Provisioning] : 3-Node Init"
   shell: /opt/seagate/cortx/utils/bin/openldap_setup init --config "yaml:///opt/seagate/cortx/utils/conf/openldap.init.tmpl.3-node"
   tags: ['02_MINI_PROV_INIT']
+  delegate_to: srvnode-1
   when: SETUP_TYPE == '3_node'
