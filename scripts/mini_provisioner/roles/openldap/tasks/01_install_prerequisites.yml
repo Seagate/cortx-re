@@ -54,8 +54,8 @@
   when: SETUP_TYPE == '3_node'
 
 - set_fact:
-    TMPL_HOSTNAME1: "{{ ansible_machine_id }}"
-    TMPL_MACHINE_ID1: "{{ ansible_fqdn }}"
+    TMPL_HOSTNAME1: "{{ hostname.stdout }}"
+    TMPL_MACHINE_ID1: "{{ machineid.stdout }}"
   delegate_to: srvnode-1
   when: SETUP_TYPE == '3_node'
 
@@ -72,8 +72,8 @@
   when: SETUP_TYPE == '3_node'
   
 - set_fact:
-    TMPL_HOSTNAME2: "{{ ansible_machine_id }}"
-    TMPL_MACHINE_ID2: "{{ ansible_fqdn }}"
+    TMPL_HOSTNAME2: "{{ hostname.stdout }}"
+    TMPL_MACHINE_ID2: "{{ machineid.stdout }}"
   delegate_to: srvnode-2
   when: SETUP_TYPE == '3_node'
 
@@ -90,8 +90,8 @@
   when: SETUP_TYPE == '3_node'
   
 - set_fact:
-    TMPL_HOSTNAME3: "{{ ansible_machine_id }}"
-    TMPL_MACHINE_ID3: "{{ ansible_fqdn }}"
+    TMPL_HOSTNAME3: "{{ hostname.stdout }}"
+    TMPL_MACHINE_ID3: "{{ machineid.stdout }}"
   delegate_to: srvnode-3
   when: SETUP_TYPE == '3_node'    
 
