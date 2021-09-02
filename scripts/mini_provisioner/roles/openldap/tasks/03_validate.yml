@@ -6,5 +6,4 @@
 
 - name: "[ Validate ] : 3-Node Test" 
   shell: /opt/seagate/cortx/utils/bin/openldap_setup test --config "yaml:///opt/seagate/cortx/utils/conf/openldap.test.tmpl.3-node"
-  delegate_to: srvnode-1
   when: SETUP_TYPE == '3_node'
