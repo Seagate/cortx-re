@@ -41,31 +41,44 @@
 - name: "[Pre-Requisites] : Start slapd service"
   shell: systemctl start slapd
 
-- name: "[Pre-Requisites] : Machine-ID of the VM" 
-  shell: cat /etc/machine-id
-  register: machineid
+# - name: "[Pre-Requisites] : Machine-ID of the VM" 
+#   shell: cat /etc/machine-id
+#   register: machineid
 
-- name: "[Pre-Requisites] : FQDN of the VM" 
-  shell: hostname
-  register: hostname
+# - name: "[Pre-Requisites] : FQDN of the VM" 
+#   shell: hostname
+#   register: hostname
 
-- name: Print machineid var
-  debug: 
-    var: machineid
+- set_fact:
+    TMPL_HOSTNAME1: "{{ ansible_machine_id }}"
+    TMPL_MACHINE_ID1: "{{ ansible_fqdn }}"
+  delegate_to: srvnode-1
+  when: SETUP_TYPE == '3_node'
 
-- name: Print hostname var
-  debug: 
-    var: hostname
+- set_fact:
+    TMPL_HOSTNAME2: "{{ ansible_machine_id }}"
+    TMPL_MACHINE_ID2: "{{ ansible_fqdn }}"
+  delegate_to: srvnode-2
+  when: SETUP_TYPE == '3_node'
+
+- set_fact:
+    TMPL_HOSTNAME3: "{{ ansible_machine_id }}"
+    TMPL_MACHINE_ID3: "{{ ansible_fqdn }}"
+  delegate_to: srvnode-3
+  when: SETUP_TYPE == '3_node'  
+
+# - name: Print machineid var
+#   debug: 
+#     var: machineid
+
+# - name: Print hostname var
+#   debug: 
+#     var: hostname
 
 - set_fact:
     TMPL_HOSTNAME: "{{ hostname.stdout }}"
     TMPL_MACHINE_ID: "{{ machineid.stdout }}"
-  when: SETUP_TYPE == 'single'
-
-- set_fact:
-    TMPL_HOSTNAME1: "{{ hostname.results[0].stdout }}"
-    TMPL_MACHINE_ID1: "{{ machineid.results[0].stdout }}"
-  when: SETUP_TYPE == '3_node' 
+  when: SETUP_TYPE == 'single' 
 
 - name: "[Pre-Requisites] : Update single node openldap template files" 
   shell:  |
@@ -99,12 +112,12 @@
 
 - name: "[Pre-Requisites] : Update 3 node openldap template files" 
   shell:  |
-    sed -i "s/TMPL_HOSTNAME1/{{ TMPL_HOSTNAME }}/g;  \
-        s/TMPL_HOSTNAME2/{{ TMPL_HOSTNAME }}/g;  \
-        s/TMPL_HOSTNAME3/{{ TMPL_HOSTNAME }}/g;  \
-        s/TMPL_MACHINE_ID1/{{ TMPL_MACHINE_ID }}/g; \
-        s/TMPL_MACHINE_ID2/{{ TMPL_MACHINE_ID }}/g; \
-        s/TMPL_MACHINE_ID3/{{ TMPL_MACHINE_ID }}/g; \
+    sed -i "s/TMPL_HOSTNAME1/{{ TMPL_HOSTNAME1 }}/g;  \
+        s/TMPL_HOSTNAME2/{{ TMPL_HOSTNAME2 }}/g;  \
+        s/TMPL_HOSTNAME3/{{ TMPL_HOSTNAME3 }}/g;  \
+        s/TMPL_MACHINE_ID1/{{ TMPL_MACHINE_ID1 }}/g; \
+        s/TMPL_MACHINE_ID2/{{ TMPL_MACHINE_ID2 }}/g; \
+        s/TMPL_MACHINE_ID3/{{ TMPL_MACHINE_ID3 }}/g; \
         s/TMPL_BASE_DN/{{ TMPL_BASE_DN }}/g; \
         s/TMPL_CLUSTER_ID/{{ TMPL_CLUSTER_ID }}/g; \
         s/TMPL_ROOT_USER/{{ TMPL_ROOT_USER }}/g; \
@@ -112,12 +125,12 @@
         s/TMPL_STORAGE_SET_COUNT/{{ TMPL_STORAGE_SET_COUNT }}/g; \
         s/TMPL_BIND_BASE_DN/{{ TMPL_BIND_BASE_DN }}/g;" /opt/seagate/cortx/utils/conf/openldap.config.tmpl.3-node
     
-    sed -i "s/TMPL_HOSTNAME1/{{ TMPL_HOSTNAME }}/g;  \
-        s/TMPL_HOSTNAME2/{{ TMPL_HOSTNAME }}/g;  \
-        s/TMPL_HOSTNAME3/{{ TMPL_HOSTNAME }}/g;  \
-        s/TMPL_MACHINE_ID1/{{ TMPL_MACHINE_ID }}/g; \
-        s/TMPL_MACHINE_ID2/{{ TMPL_MACHINE_ID }}/g; \
-        s/TMPL_MACHINE_ID3/{{ TMPL_MACHINE_ID }}/g; \
+    sed -i "s/TMPL_HOSTNAME1/{{ TMPL_HOSTNAME1 }}/g;  \
+        s/TMPL_HOSTNAME2/{{ TMPL_HOSTNAME2 }}/g;  \
+        s/TMPL_HOSTNAME3/{{ TMPL_HOSTNAME3 }}/g;  \
+        s/TMPL_MACHINE_ID1/{{ TMPL_MACHINE_ID1 }}/g; \
+        s/TMPL_MACHINE_ID2/{{ TMPL_MACHINE_ID2 }}/g; \
+        s/TMPL_MACHINE_ID3/{{ TMPL_MACHINE_ID3 }}/g; \
         s/TMPL_BASE_DN/{{ TMPL_BASE_DN }}/g; \
         s/TMPL_CLUSTER_ID/{{ TMPL_CLUSTER_ID }}/g; \
         s/TMPL_ROOT_USER/{{ TMPL_ROOT_USER }}/g; \
@@ -125,12 +138,12 @@
         s/TMPL_STORAGE_SET_COUNT/{{ TMPL_STORAGE_SET_COUNT }}/g; \
         s/TMPL_BIND_BASE_DN/{{ TMPL_BIND_BASE_DN }}/g;" /opt/seagate/cortx/utils/conf/openldap.init.tmpl.3-node
 
-    sed -i "s/TMPL_HOSTNAME1/{{ TMPL_HOSTNAME }}/g;  \
-        s/TMPL_HOSTNAME2/{{ TMPL_HOSTNAME }}/g;  \
-        s/TMPL_HOSTNAME3/{{ TMPL_HOSTNAME }}/g;  \
-        s/TMPL_MACHINE_ID1/{{ TMPL_MACHINE_ID }}/g; \
-        s/TMPL_MACHINE_ID2/{{ TMPL_MACHINE_ID }}/g; \
-        s/TMPL_MACHINE_ID3/{{ TMPL_MACHINE_ID }}/g; \
+    sed -i "s/TMPL_HOSTNAME1/{{ TMPL_HOSTNAME1 }}/g;  \
+        s/TMPL_HOSTNAME2/{{ TMPL_HOSTNAME2 }}/g;  \
+        s/TMPL_HOSTNAME3/{{ TMPL_HOSTNAME3 }}/g;  \
+        s/TMPL_MACHINE_ID1/{{ TMPL_MACHINE_ID1 }}/g; \
+        s/TMPL_MACHINE_ID2/{{ TMPL_MACHINE_ID2 }}/g; \
+        s/TMPL_MACHINE_ID3/{{ TMPL_MACHINE_ID3 }}/g; \
         s/TMPL_BASE_DN/{{ TMPL_BASE_DN }}/g; \
         s/TMPL_CLUSTER_ID/{{ TMPL_CLUSTER_ID }}/g; \
         s/TMPL_ROOT_USER/{{ TMPL_ROOT_USER }}/g; \
