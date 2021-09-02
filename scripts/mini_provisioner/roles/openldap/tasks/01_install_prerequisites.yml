@@ -41,13 +41,17 @@
 - name: "[Pre-Requisites] : Start slapd service"
   shell: systemctl start slapd
 
-# - name: "[Pre-Requisites] : Machine-ID of the VM" 
-#   shell: cat /etc/machine-id
-#   register: machineid
+- name: "[Pre-Requisites] : Machine-ID of the VM-1" 
+  shell: cat /etc/machine-id
+  register: machineid
+  delegate_to: srvnode-1
+  when: SETUP_TYPE == '3_node'
 
-# - name: "[Pre-Requisites] : FQDN of the VM" 
-#   shell: hostname
-#   register: hostname
+- name: "[Pre-Requisites] : FQDN of the VM-1" 
+  shell: hostname
+  register: hostname
+  delegate_to: srvnode-1
+  when: SETUP_TYPE == '3_node'
 
 - set_fact:
     TMPL_HOSTNAME1: "{{ ansible_machine_id }}"
@@ -55,25 +59,51 @@
   delegate_to: srvnode-1
   when: SETUP_TYPE == '3_node'
 
+- name: "[Pre-Requisites] : Machine-ID of the VM-2" 
+  shell: cat /etc/machine-id
+  register: machineid
+  delegate_to: srvnode-2
+  when: SETUP_TYPE == '3_node'
+
+- name: "[Pre-Requisites] : FQDN of the VM-2" 
+  shell: hostname
+  register: hostname
+  delegate_to: srvnode-2
+  when: SETUP_TYPE == '3_node'
+  
 - set_fact:
     TMPL_HOSTNAME2: "{{ ansible_machine_id }}"
     TMPL_MACHINE_ID2: "{{ ansible_fqdn }}"
   delegate_to: srvnode-2
   when: SETUP_TYPE == '3_node'
 
+- name: "[Pre-Requisites] : Machine-ID of the VM-3" 
+  shell: cat /etc/machine-id
+  register: machineid
+  delegate_to: srvnode-3
+  when: SETUP_TYPE == '3_node'
+
+- name: "[Pre-Requisites] : FQDN of the VM-3" 
+  shell: hostname
+  register: hostname
+  delegate_to: srvnode-3
+  when: SETUP_TYPE == '3_node'
+  
 - set_fact:
     TMPL_HOSTNAME3: "{{ ansible_machine_id }}"
     TMPL_MACHINE_ID3: "{{ ansible_fqdn }}"
   delegate_to: srvnode-3
-  when: SETUP_TYPE == '3_node'  
+  when: SETUP_TYPE == '3_node'    
 
-# - name: Print machineid var
-#   debug: 
-#     var: machineid
+- name: Print machineid var
+  shell: cat /etc/machine-id
+  register: machineid
+  when: SETUP_TYPE == 'single'
 
-# - name: Print hostname var
-#   debug: 
-#     var: hostname
+- name: Print hostname var
+  shell: cat /etc/machine-id
+  register: machineid
+  when: SETUP_TYPE == 'single'
 
 - set_fact:
     TMPL_HOSTNAME: "{{ hostname.stdout }}"
