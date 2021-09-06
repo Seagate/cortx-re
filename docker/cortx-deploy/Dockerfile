@@ -48,37 +48,37 @@ RUN yum-config-manager --add-repo ${BUILD_URL}/cortx_iso/ \
 
 COPY ./scripts/third-party-rpm/python_requirements*.txt /opt/
 
-RUN pip3 install  --no-cache-dir --trusted-host $(echo $BUILD_URL | awk -F '/' '{print $3}')  -i $BUILD_URL/python_deps -r /opt/python_requirements.txt -r /opt/python_requirements.ext.txt
+RUN yum install --nogpgcheck -y python3-pip \
+    && pip3 install  --no-cache-dir --trusted-host $(echo $BUILD_URL | awk -F '/' '{print $3}') -i $BUILD_URL/python_deps -r /opt/python_requirements.txt -r /opt/python_requirements.ext.txt \
+   && yum clean all && rm -rf /var/cache/yum
 
-RUN yum install --nogpgcheck -y cortx-py-utils \
-    cortx-hare \
-    cortx-motr \ 
-    cortx-s3server \
-    cortx-csm_agent \
-    java-1.8.0-openjdk-headless  \
-    python3 \ 
-    sshpass \ 
+RUN yum install --nogpgcheck -y java-1.8.0-openjdk-headless \
+    sudo \
+    which \
+    haproxy \
+    python3 \
+    sshpass \
     python36-m2crypto \
-    salt \ 
-    salt-master \ 
+    salt \
+    salt-master \
     salt-minion \
     glusterfs-server \
     glusterfs-client \
+    cortx-py-utils \
+    cortx-hare \
+    cortx-motr \
+    cortx-s3server \
+    cortx-csm_agent \
     python36-cortx-prvsnr \
     cortx-prvsnr \
     cortx-prvsnr-cli \
     python36-cortx-setup \
     cortx-node-cli \
-    cortx-cli \ 
-    sudo \
-    which \
-    python3-pip \
-    haproxy \                
-    && rm -rf /var/cache/yum
+    cortx-cli \
+    && yum clean all && rm -rf /var/cache/yum
 
 RUN yum-config-manager --enable base,extras,updates && rm -rf /etc/yum.repos.d/cortx-storage.colo.seagate.com_releases_cortx_* \
-    && rm -rf /var/cache/yum
+    && yum clean all && rm -rf /var/cache/yum
 
 RUN rm -rf /etc/yum.repos.d/cortx-storage.colo.seagate.com_releases_cortx_* \
-    && rm -rf /var/cache/yum
-
+    && yum clean all && rm -rf /var/cache/yum
