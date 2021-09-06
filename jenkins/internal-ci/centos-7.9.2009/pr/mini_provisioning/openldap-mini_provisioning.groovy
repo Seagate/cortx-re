@@ -267,7 +267,7 @@ def runAnsible(tags) {
                 "CLUSTER_PASS"          : [value: "${NODE_PASS}", hidden: false],
                 "SETUP_TYPE"            : [value: "${SETUP_TYPE}", hidden: false],
                 "TMPL_CLUSTER_ID"       : [value: "${TMPL_CLUSTER_ID}", hidden: false],
-                "TMPL_ROOT_SECRET_KEY"  : [value: "${TMPL_ROOT_SECRET_KEY}", hidden: false]"            
+                "TMPL_ROOT_SECRET_KEY"  : [value: "${TMPL_ROOT_SECRET_KEY}", hidden: false]            
             ],
             extras: '-v',
             colorized: true
