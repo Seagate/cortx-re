@@ -22,7 +22,7 @@
       timeout=1800
   become: false
   ignore_errors: true
-  with_items: "{{ groups['srvnodes'] }}"
+  with_items: "{{ groups['nodes'] }}"
   
 # Refresh inventory for host identity changes
 - meta: refresh_inventory
