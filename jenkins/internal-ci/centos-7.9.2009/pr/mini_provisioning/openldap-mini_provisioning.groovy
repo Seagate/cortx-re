@@ -43,6 +43,7 @@ Recommended VM specification:
         }
         environment {
             // Credentials used to SSH node
+            // TMPL_CLUSTER_ID and TMPL_ROOT_SECRET_KEY are jenkins parameters. manually configured.
             NODE_DEFAULT_SSH_CRED =  credentials("${NODE_DEFAULT_SSH_CRED}")
             NODE_USER = "${NODE_DEFAULT_SSH_CRED_USR}"
             NODE1_HOST = "${params.HOST == '-' ? NODE1_HOST : params.HOST }"
@@ -264,7 +265,9 @@ def runAnsible(tags) {
                 "CORTX_UTILS_BRANCH"    : [value: "${CORTX_UTILS_BRANCH}", hidden: false],
                 "THIRD_PARTY_LOCATION"  : [value: "${THIRD_PARTY_LOCATION}", hidden: false] ,
                 "CLUSTER_PASS"          : [value: "${NODE_PASS}", hidden: false],
-                "SETUP_TYPE"            : [value: "${SETUP_TYPE}", hidden: false]            
+                "SETUP_TYPE"            : [value: "${SETUP_TYPE}", hidden: false],
+                "TMPL_CLUSTER_ID"       : [value: "${TMPL_CLUSTER_ID}", hidden: false],
+                "TMPL_ROOT_SECRET_KEY"  : [value: "${TMPL_ROOT_SECRET_KEY}", hidden: false]"            
             ],
             extras: '-v',
             colorized: true
