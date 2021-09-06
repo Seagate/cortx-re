@@ -187,8 +187,28 @@ Recommended VM specification:
                         echo err.getMessage()
                     }
 
+                    if (env.ghprbPullLink) {
+                        env.pr_id = "${ghprbPullLink}"
+                    } else {
+                        env.branch_name = "${CORTX_UTILS_BRANCH}"
+                        env.repo_url = "${CORTX_UTILS_URL}"
+                    }
+                    env.build_stage = "${build_stage}"
+                
+                    def mailRecipients = "nilesh.govande@seagate.com, basavaraj.kirunge@seagate.com, rajesh.nambiar@seagate.com"
+                    emailext body: '''${SCRIPT, template="mini_prov-email.template"}''',
+                    mimeType: 'text/html',
+                    recipientProviders: [requestor()], 
+                    subject: "[Jenkins] OpenldapMiniProvisioning : ${currentBuild.currentResult}, ${JOB_BASE_NAME}#${BUILD_NUMBER}",
+                    to: "${mailRecipients}"    
+
                     archiveArtifacts artifacts: "artifacts/**/*.*", onlyIfSuccessful: false, allowEmptyArchive: true                           
                 }
+            }
+            failure {
+                script {
+                    manager.addShortText("${build_stage} Failed")
+                }  
             }
             cleanup {
                 script {
@@ -215,32 +235,6 @@ Recommended VM specification:
                 } 
             }
         }
-
-    post {
-        always {
-            script  {
-                if (env.ghprbPullLink) {
-                    env.pr_id = "${ghprbPullLink}"
-                } else {
-                    env.branch_name = "${CORTX_UTILS_BRANCH}"
-                    env.repo_url = "${CORTX_UTILS_URL}"
-                }
-                env.build_stage = "${build_stage}"
-                
-                def mailRecipients = "nilesh.govande@seagate.com, basavaraj.kirunge@seagate.com, rajesh.nambiar@seagate.com"
-                emailext body: '''${SCRIPT, template="mini_prov-email.template"}''',
-                mimeType: 'text/html',
-                recipientProviders: [requestor()], 
-                subject: "[Jenkins] OpenldapMiniProvisioning : ${currentBuild.currentResult}, ${JOB_BASE_NAME}#${BUILD_NUMBER}",
-                to: "${mailRecipients}"
-            }
-        }
-        failure {
-            script {
-                manager.addShortText("${build_stage} Failed")
-            }  
-        }
-    }
 }	
 
 
