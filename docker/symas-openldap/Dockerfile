@@ -26,10 +26,12 @@ ARG CENTOS_RELEASE
 ARG ENVIRONMENT
 ARG GIT_HASH
 ARG BUILD_URL
+ARG CREATED_DATE
 
 LABEL maintainer="cortx.opensource@seagate.com" \
-      org.opencontainers.image.title="CORTX Image" \
-      org.opencontainers.image.revision=$GIT_HASH
+      org.opencontainers.image.title="Symas Openldap Image" \
+      org.opencontainers.image.revision=$GIT_HASH \
+      org.opencontainers.image.created=$CREATED_DATE
 
 ENV GIT_HASH $GIT_HASH
 
