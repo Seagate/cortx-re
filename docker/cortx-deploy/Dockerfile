@@ -54,9 +54,6 @@ RUN yum install --nogpgcheck -y sudo \
     haproxy \ 
     && pip3 install  --no-cache-dir --trusted-host $(echo $BUILD_URL | awk -F '/' '{print $3}')  -i $BUILD_URL/python_deps -r /opt/python_requirements.txt -r /opt/python_requirements.ext.txt
 
-RUN yum install --nogpgcheck -y http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/custom-deps/motr/libfabric/libfabric-1.11.2-1.el7.x86_64.rpm \
-    && rm -rf /var/cache/yum
-
 RUN yum install --nogpgcheck -y cortx-py-utils \
     cortx-hare \
     cortx-motr \ 
@@ -77,6 +74,7 @@ RUN yum install --nogpgcheck -y cortx-py-utils \
     python36-cortx-setup \
     cortx-node-cli \
     cortx-cli \                 
+    libfabric-1.11.2-1.el7.x86_64.rpm \
     && rm -rf /var/cache/yum
 
 RUN yum-config-manager --enable base,extras,updates && rm -rf /etc/yum.repos.d/cortx-storage.colo.seagate.com_releases_cortx_* \
