@@ -41,8 +41,10 @@ pipeline {
                                 string(name: 'SSPL_BRANCH', value: "${COMPONENT_BRANCH}"),
                                 string(name: 'CORTX_UTILS_BRANCH', value: "${COMPONENT_BRANCH}"),
                                 string(name: 'CORTX_RE_BRANCH', value: "${COMPONENT_BRANCH}"),
+                                string(name: 'CORTX_RE_BRANCH', value: "${COMPONENT_BRANCH}"),
+                                string(name: 'THIRD_PARTY_RPM_VERSION', value: "custom"),
                             ]
-                    env.custom_ci_build_id = custom_ci.rawBuild.id            
+                    env.custom_ci_build_id = custom_ci.rawBuild.id
                 }
             }   
         }
