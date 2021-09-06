@@ -199,7 +199,7 @@ Recommended VM specification:
                     emailext body: '''${SCRIPT, template="mini_prov-email.template"}''',
                     mimeType: 'text/html',
                     recipientProviders: [requestor()], 
-                    subject: "[Jenkins] OpenldapMiniProvisioning : ${currentBuild.currentResult}, ${JOB_BASE_NAME}#${BUILD_NUMBER}",
+                    subject: "[Jenkins] Openldap 1N MiniProvisioning : ${currentBuild.currentResult}, ${JOB_BASE_NAME}#${BUILD_NUMBER}",
                     to: "${mailRecipients}"    
 
                     archiveArtifacts artifacts: "artifacts/**/*.*", onlyIfSuccessful: false, allowEmptyArchive: true                           
@@ -224,7 +224,7 @@ Recommended VM specification:
                     if ( "${params.HOST}" == "-" ) {
 
                         if ( "${params.DEBUG}" == "yes" ) {  
-                            markNodeOffline("S3 Debug Mode Enabled on This Host  - ${BUILD_URL}")
+                            markNodeOffline("Openldap Debug Mode Enabled on This Host  - ${BUILD_URL}")
                         } else {
                             build job: 'Cortx-Automation/Deployment/VM-Cleanup', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${env.NODE_NAME}")]                    
                         }
