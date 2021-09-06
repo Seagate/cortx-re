@@ -95,14 +95,14 @@
   delegate_to: srvnode-3
   when: SETUP_TYPE == '3_node'    
 
-- name: Print machineid var
+- name: "[Pre-Requisites] : Fetch Machine-ID" 
   shell: cat /etc/machine-id
   register: machineid
   when: SETUP_TYPE == 'single'
 
-- name: Print hostname var
-  shell: cat /etc/machine-id
-  register: machineid
+- name: "[Pre-Requisites] : Fetch FQDN" 
+  shell: hostname
+  register: hostname
   when: SETUP_TYPE == 'single'
 
 - set_fact:
