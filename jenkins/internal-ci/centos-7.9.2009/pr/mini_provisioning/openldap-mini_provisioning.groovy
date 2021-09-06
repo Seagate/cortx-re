@@ -216,37 +216,31 @@ Recommended VM specification:
             }
         }
 
-    // post {
-    //     always {
-    //         script  {
+    post {
+        always {
+            script  {
+                if (env.ghprbPullLink) {
+                    env.pr_id = "${ghprbPullLink}"
+                } else {
+                    env.branch_name = "${CORTX_UTILS_BRANCH}"
+                    env.repo_url = "${CORTX_UTILS_URL}"
+                }
+                env.build_stage = "${build_stage}"
                 
-    //             sh label: 'Delete Old Builds', script: '''
-    //                 set +x
-    //                 find /mnt/bigstorage/releases/cortx/github/pr-build/${COMPONENT_NAME}/* -maxdepth 0 -mtime +30 -type d -exec rm -rf {} \\;
-	// 			'''
-
-    //             if (env.ghprbPullLink) {
-    //                 env.pr_id = "${ghprbPullLink}"
-    //             } else {
-    //                 env.branch_name = "${S3_BRANCH}"
-    //                 env.repo_url = "${S3_URL}"
-    //             }
-    //             env.build_stage = "${build_stage}"
-                
-    //             def mailRecipients = "nilesh.govande@seagate.com, basavaraj.kirunge@seagate.com, rajesh.nambiar@seagate.com, amit.kumar@seagate.com"
-    //             emailext body: '''${SCRIPT, template="mini_prov-email.template"}''',
-    //             mimeType: 'text/html',
-    //             recipientProviders: [requestor()], 
-    //             subject: "[Jenkins] S3AutoMiniProvisioning : ${currentBuild.currentResult}, ${JOB_BASE_NAME}#${BUILD_NUMBER}",
-    //             to: "${mailRecipients}"
-    //         }
-    //     }
-    //     failure {
-    //         script {
-    //             manager.addShortText("${build_stage} Failed")
-    //         }  
-    //     }
-    // }
+                def mailRecipients = "nilesh.govande@seagate.com, basavaraj.kirunge@seagate.com, rajesh.nambiar@seagate.com"
+                emailext body: '''${SCRIPT, template="mini_prov-email.template"}''',
+                mimeType: 'text/html',
+                recipientProviders: [requestor()], 
+                subject: "[Jenkins] OpenldapMiniProvisioning : ${currentBuild.currentResult}, ${JOB_BASE_NAME}#${BUILD_NUMBER}",
+                to: "${mailRecipients}"
+            }
+        }
+        failure {
+            script {
+                manager.addShortText("${build_stage} Failed")
+            }  
+        }
+    }
 }	
 
 
