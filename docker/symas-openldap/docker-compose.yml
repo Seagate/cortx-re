@@ -21,7 +21,7 @@ version: "3"
 
 services:
   syams-openldap:
-    image: ghcr.io/seagate/symas-openldap:2.4.58
+    image: ghcr.io/seagate/symas-openldap:$TAG
     build:
       context: ../../
       dockerfile: ./docker/symas-openldap/Dockerfile

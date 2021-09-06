@@ -49,6 +49,8 @@ RUN yum install --nogpgcheck -y sudo \
 RUN yum install --nogpgcheck -y cortx-py-utils \
     symas-openldap-clients \
     symas-openldap-servers \
+    python36-ldap \
+    openldap-devel \
     && rm -rf /var/cache/yum
 
 RUN rm -rf /etc/yum.repos.d/cortx-storage.colo.seagate.com_releases_cortx_* \
