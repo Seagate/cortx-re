@@ -195,7 +195,7 @@ Recommended VM specification:
                     }
                     env.build_stage = "${build_stage}"
                 
-                    def mailRecipients = "nilesh.govande@seagate.com, basavaraj.kirunge@seagate.com, rajesh.nambiar@seagate.com"
+                    def mailRecipients = "nilesh.govande@seagate.com, basavaraj.kirunge@seagate.com, rajesh.nambiar@seagate.com,CORTX.s3@seagate.com"
                     emailext body: '''${SCRIPT, template="mini_prov-email.template"}''',
                     mimeType: 'text/html',
                     recipientProviders: [requestor()], 
