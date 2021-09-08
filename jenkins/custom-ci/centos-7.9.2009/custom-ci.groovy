@@ -62,6 +62,12 @@ pipeline {
 			choices: ['cortx-2.0', 'custom'],
 			description: 'Third Party Python Version to use.'
 		)
+
+		choice(
+			name: 'ISO_GENERATION',
+			choices: ['no', 'yes'],
+			description: 'Need ISO files'
+		)
 	
 	}
 
@@ -388,6 +394,9 @@ pipeline {
 		}
 		
 		stage ('Generate ISO Image') {
+			when {
+                expression { params.ISO_GENERATION == 'yes' }
+            }
 		    steps {
 
 				sh label: 'Release ISO', script: '''
@@ -424,6 +433,11 @@ pipeline {
                     gpg --output $integration_dir/$release_tag/iso/cortx-$version-$release_tag-single.iso.sig --detach-sig $integration_dir/$release_tag/iso/cortx-$version-$release_tag-single.iso 
                 popd
                 '''
+			}
+		}
+
+		stage ('Additional Files') {
+		    steps {
 
 				sh label: 'Additional Files', script:'''
 				#Add cortx-prep.sh
