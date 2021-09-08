@@ -42,38 +42,26 @@ if [ -z "${BUILD_URL}" ] ; then
     usage
 fi
 
-curl $BUILD_URL/RELEASE.INFO -o RELEASE.INFO
-
-for PARAM in BRANCH BUILD
-do
-export DOCKER_BUILD_$PARAM=$(grep $PARAM RELEASE.INFO | cut -d'"' -f2)
-done
-rm -rf RELEASE.INFO
 
 pushd ../.././
-if [ "$DOCKER_BUILD_BRANCH" != "stable" ]; then
-	export TAG=$VERSION-$DOCKER_BUILD_BUILD-$DOCKER_BUILD_BRANCH
-else
-	export TAG=$VERSION-$DOCKER_BUILD_BUILD
-fi
 
-CREATED_DATE=$(date -u +'%Y-%m-%d %H:%M:%S%:z')
+export CREATED_DATE=$(date -u +'%Y-%m-%d %H:%M:%S%:z')
+export TAG=2.4.58
 
-docker-compose -f docker/cortx-deploy/docker-compose.yml build --force-rm --no-cache --compress --build-arg GIT_HASH="$(git rev-parse --short HEAD)" --build-arg CREATED_DATE="$CREATED_DATE" --build-arg BUILD_URL=$BUILD_URL  cortx-all
+docker-compose -f docker/symas-openldap/docker-compose.yml build --force-rm --no-cache --compress --build-arg GIT_HASH="$(git rev-parse --short HEAD)" --build-arg CREATED_DATE="$CREATED_DATE" --build-arg BUILD_URL=$BUILD_URL syams-openldap
 
 if [ "$DOCKER_PUSH" == "yes" ];then
         echo "Pushing Docker image to GitHub Container Registry"
-	docker-compose -f docker/cortx-deploy/docker-compose.yml push cortx-all
+	docker-compose -f docker/symas-openldap/docker-compose.yml push syams-openldap
 else
 	echo "Docker Image push skipped"
-	exit 0	
 fi
 popd
 
 if [ "$TAG_LATEST" == "yes" ];then
 	echo "Tagging generated image as latest"
-        docker tag $(docker images ghcr.io/seagate/cortx-all --format='{{.Repository}}:{{.Tag}}' | head -1) ghcr.io/seagate/cortx-all:$(echo $TAG | sed 's|'$DOCKER_BUILD_BUILD'|latest|g')
-        docker push ghcr.io/seagate/cortx-all:$(echo $TAG | sed 's|'$DOCKER_BUILD_BUILD'|latest|g')  
+        docker tag $(docker images ghcr.io/seagate/symas-openldap --format='{{.Repository}}:{{.Tag}}' | head -1) ghcr.io/seagate/symas-openldap:latest
+        docker push ghcr.io/seagate/symas-openldap:latest 
 else 
 	echo "Latest tag creation skipped"
 fi

@@ -17,8 +17,8 @@ pipeline {
 
 		python_deps = "${THIRD_PARTY_PYTHON_VERSION == 'cortx-2.0' ? "$release_dir/third-party-deps/python-deps/python-packages-2.0.0-latest" : THIRD_PARTY_PYTHON_VERSION == 'cortx-1.0' ?  "$release_dir/third-party-deps/python-packages" : "$release_dir/third-party-deps/python-deps/python-packages-2.0.0-custom"}"
 
-		cortx_os_iso = "/mnt/bigstorage/releases/cortx_builds/custom-os-iso/cortx-os-1.0.0-23.iso"
-		third_party_dir = "${THIRD_PARTY_RPM_VERSION == 'cortx-2.0' ? "$release_dir/third-party-deps/centos/$os_version-2.0.0-latest" : THIRD_PARTY_RPM_VERSION == 'cortx-1.0' ?  "$release_dir/third-party-deps/centos/$os_version-1.0.0-1" : "$release_dir/third-party-deps/centos/$os_version-custom"}"
+		cortx_os_iso = "/mnt/bigstorage/releases/cortx_builds/custom-os-iso/cortx-2.0.0/cortx-os-2.0.0-7.iso"
+		third_party_dir = "${THIRD_PARTY_RPM_VERSION == 'cortx-2.0' ? "$release_dir/third-party-deps/centos/$os_version-2.0.0-latest" : THIRD_PARTY_RPM_VERSION == 'cortx-k8' ?  "$release_dir/third-party-deps/centos/$os_version-2.0.0-k8" : "$release_dir/third-party-deps/centos/$os_version-custom"}"
 	}
 
 	options {
@@ -53,7 +53,7 @@ pipeline {
 
 		choice(
 			name: 'THIRD_PARTY_RPM_VERSION',
-			choices: ['cortx-2.0', 'custom'],
+			choices: ['cortx-2.0', 'cortx-2.0-k8', 'custom'],
 			description: 'Third Party RPM Version to use.'
 		)
 
@@ -61,6 +61,12 @@ pipeline {
 			name: 'THIRD_PARTY_PYTHON_VERSION',
 			choices: ['cortx-2.0', 'custom'],
 			description: 'Third Party Python Version to use.'
+		)
+
+		choice(
+			name: 'ISO_GENERATION',
+			choices: ['no', 'yes'],
+			description: 'Need ISO files'
 		)
 	
 	}
@@ -388,6 +394,9 @@ pipeline {
 		}
 		
 		stage ('Generate ISO Image') {
+			when {
+                expression { params.ISO_GENERATION == 'yes' }
+            }
 		    steps {
 
 				sh label: 'Release ISO', script: '''
@@ -424,9 +433,15 @@ pipeline {
                     gpg --output $integration_dir/$release_tag/iso/cortx-$version-$release_tag-single.iso.sig --detach-sig $integration_dir/$release_tag/iso/cortx-$version-$release_tag-single.iso 
                 popd
                 '''
+			}
+		}
+
+		stage ('Additional Files') {
+		    steps {
 
 				sh label: 'Additional Files', script:'''
 				#Add cortx-prep.sh
+				mkdir -p $integration_dir/$release_tag/iso
                 cortx_prvsnr_preq=$(ls "$integration_dir/$release_tag/cortx_iso" | grep "python36-cortx-prvsnr" | cut -d- -f5 | cut -d_ -f2 | cut -d. -f1 | sed s/"git"//)                 
 				wget -O $integration_dir/$release_tag/iso/install-$version-$BUILD_NUMBER.sh https://raw.githubusercontent.com/Seagate/cortx-prvsnr/$cortx_prvsnr_preq/srv/components/provisioner/scripts/install.sh
 

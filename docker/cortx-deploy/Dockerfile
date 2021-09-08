@@ -26,10 +26,13 @@ ARG CENTOS_RELEASE
 ARG ENVIRONMENT
 ARG GIT_HASH
 ARG BUILD_URL
+ARG CREATED_DATE
 
 LABEL maintainer="cortx.opensource@seagate.com" \
-      org.opencontainers.image.title="CORTX Image" \
-      org.opencontainers.image.revision=$GIT_HASH
+      org.opencontainers.image.title="CORTX ALL" \
+      org.opencontainers.image.description="CORTX is 100% Open Source, Distributed object storage system designed for great efficiency, Massive capacity, and High HDD-utilization" \
+      org.opencontainers.image.revision=$GIT_HASH \
+      org.opencontainers.image.created=$CREATED_DATE
 
 ENV GIT_HASH $GIT_HASH
 
@@ -37,7 +40,7 @@ ENV GIT_HASH $GIT_HASH
 RUN yum-config-manager --disable base,extras,updates
 
 #Add Internal and CORTX uploads repository
-COPY ./docker/cortx-build/${ENVIRONMENT}/C${CENTOS_RELEASE}.repo /etc/yum.repos.d/
+COPY ./docker/cortx-deploy/${ENVIRONMENT}/C${CENTOS_RELEASE}.repo /etc/yum.repos.d/
 
 RUN yum-config-manager --add-repo ${BUILD_URL}/cortx_iso/ \
     && yum-config-manager --add-repo ${BUILD_URL}/3rd_party \
@@ -45,40 +48,34 @@ RUN yum-config-manager --add-repo ${BUILD_URL}/cortx_iso/ \
 
 COPY ./scripts/third-party-rpm/python_requirements*.txt /opt/
 
-RUN yum install --nogpgcheck -y sudo \
+RUN yum install --nogpgcheck -y python3-pip \
+    && pip3 install  --no-cache-dir --trusted-host $(echo $BUILD_URL | awk -F '/' '{print $3}') -i $BUILD_URL/python_deps -r /opt/python_requirements.txt -r /opt/python_requirements.ext.txt \
+   && yum clean all && rm -rf /var/cache/yum
+
+RUN yum install --nogpgcheck -y java-1.8.0-openjdk-headless \
+    sudo \
     which \
-    python3-pip \
-    haproxy \ 
-    && pip3 install  --no-cache-dir --trusted-host $(echo $BUILD_URL | awk -F '/' '{print $3}')  -i $BUILD_URL/python_deps -r /opt/python_requirements.txt -r /opt/python_requirements.ext.txt
-
-RUN yum install --nogpgcheck -y http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/custom-deps/motr/libfabric/libfabric-1.11.2-1.el7.x86_64.rpm \
-    && rm -rf /var/cache/yum
-
-RUN yum install --nogpgcheck -y cortx-py-utils \
-    cortx-hare \
-    cortx-motr \ 
-    cortx-s3server \
-    cortx-csm_agent \
-    java-1.8.0-openjdk-headless  \
-    ipython3 \ 
-    sshpass \ 
+    haproxy22 \
+    python3 \
+    sshpass \
     python36-m2crypto \
-    salt \ 
-    salt-master \ 
+    salt \
+    salt-master \
     salt-minion \
     glusterfs-server \
     glusterfs-client \
+    cortx-py-utils \
+    cortx-hare \
+    cortx-motr \
+    cortx-s3server \
+    cortx-csm_agent \
     python36-cortx-prvsnr \
     cortx-prvsnr \
     cortx-prvsnr-cli \
     python36-cortx-setup \
     cortx-node-cli \
-    cortx-cli \                 
-    && rm -rf /var/cache/yum
+    cortx-cli \
+    && yum clean all && rm -rf /var/cache/yum
 
-RUN yum-config-manager --enable base,extras,updates && rm -rf /etc/yum.repos.d/cortx-storage.colo.seagate.com_releases_cortx_* \
-    && rm -rf /var/cache/yum
-
-RUN rm -rf /etc/yum.repos.d/cortx-storage.colo.seagate.com_releases_cortx_* \
-    && rm -rf /var/cache/yum
-
+RUN yum-config-manager --enable base,extras,updates && rm -rf /etc/yum.repos.d/cortx-storage.colo.seagate.com_releases_cortx_* /etc/yum.repos.d/C${CENTOS_RELEASE}.repo \
+    && yum clean all && rm -rf /var/cache/yum

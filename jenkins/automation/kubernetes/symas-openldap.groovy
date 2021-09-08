@@ -11,7 +11,7 @@ pipeline {
         timestamps()
         ansiColor('xterm') 
         disableConcurrentBuilds()
-        buildDiscarder(logRotator(daysToKeepStr: '5', numToKeepStr: '20'))  
+        buildDiscarder(logRotator(daysToKeepStr: '5', numToKeepStr: '20'))   
     }
 
     environment {
@@ -19,9 +19,9 @@ pipeline {
 	}
 
     parameters {  
-        string(name: 'CORTX_RE_URL', defaultValue: 'https://github.com/Seagate/cortx-re.git', description: 'Repository URL for cortx-all image build.')
-		string(name: 'CORTX_RE_BRANCH', defaultValue: 'kubernetes', description: 'Branch for cortx-all image build.')
-		string(name: 'BUILD_URL', defaultValue: 'http://cortx-storage.colo.seagate.com/releases/cortx/github/main/centos-7.9.2009/last_successful_prod/', description: 'Build URL for cortx-all docker image')
+        string(name: 'CORTX_RE_URL', defaultValue: 'https://github.com/Seagate/cortx-re.git', description: 'Repository URL for symas-openldap image build.')
+		string(name: 'CORTX_RE_BRANCH', defaultValue: 'kubernetes', description: 'Branch for symas-openldap image build.')
+		string(name: 'BUILD_URL', defaultValue: 'http://cortx-storage.colo.seagate.com/releases/cortx/github/main/centos-7.9.2009/last_successful_prod/', description: 'Build URL for symas-openldap docker image')
 
         choice (
             choices: ['yes' , 'no'],
@@ -30,13 +30,7 @@ pipeline {
         )
 
         choice (
-            choices: ['yes' , 'no'],
-            description: 'Tag newly Docker image as latest ',
-            name: 'TAG_LATEST'
-        )
-
-        choice (
-            choices: ['DEVOPS', 'ALL', 'DEBUG'],
+            choices: ['DEVOPS', 'ALL'],
             description: 'Email Notification Recipients ',
             name: 'EMAIL_RECIPIENTS'
         )
@@ -73,14 +67,12 @@ pipeline {
         stage('Build & push Image') {
             steps {
 				script { build_stage = env.STAGE_NAME }
-                sh encoding: 'utf-8', label: 'Build cortx-all docker image', script: """
-                    pushd ./docker/cortx-deploy
-                        if [ $GITHUB_PUSH == yes ] && [ $TAG_LATEST == yes ];then
-                                sh ./build.sh -b $BUILD_URL -p yes -t yes
-                        elif [ $GITHUB_PUSH == yes ] && [ $TAG_LATEST == no ]; then
-                                 sh ./build.sh -b $BUILD_URL -p yes -t no
+                sh encoding: 'utf-8', label: 'Build symas-openldap docker image', script: """
+                    pushd ./docker/symas-openldap
+                        if [ $GITHUB_PUSH == yes ];then
+                            sh ./build.sh -b $BUILD_URL -t yes
                         else
-                                 sh ./build.sh -b $BUILD_URL -p no
+                            sh ./build.sh -b $BUILD_URL -p no
                         fi
                     popd
                     docker logout  
@@ -94,7 +86,7 @@ pipeline {
 		always {
             cleanWs()
 			script {
-				env.docker_image_location = "https://github.com/Seagate/cortx-re/pkgs/container/cortx-all"
+				env.docker_image_location = "https://github.com/Seagate/cortx-re/pkgs/container/symas-openldap"
                 env.image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' | head -1", returnStdout: true).trim()
 				env.build_stage = "${build_stage}"
 				def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
@@ -102,7 +94,7 @@ pipeline {
                     mailRecipients = "cortx.sme@seagate.com, manoj.management.team@seagate.com, CORTX.SW.Architecture.Team@seagate.com, CORTX.DevOps.RE@seagate.com"
                 } else if ( params.EMAIL_RECIPIENTS == "DEVOPS" ) {
                     mailRecipients = "CORTX.DevOps.RE@seagate.com"
-                } else if ( params.EMAIL_RECIPIENTS == "DEBUG" ) {
+                } else {
                     mailRecipients = "shailesh.vaidya@seagate.com"
                 }
 
