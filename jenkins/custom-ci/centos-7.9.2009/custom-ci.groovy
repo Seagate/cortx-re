@@ -441,6 +441,7 @@ pipeline {
 
 				sh label: 'Additional Files', script:'''
 				#Add cortx-prep.sh
+				mkdir -p $integration_dir/$release_tag/iso
                 cortx_prvsnr_preq=$(ls "$integration_dir/$release_tag/cortx_iso" | grep "python36-cortx-prvsnr" | cut -d- -f5 | cut -d_ -f2 | cut -d. -f1 | sed s/"git"//)                 
 				wget -O $integration_dir/$release_tag/iso/install-$version-$BUILD_NUMBER.sh https://raw.githubusercontent.com/Seagate/cortx-prvsnr/$cortx_prvsnr_preq/srv/components/provisioner/scripts/install.sh
 
