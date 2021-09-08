@@ -17,8 +17,8 @@ pipeline {
 
 		python_deps = "${THIRD_PARTY_PYTHON_VERSION == 'cortx-2.0' ? "$release_dir/third-party-deps/python-deps/python-packages-2.0.0-latest" : THIRD_PARTY_PYTHON_VERSION == 'cortx-1.0' ?  "$release_dir/third-party-deps/python-packages" : "$release_dir/third-party-deps/python-deps/python-packages-2.0.0-custom"}"
 
-		cortx_os_iso = "/mnt/bigstorage/releases/cortx_builds/custom-os-iso/cortx-os-1.0.0-23.iso"
-		third_party_dir = "${THIRD_PARTY_RPM_VERSION == 'cortx-2.0' ? "$release_dir/third-party-deps/centos/$os_version-2.0.0-latest" : THIRD_PARTY_RPM_VERSION == 'cortx-1.0' ?  "$release_dir/third-party-deps/centos/$os_version-1.0.0-1" : "$release_dir/third-party-deps/centos/$os_version-custom"}"
+		cortx_os_iso = "/mnt/bigstorage/releases/cortx_builds/custom-os-iso/cortx-2.0.0/cortx-os-2.0.0-7.iso"
+		third_party_dir = "${THIRD_PARTY_RPM_VERSION == 'cortx-2.0' ? "$release_dir/third-party-deps/centos/$os_version-2.0.0-latest" : THIRD_PARTY_RPM_VERSION == 'cortx-k8' ?  "$release_dir/third-party-deps/centos/$os_version-2.0.0-k8" : "$release_dir/third-party-deps/centos/$os_version-custom"}"
 	}
 
 	options {
@@ -53,7 +53,7 @@ pipeline {
 
 		choice(
 			name: 'THIRD_PARTY_RPM_VERSION',
-			choices: ['cortx-2.0', 'custom'],
+			choices: ['cortx-2.0', 'cortx-2.0-k8', 'custom'],
 			description: 'Third Party RPM Version to use.'
 		)
 
