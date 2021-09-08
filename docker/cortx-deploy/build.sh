@@ -66,6 +66,7 @@ if [ "$DOCKER_PUSH" == "yes" ];then
 	docker-compose -f docker/cortx-deploy/docker-compose.yml push cortx-all
 else
 	echo "Docker Image push skipped"
+	exit 0	
 fi
 popd
 
