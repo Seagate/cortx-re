@@ -40,7 +40,7 @@ ENV GIT_HASH $GIT_HASH
 RUN yum-config-manager --disable base,extras,updates
 
 #Add Internal and CORTX uploads repository
-COPY ./docker/cortx-build/${ENVIRONMENT}/C${CENTOS_RELEASE}.repo /etc/yum.repos.d/
+COPY ./docker/cortx-deploy/${ENVIRONMENT}/C${CENTOS_RELEASE}.repo /etc/yum.repos.d/
 
 RUN yum-config-manager --add-repo ${BUILD_URL}/cortx_iso/ \
     && yum-config-manager --add-repo ${BUILD_URL}/3rd_party \
@@ -55,7 +55,7 @@ RUN yum install --nogpgcheck -y python3-pip \
 RUN yum install --nogpgcheck -y java-1.8.0-openjdk-headless \
     sudo \
     which \
-    haproxy \
+    haproxy22 \
     python3 \
     sshpass \
     python36-m2crypto \
@@ -77,8 +77,5 @@ RUN yum install --nogpgcheck -y java-1.8.0-openjdk-headless \
     cortx-cli \
     && yum clean all && rm -rf /var/cache/yum
 
-RUN yum-config-manager --enable base,extras,updates && rm -rf /etc/yum.repos.d/cortx-storage.colo.seagate.com_releases_cortx_* \
-    && yum clean all && rm -rf /var/cache/yum
-
-RUN rm -rf /etc/yum.repos.d/cortx-storage.colo.seagate.com_releases_cortx_* \
+RUN yum-config-manager --enable base,extras,updates && rm -rf /etc/yum.repos.d/cortx-storage.colo.seagate.com_releases_cortx_* /etc/yum.repos.d/C${CENTOS_RELEASE}.repo \
     && yum clean all && rm -rf /var/cache/yum
