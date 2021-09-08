@@ -30,7 +30,13 @@ pipeline {
         )
 
         choice (
-            choices: ['DEVOPS', 'ALL'],
+            choices: ['yes' , 'no'],
+            description: 'Tag newly Docker image as latest ',
+            name: 'TAG_LATEST'
+        )
+
+        choice (
+            choices: ['DEVOPS', 'ALL', 'DEBUG'],
             description: 'Email Notification Recipients ',
             name: 'EMAIL_RECIPIENTS'
         )
@@ -69,10 +75,12 @@ pipeline {
 				script { build_stage = env.STAGE_NAME }
                 sh encoding: 'utf-8', label: 'Build cortx-all docker image', script: """
                     pushd ./docker/cortx-deploy
-                        if [ $GITHUB_PUSH == yes ];then
-                            sh ./build.sh -b $BUILD_URL -t yes
+                        if [ $GITHUB_PUSH == yes ] && [ $TAG_LATEST == yes ];then
+                                sh ./build.sh -b $BUILD_URL -p yes -t yes
+                        elif [ $GITHUB_PUSH == yes ] && [ $TAG_LATEST == no ]; then
+                                 sh ./build.sh -b $BUILD_URL -p yes -t no
                         else
-                            sh ./build.sh -b $BUILD_URL -p no
+                                 sh ./build.sh -b $BUILD_URL -p no
                         fi
                     popd
                     docker logout  
@@ -94,7 +102,7 @@ pipeline {
                     mailRecipients = "cortx.sme@seagate.com, manoj.management.team@seagate.com, CORTX.SW.Architecture.Team@seagate.com, CORTX.DevOps.RE@seagate.com"
                 } else if ( params.EMAIL_RECIPIENTS == "DEVOPS" ) {
                     mailRecipients = "CORTX.DevOps.RE@seagate.com"
-                } else {
+                } else if ( params.EMAIL_RECIPIENTS == "DEBUG" ) {
                     mailRecipients = "shailesh.vaidya@seagate.com"
                 }
 
