@@ -58,15 +58,15 @@
   with_items: "{{ groups['srvnodes'] }}"  
 
 - name: "[ Deploy Prerequisite ] : Extract script name"
-  shell: curl -s "{{ CORTX_BUILD }}iso/" | grep install | cut -d \" -f2
+  shell: curl -s "{{ CORTX_BUILD }}/iso/" | grep install | cut -d \" -f2
   register: script_name
 
 - set_fact:
-    SCRIPT: script_name.stdout
+    SCRIPT: "{{ script_name.stdout }}"
 
 - name: "[ Deploy Prerequisite ] : Download install.sh script"
   get_url:
-    url: "{{ CORTX_BUILD }}iso/{{ SCRIPT }}"
+    url: "{{ CORTX_BUILD }}/iso/{{ SCRIPT }}"
     dest: "{{ CORTX_DIR_PATH }}"
     mode: 0755
   delegate_to: "{{ item }}"
