@@ -65,7 +65,7 @@ pipeline {
                                     playbook: 'prepare.yml',
                                     inventory: 'inventories/hosts',
                                     extraVars: [
-                                        "NODE1"                 : [value: "${NODE1_HOST}", hidden: false],
+                                        "HOST"                 : [value: "${NODE1_HOST}", hidden: false],
                                         "CLUSTER_PASS"          : [value: "${CLUSTER_PASS}", hidden: false],
                                         "CLOUDFORM_API_CRED"    : [value: "${CLOUDFORM_API_CRED}", hidden: true],
                                         "SERVICE_USER"          : [value: "${SERVICE_USER}", hidden: true],
