@@ -42,12 +42,24 @@ if [ -z "${BUILD_URL}" ] ; then
     usage
 fi
 
+function get_git_hash {
+
+for component in cortx-py-utils cortx-s3server cortx-motr cortx-hare
+do
+echo $component:$(awk -F['_'] '/'$component'-2.0.0/ { print $2 }' RELEASE.INFO | cut -d. -f1 | sed 's/git//g'),
+done
+echo cortx-csm_agent:$(awk -F['_'] '/cortx-csm_agent-2.0.0/ { print $3 }' RELEASE.INFO | cut -d. -f1),
+echo cortx-prvsnr:$(awk -F['.'] '/cortx-prvsnr-2.0.0/ { print $4 }' RELEASE.INFO | sed 's/git//g'),
+}
+
+
 curl $BUILD_URL/RELEASE.INFO -o RELEASE.INFO
 
 for PARAM in BRANCH BUILD
 do
 export DOCKER_BUILD_$PARAM=$(grep $PARAM RELEASE.INFO | cut -d'"' -f2)
 done
+CORTX_VERSION=$(get_git_hash | tr '\n' ' ')
 rm -rf RELEASE.INFO
 
 pushd ../.././
@@ -59,7 +71,7 @@ fi
 
 CREATED_DATE=$(date -u +'%Y-%m-%d %H:%M:%S%:z')
 
-docker-compose -f docker/cortx-deploy/docker-compose.yml build --force-rm --no-cache --compress --build-arg GIT_HASH="$(git rev-parse --short HEAD)" --build-arg CREATED_DATE="$CREATED_DATE" --build-arg BUILD_URL=$BUILD_URL  cortx-all
+docker-compose -f docker/cortx-deploy/docker-compose.yml build --force-rm --compress --build-arg GIT_HASH="$CORTX_VERSION" --build-arg CREATED_DATE="$CREATED_DATE" --build-arg BUILD_URL=$BUILD_URL  cortx-all
 
 if [ "$DOCKER_PUSH" == "yes" ];then
         echo "Pushing Docker image to GitHub Container Registry"
