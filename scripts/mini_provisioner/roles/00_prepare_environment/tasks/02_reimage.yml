@@ -10,8 +10,8 @@
 ##########################################################################################
 
 # Execute reimage using cloudform api 
-- name: "[prepare] : Re-Image nodes {{ NODE1 }} using satellite API" 
-  script: files/reimage.sh -h {{ NODE1 }} -x '{{ CLOUDFORM_API_CRED }}'
+- name: "[prepare] : Re-Image nodes {{ HOST }} using satellite API" 
+  script: files/reimage.sh -h {{ HOST }} -x '{{ CLOUDFORM_API_CRED }}'
 
 # Wait for SSH service to be up and running
 - name: "[prepare] : Wait for server to restart"
