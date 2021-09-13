@@ -57,10 +57,17 @@
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}"  
 
-- name: "[ Deploy Prerequisite ] : Download install.sh script"
+- name: "[ Deploy Prerequisite ] : Extract setup script name"
+  shell: curl -s "{{ CORTX_BUILD }}/iso/" | grep install | cut -d \" -f2
+  register: script_name
+
+- set_fact:
+    SCRIPT: "{{ script_name.stdout }}"
+
+- name: "[ Deploy Prerequisite ] : Download setup script"
   get_url:
-    url: https://raw.githubusercontent.com/Seagate/cortx-prvsnr/stable/srv/components/provisioner/scripts/install.sh
-    dest: "{{ CORTX_DIR_PATH }}"
+    url: "{{ CORTX_BUILD }}/iso/{{ SCRIPT }}"
+    dest: "{{ CORTX_DIR_PATH }}/install.sh"
     mode: 0755
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}"  
