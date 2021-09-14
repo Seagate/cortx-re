@@ -21,7 +21,7 @@ pipeline {
     parameters {  
         string(name: 'CORTX_RE_URL', defaultValue: 'https://github.com/Seagate/cortx-re.git', description: 'Repository URL for cortx-all image build.')
 		string(name: 'CORTX_RE_BRANCH', defaultValue: 'kubernetes', description: 'Branch for cortx-all image build.')
-		string(name: 'BUILD', defaultValue: 'last_successful_prod/', description: 'Build for cortx-all docker image')
+		string(name: 'BUILD', defaultValue: 'last_successful_prod', description: 'Build for cortx-all docker image')
 
         choice (
             choices: ['yes' , 'no'],
