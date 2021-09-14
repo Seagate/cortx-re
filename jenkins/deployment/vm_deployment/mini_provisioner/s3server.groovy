@@ -297,7 +297,7 @@ def runAnsible(tags) {
             inventory: 'inventories/hosts',
             tags: "${tags}",
             extraVars: [
-                "NODE1"                 : [value:"${NODE1_HOST}", hidden: false],
+                "HOST"                 : [value:"${NODE1_HOST}", hidden: false],
                 "CORTX_BUILD"           : [value: "${CORTX_BUILD}", hidden: false] ,
                 "CLUSTER_PASS"          : [value: "${NODE_PASS}", hidden: false]
             ],
