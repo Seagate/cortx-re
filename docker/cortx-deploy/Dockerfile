@@ -59,11 +59,6 @@ RUN yum install --nogpgcheck -y java-1.8.0-openjdk-headless \
     python3 \
     sshpass \
     python36-m2crypto \
-    salt \
-    salt-master \
-    salt-minion \
-    glusterfs-server \
-    glusterfs-client \
     cortx-py-utils \
     cortx-hare \
     cortx-motr \

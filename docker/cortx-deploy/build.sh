@@ -20,15 +20,18 @@
 
 set -e -o pipefail
 
-usage() { echo "Usage: $0 [-b build url] [-p push docker-image to GHCR yes/no. Default yes] [ -t tag latest yes/no. Default no" ] 1>&2; exit 1; }
+usage() { echo "Usage: $0 [-b build ]  [-p push docker-image to GHCR yes/no. Default no] [ -t tag latest yes/no. Default no" ] 1>&2; exit 1; }
 
 VERSION=2.0.0
-DOCKER_PUSH=yes
+DOCKER_PUSH=no
 TAG_LATEST=no
+OS=centos-7.9.2009
+ARTFACT_URL="http://cortx-storage.colo.seagate.com/releases/cortx/github/"
+
 
 while getopts "b:p:t:" opt; do
     case $opt in
-        b ) BUILD_URL=$OPTARG;;
+        b ) BUILD=$OPTARG;;
         p ) DOCKER_PUSH=$OPTARG;;
         t ) TAG_LATEST=$OPTARG;;
         h ) usage
@@ -38,22 +41,29 @@ while getopts "b:p:t:" opt; do
     esac
 done
 
-if [ -z "${BUILD_URL}" ] ; then
-    usage
+if [ -z "${BUILD}" ] ; then
+    BUILD=last_successful_prod
 fi
+
+if echo $BUILD | grep -q custom; then BRANCH="integration-custom-ci"; else BRANCH="main"; fi
+BUILD_URL="$ARTFACT_URL/$BRANCH/$OS/$BUILD"
+
+echo "Building cortx-all image from $BUILD_URL"
+sleep 5
 
 function get_git_hash {
 
 for component in cortx-py-utils cortx-s3server cortx-motr cortx-hare
 do
-echo $component:$(awk -F['_'] '/'$component'-2.0.0/ { print $2 }' RELEASE.INFO | cut -d. -f1 | sed 's/git//g'),
+    echo $component:$(awk -F['_'] '/'$component'-2.0.0/ { print $2 }' RELEASE.INFO | cut -d. -f1 | sed 's/git//g'),
 done
 echo cortx-csm_agent:$(awk -F['_'] '/cortx-csm_agent-2.0.0/ { print $3 }' RELEASE.INFO | cut -d. -f1),
 echo cortx-prvsnr:$(awk -F['.'] '/cortx-prvsnr-2.0.0/ { print $4 }' RELEASE.INFO | sed 's/git//g'),
 }
 
 
-curl $BUILD_URL/RELEASE.INFO -o RELEASE.INFO
+curl -s $BUILD_URL/RELEASE.INFO -o RELEASE.INFO
+if grep -q "404 Not Found" RELEASE.INFO ; then echo "Provided Build does not have required structure..existing"; exit 1; fi
 
 for PARAM in BRANCH BUILD
 do
