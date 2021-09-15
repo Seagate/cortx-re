@@ -58,7 +58,7 @@ pipeline {
                             parameters: [
                                 string(name: 'CORTX_RE_URL', value: "https://github.com/shailesh-vaidya/cortx-re"),
                                 string(name: 'CORTX_RE_BRANCH', value: "kubernetes"),
-                                string(name: 'BUILD_URL', value: "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/centos-7.9.2009/custom-build-${env.custom_ci_build_id}"),
+                                string(name: 'BUILD', value: "custom-build-${env.custom_ci_build_id}"),
                                 string(name: 'EMAIL_RECIPIENTS', value: "${EMAIL_RECIPIENTS}"),
                             ]
                     } catch (err) {
