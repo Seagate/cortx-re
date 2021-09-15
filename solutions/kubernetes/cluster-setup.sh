@@ -40,6 +40,15 @@ install_prerequisites(){
     systemctl disable firewalld
     systemctl mask --now firewalld
 
+    cat <<EOF > /etc/yum.repos.d/docker-ce.repo 
+[docker-ce-stable]
+name=Docker CE Stable - $basearch
+baseurl=https://download.docker.com/linux/centos/$releasever/$basearch/stable
+enabled=1
+gpgcheck=0
+gpgkey=https://download.docker.com/linux/centos/gpg
+EOF
+
     cat <<EOF > /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
 name=Kubernetes
@@ -50,7 +59,7 @@ repo_gpgcheck=1
 gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
 EOF
 
-    yum install kubeadm docker -y
+    yum install kubeadm docker-ce -y
 
     sudo systemctl enable docker
     sudo systemctl daemon-reload
