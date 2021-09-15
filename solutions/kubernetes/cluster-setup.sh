@@ -40,14 +40,7 @@ install_prerequisites(){
     systemctl disable firewalld
     systemctl mask --now firewalld
 
-    cat <<EOF > /etc/yum.repos.d/docker-ce.repo 
-[docker-ce-stable]
-name=Docker CE Stable - $basearch
-baseurl=https://download.docker.com/linux/centos/$releasever/$basearch/stable
-enabled=1
-gpgcheck=0
-gpgkey=https://download.docker.com/linux/centos/gpg
-EOF
+    yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 
     cat <<EOF > /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
