@@ -100,6 +100,7 @@ case $ACTION in
     ;;
     --init)
         initialize_cluster
+    ;;    
     *)
         echo "ERROR : Please provide valid option"
         usage
