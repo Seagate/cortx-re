@@ -59,11 +59,6 @@ RUN yum install --nogpgcheck -y java-1.8.0-openjdk-headless \
     python3 \
     sshpass \
     python36-m2crypto \
-    salt \
-    salt-master \
-    salt-minion \
-    glusterfs-server \
-    glusterfs-client \
     cortx-py-utils \
     cortx-hare \
     cortx-motr \
@@ -72,8 +67,6 @@ RUN yum install --nogpgcheck -y java-1.8.0-openjdk-headless \
     python36-cortx-prvsnr \
     cortx-prvsnr \
     cortx-prvsnr-cli \
-    python36-cortx-setup \
-    cortx-node-cli \
     cortx-cli \
     && yum clean all && rm -rf /var/cache/yum
 
