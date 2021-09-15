@@ -72,6 +72,21 @@ EOF
 
 }
 
+initialize_cluster(){
+    #initialize cluster
+    kubeadm init
+    # Verify node added in cluster
+    kubectl get nodes
+    # Copy cluster configuration for user
+    mkdir -p $HOME/.kube
+    cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+    chown $(id -u):$(id -g) $HOME/.kube/config
+    # deploy calico network
+    kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+}
+
+
+
 ACTION="$1"
 if [ -z "$ACTION" ]; then
     echo "ERROR : No option provided"
@@ -83,6 +98,8 @@ case $ACTION in
     --prepare) 
         install_prerequisites
     ;;
+    --init)
+        initialize_cluster
     *)
         echo "ERROR : Please provide valid option"
         usage
