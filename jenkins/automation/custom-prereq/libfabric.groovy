@@ -6,12 +6,12 @@ pipeline {
     }
     
     options {
-		timeout(time: 120, unit: 'MINUTES')
-		timestamps()
-		disableConcurrentBuilds()
+        timeout(time: 120, unit: 'MINUTES')
+        timestamps()
+        disableConcurrentBuilds()
         buildDiscarder(logRotator(daysToKeepStr: '30', numToKeepStr: '30'))
-		ansiColor('xterm')
-	}
+        ansiColor('xterm')
+    }
 
     environment {
         build_upload_dir = "/mnt/bigstorage/releases/cortx/third-party-deps/custom-deps/motr/libfabric/"
@@ -22,7 +22,7 @@ pipeline {
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash to build docker image', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repository to build docker image', trim: true)
         string(name: 'libfabric_release', defaultValue: 'v1.13.0', description: 'Libfaric Version. Refer - https://github.com/ofiwg/libfabric/releases/tag/v1.12.1', trim: true)
-	}	
+    }    
 
     stages {
 
@@ -35,48 +35,50 @@ pipeline {
         }
 
         stage ('Build RPM') {
-			steps {
-				script { build_stage = env.STAGE_NAME }
-				
-				sh label: 'Install prerequisite', script: '''
-				rm -rf /etc/yum.repos.d/CentOS-*
-				yum install libibverbs librdmacm-devel -y
-				'''
-				
-				sh label: 'Build RPM', script: '''
-				
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                
+                sh label: 'Install prerequisite', script: '''
+                rm -rf /etc/yum.repos.d/CentOS-*
+                yum install libibverbs librdmacm-devel -y
+                '''
+                
+                sh label: 'Build RPM', script: '''
+                
                 git clone https://github.com/ofiwg/libfabric -b $libfabric_release
                 pushd libfabric
+                    sed -i 's/TCPX_IOV_LIMIT = 4/TCPX_IOV_LIMIT = 8/g' ./prov/tcp/src/tcpx.h
+                    grep TCPX_IOV_LIMIT ./prov/tcp/src/tcpx.h
                     ./autogen.sh
                     ./configure
                     make rpm
                 popd    
-				
-		        '''
-			}
-		}
+                
+                '''
+            }
+        }
 
         stage ('Upload') {
-			steps {
-				script { build_stage = env.STAGE_NAME }
-				sh label: 'Copy RPMS', script: '''
-					mkdir -p $build_upload_dir/$BUILD_NUMBER
-					cp /root/rpmbuild/RPMS/x86_64/libfabric*.rpm $build_upload_dir/$BUILD_NUMBER
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'Copy RPMS', script: '''
+                    mkdir -p $build_upload_dir/$BUILD_NUMBER
+                    cp /root/rpmbuild/RPMS/x86_64/libfabric*.rpm $build_upload_dir/$BUILD_NUMBER
                     createrepo -v $build_upload_dir/$BUILD_NUMBER
-				'''
-			}
-		}
+                '''
+            }
+        }
 
         stage ('Tag last_successful') {
-			steps {
-				script { build_stage = env.STAGE_NAME }
-				sh label: 'Tag last_successful', script: '''pushd $build_upload_dir/
-					test -L $build_upload_dir/last_successful && rm -f last_successful
-					ln -s $build_upload_dir/$BUILD_NUMBER last_successful
-					popd
-				'''
-			}
-		}
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'Tag last_successful', script: '''pushd $build_upload_dir/
+                    test -L $build_upload_dir/last_successful && rm -f last_successful
+                    ln -s $build_upload_dir/$BUILD_NUMBER last_successful
+                    popd
+                '''
+            }
+        }
 
     }
 }
