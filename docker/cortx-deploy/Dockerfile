@@ -49,6 +49,7 @@ RUN yum-config-manager --add-repo ${BUILD_URL}/cortx_iso/ \
 COPY ./scripts/third-party-rpm/python_requirements*.txt /opt/
 
 RUN yum install --nogpgcheck -y python3-pip \
+    && pip3 install yq \
     && pip3 install  --no-cache-dir --trusted-host $(echo $BUILD_URL | awk -F '/' '{print $3}') -i $BUILD_URL/python_deps -r /opt/python_requirements.txt -r /opt/python_requirements.ext.txt \
    && yum clean all && rm -rf /var/cache/yum
 
@@ -59,6 +60,8 @@ RUN yum install --nogpgcheck -y java-1.8.0-openjdk-headless \
     python3 \
     sshpass \
     python36-m2crypto \
+    yq \
+    jq \
     cortx-py-utils \
     cortx-hare \
     cortx-motr \
