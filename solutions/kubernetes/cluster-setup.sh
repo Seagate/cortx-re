@@ -20,9 +20,10 @@
 
 usage(){
     cat << HEREDOC
-Usage : $0 [--prepare]
+Usage : $0 [--prepare, --init]
 where,
     --prepare - Install prerequisites on nodes for kubernetes setup
+    --master - Initialize K8 master node. 
 HEREDOC
 }
 
@@ -40,6 +41,7 @@ install_prerequisites(){
     systemctl stop firewalld && systemctl disable firewalld && sudo systemctl mask --now firewalld
 
     # set yum repositories for k8 and docker-ce
+    rm -rf /etc/yum.repos.d/download.docker.com_linux_centos_7_x86_64_stable_.repo /etc/yum.repos.d/packages.cloud.google.com_yum_repos_kubernetes-el7-x86_64.repo
     yum-config-manager --add https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
     yum-config-manager --save --setopt=packages.cloud.google.com_yum_repos_kubernetes-el7-x86_64.gpgkey="https://packages.cloud.google.com/yum/doc/yum-key.gpg,https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg"
     yum-config-manager --add https://download.docker.com/linux/centos/7/x86_64/stable/    
@@ -59,6 +61,13 @@ install_prerequisites(){
     systemctl enable kubelet && sudo systemctl daemon-reload && systemctl restart kubelet
     echo "kubelet Configured Successfully"
 
+
+    #Download calico plugin image
+    pushd /var/tmp/ 
+    wget -c https://github.com/projectcalico/calico/releases/download/v3.20.0/release-v3.20.0.tgz -O - | tar -xz
+    cd release-v3.20.0/images && for file in calico-node.tar calico-kube-controllers.tar  calico-cni.tar calico-pod2daemon-flexvol.tar; do docker load -i $file; done
+    popd
+
 }
 
 initialize_cluster(){
@@ -77,11 +86,7 @@ initialize_cluster(){
     cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
     chown $(id -u):$(id -g) $HOME/.kube/config
 
-    #Install calico plugin
-    pushd /var/tmp/ 
-    wget -c https://github.com/projectcalico/calico/releases/download/v3.20.0/release-v3.20.0.tgz -O - | tar -xz
-    cd release-v3.20.0/images && for file in calico-node.tar calico-kube-controllers.tar  calico-cni.tar calico-pod2daemon-flexvol.tar; do docker load -i $file; done
-    popd
+    # Apply calcio plugin 	
     kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
 }
 
