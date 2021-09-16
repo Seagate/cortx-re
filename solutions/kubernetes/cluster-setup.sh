@@ -1,10 +1,22 @@
 #!/bin/bash
 HOST_FILE=$PWD/hosts
+SSH_KEY_FILE=/root/.ssh/id_rsa
+
+function validation {
+
+if [ ! -f "$HOST_FILE" ]; then
+echo "$HOST_FILE is not present"
+exit 1
+fi
+}
 
 
 function generate_rsa_key {
-rm -rf /root/.ssh/id_rsa
-ssh-keygen -b 2048 -t rsa -f /root/.ssh/id_rsa -q -N ""
+if [ ! -f "$SSH_KEY_FILE" ]; then
+ssh-keygen -b 2048 -t rsa -f $SSH_KEY_FILE -q -N ""
+else
+echo $SSH_KEY_FILE already present
+fi
 }
 
 function passwordless_ssh {
@@ -16,13 +28,13 @@ sshpass -p $PASS ssh-copy-id -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa.pub $U
 }
 
 function nodes_setup {
-for i in $(cat $HOST_FILE)
+for ssh_node in $(cat $HOST_FILE)
 do 
-local NODE=$(echo $i | awk -F[,] '{print $1}' | cut -d'=' -f2)
-local USER=$(echo $i | awk -F[,] '{print $2}' | cut -d'=' -f2)
-local PASS=$(echo $i | awk -F[,] '{print $3}' | cut -d'=' -f2)
+local NODE=$(echo $ssh_node | awk -F[,] '{print $1}' | cut -d'=' -f2)
+local USER=$(echo $ssh_node | awk -F[,] '{print $2}' | cut -d'=' -f2)
+local PASS=$(echo $ssh_node | awk -F[,] '{print $3}' | cut -d'=' -f2)
 
-echo "Running on $NODE"
+echo "----------------------[ Setting up passwordless ssh for $NODE ]--------------------------------------"
 passwordless_ssh $NODE $USER $PASS
 scp cluster-functions.sh $NODE:/var/tmp/
 done
@@ -40,16 +52,26 @@ echo "---------------------------------------[ Preparing Node $node ]-----------
 ssh -o 'StrictHostKeyChecking=no' $node '/var/tmp/cluster-functions.sh --prepare'
 done
 
+echo "---------------------------------------[ Preparing Master Node $node ]--------------------------------------"
 ssh -o 'StrictHostKeyChecking=no' $MASTER_NODE '/var/tmp/cluster-functions.sh --master'
 sleep 10 #To be replaced with status check
 JOIN_COMMAND=$(ssh -o 'StrictHostKeyChecking=no' $MASTER_NODE 'kubeadm token create --print-join-command --description "Token to join worker nodes"')
 
 for worker_node in $WORKER_NODES
 do
+echo "---------------------------------------[ Joining Worker Node $node ]--------------------------------------"
 ssh -o 'StrictHostKeyChecking=no' $worker_node "echo "y" | kubeadm reset && $JOIN_COMMAND" 
 done
 }
 
+function print_status {
+
+ssh -o 'StrictHostKeyChecking=no' $MASTER_NODE 'kubectl get nodes -o wide'
+
+}
+
+
 generate_rsa_key
 nodes_setup
 setup_cluster
+print_status
