@@ -66,6 +66,8 @@ done
 
 function print_status {
 
+echo "---------------------------------------[ Print Node status ]----------------------------------------------"
+sleep 10
 ssh -o 'StrictHostKeyChecking=no' $MASTER_NODE 'kubectl get nodes -o wide'
 
 }
