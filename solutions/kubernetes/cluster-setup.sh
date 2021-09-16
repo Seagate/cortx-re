@@ -36,6 +36,7 @@ echo MASTER NODE=$MASTER_NODE
 echo WORKER NODES=$WORKER_NODES
 for node in $ALL_NODES
 do 
+echo "---------------------------------------[ Preparing Node $node ]--------------------------------------"
 ssh -o 'StrictHostKeyChecking=no' $node '/var/tmp/cluster-functions.sh --prepare'
 done
 
