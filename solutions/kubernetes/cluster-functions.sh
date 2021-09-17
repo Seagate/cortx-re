@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (c) 2020 Seagate Technology LLC and/or its Affiliates
+# Copyright (c) 2021 Seagate Technology LLC and/or its Affiliates
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,23 +20,11 @@
 
 usage(){
     cat << HEREDOC
-Usage : $0 [--prepare, --init]
+Usage : $0 [--prepare, --master]
 where,
     --prepare - Install prerequisites on nodes for kubernetes setup
     --master - Initialize K8 master node. 
 HEREDOC
-}
-
-function generate_rsa_key {
-   rm -rf /root/.ssh/id_rsa
-     ssh-keygen -b 2048 -t rsa -f /root/.ssh/id_rsa -q -N ""
-}
-
-function passwordless_ssh {
-   local NODE=$1
-   local USER=$2
-   local PASS=$3
-   sshpass -p $PASS ssh-copy-id -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa.pub $USER@$NODE
 }
 
 
@@ -57,7 +45,6 @@ install_prerequisites(){
     rm -rf /etc/yum.repos.d/download.docker.com_linux_centos_7_x86_64_stable_.repo /etc/yum.repos.d/packages.cloud.google.com_yum_repos_kubernetes-el7-x86_64.repo
     yum-config-manager --add https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
     yum-config-manager --add https://download.docker.com/linux/centos/7/x86_64/stable/    
-
     yum install kubeadm-1.19.0-0 kubectl-1.19.0-0 kubelet-1.19.0-0 kubernetes-cni docker-ce --nogpgcheck -y 
 
     # setup kernel parameters
@@ -102,6 +89,7 @@ master_node(){
     kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
 }
 
+
 ACTION="$1"
 if [ -z "$ACTION" ]; then
     echo "ERROR : No option provided"
@@ -122,3 +110,4 @@ case $ACTION in
         exit 1
     ;;    
 esac
+
