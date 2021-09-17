@@ -61,6 +61,7 @@ RUN yum install --nogpgcheck -y java-1.8.0-openjdk-headless \
     sshpass \
     python36-m2crypto \
     jq \
+    kafka \
     python36-dbus \
     cortx-provisioner \
     cortx-py-utils \
