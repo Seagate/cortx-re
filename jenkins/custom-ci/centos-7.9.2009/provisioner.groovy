@@ -66,6 +66,14 @@ pipeline {
                     echo "cortx-setup package creation is not implemented"
                 fi        
 				'''
+
+                sh encoding: 'UTF-8', label: 'cortx-provisioner', script: '''
+                if [ -f "./jenkins/build.sh" ]; then
+					bash ./jenkins/build.sh -v 2.0.0 -b ${CUSTOM_CI_BUILD_ID}
+                else
+                    echo "cortx-provisioner package creation is not implemented"
+                fi        
+				'''
             }
         }
 
