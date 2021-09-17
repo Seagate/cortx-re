@@ -40,7 +40,7 @@ pipeline {
                 
                 sh label: 'Install prerequisite', script: '''
                 rm -rf /etc/yum.repos.d/CentOS-*
-                yum install libibverbs librdmacm-devel -y
+                #yum install libibverbs librdmacm-devel -y
                 '''
                 
                 sh label: 'Build RPM', script: '''
