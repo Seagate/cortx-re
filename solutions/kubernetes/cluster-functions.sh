@@ -45,7 +45,6 @@ install_prerequisites(){
     rm -rf /etc/yum.repos.d/download.docker.com_linux_centos_7_x86_64_stable_.repo /etc/yum.repos.d/packages.cloud.google.com_yum_repos_kubernetes-el7-x86_64.repo
     yum-config-manager --add https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
     yum-config-manager --add https://download.docker.com/linux/centos/7/x86_64/stable/    
-
     yum install kubeadm-1.19.0-0 kubectl-1.19.0-0 kubelet-1.19.0-0 kubernetes-cni docker-ce --nogpgcheck -y 
 
     # setup kernel parameters

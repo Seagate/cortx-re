@@ -40,7 +40,7 @@ function passwordless_ssh {
     local NODE=$1
     local USER=$2
     local PASS=$3
-    sshpass -p "$PASS" ssh-copy-id -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa.pub "$USER"@"$NODE"
+    sshpass -p "$PASS" ssh-copy-id -f -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa.pub "$USER"@"$NODE"
 }
 
 function nodes_setup {
@@ -52,7 +52,7 @@ function nodes_setup {
 
         echo "----------------------[ Setting up passwordless ssh for $NODE ]--------------------------------------"
         passwordless_ssh "$NODE" "$USER" "$PASS"
-        scp cluster-functions.sh "$NODE":/var/tmp/
+        scp -q cluster-functions.sh "$NODE":/var/tmp/
     done
 }
 
@@ -60,22 +60,26 @@ function setup_cluster {
     ALL_NODES=$(cat "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
     MASTER_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
     WORKER_NODES=$(cat "$HOST_FILE" | grep -v "$MASTER_NODE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+
+    echo "---------------[ Setting up kubernetes cluster for following nodes ]--------------------------------------"
     echo MASTER NODE="$MASTER_NODE"
     echo WORKER NODES="$WORKER_NODES"
+    echo "------------------------------------------------------------------------------------------------------"    
+
     for node in $ALL_NODES
     do 
         echo "---------------------------------------[ Preparing Node $node ]--------------------------------------"
         ssh -o 'StrictHostKeyChecking=no' "$node" '/var/tmp/cluster-functions.sh --prepare'
     done
 
-    echo "---------------------------------------[ Preparing Master Node $node ]--------------------------------------"
+    echo "---------------------------------------[ Preparing Master Node $MASTER_NODE ]--------------------------------------"
     ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" '/var/tmp/cluster-functions.sh --master'
     sleep 10 #To be replaced with status check
     JOIN_COMMAND=$(ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" 'kubeadm token create --print-join-command --description "Token to join worker nodes"')
 
     for worker_node in $WORKER_NODES
         do
-        echo "---------------------------------------[ Joining Worker Node $node ]--------------------------------------"
+        echo "---------------------------------------[ Joining Worker Node $worker_node ]--------------------------------------"
         ssh -o 'StrictHostKeyChecking=no' "$worker_node" "echo "y" | kubeadm reset && $JOIN_COMMAND"
         ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" "kubectl label node $worker_node" node-role.kubernetes.io/worker=worker 
     done
