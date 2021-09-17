@@ -83,8 +83,8 @@ pipeline {
                 sh label: 'Copy RPMS', script: '''
                     mkdir -p $build_upload_dir
                     cp /root/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir
+                    shopt -s extglob
                     if ls ./dist/*.rpm; then
-                        shopt -s extglob
                         cp ./dist/!(*.src.rpm|*.tar.gz) $build_upload_dir
                     fi
                     createrepo -v --update $build_upload_dir
