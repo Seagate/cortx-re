@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (c) 2020 Seagate Technology LLC and/or its Affiliates
+# Copyright (c) 2021 Seagate Technology LLC and/or its Affiliates
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,9 +27,30 @@ where,
 HEREDOC
 }
 
+ACTION="$1"
+if [ -z "$ACTION" ]; then
+    echo "ERROR : No option provided"
+    usage
+    exit 1
+fi
+
+case $ACTION in
+    --prepare) 
+        install_prerequisites
+    ;;
+    --master)
+        master_node
+    ;;    
+    *)
+        echo "ERROR : Please provide valid option"
+        usage
+        exit 1
+    ;;    
+esac
+
 function generate_rsa_key {
    rm -rf /root/.ssh/id_rsa
-     ssh-keygen -b 2048 -t rsa -f /root/.ssh/id_rsa -q -N ""
+   ssh-keygen -b 2048 -t rsa -f /root/.ssh/id_rsa -q -N ""
 }
 
 function passwordless_ssh {
@@ -76,8 +97,8 @@ install_prerequisites(){
 
     #Download calico plugin image
     pushd /var/tmp/ 
-    wget -c https://github.com/projectcalico/calico/releases/download/v3.20.0/release-v3.20.0.tgz -O - | tar -xz
-    cd release-v3.20.0/images && for file in calico-node.tar calico-kube-controllers.tar  calico-cni.tar calico-pod2daemon-flexvol.tar; do docker load -i $file; done
+        wget -c https://github.com/projectcalico/calico/releases/download/v3.20.0/release-v3.20.0.tgz -O - | tar -xz
+        cd release-v3.20.0/images && for file in calico-node.tar calico-kube-controllers.tar  calico-cni.tar calico-pod2daemon-flexvol.tar; do docker load -i $file; done
     popd
 
 }
@@ -102,23 +123,4 @@ master_node(){
     kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
 }
 
-ACTION="$1"
-if [ -z "$ACTION" ]; then
-    echo "ERROR : No option provided"
-    usage
-    exit 1
-fi
 
-case $ACTION in
-    --prepare) 
-        install_prerequisites
-    ;;
-    --master)
-        master_node
-    ;;    
-    *)
-        echo "ERROR : Please provide valid option"
-        usage
-        exit 1
-    ;;    
-esac
