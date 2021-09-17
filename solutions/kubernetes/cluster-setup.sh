@@ -31,7 +31,7 @@ function validation {
 function generate_rsa_key {
     if [ ! -f "$SSH_KEY_FILE" ]; then
         ssh-keygen -b 2048 -t rsa -f $SSH_KEY_FILE -q -N ""
-        else
+     else
         echo $SSH_KEY_FILE already present
     fi
 }
@@ -76,17 +76,20 @@ function setup_cluster {
     for worker_node in $WORKER_NODES
         do
         echo "---------------------------------------[ Joining Worker Node $node ]--------------------------------------"
-        ssh -o 'StrictHostKeyChecking=no' "$worker_node" "echo "y" | kubeadm reset && $JOIN_COMMAND" 
+        ssh -o 'StrictHostKeyChecking=no' "$worker_node" "echo "y" | kubeadm reset && $JOIN_COMMAND"
+        ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" "kubectl label node $worker_node" node-role.kubernetes.io/worker=worker 
     done
 }
 
 function print_status {
 
-echo "---------------------------------------[ Print Node status ]----------------------------------------------"
-sleep 10 #To be replaced with status check
-ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" 'kubectl get nodes -o wide'
+    echo "---------------------------------------[ Print Node status ]----------------------------------------------"
+    sleep 10 #To be replaced with status check
+    ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" 'kubectl get nodes -o wide'
+}
 
 #Execution 
+validation
 generate_rsa_key
 nodes_setup
 setup_cluster

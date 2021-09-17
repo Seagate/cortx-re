@@ -20,44 +20,11 @@
 
 usage(){
     cat << HEREDOC
-Usage : $0 [--prepare, --init]
+Usage : $0 [--prepare, --master]
 where,
     --prepare - Install prerequisites on nodes for kubernetes setup
     --master - Initialize K8 master node. 
 HEREDOC
-}
-
-ACTION="$1"
-if [ -z "$ACTION" ]; then
-    echo "ERROR : No option provided"
-    usage
-    exit 1
-fi
-
-case $ACTION in
-    --prepare) 
-        install_prerequisites
-    ;;
-    --master)
-        master_node
-    ;;    
-    *)
-        echo "ERROR : Please provide valid option"
-        usage
-        exit 1
-    ;;    
-esac
-
-function generate_rsa_key {
-   rm -rf /root/.ssh/id_rsa
-   ssh-keygen -b 2048 -t rsa -f /root/.ssh/id_rsa -q -N ""
-}
-
-function passwordless_ssh {
-   local NODE=$1
-   local USER=$2
-   local PASS=$3
-   sshpass -p $PASS ssh-copy-id -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa.pub $USER@$NODE
 }
 
 
@@ -97,8 +64,8 @@ install_prerequisites(){
 
     #Download calico plugin image
     pushd /var/tmp/ 
-        wget -c https://github.com/projectcalico/calico/releases/download/v3.20.0/release-v3.20.0.tgz -O - | tar -xz
-        cd release-v3.20.0/images && for file in calico-node.tar calico-kube-controllers.tar  calico-cni.tar calico-pod2daemon-flexvol.tar; do docker load -i $file; done
+    wget -c https://github.com/projectcalico/calico/releases/download/v3.20.0/release-v3.20.0.tgz -O - | tar -xz
+    cd release-v3.20.0/images && for file in calico-node.tar calico-kube-controllers.tar  calico-cni.tar calico-pod2daemon-flexvol.tar; do docker load -i $file; done
     popd
 
 }
@@ -123,4 +90,25 @@ master_node(){
     kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
 }
 
+
+ACTION="$1"
+if [ -z "$ACTION" ]; then
+    echo "ERROR : No option provided"
+    usage
+    exit 1
+fi
+
+case $ACTION in
+    --prepare) 
+        install_prerequisites
+    ;;
+    --master)
+        master_node
+    ;;    
+    *)
+        echo "ERROR : Please provide valid option"
+        usage
+        exit 1
+    ;;    
+esac
 
