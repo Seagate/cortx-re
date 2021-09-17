@@ -84,7 +84,7 @@ pipeline {
                     mkdir -p $build_upload_dir
                     cp /root/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir
                     shopt -s extglob
-                    cp ./dist/!(*.src.rpm|*.tar.gz) /root/test/ $build_upload_dir
+                    cp ./dist/!(*.src.rpm|*.tar.gz) $build_upload_dir
                     createrepo -v --update $build_upload_dir
                 '''
             }
