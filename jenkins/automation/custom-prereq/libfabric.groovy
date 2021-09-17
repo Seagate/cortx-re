@@ -47,7 +47,7 @@ pipeline {
                 
                 git clone https://github.com/ofiwg/libfabric -b $libfabric_release
                 pushd libfabric
-                    sed -i 's/TCPX_IOV_LIMIT = 4/TCPX_IOV_LIMIT = 8/g' ./prov/tcp/src/tcpx.h
+                    sed -i 's/(4)/(8)/g' ./prov/tcp/src/tcpx.h
                     grep TCPX_IOV_LIMIT ./prov/tcp/src/tcpx.h
                     git config --global user.email "cortx-admin@seagate.com" && git config --global user.name "cortx-admin"
                     git add prov/tcp/src/tcpx.h && git commit -s -m "patch"
