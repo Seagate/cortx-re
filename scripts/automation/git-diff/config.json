@@ -1,0 +1,44 @@
+{
+  "repository": [
+    {
+      "name": "cortx-motr",
+      "files": ["./cortx-motr/cortx-motr.spec.in"]
+    },
+    {
+      "name": "cortx-posix",
+      "files": ["./cortx-posix/scripts/libevhtp.spec"]
+    },
+    {
+      "name": "cortx-monitor",
+      "files": ["./cortx-monitor/libsspl_sec/libsspl_sec.spec"]
+    },
+    {
+      "name": "cortx-hare",
+      "files": ["./cortx-hare/cfgen/requirements.txt", "./cortx-hare/hare.spec"]
+    },
+    {
+      "name": "cortx-prvsnr",
+      "files": ["./cortx-prvsnr/devops/rpms/cortx-prvsnr.spec", "./cortx-prvsnr/srv/components/system/files/cortx_py_utils_requirements.txt"]
+    },
+    {
+      "name": "cortx-ha",
+      "files": ["./cortx-ha/jenkins/requirements.txt","./cortx-ha/jenkins/rpm/v2/cortx-ha.spec"]
+    },
+    {
+      "name": "cortx-management-portal",
+      "files": ["./cortx-management-portal/cicd/csm_web.spec", "./cortx-management-portal/web/package.json"]
+    },
+    {
+      "name": "cortx-manager",
+      "files": ["./cortx-manager/cicd/csm_agent.spec","./cortx-manager/csm/conf/requirment.txt"]
+    },
+    {
+      "name": "cortx-s3server",
+      "files": ["./cortx-s3server/rpms/python3x/boto3/cortx-s3-python-boto3.spec","./cortx-s3server/requirements.txt"]
+    },
+    {
+      "name": "cortx-utils",
+      "files": ["./cortx-utils/py-utils/python_requirements.txt", "./cortx-utils/statsd-utils/jenkins/stats_utils.spec"]
+    }
+  ]
+}
