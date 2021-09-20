@@ -89,7 +89,7 @@ function print_status {
 
     echo "---------------------------------------[ Print Node status ]----------------------------------------------"
     sleep 10 #To be replaced with status check
-    ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" 'kubectl get nodes -o wide'
+    ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" '/var/tmp/cluster-functions.sh --status'
 }
 
 #Execution 

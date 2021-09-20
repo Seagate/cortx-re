@@ -32,6 +32,16 @@ K8_VERSION=1.19.0-0
 DOCKER_VERSION=latest
 
 
+print_cluster_status(){
+
+    while kubectl get nodes | grep -v STATUS | awk '{print $2}' | tr '\n' ' ' | grep -q NotReady
+    do
+	echo "Cluster is not ready yet"
+	sleep 5
+    done
+    kubectl get nodes -o wide
+}
+
 install_prerequisites(){
     # disable swap 
     sudo swapoff -a
@@ -119,6 +129,9 @@ fi
 case $ACTION in
     --prepare) 
         install_prerequisites
+    ;;
+    --status) 
+        print_cluster_status
     ;;
     --master)
         master_node
