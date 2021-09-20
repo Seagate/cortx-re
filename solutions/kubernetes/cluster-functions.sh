@@ -49,7 +49,7 @@ function throw()
 function catch()
 {
     export ex_code=$?
-    (( $SAVED_OPT_E )) && set +e
+    set +e
     return $ex_code
 }
 
