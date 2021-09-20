@@ -27,6 +27,10 @@ where,
 HEREDOC
 }
 
+CALICO_PLUGIN_VERSION=latest
+K8_VERSION=1.19.0-0
+DOCKER_VERSION=latest
+
 
 install_prerequisites(){
     # disable swap 
@@ -45,7 +49,7 @@ install_prerequisites(){
     rm -rf /etc/yum.repos.d/download.docker.com_linux_centos_7_x86_64_stable_.repo /etc/yum.repos.d/packages.cloud.google.com_yum_repos_kubernetes-el7-x86_64.repo
     yum-config-manager --add https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
     yum-config-manager --add https://download.docker.com/linux/centos/7/x86_64/stable/    
-    yum install kubeadm-1.19.0-0 kubectl-1.19.0-0 kubelet-1.19.0-0 kubernetes-cni docker-ce --nogpgcheck -y 
+    yum install kubeadm-$K8_VERSION kubectl-$K8_VERSION kubelet-$K8_VERSION kubernetes-cni docker-ce --nogpgcheck -y 
 
     # setup kernel parameters
     sysctl -w net.bridge.bridge-nf-call-iptables=1 -w net.bridge.bridge-nf-call-ip6tables=1 >> /etc/sysctl.d/k8s.conf
@@ -62,9 +66,17 @@ install_prerequisites(){
 
 
     #Download calico plugin image
-    pushd /var/tmp/ 
-    wget -c https://github.com/projectcalico/calico/releases/download/v3.20.0/release-v3.20.0.tgz -O - | tar -xz
-    cd release-v3.20.0/images && for file in calico-node.tar calico-kube-controllers.tar  calico-cni.tar calico-pod2daemon-flexvol.tar; do docker load -i $file; done
+    pushd /var/tmp/
+    rm -rf calico*.yaml 
+    if [ "$CALICO_PLUGIN_VERSION" == "latest" ]; then 
+    	curl  https://docs.projectcalico.org/manifests/calico.yaml -o calico-$CALICO_PLUGIN_VERSION.yaml
+    else
+        CALICO_PLUGIN_MAJOR_VERSION=$(echo $CALICO_PLUGIN_VERSION | awk -F[.] '{print $1"."$2}')
+        curl https://docs.projectcalico.org/archive/$CALICO_PLUGIN_MAJOR_VERSION/manifests/calico.yaml -o calico-$CALICO_PLUGIN_VERSION.yaml
+    fi
+    CALICO_IMAGE_VERSION=$(grep 'docker.io/calico/cni' calico-$CALICO_PLUGIN_VERSION.yaml | uniq | awk -F':' '{ print $3}')	
+    wget -c https://github.com/projectcalico/calico/releases/download/$CALICO_IMAGE_VERSION/release-$CALICO_IMAGE_VERSION.tgz -O - | tar -xz
+    cd release-$CALICO_IMAGE_VERSION/images && for file in calico-node.tar calico-kube-controllers.tar  calico-cni.tar calico-pod2daemon-flexvol.tar; do docker load -i $file; done
     popd
 
 }
@@ -86,7 +98,14 @@ master_node(){
     chown $(id -u):$(id -g) $HOME/.kube/config
 
     # Apply calcio plugin 	
-    kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+    if [ "$CALICO_PLUGIN_VERSION" == "latest" ]; then
+    	kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+    else
+	CALICO_PLUGIN_MAJOR_VERSION=$(echo $CALICO_PLUGIN_VERSION | awk -F[.] '{print $1"."$2}')
+        curl https://docs.projectcalico.org/archive/$CALICO_PLUGIN_MAJOR_VERSION/manifests/calico.yaml -o calico-$CALICO_PLUGIN_VERSION.yaml
+        kubectl apply -f calico-$CALICO_PLUGIN_VERSION.yaml
+    fi
+        
 }
 
 
