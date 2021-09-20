@@ -49,6 +49,7 @@ RUN yum-config-manager --add-repo ${BUILD_URL}/cortx_iso/ \
 COPY ./scripts/third-party-rpm/python_requirements*.txt /opt/
 
 RUN yum install --nogpgcheck -y python3-pip \
+    && pip3 install yq \
     && pip3 install  --no-cache-dir --trusted-host $(echo $BUILD_URL | awk -F '/' '{print $3}') -i $BUILD_URL/python_deps -r /opt/python_requirements.txt -r /opt/python_requirements.ext.txt \
    && yum clean all && rm -rf /var/cache/yum
 
@@ -59,15 +60,16 @@ RUN yum install --nogpgcheck -y java-1.8.0-openjdk-headless \
     python3 \
     sshpass \
     python36-m2crypto \
+    jq \
+    kafka \
+    python36-dbus \
+    cortx-provisioner \
     cortx-py-utils \
     cortx-hare \
     cortx-motr \
     cortx-s3server \
     cortx-csm_agent \
     python36-cortx-prvsnr \
-    cortx-prvsnr \
-    cortx-prvsnr-cli \
-    cortx-cli \
     && yum clean all && rm -rf /var/cache/yum
 
 RUN yum-config-manager --enable base,extras,updates && rm -rf /etc/yum.repos.d/cortx-storage.colo.seagate.com_releases_cortx_* /etc/yum.repos.d/C${CENTOS_RELEASE}.repo \
