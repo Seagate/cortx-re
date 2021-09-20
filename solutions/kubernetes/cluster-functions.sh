@@ -142,7 +142,7 @@ setup_master_node(){
         kubeadm init || throw $Exception
 
         # Verify node added in cluster
-        kubectl get nodes || throw $Exception
+        #kubectl get nodes || throw $Exception
 
         # Copy cluster configuration for user
         mkdir -p $HOME/.kube
