@@ -71,7 +71,7 @@ install_prerequisites(){
         sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
 
         # disable selinux
-        setenforce 0 || throw $Exception
+        setenforce 0
         sed -i  -e 's/SELINUX=enforcing/SELINUX=disabled/g' -e 's/SELINUX=enforcing/SELINUX=permissive/g' /etc/sysconfig/selinux || throw $Exception
     
         # stop and disable firewalld
@@ -116,9 +116,11 @@ install_prerequisites(){
     case $ex_code in
         $Exception)
             echo "An Exception was thrown. Please check logs"
+            throw 1
         ;;
         $ConfigException)
             echo "A ConfigException was thrown. Please check logs"
+            throw 1
         ;;
         *)
             echo "An unexpected exception was thrown"
@@ -133,8 +135,8 @@ setup_master_node(){
     try
     (
         #cleanup
-        echo "y" | kubeadm reset || throw $Exception
-        rm -rf $HOME/.kube 
+        echo "y" | kubeadm reset
+        rm -rf $HOME/.kube
 
         #initialize cluster
         kubeadm init || throw $Exception
@@ -169,9 +171,11 @@ setup_master_node(){
     case $ex_code in
         $Exception)
             echo "An Exception was thrown. Please check logs"
+            throw 1
         ;;
         $ConfigException)
             echo "A ConfigException was thrown. Please check logs"
+            throw 1
         ;;
         *)
             echo "An unexpected exception was thrown"
@@ -196,7 +200,7 @@ case $ACTION in
     ;;
     --master)
         setup_master_node
-    ;;        
+    ;;
     *)
         echo "ERROR : Please provide valid option"
         usage
