@@ -52,8 +52,8 @@ install_prerequisites(){
     yum install kubeadm-$K8_VERSION kubectl-$K8_VERSION kubelet-$K8_VERSION kubernetes-cni docker-ce --nogpgcheck -y 
 
     # setup kernel parameters
-    sysctl -w net.bridge.bridge-nf-call-iptables=1 -w net.bridge.bridge-nf-call-ip6tables=1 >> /etc/sysctl.d/k8s.conf
-    sysctl -p 
+    sysctl -w net.bridge.bridge-nf-call-iptables=1 -w net.bridge.bridge-nf-call-ip6tables=1 > /etc/sysctl.d/k8s.conf
+    sysctl -p /etc/sysctl.d/k8s.conf
 
     # enable cgroupfs 
     sed -i '/config.yaml/s/config.yaml"/config.yaml --cgroup-driver=cgroupfs"/g' /usr/lib/systemd/system/kubelet.service.d/10-kubeadm.conf
