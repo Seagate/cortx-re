@@ -75,7 +75,7 @@ install_prerequisites(){
         sed -i  -e 's/SELINUX=enforcing/SELINUX=disabled/g' -e 's/SELINUX=enforcing/SELINUX=permissive/g' /etc/sysconfig/selinux || throw $Exception
     
         # stop and disable firewalld
-        systemctl stop firewalld && systemctl disable firewalld && sudo systemctl mask --now firewalld || throw $Exception
+        (systemctl stop firewalld && systemctl disable firewalld && sudo systemctl mask --now firewalld) || throw $Exception
 
         # set yum repositories for k8 and docker-ce
         rm -rf /etc/yum.repos.d/download.docker.com_linux_centos_7_x86_64_stable_.repo /etc/yum.repos.d/packages.cloud.google.com_yum_repos_kubernetes-el7-x86_64.repo
@@ -90,10 +90,10 @@ install_prerequisites(){
         # enable cgroupfs 
         sed -i '/config.yaml/s/config.yaml"/config.yaml --cgroup-driver=cgroupfs"/g' /usr/lib/systemd/system/kubelet.service.d/10-kubeadm.conf || throw $ConfigException
 
-        sudo systemctl enable docker && sudo systemctl daemon-reload && sudo systemctl restart docker || throw $Exception
+        (sudo systemctl enable docker && sudo systemctl daemon-reload && sudo systemctl restart docker) || throw $Exception
         echo "Docker Runtime Configured Successfully"
 
-        systemctl enable kubelet && sudo systemctl daemon-reload && systemctl restart kubelet || throw $Exception
+        (systemctl enable kubelet && sudo systemctl daemon-reload && systemctl restart kubelet) || throw $Exception
         echo "kubelet Configured Successfully"
 
 
@@ -164,7 +164,7 @@ setup_master_node(){
 
         # Install helm
         curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 || throw $Exception
-        chmod 700 get_helm.sh && ./get_helm.sh || throw $Exception
+        (chmod 700 get_helm.sh && ./get_helm.sh) || throw $Exception
     )
     catch || {
     # Handle excption
