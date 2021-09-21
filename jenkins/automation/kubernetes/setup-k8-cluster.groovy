@@ -24,7 +24,8 @@ pipeline {
     stages {
 
         stage('Checkout Script') {
-            steps {             
+            steps { 
+                cleanWs()            
                 script {
                     checkout([$class: 'GitSCM', branches: [[name: "${CORTX_RE_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${CORTX_RE_REPO}"]]])                
                 }
@@ -48,10 +49,10 @@ pipeline {
 
     post {
         always {
-            cleanWs()
+            
             script {
                 
-                env.docker_image_location = sh( script: "ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" '/var/tmp/cluster-functions.sh --status", returnStdout: true).trim()
+                env.docker_image_location = sh( script: "cat solutions/kubernetes/cluster-status.txt, returnStdout: true).trim()
                 env.build_stage = "${build_stage}"
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
                 mailRecipients = "shailesh.vaidya@seagate.com"
