@@ -43,9 +43,18 @@ function passwordless_ssh {
     sshpass -p "$PASS" ssh-copy-id -f -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa.pub "$USER"@"$NODE"
 }
 
+function check_status {
+    return_code=$?
+    if [ $return_code -ne 0 ]; then
+            echo "------ SETUP FAILED ------"    
+            exit 1
+    fi
+    echo "------ SUCCESS ------"
+}
+
 function nodes_setup {
     for ssh_node in $(cat "$HOST_FILE")
-    do 
+    do
         local NODE=$(echo "$ssh_node" | awk -F[,] '{print $1}' | cut -d'=' -f2)
         local USER=$(echo "$ssh_node" | awk -F[,] '{print $2}' | cut -d'=' -f2)
         local PASS=$(echo "$ssh_node" | awk -F[,] '{print $3}' | cut -d'=' -f2)
@@ -64,24 +73,28 @@ function setup_cluster {
     echo "---------------[ Setting up kubernetes cluster for following nodes ]--------------------------------------"
     echo MASTER NODE="$MASTER_NODE"
     echo WORKER NODES="$WORKER_NODES"
-    echo "------------------------------------------------------------------------------------------------------"    
+    echo "------------------------------------------------------------------------------------------------------"
 
     for node in $ALL_NODES
-    do 
+    do
         echo "---------------------------------------[ Preparing Node $node ]--------------------------------------"
         ssh -o 'StrictHostKeyChecking=no' "$node" '/var/tmp/cluster-functions.sh --prepare'
+        check_status
     done
 
     echo "---------------------------------------[ Preparing Master Node $MASTER_NODE ]--------------------------------------"
     ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" '/var/tmp/cluster-functions.sh --master'
+    check_status
     sleep 10 #To be replaced with status check
     JOIN_COMMAND=$(ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" 'kubeadm token create --print-join-command --description "Token to join worker nodes"')
-
+    check_status
     for worker_node in $WORKER_NODES
         do
         echo "---------------------------------------[ Joining Worker Node $worker_node ]--------------------------------------"
         ssh -o 'StrictHostKeyChecking=no' "$worker_node" "echo "y" | kubeadm reset && $JOIN_COMMAND"
-        ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" "kubectl label node $worker_node" node-role.kubernetes.io/worker=worker 
+        check_status
+        ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" "kubectl label node $worker_node" node-role.kubernetes.io/worker=worker
+        check_status
     done
 }
 
@@ -92,7 +105,7 @@ function print_status {
     ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" '/var/tmp/cluster-functions.sh --status'
 }
 
-#Execution 
+#Execution
 validation
 generate_rsa_key
 nodes_setup
