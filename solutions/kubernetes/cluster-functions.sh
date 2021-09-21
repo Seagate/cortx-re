@@ -67,8 +67,7 @@ print_cluster_status(){
 
     while kubectl get nodes | grep -v STATUS | awk '{print $2}' | tr '\n' ' ' | grep -q NotReady
     do
-	echo "Cluster is not ready yet"
-	sleep 5
+		sleep 5
     done
     kubectl get nodes -o wide
 }
