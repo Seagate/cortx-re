@@ -50,8 +50,8 @@ pipeline {
         always {
             cleanWs()
             script {
-                env.docker_image_location = "https://github.com/Seagate/cortx-re/pkgs/container/cortx-all"
-                env.image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' | head -1", returnStdout: true).trim()
+                
+                env.docker_image_location = sh( script: "ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" '/var/tmp/cluster-functions.sh --status", returnStdout: true).trim()
                 env.build_stage = "${build_stage}"
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
                 mailRecipients = "shailesh.vaidya@seagate.com"
