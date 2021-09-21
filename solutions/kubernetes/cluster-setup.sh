@@ -44,7 +44,7 @@ function passwordless_ssh {
 }
 
 function check_status {
-    return_code=$1
+    return_code=$?
     if [ $return_code -ne 0 ]; then
             echo "------ SETUP FAILED ------"    
             exit 1
@@ -79,20 +79,22 @@ function setup_cluster {
     do
         echo "---------------------------------------[ Preparing Node $node ]--------------------------------------"
         ssh -o 'StrictHostKeyChecking=no' "$node" '/var/tmp/cluster-functions.sh --prepare'
-        check_status $?
+        check_status
     done
 
     echo "---------------------------------------[ Preparing Master Node $MASTER_NODE ]--------------------------------------"
     ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" '/var/tmp/cluster-functions.sh --master'
-    check_status $?
+    check_status
     sleep 10 #To be replaced with status check
     JOIN_COMMAND=$(ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" 'kubeadm token create --print-join-command --description "Token to join worker nodes"')
-
+    check_status
     for worker_node in $WORKER_NODES
         do
         echo "---------------------------------------[ Joining Worker Node $worker_node ]--------------------------------------"
         ssh -o 'StrictHostKeyChecking=no' "$worker_node" "echo "y" | kubeadm reset && $JOIN_COMMAND"
+        check_status
         ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" "kubectl label node $worker_node" node-role.kubernetes.io/worker=worker
+        check_status
     done
 }
 
