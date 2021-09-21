@@ -16,9 +16,9 @@ pipeline {
 
     parameters {
 
-        string(name: 'CORTX_RE_BRANCH', defaultValue: 'kubernetes', description: 'Branch or GitHash to build docker image', trim: true)
-        string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/shailesh-vaidya/cortx-re', description: 'Repository to build docker image', trim: true)
-        text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'node information', name: 'hosts')
+        string(name: 'CORTX_RE_BRANCH', defaultValue: 'kubernetes', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
+        string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/shailesh-vaidya/cortx-re', description: 'Repository for Cluster Setup scripts', trim: true)
+        text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used for K8 cluster setup. First node will be used as Master', name: 'hosts')
     }    
 
     stages {
