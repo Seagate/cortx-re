@@ -52,7 +52,7 @@ pipeline {
 
             script {
 
-
+                // Jenkins Summary
                 clusterStatus = ""
                 if ( fileExists('/var/tmp/cluster-status.txt') && currentBuild.currentResult == "SUCCESS" ) {
                     clusterStatus = readFile(file: '/var/tmp/cluster-status.txt')
@@ -76,6 +76,8 @@ pipeline {
 
                 manager.createSummary("${ICON}").appendText("<h3>K8 Cluster Setup ${currentBuild.currentResult} </h3><p>Please check <a href=\"${BUILD_URL}/console\">cluster setup logs</a> for more info <h4>Cluster Status:</h4>${clusterStatusHTML}", false, false, false, "red")
 
+                // Email Notification
+                env.cluster_status = "${clusterStatusHTML}"
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
                 mailRecipients = "shailesh.vaidya@seagate.com"
                 emailext ( 
