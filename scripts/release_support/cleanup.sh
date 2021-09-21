@@ -57,7 +57,7 @@ if [ "$CURRENT" -gt "$THRESHOLD" ] ; then
                 ls -lrt /mnt/bigstorage/releases/backups/cortx_build_backup/ | grep -w ${build[k]}
 		echo -----Files to be Deleted------- 
 		find $fpath -type f -mtime +30 ! -name '*.INFO*' -exec ls -lrt {} \;        
-	       #find $fpath -type f -mtime +30 ! -name '*.INFO*' -exec rm -rf {} \;
+	        find $fpath -type f -mtime +30 ! -name '*.INFO*' -exec rm -rf {} \;
 		done
 	done
 done
