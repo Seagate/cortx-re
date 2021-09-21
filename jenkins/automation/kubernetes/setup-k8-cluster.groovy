@@ -52,7 +52,7 @@ pipeline {
             
             script {
                 
-                env.docker_image_location = sh( script: "cat solutions/kubernetes/cluster-status.txt", returnStdout: true).trim()
+                env.docker_image_location = sh( script: "cat /var/tmp/cluster-status.txt", returnStdout: true).trim()
                 env.build_stage = "${build_stage}"
 
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]

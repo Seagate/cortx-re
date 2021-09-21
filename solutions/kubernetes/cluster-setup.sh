@@ -88,8 +88,8 @@ function setup_cluster {
 function print_status {
 
     echo "---------------------------------------[ Print Node status ]----------------------------------------------"
-    sleep 10 #To be replaced with status check
-    ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" '/var/tmp/cluster-functions.sh --status'
+    rm -rf /var/tmp/cluster-status.txt
+    ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" '/var/tmp/cluster-functions.sh --status' | tee /var/tmp/cluster-status.txt
 }
 
 #Execution 
