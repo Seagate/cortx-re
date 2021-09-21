@@ -99,9 +99,6 @@ master_node(){
     #initialize cluster
     kubeadm init
 
-    # Verify node added in cluster
-    kubectl get nodes
-
     # Copy cluster configuration for user
     mkdir -p $HOME/.kube
     cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
