@@ -16,10 +16,12 @@
 # For any questions about this software or licensing,
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
-
+# import os
+# import sys
 import re
 from datetime import datetime
 from collections import defaultdict
+
 
 def clean(text):
     text = text.replace('&', '&amp;')
@@ -77,11 +79,15 @@ class HTMLGen:
                 sub_string_7 = line[0:7]
                 sub_string_8 = line[0:8]
                 if sub_string_8 == 'RepoName':
+                    if diff_seen == 1:
+                        html_data += self.add_diff_to_page(curr_file, curr_section, td_rowspan)
+                        diff_seen = 0
+                        td_rowspan = ''
                     repo_name = line.replace('RepoName: ', '')
                     td_rowspan = "<td rowspan='%s' id='reponame'>%s</td>" %(row_span[repo_name],repo_name)
                     continue
                 elif sub_string_7 == 'diff no':
-                    html_data += self.add_diff_to_page(curr_file, 'No Diff found', td_rowspan)
+                    html_data += self.add_diff_to_page('', 'No Diff found', td_rowspan)
                     curr_section = ''
                     continue
                 elif sub_string_4 == "diff":
@@ -107,7 +113,7 @@ class HTMLGen:
                 line = clean(line)
                 if html_cls:
                     curr_section += '<pre class="%s">%s</pre>' %(html_cls, line)
-                else:
+                elif sub_string_7 != 'diff no':
                     curr_section += '<pre>%s</pre>' %line
             if curr_section:
                 curr_section += "</div>"
@@ -118,9 +124,10 @@ class HTMLGen:
             html_tmpl_cont = html_tmpl_cont.replace('##MyTotalRepo##', str(len(row_span.keys())))
         with open('git_diff.html', 'w') as w_obj:
             w_obj.write(html_tmpl_cont)
+            # print (html_tmpl_cont)
 
 def main():
-    html_obj = HTMLGen('/var/lib/jenkins/workspace/Cortx-Dev/Git-Diff/3552625012', './git_diff_template.html')
+    html_obj = HTMLGen('/var/lib/jenkins/workspace/Cortx-Dev/Git-Diff/5298794238', './git_diff_template.html')
     html = html_obj.html_git_diff()
     print (html)
 

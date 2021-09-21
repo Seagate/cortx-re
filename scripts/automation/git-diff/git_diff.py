@@ -22,7 +22,7 @@ import argparse
 import ast
 import random
 from html_generator import HTMLGen
-
+import os
 
 # files = ['LICENSE', 'README.md']
 
@@ -76,7 +76,8 @@ class GitDiff:
                 for repo_dict in self.config['repository']:
                     repo = repo_dict['name']
                     repo_obj = Repo(repo)
-
+                    os.chdir(repo)
+                    print (os.getcwd())
                     if self.src_branch and self.dest_branch:
                         diff_string = repo_obj.git.diff(self.src_branch, self.dest_branch)
                     else:
@@ -88,15 +89,16 @@ class GitDiff:
                             last_day_commit = logs_before.splitlines()
                             if len(last_day_commit) > 0:
                                 print (latest_commit[0], last_day_commit[0], ' '.join(repo_dict['files']))
-                                diff_string = repo_obj.git.diff(latest_commit[0], last_day_commit[0], '--', ' '.join(repo_dict['files']))
+                                diff_string = repo_obj.git.diff(latest_commit[0], last_day_commit[0], '--', repo_dict['files'])
                                 if diff_string == '': diff_string = 'diff not found'
-                                f_obj.write('RepoName: %s\n%s\n' %(repo,diff_string))
+                                f_obj.write('RepoName: %s\n%s\n' %(repo, diff_string))
                             else:
                                 print("No last day commit found for %s.." % repo)
                                 f_obj.write('RepoName: %s\ndiff not found\n' % repo)
                         else:
                            print("No latest commits found for %s.." %repo)
                            f_obj.write('RepoName: %s\ndiff not found\n' % repo)
+                        os.chdir('..')
         except IOError as io_error:
             print('Error while writing files', {io_error})
         except exc.GitCommandError as git_error:
