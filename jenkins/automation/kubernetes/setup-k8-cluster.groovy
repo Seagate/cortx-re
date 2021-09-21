@@ -47,21 +47,21 @@ pipeline {
     }
 
     post {
-		always {
+        always {
             cleanWs()
-			script {
-				env.docker_image_location = "https://github.com/Seagate/cortx-re/pkgs/container/cortx-all"
+            script {
+                env.docker_image_location = "https://github.com/Seagate/cortx-re/pkgs/container/cortx-all"
                 env.image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' | head -1", returnStdout: true).trim()
-				env.build_stage = "${build_stage}"
-				def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
-
+                env.build_stage = "${build_stage}"
+                def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
+                mailRecipients = "shailesh.vaidya@seagate.com"
                 emailext ( 
                     body: '''${SCRIPT, template="cluster-setup-email.template"}''',
                     mimeType: 'text/html',
                     subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
                     attachLog: true,
                     to: "${mailRecipients}",
-					recipientProviders: recipientProvidersClass
+                    recipientProviders: recipientProvidersClass
                 )
             }
         }
