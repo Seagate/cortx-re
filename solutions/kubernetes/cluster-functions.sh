@@ -73,7 +73,7 @@ print_cluster_status(){
 }
 
 install_prerequisites(){
-<<<<<<< HEAD
+
     # disable swap 
     sudo swapoff -a
     # keeps the swaf off during reboot
