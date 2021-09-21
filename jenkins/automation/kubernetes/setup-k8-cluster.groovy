@@ -49,11 +49,32 @@ pipeline {
 
     post {
         always {
-            
+
             script {
+
+
+                clusterStatus = ""
+                if ( fileExists('/var/tmp/cluster-status.txt') && currentBuild.currentResult == "SUCCESS" ) {
+                    clusterStatus = readFile(file: '/var/tmp/cluster-status.txt')
+                    MESSAGE = "Cluster Setup Success for the build ${build_id}"
+                    ICON = "accept.gif"
+                    STATUS = "SUCCESS"
+                } else if ( currentBuild.currentResult == "FAILURE" ) {
+                    manager.buildFailure()
+                    MESSAGE = "Cluster Setup Failed for the build ${build_id}"
+                    ICON = "error.gif"
+                    STATUS = "FAILURE"
+ 
+                } else {
+                    manager.buildUnstable()
+                    MESSAGE = "1 Node - Cortx Stack VM Deployment is Unstable"
+                    ICON = "warning.gif"
+                    STATUS = "UNSTABLE"
+                }
                 
-                env.docker_image_location = sh( script: "cat /var/tmp/cluster-status.txt", returnStdout: true).trim()
-                env.build_stage = "${build_stage}"
+                clusterStatusHTML = "<pre>${clusterStatus}</pre>"
+
+                manager.createSummary("${ICON}").appendText("<h3>K8 Cluster Setup ${currentBuild.currentResult} </h3><p>Please check <a href=\"${BUILD_URL}/console\">cluster setup logs</a> for more info <h4>Cluster Status:</h4>${clusterStatusHTML}", false, false, false, "red")
 
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
                 mailRecipients = "shailesh.vaidya@seagate.com"
