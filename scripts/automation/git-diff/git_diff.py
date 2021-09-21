@@ -16,14 +16,13 @@
 # For any questions about this software or licensing,
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
-
 from git import Repo, exc
 from datetime import datetime, timedelta
 import argparse
 import ast
 import random
-
 from html_generator import HTMLGen
+
 
 # files = ['LICENSE', 'README.md']
 
@@ -76,8 +75,8 @@ class GitDiff:
             with open(filename, 'a') as f_obj:
                 for repo_dict in self.config['repository']:
                     repo = repo_dict['name']
-
                     repo_obj = Repo(repo)
+
                     if self.src_branch and self.dest_branch:
                         diff_string = repo_obj.git.diff(self.src_branch, self.dest_branch)
                     else:
@@ -88,9 +87,10 @@ class GitDiff:
                             logs_before = repo_obj.git.log("--before='%s'" % self.date_from, "--pretty=%H")
                             last_day_commit = logs_before.splitlines()
                             if len(last_day_commit) > 0:
-                                #print (latest_commit[0], last_day_commit[0])
-                                diff_string = repo_obj.git.diff(latest_commit[0], last_day_commit[0], repo_dict['files'])
-                                f_obj.write(diff_string)
+                                print (latest_commit[0], last_day_commit[0], ' '.join(repo_dict['files']))
+                                diff_string = repo_obj.git.diff(latest_commit[0], last_day_commit[0], '--', ' '.join(repo_dict['files']))
+                                if diff_string == '': diff_string = 'diff not found'
+                                f_obj.write('RepoName: %s\n%s\n' %(repo,diff_string))
                             else:
                                 print("No last day commit found for %s.." % repo)
                                 f_obj.write('RepoName: %s\ndiff not found\n' % repo)
@@ -100,7 +100,7 @@ class GitDiff:
         except IOError as io_error:
             print('Error while writing files', {io_error})
         except exc.GitCommandError as git_error:
-            print('Error creating remote:', {git_error})
+            print('Error creating remote:',repo, {git_error})
         else:
             print("Generating HTML")
             html_obj = HTMLGen(filename, './git_diff_template.html')
