@@ -16,8 +16,8 @@
 # For any questions about this software or licensing,
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
-import os
-import sys
+# import os
+# import sys
 import re
 from datetime import datetime
 from collections import defaultdict
@@ -39,10 +39,10 @@ class HTMLGen:
         try:
             with open(file, 'r') as f_obj:
                 data = f_obj.read()
-        except IOError as io_error:
-            print(io_error)
         except FileNotFoundError as fnf_error:
             print(fnf_error)
+        except IOError as io_error:
+            print(io_error)
         else:
             return data
 

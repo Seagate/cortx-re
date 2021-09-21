@@ -18,11 +18,11 @@
 #
 from git import Repo, exc
 from datetime import datetime, timedelta
-from builtins import Exception
+# from builtins import Exception
 import argparse
 import random
-import os
-import json
+# import os
+# import json
 from html_generator import HTMLGen
 
 # files = ['LICENSE', 'README.md']
@@ -104,7 +104,7 @@ class GitDiff:
         else:
             print("Generating HTML")
             html_obj = HTMLGen(filename, './git_diff_template.html')
-            html = html_obj.html_git_diff()
+            html_obj.html_git_diff()
             #print (filename)
 
 def main():

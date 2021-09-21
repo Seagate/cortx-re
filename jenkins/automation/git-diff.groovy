@@ -22,11 +22,11 @@ pipeline {
 		            echo "${env.WORKSPACE}/scripts/automation/git-diff/config.json"
 					projects.repository.each { entry ->
 						echo entry.name
-						def repo_url = 'https://github.com/seagate/' + entry.name
-						stage ('Checkout Repo:' + entry.name){
+						def repourl = 'https://github.com/seagate/' + entry.name
+						stage ('Checkout Repo:' + entry.name) {
 							dir (entry.name) {
-								timestamps{
-									checkout([$class: 'GitSCM', branches: [[name: "main"]], doGenerateSubmoduleConfigurations: false, userRemoteConfigs: [[credentialsId: 'github-access', url: repo_url]]])
+								timestamps {
+									checkout([$class: 'GitSCM', branches: [[name: "main"]], doGenerateSubmoduleConfigurations: false, userRemoteConfigs: [[credentialsId: 'github-access', url: repourl]]])
 								}
 							}
 						}
