@@ -9,7 +9,7 @@ pipeline {
 	    stage('Checkout source code') {
             steps {
                 script {
-                    checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, userRemoteConfigs: [[credentialsId: 'github-access', url: 'https://github.com/venkuppu-chn/cortx-re/']]])
+                    checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, userRemoteConfigs: [[credentialsId: 'github-access', url: 'https://github.com/seagate/cortx-re/']]])
 					sh 'cp ./scripts/automation/git-diff/* .'
                 }
             }
@@ -49,7 +49,7 @@ pipeline {
                     env.ForEmailPlugin = env.WORKSPACE
                     emailext mimeType: 'text/html',
                     body: '${FILE, path="git_diff.html"}',
-                    subject: 'Git Diff Report - [ Date :' +new Date().format("dd-MMM-yyyy") + ' ]',
+                    subject: 'Third Party Depdenency scan - [ Date :' +new Date().format("dd-MMM-yyyy") + ' ]',
                     to: 'venkatesh.k@seagate.com, shailesh.vaidya@seagate.com, priyank.p.dalal@seagate.com'
                 }
             }

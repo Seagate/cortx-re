@@ -124,7 +124,7 @@ class HTMLGen:
 def main():
     html_obj = HTMLGen('/var/lib/jenkins/workspace/Cortx-Dev/Git-Diff/3552625012', './git_diff_template.html')
     html = html_obj.html_git_diff()
-    # print (html)
+    print (html)
 
     # html_generate('/var/lib/jenkins/workspace/Cortx-Dev/Git-Diff/1631520245000')
 

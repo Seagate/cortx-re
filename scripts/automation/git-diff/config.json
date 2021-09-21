@@ -13,6 +13,10 @@
       "files": ["./cortx-monitor/libsspl_sec/libsspl_sec.spec"]
     },
     {
+      "name": "cortx-re",
+      "files": ["./scripts/third-party-rpm/third-party-rpms.txt", "./scripts/third-party-rpm/python_requirements.txt"]
+    },
+    {
       "name": "cortx-hare",
       "files": ["./cortx-hare/cfgen/requirements.txt", "./cortx-hare/hare.spec"]
     },

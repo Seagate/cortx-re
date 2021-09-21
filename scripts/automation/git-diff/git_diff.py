@@ -20,6 +20,7 @@ from git import Repo, exc
 from datetime import datetime, timedelta
 # from builtins import Exception
 import argparse
+import ast
 import random
 # import os
 # import json
@@ -51,7 +52,7 @@ class GitDiff:
         self.now = datetime.now()
         self.src_branch = params.src_branch
         self.dest_branch = params.dest_branch
-        self.config = eval(HTMLGen.read_file(params.config))
+        self.config = ast.literal_eval(HTMLGen.read_file(params.config))
 
         days_range = ''
         if params.diff_range == "Today":
