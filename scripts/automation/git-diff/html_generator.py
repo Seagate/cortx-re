@@ -16,12 +16,10 @@
 # For any questions about this software or licensing,
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
-# import os
-# import sys
+
 import re
 from datetime import datetime
 from collections import defaultdict
-
 
 def clean(text):
     text = text.replace('&', '&amp;')

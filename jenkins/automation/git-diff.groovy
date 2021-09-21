@@ -1,7 +1,16 @@
 pipeline {
-    agent {
+    parameters {
+        string(
+            defaultValue: 'centos-7.9.2009',
+            name: 'os_version',
+            description: 'OS version of the build',
+            trim: true
+        )
+    }
+	agent {
         node {
-           label "cortx-test-ssc-vm-4090"
+           label "docker-${os_version}-node"
+           // label "cortx-test-ssc-vm-4090"
         }
     }
 
@@ -16,7 +25,7 @@ pipeline {
         }
         stage('Checkout repositories') {
             steps {
-				cleanWs()
+				// cleanWs()
 				script {
 					def projects = readJSON file: "${env.WORKSPACE}/config.json"
 		            echo "${env.WORKSPACE}/scripts/automation/git-diff/config.json"
@@ -34,6 +43,14 @@ pipeline {
                 }
             }
         }
+        stage('Install Dependencies') {
+            steps {
+                sh label: 'Installed Dependencies', script: '''
+                    yum install -y GitPython.noarch
+                '''
+            }
+        }
+
 		stage('Get Git Diff') {
             steps {
                 script {
@@ -50,7 +67,7 @@ pipeline {
                     emailext mimeType: 'text/html',
                     body: '${FILE, path="git_diff.html"}',
                     subject: 'Third Party Depdenency scan - [ Date :' +new Date().format("dd-MMM-yyyy") + ' ]',
-                    to: 'venkatesh.k@seagate.com, shailesh.vaidya@seagate.com, priyank.p.dalal@seagate.com'
+                    to: 'cortx.sme@seagate.com, venkatesh.k@seagate.com, shailesh.vaidya@seagate.com, priyank.p.dalal@seagate.com, mukul.malhotra@seagate.com'
                 }
             }
         }

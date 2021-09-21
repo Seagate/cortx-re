@@ -16,14 +16,13 @@
 # For any questions about this software or licensing,
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
+
 from git import Repo, exc
 from datetime import datetime, timedelta
-# from builtins import Exception
 import argparse
 import ast
 import random
-# import os
-# import json
+
 from html_generator import HTMLGen
 
 # files = ['LICENSE', 'README.md']
