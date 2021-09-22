@@ -39,7 +39,7 @@ declare -A COMPONENT_LIST=(
 function usage() {
     cat << HEREDOC
 Usage : $0 SOURCE_BRANCH TARGET_BRANCH
-HEREDOC    
+HEREDOC
 }
 
 if [ $# -lt 2 ]; then
