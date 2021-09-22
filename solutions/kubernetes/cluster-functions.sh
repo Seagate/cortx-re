@@ -63,6 +63,15 @@ function ignoreErrors()
     set +e
 }
 
+print_cluster_status(){
+
+    while kubectl get nodes | grep -v STATUS | awk '{print $2}' | tr '\n' ' ' | grep -q NotReady
+    do
+		sleep 5
+    done
+    kubectl get nodes -o wide
+}
+
 install_prerequisites(){
     try
     (   # disable swap 
@@ -85,7 +94,7 @@ install_prerequisites(){
 
         # setup kernel parameters
         sysctl -w net.bridge.bridge-nf-call-iptables=1 -w net.bridge.bridge-nf-call-ip6tables=1 >> /etc/sysctl.d/k8s.conf || throw $ConfigException
-        sysctl -p || throw $ConfigException
+        sysctl -p /etc/sysctl.d/k8s.conf || throw $ConfigException
 
         # enable cgroupfs 
         sed -i '/config.yaml/s/config.yaml"/config.yaml --cgroup-driver=cgroupfs"/g' /usr/lib/systemd/system/kubelet.service.d/10-kubeadm.conf || throw $ConfigException
@@ -99,16 +108,16 @@ install_prerequisites(){
 
         #Download calico plugin image
         pushd /var/tmp/
-        rm -rf calico*.yaml 
-        if [ "$CALICO_PLUGIN_VERSION" == "latest" ]; then 
-            curl  https://docs.projectcalico.org/manifests/calico.yaml -o calico-$CALICO_PLUGIN_VERSION.yaml || throw $Exception
-        else
-            CALICO_PLUGIN_MAJOR_VERSION=$(echo $CALICO_PLUGIN_VERSION | awk -F[.] '{print $1"."$2}')
-            curl https://docs.projectcalico.org/archive/$CALICO_PLUGIN_MAJOR_VERSION/manifests/calico.yaml -o calico-$CALICO_PLUGIN_VERSION.yaml || throw $Exception
-        fi
-        CALICO_IMAGE_VERSION=$(grep 'docker.io/calico/cni' calico-$CALICO_PLUGIN_VERSION.yaml | uniq | awk -F':' '{ print $3}')	
-        wget -c https://github.com/projectcalico/calico/releases/download/$CALICO_IMAGE_VERSION/release-$CALICO_IMAGE_VERSION.tgz -O - | tar -xz || throw $Exception
-        cd release-$CALICO_IMAGE_VERSION/images && for file in calico-node.tar calico-kube-controllers.tar  calico-cni.tar calico-pod2daemon-flexvol.tar; do docker load -i $file || throw $Exception; done
+            rm -rf calico*.yaml 
+            if [ "$CALICO_PLUGIN_VERSION" == "latest" ]; then 
+                curl  https://docs.projectcalico.org/manifests/calico.yaml -o calico-$CALICO_PLUGIN_VERSION.yaml || throw $Exception
+            else
+                CALICO_PLUGIN_MAJOR_VERSION=$(echo $CALICO_PLUGIN_VERSION | awk -F[.] '{print $1"."$2}')
+                curl https://docs.projectcalico.org/archive/$CALICO_PLUGIN_MAJOR_VERSION/manifests/calico.yaml -o calico-$CALICO_PLUGIN_VERSION.yaml || throw $Exception
+            fi
+            CALICO_IMAGE_VERSION=$(grep 'docker.io/calico/cni' calico-$CALICO_PLUGIN_VERSION.yaml | uniq | awk -F':' '{ print $3}')	
+            wget -c https://github.com/projectcalico/calico/releases/download/$CALICO_IMAGE_VERSION/release-$CALICO_IMAGE_VERSION.tgz -O - | tar -xz || throw $Exception
+            cd release-$CALICO_IMAGE_VERSION/images && for file in calico-node.tar calico-kube-controllers.tar  calico-cni.tar calico-pod2daemon-flexvol.tar; do docker load -i $file || throw $Exception; done
         popd
     )
     catch || {
@@ -197,6 +206,9 @@ fi
 case $ACTION in
     --prepare) 
         install_prerequisites
+    ;;
+    --status) 
+        print_cluster_status
     ;;
     --master)
         setup_master_node
