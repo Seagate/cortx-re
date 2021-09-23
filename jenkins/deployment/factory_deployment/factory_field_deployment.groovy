@@ -27,7 +27,7 @@ pipeline {
         CORTX_PREP_URL = "${ISO_PARENT_DIR}/${CORTX_PREP_NAME}"
         CORTX_OS_ISO_URL = "${ISO_PARENT_DIR}/${CORTX_OS_ISO_NAME}"
 	
-	NODE_UN_PASS_CRED_ID = credentials("PassCredID")
+	NODE_UN_PASS_CRED_ID = "cortx-re-cloudform"
         RE_SAT_CRED_ID       = "RE-SAT-CRED"
         NODE_DEFAULT_SSH_CRED  = credentials("hw-deployment-ssh-cred")
         NODE_USER = "${NODE_DEFAULT_SSH_CRED_USR}"
