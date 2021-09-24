@@ -47,7 +47,7 @@ if [ $# -lt 2 ]; then
     usage
 fi
 
-test -d $clone_dir/clone && $(rm -rf $clone_dir/clone;mkdir -p $clone_dir/clone) || mkdir -p $clone_dir/clone
+(test -d $clone_dir/clone && (rm -rf $clone_dir/clone;mkdir -p $clone_dir/clone)) || mkdir -p $clone_dir/clone
 export TZ=$time_zone;ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 pushd $clone_dir/clone

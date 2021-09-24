@@ -31,8 +31,8 @@ pipeline {
         }
 
         stage ('Extract Commit Difference') {
-            steps{
-                script{
+            steps {
+                script {
                     sh label: 'Execute Diff Script', script: """
                         sh -x scripts/automation/get_branch_diff.sh ${SOURCE_BRANCH} ${TARGET_BRANCH}
                         cp /root/git_branch_diff//git-branch-diff-report.txt CHANGESET.txt 
@@ -50,7 +50,7 @@ pipeline {
                 env.target_branch = "${TARGET_BRANCH}"
                 changeset = readFile(file: 'CHANGESET.txt')
                 env.changesetHTML = "<pre>${changeset}</pre>"
-                toEmail = "gaurav.chaudhari@seagate.com"
+                toEmail = "cortx.sme@seagate.com, manoj.management.team@seagate.com, CORTX.SW.Architecture.Team@seagate.com"
 
                 emailext (
                     body: '''${SCRIPT, template="commit-diff.template"}''',
