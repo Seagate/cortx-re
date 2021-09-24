@@ -53,7 +53,7 @@ pipeline {
                 emailext (
                     body: '''${SCRIPT, template="commit-diff.template"}''',
                     mimeType: 'text/html',
-                    subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
+                    subject: "[${currentBuild.currentResult}] : Branch Commit Difference Stats",
                     attachmentsPattern: 'CHANGESET.txt',
                     to: toEmail,
                     recipientProviders: [[$class: 'RequesterRecipientProvider']]
