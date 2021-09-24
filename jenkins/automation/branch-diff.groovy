@@ -45,6 +45,19 @@ pipeline {
 		always {
             script {
 				archiveArtifacts artifacts: "CHANGESET.txt", onlyIfSuccessful: false, allowEmptyArchive: true
+
+                env.source_branch = "${SOURCE_BRANCH}"
+                env.target_branch = "${TARGET_BRANCH}"
+                toEmail = "gaurav.chaudhari@seagate.com"
+
+                emailext (
+                    body: '''${SCRIPT, template="commit-diff.template"}''',
+                    mimeType: 'text/html',
+                    subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
+                    attachLog: true,
+                    to: toEmail,
+                    recipientProviders: [[$class: 'RequesterRecipientProvider']]
+                )
             }
         }
     }
