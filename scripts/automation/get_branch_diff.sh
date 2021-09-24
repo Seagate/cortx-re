@@ -67,6 +67,7 @@ do
                 echo "INFO: Branch $SOURCE_BRANCH is not available"
                 continue
             fi
+            echo -e "\033[1m$SOURCE_BRANCH Branch Delta\033[0m"
             echo -e "--------------------------" >> $report_file
             echo -e "---[ $component ]---" >> $report_file
             echo -e "--------------------------\n" >> $report_file
@@ -80,6 +81,7 @@ do
 			    echo "No Changes" >> $report_file
 			    echo -e "\n" >> $report_file
             fi
+            echo -e "\033[1m$TARGET_BRANCH Branch Delta\033[0m"
             echo -e "\t--[ Commit differnce for $component from $TARGET_BRANCH to $SOURCE_BRANCH ]--" >> $report_file
             echo -e "Githash|Description|Author|" >> $report_file
 			targetchanges="$(git log "$TARGET_BRANCH..$SOURCE_BRANCH" --oneline --pretty=format:"%h|%cd|%s|%an|")";
