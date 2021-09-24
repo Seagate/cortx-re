@@ -48,7 +48,8 @@ pipeline {
 
                 env.source_branch = "${SOURCE_BRANCH}"
                 env.target_branch = "${TARGET_BRANCH}"
-                env.changeset = readFile(file: 'artifact/CHANGESET.txt')
+                changeset = readFile(file: 'CHANGESET.txt')
+                env.changesetHTML = "<pre>${changeset}</pre>"
                 toEmail = "gaurav.chaudhari@seagate.com"
 
                 emailext (
