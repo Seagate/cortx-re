@@ -54,7 +54,7 @@ pipeline {
                     body: '''${SCRIPT, template="commit-diff.template"}''',
                     mimeType: 'text/html',
                     subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
-                    attachLog: true,
+                    attachmentsPattern: 'CHANGESET.txt',
                     to: toEmail,
                     recipientProviders: [[$class: 'RequesterRecipientProvider']]
                 )
