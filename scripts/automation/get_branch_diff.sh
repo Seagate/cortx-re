@@ -64,8 +64,8 @@ do
         pushd $component
             git checkout $SOURCE_BRANCH
             if [ $? -ne 0 ]; then 
-                echo "ERROR:git checkout failed for $SOURCE_BRANCH on $component."
-                exit 1
+                echo "INFO: Branch $SOURCE_BRANCH is not available"
+                continue
             fi
             echo -e "--------------------------" >> $report_file
             echo -e "---[ $component ]---" >> $report_file
