@@ -52,7 +52,6 @@ function passwordless_ssh {
     ping -c1 -W1 -q $NODE
     check_status
     sshpass -p "$PASS" ssh-copy-id -f -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa.pub "$USER"@"$NODE"
-    check_status
 }
 
 function nodes_setup {

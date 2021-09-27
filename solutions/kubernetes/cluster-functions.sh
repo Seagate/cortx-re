@@ -21,6 +21,7 @@
 CALICO_PLUGIN_VERSION=latest
 K8_VERSION=1.19.0-0
 DOCKER_VERSION=latest
+OS_VERSION="CentOS 7.9.2009"
 export Exception=100
 export ConfigException=101
 
@@ -64,9 +65,9 @@ function ignoreErrors()
 }
 
 function verify_os() {
-    OS=$(cat /etc/redhat-release | cut -d " " f1,4)
-    if [ "$OS" -ne 'CentOS 7.9.2009' ]; then
-        echo "OS is not correct. Current OS is $OS"
+    CURRENT_OS=$(cat /etc/redhat-release | cut -d " " f1,4)
+    if [ "$CURRENT_OS" -ne "$OS_VERSION" ]; then
+        echo "ERROR : Operating System is not correct. Current OS : $CURRENT_OS, Required OS : $OS_VERSION"
         exit 1
     fi 
 }
