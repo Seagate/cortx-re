@@ -31,6 +31,7 @@ jobs:
   # Let's start the alex to scan
   alex:
     name: Alex report
+    # Label alex will trigger the workflow without creating new PR. Useful for debugging. 
     #if: ${{ github.event.label.name == 'alex' || github.event.action == 'synchronize' }}
     runs-on: ubuntu-latest
     steps:
