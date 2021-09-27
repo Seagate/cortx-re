@@ -39,7 +39,7 @@ RUN yum-config-manager --add-repo ${BUILD_URL}/cortx_iso/ \
     && yum-config-manager --add-repo ${BUILD_URL}/3rd_party \
     && curl ${BUILD_URL}/RELEASE.INFO -o RELEASE.INFO 
 
-COPY ./scripts/third-party-rpm/python_requirements*.txt /opt/
+COPY ./scripts/third-party-rpm/python_requirements*.txt ./docker/symas-openldap/entrypoint.sh  /opt/
 
 RUN yum install --nogpgcheck -y sudo \
     which \
