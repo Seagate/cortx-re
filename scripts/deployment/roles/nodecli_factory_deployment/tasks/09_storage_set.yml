@@ -1,0 +1,23 @@
+- name: Cluster show
+  script: files/nodecliprompt.sh "{{ NODEADMIN_USER }}" "{{inventory_hostname}}" "{{ NODEADMIN_NEW_PASSWORD }}" "cluster show"
+  delegate_to: "srvnode-1"
+
+- name: Define storage set
+  script: files/nodecliprompt.sh "{{ NODEADMIN_USER }}" "{{inventory_hostname}}" "{{ NODEADMIN_NEW_PASSWORD }}" "storageset create --name storage-set-1 --count 3"
+  delegate_to: "srvnode-1"
+  
+- name: Storageset add nodes
+  script: files/nodecliprompt.sh "{{ NODEADMIN_USER }}" "{{inventory_hostname}}" "{{ NODEADMIN_NEW_PASSWORD }}" "storageset add node storage-set-1 srvnode-1 srvnode-2 srvnode-3"
+  delegate_to: "srvnode-1"
+  
+- name: Storageset add enclosure
+  script: files/nodecliprompt.sh "{{ NODEADMIN_USER }}" "{{inventory_hostname}}" "{{ NODEADMIN_NEW_PASSWORD }}" "storageset add enclosure storage-set-1 srvnode-1 srvnode-2 srvnode-3"
+  delegate_to: "srvnode-1"
+
+- name: Storageset config durability type sns
+  script: files/nodecliprompt.sh "{{ NODEADMIN_USER }}" "{{inventory_hostname}}" "{{ NODEADMIN_NEW_PASSWORD }}" "storageset config durability storage-set-1 --type sns --data 4 --parity 2 --spare 0"
+  delegate_to: "srvnode-1"
+
+- name: Storageset config durability type dix
+  script: files/nodecliprompt.sh "{{ NODEADMIN_USER }}" "{{inventory_hostname}}" "{{ NODEADMIN_NEW_PASSWORD }}" "storageset config durability storage-set-1 --type dix --data 1 --parity 2 --spare 0"
+  delegate_to: "srvnode-1"

@@ -1,0 +1,9 @@
+---
+ - hosts: localhost
+   gather_facts: True
+   become: yes 
+   roles:
+      - nodecli_factory_deployment
+
+
+     
