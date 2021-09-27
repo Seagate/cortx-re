@@ -25,7 +25,7 @@ export Exception=100
 export ConfigException=101
 
 
-usage(){
+function usage(){
     cat << HEREDOC
 Usage : $0 [--prepare, --master]
 where,
@@ -63,7 +63,15 @@ function ignoreErrors()
     set +e
 }
 
-print_cluster_status(){
+function verify_os() {
+    OS=$(cat /etc/redhat-release | cut -d " " f1,4)
+    if [ "$OS" -ne 'CentOS 7.9.2009' ]; then
+        echo "OS is not correct. Current OS is $OS"
+        exit 1
+    fi 
+}
+
+function print_cluster_status(){
 
     while kubectl get nodes | grep -v STATUS | awk '{print $2}' | tr '\n' ' ' | grep -q NotReady
     do
@@ -72,9 +80,10 @@ print_cluster_status(){
     kubectl get nodes -o wide
 }
 
-install_prerequisites(){
+function install_prerequisites(){
     try
-    (   # disable swap 
+    (   # disable swap
+        verify_os 
         sudo swapoff -a
         # keeps the swaf off during reboot
         sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
@@ -143,7 +152,7 @@ install_prerequisites(){
 
 }
 
-setup_master_node(){
+function setup_master_node(){
     try
     (
         #cleanup

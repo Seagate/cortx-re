@@ -36,20 +36,23 @@ function generate_rsa_key {
     fi
 }
 
+function check_status {
+    return_code=$?
+    if [ $return_code -ne 0 ]; then
+            echo "------ SETUP FAILED ------"
+            exit 1
+    fi
+    echo "------ SUCCESS ------"
+}
+
 function passwordless_ssh {
     local NODE=$1
     local USER=$2
     local PASS=$3
+    ping -c1 -W1 -q $NODE
+    check_status
     sshpass -p "$PASS" ssh-copy-id -f -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa.pub "$USER"@"$NODE"
-}
-
-function check_status {
-    return_code=$?
-    if [ $return_code -ne 0 ]; then
-            echo "------ SETUP FAILED ------"    
-            exit 1
-    fi
-    echo "------ SUCCESS ------"
+    check_status
 }
 
 function nodes_setup {
