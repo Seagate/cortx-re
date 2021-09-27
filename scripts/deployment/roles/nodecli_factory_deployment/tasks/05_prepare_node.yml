@@ -1,0 +1,14 @@
+- name: "[prepare] : Install tools [expect] on nodes"
+  shell: yum install -y expect
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['srvnodes'] }}"
+
+- name: Change nodeadmin  password
+  shell: echo "{{NODEADMIN_NEW_PASSWORD}}" | passwd --stdin nodeadmin 
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['srvnodes'] }}" 
+  
+- name: Prepare node1 over service port
+  script: files/nodecliprompt.sh "{{ NODEADMIN_USER }}" {{ hostvars[item]['ansible_host'] }} "{{ NODEADMIN_NEW_PASSWORD }}" "node prepare server --site_id 1 --rack_id 1 --node_id {{ hostvars[item]['nodeid'] }}" 
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['srvnodes'] }}"  
