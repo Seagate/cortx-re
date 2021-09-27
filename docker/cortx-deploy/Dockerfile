@@ -63,6 +63,8 @@ RUN yum install --nogpgcheck -y java-1.8.0-openjdk-headless \
     jq \
     kafka \
     python36-dbus \
+    symas-openldap-clients \
+    python36-psutil \
     cortx-provisioner \
     cortx-py-utils \
     cortx-hare \
