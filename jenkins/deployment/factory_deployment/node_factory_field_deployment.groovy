@@ -24,6 +24,7 @@ pipeline {
         NODES = getHosts("${CONFIG}")
         USERS = getUsers("${CONFIG}")
 	BUILD_NO = sh(script: "curl -s  ${CORTX_BUILD}/RELEASE.INFO  | grep BUILD | cut -d':' -f2 | tr -d '\"' | xargs", returnStdout: true).trim()
+	VERSION_NO = sh(script: "curl -s  ${CORTX_BUILD}/RELEASE.INFO  | grep VERSION | cut -d':' -f2 | tr -d '\"' | xargs", returnStdout: true).trim()
         ISO_PARENT_DIR = sh(script: "set +x; echo \$(dirname ${CORTX_BUILD})", returnStdout: true).trim()
         CORTX_PREP_NAME = getBuildArtifcatName("${ISO_PARENT_DIR}/", 'cortx-prep')
         CORTX_OS_ISO_NAME = getBuildArtifcatName("${ISO_PARENT_DIR}/", 'cortx-os')
@@ -372,7 +373,8 @@ def runAnsible(tags) {
 	            "USERS"                  : [value: "${USERS}", hidden: true],
                     "NODEADMIN_USER"         : [value: "${NODEADMIN_USER}", hidden: true],
 	            "NODEADMIN_NEW_PASSWORD" : [value: "${NODEADMIN_NEW_PASSWORD}", hidden: true],
-	            "BUILD_NO"               : [value: "${BUILD_NO}", hidden: true]
+	            "BUILD_NO"               : [value: "${BUILD_NO}", hidden: true],
+		    "VERSION_NO"             : [value: "${VERSION_NO}", hidden: true]
 		    
                 ],
                 extras: '-v',
