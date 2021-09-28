@@ -1,7 +1,5 @@
 ---
 
-- include: passwordless_authentication.yml
-
 - name: "[deploy-prep] : Wait for SSH Connection"
   pause:
     minutes: 2
