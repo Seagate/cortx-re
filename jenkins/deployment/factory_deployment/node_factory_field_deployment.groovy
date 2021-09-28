@@ -9,7 +9,8 @@ pipeline {
 	
     parameters {
         string(name: 'CORTX_BUILD', defaultValue: '', description: 'Build URL', trim: true)
-		string(name: 'MGMT_VIP', defaultValue: '', description: 'Management VIP', trim: true)
+        string(name: 'INSTALL_SCRIPT_PATH', defaultValue: '', description: 'Install Script Path', trim: true)	    
+	string(name: 'MGMT_VIP', defaultValue: '', description: 'Management VIP', trim: true)
         string(name: 'HOST', defaultValue: '' , description: 'HW Deploy Host', trim: true)
         string(name: 'CONFIG', defaultValue: '' , description: 'HW config file raw file path', trim: true)
         choice(name: 'DEPLOY_TYPE', choices: [ 'DEPLOY-WITH-REIMAGE','DEPLOY-WITHOUT-REIMAGE','REIMAGE' ], description: 'Deployment Type')
@@ -363,15 +364,17 @@ def runAnsible(tags) {
                     "DEPLOY_TYPE"            : [value: "${DEPLOY_TYPE}", hidden: false],
                     "CONFIG_URL"             : [value: "${CONFIG}", hidden: false],
                     "CORTX_BUILD_URL"        : [value: "${CORTX_BUILD}", hidden: false],
+		    "INSTALL_SCRIPT_PATH"    : [value: "${NSTALL_SCRIPT_PATH}", hidden: true],	
                     "CORTX_PREP_URL"         : [value: "${CORTX_PREP_URL}", hidden: false],
                     "CORTX_OS_ISO_URL"       : [value: "${CORTX_OS_ISO_URL}", hidden: false],
                     "CLUSTER_PASS"           : [value: "${CLUSTER_PASS}", hidden: true],
                     "SATELLITE_UN"           : [value: "${SATELLITE_UN}", hidden: true],
                     "SATELLITE_PW"           : [value: "${SATELLITE_PW}", hidden: true],
-					          "MGMT_VIP"			 	       : [value: "${MGMT_VIP}", hidden: true],
-				          	"USERS"                  : [value: "${USERS}", hidden: true],
-					          "NODEADMIN_USER"         : [value: "${NODEADMIN_USER}", hidden: true],
-					          "NODEADMIN_NEW_PASSWORD" : [value: "${NODEADMIN_NEW_PASSWORD}", hidden: true]
+		    "MGMT_VIP"		     : [value: "${MGMT_VIP}", hidden: true],
+	            "USERS"                  : [value: "${USERS}", hidden: true],
+                    "NODEADMIN_USER"         : [value: "${NODEADMIN_USER}", hidden: true],
+	            "NODEADMIN_NEW_PASSWORD" : [value: "${NODEADMIN_NEW_PASSWORD}", hidden: true]
+		    
                 ],
                 extras: '-v',
                 colorized: true
