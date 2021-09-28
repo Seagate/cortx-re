@@ -211,6 +211,11 @@ function setup_master_node(){
         cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
         chown $(id -u):$(id -g) $HOME/.kube/config
 
+        # Taint master node
+        if [ "$1" ]; then
+            kubectl taint nodes --all node-role.kubernetes.io/master-
+        fi    
+
         # Apply calcio plugin 	
         if [ "$CALICO_PLUGIN_VERSION" == "latest" ]; then
             kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml || throw $Exception
@@ -267,7 +272,7 @@ case $ACTION in
         print_cluster_status
     ;;
     --master)
-        setup_master_node
+        setup_master_node "$2"
     ;;
     *)
         echo "ERROR : Please provide valid option"
