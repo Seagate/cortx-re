@@ -210,10 +210,11 @@ function setup_master_node(){
         mkdir -p $HOME/.kube
         cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
         chown $(id -u):$(id -g) $HOME/.kube/config
-
+        echo $1    
         # Taint master node
         if [ "$1" ]; then
-            host=$(hostname) 
+            host=$(hostname)
+            echo "Inside taint : ${host} - $1" 
             kubectl taint nodes ${host} node-role.kubernetes.io/master- || throw $Exception
         fi    
 
