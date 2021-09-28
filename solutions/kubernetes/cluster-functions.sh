@@ -274,6 +274,7 @@ case $ACTION in
         print_cluster_status
     ;;
     --master)
+        echo $2
         setup_master_node "$2"
     ;;
     *)

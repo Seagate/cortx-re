@@ -90,7 +90,7 @@ function setup_cluster {
 
     echo "---------------------------------------[ Preparing Master Node $MASTER_NODE ]--------------------------------------"
     echo ${TAINT}
-    ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" '/var/tmp/cluster-functions.sh --master "${TAINT}"'
+    ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" '/var/tmp/cluster-functions.sh --master ${TAINT}'
     check_status
     sleep 10 #To be replaced with status check
     JOIN_COMMAND=$(ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" 'kubeadm token create --print-join-command --description "Token to join worker nodes"')
