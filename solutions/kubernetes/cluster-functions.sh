@@ -213,7 +213,8 @@ function setup_master_node(){
 
         # Taint master node
         if [ "$1" ]; then
-            kubectl taint nodes --all node-role.kubernetes.io/master-
+            host=$(hostname) 
+            kubectl taint nodes ${host} node-role.kubernetes.io/master- || throw $Exception
         fi    
 
         # Apply calcio plugin 	
