@@ -89,6 +89,7 @@ function setup_cluster {
     done
 
     echo "---------------------------------------[ Preparing Master Node $MASTER_NODE ]--------------------------------------"
+    echo ${TAINT}
     ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" '/var/tmp/cluster-functions.sh --master "${TAINT}"'
     check_status
     sleep 10 #To be replaced with status check
