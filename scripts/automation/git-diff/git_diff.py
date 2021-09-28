@@ -71,13 +71,17 @@ class GitDiff:
 
     def process(self):
         try:
-            filename = str(random.randrange(10000, 10**10))
-            with open(filename, 'a') as f_obj:
-                for repo_dict in self.config['repository']:
-                    repo = repo_dict['name']
+            folder = str(random.randrange(10000, 10**10))
+            if not os.path.exists(folder):
+                print("Creating the tmp folder...")
+                os.makedirs(folder)
+            for repo_dict in self.config['repository']:
+                repo = repo_dict['name']
+                print("\nProcessing %s..." %repo)
+                filename = os.path.join(folder, repo)
+                with open(filename, 'w+') as f_obj:
                     repo_obj = Repo(repo)
                     os.chdir(repo)
-                    print (os.getcwd())
                     if self.src_branch and self.dest_branch:
                         diff_string = repo_obj.git.diff(self.src_branch, self.dest_branch)
                     else:
@@ -85,32 +89,33 @@ class GitDiff:
                                                 "--pretty=%H")
                         latest_commit = logs.splitlines()
                         if len(latest_commit) > 0:
-                            logs_before = repo_obj.git.log("--before='%s'" % self.date_from, "--pretty=%H")
+                            logs_before = repo_obj.git.log("--before='%s'" % self.date_from, "--pretty=%H", "-n", "1")
                             last_day_commit = logs_before.splitlines()
                             if len(last_day_commit) > 0:
-                                print (latest_commit[0], last_day_commit[0], ' '.join(repo_dict['files']))
+                                print("Last day commit: %s" %last_day_commit[0])
+                                print("Latest day commit: %s" %latest_commit[0])
                                 diff_string = repo_obj.git.diff(latest_commit[0], last_day_commit[0], '--', repo_dict['files'])
-                                if diff_string == '': diff_string = 'diff not found'
-                                f_obj.write('RepoName: %s\n%s\n' %(repo, diff_string))
+                                f_obj.write('%s\n' %(diff_string))
                             else:
                                 print("No last day commit found for %s.." % repo)
-                                f_obj.write('RepoName: %s\ndiff not found\n' % repo)
                         else:
                            print("No latest commits found for %s.." %repo)
-                           f_obj.write('RepoName: %s\ndiff not found\n' % repo)
+                        f_obj.write('\n')
                         os.chdir('..')
         except IOError as io_error:
-            print('Error while writing files', {io_error})
+            print('Error: Cannot open file %s \n' %filename, {io_error})
         except exc.GitCommandError as git_error:
-            print('Error creating remote:',repo, {git_error})
+            print('Error: Unable to process git command for %s' %repo, {git_error})
         else:
-            print("Generating HTML")
-            html_obj = HTMLGen(filename, './git_diff_template.html')
-            html_obj.html_git_diff()
+            print("Generate the HTML")
+            html_obj = HTMLGen(folder, './git_diff_template.html')
+            html_obj.generate_report()
             #print (filename)
 
 def main():
+    print("\nInitiating the Package Diff...")
     args = get_args()
+    print("Parameters: %s" %args)
     diff_obj = GitDiff(args)
     diff_obj.process()
 

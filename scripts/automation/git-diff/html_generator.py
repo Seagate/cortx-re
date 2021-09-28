@@ -16,7 +16,8 @@
 # For any questions about this software or licensing,
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
-# import os
+import os
+import re
 # import sys
 import re
 from datetime import datetime
@@ -31,8 +32,9 @@ def clean(text):
 
 class HTMLGen:
     def __init__(self, git_diff_file, html_tmpl):
-        self.git_diff_file = git_diff_file
+        self.git_diff_files = git_diff_file
         self.html_tmpl = html_tmpl
+        self.total_diff = 0
 
     @staticmethod
     def read_file(file):
@@ -40,95 +42,75 @@ class HTMLGen:
             with open(file, 'r') as f_obj:
                 data = f_obj.read()
         except FileNotFoundError as fnf_error:
-            print(fnf_error)
+            print("Error: File not found %s" %file, fnf_error)
         except IOError as io_error:
-            print(io_error)
+            print("Error: Cannot read file %s" %file, io_error)
         else:
             return data
 
-    @staticmethod
-    def add_diff_to_page(header, curr_section, row_span):
-        html = "<tr>%s<td><h2>%s</h2><div class='file-diff'>%s</div></td></tr>" %(row_span, header, curr_section)
-        return html
+    def diff_to_html(self, file):
+        filename = os.path.join(self.git_diff_files, file)
+        diff_data = self.read_file(filename)
+        diffs_list = diff_data.split('diff --git')
+        all_diff_html = ''
+        rowspan = len(diffs_list) - 1
+        if len(diffs_list) > 1:
+           count = 0
+           for section in diffs_list:
+              if section == '' :
+                 continue
+              removed = ''
+              added = ''
+              curr_file = ''
+              diff_html = ''
+              for line in section.split('\n'):
+                  if line.startswith('---'):
+                      curr_file = re.sub('---\s*.*?/', './', line)
+                      print("Diff found in %s" %curr_file)
+                  elif line.startswith('+++'):
+                      continue
+                  elif line.startswith('-'):
+                      removed += '<pre class="delete">%s</pre>' %line
+                  elif line.startswith('+'):
+                      added += '<pre class="insert">%s</pre>' %line
+              count += 1
+              diff_html += '<td><h2>%s</h2><div class="file-diff">' %curr_file
+              diff_html += '<pre class="context"><b>Package Added:</b></pre>%s<br>' %added
+              diff_html += '<pre class="context"><b>Package Deleted:</b></pre>%s' %removed
+              diff_html += '</div></td>'
 
-    def html_git_diff(self):
-        curr_file = ''
-        curr_section = ''
-        diff_seen = 0
-        html_cls = ''
-        html_data = ''
-        td_rowspan = ''
-        diff_count = 0
-        row_span = defaultdict(int)
+              if count == 1:
+                 self.total_diff += 1
+                 all_diff_html += '<tr><td rowspan="%s" id="reponame">%s</td>' %(rowspan,file)
+                 all_diff_html += diff_html
+              else:
+                 all_diff_html += '<tr>%s' %diff_html
+           all_diff_html += "</tr>" * rowspan
+        else:
+           all_diff_html += '<tr><td rowspan="1" id="reponame">%s</td>' %file
+           all_diff_html += '<td><h2></h2><div class="file-diff">No Diff found</div></td></tr>'
+           print ('No diff found')
+        return all_diff_html
+
+    def generate_report(self):
+        files = os.listdir(self.git_diff_files)
+        table_data = ''
+        for file in files:
+           print("\nProceesing the %s..." %file)
+           #filename = os.path.join(self.git_diff_files, file)
+           table_data += self.diff_to_html(file)
         html_tmpl_cont = self.read_file(self.html_tmpl)
-        with open(self.git_diff_file, 'r') as f_obj:
-            for line in f_obj:
-                sub_string_8 = line[0:8]
-                sub_string_4 = line[0:4]
-                if sub_string_8 == 'RepoName':
-                   repo_name = line.replace('RepoName: ', '')
-                if sub_string_4 == 'diff':
-                   row_span[repo_name] += 1
-
-        with open(self.git_diff_file, 'r') as f_obj:
-            for line in f_obj:
-                sub_string_1 = line[0:1]
-                sub_string_2 = line[0:2]
-                sub_string_3 = line[0:3]
-                sub_string_4 = line[0:4]
-                sub_string_7 = line[0:7]
-                sub_string_8 = line[0:8]
-                if sub_string_8 == 'RepoName':
-                    if diff_seen == 1:
-                        html_data += self.add_diff_to_page(curr_file, curr_section, td_rowspan)
-                        diff_seen = 0
-                        td_rowspan = ''
-                    repo_name = line.replace('RepoName: ', '')
-                    td_rowspan = "<td rowspan='%s' id='reponame'>%s</td>" %(row_span[repo_name],repo_name)
-                    continue
-                elif sub_string_7 == 'diff no':
-                    html_data += self.add_diff_to_page('', 'No Diff found', td_rowspan)
-                    curr_section = ''
-                    continue
-                elif sub_string_4 == "diff":
-                    html_cls = 'file'
-                    if diff_seen == 1:
-                        html_data += self.add_diff_to_page(curr_file, curr_section, td_rowspan)
-                        td_rowspan = ''
-                    diff_count += 1
-                    diff_seen = 1
-                elif sub_string_3 == '---':
-                    html_cls = 'delete'
-                    curr_file = re.sub('---\s*.*/', '', line)
-                elif sub_string_3 == '+++':
-                    html_cls = 'insert'
-                elif sub_string_2 == '@@':
-                    html_cls = 'info'
-                elif sub_string_1 == '+':
-                    html_cls = 'insert'
-                elif sub_string_1 == '-':
-                    html_cls = 'delete'
-                else:
-                    html_cls = 'context'
-                line = clean(line)
-                if html_cls:
-                    curr_section += '<pre class="%s">%s</pre>' %(html_cls, line)
-                elif sub_string_7 != 'diff no':
-                    curr_section += '<pre>%s</pre>' %line
-            if curr_section:
-                curr_section += "</div>"
-                html_data += self.add_diff_to_page(curr_file, curr_section, td_rowspan)
-            html_tmpl_cont = html_tmpl_cont.replace('##MyCont##', html_data)
-            html_tmpl_cont = html_tmpl_cont.replace('##DiffFound##', str(diff_count))
-            html_tmpl_cont = html_tmpl_cont.replace('##MyDate##', datetime.now().strftime("%Y-%m-%d %H:%M"))
-            html_tmpl_cont = html_tmpl_cont.replace('##MyTotalRepo##', str(len(row_span.keys())))
+        html_tmpl_cont = html_tmpl_cont.replace('##MyCont##', table_data)
+        html_tmpl_cont = html_tmpl_cont.replace('##DiffFound##', str(self.total_diff))
+        html_tmpl_cont = html_tmpl_cont.replace('##MyDate##', datetime.now().strftime("%Y-%m-%d %H:%M"))
+        html_tmpl_cont = html_tmpl_cont.replace('##MyTotalRepo##', str(len(files)))
+        print('\n\nCreating the git_diff.html file')
         with open('git_diff.html', 'w') as w_obj:
             w_obj.write(html_tmpl_cont)
-            # print (html_tmpl_cont)
 
 def main():
-    html_obj = HTMLGen('/var/lib/jenkins/workspace/Cortx-Dev/Git-Diff/5298794238', './git_diff_template.html')
-    html = html_obj.html_git_diff()
+    html_obj = HTMLGen('/var/lib/jenkins/workspace/Cortx-Dev/Git-Diff/3149545061', './git_diff_template.html')
+    html = html_obj.generate_report()
     print (html)
 
     # html_generate('/var/lib/jenkins/workspace/Cortx-Dev/Git-Diff/1631520245000')
