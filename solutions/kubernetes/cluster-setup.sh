@@ -79,6 +79,9 @@ function setup_cluster {
 
     for node in $ALL_NODES
     do
+        echo "---------------------------------------[ Cleanup Node $node ]--------------------------------------"
+        ssh -o 'StrictHostKeyChecking=no' "$node" '/var/tmp/cluster-functions.sh --cleanup'
+        check_status
         echo "---------------------------------------[ Preparing Node $node ]--------------------------------------"
         ssh -o 'StrictHostKeyChecking=no' "$node" '/var/tmp/cluster-functions.sh --prepare'
         check_status

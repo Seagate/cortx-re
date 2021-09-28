@@ -81,6 +81,47 @@ function print_cluster_status(){
     kubectl get nodes -o wide
 }
 
+function clenaup_node(){
+    pkgs_to_remove=(
+        "docker-ce"
+        "docker-ce-cli"
+        "containerd"
+        "kubeadm"
+    )
+    files_to_remove=(
+        "/etc/docker/daemon.json"
+        "$HOME/.kube"
+    )
+    # Set directive to remove packages with dependencies.
+    searchString="clean_requirements_on_remove*"
+    conffile="/etc/yum.conf"
+    if grep -q "$searchString" "$conffile"
+    then
+        sed -i "/$searchString/d" "$conffile"
+    fi
+    echo "clean_requirements_on_remove=1" >> "$conffile"
+
+    # Remove packages
+    echo "Uninstalling packages"
+    for pkg in ${pkgs_to_remove[@]}; do
+        if rpm -qa "$pkg"; then
+            yum remove "$pkg" -y
+            if [ $? -ne 0 ]; then
+                echo "Failed to uninstall $pkg"
+                exit 1
+            fi
+        else
+            echo -e "\t$pkg is not installed"
+        fi
+    done
+    for file in ${files_to_remove[@]}; do
+        if [ -f "$file" ]; then
+            echo "Removing file $file"
+            rm -rf $file
+        fi
+    done
+}
+
 function install_prerequisites(){
     try
     (   # disable swap
@@ -158,7 +199,6 @@ function setup_master_node(){
     (
         #cleanup
         echo "y" | kubeadm reset
-        rm -rf $HOME/.kube
 
         #initialize cluster
         kubeadm init || throw $Exception
@@ -217,6 +257,9 @@ if [ -z "$ACTION" ]; then
 fi
 
 case $ACTION in
+    --cleanup)
+        clenaup_node
+    ;;
     --prepare) 
         install_prerequisites
     ;;
