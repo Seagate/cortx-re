@@ -8,8 +8,7 @@ pipeline {
     }
 	
     parameters {
-        string(name: 'CORTX_BUILD', defaultValue: '', description: 'Build URL', trim: true)
-        string(name: 'INSTALL_SCRIPT_PATH', defaultValue: '', description: 'Install Script Path', trim: true)	    
+        string(name: 'CORTX_BUILD', defaultValue: '', description: 'Build URL', trim: true)	    
 	string(name: 'MGMT_VIP', defaultValue: '', description: 'Management VIP', trim: true)
         string(name: 'HOST', defaultValue: '' , description: 'HW Deploy Host', trim: true)
         string(name: 'CONFIG', defaultValue: '' , description: 'HW config file raw file path', trim: true)
@@ -24,7 +23,7 @@ pipeline {
         build_id = getBuild("${CORTX_BUILD}")
         NODES = getHosts("${CONFIG}")
         USERS = getUsers("${CONFIG}")
-
+	BUILD_NO = sh(script: "curl -s  ${CORTX_BUILD}/RELEASE.INFO  | grep BUILD | cut -d':' -f2 | tr -d '\"' | xargs", returnStdout: true).trim()
         ISO_PARENT_DIR = sh(script: "set +x; echo \$(dirname ${CORTX_BUILD})", returnStdout: true).trim()
         CORTX_PREP_NAME = getBuildArtifcatName("${ISO_PARENT_DIR}/", 'cortx-prep')
         CORTX_OS_ISO_NAME = getBuildArtifcatName("${ISO_PARENT_DIR}/", 'cortx-os')
@@ -363,8 +362,7 @@ def runAnsible(tags) {
                     
                     "DEPLOY_TYPE"            : [value: "${DEPLOY_TYPE}", hidden: false],
                     "CONFIG_URL"             : [value: "${CONFIG}", hidden: false],
-                    "CORTX_BUILD_URL"        : [value: "${CORTX_BUILD}", hidden: false],
-		    "INSTALL_SCRIPT_PATH"    : [value: "${NSTALL_SCRIPT_PATH}", hidden: true],	
+                    "CORTX_BUILD_URL"        : [value: "${CORTX_BUILD}", hidden: false],	
                     "CORTX_PREP_URL"         : [value: "${CORTX_PREP_URL}", hidden: false],
                     "CORTX_OS_ISO_URL"       : [value: "${CORTX_OS_ISO_URL}", hidden: false],
                     "CLUSTER_PASS"           : [value: "${CLUSTER_PASS}", hidden: true],
@@ -373,7 +371,8 @@ def runAnsible(tags) {
 		    "MGMT_VIP"		     : [value: "${MGMT_VIP}", hidden: true],
 	            "USERS"                  : [value: "${USERS}", hidden: true],
                     "NODEADMIN_USER"         : [value: "${NODEADMIN_USER}", hidden: true],
-	            "NODEADMIN_NEW_PASSWORD" : [value: "${NODEADMIN_NEW_PASSWORD}", hidden: true]
+	            "NODEADMIN_NEW_PASSWORD" : [value: "${NODEADMIN_NEW_PASSWORD}", hidden: true],
+	            "BUILD_NO"               : [value: "${BUILD_NO}", hidden: true]
 		    
                 ],
                 extras: '-v',
