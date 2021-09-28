@@ -191,7 +191,7 @@ gpgkey=$BUILD_URL/RPM-GPG-KEY-Seagate
 priority=1
 EOF
 
-CENTOS_RELEASE="$(cat /etc/redhat-release | awk '{print $4}')"
+CENTOS_RELEASE="$(awk '{print $4}' /etc/redhat-release)"
 
 if [[ "$CENTOS_RELEASE" == "7.8.2003" ]]; then
     yum-config-manager --add-repo http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/centos/centos-7.8.2003-2.0.0-latest/
