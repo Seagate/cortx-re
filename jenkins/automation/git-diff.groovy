@@ -6,11 +6,17 @@ pipeline {
             description: 'OS version of the build',
             trim: true
         )
+		string(
+            defaultValue: 'dev',
+            name: 'environment',
+            description: 'Environment',
+            trim: true
+        )
     }
 	agent {
         node {
-           label "docker-${os_version}-node"
-           // label "cortx-test-ssc-vm-4090"
+           // label "docker-${os_version}-node"
+           label "cortx-test-ssc-vm-4090"
         }
     }
 
@@ -18,7 +24,7 @@ pipeline {
 	    stage('Checkout source code') {
             steps {
                 script {
-                    checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, userRemoteConfigs: [[credentialsId: 'github-access', url: 'https://github.com/seagate/cortx-re/']]])
+                    checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, userRemoteConfigs: [[credentialsId: 'github-access', url: 'https://github.com/venkuppu-chn/cortx-re/']]])
 					sh 'cp ./scripts/automation/git-diff/* .'
                 }
             }
@@ -55,7 +61,7 @@ pipeline {
             steps {
                 script {
 					echo "Checking the difference in packages file.."
-                    sh "python git_diff.py -d Last-Day -c config.json"
+                    sh "python git_diff.py -d Last-Year -c config.json"
                 }
             }
         }
@@ -63,11 +69,16 @@ pipeline {
 		stage('Send Email') {
             steps {
                 script {
+					def useEmailList = ''
+					if ( params.environment == 'prod') {
+						useEmailList = 'cortx.sme@seagate.com, shailesh.vaidya@seagate.com, priyank.p.dalal@seagate.com, mukul.malhotra@seagate.com'
+					}
                     env.ForEmailPlugin = env.WORKSPACE
                     emailext mimeType: 'text/html',
                     body: '${FILE, path="git_diff.html"}',
                     subject: 'Third Party Depdenency scan - [ Date :' +new Date().format("dd-MMM-yyyy") + ' ]',
-                    to: 'cortx.sme@seagate.com, venkatesh.k@seagate.com, shailesh.vaidya@seagate.com, priyank.p.dalal@seagate.com, mukul.malhotra@seagate.com'
+                    recipientProviders: [[$class: 'RequesterRecipientProvider']],
+					to: useEmailList
                 }
             }
         }
