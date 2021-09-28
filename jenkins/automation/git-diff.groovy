@@ -15,8 +15,8 @@ pipeline {
     }
 	agent {
         node {
-           // label "docker-${os_version}-node"
-           label "cortx-test-ssc-vm-4090"
+           label "docker-${os_version}-node"
+           // label "cortx-test-ssc-vm-4090"
         }
     }
 
@@ -24,7 +24,7 @@ pipeline {
 	    stage('Checkout source code') {
             steps {
                 script {
-                    checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, userRemoteConfigs: [[credentialsId: 'github-access', url: 'https://github.com/venkuppu-chn/cortx-re/']]])
+                    checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, userRemoteConfigs: [[credentialsId: 'github-access', url: 'https://github.com/seagate/cortx-re/']]])
 					sh 'cp ./scripts/automation/git-diff/* .'
                 }
             }
