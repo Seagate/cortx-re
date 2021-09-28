@@ -61,7 +61,7 @@ pipeline {
             steps {
                 script {
 					echo "Checking the difference in packages file.."
-                    sh "python git_diff.py -d Last-Year -c config.json"
+                    sh "python git_diff.py -d Last-Day -c config.json"
                 }
             }
         }
