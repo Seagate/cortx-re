@@ -115,8 +115,8 @@ function clenaup_node(){
         fi
     done
     for file in ${files_to_remove[@]}; do
-        if [ -f "$file" ]; then
-            echo "Removing file $file"
+        if [ -f "$file" || -d "$file" ]; then
+            echo "Removing file/folder $file"
             rm -rf $file
         fi
     done
