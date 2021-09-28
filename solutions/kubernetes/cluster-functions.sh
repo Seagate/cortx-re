@@ -66,7 +66,7 @@ function ignoreErrors()
 
 function verify_os() {
     CURRENT_OS=$(cat /etc/redhat-release | cut -d " " f1,4)
-    if [ "$CURRENT_OS" -ne "$OS_VERSION" ]; then
+    if [ "$CURRENT_OS" != "$OS_VERSION" ]; then
         echo "ERROR : Operating System is not correct. Current OS : $CURRENT_OS, Required OS : $OS_VERSION"
         exit 1
     fi 
@@ -171,7 +171,7 @@ function install_prerequisites(){
             fi
             CALICO_IMAGE_VERSION=$(grep 'docker.io/calico/cni' calico-$CALICO_PLUGIN_VERSION.yaml | uniq | awk -F':' '{ print $3}')	
             wget -c https://github.com/projectcalico/calico/releases/download/$CALICO_IMAGE_VERSION/release-$CALICO_IMAGE_VERSION.tgz -O - | tar -xz || throw $Exception
-            cd release-$CALICO_IMAGE_VERSION/images && for file in calico-node.tar calico-kube-controllers.tar  calico-cni.tar calico-pod2daemon-flexvol.tar; do docker load -i $file || throw $Exception; done
+            cd release-$CALICO_IMAGE_VERSION/images && for file in calico-node.tar calico-kube-controllers.tar  calico-cni.tar calico-pod2daemon-flexvol.tar; do docker load -i $file; done
         popd
     )
     catch || {
