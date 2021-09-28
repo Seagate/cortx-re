@@ -41,7 +41,6 @@ pipeline {
                     pushd solutions/kubernetes/
                         echo $hosts | tr ' ' '\n' > hosts
                         cat hosts
-                        echo ${TAINT}
                         ./cluster-setup.sh ${TAINT}
                     popd
                 '''
