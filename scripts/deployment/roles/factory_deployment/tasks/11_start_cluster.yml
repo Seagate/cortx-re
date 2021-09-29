@@ -1,6 +1,3 @@
-- name: Set pcs property
-  shell: pcs property set stonith-enabled=false
-  delegate_to: "srvnode-1"
   
 - name: Start the cortx cluster
   shell: cortx cluster start
