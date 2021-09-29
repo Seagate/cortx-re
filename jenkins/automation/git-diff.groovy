@@ -1,4 +1,10 @@
 pipeline {
+	agent {
+        node {
+           label "docker-${os_version}-node"
+           // label "cortx-test-ssc-vm-4090"
+        }
+    }
     parameters {
         string(
             defaultValue: 'centos-7.9.2009',
@@ -12,12 +18,6 @@ pipeline {
             description: 'Environment',
             trim: true
         )
-    }
-	agent {
-        node {
-           label "docker-${os_version}-node"
-           // label "cortx-test-ssc-vm-4090"
-        }
     }
 
     stages {
