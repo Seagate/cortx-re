@@ -18,7 +18,7 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
-Repo_Name=$1
+Repo_Name=$(echo "$1"|tr "," " ")
 GitUserName=$2
 file_name=Repository_reports.csv
 
