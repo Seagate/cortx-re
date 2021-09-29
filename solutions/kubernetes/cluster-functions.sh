@@ -21,11 +21,12 @@
 CALICO_PLUGIN_VERSION=latest
 K8_VERSION=1.19.0-0
 DOCKER_VERSION=latest
+OS_VERSION="CentOS 7.9.2009"
 export Exception=100
 export ConfigException=101
 
 
-usage(){
+function usage(){
     cat << HEREDOC
 Usage : $0 [--prepare, --master]
 where,
@@ -49,7 +50,7 @@ function throw()
 function catch()
 {
     export ex_code=$?
-    $SAVED_OPT_E && set +e
+    (( $SAVED_OPT_E )) && set +e
     return $ex_code
 } 
 
@@ -63,7 +64,15 @@ function ignoreErrors()
     set +e
 }
 
-print_cluster_status(){
+function verify_os() {
+    CURRENT_OS=$(cut -d ' ' -f 1,4 < /etc/redhat-release)
+    if [ "$CURRENT_OS" != "$OS_VERSION" ]; then
+        echo "ERROR : Operating System is not correct. Current OS : $CURRENT_OS, Required OS : $OS_VERSION"
+        exit 1
+    fi 
+}
+
+function print_cluster_status(){
 
     while kubectl get nodes | grep -v STATUS | awk '{print $2}' | tr '\n' ' ' | grep -q NotReady
     do
@@ -72,9 +81,52 @@ print_cluster_status(){
     kubectl get nodes -o wide
 }
 
-install_prerequisites(){
+function clenaup_node(){
+    pkgs_to_remove=(
+        "docker-ce"
+        "docker-ce-cli"
+        "containerd"
+        "kubernetes-cni"
+        "kubeadm"
+    )
+    files_to_remove=(
+        "/etc/docker/daemon.json"
+        "$HOME/.kube"
+    )
+    # Set directive to remove packages with dependencies.
+    searchString="clean_requirements_on_remove*"
+    conffile="/etc/yum.conf"
+    if grep -q "$searchString" "$conffile"
+    then
+        sed -i "/$searchString/d" "$conffile"
+    fi
+    echo "clean_requirements_on_remove=1" >> "$conffile"
+
+    # Remove packages
+    echo "Uninstalling packages"
+    for pkg in ${pkgs_to_remove[@]}; do
+        if rpm -qa "$pkg"; then
+            yum remove "$pkg" -y
+            if [ $? -ne 0 ]; then
+                echo "Failed to uninstall $pkg"
+                exit 1
+            fi
+        else
+            echo -e "\t$pkg is not installed"
+        fi
+    done
+    for file in ${files_to_remove[@]}; do
+        if [ -f "$file" ] || [ -d "$file" ]; then
+            echo "Removing file/folder $file"
+            rm -rf $file
+        fi
+    done
+}
+
+function install_prerequisites(){
     try
-    (   # disable swap 
+    (   # disable swap
+        verify_os 
         sudo swapoff -a
         # keeps the swaf off during reboot
         sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
@@ -143,12 +195,11 @@ install_prerequisites(){
 
 }
 
-setup_master_node(){
+function setup_master_node(){
     try
     (
         #cleanup
         echo "y" | kubeadm reset
-        rm -rf $HOME/.kube
 
         #initialize cluster
         kubeadm init || throw $Exception
@@ -160,6 +211,10 @@ setup_master_node(){
         mkdir -p $HOME/.kube
         cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
         chown $(id -u):$(id -g) $HOME/.kube/config
+        # untaint master node
+        if [ "$1" ]; then 
+            kubectl taint nodes $(hostname) node-role.kubernetes.io/master- || throw $Exception
+        fi    
 
         # Apply calcio plugin 	
         if [ "$CALICO_PLUGIN_VERSION" == "latest" ]; then
@@ -207,6 +262,9 @@ if [ -z "$ACTION" ]; then
 fi
 
 case $ACTION in
+    --cleanup)
+        clenaup_node
+    ;;
     --prepare) 
         install_prerequisites
     ;;
@@ -214,7 +272,7 @@ case $ACTION in
         print_cluster_status
     ;;
     --master)
-        setup_master_node
+        setup_master_node "$2"
     ;;
     *)
         echo "ERROR : Please provide valid option"

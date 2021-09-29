@@ -20,6 +20,7 @@
 
 HOST_FILE=$PWD/hosts
 SSH_KEY_FILE=/root/.ssh/id_rsa
+TAINT="$1"
 
 function validation {
     if [ ! -f "$HOST_FILE" ]; then
@@ -36,22 +37,24 @@ function generate_rsa_key {
     fi
 }
 
-function passwordless_ssh {
-    local NODE=$1
-    local USER=$2
-    local PASS=$3
-    sshpass -p "$PASS" ssh-copy-id -f -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa.pub "$USER"@"$NODE"
-    check_status "Passwordless ssh setup failed for $NODE. Please validte provide credentails"
-}
-
 function check_status {
     return_code=$?
     error_message=$1
     if [ $return_code -ne 0 ]; then
-            echo "----------------------[ ERROR: $error_message ]--------------------------------------"    
+            echo "----------------------[ ERROR: $error_message ]--------------------------------------"
             exit 1
     fi
     echo "----------------------[ SUCCESS ]--------------------------------------"
+}
+
+function passwordless_ssh {
+    local NODE=$1
+    local USER=$2
+    local PASS=$3
+    ping -c1 -W1 -q $NODE
+    check_status
+    sshpass -p "$PASS" ssh-copy-id -f -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa.pub "$USER"@"$NODE"
+    check_status "Passwordless ssh setup failed for $NODE. Please validte provide credentails"
 }
 
 function nodes_setup {
@@ -79,13 +82,16 @@ function setup_cluster {
 
     for node in $ALL_NODES
     do
+        echo "---------------------------------------[ Cleanup Node $node ]--------------------------------------"
+        ssh -o 'StrictHostKeyChecking=no' "$node" '/var/tmp/cluster-functions.sh --cleanup'
+        check_status
         echo "---------------------------------------[ Preparing Node $node ]--------------------------------------"
         ssh -o 'StrictHostKeyChecking=no' "$node" '/var/tmp/cluster-functions.sh --prepare'
         check_status "Node preparation failed on $node"
     done
 
     echo "---------------------------------------[ Preparing Master Node $MASTER_NODE ]--------------------------------------"
-    ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" '/var/tmp/cluster-functions.sh --master'
+    ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" "/var/tmp/cluster-functions.sh --master ${TAINT}"
     check_status
     sleep 10 #To be replaced with status check
     JOIN_COMMAND=$(ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" 'kubeadm token create --print-join-command --description "Token to join worker nodes"')
