@@ -20,7 +20,8 @@ pipeline {
         build_id = getBuild("${CORTX_BUILD}")
         NODES = getHosts("${CONFIG}")
         USERS = getUsers("${CONFIG}")
-
+	BUILD_NO = sh(script: "curl -s  ${CORTX_BUILD}/RELEASE.INFO  | grep BUILD | cut -d':' -f2 | tr -d '\"' | xargs", returnStdout: true).trim()
+	VERSION_NO = sh(script: "curl -s  ${CORTX_BUILD}/RELEASE.INFO  | grep VERSION | cut -d':' -f2 | tr -d '\"' | xargs", returnStdout: true).trim()
         ISO_PARENT_DIR = sh(script: "set +x; echo \$(dirname ${CORTX_BUILD})", returnStdout: true).trim()
         CORTX_PREP_NAME = getBuildArtifcatName("${ISO_PARENT_DIR}/", 'cortx-prep')
         CORTX_OS_ISO_NAME = getBuildArtifcatName("${ISO_PARENT_DIR}/", 'cortx-os')
@@ -365,8 +366,10 @@ def runAnsible(tags) {
                     "CLUSTER_PASS"          : [value: "${CLUSTER_PASS}", hidden: true],
                     "SATELLITE_UN"          : [value: "${SATELLITE_UN}", hidden: true],
                     "SATELLITE_PW"          : [value: "${SATELLITE_PW}", hidden: true],
-					"MGMT_VIP"				: [value: "${MGMT_VIP}", hidden: true],
-					"USERS"                 : [value: "${USERS}", hidden: true]
+		    "MGMT_VIP"	            : [value: "${MGMT_VIP}", hidden: true],
+		    "USERS"                 : [value: "${USERS}", hidden: true],
+	            "BUILD_NO"               : [value: "${BUILD_NO}", hidden: true],
+		    "VERSION_NO"             : [value: "${VERSION_NO}", hidden: true]			
                 ],
                 extras: '-v',
                 colorized: true
