@@ -18,3 +18,5 @@ required_vars:
   - SATELLITE_PW
   - MGMT_VIP
   - USERS
+  - BUILD_NO 
+  - VERSION_NO
