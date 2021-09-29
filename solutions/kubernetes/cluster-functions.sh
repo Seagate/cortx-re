@@ -86,6 +86,7 @@ function clenaup_node(){
         "docker-ce"
         "docker-ce-cli"
         "containerd"
+        "kubernetes-cni"
         "kubeadm"
     )
     files_to_remove=(

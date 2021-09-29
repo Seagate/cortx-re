@@ -37,14 +37,6 @@ function generate_rsa_key {
     fi
 }
 
-function passwordless_ssh {
-    local NODE=$1
-    local USER=$2
-    local PASS=$3
-    sshpass -p "$PASS" ssh-copy-id -f -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa.pub "$USER"@"$NODE"
-    check_status "Passwordless ssh setup failed for $NODE. Please validte provide credentails"
-}
-
 function check_status {
     return_code=$?
     error_message=$1
@@ -62,6 +54,7 @@ function passwordless_ssh {
     ping -c1 -W1 -q $NODE
     check_status
     sshpass -p "$PASS" ssh-copy-id -f -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa.pub "$USER"@"$NODE"
+    check_status "Passwordless ssh setup failed for $NODE. Please validte provide credentails"
 }
 
 function nodes_setup {
