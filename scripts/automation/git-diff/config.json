@@ -2,7 +2,7 @@
   "repository": [
     {
       "name": "cortx-motr",
-      "files": ["./cortx-motr.spec.in", "./fop/fom.h"]
+      "files": ["./cortx-motr.spec.in"]
     },
     {
       "name": "cortx-posix",
