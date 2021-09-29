@@ -15,7 +15,7 @@
   with_items: "{{ groups['srvnodes'] }}" 
 
 - name: Download install.sh
-  shell: (cd /mnt/cortx && curl -O https://raw.githubusercontent.com/Seagate/cortx-prvsnr/stable/srv/components/provisioner/scripts/install.sh)
+  shell: (cd /mnt/cortx && curl -O install-{{VERSION_NO}}-{{BUILD_NO}})
   delegate_to: "{{ item }}"
   with_items: "{{ groups['srvnodes'] }}" 
 
