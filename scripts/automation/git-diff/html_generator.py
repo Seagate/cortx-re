@@ -54,20 +54,27 @@ class HTMLGen:
 
         diffs_list = []
         for diff in diff_data.split('diff --git'):
-            curr_file = re.sub('---\s*.*?/', './', diff)
-            if '.spec' in curr_file and bool(re.search(r"^\s*[-+](?:Build)?Requires", diff)):
-                diffs_list.append(diff)
-            elif not '.spec' in curr_file:
-                diffs_list.append(diff)
+            file_obj = re.search(r'---\s*.*', diff)
+            if file_obj:
+                curr_file = file_obj.group()
+                if '.spec' in curr_file:
+                    if bool(re.search(r"[-+](?:Build)?Requires", diff)):
+                        diffs_list.append(diff)
+                    else:
+                        print('No package added/removed in %s', curr_file)
+                elif '.txt' in curr_file:
+                    diffs_list.append(diff)
+                elif '.json' in curr_file:
+                    diffs_list.append(diff)
+                else:
+                    print("Support only .spec and .txt files, not support %s" %curr_file)
 
         all_diff_html = ''
-        rowspan = len(diffs_list) - 1
+        rowspan = len(diffs_list)
 
-        if len(diffs_list) > 1:
+        if len(diffs_list) > 0:
             count = 0
             for section in diffs_list:
-                if section == '':
-                    continue
                 removed = ''
                 added = ''
                 curr_file = ''
