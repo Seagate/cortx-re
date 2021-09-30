@@ -23,18 +23,18 @@ GitUserName=$2
 file_name=Repository_reports.csv
 
 if [ -f $file_name ]; then
-	rm $file_name
+	rm -f $file_name
 fi
 
 git_branch_report(){
 	RepoName=$1
 	echo "Repo Name: $RepoName"
-	git clone --branch main https://github.com/$RepoName.git
+	git clone --branch https://github.com/$RepoName.git
 	if [ $? -ne 0 ]; then
 		echo "ERROR: git clone command getting some error for $RepoName"
 		exit 1
 	fi
-	Repo_folder=$(echo "$RepoName"|rev|cut -d "/" -f1| rev)
+	Repo_folder=$(echo "$RepoName"| awk -F[/] '{ print $NF}')
 	pushd $Repo_folder
 	echo "$Repo_folder," >> ../$file_name
 	branches_name=$(git for-each-ref --sort=-committerdate --format="%(refname)" refs/remotes)

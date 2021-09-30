@@ -24,7 +24,7 @@ pipeline {
         stage('Checkout Script') {
             steps {             
                 script {
-                    checkout([$class: 'GitSCM', branches: [[name: 'git-repository-reports-936455']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/AbhijitPatil1992/cortx-re/']]])                
+                    checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])                
                 }
             }
         }
@@ -49,7 +49,7 @@ pipeline {
 		stage('Send Email') {
             steps {             
                 script {
-                    toEmail = "abhijit.patil@seagate.com,priyank.p.dalal@seagate.com"
+                    toEmail = "priyank.p.dalal@seagate.com,shailesh.vaidya@seagate.com,john.bent@seagate.com,mehmet.balman@seagate.com"
                     env.ForEmailPlugin = env.WORKSPACE
                     emailext attachmentsPattern: 'Repository_reports.csv', mimeType: 'text/html',
                     body: '''Hi Team,<br/><br/>
