@@ -49,7 +49,8 @@ pipeline {
 		stage('Send Email') {
             steps {             
                 script {
-                    toEmail = "priyank.p.dalal@seagate.com,shailesh.vaidya@seagate.com,john.bent@seagate.com,mehmet.balman@seagate.com"
+                    toEmail = [[$class: 'DevelopersRecipientProvider']]
+#                    toEmail = "priyank.p.dalal@seagate.com"
                     env.ForEmailPlugin = env.WORKSPACE
                     emailext attachmentsPattern: 'Repository_reports.csv', mimeType: 'text/html',
                     body: '''Hi Team,<br/><br/>

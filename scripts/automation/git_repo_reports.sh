@@ -29,7 +29,7 @@ fi
 git_branch_report(){
 	RepoName=$1
 	echo "Repo Name: $RepoName"
-	git clone --branch https://github.com/$RepoName.git
+	git clone https://github.com/$RepoName.git
 	if [ $? -ne 0 ]; then
 		echo "ERROR: git clone command getting some error for $RepoName"
 		exit 1
