@@ -24,7 +24,7 @@ pipeline {
 	    stage('Checkout source code') {
             steps {
                 script {
-                    checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, userRemoteConfigs: [[credentialsId: 'github-access', url: 'https://github.com/seagate/cortx-re/']]])
+                    checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/seagate/cortx-re/']]])
 					sh 'cp ./scripts/automation/git-diff/* .'
                 }
             }
@@ -41,7 +41,7 @@ pipeline {
 						stage ('Checkout Repo:' + entry.name) {
 							dir (entry.name) {
 								timestamps {
-									checkout([$class: 'GitSCM', branches: [[name: "main"]], doGenerateSubmoduleConfigurations: false, userRemoteConfigs: [[credentialsId: 'github-access', url: repourl]]])
+									checkout([$class: 'GitSCM', branches: [[name: "main"]], doGenerateSubmoduleConfigurations: false, userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: repourl]]])
 								}
 							}
 						}
