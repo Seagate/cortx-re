@@ -7,24 +7,24 @@ pipeline {
 
     options {
         timeout(time: 120, unit: 'MINUTES')
-        timestamps() 
+        timestamps()
     }
 
     parameters {
         choice(
-            name: 'Repository', 
+            name: 'Repository',
             choices: ['ALL', 'cortx-s3server', 'cortx-motr', 'cortx-hare', 'cortx-ha', 'cortx-prvsnr', 'cortx-sspl', 'cortx-manager', 'cortx-management-portal', 'cortx-utils', 'cortx-monitor', 'cortx-multisite'],
             description: 'Repo Name'
         )
-	}	
-	
+        }
+
 
     stages {
 
         stage('Checkout Script') {
-            steps {             
+            steps {
                 script {
-                    checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])                
+                    checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
                 }
             }
         }
@@ -45,25 +45,26 @@ pipeline {
                 }
             }
         }
-
-		stage('Send Email') {
-            steps {             
+        stage('Send Email') {
+            steps {
                 script {
-                    toEmail = [[$class: 'DevelopersRecipientProvider']]
-#                    toEmail = "priyank.p.dalal@seagate.com"
+					def useEmailList = ''
+					if ( params.environment == 'prod') {
+						useEmailList = 'priyank.p.dalal@seagate.com'
+					}
                     env.ForEmailPlugin = env.WORKSPACE
-                    emailext attachmentsPattern: 'Repository_reports.csv', mimeType: 'text/html',
+					emailext attachmentsPattern: 'Repository_reports.csv', mimeType: 'text/html',
                     body: '''Hi Team,<br/><br/>
-                    
+
                     Please find an attachment for repositories report.<br/><br/>
-                    
+
                     Thanks,<br/>
                     DevOps Team.<br/>''',
                     subject: 'Repository Report - [ Date :' +new Date().format("dd-MMM-yyyy") + ' ]',
-                    to: toEmail
+                    recipientProviders: [[$class: 'RequesterRecipientProvider']],
+					to: useEmailList
                 }
-            } 
+            }
         }
-        
     }
 }
