@@ -37,9 +37,9 @@ pipeline {
                             Repository="cortx-s3server,cortx-motr,cortx-hare,cortx-ha,cortx-prvsnr,cortx-sspl,cortx-manager,cortx-management-portal,cortx-utils,cortx-monitor,cortx-multisite"
                         fi
                         gituser="Seagate"
-                        cp scripts/automation/get_repo_details.sh /opt/
+                        cp scripts/automation/git_repo_reports.sh /opt/
                         pushd /opt
-                        bash get_repo_details.sh $Repository $gituser
+                        bash git_repo_reports.sh $Repository $gituser
                         cp /opt/Repository_reports.csv $WORKSPACE/
                     '''
                 }
