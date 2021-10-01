@@ -48,10 +48,6 @@ pipeline {
         stage('Send Email') {
             steps {
                 script {
-					def useEmailList = ''
-					if ( params.environment == 'prod') {
-						useEmailList = 'priyank.p.dalal@seagate.com'
-					}
                     env.ForEmailPlugin = env.WORKSPACE
 					emailext attachmentsPattern: 'Repository_reports.csv', mimeType: 'text/html',
                     body: '''Hi Team,<br/><br/>
@@ -61,8 +57,7 @@ pipeline {
                     Thanks,<br/>
                     DevOps Team.<br/>''',
                     subject: 'Repository Report - [ Date :' +new Date().format("dd-MMM-yyyy") + ' ]',
-                    recipientProviders: [[$class: 'RequesterRecipientProvider']],
-					to: useEmailList
+                    recipientProviders: [[$class: 'RequesterRecipientProvider']]
                 }
             }
         }
