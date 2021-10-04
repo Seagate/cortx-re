@@ -17,8 +17,6 @@
 
 import requests
 import argparse
-import json
-
 
 def get_args():
     # Create the parser

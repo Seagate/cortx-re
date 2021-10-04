@@ -55,7 +55,7 @@ pipeline {
         }
 
         stage('Running python script') {
-            steps{
+            steps {
                 echo "Executing the script..."
                 echo "Branchs: ${branch}, Repos: ${repo}"
                 sh "python3 ./scripts/automation/lock-unlock/lock-unlock.py -f ${flag} -r ${repo} -b ${branch} -t ${GIT_CRED_PSW}"
