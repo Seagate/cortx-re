@@ -1,8 +1,8 @@
 pipeline {
 	agent {
         node {
-           // label "docker-${os_version}-node"
-           label "cortx-test-ssc-vm-4090"
+           label "docker-${os_version}-node"
+           // label "cortx-test-ssc-vm-4090"
         }
     }
     parameters {
@@ -49,7 +49,7 @@ pipeline {
         stage('Checkout source code') {
                 steps {
                     script {
-                        checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, userRemoteConfigs: [[credentialsId: 'github-access', url: 'https://github.com/seagate/cortx-re/']]])
+                        checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/seagate/cortx-re/']]])
                     }
                 }
         }
@@ -58,7 +58,7 @@ pipeline {
             steps{
                 echo "Executing the script..."
                 echo "Branchs: ${branch}, Repos: ${repo}"
-                sh "python3 ./scripts/env_setup/lock-unlock.py -f ${flag} -r ${repo} -b ${branch} -t ${GIT_CRED_PSW}"
+                sh "python3 ./scripts/automation/lock-unlock/lock-unlock.py -f ${flag} -r ${repo} -b ${branch} -t ${GIT_CRED_PSW}"
             }
         }
 
