@@ -91,7 +91,7 @@ popd
 
 function mount_system_device(){
 
-mkfs.ext4 $SYSTESM_DRIVE
+mkfs.ext4 -F $SYSTESM_DRIVE
 mkdir -p /mnt/fs-local-volume
 mount -t ext4 $SYSTESM_DRIVE /mnt/fs-local-volume
 }
@@ -108,8 +108,8 @@ yum install glusterfs-fuse -y
 function openldap_requiremenrs(){
 
 mkdir -p /var/lib/ldap
-echo "ldap:x:55:" >> /etc/group
-echo "ldap:x:55:55:OpenLDAP server:/var/lib/ldap:/sbin/nologin" >> /etc/passwd
+grep -qxF "ldap:x:55:" /etc/group || echo "ldap:x:55:" >> /etc/group
+grep -qxF "ldap:x:55:55:OpenLDAP server:/var/lib/ldap:/sbin/nologin" /etc/group || echo "ldap:x:55:55:OpenLDAP server:/var/lib/ldap:/sbin/nologin" >> /etc/group
 chown -R ldap.ldap /var/lib/ldap
 
 }

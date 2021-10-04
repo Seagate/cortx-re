@@ -66,10 +66,10 @@ update_solution_config
 
 
 function setup_worker_node(){
-echo "---------------------------------------[ Setting up Master Node ]--------------------------------------"
-download_deploy_script $GITHUB_TOKEN
-update_solution_config
-
+echo "---------------------------------------[ Setting up Worker Node ]--------------------------------------"
+mount_system_device
+glusterfs_requirements
+openldap_requiremenrs
 }
 
 
