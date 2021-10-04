@@ -70,6 +70,7 @@ chown -R ldap.ldap $CONFIG_PATH/openldap/
 # Perform base config
 if [ "$perform_base_config" == true ]
 then
+  DATA_PATH=${DATA_PATH}/ldap
   python3 -c "import sys;sys.path.insert(1, '/usr/lib/python3.6/site-packages/cortx/utils/setup/openldap/');from base_configure_ldap import BaseConfig;BaseConfig.perform_base_config('$ROOTDN_PASSWORD',True,{'base_dn':'dc=seagate,dc=com' , 'bind_base_dn':'cn=admin,dc=seagate,dc=com', 'install_dir': '$CONFIG_PATH', 'data_dir': '$DATA_PATH'})" 
 fi
 
