@@ -34,6 +34,16 @@ function download_deploy_script(){
 	git clone https://$GITHUB_TOKEN@github.com/Seagate/cortx-k8s/ -b UDX-5986_cortxProvisioner_cortxData_with_dummy_containers $SCRIPT_LOCTION
 }
 
+#Install yq 4.13.3
+
+function install_yq(){
+VERSION=v4.13.3
+BINARY=yq_linux_386
+wget https://github.com/mikefarah/yq/releases/download/${VERSION}/${BINARY}.tar.gz -O - | tar xz && mv ${BINARY} /usr/bin/yq
+ln -s /usr/bin/yq /usr/local/bin/yq
+
+}
+
 #modify solution.yaml
 
 function update_solution_config(){
@@ -95,9 +105,10 @@ yum install glusterfs-fuse -y
 
 function openldap_requiremenrs(){
 
+wget -c http://cortx-storage.colo.seagate.com/releases/cortx/images/cortx-openldap.tar && docker load -i cortx-openldap.tar 
 mkdir -p /var/lib/ldap
 grep -qxF "ldap:x:55:" /etc/group || echo "ldap:x:55:" >> /etc/group
-grep -qxF "ldap:x:55:55:OpenLDAP server:/var/lib/ldap:/sbin/nologin" /etc/group || echo "ldap:x:55:55:OpenLDAP server:/var/lib/ldap:/sbin/nologin" >> /etc/group
+grep -qxF "ldap:x:55:55:OpenLDAP server:/var/lib/ldap:/sbin/nologin" /etc/passwd || echo "ldap:x:55:55:OpenLDAP server:/var/lib/ldap:/sbin/nologin" >> /etc/passwd
 chown -R ldap.ldap /var/lib/ldap
 
 }
@@ -127,6 +138,7 @@ fi
 function setup_master_node(){
 echo "---------------------------------------[ Setting up Master Node ]--------------------------------------"
 download_deploy_script $GITHUB_TOKEN
+install_yq
 update_solution_config
 execute_deploy_script
 }
