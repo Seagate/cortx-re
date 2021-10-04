@@ -23,62 +23,73 @@ source functions.sh
 HOST_FILE=$PWD/hosts
 CORTX_SCRIPTS_REPO="https://github.com/Seagate/cortx-k8s/"
 CORTX_SCRIPTS_BRANCH="UDX-5986_cortxProvisioner_cortxData_with_dummy_containers"
-GITHUB_TOKEN=$1
 SYSTESM_DRIVE="/dev/sdg"
 
+#On master
 #download CORTX k8 deployment scripts
-#format and mount system drive
 #modify solution.yaml
-#glusterfes requirements
-#openldap requirements
 #execute script
 
-function download_deploy_script(){
-yum install git -y 
-git clone https://$GITHUB_TOKEN@github.com/Seagate/cortx-k8s/ -b UDX-5986_cortxProvisioner_cortxData_with_dummy_containers
+#On worker
+#format and mount system drive
+#glusterfes requirements
+#openldap requirements
+
+function usage(){
+    cat << HEREDOC
+Usage : $0 [--worker, --master]
+where,
+    --worker - Install prerequisites on nodes for kubernetes setup
+    --master - Initialize K8 master node. 
+HEREDOC
 }
 
-function update_solution_config(){
 
- for ssh_node in $(cat "$HOST_FILE")
-    do
-        local NODE=$(echo "$ssh_node" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+#validation
+#download_deploy_script
+#update_solution_config
 
-        echo "----------------------[ Setting up passwordless ssh for $NODE ]--------------------------------------"
-    done
+ACTION="$1"
+if [ -z "$ACTION" ]; then
+    echo "ERROR : No option provided"
+    usage
+    exit 1
+fi
 
-pushd cortx-k8s/k8_cortx_cloud
-cat solution.yaml
 
-popd
-
-}
-
-function mount_system_device(){
-
-mkfs.ext4 $SYSTESM_DRIVE
-mkdir -p /mnt/fs-local-volume
-mount -t ext4 $SYSTESM_DRIVE /mnt/fs-local-volume
-}
-
-function glusterfs_requirements(){
-
-mkdir -p /mnt/fs-local-volume/etc/gluster
-mkdir -p /mnt/fs-local-volume/var/log/gluster
-mkdir -p /mnt/fs-local-volume/var/lib/glusterd
-
-yum install glusterfs-fuse -y
-}
-
-function openldap_requiremenrs(){
-
-mkdir -p /var/lib/ldap
-echo "ldap:x:55:" >> /etc/group
-echo "ldap:x:55:55:OpenLDAP server:/var/lib/ldap:/sbin/nologin" >> /etc/passwd
-chown -R ldap.ldap /var/lib/ldap
-
-}
-
-validation
-download_deploy_script
+function setup_master_node(){
+echo "---------------------------------------[ Setting up Master Node ]--------------------------------------"
+download_deploy_script $GITHUB_TOKEN
 update_solution_config
+
+}
+
+
+function setup_worker_node(){
+echo "---------------------------------------[ Setting up Master Node ]--------------------------------------"
+download_deploy_script $GITHUB_TOKEN
+update_solution_config
+
+}
+
+
+case $ACTION in
+    --cleanup)
+        clenaup_node
+    ;;
+    --worker) 
+        setup_worker_node
+    ;;
+    --status) 
+        print_cluster_status
+    ;;
+    --master)
+        setup_master_node
+    ;;
+    *)
+        echo "ERROR : Please provide valid option"
+        usage
+        exit 1
+    ;;    
+esac
+
