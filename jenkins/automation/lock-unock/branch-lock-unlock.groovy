@@ -36,7 +36,7 @@ pipeline {
             quoteValue: false,
             saveJSONParameterToFile: false,
             type: 'PT_CHECKBOX',
-            value:'alex-test,cortx-re,cortx-manager,cortx-management-portal,cortx-ha,cortx-hare,cortx-motr,cortx-prvsnr,cortx-monitor,cortx-s3server,cortx-utils',
+            value:'cortx-re,cortx-manager,cortx-management-portal,cortx-ha,cortx-hare,cortx-motr,cortx-prvsnr,cortx-monitor,cortx-s3server,cortx-utils',
             visibleItemCount: 10
         )
 
