@@ -84,7 +84,7 @@ function update_solution_config(){
 
 pushd cortx-k8s/k8_cortx_cloud
 cat solution.yaml
-
+./deploy-cortx-cloud.sh
 popd
 
 }

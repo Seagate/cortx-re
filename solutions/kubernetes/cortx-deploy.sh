@@ -21,75 +21,35 @@
 source functions.sh
 
 HOST_FILE=$PWD/hosts
-CORTX_SCRIPTS_REPO="https://github.com/Seagate/cortx-k8s/"
-CORTX_SCRIPTS_BRANCH="UDX-5986_cortxProvisioner_cortxData_with_dummy_containers"
-SYSTESM_DRIVE="/dev/sdg"
+SSH_KEY_FILE=/root/.ssh/id_rsa
 
-#On master
-#download CORTX k8 deployment scripts
-#modify solution.yaml
-#execute script
+function setup_cluster {
+    ALL_NODES=$(cat "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+    MASTER_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+    WORKER_NODES=$(cat "$HOST_FILE" | grep -v "$MASTER_NODE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
 
-#On worker
-#format and mount system drive
-#glusterfes requirements
-#openldap requirements
+    echo "MASTER NODE:" $MASTER_NODE
+    echo "WORKER NODE:" $WORKER_NODES
 
-function usage(){
-    cat << HEREDOC
-Usage : $0 [--worker, --master]
-where,
-    --worker - Install prerequisites on nodes for kubernetes setup
-    --master - Initialize K8 master node. 
-HEREDOC
+    for node in $ALL_NODES
+	do 
+	scp -q cortx-deploy-functions.sh functions.sh "$node":/var/tmp/
+	done
+
+    for worker_node in $WORKER_NODES
+	do
+	ssh -o 'StrictHostKeyChecking=no' "$worker_node" "/var/tmp/cortx-deploy-functions.sh --worker"
+	done
+
+
+    for master_node in $MASTER_NODE
+	do
+	ssh -o 'StrictHostKeyChecking=no' "$master_node" "export GITHUB_TOKEN=$GITHUB_TOKEN && /var/tmp/cortx-deploy-functions.sh --master"
+        done
+
+   
 }
 
-
-#validation
-#download_deploy_script
-#update_solution_config
-
-ACTION="$1"
-if [ -z "$ACTION" ]; then
-    echo "ERROR : No option provided"
-    usage
-    exit 1
-fi
-
-
-function setup_master_node(){
-echo "---------------------------------------[ Setting up Master Node ]--------------------------------------"
-download_deploy_script $GITHUB_TOKEN
-update_solution_config
-
-}
-
-
-function setup_worker_node(){
-echo "---------------------------------------[ Setting up Worker Node ]--------------------------------------"
-mount_system_device
-glusterfs_requirements
-openldap_requiremenrs
-}
-
-
-case $ACTION in
-    --cleanup)
-        clenaup_node
-    ;;
-    --worker) 
-        setup_worker_node
-    ;;
-    --status) 
-        print_cluster_status
-    ;;
-    --master)
-        setup_master_node
-    ;;
-    *)
-        echo "ERROR : Please provide valid option"
-        usage
-        exit 1
-    ;;    
-esac
-
+validation
+nodes_setup
+setup_cluster

@@ -43,12 +43,10 @@ echo > solution.yaml
 count=0
 for node in $(kubectl get node --selector='!node-role.kubernetes.io/master' | grep -v NAME | awk '{print $1}')
 do
-echo $node
-echo $count
 i=$node yq e -i '.solution.nodes['$count'].node'$count'.name = env(i)' solution.yaml
 yq e -i '.solution.nodes['$count'].node'$count'.volumes.local = "/mnt/fs-local-volume"' solution.yaml
 yq e -i '.solution.nodes['$count'].node'$count'.volumes.share = "/mnt/fs-local-volume"' solution.yaml
-yq e -i '.solution.nodes['$count'].node'$count'.volumes.devices.system = "/dev/sda"' solution.yaml
+drive=$SYSTESM_DRIVE yq e -i '.solution.nodes['$count'].node'$count'.volumes.devices.system = env(drive)' solution.yaml
 yq e -i '.solution.nodes['$count'].node'$count'.volumes.devices.log = "/dev/sdb"' solution.yaml
 yq e -i '.solution.nodes['$count'].node'$count'.volumes.devices.meta0 = "/dev/sdc"' solution.yaml
 yq e -i '.solution.nodes['$count'].node'$count'.volumes.devices.metadata = "/dev/sdd"' solution.yaml
@@ -56,7 +54,6 @@ yq e -i '.solution.nodes['$count'].node'$count'.volumes.devices.data.d1 = "/dev/
 yq e -i '.solution.nodes['$count'].node'$count'.volumes.devices.data.d2 = "/dev/sdf"' solution.yaml
 count=$((count+1))
 done
-
 sed -i 's/- //g' solution.yaml
 popd
 
@@ -72,7 +69,6 @@ chmod +x *.sh
 popd
 
 }
-
 
 #On worker
 #format and mount system drive
