@@ -60,8 +60,8 @@ pipeline {
 
                 // Jenkins Summary
                 clusterStatus = ""
-                if ( fileExists('/var/tmp/cluster-status.txt') && currentBuild.currentResult == "SUCCESS" ) {
-                    clusterStatus = readFile(file: '/var/tmp/cluster-status.txt')
+                if ( fileExists('/var/tmp/cortx-cluster-status.txt') && currentBuild.currentResult == "SUCCESS" ) {
+                    clusterStatus = readFile(file: '/var/tmp/cortx-cluster-status.txt')
                     MESSAGE = "Third Party Cluster Setup Success for the build ${build_id}"
                     ICON = "accept.gif"
                     STATUS = "SUCCESS"
