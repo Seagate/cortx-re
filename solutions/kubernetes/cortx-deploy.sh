@@ -65,7 +65,9 @@ function setup_cluster {
     for master_node in $MASTER_NODE
         do
         ssh -o 'StrictHostKeyChecking=no' "$master_node" "export GITHUB_TOKEN=$GITHUB_TOKEN && /var/tmp/cortx-deploy-functions.sh --$TARGET"
-        ssh -o 'StrictHostKeyChecking=no' "$master_node" '/var/tmp/cortx-deploy-functions.sh --status' | tee /var/tmp/cluster-status.txt
+        echo "---------------------------------------[ Print Node status ]----------------------------------------------"
+        rm -rf /var/tmp/cortx-cluster-status.txt
+        ssh -o 'StrictHostKeyChecking=no' "$master_node" '/var/tmp/cortx-deploy-functions.sh --status' | tee /var/tmp/cortx-cluster-status.txt
         done
 }
 
