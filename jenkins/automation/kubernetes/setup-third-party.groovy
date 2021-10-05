@@ -38,7 +38,7 @@ pipeline {
         }
 
 
-        stage ('Setup Cluster') {
+        stage ('Deploy Third Party Components') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Tag last_successful', script: '''
@@ -62,25 +62,25 @@ pipeline {
                 clusterStatus = ""
                 if ( fileExists('/var/tmp/cluster-status.txt') && currentBuild.currentResult == "SUCCESS" ) {
                     clusterStatus = readFile(file: '/var/tmp/cluster-status.txt')
-                    MESSAGE = "Cluster Setup Success for the build ${build_id}"
+                    MESSAGE = "Third Party Cluster Setup Success for the build ${build_id}"
                     ICON = "accept.gif"
                     STATUS = "SUCCESS"
                 } else if ( currentBuild.currentResult == "FAILURE" ) {
                     manager.buildFailure()
-                    MESSAGE = "Cluster Setup Failed for the build ${build_id}"
+                    MESSAGE = "Third Party Cluster Setup Failed for the build ${build_id}"
                     ICON = "error.gif"
                     STATUS = "FAILURE"
  
                 } else {
                     manager.buildUnstable()
-                    MESSAGE = "1 Node - Cortx Stack VM Deployment is Unstable"
+                    MESSAGE = "Third Party Cluster Setup is Unstable"
                     ICON = "warning.gif"
                     STATUS = "UNSTABLE"
                 }
                 
                 clusterStatusHTML = "<pre>${clusterStatus}</pre>"
 
-                manager.createSummary("${ICON}").appendText("<h3>CORTX Cluster Setup ${currentBuild.currentResult} </h3><p>Please check <a href=\"${BUILD_URL}/console\">cluster setup logs</a> for more info <h4>Cluster Status:</h4>${clusterStatusHTML}", false, false, false, "red")
+                manager.createSummary("${ICON}").appendText("<h3>Third Party Cluster Setup ${currentBuild.currentResult} </h3><p>Please check <a href=\"${BUILD_URL}/console\">cluster setup logs</a> for more info <h4>Cluster Status:</h4>${clusterStatusHTML}", false, false, false, "red")
 
                 // Email Notification
                 env.cluster_status = "${clusterStatusHTML}"
