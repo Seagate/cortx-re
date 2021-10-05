@@ -129,7 +129,7 @@ function setup_cluster () {
         mkdir -p "${USER_HOME}"
         (useradd -d "${USER_HOME}/${USER}" "${USER}" && (echo "${USER}:${USER_PASS}" | chpasswd))  || throw $Exception
         usermod -aG docker "${USER}"  || throw $Exception
-        echo "${USER_PASS}" | su -c "minikube start --driver=docker --alsologtostderr -v=3" "${USER}") 
+        echo "${USER_PASS}" | su -c "minikube start --driver=docker --alsologtostderr -v=3" "${USER}"
         if [ $? -eq 0 ]; then
             sleep 30
             (echo "${USER_PASS}" | su -c "minikube kubectl -- get po -A" "${USER}")  || throw $Exception 
