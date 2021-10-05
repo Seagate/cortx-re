@@ -23,12 +23,12 @@ HOST_FILE=$PWD/hosts
 CORTX_SCRIPTS_REPO="https://github.com/Seagate/cortx-k8s/"
 CORTX_SCRIPTS_BRANCH="UDX-5986_cortxProvisioner_cortxData_with_dummy_containers"
 SYSTESM_DRIVE="/dev/sdg"
+SCRIPT_LOCTION="/root/deploy-scripts"
 
 #On master
 #download CORTX k8 deployment scripts
 
 function download_deploy_script(){
-        SCRIPT_LOCTION="/root/deploy-scripts"
         rm -rf $SCRIPT_LOCTION
 	yum install git -y
 	git clone https://$GITHUB_TOKEN@github.com/Seagate/cortx-k8s/ -b UDX-5986_cortxProvisioner_cortxData_with_dummy_containers $SCRIPT_LOCTION
@@ -72,10 +72,10 @@ popd
 #execute script
 
 function execute_deploy_script(){
-
+local SCRIPT_NAME=$1
 pushd $SCRIPT_LOCTION/k8_cortx_cloud
 chmod +x *.sh
-./deploy-cortx-cloud.sh
+./$SCRIPT_NAME
 popd
 
 }
@@ -124,10 +124,14 @@ popd
 
 function usage(){
     cat << HEREDOC
-Usage : $0 [--worker, --master]
+Usage : $0 [--setup-worker, --setup-master, --third-party, --cortx-cluster, --destroy, --status]
 where,
-    --worker - Install prerequisites on nodes for kubernetes setup
-    --master - Initialize K8 master node. 
+    --setup-worker - Setup k8 worker node for CORTX deployment
+    --setup-master - Setup k8 master node for CORTX deployment
+    --third-party - Deploy third-party components
+    --cortx-cluster - Deploy Third-Party and CORTX components
+    --destroy - Destroy CORTX Cluster
+    --status - Print CLUSTER status
 HEREDOC
 }
 
@@ -143,13 +147,11 @@ if [ -z "$ACTION" ]; then
     exit 1
 fi
 
-
 function setup_master_node(){
 echo "---------------------------------------[ Setting up Master Node ]--------------------------------------"
 download_deploy_script $GITHUB_TOKEN
 install_yq
 update_solution_config
-execute_deploy_script
 }
 
 
@@ -161,6 +163,11 @@ glusterfs_requirements
 openldap_requiremenrs
 }
 
+
+function cortx-cluster(){
+execute_deploy_script deploy-cortx-cloud.sh
+}
+
 function destroy(){
 pushd $SCRIPT_LOCTION/k8_cortx_cloud
 chmod +x *.sh
@@ -168,18 +175,28 @@ chmod +x *.sh
 popd
 }
 
+function print_pod_status(){
+
+     kubectl get pods -o wide
+}
 
 case $ACTION in
+    --third-party)
+        execute_deploy_script deploy-cortx-cloud-3rd-party.sh
+    ;;
+    --cortx-cluster)
+        execute_deploy_script deploy-cortx-cloud.sh
+    ;;
     --destroy)
         destroy
     ;;
-    --worker) 
+    --setup-worker) 
         setup_worker_node
     ;;
     --status) 
-        print_cluster_status
+        print_pod_status
     ;;
-    --master)
+    --setup-master)
         setup_master_node
     ;;
     *)

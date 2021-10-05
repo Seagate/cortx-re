@@ -23,7 +23,22 @@ source functions.sh
 HOST_FILE=$PWD/hosts
 SSH_KEY_FILE=/root/.ssh/id_rsa
 
+function usage(){
+    cat << HEREDOC
+Usage : $0 [--third-party, --cortx-cluster]
+where,
+    --third-party - Deploy third-party components
+    --cortx-cluster - Deploy Third-Party and CORTX components
+HEREDOC
+}
+
+
 function setup_cluster {
+	
+   validation
+   nodes_setup
+
+    TARGET=$1
     ALL_NODES=$(cat "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
     MASTER_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
     WORKER_NODES=$(cat "$HOST_FILE" | grep -v "$MASTER_NODE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
@@ -38,18 +53,44 @@ function setup_cluster {
 
     for worker_node in $WORKER_NODES
 	do
-	ssh -o 'StrictHostKeyChecking=no' "$worker_node" "/var/tmp/cortx-deploy-functions.sh --worker"
+	ssh -o 'StrictHostKeyChecking=no' "$worker_node" "/var/tmp/cortx-deploy-functions.sh --setup-worker"
 	done
 
 
     for master_node in $MASTER_NODE
 	do
-	ssh -o 'StrictHostKeyChecking=no' "$master_node" "export GITHUB_TOKEN=$GITHUB_TOKEN && /var/tmp/cortx-deploy-functions.sh --master"
+	ssh -o 'StrictHostKeyChecking=no' "$master_node" "export GITHUB_TOKEN=$GITHUB_TOKEN && /var/tmp/cortx-deploy-functions.sh --setup-master"
         done
 
-   
+    for master_node in $MASTER_NODE
+        do
+        ssh -o 'StrictHostKeyChecking=no' "$master_node" "export GITHUB_TOKEN=$GITHUB_TOKEN && /var/tmp/cortx-deploy-functions.sh --$TARGET"
+        ssh -o 'StrictHostKeyChecking=no' "$master_node" '/var/tmp/cortx-deploy-functions.sh --status' | tee /var/tmp/cluster-status.txt
+        done
 }
 
-validation
-nodes_setup
-setup_cluster
+
+ACTION="$1"
+if [ -z "$ACTION" ]; then
+    echo "ERROR : No option provided"
+    usage
+    exit 1
+fi
+
+
+case $ACTION in
+    --third-party)
+        setup_cluster third-party        
+    ;;
+    --cortx-cluster)
+       setup_cluster cortx-cluster
+    ;;
+    *)
+        echo "ERROR : Please provide valid option"
+        usage
+        exit 1
+    ;;
+esac
+
+
+
