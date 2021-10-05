@@ -29,7 +29,7 @@ SCRIPT_LOCTION="/root/deploy-scripts"
 #download CORTX k8 deployment scripts
 
 function download_deploy_script(){
-        rm -rf $SCRIPT_LOCTION
+    rm -rf $SCRIPT_LOCTION
 	yum install git -y
 	git clone https://$GITHUB_TOKEN@github.com/Seagate/cortx-k8s/ -b UDX-5986_cortxProvisioner_cortxData_with_dummy_containers $SCRIPT_LOCTION
 }
@@ -37,89 +37,79 @@ function download_deploy_script(){
 #Install yq 4.13.3
 
 function install_yq(){
-VERSION=v4.13.3
-BINARY=yq_linux_386
-wget https://github.com/mikefarah/yq/releases/download/${VERSION}/${BINARY}.tar.gz -O - | tar xz && mv ${BINARY} /usr/bin/yq
-ln -s /usr/bin/yq /usr/local/bin/yq
-
+    VERSION=v4.13.3
+    BINARY=yq_linux_386
+    wget https://github.com/mikefarah/yq/releases/download/${VERSION}/${BINARY}.tar.gz -O - | tar xz && mv ${BINARY} /usr/bin/yq
+    ln -s /usr/bin/yq /usr/local/bin/yq
 }
 
 #modify solution.yaml
 
 function update_solution_config(){
-
-pushd $SCRIPT_LOCTION/k8_cortx_cloud
-echo > solution.yaml
-count=0
-for node in $(kubectl get node --selector='!node-role.kubernetes.io/master' | grep -v NAME | awk '{print $1}')
-do
-i=$node yq e -i '.solution.nodes['$count'].node'$count'.name = env(i)' solution.yaml
-yq e -i '.solution.nodes['$count'].node'$count'.volumes.local = "/mnt/fs-local-volume"' solution.yaml
-yq e -i '.solution.nodes['$count'].node'$count'.volumes.share = "/mnt/fs-local-volume"' solution.yaml
-drive=$SYSTESM_DRIVE yq e -i '.solution.nodes['$count'].node'$count'.volumes.devices.system = env(drive)' solution.yaml
-yq e -i '.solution.nodes['$count'].node'$count'.volumes.devices.log = "/dev/sdb"' solution.yaml
-yq e -i '.solution.nodes['$count'].node'$count'.volumes.devices.meta0 = "/dev/sdc"' solution.yaml
-yq e -i '.solution.nodes['$count'].node'$count'.volumes.devices.metadata = "/dev/sdd"' solution.yaml
-yq e -i '.solution.nodes['$count'].node'$count'.volumes.devices.data.d1 = "/dev/sde"' solution.yaml
-yq e -i '.solution.nodes['$count'].node'$count'.volumes.devices.data.d2 = "/dev/sdf"' solution.yaml
-count=$((count+1))
-done
-sed -i 's/- //g' solution.yaml
-popd
-
+    pushd $SCRIPT_LOCTION/k8_cortx_cloud
+        echo > solution.yaml
+        count=0
+        for node in $(kubectl get node --selector='!node-role.kubernetes.io/master' | grep -v NAME | awk '{print $1}')
+            do
+            i=$node yq e -i '.solution.nodes['$count'].node'$count'.name = env(i)' solution.yaml
+            yq e -i '.solution.nodes['$count'].node'$count'.volumes.local = "/mnt/fs-local-volume"' solution.yaml
+            yq e -i '.solution.nodes['$count'].node'$count'.volumes.share = "/mnt/fs-local-volume"' solution.yaml
+            drive=$SYSTESM_DRIVE yq e -i '.solution.nodes['$count'].node'$count'.volumes.devices.system = env(drive)' solution.yaml
+            yq e -i '.solution.nodes['$count'].node'$count'.volumes.devices.log = "/dev/sdb"' solution.yaml
+            yq e -i '.solution.nodes['$count'].node'$count'.volumes.devices.meta0 = "/dev/sdc"' solution.yaml
+            yq e -i '.solution.nodes['$count'].node'$count'.volumes.devices.metadata = "/dev/sdd"' solution.yaml
+            yq e -i '.solution.nodes['$count'].node'$count'.volumes.devices.data.d1 = "/dev/sde"' solution.yaml
+            yq e -i '.solution.nodes['$count'].node'$count'.volumes.devices.data.d2 = "/dev/sdf"' solution.yaml
+            count=$((count+1))
+        done
+        sed -i 's/- //g' solution.yaml
+    popd
 }
 
 #execute script
 
 function execute_deploy_script(){
-local SCRIPT_NAME=$1
-pushd $SCRIPT_LOCTION/k8_cortx_cloud
-chmod +x *.sh
-./$SCRIPT_NAME
-popd
-
+    local SCRIPT_NAME=$1
+        pushd $SCRIPT_LOCTION/k8_cortx_cloud
+        chmod +x *.sh
+        ./$SCRIPT_NAME
+    popd
 }
 
 #On worker
 #format and mount system drive
 
 function mount_system_device(){
-umount -l $SYSTESM_DRIVE
-mkfs.ext4 -F $SYSTESM_DRIVE
-mkdir -p /mnt/fs-local-volume
-mount -t ext4 $SYSTESM_DRIVE /mnt/fs-local-volume
-mkdir -p /mnt/fs-local-volume/local-path-provisioner
+    umount -l $SYSTESM_DRIVE
+    mkfs.ext4 -F $SYSTESM_DRIVE
+    mkdir -p /mnt/fs-local-volume
+    mount -t ext4 $SYSTESM_DRIVE /mnt/fs-local-volume
+    mkdir -p /mnt/fs-local-volume/local-path-provisioner
 }
 
 #glusterfes requirements
 
 function glusterfs_requirements(){
-
-mkdir -p /mnt/fs-local-volume/etc/gluster
-mkdir -p /mnt/fs-local-volume/var/log/gluster
-mkdir -p /mnt/fs-local-volume/var/lib/glusterd
-
-yum install glusterfs-fuse -y
+    mkdir -p /mnt/fs-local-volume/etc/gluster
+    mkdir -p /mnt/fs-local-volume/var/log/gluster
+    mkdir -p /mnt/fs-local-volume/var/lib/glusterd
+    yum install glusterfs-fuse -y
 }
 
 #openldap requirements
 
 function openldap_requiremenrs(){
-
-mkdir -p /var/lib/ldap
-grep -qxF "ldap:x:55:" /etc/group || echo "ldap:x:55:" >> /etc/group
-grep -qxF "ldap:x:55:55:OpenLDAP server:/var/lib/ldap:/sbin/nologin" /etc/passwd || echo "ldap:x:55:55:OpenLDAP server:/var/lib/ldap:/sbin/nologin" >> /etc/passwd
-chown -R ldap.ldap /var/lib/ldap
-
+    mkdir -p /var/lib/ldap
+    grep -qxF "ldap:x:55:" /etc/group || echo "ldap:x:55:" >> /etc/group
+    grep -qxF "ldap:x:55:55:OpenLDAP server:/var/lib/ldap:/sbin/nologin" /etc/passwd || echo "ldap:x:55:55:OpenLDAP server:/var/lib/ldap:/sbin/nologin" >> /etc/passwd
+    chown -R ldap.ldap /var/lib/ldap
 }
 
 function download_images(){
-
-mkdir -p /var/images && pushd /var/images
-wget -r -np -nH --cut-dirs=3 -A *.tar http://cortx-storage.colo.seagate.com/releases/cortx/images/
-for file in $(ls -1); do docker load -i $file; done
-popd 
-
+    mkdir -p /var/images && pushd /var/images
+        wget -r -np -nH --cut-dirs=3 -A *.tar http://cortx-storage.colo.seagate.com/releases/cortx/images/
+        for file in $(ls -1); do docker load -i $file; done
+    popd 
 }
 
 function usage(){
@@ -149,34 +139,28 @@ fi
 
 function setup_master_node(){
 echo "---------------------------------------[ Setting up Master Node ]--------------------------------------"
-download_deploy_script $GITHUB_TOKEN
-install_yq
-update_solution_config
+    download_deploy_script $GITHUB_TOKEN
+    install_yq
+    update_solution_config
 }
 
 
 function setup_worker_node(){
 echo "---------------------------------------[ Setting up Worker Node ]--------------------------------------"
-mount_system_device
-download_images
-glusterfs_requirements
-openldap_requiremenrs
-}
-
-
-function cortx-cluster(){
-execute_deploy_script deploy-cortx-cloud.sh
+    mount_system_device
+    download_images
+    glusterfs_requirements
+    openldap_requiremenrs
 }
 
 function destroy(){
-pushd $SCRIPT_LOCTION/k8_cortx_cloud
-chmod +x *.sh
-./destroy-cortx-cloud.sh
-popd
+    pushd $SCRIPT_LOCTION/k8_cortx_cloud
+        chmod +x *.sh
+        ./destroy-cortx-cloud.sh
+    popd
 }
 
 function print_pod_status(){
-
      kubectl get pods -o wide
 }
 
@@ -205,4 +189,3 @@ case $ACTION in
         exit 1
     ;;    
 esac
-

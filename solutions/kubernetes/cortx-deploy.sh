@@ -35,8 +35,8 @@ HEREDOC
 
 function setup_cluster {
 	
-   validation
-   nodes_setup
+    validation
+    nodes_setup
 
     TARGET=$1
     ALL_NODES=$(cat "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
@@ -91,6 +91,3 @@ case $ACTION in
         exit 1
     ;;
 esac
-
-
-
