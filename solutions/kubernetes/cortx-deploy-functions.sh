@@ -116,7 +116,7 @@ chown -R ldap.ldap /var/lib/ldap
 function download_images(){
 
 mkdir -p /var/images && pushd /var/images
-wget -r -np -nH --cut-dirs=100 -A *.tar http://cortx-storage.colo.seagate.com/releases/cortx/images/
+wget -r -np -nH --cut-dirs=3 -A *.tar http://cortx-storage.colo.seagate.com/releases/cortx/images/
 for file in $(ls -1); do docker load -i $file; done
 popd 
 
