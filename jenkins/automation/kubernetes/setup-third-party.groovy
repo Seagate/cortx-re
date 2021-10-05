@@ -14,7 +14,7 @@ pipeline {
     }
 
     environment {
-        GITHUB_TOKEN = credentials('shailesh-github-token')
+        GITHUB_CRED = credentials('shailesh-github-token')
     }
 
 
@@ -22,7 +22,7 @@ pipeline {
 
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'kubernetes', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for Cluster Setup scripts', trim: true)
-        text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used for K8 cluster setup. First node will be used as Master', name: 'hosts')
+        text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used for CORTX cluster setup. First node will be used as Master', name: 'hosts')
        
     }    
 
@@ -45,8 +45,8 @@ pipeline {
                     pushd solutions/kubernetes/
                         echo $hosts | tr ' ' '\n' > hosts
                         cat hosts
-                        export $GITHUB_TOKEN
-                        ./cortx-deploy.sh
+                        export GITHUB_TOKEN=${GITHUB_CRED}
+                        ./cortx-deploy.sh --third-party
                     popd
                 '''
             }
@@ -80,7 +80,7 @@ pipeline {
                 
                 clusterStatusHTML = "<pre>${clusterStatus}</pre>"
 
-                manager.createSummary("${ICON}").appendText("<h3>K8 Cluster Setup ${currentBuild.currentResult} </h3><p>Please check <a href=\"${BUILD_URL}/console\">cluster setup logs</a> for more info <h4>Cluster Status:</h4>${clusterStatusHTML}", false, false, false, "red")
+                manager.createSummary("${ICON}").appendText("<h3>CORTX Cluster Setup ${currentBuild.currentResult} </h3><p>Please check <a href=\"${BUILD_URL}/console\">cluster setup logs</a> for more info <h4>Cluster Status:</h4>${clusterStatusHTML}", false, false, false, "red")
 
                 // Email Notification
                 env.cluster_status = "${clusterStatusHTML}"
