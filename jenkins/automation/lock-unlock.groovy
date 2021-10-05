@@ -23,7 +23,7 @@ pipeline {
             visibleItemCount: 4
         )
         extendedChoice(
-            defaultValue: 'alex-test',
+            defaultValue: 'cortx-re',
             description: 'Repo name',
             multiSelectDelimiter: ',',
             name: 'repo',
@@ -36,7 +36,7 @@ pipeline {
 
     }
     environment {
-        GIT_CRED = credentials('github-access')
+        GIT_CRED = credentials('cortx-admin-github')
     }
 
     stages {
@@ -52,7 +52,7 @@ pipeline {
             steps {
                 echo "Executing the script..."
                 echo "Branchs: ${branch}, Repos: ${repo}"
-                sh "python3 ./scripts/automation/lock-unlock/lock-unlock.py -f ${flag} -r ${repo} -b ${branch} -t ${GIT_CRED_PSW}"
+                sh "python3 ./scripts/automation/lock-unlock.py -f ${flag} -r ${repo} -b ${branch} -t ${GIT_CRED_PSW}"
             }
         }
 
