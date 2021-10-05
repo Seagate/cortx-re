@@ -132,6 +132,7 @@ function setup_cluster () {
         echo "${USER_PASS}" | su -c "minikube start --driver=docker --alsologtostderr -v=3" "${USER}"
         if [ $? -eq 0 ]; then
             sleep 30
+            echo "---------------------------------------[ Cluster Status ]--------------------------------------"
             (echo "${USER_PASS}" | su -c "minikube kubectl -- get po -A" "${USER}")  || throw $Exception 
         else
             echo "ERROR : Minikube setup failed"    
