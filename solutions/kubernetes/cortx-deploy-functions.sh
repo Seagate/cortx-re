@@ -84,10 +84,11 @@ popd
 #format and mount system drive
 
 function mount_system_device(){
-
+umount -l $SYSTESM_DRIVE
 mkfs.ext4 -F $SYSTESM_DRIVE
 mkdir -p /mnt/fs-local-volume
 mount -t ext4 $SYSTESM_DRIVE /mnt/fs-local-volume
+mkdir -p /mnt/fs-local-volume/local-path-provisioner
 }
 
 #glusterfes requirements
@@ -105,11 +106,19 @@ yum install glusterfs-fuse -y
 
 function openldap_requiremenrs(){
 
-wget -c http://cortx-storage.colo.seagate.com/releases/cortx/images/cortx-openldap.tar && docker load -i cortx-openldap.tar 
 mkdir -p /var/lib/ldap
 grep -qxF "ldap:x:55:" /etc/group || echo "ldap:x:55:" >> /etc/group
 grep -qxF "ldap:x:55:55:OpenLDAP server:/var/lib/ldap:/sbin/nologin" /etc/passwd || echo "ldap:x:55:55:OpenLDAP server:/var/lib/ldap:/sbin/nologin" >> /etc/passwd
 chown -R ldap.ldap /var/lib/ldap
+
+}
+
+function download_images(){
+
+mkdir -p /var/images && pushd /var/images
+wget -r -np -nH --cut-dirs=100 -A *.tar http://cortx-storage.colo.seagate.com/releases/cortx/images/
+for file in $(ls -1); do docker load -i $file; done
+popd 
 
 }
 
@@ -147,14 +156,22 @@ execute_deploy_script
 function setup_worker_node(){
 echo "---------------------------------------[ Setting up Worker Node ]--------------------------------------"
 mount_system_device
+download_images
 glusterfs_requirements
 openldap_requiremenrs
 }
 
+function destroy(){
+pushd $SCRIPT_LOCTION/k8_cortx_cloud
+chmod +x *.sh
+./destroy-cortx-cloud.sh
+popd
+}
+
 
 case $ACTION in
-    --cleanup)
-        clenaup_node
+    --destroy)
+        destroy
     ;;
     --worker) 
         setup_worker_node
