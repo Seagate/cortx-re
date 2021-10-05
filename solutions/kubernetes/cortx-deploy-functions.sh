@@ -18,9 +18,7 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
-
-HOST_FILE=$PWD/hosts
-CORTX_SCRIPTS_REPO="https://github.com/Seagate/cortx-k8s/"
+CORTX_SCRIPTS_REPO="Seagate/cortx-k8s/"
 CORTX_SCRIPTS_BRANCH="UDX-5986_cortxProvisioner_cortxData_with_dummy_containers"
 SYSTESM_DRIVE="/dev/sdg"
 SCRIPT_LOCTION="/root/deploy-scripts"
@@ -31,7 +29,7 @@ SCRIPT_LOCTION="/root/deploy-scripts"
 function download_deploy_script(){
     rm -rf $SCRIPT_LOCTION
 	yum install git -y
-	git clone https://$GITHUB_TOKEN@github.com/Seagate/cortx-k8s/ -b UDX-5986_cortxProvisioner_cortxData_with_dummy_containers $SCRIPT_LOCTION
+	git clone https://$GITHUB_TOKEN@github.com/$CORTX_SCRIPTS_REPO -b $CORTX_SCRIPTS_BRANCH $SCRIPT_LOCTION
 }
 
 #Install yq 4.13.3
