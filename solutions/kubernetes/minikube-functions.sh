@@ -22,8 +22,8 @@
 CMD=${1}
 PREFIX=${2:-/usr/local/bin}
 USER=${3:-minikube}
+USER_PASS=${4}
 USER_HOME="/local/home"
-USER_PASS='seagate1'
 export Exception=100
 export ConfigException=101
 

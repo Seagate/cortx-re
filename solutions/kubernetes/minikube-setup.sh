@@ -59,7 +59,7 @@ function setup_cluster {
     ssh -o 'StrictHostKeyChecking=no' "$NODE" '/var/tmp/minikube-functions.sh install'
     check_status "Node preparation failed on $NODE"
     echo "---------------------------------------[ Setting up cluster on Node ]--------------------------------------"
-    ssh -o 'StrictHostKeyChecking=no' "$NODE" '/var/tmp/minikube-functions.sh setup'
+    ssh -o 'StrictHostKeyChecking=no' "$NODE" "/var/tmp/minikube-functions.sh setup /usr/local/bin minikube $PASS"
     check_status "Cluster formation failed on $NODE"
 }
 
