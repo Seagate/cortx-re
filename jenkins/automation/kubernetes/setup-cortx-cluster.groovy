@@ -13,13 +13,17 @@ pipeline {
         ansiColor('xterm')
     }
 
+    environment {
+        GITHUB_TOKEN = credentials('shailesh-github-token')
+    }
+
 
     parameters {
 
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'kubernetes', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for Cluster Setup scripts', trim: true)
         text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used for K8 cluster setup. First node will be used as Master', name: 'hosts')
-        booleanParam(name: 'TAINT', defaultValue: false, description: 'Allow to schedule pods on master node')
+       
     }    
 
     stages {
@@ -41,6 +45,7 @@ pipeline {
                     pushd solutions/kubernetes/
                         echo $hosts | tr ' ' '\n' > hosts
                         cat hosts
+                        export $GITHUB_TOKEN
                         ./cortx-deploy.sh
                     popd
                 '''
