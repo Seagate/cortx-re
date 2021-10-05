@@ -6,12 +6,6 @@ pipeline {
         }
     }
     parameters {
-        string(
-            defaultValue: 'centos-7.9.2009',
-            name: 'os_version',
-            description: 'OS version of the build',
-            trim: true
-        )
         choice(
             name: 'flag',
             choices: ['Lock', 'Unlock'],
