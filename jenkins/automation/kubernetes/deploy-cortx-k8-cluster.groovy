@@ -23,6 +23,12 @@ pipeline {
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'kubernetes', description: 'Branch or GitHash for Cluster Destroy scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for Cluster Destroy scripts', trim: true)
         text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used. First node will be used as Master', name: 'hosts')
+
+        choice(
+			name: 'DEPLOY_TARGET',
+			choices: ['THIRD-PARTY-ONLY', 'CORTX-CLUSTER'],
+			description: 'Deployment Target THIRD-PARTY-ONLY - This will only install third party components, CORTX-CLUSTER - This will install Third party and CORTX components both.'
+		)
        
     }    
 
@@ -76,6 +82,9 @@ pipeline {
 		}
 
 		stage ("Deploy third-party components") {
+            when {
+                expression { params.DEPLOY_TARGET == 'THIRD-PARTY-ONLY' }
+            }
 			steps {
 				script { build_stage = env.STAGE_NAME }
 				script {
@@ -95,6 +104,9 @@ pipeline {
 		}
 
         stage ("Deploy CORTX components") {
+            when {
+                expression { params.DEPLOY_TARGET == 'CORTX-CLUSTER' }
+            }
 			steps {
 				script { build_stage = env.STAGE_NAME }
 				script {
