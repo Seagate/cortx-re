@@ -62,25 +62,6 @@ pipeline {
 			}
 		}
 
-		stage ("Destroy CORTX Cluster") {
-			steps {
-				script { build_stage = env.STAGE_NAME }
-				script {
-					try {
-						def cortx_utils_build = build job: 'destroy-cluster', wait: true,
-										parameters: [
-											string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
-											string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
-											string(name: 'hosts', value: "${hosts}")
-										]
-					} catch (err) {
-						build_stage = env.STAGE_NAME
-						error "destroy-cluster"
-					}
-				}                        
-			}
-		}
-
 		stage ("Deploy third-party components") {
             when {
                 expression { params.DEPLOY_TARGET == 'THIRD-PARTY-ONLY' }
