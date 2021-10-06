@@ -21,7 +21,9 @@
 CORTX_SCRIPTS_REPO="Seagate/cortx-k8s/"
 CORTX_SCRIPTS_BRANCH="UDX-5986_cortxProvisioner_cortxData_with_dummy_containers"
 SYSTESM_DRIVE="/dev/sdg"
-SCRIPT_LOCTION="/root/deploy-scripts"
+SCRIPT_LOCATION="/root/deploy-scripts"
+VERSION=v4.13.3
+BINARY=yq_linux_386
 
 #On master
 #download CORTX k8 deployment scripts
@@ -29,14 +31,12 @@ SCRIPT_LOCTION="/root/deploy-scripts"
 function download_deploy_script(){
     rm -rf $SCRIPT_LOCTION
 	yum install git -y
-	git clone https://$GITHUB_TOKEN@github.com/$CORTX_SCRIPTS_REPO -b $CORTX_SCRIPTS_BRANCH $SCRIPT_LOCTION
+	git clone https://$GITHUB_TOKEN@github.com/$CORTX_SCRIPTS_REPO -b $CORTX_SCRIPTS_BRANCH $SCRIPT_LOCATION
 }
 
 #Install yq 4.13.3
 
 function install_yq(){
-    VERSION=v4.13.3
-    BINARY=yq_linux_386
     wget https://github.com/mikefarah/yq/releases/download/${VERSION}/${BINARY}.tar.gz -O - | tar xz && mv ${BINARY} /usr/bin/yq
     ln -s /usr/bin/yq /usr/local/bin/yq
 }

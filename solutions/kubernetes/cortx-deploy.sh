@@ -25,7 +25,7 @@ SSH_KEY_FILE=/root/.ssh/id_rsa
 
 function usage(){
     cat << HEREDOC
-Usage : $0 [--third-party, --cortx-cluster]
+Usage : $0 [--third-party, --cortx-cluster, destroy-cluster]
 where,
     --third-party - Deploy third-party components
     --cortx-cluster - Deploy Third-Party and CORTX components
@@ -66,7 +66,7 @@ function setup_cluster {
     for master_node in $MASTER_NODE
         do
         ssh -o 'StrictHostKeyChecking=no' "$master_node" "export GITHUB_TOKEN=$GITHUB_TOKEN && /var/tmp/cortx-deploy-functions.sh --$TARGET"
-        echo "---------------------------------------[ Print Node status ]----------------------------------------------"
+        echo "---------------------------------------[ Print Cluster Status ]----------------------------------------------"
         rm -rf /var/tmp/cortx-cluster-status.txt
         ssh -o 'StrictHostKeyChecking=no' "$master_node" '/var/tmp/cortx-deploy-functions.sh --status' | tee /var/tmp/cortx-cluster-status.txt
         done
