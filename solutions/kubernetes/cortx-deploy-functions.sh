@@ -160,7 +160,6 @@ function destroy(){
 }
 
 function print_pod_status(){
-     rm -rf /var/tmp/cortx-cluster-status.txt
      kubectl get pods -o wide
 }
 
