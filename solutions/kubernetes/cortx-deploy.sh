@@ -29,6 +29,7 @@ Usage : $0 [--third-party, --cortx-cluster]
 where,
     --third-party - Deploy third-party components
     --cortx-cluster - Deploy Third-Party and CORTX components
+    --destroy-cluster  - Destroy CORTX cluster
 HEREDOC
 }
 
@@ -72,6 +73,19 @@ function setup_cluster {
 }
 
 
+function destroy-cluster(){
+
+        validation
+        nodes_setup
+	
+	echo "---------------------------------------[ Destroying cluster ]----------------------------------------------"
+	MASTER_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+        scp -q cortx-deploy-functions.sh functions.sh "$MASTER_NODE":/var/tmp/
+        ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" "export GITHUB_TOKEN=$GITHUB_TOKEN && /var/tmp/cortx-deploy-functions.sh --destroy"	
+        ssh -o 'StrictHostKeyChecking=no' "$master_node" '/var/tmp/cortx-deploy-functions.sh --status' | tee /var/tmp/cortx-cluster-status.txt
+}
+
+
 ACTION="$1"
 if [ -z "$ACTION" ]; then
     echo "ERROR : No option provided"
@@ -86,6 +100,9 @@ case $ACTION in
     ;;
     --cortx-cluster)
        setup_cluster cortx-cluster
+    ;;
+    --destroy-cluster)
+       destroy-cluster
     ;;
     *)
         echo "ERROR : Please provide valid option"
