@@ -152,6 +152,7 @@ echo "---------------------------------------[ Setting up Worker Node ]---------
 }
 
 function destroy(){
+    download_deploy_script $GITHUB_TOKEN
     pushd $SCRIPT_LOCTION/k8_cortx_cloud
         chmod +x *.sh
         ./destroy-cortx-cloud.sh
