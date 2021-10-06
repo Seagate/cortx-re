@@ -29,7 +29,7 @@ BINARY=yq_linux_386
 #download CORTX k8 deployment scripts
 
 function download_deploy_script(){
-    rm -rf $SCRIPT_LOCTION
+    rm -rf $SCRIPT_LOCATION
 	yum install git -y
 	git clone https://$GITHUB_TOKEN@github.com/$CORTX_SCRIPTS_REPO -b $CORTX_SCRIPTS_BRANCH $SCRIPT_LOCATION
 }
@@ -44,7 +44,7 @@ function install_yq(){
 #modify solution.yaml
 
 function update_solution_config(){
-    pushd $SCRIPT_LOCTION/k8_cortx_cloud
+    pushd $SCRIPT_LOCATION/k8_cortx_cloud
         echo > solution.yaml
         count=0
         for node in $(kubectl get node --selector='!node-role.kubernetes.io/master' | grep -v NAME | awk '{print $1}')
@@ -68,7 +68,7 @@ function update_solution_config(){
 
 function execute_deploy_script(){
     local SCRIPT_NAME=$1
-        pushd $SCRIPT_LOCTION/k8_cortx_cloud
+        pushd $SCRIPT_LOCATION/k8_cortx_cloud
         chmod +x *.sh
         ./$SCRIPT_NAME
     popd
@@ -153,7 +153,7 @@ echo "---------------------------------------[ Setting up Worker Node ]---------
 
 function destroy(){
     download_deploy_script $GITHUB_TOKEN
-    pushd $SCRIPT_LOCTION/k8_cortx_cloud
+    pushd $SCRIPT_LOCATION/k8_cortx_cloud
         chmod +x *.sh
         ./destroy-cortx-cloud.sh
     popd
