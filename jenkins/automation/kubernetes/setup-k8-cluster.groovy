@@ -13,17 +13,13 @@ pipeline {
         ansiColor('xterm')
     }
 
-    environment {
-        GITHUB_CRED = credentials('shailesh-github-token')
-    }
-
 
     parameters {
 
-        string(name: 'CORTX_RE_BRANCH', defaultValue: 'kubernetes', description: 'Branch or GitHash for Cluster Destroy scripts', trim: true)
-        string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for Cluster Destroy scripts', trim: true)
-        text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used. First node will be used as Master', name: 'hosts')
-       
+        string(name: 'CORTX_RE_BRANCH', defaultValue: 'kubernetes', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
+        string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for Cluster Setup scripts', trim: true)
+        text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used for K8 cluster setup. First node will be used as Master', name: 'hosts')
+        booleanParam(name: 'TAINT', defaultValue: false, description: 'Allow to schedule pods on master node')
     }    
 
     stages {
@@ -38,15 +34,14 @@ pipeline {
         }
 
 
-        stage ('Destory Cluster') {
+        stage ('Setup Cluster') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Tag last_successful', script: '''
                     pushd solutions/kubernetes/
                         echo $hosts | tr ' ' '\n' > hosts
                         cat hosts
-                        export GITHUB_TOKEN=${GITHUB_CRED}
-                        ./cortx-deploy.sh --destroy-cluster
+                        ./cluster-setup.sh ${TAINT}
                     popd
                 '''
             }
@@ -60,27 +55,27 @@ pipeline {
 
                 // Jenkins Summary
                 clusterStatus = ""
-                if ( fileExists('/var/tmp/cortx-cluster-status.txt') && currentBuild.currentResult == "SUCCESS" ) {
-                    clusterStatus = readFile(file: '/var/tmp/cortx-cluster-status.txt')
-                    MESSAGE = "CORTX Cluster Destroy Success for the build ${build_id}"
+                if ( fileExists('/var/tmp/cluster-status.txt') && currentBuild.currentResult == "SUCCESS" ) {
+                    clusterStatus = readFile(file: '/var/tmp/cluster-status.txt')
+                    MESSAGE = "Cluster Setup Success for the build ${build_id}"
                     ICON = "accept.gif"
                     STATUS = "SUCCESS"
                 } else if ( currentBuild.currentResult == "FAILURE" ) {
                     manager.buildFailure()
-                    MESSAGE = "CORTX Cluster Destroy Failed for the build ${build_id}"
+                    MESSAGE = "Cluster Setup Failed for the build ${build_id}"
                     ICON = "error.gif"
                     STATUS = "FAILURE"
  
                 } else {
                     manager.buildUnstable()
-                    MESSAGE = "CORTX Cluster Destroy is Unstable"
+                    MESSAGE = "1 Node - Cortx Stack VM Deployment is Unstable"
                     ICON = "warning.gif"
                     STATUS = "UNSTABLE"
                 }
                 
                 clusterStatusHTML = "<pre>${clusterStatus}</pre>"
 
-                manager.createSummary("${ICON}").appendText("<h3>CORTX Cluster Destroy ${currentBuild.currentResult} </h3><p>Please check <a href=\"${BUILD_URL}/console\">cluster setup logs</a> for more info <h4>Cluster Status:</h4>${clusterStatusHTML}", false, false, false, "red")
+                manager.createSummary("${ICON}").appendText("<h3>K8 Cluster Setup ${currentBuild.currentResult} </h3><p>Please check <a href=\"${BUILD_URL}/console\">cluster setup logs</a> for more info <h4>Cluster Status:</h4>${clusterStatusHTML}", false, false, false, "red")
 
                 // Email Notification
                 env.cluster_status = "${clusterStatusHTML}"
