@@ -1,6 +1,6 @@
 #!/bin/bash
-USAGE="USAGE: bash $(basename "$0") [--rootdnpassword <rootdnpassword>][--config_dir <config_path>] [--data_dir <data_path>]
-      [--help | -h]
+USAGE="USAGE: bash $(basename "$0") [--rootdnpassword <rootdnpassword>] [--config_dir <config_path>] [--data_dir <data_path>]
+      [--log_dir <log_path>] [--log_level <log_level>] [--help | -h]
 Configure LDAP Directories.
 
 where:
@@ -14,6 +14,8 @@ set -e
 # Default config and data directories
 CONFIG_PATH="/etc/cortx"
 DATA_PATH="/var/data/cortx"
+LOG_PATH="/var/log/cortx"
+LOG_LEVEL="1"
 ROOTDN_PASSWORD="seagate"
 
 echo "Running entrypoint.sh script"
@@ -29,6 +31,12 @@ do
         ;;
     --data_dir ) shift;
         DATA_PATH=$1
+        ;;
+    --log_dir ) shift;
+        LOG_PATH=$1
+        ;;
+    --log_level ) shift;
+        LOG_LEVEL=$1
         ;;
     --help | -h )
         echo "$USAGE"
@@ -48,6 +56,12 @@ fi
 if [ ! -d "$DATA_PATH/ldap/" ]
 then
         mkdir -p $DATA_PATH/ldap
+fi
+
+# Check if LOG_PATH exists else create
+if [ ! -d "$LOG_PATH" ]
+then
+        mkdir -p $LOG_PATH
 fi
 
 perform_base_config=false
@@ -77,4 +91,4 @@ fi
 kill -15 $(pidof slapd)
 
 # Start slapd
-/usr/sbin/slapd -F $CONFIG_PATH/openldap/slapd.d -u ldap -h 'ldapi:/// ldap:///' -d 0
+/usr/sbin/slapd -F $CONFIG_PATH/openldap/slapd.d -u ldap -h 'ldapi:/// ldap:///' -d $LOG_LEVEL &> $LOG_PATH/openldap.log
