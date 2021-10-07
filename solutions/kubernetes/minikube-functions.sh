@@ -81,7 +81,7 @@ function install_prereq () {
             yum install docker-ce --nogpgcheck -y || throw $Exception
             systemctl restart docker || throw $Exception
             sleep 10
-            #chgrp docker /var/run/docker.sock || throw $Exception
+            chgrp docker /var/run/docker.sock || throw $Exception
         else
             echo "Docker is already installed"
         fi    
