@@ -37,6 +37,7 @@ HEREDOC
 function setup_cluster {
 	
     validation
+    generate_rsa_key
     nodes_setup
 
     TARGET=$1
