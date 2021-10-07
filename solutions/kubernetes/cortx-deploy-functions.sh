@@ -22,8 +22,8 @@ CORTX_SCRIPTS_REPO="Seagate/cortx-k8s/"
 CORTX_SCRIPTS_BRANCH="UDX-5986_cortxProvisioner_cortxData_with_dummy_containers"
 SYSTESM_DRIVE="/dev/sdg"
 SCRIPT_LOCATION="/root/deploy-scripts"
-VERSION=v4.13.3
-BINARY=yq_linux_386
+YQ_VERSION=v4.13.3
+YQ_BINARY=yq_linux_386
 
 #On master
 #download CORTX k8 deployment scripts
@@ -38,7 +38,7 @@ function download_deploy_script(){
 
 function install_yq(){
     pip3 uninstall yq -y
-    wget https://github.com/mikefarah/yq/releases/download/${VERSION}/${BINARY}.tar.gz -O - | tar xz && mv ${BINARY} /usr/bin/yq
+    wget https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${YQ_BINARY}.tar.gz -O - | tar xz && mv ${YQ_BINARY} /usr/bin/yq
     ln -s /usr/bin/yq /usr/local/bin/yq
 }
 
@@ -139,6 +139,7 @@ fi
 function setup_master_node(){
 echo "---------------------------------------[ Setting up Master Node ]--------------------------------------"
     download_deploy_script $GITHUB_TOKEN
+    download_images
     install_yq
     update_solution_config
 }
