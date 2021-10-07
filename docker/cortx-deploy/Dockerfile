@@ -74,5 +74,7 @@ RUN yum install --nogpgcheck -y java-1.8.0-openjdk-headless \
     python36-cortx-prvsnr \
     && yum clean all && rm -rf /var/cache/yum
 
+RUN rm -f /etc/machine-id && ln -s /etc/cortx/solution/node/id /etc/machine-id
+
 RUN yum-config-manager --enable base,extras,updates && rm -rf /etc/yum.repos.d/cortx-storage.colo.seagate.com_releases_cortx_* /etc/yum.repos.d/C${CENTOS_RELEASE}.repo \
     && yum clean all && rm -rf /var/cache/yum
