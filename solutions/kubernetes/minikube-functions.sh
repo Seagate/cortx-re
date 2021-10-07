@@ -79,8 +79,9 @@ function install_prereq () {
             rm -rf /etc/yum.repos.d/download.docker.com_linux_centos_7_x86_64_stable_.repo /etc/yum.repos.d/packages.cloud.google.com_yum_repos_kubernetes-el7-x86_64.repo
             yum-config-manager --add https://download.docker.com/linux/centos/7/x86_64/stable/ || throw $ConfigException
             yum install docker-ce --nogpgcheck -y || throw $Exception
-            chgrp docker /var/run/docker.sock || throw $Exception
             systemctl restart docker || throw $Exception
+            sleep 10
+            chgrp docker /var/run/docker.sock || throw $Exception
         else
             echo "Docker is already installed"
         fi    
@@ -167,17 +168,22 @@ function cleanup_setup () {
         "${USER_HOME}/${USER}/.kube"
         "${USER_HOME}/${USER}/.minikube"
         "/etc/kubernetes/"
+        "/var/tmp/minikube-functions.sh"
     )
     if id -u "${USER}" >/dev/null 2>&1; then
         userdel -f "${USER}"
         rm -rf "${USER_HOME}/${USER}"
     fi
     systemctl stop '*kubelet*.mount'
-    docker system prune -af --volumes
     if command docker >/dev/null 2>&1; then
+        docker system prune -af --volumes
         yum remove docker-ce docker-ce-cli containerd.io -y
         rm -rf "/var/lib/docker"
         rm -rf "/etc/docker"
+        rm -rf "/var/run/docker"
+        rm -rf "/var/run/docker.sock"
+        rm -rf "/usr/bin/docker"
+        rm -rf "/bin/docker"
     fi
     for file in ${files_to_remove[@]}; do
         if [ -f "$file" ] || [ -d "$file" ]; then
