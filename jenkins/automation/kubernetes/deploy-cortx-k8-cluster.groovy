@@ -114,8 +114,8 @@ pipeline {
 
                 // Jenkins Summary
                 clusterStatus = ""
-                if ( fileExists('/var/tmp/cortx-cluster-status.txt') && currentBuild.currentResult == "SUCCESS" ) {
-                    clusterStatus = readFile(file: '/var/tmp/cortx-cluster-status.txt')
+                if ( currentBuild.currentResult == "SUCCESS" ) {
+                    //clusterStatus = readFile(file: '/var/tmp/cortx-cluster-status.txt')
                     MESSAGE = "CORTX Cluster Destroy Success for the build ${build_id}"
                     ICON = "accept.gif"
                     STATUS = "SUCCESS"
