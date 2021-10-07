@@ -179,6 +179,10 @@ function cleanup_setup () {
         yum remove docker-ce docker-ce-cli containerd.io -y
         rm -rf "/var/lib/docker"
         rm -rf "/etc/docker"
+        rm -rf "/var/run/docker"
+        rm -rf "/var/run/docker.sock"
+        rm -rf "/usr/bin/docker"
+        rm -rf "/bin/docker"
     fi
     for file in ${files_to_remove[@]}; do
         if [ -f "$file" ] || [ -d "$file" ]; then
