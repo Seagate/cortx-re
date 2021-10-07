@@ -37,6 +37,7 @@ function download_deploy_script(){
 #Install yq 4.13.3
 
 function install_yq(){
+    pip3 uninstall yq -y
     wget https://github.com/mikefarah/yq/releases/download/${VERSION}/${BINARY}.tar.gz -O - | tar xz && mv ${BINARY} /usr/bin/yq
     ln -s /usr/bin/yq /usr/local/bin/yq
 }
