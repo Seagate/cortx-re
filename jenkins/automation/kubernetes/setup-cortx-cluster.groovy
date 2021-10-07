@@ -1,7 +1,7 @@
 pipeline {
     agent {
         node {
-            label 'k8-executor'
+            label 'docker-k8-deployment-node'
         }
     }
     
