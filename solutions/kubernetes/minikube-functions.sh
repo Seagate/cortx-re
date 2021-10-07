@@ -79,8 +79,9 @@ function install_prereq () {
             rm -rf /etc/yum.repos.d/download.docker.com_linux_centos_7_x86_64_stable_.repo /etc/yum.repos.d/packages.cloud.google.com_yum_repos_kubernetes-el7-x86_64.repo
             yum-config-manager --add https://download.docker.com/linux/centos/7/x86_64/stable/ || throw $ConfigException
             yum install docker-ce --nogpgcheck -y || throw $Exception
-            chgrp docker /var/run/docker.sock || throw $Exception
             systemctl restart docker || throw $Exception
+            sleep 10
+            #chgrp docker /var/run/docker.sock || throw $Exception
         else
             echo "Docker is already installed"
         fi    
