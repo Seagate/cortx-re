@@ -174,8 +174,8 @@ function cleanup_setup () {
         rm -rf "${USER_HOME}/${USER}"
     fi
     systemctl stop '*kubelet*.mount'
-    docker system prune -af --volumes
     if command docker >/dev/null 2>&1; then
+        docker system prune -af --volumes
         yum remove docker-ce docker-ce-cli containerd.io -y
         rm -rf "/var/lib/docker"
         rm -rf "/etc/docker"
