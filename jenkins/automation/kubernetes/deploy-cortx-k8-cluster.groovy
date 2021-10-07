@@ -116,25 +116,25 @@ pipeline {
                 clusterStatus = ""
                 if ( currentBuild.currentResult == "SUCCESS" ) {
                     //clusterStatus = readFile(file: '/var/tmp/cortx-cluster-status.txt')
-                    MESSAGE = "CORTX Cluster Destroy Success for the build ${build_id}"
+                    MESSAGE = "CORTX Cluster Setup Success for the build ${build_id}"
                     ICON = "accept.gif"
                     STATUS = "SUCCESS"
                 } else if ( currentBuild.currentResult == "FAILURE" ) {
                     manager.buildFailure()
-                    MESSAGE = "CORTX Cluster Destroy Failed for the build ${build_id}"
+                    MESSAGE = "CORTX Cluster Setup Failed for the build ${build_id}"
                     ICON = "error.gif"
                     STATUS = "FAILURE"
  
                 } else {
                     manager.buildUnstable()
-                    MESSAGE = "CORTX Cluster Destroy is Unstable"
+                    MESSAGE = "CORTX Cluster Setup is Unstable for the build ${build_id}"
                     ICON = "warning.gif"
                     STATUS = "UNSTABLE"
                 }
                 
                 clusterStatusHTML = "<pre>${clusterStatus}</pre>"
 
-                manager.createSummary("${ICON}").appendText("<h3>CORTX Cluster Destroy ${currentBuild.currentResult} </h3><p>Please check <a href=\"${BUILD_URL}/console\">cluster setup logs</a> for more info <h4>Cluster Status:</h4>${clusterStatusHTML}", false, false, false, "red")
+                manager.createSummary("${ICON}").appendText("<h3>CORTX Cluster Setup ${currentBuild.currentResult} </h3><p>Please check <a href=\"${BUILD_URL}/console\">cluster setup logs</a> for more info <h4>Cluster Status:</h4>${clusterStatusHTML}", false, false, false, "red")
 
                 // Email Notification
                 env.cluster_status = "${clusterStatusHTML}"
