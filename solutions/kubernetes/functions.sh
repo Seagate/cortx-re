@@ -49,8 +49,9 @@ function passwordless_ssh {
     local PASS=$3
     ping -c1 -W1 -q $NODE
     check_status
+    yum install sshpass openssh-clients -y
     sshpass -p "$PASS" ssh-copy-id -f -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa.pub "$USER"@"$NODE"
-    check_status "Passwordless ssh setup failed for $NODE. Please validte provide credentails"
+    check_status "Passwordless ssh setup failed for $NODE. Please validate provided credentails"
 }
 
 function nodes_setup {
