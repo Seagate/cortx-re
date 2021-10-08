@@ -22,6 +22,7 @@ pipeline {
 
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'kubernetes', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for Cluster Setup scripts', trim: true)
+        string(name: 'CORTX_SCRIPTS_BRANCH', defaultValue: 'integration', description: 'Branch or GitHash for cortx-k8 repo', trim: true)
         text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used for CORTX cluster setup. First node will be used as Master', name: 'hosts')
        
     }    
@@ -46,6 +47,7 @@ pipeline {
                         echo $hosts | tr ' ' '\n' > hosts
                         cat hosts
                         export GITHUB_TOKEN=${GITHUB_CRED}
+                        export CORTX_SCRIPTS_BRANCH=${CORTX_SCRIPTS_BRANCH}
                         ./cortx-deploy.sh --third-party
                     popd
                 '''
