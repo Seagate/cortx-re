@@ -60,8 +60,8 @@ function setup_cluster {
 
 
     for master_node in $MASTER_NODE
-	do
-	ssh -o 'StrictHostKeyChecking=no' "$master_node" "export GITHUB_TOKEN=$GITHUB_TOKEN && export CORTX_SCRIPTS_BRANCH=integration && /var/tmp/cortx-deploy-functions.sh --setup-master"
+	    do
+    	ssh -o 'StrictHostKeyChecking=no' "$master_node" "export GITHUB_TOKEN=$GITHUB_TOKEN && export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH && /var/tmp/cortx-deploy-functions.sh --setup-master"
         done
 
     for master_node in $MASTER_NODE
