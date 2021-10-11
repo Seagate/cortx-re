@@ -12,9 +12,9 @@ where:
 set -e
 
 # Default config and data directories
-CONFIG_PATH="/etc/cortx"
-DATA_PATH="/var/data/cortx"
-LOG_PATH="/var/log/cortx"
+CONFIG_PATH="/etc/3rd-party"
+DATA_PATH="/var/data/3rd-party"
+LOG_PATH="/var/log/3rd-party"
 LOG_LEVEL="1"
 ROOTDN_PASSWORD="seagate"
 
@@ -85,7 +85,7 @@ chown -R ldap.ldap $CONFIG_PATH/openldap/
 if [ "$perform_base_config" == true ]
 then
   DATA_PATH=${DATA_PATH}/ldap
-  python3 -c "import sys;sys.path.insert(1, '/usr/lib/python3.6/site-packages/cortx/utils/setup/openldap/');from base_configure_ldap import BaseConfig;BaseConfig.perform_base_config('$ROOTDN_PASSWORD',True,{'base_dn':'dc=seagate,dc=com' , 'bind_base_dn':'cn=admin,dc=seagate,dc=com', 'install_dir': '$CONFIG_PATH', 'data_dir': '$DATA_PATH'})" 
+  sh /opt/openldap-config/baseconfig.sh --rootdnpasswd $ROOTDN_PASSWORD --config_path $CONFIG_PATH --data_path $DATA_PATH
 fi
 
 kill -15 $(pidof slapd)
