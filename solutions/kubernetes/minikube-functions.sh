@@ -168,7 +168,6 @@ function cleanup_setup () {
         "${USER_HOME}/${USER}/.kube"
         "${USER_HOME}/${USER}/.minikube"
         "/etc/kubernetes/"
-        "/var/tmp/minikube-functions.sh"
     )
     if id -u "${USER}" >/dev/null 2>&1; then
         userdel -f "${USER}"
