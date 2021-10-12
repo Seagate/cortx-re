@@ -43,6 +43,7 @@ COPY ./docker/symas-openldap/openldap-config /opt/openldap-config
 
 RUN yum install --nogpgcheck -y  symas-openldap-clients \
     symas-openldap-servers \
+    sysvinit-tools \
     && yum clean all \
     && rm -rf /var/cache/yum
 
