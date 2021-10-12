@@ -18,7 +18,6 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
-CORTX_SCRIPTS_REPO="Seagate/cortx-k8s/"
 SYSTESM_DRIVE="/dev/sdg"
 SCRIPT_LOCATION="/root/deploy-scripts"
 YQ_VERSION=v4.13.3
@@ -29,8 +28,11 @@ YQ_BINARY=yq_linux_386
 
 function download_deploy_script(){
     rm -rf $SCRIPT_LOCATION
-	yum install git -y
-	git clone https://$GITHUB_TOKEN@github.com/$CORTX_SCRIPTS_REPO -b $CORTX_SCRIPTS_BRANCH $SCRIPT_LOCATION
+    yum install git -y
+    git clone https://$GITHUB_TOKEN@github.com/$CORTX_SCRIPTS_REPO $SCRIPT_LOCATION
+    pushd $SCRIPT_LOCATION
+    git checkout $CORTX_SCRIPTS_BRANCH
+    popd
 }
 
 #Install yq 4.13.3
