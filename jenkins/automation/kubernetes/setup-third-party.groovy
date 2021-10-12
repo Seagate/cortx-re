@@ -48,6 +48,7 @@ pipeline {
                         cat hosts
                         export GITHUB_TOKEN=${GITHUB_CRED}
                         export CORTX_SCRIPTS_BRANCH=${CORTX_SCRIPTS_BRANCH}
+                        export CORTX_SCRIPTS_REPO=${CORTX_SCRIPTS_REPO}
                         ./cortx-deploy.sh --third-party
                     popd
                 '''
