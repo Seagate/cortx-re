@@ -19,7 +19,6 @@
 #
 
 CORTX_SCRIPTS_REPO="Seagate/cortx-k8s/"
-CORTX_SCRIPTS_BRANCH="UDX-5986_cortxProvisioner_cortxData_with_dummy_containers"
 SYSTESM_DRIVE="/dev/sdg"
 SCRIPT_LOCATION="/root/deploy-scripts"
 YQ_VERSION=v4.13.3
@@ -47,6 +46,8 @@ function install_yq(){
 function update_solution_config(){
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         echo > solution.yaml
+        yq e -i '.solution.common.num_s3_inst = 2' solution.yaml
+	yq e -i '.solution.common.num_motr_inst = 1' solution.yaml
         count=0
         for node in $(kubectl get node --selector='!node-role.kubernetes.io/master' | grep -v NAME | awk '{print $1}')
             do
