@@ -48,8 +48,36 @@ function install_yq(){
 function update_solution_config(){
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         echo > solution.yaml
-        yq e -i '.solution.common.num_s3_inst = 2' solution.yaml
-	yq e -i '.solution.common.num_motr_inst = 1' solution.yaml
+        yq e -i '.solution.namespace = "default"' solution.yaml
+        
+        yq e -i '.solution.secrets.secret1.name = "kafka-secret"' solution.yaml
+        yq e -i '.solution.secrets.secret1.content.kafka_secret = "segate123"' solution.yaml
+        yq e -i '.solution.secrets.secret1.content.kafka_secret1 = "segate1234"' solution.yaml
+        
+        yq e -i '.solution.secrets.secret2.name = "cortx-secret"' solution.yaml
+        yq e -i '.solution.secrets.secret2.content.openldap_admin_secret = "seagate2"' solution.yaml
+        yq e -i '.solution.secrets.secret2.content.kafka_admin_secret = "Seagate@123"' solution.yaml   
+        yq e -i '.solution.secrets.secret2.content.consul_admin_secret = "Seagate@123"' solution.yaml
+        yq e -i '.solution.secrets.secret2.content.common_admin_secret = "Seagate@123"' solution.yaml
+        yq e -i '.solution.secrets.secret2.content.s3_auth_admin_secret = "ldapadmin"' solution.yaml
+        yq e -i '.solution.secrets.secret2.content.csm_auth_admin_secret = "seagate2"' solution.yaml
+        yq e -i '.solution.secrets.secret2.content.csm_mgmt_admin_secret = "Cortxadmin@123"' solution.yaml
+
+        yq e -i '.solution.secrets.secret3.name = "consul-secret"' solution.yaml
+        yq e -i '.solution.secrets.secret3.content.consul_secret = "hadjhjdhsjd"' solution.yaml
+        yq e -i '.solution.secrets.secret3.content.consul_secret1 = "hadjhjdhsjdaaa"' solution.yaml
+
+        yq e -i '.solution.images.cortxcontrolprov = "centos:7"' solution.yaml
+        yq e -i '.solution.images.cortxcontrol = "centos:7"' solution.yaml
+        yq e -i '.solution.images.cortxdataprov = "centos:7"' solution.yaml
+        yq e -i '.solution.images.cortxdata = "centos:7"' solution.yaml
+        yq e -i '.solution.images.cortxsupport = "centos:7"' solution.yaml
+
+        yq e -i '.solution.common.s3.num_inst = 2' solution.yaml
+        yq e -i '.solution.common.s3.start_port_num = 28051' solution.yaml
+        yq e -i '.solution.common.motr.num_inst = 1' solution.yaml
+        yq e -i '.solution.common.motr.start_port_num = 2900' solution.yaml
+
         count=0
         for node in $(kubectl get node --selector='!node-role.kubernetes.io/master' | grep -v NAME | awk '{print $1}')
             do
@@ -57,11 +85,16 @@ function update_solution_config(){
             yq e -i '.solution.nodes['$count'].node'$count'.volumes.local = "/mnt/fs-local-volume"' solution.yaml
             yq e -i '.solution.nodes['$count'].node'$count'.volumes.share = "/mnt/fs-local-volume"' solution.yaml
             drive=$SYSTESM_DRIVE yq e -i '.solution.nodes['$count'].node'$count'.volumes.devices.system = env(drive)' solution.yaml
-            yq e -i '.solution.nodes['$count'].node'$count'.volumes.devices.log = "/dev/sdb"' solution.yaml
-            yq e -i '.solution.nodes['$count'].node'$count'.volumes.devices.meta0 = "/dev/sdc"' solution.yaml
-            yq e -i '.solution.nodes['$count'].node'$count'.volumes.devices.metadata = "/dev/sdd"' solution.yaml
-            yq e -i '.solution.nodes['$count'].node'$count'.volumes.devices.data.d1 = "/dev/sde"' solution.yaml
-            yq e -i '.solution.nodes['$count'].node'$count'.volumes.devices.data.d2 = "/dev/sdf"' solution.yaml
+    
+            yq e -i '.solution.nodes['$count'].node'$count'.volumes.devices.metadata.device = "/dev/sdb"' solution.yaml
+            yq e -i '.solution.nodes['$count'].node'$count'.volumes.devices.metadata.size = "5Gi"' solution.yaml
+
+            yq e -i '.solution.nodes['$count'].node'$count'.volumes.devices.data.d1.device = "/dev/sdd"' solution.yaml
+            yq e -i '.solution.nodes['$count'].node'$count'.volumes.devices.data.d1.size = "5Gi"' solution.yaml
+
+            yq e -i '.solution.nodes['$count'].node'$count'.volumes.devices.data.d2.device = "/dev/sde"' solution.yaml
+            yq e -i '.solution.nodes['$count'].node'$count'.volumes.devices.data.d2.size = "5Gi"' solution.yaml
+
             count=$((count+1))
         done
         sed -i 's/- //g' solution.yaml
@@ -93,7 +126,7 @@ function mount_system_device(){
 
 function glusterfs_requirements(){
     mkdir -p /mnt/fs-local-volume/etc/gluster
-    mkdir -p /mnt/fs-local-volume/var/log/gluster
+    mkdir -p /mnt/fs-local-volume/var/log/glusterfs
     mkdir -p /mnt/fs-local-volume/var/lib/glusterd
     yum install glusterfs-fuse -y
 }
@@ -101,10 +134,9 @@ function glusterfs_requirements(){
 #openldap requirements
 
 function openldap_requiremenrs(){
-    mkdir -p /var/lib/ldap
-    grep -qxF "ldap:x:55:" /etc/group || echo "ldap:x:55:" >> /etc/group
-    grep -qxF "ldap:x:55:55:OpenLDAP server:/var/lib/ldap:/sbin/nologin" /etc/passwd || echo "ldap:x:55:55:OpenLDAP server:/var/lib/ldap:/sbin/nologin" >> /etc/passwd
-    chown -R ldap.ldap /var/lib/ldap
+    mkdir -p /etc/3rd-party/openldap
+    mkdir -p /var/data/3rd-party
+    mkdir -p /var/log/3rd-party
 }
 
 function download_images(){
