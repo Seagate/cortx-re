@@ -1,0 +1,270 @@
+pipeline {
+    agent {
+          node {
+             // label "docker-${os_version}-node"
+             label "cortx-test-ssc-vm-4103"
+          }
+      }
+      parameters {
+          string(
+              defaultValue: 'centos-7.9.2009',
+              name: 'os_version',
+              description: 'OS version of the build',
+              trim: true
+          )
+      string(
+              defaultValue: 'dev',
+              name: 'environment',
+              description: 'Environment',
+              trim: true
+          )
+      }
+
+      stages {
+        stage('Checkout source code') {
+              steps {
+                  script {
+                      checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, userRemoteConfigs: [[credentialsId: 'github-access', url: 'https://github.com/venkuppu-chn/cortx-re/']]])
+                      sh 'cp ./scripts/automation/git-diff/config.json .'
+                      sh 'cp ./scripts/automation/alex/* .'
+                  }
+              }
+          }
+
+      stage('Install Dependencies') {
+          steps {
+              sh label: 'Installed Dependencies', script: '''
+                  yum install epel-release
+                  yum install nodejs
+                  npm install alex --global
+                  pip install GitPython==2.1.15
+              '''
+          }
+      }
+      stage('Checkout repositories') {
+          steps {
+              // cleanWs()
+              script {
+                  def projects = readJSON file: "${env.WORKSPACE}/config.json"
+                  projects.repository.each { entry ->
+                    echo entry.name
+                    def repourl = 'https://github.com/seagate/' + entry.name
+                    stage ('Checkout Repo:' + entry.name) {
+                        dir (entry.name) {
+                            timestamps {
+                              checkout([$class: 'GitSCM', branches: [[name: "main"]], doGenerateSubmoduleConfigurations: false, userRemoteConfigs: [[credentialsId: 'github-access', url: repourl]]])
+                            }
+                        }
+                    }
+                  }
+              }
+          }
+      }
+      stage('Run Alex') {
+          steps {
+              script {
+                def projects = readJSON file: "${env.WORKSPACE}/config.json"
+                projects.repository.each { entry ->
+                    def path = './' + entry.name + '/*'
+                    def file = entry.name + '.alex'
+                    sh ''' 
+                      set +e
+                      alex ''' + path + ''' >> ''' + file +''' 2>&1
+                      set -e
+                    '''
+                  }
+              }
+          }	
+      }
+      stage('Generate HTML report') {
+          steps {
+              script {
+                echo "Get the scanned alex file."
+                sh "ls *.alex > listAlexFiles"
+                def files = readFile( "listAlexFiles" ).split( "\\r?\\n" );
+                files.each { item ->
+                   sh ''' python alex.py -f ''' + item 
+                }
+              }
+          }
+      }
+      stage('Send Email to Motr') {
+          steps {
+              script {
+                  def useEmailList = ''
+                  if ( params.environment == 'prod') {
+                    useEmailList = 'shailesh.vaidya@seagate.com, priyank.p.dalal@seagate.com, john.bent@seagate.com, venkatesh.k@seagate.com'
+                  }
+                  env.ForEmailPlugin = env.WORKSPACE
+                  emailext mimeType: 'text/html',
+                   body: '${FILE, path="cortx-motr.html"}',
+                   subject: 'Alex Scan Report - [ Date :' +new Date().format("dd-MMM-yyyy") + ' ]',
+                   recipientProviders: [[$class: 'RequesterRecipientProvider']],
+                   to: useEmailList
+
+               }
+          }
+      }
+      stage('Send Email to RE') {
+          steps {
+              script {
+                  def useEmailList = ''
+                  if ( params.environment == 'prod') {
+                    useEmailList = 'shailesh.vaidya@seagate.com, priyank.p.dalal@seagate.com, john.bent@seagate.com, venkatesh.k@seagate.com'
+                  }
+                  env.ForEmailPlugin = env.WORKSPACE
+                  emailext mimeType: 'text/html',
+                  body: '${FILE, path="cortx-re.html"}',
+                  subject: 'Alex Scan Report - [ Date :' +new Date().format("dd-MMM-yyyy") + ' ]',
+                  recipientProviders: [[$class: 'RequesterRecipientProvider']],
+                  to: useEmailList
+              }
+          }
+      }
+      stage('Send Email to S3') {
+          steps {
+              script {
+                  def useEmailList = ''
+                  if ( params.environment == 'prod') {
+                    useEmailList = 'shailesh.vaidya@seagate.com, priyank.p.dalal@seagate.com, john.bent@seagate.com, venkatesh.k@seagate.com'
+                  }
+                  env.ForEmailPlugin = env.WORKSPACE
+                  emailext mimeType: 'text/html',
+                  body: '${FILE, path="cortx-s3server.html"}',
+                  subject: 'Alex Scan Report - [ Date :' +new Date().format("dd-MMM-yyyy") + ' ]',
+                  recipientProviders: [[$class: 'RequesterRecipientProvider']],
+                  to: useEmailList
+              }
+          }
+      }
+      stage('Send Email to HA') {
+          steps {
+              script {
+                  def useEmailList = ''
+                  if ( params.environment == 'prod') {
+                    useEmailList = 'shailesh.vaidya@seagate.com, priyank.p.dalal@seagate.com, john.bent@seagate.com, venkatesh.k@seagate.com'
+                  }
+                  env.ForEmailPlugin = env.WORKSPACE
+                  emailext mimeType: 'text/html',
+                  body: '${FILE, path="cortx-ha.html"}',
+                  subject: 'Alex Scan Report - [ Date :' +new Date().format("dd-MMM-yyyy") + ' ]',
+                  recipientProviders: [[$class: 'RequesterRecipientProvider']],
+                  to: useEmailList
+              }
+          }
+      }
+      stage('Send Email to Hare') {
+          steps {
+              script {
+                  def useEmailList = ''
+                  if ( params.environment == 'prod') {
+                    useEmailList = 'shailesh.vaidya@seagate.com, priyank.p.dalal@seagate.com, john.bent@seagate.com, venkatesh.k@seagate.com'
+                  }
+                  env.ForEmailPlugin = env.WORKSPACE
+                  emailext mimeType: 'text/html',
+                  body: '${FILE, path="cortx-hare.html"}',
+                  subject: 'Alex Scan Report - [ Date :' +new Date().format("dd-MMM-yyyy") + ' ]',
+                  recipientProviders: [[$class: 'RequesterRecipientProvider']],
+                  to: useEmailList
+              }
+          }
+      }
+      stage('Send Email to Management Portal') {
+          steps {
+              script {
+                  def useEmailList = ''
+                  if ( params.environment == 'prod') {
+                    useEmailList = 'shailesh.vaidya@seagate.com, priyank.p.dalal@seagate.com, john.bent@seagate.com, venkatesh.k@seagate.com'
+                  }
+                  env.ForEmailPlugin = env.WORKSPACE
+                  emailext mimeType: 'text/html',
+                  body: '${FILE, path="cortx-management-portal.html"}',
+                  subject: 'Alex Scan Report - [ Date :' +new Date().format("dd-MMM-yyyy") + ' ]',
+                  recipientProviders: [[$class: 'RequesterRecipientProvider']],
+                  to: useEmailList
+              }
+          }
+      }
+      stage('Send Email to Manager') {
+          steps {
+              script {
+                  def useEmailList = ''
+                  if ( params.environment == 'prod') {
+                    useEmailList = 'shailesh.vaidya@seagate.com, priyank.p.dalal@seagate.com, john.bent@seagate.com, venkatesh.k@seagate.com'
+                  }
+                  env.ForEmailPlugin = env.WORKSPACE
+                  emailext mimeType: 'text/html',
+                  body: '${FILE, path="cortx-manager.html"}',
+                  subject: 'Alex Scan Report - [ Date :' +new Date().format("dd-MMM-yyyy") + ' ]',
+                  recipientProviders: [[$class: 'RequesterRecipientProvider']],
+                  to: useEmailList
+              }
+          }
+      }
+      stage('Send Email to Monitor') {
+          steps {
+              script {
+                  def useEmailList = ''
+                  if ( params.environment == 'prod') {
+                    useEmailList = 'shailesh.vaidya@seagate.com, priyank.p.dalal@seagate.com, john.bent@seagate.com, venkatesh.k@seagate.com'
+                  }
+                  env.ForEmailPlugin = env.WORKSPACE
+                  emailext mimeType: 'text/html',
+                  body: '${FILE, path="cortx-monitor.html"}',
+                  subject: 'Alex Scan Report - [ Date :' +new Date().format("dd-MMM-yyyy") + ' ]',
+                  recipientProviders: [[$class: 'RequesterRecipientProvider']],
+                  to: useEmailList
+              }
+          }
+        }
+        stage('Send Email to Provisioner') {
+            steps {
+                script {
+                    def useEmailList = ''
+                    if ( params.environment == 'prod') {
+                      useEmailList = 'shailesh.vaidya@seagate.com, priyank.p.dalal@seagate.com, john.bent@seagate.com, venkatesh.k@seagate.com'
+                    }
+                    env.ForEmailPlugin = env.WORKSPACE
+                    emailext mimeType: 'text/html',
+                    body: '${FILE, path="cortx-prvsnr.html"}',
+                    subject: 'Alex Scan Report - [ Date :' +new Date().format("dd-MMM-yyyy") + ' ]',
+                    recipientProviders: [[$class: 'RequesterRecipientProvider']],
+                    to: useEmailList
+                }
+            }
+        }
+        stage('Send Email to Utils') {
+            steps {
+                script {
+                    def useEmailList = ''
+                    if ( params.environment == 'prod') {
+                      useEmailList = 'shailesh.vaidya@seagate.com, priyank.p.dalal@seagate.com, john.bent@seagate.com, venkatesh.k@seagate.com'
+                    }
+                    env.ForEmailPlugin = env.WORKSPACE
+                    emailext mimeType: 'text/html',
+                    body: '${FILE, path="cortx-utils.html"}',
+                    subject: 'Alex Scan Report - [ Date :' +new Date().format("dd-MMM-yyyy") + ' ]',
+                    recipientProviders: [[$class: 'RequesterRecipientProvider']],
+                    to: useEmailList
+                }
+            }
+        }
+        stage('Send Email to Posix') {
+            steps {
+                script {
+                    def useEmailList = ''
+                    if ( params.environment == 'prod') {
+                      useEmailList = 'shailesh.vaidya@seagate.com, priyank.p.dalal@seagate.com, john.bent@seagate.com, venkatesh.k@seagate.com'
+                    }
+                    env.ForEmailPlugin = env.WORKSPACE
+                    emailext mimeType: 'text/html',
+                    body: '${FILE, path="cortx-posix.html"}',
+                    subject: 'Alex Scan Report - [ Date :' +new Date().format("dd-MMM-yyyy") + ' ]',
+                    recipientProviders: [[$class: 'RequesterRecipientProvider']],
+                    to: useEmailList
+                }
+            }
+        }
+    }
+}
+
