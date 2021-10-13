@@ -60,13 +60,13 @@ function setup_cluster {
 
 
     for master_node in $MASTER_NODE
-	do
-	ssh -o 'StrictHostKeyChecking=no' "$master_node" "export GITHUB_TOKEN=$GITHUB_TOKEN && /var/tmp/cortx-deploy-functions.sh --setup-master"
+	    do
+    	ssh -o 'StrictHostKeyChecking=no' "$master_node" "export GITHUB_TOKEN=$GITHUB_TOKEN && export CORTX_SCRIPTS_REPO=$CORTX_SCRIPTS_REPO && export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH && /var/tmp/cortx-deploy-functions.sh --setup-master"
         done
 
     for master_node in $MASTER_NODE
         do
-        ssh -o 'StrictHostKeyChecking=no' "$master_node" "export GITHUB_TOKEN=$GITHUB_TOKEN && /var/tmp/cortx-deploy-functions.sh --$TARGET"
+        ssh -o 'StrictHostKeyChecking=no' "$master_node" "/var/tmp/cortx-deploy-functions.sh --$TARGET"
         echo "---------------------------------------[ Print Cluster Status ]----------------------------------------------"
         rm -rf /var/tmp/cortx-cluster-status.txt
         ssh -o 'StrictHostKeyChecking=no' "$master_node" '/var/tmp/cortx-deploy-functions.sh --status' | tee /var/tmp/cortx-cluster-status.txt
@@ -77,12 +77,13 @@ function setup_cluster {
 function destroy-cluster(){
 
         validation
+        generate_rsa_key
         nodes_setup
 	
 	echo "---------------------------------------[ Destroying cluster ]----------------------------------------------"
 	MASTER_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
         scp -q cortx-deploy-functions.sh functions.sh "$MASTER_NODE":/var/tmp/
-        ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" "export GITHUB_TOKEN=$GITHUB_TOKEN && /var/tmp/cortx-deploy-functions.sh --destroy"	
+        ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" "export CORTX_SCRIPTS_REPO=$CORTX_SCRIPTS_REPO && export GITHUB_TOKEN=$GITHUB_TOKEN && export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH && /var/tmp/cortx-deploy-functions.sh --destroy"	
         ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" '/var/tmp/cortx-deploy-functions.sh --status' | tee /var/tmp/cortx-cluster-status.txt
 }
 
