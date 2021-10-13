@@ -77,6 +77,7 @@ function setup_cluster {
 function destroy-cluster(){
 
         validation
+        generate_rsa_key
         nodes_setup
 	
 	echo "---------------------------------------[ Destroying cluster ]----------------------------------------------"

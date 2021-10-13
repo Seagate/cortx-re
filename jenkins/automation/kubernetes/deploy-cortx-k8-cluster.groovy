@@ -73,8 +73,8 @@ pipeline {
 										parameters: [
 											string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
 											string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
-                                            string(name: 'CORTX_SCRIPTS_REPO', value: "shailesh-vaidya/cortx-k8s"),
-											string(name: 'CORTX_SCRIPTS_BRANCH', value: "jenkins-integration"),
+                                            string(name: 'CORTX_SCRIPTS_REPO', value: "Seagate/cortx-k8s"),
+											string(name: 'CORTX_SCRIPTS_BRANCH', value: "stable"),
 											string(name: 'hosts', value: "${hosts}")
 										]
 					} catch (err) {
