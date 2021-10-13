@@ -1,0 +1,37 @@
+{
+  "repository": [
+    {
+      "name": "cortx-motr"
+    },
+    {
+      "name": "cortx-posix"
+    },
+    {
+      "name": "cortx-monitor"
+    },
+    {
+      "name": "cortx-re"
+    },
+    {
+      "name": "cortx-hare"
+    },
+    {
+      "name": "cortx-prvsnr"
+    },
+    {
+      "name": "cortx-ha"
+    },
+    {
+      "name": "cortx-management-portal"
+    },
+    {
+      "name": "cortx-manager"
+    },
+    {
+      "name": "cortx-s3server"
+    },
+    {
+      "name": "cortx-utils"
+    }
+  ]
+}
