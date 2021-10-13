@@ -25,7 +25,6 @@ pipeline {
               steps {
                   script {
                       checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, userRemoteConfigs: [[credentialsId: 'github-access', url: 'https://github.com/venkuppu-chn/cortx-re/']]])
-                      sh 'cp ./scripts/automation/git-diff/config.json .'
                       sh 'cp ./scripts/automation/alex/* .'
                   }
               }
