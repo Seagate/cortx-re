@@ -65,6 +65,8 @@ RUN yum install --nogpgcheck -y java-1.8.0-openjdk-headless \
     python36-dbus \
     symas-openldap-clients \
     python36-psutil \
+    crontabs \
+    logrotate \    
     cortx-provisioner \
     cortx-py-utils \
     cortx-hare \
