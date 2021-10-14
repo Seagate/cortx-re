@@ -105,7 +105,7 @@
     - "log.flush.offset.checkpoint.interval.ms=1"
     - "log.retention.check.interval.ms=1"
     - "log.delete.delay.ms=1"
-    - "listeners=PLAINTEXT://{{ NODE1 }}:9092"
+    - "listeners=PLAINTEXT://{{ HOST }}:9092"
 
 - name: "[install_prereq] : Enable and start Kafka Service"
   shell: |
