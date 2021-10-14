@@ -73,7 +73,7 @@ function update_solution_config(){
         yq e -i '.solution.common.s3.num_inst = 2' solution.yaml
         yq e -i '.solution.common.s3.start_port_num = 28051' solution.yaml
         yq e -i '.solution.common.motr.num_inst = 1' solution.yaml
-        yq e -i '.solution.common.motr.start_port_num = 2900' solution.yaml
+        yq e -i '.solution.common.motr.start_port_num = 29000' solution.yaml
         yq e -i '.solution.common.storage_sets.name = "storage-set-1"' solution.yaml
         yq e -i '.solution.common.storage_sets.durability.sns = "8+7+0"' solution.yaml
         yq e -i '.solution.common.storage_sets.durability.dix = "1+0+0"' solution.yaml
@@ -83,8 +83,6 @@ function update_solution_config(){
         for node in $(kubectl get node --selector='!node-role.kubernetes.io/master' | grep -v NAME | awk '{print $1}')
             do
             i=$node yq e -i '.solution.nodes['$count'].node'$count'.name = env(i)' solution.yaml
-            yq e -i '.solution.nodes['$count'].node'$count'.volumes.local = "/mnt/fs-local-volume"' solution.yaml
-            yq e -i '.solution.nodes['$count'].node'$count'.volumes.share = "/mnt/fs-local-volume"' solution.yaml
             drive=$SYSTESM_DRIVE yq e -i '.solution.nodes['$count'].node'$count'.volumes.devices.system = env(drive)' solution.yaml
     
             yq e -i '.solution.nodes['$count'].node'$count'.volumes.devices.metadata.device = "/dev/sdb"' solution.yaml
