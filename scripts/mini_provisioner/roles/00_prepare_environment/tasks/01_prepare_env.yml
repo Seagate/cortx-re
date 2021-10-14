@@ -16,8 +16,14 @@
     update_cache: yes
 
 # Update hostfile with node hostname (dynamic host)
-- name: "[prepare] : Update host files for node connect"
-  script: files/update_hosts.sh {{ NODE1 }}
+# - name: "[prepare] : Update host files for node connect"
+#   script: files/update_hosts.sh {{ NODE1 }}
+
+- name: "[prepare] : Generate host file"
+  template:
+    src: hosts_srvnode.j2
+    dest: inventories/hosts
+    mode: '0754'
 
 # Refresh inventory for hostfile changes
 - meta: refresh_inventory
