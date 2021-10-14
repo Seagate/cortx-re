@@ -18,7 +18,8 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
-SYSTESM_DRIVE="/mnt/fs-local-volume/"
+SYSTESM_DRIVE="/dev/sdb"
+SYSTEM_DRIVE_MOUNT="/mnt/fs-local-volume/"
 SCRIPT_LOCATION="/root/deploy-scripts"
 YQ_VERSION=v4.13.3
 YQ_BINARY=yq_linux_386
@@ -83,7 +84,7 @@ function update_solution_config(){
         for node in $(kubectl get node --selector='!node-role.kubernetes.io/master' | grep -v NAME | awk '{print $1}')
             do
             i=$node yq e -i '.solution.nodes['$count'].node'$count'.name = env(i)' solution.yaml
-            drive=$SYSTESM_DRIVE yq e -i '.solution.nodes['$count'].node'$count'.volumes.devices.system = env(drive)' solution.yaml
+            drive=$SYSTEM_DRIVE_MOUNT yq e -i '.solution.nodes['$count'].node'$count'.volumes.devices.system = env(drive)' solution.yaml
     
             yq e -i '.solution.nodes['$count'].node'$count'.volumes.devices.metadata.device = "/dev/sdb"' solution.yaml
             yq e -i '.solution.nodes['$count'].node'$count'.volumes.devices.metadata.size = "5Gi"' solution.yaml
@@ -117,7 +118,7 @@ function mount_system_device(){
     umount -l $SYSTESM_DRIVE
     mkfs.ext4 -F $SYSTESM_DRIVE
     mkdir -p /mnt/fs-local-volume
-    mount -t ext4 $SYSTESM_DRIVE /mnt/fs-local-volume
+    mount -t ext4 $SYSTESM_DRIVE $SYSTEM_DRIVE_MOUNT
     mkdir -p /mnt/fs-local-volume/local-path-provisioner
 }
 
