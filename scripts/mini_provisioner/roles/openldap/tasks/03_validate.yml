@@ -1,0 +1,9 @@
+---
+
+- name: "[ Validate ] : 1-Node Test" 
+  shell: /opt/seagate/cortx/utils/bin/openldap_setup test --config "yaml:///opt/seagate/cortx/utils/conf/openldap.test.tmpl.1-node"
+  when: SETUP_TYPE == 'single'
+
+- name: "[ Validate ] : 3-Node Test" 
+  shell: /opt/seagate/cortx/utils/bin/openldap_setup test --config "yaml:///opt/seagate/cortx/utils/conf/openldap.test.tmpl.3-node"
+  when: SETUP_TYPE == '3_node'

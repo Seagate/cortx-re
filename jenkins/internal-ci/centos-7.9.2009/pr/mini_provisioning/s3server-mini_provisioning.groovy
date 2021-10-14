@@ -222,7 +222,7 @@ Recommended VM specification:
             agent {
                 node {
                     // Run deployment on mini_provisioner nodes (vm deployment nodes)
-                    label params.HOST == "-" ? "mini_provisioner_7_9 && !cleanup_req" : "mini_provisioner_s3_user_host"
+                    label params.HOST == "-" ? "mini_provisioner_s3_7_9 && !cleanup_req" : "mini_provisioner_s3_user_host"
                     customWorkspace "/var/jenkins/mini_provisioner/${JOB_NAME}_${BUILD_NUMBER}"
                 }
             }
@@ -426,7 +426,7 @@ Recommended VM specification:
                 }
                 env.build_stage = "${build_stage}"
                 
-                def mailRecipients = "nilesh.govande@seagate.com, basavaraj.kirunge@seagate.com, rajesh.nambiar@seagate.com, amit.kumar@seagate.com"
+                def mailRecipients = "nilesh.govande@seagate.com, basavaraj.kirunge@seagate.com, rajesh.nambiar@seagate.com"
                 emailext body: '''${SCRIPT, template="mini_prov-email.template"}''',
                 mimeType: 'text/html',
                 recipientProviders: [requestor()], 
@@ -466,7 +466,7 @@ def runAnsible(tags) {
             inventory: 'inventories/hosts',
             tags: "${tags}",
             extraVars: [
-                "NODE1"                 : [value: "${NODE1_HOST}", hidden: false],
+                "HOST"                 : [value: "${NODE1_HOST}", hidden: false],
                 "CORTX_BUILD"           : [value: "${CORTX_BUILD}", hidden: false] ,
                 "CLUSTER_PASS"          : [value: "${NODE_PASS}", hidden: false]            
             ],
