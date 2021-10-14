@@ -18,7 +18,7 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
-SYSTESM_DRIVE="/dev/sdg"
+SYSTESM_DRIVE="/mnt/fs-local-volume/"
 SCRIPT_LOCATION="/root/deploy-scripts"
 YQ_VERSION=v4.13.3
 YQ_BINARY=yq_linux_386
@@ -50,22 +50,14 @@ function update_solution_config(){
         echo > solution.yaml
         yq e -i '.solution.namespace = "default"' solution.yaml
         
-        yq e -i '.solution.secrets.secret1.name = "kafka-secret"' solution.yaml
-        yq e -i '.solution.secrets.secret1.content.kafka_secret = "segate123"' solution.yaml
-        yq e -i '.solution.secrets.secret1.content.kafka_secret1 = "segate1234"' solution.yaml
-        
-        yq e -i '.solution.secrets.secret2.name = "cortx-secret"' solution.yaml
-        yq e -i '.solution.secrets.secret2.content.openldap_admin_secret = "seagate2"' solution.yaml
-        yq e -i '.solution.secrets.secret2.content.kafka_admin_secret = "Seagate@123"' solution.yaml   
-        yq e -i '.solution.secrets.secret2.content.consul_admin_secret = "Seagate@123"' solution.yaml
-        yq e -i '.solution.secrets.secret2.content.common_admin_secret = "Seagate@123"' solution.yaml
-        yq e -i '.solution.secrets.secret2.content.s3_auth_admin_secret = "ldapadmin"' solution.yaml
-        yq e -i '.solution.secrets.secret2.content.csm_auth_admin_secret = "seagate2"' solution.yaml
-        yq e -i '.solution.secrets.secret2.content.csm_mgmt_admin_secret = "Cortxadmin@123"' solution.yaml
-
-        yq e -i '.solution.secrets.secret3.name = "consul-secret"' solution.yaml
-        yq e -i '.solution.secrets.secret3.content.consul_secret = "hadjhjdhsjd"' solution.yaml
-        yq e -i '.solution.secrets.secret3.content.consul_secret1 = "hadjhjdhsjdaaa"' solution.yaml
+        yq e -i '.solution.secrets.name = "cortx-secret"' solution.yaml
+        yq e -i '.solution.secrets.content.openldap_admin_secret = "seagate2"' solution.yaml
+        yq e -i '.solution.secrets.content.kafka_admin_secret = "Seagate@123"' solution.yaml
+        yq e -i '.solution.secrets.content.consul_admin_secret = "Seagate@123"' solution.yaml
+        yq e -i '.solution.secrets.content.common_admin_secret = "Seagate@123"' solution.yaml
+        yq e -i '.solution.secrets.content.s3_auth_admin_secret = "ldapadmin"' solution.yaml
+        yq e -i '.solution.secrets.content.csm_auth_admin_secret = "seagate2"' solution.yaml
+        yq e -i '.solution.secrets.content.csm_mgmt_admin_secret = "Cortxadmin@123"' solution.yaml
 
         yq e -i '.solution.images.cortxcontrolprov = "centos:7"' solution.yaml
         yq e -i '.solution.images.cortxcontrol = "centos:7"' solution.yaml
@@ -73,10 +65,19 @@ function update_solution_config(){
         yq e -i '.solution.images.cortxdata = "centos:7"' solution.yaml
         yq e -i '.solution.images.cortxsupport = "centos:7"' solution.yaml
 
+        yq e -i '.solution.3rdparty.openldap.password = "seagate1"' solution.yaml
+
+        yq e -i '.solution.common.storage.local = "/etc/cortx"' solution.yaml
+        yq e -i '.solution.common.storage.shared = "/share"' solution.yaml
+        yq e -i '.solution.common.storage.log = "/share/var/log/cortx"' solution.yaml
         yq e -i '.solution.common.s3.num_inst = 2' solution.yaml
         yq e -i '.solution.common.s3.start_port_num = 28051' solution.yaml
         yq e -i '.solution.common.motr.num_inst = 1' solution.yaml
         yq e -i '.solution.common.motr.start_port_num = 2900' solution.yaml
+        yq e -i '.solution.common.storage_sets.name = "storage-set-1"' solution.yaml
+        yq e -i '.solution.common.storage_sets.durability.sns = "8+7+0"' solution.yaml
+        yq e -i '.solution.common.storage_sets.durability.dix = "1+0+0"' solution.yaml
+
 
         count=0
         for node in $(kubectl get node --selector='!node-role.kubernetes.io/master' | grep -v NAME | awk '{print $1}')
