@@ -22,6 +22,7 @@ pipeline {
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'kubernetes', description: 'Branch or GitHash for CORTX Cluster scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for CORTX Cluster scripts', trim: true)
         text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used. First node will be used as Master', name: 'hosts')
+        // Please configure CORTX_SCRIPTS_BRANCH and CORTX_SCRIPTS_REPO parameter in Jenkins job configuration.
 
         choice(
 			name: 'DEPLOY_TARGET',
@@ -73,8 +74,8 @@ pipeline {
 										parameters: [
 											string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
 											string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
-                                            string(name: 'CORTX_SCRIPTS_REPO', value: "Seagate/cortx-k8s"),
-											string(name: 'CORTX_SCRIPTS_BRANCH', value: "stable"),
+                                            string(name: 'CORTX_SCRIPTS_REPO', value: "${CORTX_SCRIPTS_REPO}"),
+											string(name: 'CORTX_SCRIPTS_BRANCH', value: "${CORTX_SCRIPTS_BRANCH}"),
 											string(name: 'hosts', value: "${hosts}")
 										]
 					} catch (err) {
