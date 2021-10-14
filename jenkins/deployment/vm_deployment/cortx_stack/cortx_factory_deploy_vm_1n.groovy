@@ -68,7 +68,7 @@ pipeline {
                         echo "-----------------------------------------------------------"
                     """
                     dir('cortx-re') {
-                        checkout([$class: 'GitSCM', branches: [[name: '*/pcs_status_changes']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/AbhijitPatil1992/cortx-re']]])
+                        checkout([$class: 'GitSCM', branches: [[name: '*/EOS-25322-pcs-status']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/AbhijitPatil1992/cortx-re']]])
                     }
 
                     if ( NODE1.isEmpty() ) {
