@@ -92,6 +92,7 @@ function clenaup_node(){
     files_to_remove=(
         "/etc/docker/daemon.json"
         "$HOME/.kube"
+        "/etc/systemd/system/docker.service"
     )
     # Set directive to remove packages with dependencies.
     searchString="clean_requirements_on_remove*"
