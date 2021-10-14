@@ -23,7 +23,7 @@ set -e -o pipefail
 usage() { echo "Usage: $0 [-b build url] [-p push docker-image to GHCR yes/no. Default yes] [ -t tag latest yes/no. Default no" ] 1>&2; exit 1; }
 
 VERSION=2.0.0
-DOCKER_PUSH=yes
+DOCKER_PUSH=no
 TAG_LATEST=no
 
 while getopts "b:p:t:" opt; do
@@ -46,7 +46,7 @@ fi
 pushd ../.././
 
 export CREATED_DATE=$(date -u +'%Y-%m-%d %H:%M:%S%:z')
-export TAG=2.4.58
+export TAG=standalone
 
 docker-compose -f docker/symas-openldap/docker-compose.yml build --force-rm --no-cache --compress --build-arg GIT_HASH="$(git rev-parse --short HEAD)" --build-arg CREATED_DATE="$CREATED_DATE" --build-arg BUILD_URL=$BUILD_URL syams-openldap
 
