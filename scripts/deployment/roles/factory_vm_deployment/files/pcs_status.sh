@@ -86,7 +86,7 @@ do
          break
     fi
     first_try_status="no"
-    count=$(expr $count + 1)
+    count=$((count+1))
     echo "retries $count"
     if [[ $count == $count_retry ]]; then
          echo "Retries timing is over"
