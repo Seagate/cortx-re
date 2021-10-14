@@ -203,7 +203,7 @@ pipeline {
                         sh build_release_info.sh $integration_dir/$release_tag/dev
                         sh build_release_info.sh $integration_dir/$release_tag/prod
 						sh build-3rdParty-release-info.sh $cortx_build_dir/$release_tag/3rd_party
-    					sh build_readme.sh $integration_dir/$release_tag
+    					sh build_readme.sh "$integration_dir/$release_tag"
 					popd
 					
 					cp $integration_dir/$release_tag/README.txt .
@@ -266,7 +266,7 @@ pipeline {
                 env.release_build = "${env.release_tag}"
                 env.build_stage = "${build_stage}"
 
-                def toEmail = "shailesh.vaidya@seagate.com, priyank.p.dalal@seagate.com, gowthaman.chinnathambi@seagate.com"
+                def toEmail = "shailesh.vaidya@seagate.com, priyank.p.dalal@seagate.com"
                 emailext ( 
                     body: '''${SCRIPT, template="release-email.template"}''',
                     mimeType: 'text/html',

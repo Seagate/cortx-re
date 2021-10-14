@@ -19,6 +19,7 @@ pipeline {
 		timeout(time: 60, unit: 'MINUTES')
 		timestamps ()
         ansiColor('xterm')
+		buildDiscarder(logRotator(daysToKeepStr: '5', numToKeepStr: '10'))
 	}
 	
 	parameters {  
@@ -73,7 +74,7 @@ pipeline {
 				sh label: 'Build', script: '''
 					pushd cortx-management-web
 						BUILD=$(git rev-parse --short HEAD)
-						VERSION=$(cat VERSION)
+						VERSION="2.0.0"
 						echo "Executing build script"
 						echo "VERSION:$VERSION"
 						echo "Python:$(python --version)"

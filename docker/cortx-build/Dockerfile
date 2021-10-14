@@ -27,9 +27,12 @@ ARG ENVIRONMENT
 ARG GIT_HASH
 
 LABEL maintainer="cortx.opensource@seagate.com" \
-      Description="This image is used to build CORTX components" \
+      org.opencontainers.image.title="CORTX Build Image" \
       org.opencontainers.image.revision=$GIT_HASH \
-      org.opencontainers.image.source="https://github.com/Seagate/cortx/blob/main/doc/Release_Build_Creation.rst"
+      org.opencontainers.image.vendor="Seagate" \
+      org.opencontainers.image.description="CORTX Build image is used to compile rpm packages from source code for CORTX stack components" \
+      org.opencontainers.image.source="https://github.com/Seagate/cortx/"
+      
 
 ENV BASH_ENV "/etc/profile"
 ENV GIT_HASH $GIT_HASH
@@ -41,7 +44,7 @@ ENV LANG=en_US.UTF-8 \
 RUN rm -rf /etc/yum.repos.d/CentOS-*
 
 #Add Internal and CORTX uploads repository
-COPY ./docker/cortx-build/${ENVIRONMENT}/*.repo /etc/yum.repos.d/
+COPY ./docker/cortx-build/${ENVIRONMENT}/C${CENTOS_RELEASE}.repo /etc/yum.repos.d/
 
 # Install EPEL repo for opensource-ci
 RUN if [ "$ENVIRONMENT" = "opensource-ci" ] ; then yum install epel-release -y ; fi && yum clean all \
@@ -172,7 +175,7 @@ COPY ./docker/cortx-build/lustre-2.9.0.spec.patch .
 
 RUN patch -p1 -i lustre-2.9.0.spec.patch /root/rpmbuild/SPECS/lustre.spec
 
-RUN yum -y install kernel{,-devel}-3.10.0-1127.el7  \
+RUN yum -y install kernel{,-devel}  \
 	&& yum-builddep -y /root/rpmbuild/SPECS/lustre.spec \
         && yum clean all \
         && rm -rf /var/cache/yum

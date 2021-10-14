@@ -37,7 +37,8 @@ pipeline {
         MGMT_VIP    = "${NODE_MGMT_VIP.isEmpty() ? MGMT_VIP : NODE_MGMT_VIP }"
         NODES       = "${NODE1_HOST},${NODE2_HOST},${NODE3_HOST}"
 
-        SETUP_TYPE = '3_node'         
+        SETUP_TYPE = '3_node'
+        SKIP_STAGE = "no"
     }
 
     options {
@@ -75,28 +76,41 @@ pipeline {
         }
 
         stage('00. Prepare Environment') {
+            when { expression { SKIP_STAGE == "no"  } }
             steps {
                 script {
-                    
-                    info("Running '00. Prepare Environment' Stage")  
+                    try {
+                        info("Running '00. Prepare Environment' Stage")  
 
-                    runAnsible("00_PREPARE")
+                        runAnsible("00_PREPARE")
+                    }
+                    catch (err) {
+                        currentBuild.result = 'UNSTABLE'
+                        SKIP_STAGE = "yes"
+                    }
                 }
             }
         }
 
         stage('01. Deploy Prereq') {
+            when { expression { SKIP_STAGE == "no"  } }
             steps {
                 script {
-                    
-                    info("Running '01. Deploy Prereq' Stage")
+                    try {
+                        info("Running '01. Deploy Prereq' Stage")
 
-                    runAnsible("01_DEPLOY_PREREQ")
+                        runAnsible("01_DEPLOY_PREREQ")
+                    }
+                    catch (err) {
+                        currentBuild.result = 'UNSTABLE'
+                        SKIP_STAGE = "yes"
+                    }
                 }
             } 
         }
 
         stage('02.1 Bootstarp Provisioner') {
+            when { expression { SKIP_STAGE == "no"  } }
             steps {
                 script {
                     
@@ -108,6 +122,7 @@ pipeline {
         }
 
         stage('02.2 Platform Setup') {
+            when { expression { SKIP_STAGE == "no"  } }
             steps {
                 script {
                     
@@ -119,6 +134,7 @@ pipeline {
         }
 
         stage('02.3 3party Tools Setup') {
+            when { expression { SKIP_STAGE == "no"  } }
             steps {
                 script {
                     
@@ -130,6 +146,7 @@ pipeline {
         }
 
         stage('02.4 Cortx Utils Setup') {
+            when { expression { SKIP_STAGE == "no"  } }
             steps {
                 script {
                     
@@ -141,6 +158,7 @@ pipeline {
         }
 
         stage('02.5 IO Path Setup') {
+            when { expression { SKIP_STAGE == "no"  } }
             steps {
                 script {
                     
@@ -152,6 +170,7 @@ pipeline {
         }
 
         stage('02.6 Control Path Setup') {
+            when { expression { SKIP_STAGE == "no"  } }
             steps {
                 script {
                     
@@ -163,6 +182,7 @@ pipeline {
         }
 
         stage('02.7 HA Setup') {
+            when { expression { SKIP_STAGE == "no"  } }
             steps {
                 script {
                     
@@ -174,12 +194,18 @@ pipeline {
         }
 
         stage('03. Validate') {
+            when { expression { SKIP_STAGE == "no"  } }
             steps {
                 script {
-                    
-                    info("Running '03. Validate Deployment' Stage")
+                    try {
+                        info("Running '03. Validate Deployment' Stage")
 
-                    runAnsible("03_VALIDATE")
+                        runAnsible("03_VALIDATE")
+                    }
+                    catch (err) {
+                        currentBuild.result = 'UNSTABLE'
+                        SKIP_STAGE = "yes"
+                    }                
                 }
             } 
         }
@@ -235,17 +261,15 @@ pipeline {
                     MESSAGE = "3 Node - Cortx Stack VM Deployment Success for the build ${build_id}"
                     ICON = "accept.gif"
                     STATUS = "SUCCESS"
-                } else {
+                } else if ( currentBuild.currentResult == "FAILURE" ) {
                     manager.buildFailure()
                     MESSAGE = "3 Node - Cortx Stack VM Deployment Failed for the build ${build_id}"
                     ICON = "error.gif"
                     STATUS = "FAILURE"
-
                     // Failure component name and Cause can be retrived from deployment status log
-                    if (fileExists('artifacts/srvnode1/cortx_deployment/log/deployment_status.log')
+                    if ( fileExists('artifacts/srvnode1/cortx_deployment/log/deployment_status.log')
                         && fileExists('artifacts/srvnode1/cortx_deployment/log/failed_component.log') ) {
-                        try {
-                           
+                        try {   
                             deployment_status_log = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/deployment_status.log').trim()
                             failed_component_stage = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/failed_component.log').trim()
                             failed_component_stage = failed_component_stage.trim().replaceAll("'","")
@@ -254,7 +278,7 @@ pipeline {
                             component_info_map = getComponentInfo(failed_component_stage)
                             component_name = component_info_map["name"]
                             component_email = component_info_map["email"] 
-
+                    
                             env.failure_cause = deployment_status_log
                             env.deployment_status_log = deployment_status_log
                             env.failed_component_stage = failed_component_stage
@@ -268,6 +292,11 @@ pipeline {
                             echo err.getMessage()
                         }
                     }
+                } else {
+                    manager.buildUnstable()
+                    MESSAGE = "3 Node - Cortx Stack VM Deployment is Unstable"
+                    ICON = "warning.gif"
+                    STATUS = "UNSTABLE"
                 }
 
                 // 5. Create JIRA on Failure - Create JIRA if deployment failed and create Jira true
@@ -301,9 +330,9 @@ pipeline {
                 }
                 
                 if ( "FAILURE".equals(currentBuild.currentResult) && params.AUTOMATED && env.component_email ) {
-                    toEmail = "${env.component_email}, priyank.p.dalal@seagate.com, gowthaman.chinnathambi@seagate.com"
+                    toEmail = "${env.component_email}, priyank.p.dalal@seagate.com, gaurav.chaudhari@seagate.com"
                 } else {
-                    toEmail = "gowthaman.chinnathambi@seagate.com"
+                    toEmail = "gaurav.chaudhari@seagate.com"
                 }
                 
                 emailext (
@@ -362,14 +391,12 @@ def getBuild(buildURL) {
 // Get build id from build url
 def getActualBuild(buildURL) {
 
-    buildRoot = "http://cortx-storage.colo.seagate.com/releases/cortx/github"
+    buildRoot = sh(script: "echo $buildURL | cut -d'/' -f1-8", returnStdout: true).trim()  
     buildID = sh(script: "curl -s  $buildURL/RELEASE.INFO  | grep BUILD | cut -d':' -f2 | tr -d '\"' | xargs", returnStdout: true).trim()
-    if ( buildURL.contains("/cortx/github/main/") ) {
-        buildURL = "${buildRoot}/main/centos-7.8.2003/${buildID}/prod"
-    } else if ( buildURL.contains("/cortx/github/stable/") ) {
-        buildURL = "${buildRoot}/stable/centos-7.8.2003/${buildID}/prod"
+    if ( buildURL.contains("/cortx/github/main/") || buildURL.contains("/cortx/github/stable/") ) {
+        buildURL = "${buildRoot}/${buildID}/prod"
     } else if ( buildURL.contains("/cortx/github/integration-custom-ci/")) {
-        buildURL = "${buildRoot}/integration-custom-ci/centos-7.8.2003/custom-build-${buildID}"
+        buildURL = "${buildRoot}/custom-build-${buildID}"
     }
 
  return buildURL  
@@ -465,7 +492,7 @@ def createJiraIssue(String failedStage, String failedComponent, String failureLo
                         issuetype: [name: 'Bug'],
                         priority: [name: "Blocker"],
                         versions: [[name: "LDR-R2"]],
-                        labels: ["PI-1"],
+                        labels: ["PI-2"],
                         components: [[name: "${failedComponent}"]],
                         summary: "3N VM-Deployment Failed in ${failedComponent} for the build ${build_id}",
                         description: "{panel}VM Deployment is failed in ${failedStage} for the build [${build_id}|${CORTX_BUILD}]. Please check Jenkins console log and deployment log for more info.\n"+

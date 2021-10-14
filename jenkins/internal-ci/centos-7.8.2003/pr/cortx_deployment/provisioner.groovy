@@ -83,6 +83,11 @@ pipeline {
 					    echo -e "Setup Provisioner python API"
 						bash ./devops/rpms/api/build_python_api.sh -vv --out-dir /root/rpmbuild/RPMS/x86_64/ --pkg-ver ${BUILD_NUMBER}_git$(git rev-parse --short HEAD)
 					'''
+
+                    sh encoding: 'UTF-8', label: 'cortx-setup', script: '''
+                        bash ./devops/rpms/lr-cli/build_python_cortx_setup.sh -vv --out-dir /root/rpmbuild/RPMS/x86_64/ --pkg-ver ${BUILD_NUMBER}_git$(git rev-parse --short HEAD)
+                    '''
+
 					sh label: 'Repo Creation', script: '''mkdir -p $DESTINATION_RELEASE_LOCATION
 					    pushd $DESTINATION_RELEASE_LOCATION
 						rpm -qi createrepo || yum install -y createrepo
@@ -180,7 +185,7 @@ pipeline {
         stage('Deploy') {
             agent { 
                 node { 
-                    label params.HOST == "-" ? "vm_deployment_1n && !teardown_req" : "vm_deployment_1n_user_host"
+                    label params.HOST == "-" ? "vm_deployment_1n && !cleanup_req" : "vm_deployment_1n_user_host"
                     customWorkspace "/var/jenkins/mini_provisioner/${JOB_NAME}_${BUILD_NUMBER}"
                 } 
             }
@@ -251,7 +256,7 @@ pipeline {
                         if ( "${DEBUG}" == "yes" ) {  
                             markNodeOffline("Motr Debug Mode Enabled on This Host  - ${BUILD_URL}")
                         } else {
-                            build job: 'Cortx-Automation/Deployment/VM-Teardown', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${env.NODE_NAME}")]                    
+                            build job: 'Cortx-Automation/Deployment/VM-Cleanup', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${env.NODE_NAME}")]                    
                         }
                     }
                     
@@ -313,7 +318,7 @@ def runAnsible(tags) {
     }
 }
 def markNodeforCleanup() {
-	nodeLabel = "teardown_req"
+	nodeLabel = "cleanup_req"
     node = getCurrentNode(env.NODE_NAME)
 	node.setLabelString(node.getLabelString() + " " + nodeLabel)
 	node.save()

@@ -1,7 +1,7 @@
 pipeline {
     agent {
         node {
-            label 'automation-node-centos'
+            label "docker-${os_version}-node"
         }
     }
     
@@ -18,11 +18,6 @@ pipeline {
             description: 'Branch Name'
         )
         
-         choice(
-            name: 'os_version', 
-            choices: ['centos-7.8.2003', 'rhel-7.7.1908'],
-            description: 'OS Version'
-        )
 	}	
 	
 
@@ -52,7 +47,7 @@ pipeline {
                     emailext mimeType: 'text/html',
                     body: '${FILE, path="rpm_validation.html"}',
                     subject: 'RPM Validation Result - [ Date :' +new Date().format("dd-MMM-yyyy") + ' ]',
-                    to: 'cortx.sme@seagate.com, shailesh.vaidya@seagate.com, gowthaman.chinnathambi@seagate.com, priyank.p.dalal@seagate.com, amol.j.kongre@seagate.com, mukul.malhotra@seagate.com'
+                    to: 'cortx.sme@seagate.com, shailesh.vaidya@seagate.com, priyank.p.dalal@seagate.com, amol.j.kongre@seagate.com, mukul.malhotra@seagate.com'
                 }
             } 
         }
