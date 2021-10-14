@@ -19,6 +19,7 @@ pipeline {
 		timeout(time: 60, unit: 'MINUTES')
 		timestamps ()
         ansiColor('xterm')
+		buildDiscarder(logRotator(daysToKeepStr: '5', numToKeepStr: '10'))
 	}
 	
 	parameters {  
@@ -86,7 +87,7 @@ pipeline {
 				sh label: 'Build', returnStatus: true, script: '''
 				pushd cortx-manager
 					BUILD=$(git rev-parse --short HEAD)
-					VERSION=$(cat VERSION)
+					VERSION="2.0.0"
 					echo "Executing build script"
 					echo "VERSION:$VERSION"
 					echo "Python:$(python --version)"
@@ -102,7 +103,6 @@ pipeline {
 				sh label: 'Copy RPMS', script: '''
 					mkdir -p $build_upload_dir
 					cp ./cortx-manager/dist/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir
-					createrepo -v --update $build_upload_dir
 				'''
 			}
 		}
