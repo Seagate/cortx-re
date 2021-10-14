@@ -46,37 +46,18 @@ RUN yum-config-manager --add-repo ${BUILD_URL}/cortx_iso/ \
     && yum-config-manager --add-repo ${BUILD_URL}/3rd_party \
     && curl ${BUILD_URL}/RELEASE.INFO -o RELEASE.INFO 
 
-COPY ./scripts/third-party-rpm/python_requirements*.txt /opt/
+COPY ./scripts/third-party-rpm/python_requirements*.txt ./docker/cortx-deploy/*-rpms.txt ./docker/cortx-deploy/generate-release-info.sh /opt/seagate/cortx/
 
 RUN yum install --nogpgcheck -y python3-pip \
     && pip3 install yq \
-    && pip3 install  --no-cache-dir --trusted-host $(echo $BUILD_URL | awk -F '/' '{print $3}') -i $BUILD_URL/python_deps -r /opt/python_requirements.txt -r /opt/python_requirements.ext.txt \
+    && pip3 install  --no-cache-dir --trusted-host $(echo $BUILD_URL | awk -F '/' '{print $3}') -i $BUILD_URL/python_deps -r /opt/seagate/cortx/python_requirements.txt -r /opt/seagate/cortx/python_requirements.ext.txt \
    && yum clean all && rm -rf /var/cache/yum
 
-RUN yum install --nogpgcheck -y java-1.8.0-openjdk-headless \
-    sudo \
-    which \
-    haproxy22 \
-    python3 \
-    sshpass \
-    python36-m2crypto \
-    jq \
-    kafka \
-    python36-dbus \
-    symas-openldap-clients \
-    python36-psutil \
-    crontabs \
-    logrotate \    
-    cortx-provisioner \
-    cortx-py-utils \
-    cortx-hare \
-    cortx-motr \
-    cortx-s3server \
-    cortx-csm_agent \
-    python36-cortx-prvsnr \
+RUN yum install --nogpgcheck -y  $(cat /opt/seagate/cortx/*-rpms.txt) \
     && yum clean all && rm -rf /var/cache/yum
-
-RUN rm -f /etc/machine-id && ln -s /etc/cortx/solution/node/id /etc/machine-id
+    
+RUN rm -f /etc/machine-id && ln -s /etc/cortx/solution/node/id /etc/machine-id \
+    && bash /opt/seagate/cortx/generate-release-info.sh
 
 RUN yum-config-manager --enable base,extras,updates && rm -rf /etc/yum.repos.d/cortx-storage.colo.seagate.com_releases_cortx_* /etc/yum.repos.d/C${CENTOS_RELEASE}.repo \
     && yum clean all && rm -rf /var/cache/yum
