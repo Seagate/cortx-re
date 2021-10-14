@@ -68,7 +68,7 @@ pipeline {
                         echo "-----------------------------------------------------------"
                     """
                     dir('cortx-re') {
-                        checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
+                        checkout([$class: 'GitSCM', branches: [[name: '*/pcs_status_changes']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/AbhijitPatil1992/cortx-re']]])
                     }
 
                     if ( NODE1.isEmpty() ) {
@@ -276,9 +276,9 @@ pipeline {
                 }
                 
                 if ( "FAILURE".equals(currentBuild.currentResult) && params.AUTOMATED && env.component_email ) {
-                    toEmail = "${env.component_email}, priyank.p.dalal@seagate.com, gaurav.chaudhari@seagate.com"
+                    toEmail = "abhijit.patil@seagate.com"
                 } else {
-                    toEmail = "gaurav.chaudhari@seagate.com"
+                    toEmail = "abhijit.patil@seagate.com"
                 }
                 
                 emailext (
