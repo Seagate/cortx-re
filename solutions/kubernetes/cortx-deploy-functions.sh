@@ -84,8 +84,8 @@ function update_solution_config(){
         yq e -i '.solution.storage.cvg1.type = "ios"' solution.yaml
         yq e -i '.solution.storage.cvg1.devices.metadata.device = "/dev/sdc"' solution.yaml
         yq e -i '.solution.storage.cvg1.devices.metadata.size = "5Gi"' solution.yaml
-        yq e -i '.solution.storage.cvg1.devices.data.device = "/dev/sdd"' solution.yaml
-        yq e -i '.solution.storage.cvg1.devices.data.size = "5Gi"' solution.yaml
+        yq e -i '.solution.storage.cvg1.devices.data.d1.device = "/dev/sdd"' solution.yaml
+        yq e -i '.solution.storage.cvg1.devices.data.d1.size = "5Gi"' solution.yaml
         
         yq e -i '.solution.storage.cvg2.name = "cvg-02"' solution.yaml
         yq e -i '.solution.storage.cvg2.type = "ios"' solution.yaml
