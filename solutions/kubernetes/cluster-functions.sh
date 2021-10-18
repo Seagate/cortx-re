@@ -81,7 +81,7 @@ function print_cluster_status(){
     kubectl get nodes -o wide
 }
 
-function clenaup_node(){
+function cleanup_node(){
     pkgs_to_remove=(
         "docker-ce"
         "docker-ce-cli"
@@ -264,7 +264,7 @@ fi
 
 case $ACTION in
     --cleanup)
-        clenaup_node
+        cleanup_node
     ;;
     --prepare) 
         install_prerequisites
