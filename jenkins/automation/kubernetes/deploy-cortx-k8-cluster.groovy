@@ -102,7 +102,7 @@ pipeline {
 
                 // Jenkins Summary
                 clusterStatus = ""
-                if ( fileExists('/var/tmp/cortx-cluster-status.txt') && currentBuild.currentResult == "SUCCESS"  {
+                if ( fileExists('/var/tmp/cortx-cluster-status.txt') && currentBuild.currentResult == "SUCCESS" ) {
                     clusterStatus = readFile(file: '/var/tmp/cortx-cluster-status.txt')
                     MESSAGE = "CORTX Cluster Setup Success for the build ${build_id}"
                     ICON = "accept.gif"
@@ -115,7 +115,7 @@ pipeline {
  
                 } else {
                     manager.buildUnstable()
-                    MESSAGE = "CORTX Cluster Setup is Unstable for the build ${build_id}"
+                    MESSAGE = "CORTX Cluster Setup is Unstable"
                     ICON = "warning.gif"
                     STATUS = "UNSTABLE"
                 }
