@@ -25,10 +25,10 @@ pipeline {
         // Please configure CORTX_SCRIPTS_BRANCH and CORTX_SCRIPTS_REPO parameter in Jenkins job configuration.
 
         choice(
-			name: 'DEPLOY_TARGET',
-			choices: ['THIRD-PARTY-ONLY', 'CORTX-CLUSTER'],
-			description: 'Deployment Target THIRD-PARTY-ONLY - This will only install third party components, CORTX-CLUSTER - This will install Third party and CORTX components both.'
-		)
+            name: 'DEPLOY_TARGET',
+            choices: ['THIRD-PARTY-ONLY', 'CORTX-CLUSTER'],
+            description: 'Deployment Target THIRD-PARTY-ONLY - This will only install third party components, CORTX-CLUSTER - This will install Third party and CORTX components both.'
+        )
        
     }    
 
@@ -56,7 +56,7 @@ pipeline {
             }
         }
 
-		stage ("Deploy third-party components") {
+        stage ("Deploy third-party components") {
             when {
                 expression { params.DEPLOY_TARGET == 'THIRD-PARTY-ONLY' }
             }
@@ -73,7 +73,7 @@ pipeline {
                     popd
                 '''
             }
-		}
+        }
 
         stage ("Deploy CORTX components") {
             when {
@@ -92,7 +92,7 @@ pipeline {
                     popd
                 '''
             }
-		}
+        }
     }
 
     post {
@@ -102,8 +102,8 @@ pipeline {
 
                 // Jenkins Summary
                 clusterStatus = ""
-                if ( currentBuild.currentResult == "SUCCESS" ) {
-                    //clusterStatus = readFile(file: '/var/tmp/cortx-cluster-status.txt')
+                if ( fileExists('/var/tmp/cortx-cluster-status.txt') && currentBuild.currentResult == "SUCCESS"  {
+                    clusterStatus = readFile(file: '/var/tmp/cortx-cluster-status.txt')
                     MESSAGE = "CORTX Cluster Setup Success for the build ${build_id}"
                     ICON = "accept.gif"
                     STATUS = "SUCCESS"
