@@ -43,69 +43,55 @@ pipeline {
             }
         }
 
-		stage ("Setup K8 Cluster") {
-			steps {
-				script { build_stage = env.STAGE_NAME }
-				script {
-					try {
-						def cortx_utils_build = build job: 'setup-kubernetes-cluster', wait: true,
-										parameters: [
-											string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
-											string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
-											string(name: 'hosts', value: "${hosts}")
-										]
-					} catch (err) {
-						build_stage = env.STAGE_NAME
-						error "Failed to Setup K8 Cluster"
-					}
-				}                        
-			}
-		}
+        stage ('Setup K8 Cluster') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'Tag last_successful', script: '''
+                    pushd solutions/kubernetes/
+                        echo $hosts | tr ' ' '\n' > hosts
+                        cat hosts
+                        ./cluster-setup.sh
+                    popd
+                '''
+            }
+        }
 
 		stage ("Deploy third-party components") {
             when {
                 expression { params.DEPLOY_TARGET == 'THIRD-PARTY-ONLY' }
             }
-			steps {
-				script { build_stage = env.STAGE_NAME }
-				script {
-					try {
-						def cortx_utils_build = build job: 'install-third-party-components', wait: true,
-										parameters: [
-											string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
-											string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
-                                            string(name: 'CORTX_SCRIPTS_REPO', value: "${CORTX_SCRIPTS_REPO}"),
-											string(name: 'CORTX_SCRIPTS_BRANCH', value: "${CORTX_SCRIPTS_BRANCH}"),
-											string(name: 'hosts', value: "${hosts}")
-										]
-					} catch (err) {
-						build_stage = env.STAGE_NAME
-						error "Deploy third-party components"
-					}
-				}                        
-			}
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'Deploy third-party components', script: '''
+                    pushd solutions/kubernetes/
+                        echo $hosts | tr ' ' '\n' > hosts
+                        cat hosts
+                        export GITHUB_TOKEN=${GITHUB_CRED}
+                        export CORTX_SCRIPTS_BRANCH=${CORTX_SCRIPTS_BRANCH}
+                        export CORTX_SCRIPTS_REPO=${CORTX_SCRIPTS_REPO}
+                        ./cortx-deploy.sh --third-party
+                    popd
+                '''
+            }
 		}
 
         stage ("Deploy CORTX components") {
             when {
                 expression { params.DEPLOY_TARGET == 'CORTX-CLUSTER' }
             }
-			steps {
-				script { build_stage = env.STAGE_NAME }
-				script {
-					try {
-						def cortx_utils_build = build job: 'setup-cortx-cluster', wait: true,
-										parameters: [
-											string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
-											string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
-											string(name: 'hosts', value: "${hosts}")
-										]
-					} catch (err) {
-						build_stage = env.STAGE_NAME
-						error "Deploy CORTX components"
-					}
-				}                        
-			}
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'Deploy third-party components', script: '''
+                    pushd solutions/kubernetes/
+                        echo $hosts | tr ' ' '\n' > hosts
+                        cat hosts
+                        export GITHUB_TOKEN=${GITHUB_CRED}
+                        export CORTX_SCRIPTS_BRANCH=${CORTX_SCRIPTS_BRANCH}
+                        export CORTX_SCRIPTS_REPO=${CORTX_SCRIPTS_REPO}
+                        ./cortx-deploy.sh --cortx-cluster
+                    popd
+                '''
+            }
 		}
     }
 
