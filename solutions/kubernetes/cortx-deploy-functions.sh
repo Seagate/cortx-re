@@ -68,17 +68,31 @@ function update_solution_config(){
 
         yq e -i '.solution.3rdparty.openldap.password = "seagate1"' solution.yaml
 
+        yq e -i '.solution.common.cortx_io_svc_ingress = "false"' solution.yaml
         yq e -i '.solution.common.storage.local = "/etc/cortx"' solution.yaml
         yq e -i '.solution.common.storage.shared = "/share"' solution.yaml
         yq e -i '.solution.common.storage.log = "/share/var/log/cortx"' solution.yaml
         yq e -i '.solution.common.s3.num_inst = 2' solution.yaml
         yq e -i '.solution.common.s3.start_port_num = 28051' solution.yaml
-        yq e -i '.solution.common.motr.num_inst = 1' solution.yaml
+        yq e -i '.solution.common.motr.num_client_inst = 1' solution.yaml
         yq e -i '.solution.common.motr.start_port_num = 29000' solution.yaml
         yq e -i '.solution.common.storage_sets.name = "storage-set-1"' solution.yaml
         yq e -i '.solution.common.storage_sets.durability.sns = "8+7+0"' solution.yaml
         yq e -i '.solution.common.storage_sets.durability.dix = "1+0+0"' solution.yaml
 
+        yq e -i '.solution.storage.cvg1.name = "cvg-01"' solution.yaml
+        yq e -i '.solution.storage.cvg1.type = "ios"' solution.yaml
+        yq e -i '.solution.storage.cvg1.devices.metadata.device = "/dev/sdc"' solution.yaml
+        yq e -i '.solution.storage.cvg1.devices.metadata.size = "5Gi"' solution.yaml
+        yq e -i '.solution.storage.cvg1.devices.data.device = "/dev/sdd"' solution.yaml
+        yq e -i '.solution.storage.cvg1.devices.data.size = "5Gi"' solution.yaml
+        
+        yq e -i '.solution.storage.cvg1.name = "cvg-02"' solution.yaml
+        yq e -i '.solution.storage.cvg1.type = "ios"' solution.yaml
+        yq e -i '.solution.storage.cvg1.devices.metadata.device = "/dev/sde"' solution.yaml
+        yq e -i '.solution.storage.cvg1.devices.metadata.size = "5Gi"' solution.yaml
+        yq e -i '.solution.storage.cvg1.devices.data.d1.device = "/dev/sdf"' solution.yaml
+        yq e -i '.solution.storage.cvg1.devices.data.d1.size = "5Gi"' solution.yaml
 
         count=0
         for node in $(kubectl get node --selector='!node-role.kubernetes.io/master' | grep -v NAME | awk '{print $1}')
@@ -86,15 +100,6 @@ function update_solution_config(){
             i=$node yq e -i '.solution.nodes['$count'].node'$count'.name = env(i)' solution.yaml
             drive=$SYSTEM_DRIVE_MOUNT yq e -i '.solution.nodes['$count'].node'$count'.volumes.devices.system = env(drive)' solution.yaml
     
-            yq e -i '.solution.nodes['$count'].node'$count'.volumes.devices.metadata.device = "/dev/sdb"' solution.yaml
-            yq e -i '.solution.nodes['$count'].node'$count'.volumes.devices.metadata.size = "5Gi"' solution.yaml
-
-            yq e -i '.solution.nodes['$count'].node'$count'.volumes.devices.data.d1.device = "/dev/sdd"' solution.yaml
-            yq e -i '.solution.nodes['$count'].node'$count'.volumes.devices.data.d1.size = "5Gi"' solution.yaml
-
-            yq e -i '.solution.nodes['$count'].node'$count'.volumes.devices.data.d2.device = "/dev/sde"' solution.yaml
-            yq e -i '.solution.nodes['$count'].node'$count'.volumes.devices.data.d2.size = "5Gi"' solution.yaml
-
             count=$((count+1))
         done
         sed -i 's/- //g' solution.yaml
