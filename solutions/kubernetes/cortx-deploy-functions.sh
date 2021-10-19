@@ -87,8 +87,8 @@ function update_solution_config(){
         yq e -i '.solution.storage.cvg1.devices.metadata.size = "5Gi"' solution.yaml
         yq e -i '.solution.storage.cvg1.devices.data.d1.device = "/dev/sdd"' solution.yaml
         yq e -i '.solution.storage.cvg1.devices.data.d1.size = "5Gi"' solution.yaml
-        yq e -i '.solution.storage.cvg1.devices.data.d1.device = "/dev/sde"' solution.yaml
-        yq e -i '.solution.storage.cvg1.devices.data.d1.size = "5Gi"' solution.yaml
+        yq e -i '.solution.storage.cvg1.devices.data.d2.device = "/dev/sde"' solution.yaml
+        yq e -i '.solution.storage.cvg1.devices.data.d2.size = "5Gi"' solution.yaml
         
         yq e -i '.solution.storage.cvg2.name = "cvg-02"' solution.yaml
         yq e -i '.solution.storage.cvg2.type = "ios"' solution.yaml
@@ -96,8 +96,8 @@ function update_solution_config(){
         yq e -i '.solution.storage.cvg2.devices.metadata.size = "5Gi"' solution.yaml
         yq e -i '.solution.storage.cvg2.devices.data.d1.device = "/dev/sdg"' solution.yaml
         yq e -i '.solution.storage.cvg2.devices.data.d1.size = "5Gi"' solution.yaml
-        yq e -i '.solution.storage.cvg1.devices.data.d1.device = "/dev/sdh"' solution.yaml
-        yq e -i '.solution.storage.cvg1.devices.data.d1.size = "5Gi"' solution.yaml
+        yq e -i '.solution.storage.cvg1.devices.data.d2.device = "/dev/sdh"' solution.yaml
+        yq e -i '.solution.storage.cvg1.devices.data.d2.size = "5Gi"' solution.yaml
         
         count=0
         for node in $(kubectl get node --selector='!node-role.kubernetes.io/master' | grep -v NAME | awk '{print $1}')
