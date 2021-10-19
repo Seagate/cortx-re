@@ -75,7 +75,7 @@ function update_solution_config(){
         yq e -i '.solution.common.storage.log = "/share/var/log/cortx"' solution.yaml
         yq e -i '.solution.common.s3.num_inst = 2' solution.yaml
         yq e -i '.solution.common.s3.start_port_num = 28051' solution.yaml
-        yq e -i '.solution.common.motr.num_client_inst = 1' solution.yaml
+        yq e -i '.solution.common.motr.num_client_inst = 0' solution.yaml
         yq e -i '.solution.common.motr.start_port_num = 29000' solution.yaml
         yq e -i '.solution.common.storage_sets.name = "storage-set-1"' solution.yaml
         yq e -i '.solution.common.storage_sets.durability.sns = "8+7+0"' solution.yaml
@@ -87,14 +87,18 @@ function update_solution_config(){
         yq e -i '.solution.storage.cvg1.devices.metadata.size = "5Gi"' solution.yaml
         yq e -i '.solution.storage.cvg1.devices.data.d1.device = "/dev/sdd"' solution.yaml
         yq e -i '.solution.storage.cvg1.devices.data.d1.size = "5Gi"' solution.yaml
+        yq e -i '.solution.storage.cvg1.devices.data.d1.device = "/dev/sde"' solution.yaml
+        yq e -i '.solution.storage.cvg1.devices.data.d1.size = "5Gi"' solution.yaml
         
         yq e -i '.solution.storage.cvg2.name = "cvg-02"' solution.yaml
         yq e -i '.solution.storage.cvg2.type = "ios"' solution.yaml
-        yq e -i '.solution.storage.cvg2.devices.metadata.device = "/dev/sde"' solution.yaml
+        yq e -i '.solution.storage.cvg2.devices.metadata.device = "/dev/sdf"' solution.yaml
         yq e -i '.solution.storage.cvg2.devices.metadata.size = "5Gi"' solution.yaml
-        yq e -i '.solution.storage.cvg2.devices.data.d1.device = "/dev/sdf"' solution.yaml
+        yq e -i '.solution.storage.cvg2.devices.data.d1.device = "/dev/sdg"' solution.yaml
         yq e -i '.solution.storage.cvg2.devices.data.d1.size = "5Gi"' solution.yaml
-
+        yq e -i '.solution.storage.cvg1.devices.data.d1.device = "/dev/sdh"' solution.yaml
+        yq e -i '.solution.storage.cvg1.devices.data.d1.size = "5Gi"' solution.yaml
+        
         count=0
         for node in $(kubectl get node --selector='!node-role.kubernetes.io/master' | grep -v NAME | awk '{print $1}')
             do
