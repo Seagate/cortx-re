@@ -60,12 +60,13 @@ function update_solution_config(){
         yq e -i '.solution.secrets.content.csm_auth_admin_secret = "seagate2"' solution.yaml
         yq e -i '.solution.secrets.content.csm_mgmt_admin_secret = "Cortxadmin@123"' solution.yaml
 
-        yq e -i '.solution.images.cortxcontrolprov = "centos:7"' solution.yaml
-        yq e -i '.solution.images.cortxcontrol = "centos:7"' solution.yaml
-        yq e -i '.solution.images.cortxdataprov = "centos:7"' solution.yaml
-        yq e -i '.solution.images.cortxdata = "centos:7"' solution.yaml
-        yq e -i '.solution.images.cortxsupport = "centos:7"' solution.yaml
 
+        image=$CORTX_IMAGE yq e -i '.solution.images.cortxcontrolprov = env(image)' solution.yaml	
+        image=$CORTX_IMAGE yq e -i '.solution.images.cortxcontrol = env(image)' solution.yaml	
+        image=$CORTX_IMAGE yq e -i '.solution.images.cortxdataprov = env(image)' solution.yaml	
+        image=$CORTX_IMAGE yq e -i '.solution.images.cortxdata = env(image)' solution.yaml	
+        image=$CORTX_IMAGE yq e -i '.solution.images.cortxsupport = env(image)' solution.yaml	
+	
         yq e -i '.solution.3rdparty.openldap.password = "seagate1"' solution.yaml
 
         yq e -i '.solution.common.cortx_io_svc_ingress = false' solution.yaml
