@@ -67,7 +67,7 @@ function update_solution_config(){
         image=$CORTX_IMAGE yq e -i '.solution.images.cortxdata = env(image)' solution.yaml	
         image=$CORTX_IMAGE yq e -i '.solution.images.cortxsupport = env(image)' solution.yaml	
 	
-        yq e -i '.solution.3rdparty.openldap.password = "seagate1"' solution.yaml
+        yq e -i '.solution.3rdparty.openldap.password = "seagate2"' solution.yaml
 
         yq e -i '.solution.common.cortx_io_svc_ingress = false' solution.yaml
         yq e -i '.solution.common.storage.local = "/etc/cortx"' solution.yaml
@@ -78,7 +78,7 @@ function update_solution_config(){
         yq e -i '.solution.common.motr.num_client_inst = 0' solution.yaml
         yq e -i '.solution.common.motr.start_port_num = 29000' solution.yaml
         yq e -i '.solution.common.storage_sets.name = "storage-set-1"' solution.yaml
-        yq e -i '.solution.common.storage_sets.durability.sns = "8+7+0"' solution.yaml
+        yq e -i '.solution.common.storage_sets.durability.sns = "1+0+0"' solution.yaml
         yq e -i '.solution.common.storage_sets.durability.dix = "1+0+0"' solution.yaml
 
         yq e -i '.solution.storage.cvg1.name = "cvg-01"' solution.yaml
