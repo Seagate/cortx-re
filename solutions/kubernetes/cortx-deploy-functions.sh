@@ -129,6 +129,7 @@ function mount_system_device(){
     mkdir -p /mnt/fs-local-volume
     mount -t ext4 $SYSTESM_DRIVE $SYSTEM_DRIVE_MOUNT
     mkdir -p /mnt/fs-local-volume/local-path-provisioner
+    sysctl -w vm.max_map_count=30000000
 }
 
 #glusterfes requirements
