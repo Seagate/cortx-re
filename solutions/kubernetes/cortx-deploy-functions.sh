@@ -158,6 +158,13 @@ function download_images(){
     
 }
 
+function execute_prereq(){
+    pushd $SCRIPT_LOCATION/k8_cortx_cloud
+        ./prereq-deploy-cortx-cloud.sh $SYSTESM_DRIVE
+    popd    
+
+}
+
 function usage(){
     cat << HEREDOC
 Usage : $0 [--setup-worker, --setup-master, --third-party, --cortx-cluster, --destroy, --status]
@@ -194,10 +201,9 @@ echo "---------------------------------------[ Setting up Master Node ]---------
 
 function setup_worker_node(){
 echo "---------------------------------------[ Setting up Worker Node ]--------------------------------------"
-    mount_system_device
     download_images
-    glusterfs_requirements
-    openldap_requiremenrs
+    download_deploy_script
+    execute_prereq
 }
 
 function destroy(){
