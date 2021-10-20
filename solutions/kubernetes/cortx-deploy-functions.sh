@@ -28,6 +28,11 @@ YQ_BINARY=yq_linux_386
 #download CORTX k8 deployment scripts
 
 function download_deploy_script(){
+    if [ -z "$SCRIPT_LOCATION" ]; then echo "SCRIPT_LOCATION not provided.Exiting..."; exit 1; fi
+    if [ -z "$GITHUB_TOKEN" ]; then echo "GITHUB_TOKEN not provided.Exiting..."; exit 1; fi
+    if [ -z "$CORTX_SCRIPTS_REPO" ]; then echo "CORTX_SCRIPTS_REPO not provided.Exiting..."; exit 1; fi
+    if [ -z "$CORTX_SCRIPTS_BRANCH" ]; then echo "CORTX_SCRIPTS_BRANCH not provided.Exiting..."; exit 1; fi
+
     rm -rf $SCRIPT_LOCATION
     yum install git -y
     git clone https://$GITHUB_TOKEN@github.com/$CORTX_SCRIPTS_REPO $SCRIPT_LOCATION
@@ -60,13 +65,14 @@ function update_solution_config(){
         yq e -i '.solution.secrets.content.csm_auth_admin_secret = "seagate2"' solution.yaml
         yq e -i '.solution.secrets.content.csm_mgmt_admin_secret = "Cortxadmin@123"' solution.yaml
 
-        yq e -i '.solution.images.cortxcontrolprov = "centos:7"' solution.yaml
-        yq e -i '.solution.images.cortxcontrol = "centos:7"' solution.yaml
-        yq e -i '.solution.images.cortxdataprov = "centos:7"' solution.yaml
-        yq e -i '.solution.images.cortxdata = "centos:7"' solution.yaml
-        yq e -i '.solution.images.cortxsupport = "centos:7"' solution.yaml
 
-        yq e -i '.solution.3rdparty.openldap.password = "seagate1"' solution.yaml
+        image=$CORTX_IMAGE yq e -i '.solution.images.cortxcontrolprov = env(image)' solution.yaml	
+        image=$CORTX_IMAGE yq e -i '.solution.images.cortxcontrol = env(image)' solution.yaml	
+        image=$CORTX_IMAGE yq e -i '.solution.images.cortxdataprov = env(image)' solution.yaml	
+        image=$CORTX_IMAGE yq e -i '.solution.images.cortxdata = env(image)' solution.yaml	
+        image=$CORTX_IMAGE yq e -i '.solution.images.cortxsupport = env(image)' solution.yaml	
+	
+        yq e -i '.solution.3rdparty.openldap.password = "seagate2"' solution.yaml
 
         yq e -i '.solution.common.cortx_io_svc_ingress = false' solution.yaml
         yq e -i '.solution.common.storage.local = "/etc/cortx"' solution.yaml
@@ -74,10 +80,10 @@ function update_solution_config(){
         yq e -i '.solution.common.storage.log = "/share/var/log/cortx"' solution.yaml
         yq e -i '.solution.common.s3.num_inst = 2' solution.yaml
         yq e -i '.solution.common.s3.start_port_num = 28051' solution.yaml
-        yq e -i '.solution.common.motr.num_client_inst = 1' solution.yaml
+        yq e -i '.solution.common.motr.num_client_inst = 0' solution.yaml
         yq e -i '.solution.common.motr.start_port_num = 29000' solution.yaml
         yq e -i '.solution.common.storage_sets.name = "storage-set-1"' solution.yaml
-        yq e -i '.solution.common.storage_sets.durability.sns = "8+7+0"' solution.yaml
+        yq e -i '.solution.common.storage_sets.durability.sns = "1+0+0"' solution.yaml
         yq e -i '.solution.common.storage_sets.durability.dix = "1+0+0"' solution.yaml
 
         yq e -i '.solution.storage.cvg1.name = "cvg-01"' solution.yaml
@@ -86,14 +92,18 @@ function update_solution_config(){
         yq e -i '.solution.storage.cvg1.devices.metadata.size = "5Gi"' solution.yaml
         yq e -i '.solution.storage.cvg1.devices.data.d1.device = "/dev/sdd"' solution.yaml
         yq e -i '.solution.storage.cvg1.devices.data.d1.size = "5Gi"' solution.yaml
+        yq e -i '.solution.storage.cvg1.devices.data.d2.device = "/dev/sde"' solution.yaml
+        yq e -i '.solution.storage.cvg1.devices.data.d2.size = "5Gi"' solution.yaml
         
         yq e -i '.solution.storage.cvg2.name = "cvg-02"' solution.yaml
         yq e -i '.solution.storage.cvg2.type = "ios"' solution.yaml
-        yq e -i '.solution.storage.cvg2.devices.metadata.device = "/dev/sde"' solution.yaml
+        yq e -i '.solution.storage.cvg2.devices.metadata.device = "/dev/sdf"' solution.yaml
         yq e -i '.solution.storage.cvg2.devices.metadata.size = "5Gi"' solution.yaml
-        yq e -i '.solution.storage.cvg2.devices.data.d1.device = "/dev/sdf"' solution.yaml
+        yq e -i '.solution.storage.cvg2.devices.data.d1.device = "/dev/sdg"' solution.yaml
         yq e -i '.solution.storage.cvg2.devices.data.d1.size = "5Gi"' solution.yaml
-
+        yq e -i '.solution.storage.cvg2.devices.data.d2.device = "/dev/sdh"' solution.yaml
+        yq e -i '.solution.storage.cvg2.devices.data.d2.size = "5Gi"' solution.yaml
+        
         count=0
         for node in $(kubectl get node --selector='!node-role.kubernetes.io/master' | grep -v NAME | awk '{print $1}')
             do
@@ -124,6 +134,7 @@ function mount_system_device(){
     mkdir -p /mnt/fs-local-volume
     mount -t ext4 $SYSTESM_DRIVE $SYSTEM_DRIVE_MOUNT
     mkdir -p /mnt/fs-local-volume/local-path-provisioner
+    sysctl -w vm.max_map_count=30000000
 }
 
 #glusterfes requirements
@@ -144,10 +155,20 @@ function openldap_requiremenrs(){
 }
 
 function download_images(){
+    rm -rf /var/images
     mkdir -p /var/images && pushd /var/images
-        wget -r -np -nH --cut-dirs=3 -A *.tar http://cortx-storage.colo.seagate.com/releases/cortx/images/
+        wget -q -r -np -nH --cut-dirs=3 -A *.tar http://cortx-storage.colo.seagate.com/releases/cortx/images/
         for file in $(ls -1); do docker load -i $file; done
-    popd 
+    popd
+    
+}
+
+function execute_prereq(){
+    pushd $SCRIPT_LOCATION/k8_cortx_cloud
+        umount -l $SYSTESM_DRIVE
+        ./prereq-deploy-cortx-cloud.sh $SYSTESM_DRIVE
+    popd    
+
 }
 
 function usage(){
@@ -176,7 +197,7 @@ if [ -z "$ACTION" ]; then
 fi
 
 function setup_master_node(){
-echo "---------------------------------------[ Setting up Master Node ]--------------------------------------"
+echo "---------------------------------------[ Setting up Master Node $HOSTNAME ]--------------------------------------"
     download_deploy_script $GITHUB_TOKEN
     download_images
     install_yq
@@ -185,11 +206,10 @@ echo "---------------------------------------[ Setting up Master Node ]---------
 
 
 function setup_worker_node(){
-echo "---------------------------------------[ Setting up Worker Node ]--------------------------------------"
-    mount_system_device
+echo "---------------------------------------[ Setting up Worker Node on $HOSTNAME ]--------------------------------------"
     download_images
-    glusterfs_requirements
-    openldap_requiremenrs
+    download_deploy_script
+    execute_prereq
 }
 
 function destroy(){
