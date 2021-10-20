@@ -197,7 +197,7 @@ if [ -z "$ACTION" ]; then
 fi
 
 function setup_master_node(){
-echo "---------------------------------------[ Setting up Master Node ]--------------------------------------"
+echo "---------------------------------------[ Setting up Master Node $HOSTNAME ]--------------------------------------"
     download_deploy_script $GITHUB_TOKEN
     download_images
     install_yq
@@ -206,7 +206,7 @@ echo "---------------------------------------[ Setting up Master Node ]---------
 
 
 function setup_worker_node(){
-echo "---------------------------------------[ Setting up Worker Node ]--------------------------------------"
+echo "---------------------------------------[ Setting up Worker Node on $HOSTNAME ]--------------------------------------"
     download_images
     download_deploy_script
     execute_prereq
