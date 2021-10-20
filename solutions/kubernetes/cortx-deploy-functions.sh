@@ -157,7 +157,7 @@ function openldap_requiremenrs(){
 function download_images(){
     rm -rf /var/images
     mkdir -p /var/images && pushd /var/images
-        wget -r -np -nH --cut-dirs=3 -A *.tar http://cortx-storage.colo.seagate.com/releases/cortx/images/
+        wget -q -r -np -nH --cut-dirs=3 -A *.tar http://cortx-storage.colo.seagate.com/releases/cortx/images/
         for file in $(ls -1); do docker load -i $file; done
     popd
     
