@@ -20,7 +20,6 @@
 
 START_BUILD=$1
 TARGET_BUILD=$2
-BUILD_LOCATION=$3
 
 function usage() {
 echo "No inputs provided exiting..."
