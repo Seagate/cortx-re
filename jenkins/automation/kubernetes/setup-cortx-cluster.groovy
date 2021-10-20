@@ -6,7 +6,7 @@ pipeline {
     }
     
     options {
-        timeout(time: 120, unit: 'MINUTES')
+        timeout(time: 30, unit: 'MINUTES')
         timestamps()
         buildDiscarder(logRotator(daysToKeepStr: '30', numToKeepStr: '30'))
         ansiColor('xterm')
@@ -42,7 +42,7 @@ pipeline {
         stage ('Deploy CORTX Components') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Tag last_successful', script: '''
+                sh label: 'Deploy CORTX Components', script: '''
                     pushd solutions/kubernetes/
                         echo $hosts | tr ' ' '\n' > hosts
                         cat hosts
