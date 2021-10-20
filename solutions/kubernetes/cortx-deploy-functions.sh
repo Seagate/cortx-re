@@ -165,6 +165,7 @@ function download_images(){
 
 function execute_prereq(){
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
+        umount -l $SYSTESM_DRIVE
         ./prereq-deploy-cortx-cloud.sh $SYSTESM_DRIVE
     popd    
 
