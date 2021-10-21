@@ -62,12 +62,13 @@ if [ $? -ne 0 ]; then
     echo "ERROR:While downloading start build RELEASE INFO by wget command got failed for $START_BUILD"
     exit 1
 fi
-
+START_BUILD=$(echo "$START_BUILD"|awk -F "/" '{print $9}')
 wget -q $TARGET_BUILD -O target_build_manifest.txt
 if [ $? -ne 0 ]; then
     echo "ERROR:While downloading target build RELEASE INFO by wget command got failed $TARGET_BUILD"
     exit 1
 fi
+TARGET_BUILD=$(echo "$TARGET_BUILD"|awk -F "/" '{print $9}')
 
 for component in "${!COMPONENT_LIST[@]}"
 do
