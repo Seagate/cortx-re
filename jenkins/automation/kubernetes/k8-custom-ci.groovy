@@ -30,21 +30,21 @@ pipeline {
   }
 
     parameters {
-        string(name: 'CSM_AGENT_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CSM Agent', trim: true)
+        string(name: 'CSM_AGENT_BRANCH', defaultValue: 'kubernetes', description: 'Branch or GitHash for CSM Agent', trim: true)
         string(name: 'CSM_AGENT_URL', defaultValue: 'https://github.com/Seagate/cortx-manager', description: 'CSM_AGENT Repository URL', trim: true)
-        string(name: 'HARE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Hare', trim: true)
+        string(name: 'HARE_BRANCH', defaultValue: 'kubernetes', description: 'Branch or GitHash for Hare', trim: true)
         string(name: 'HARE_URL', defaultValue: 'https://github.com/Seagate/cortx-hare', description: 'Hare Repository URL', trim: true)
-        string(name: 'HA_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Cortx-HA', trim: true)
+        string(name: 'HA_BRANCH', defaultValue: 'kubernetes', description: 'Branch or GitHash for Cortx-HA', trim: true)
         string(name: 'HA_URL', defaultValue: 'https://github.com/Seagate/cortx-ha.git', description: 'Cortx-HA Repository URL', trim: true)
-        string(name: 'MOTR_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Motr', trim: true)
+        string(name: 'MOTR_BRANCH', defaultValue: 'kubernetes', description: 'Branch or GitHash for Motr', trim: true)
         string(name: 'MOTR_URL', defaultValue: 'https://github.com/Seagate/cortx-motr.git', description: 'Motr Repository URL', trim: true)
-        string(name: 'PRVSNR_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Provisioner', trim: true)
+        string(name: 'PRVSNR_BRANCH', defaultValue: 'kubernetes', description: 'Branch or GitHash for Provisioner', trim: true)
         string(name: 'PRVSNR_URL', defaultValue: 'https://github.com/Seagate/cortx-prvsnr.git', description: 'Provisioner Repository URL', trim: true)
-        string(name: 'S3_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for S3Server', trim: true)
+        string(name: 'S3_BRANCH', defaultValue: 'kubernetes', description: 'Branch or GitHash for S3Server', trim: true)
         string(name: 'S3_URL', defaultValue: 'https://github.com/Seagate/cortx-s3server.git', description: 'S3Server Repository URL', trim: true)
-        string(name: 'CORTX_UTILS_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX Utils', trim: true)
+        string(name: 'CORTX_UTILS_BRANCH', defaultValue: 'kubernetes', description: 'Branch or GitHash for CORTX Utils', trim: true)
         string(name: 'CORTX_UTILS_URL', defaultValue: 'https://github.com/Seagate/cortx-utils', description: 'CORTX Utils Repository URL', trim: true)
-        string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX RE', trim: true)
+        string(name: 'CORTX_RE_BRANCH', defaultValue: 'kubernetes', description: 'Branch or GitHash for CORTX RE', trim: true)
         string(name: 'CORTX_RE_URL', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'CORTX RE Repository URL', trim: true)
 
         choice(
