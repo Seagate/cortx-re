@@ -227,7 +227,13 @@ function destroy(){
 }
 
 function print_pod_status(){
-     kubectl get pods -o wide
+    echo "---------------------------------------[ All POD Status ]----------------------------------------------"
+    kubectl get pods -o wide
+    echo "---------------------------------[ Output of status-cortx-cloud.sh ]-------------------------------------" 
+    pushd $SCRIPT_LOCATION/k8_cortx_cloud
+        chmod +x *.sh
+        ./status-cortx-cloud.sh
+    popd    
 }
 
 case $ACTION in
