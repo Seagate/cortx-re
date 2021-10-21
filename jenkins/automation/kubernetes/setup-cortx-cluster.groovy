@@ -102,10 +102,6 @@ pipeline {
         }
 
         cleanup {
-            sh label: 'Collect Artifacts', script: '''
-                mkdir artifacts
-                cp /root/deploy-scripts/k8_cortx_cloud/solution.yaml artifacts/
-            '''
             script {
                 // Archive Deployment artifacts in jenkins build
                 archiveArtifacts artifacts: "artifacts/**/*.*", onlyIfSuccessful: false, allowEmptyArchive: true 
