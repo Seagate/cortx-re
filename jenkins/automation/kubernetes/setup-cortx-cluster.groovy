@@ -104,10 +104,11 @@ pipeline {
         cleanup {
             sh label: 'Collect Artifacts', script: '''
             mkdir artifacts
+            ls -ltr
             pushd solutions/kubernetes/
                 HOST_FILE=$PWD/hosts
                 MASTER_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
-                scp -q "$MASTER_NODE":/root/deploy-scripts/k8_cortx_cloud/solution.yaml artifacts
+                scp -q "$MASTER_NODE":/root/deploy-scripts/k8_cortx_cloud/solution.yaml $WORKSPACE/artifacts/
             popd    
             '''
             script {
