@@ -73,10 +73,10 @@ function update_solution_config(){
 
         yq e -i '.solution.images.openldap = "ghcr.io/seagate/symas-openldap:standalone"' solution.yaml
         yq e -i '.solution.images.consul = "hashicorp/consul:1.10.0"' solution.yaml
-        yq e -i '.solution.images.openldap = "bitnami/kafka"' solution.yaml
-        yq e -i '.solution.images.openldap = "bitnami/zookeeper"' solution.yaml
-        yq e -i '.solution.images.openldap = "docker.io/gluster/gluster-centos"' solution.yaml
-        yq e -i '.solution.images.openldap = "rancher/local-path-provisioner:v0.0.20"' solution.yaml
+        yq e -i '.solution.images.kafka = "bitnami/kafka"' solution.yaml
+        yq e -i '.solution.images.zookeeper = "bitnami/zookeeper"' solution.yaml
+        yq e -i '.solution.images.gluster = "docker.io/gluster/gluster-centos"' solution.yaml
+        yq e -i '.solution.images.rancher = "rancher/local-path-provisioner:v0.0.20"' solution.yaml
 	
         yq e -i '.solution.3rdparty.openldap.password = "seagate2"' solution.yaml
 
