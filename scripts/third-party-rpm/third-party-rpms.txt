@@ -68,3 +68,4 @@ systemd-python36 == 1.0.0
 sysvinit-tools
 udisks2 == 2.8.4
 yaml-cpp
+java-1.8.0-openjdk-headless
