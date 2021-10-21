@@ -49,7 +49,7 @@ pipeline {
 
         choice(
             name: 'THIRD_PARTY_RPM_VERSION',
-            choices: ['cortx-2.0', 'cortx-2.0-k8', 'custom'],
+            choices: ['cortx-2.0-k8', 'cortx-2.0', 'custom'],
             description: 'Third Party RPM Version to use.'
         )
 
