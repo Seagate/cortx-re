@@ -23,6 +23,37 @@ SYSTEM_DRIVE_MOUNT="/mnt/fs-local-volume/"
 SCRIPT_LOCATION="/root/deploy-scripts"
 YQ_VERSION=v4.13.3
 YQ_BINARY=yq_linux_386
+export Exception=100
+export ConfigException=101
+
+# try-catch functions
+function try()
+{
+    [[ $- = *e* ]]; SAVED_OPT_E=$?
+    set +e
+}
+
+function throw()
+{
+    exit $1
+}
+
+function catch()
+{
+    export ex_code=$?
+    (( $SAVED_OPT_E )) && set +e
+    return $ex_code
+} 
+
+function throwErrors()
+{
+    set -e
+}
+
+function ignoreErrors()
+{
+    set +e
+}
 
 #On master
 #download CORTX k8 deployment scripts
@@ -44,9 +75,29 @@ function download_deploy_script(){
 #Install yq 4.13.3
 
 function install_yq(){
-    pip3 uninstall yq -y
-    wget https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${YQ_BINARY}.tar.gz -O - | tar xz && mv ${YQ_BINARY} /usr/bin/yq
-    ln -s /usr/bin/yq /usr/local/bin/yq
+    try
+    (
+        pip3 uninstall yq -y
+        wget https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${YQ_BINARY}.tar.gz -O - | tar xz && mv ${YQ_BINARY} /usr/bin/yq || throw $Exception
+        ln -s /usr/bin/yq /usr/local/bin/yq || throw $Exception
+    )
+    catch || {
+    # handle excption
+    case $ex_code in
+        $Exception)
+            echo "An Exception was thrown. Please check logs"
+            throw 1
+        ;;
+        $ConfigException)
+            echo "A ConfigException was thrown. Please check logs"
+            throw 1
+        ;;
+        *)
+            echo "An unexpected exception was thrown"
+            throw $ex_code # you can rethrow the "exception" causing the script to exit if not caught
+        ;;
+    esac
+    }    
 }
 
 #modify solution.yaml
@@ -129,12 +180,32 @@ function execute_deploy_script(){
 #format and mount system drive
 
 function mount_system_device(){
-    umount -l $SYSTESM_DRIVE
-    mkfs.ext4 -F $SYSTESM_DRIVE
-    mkdir -p /mnt/fs-local-volume
-    mount -t ext4 $SYSTESM_DRIVE $SYSTEM_DRIVE_MOUNT
-    mkdir -p /mnt/fs-local-volume/local-path-provisioner
-    sysctl -w vm.max_map_count=30000000
+    try
+    (
+        umount -l $SYSTESM_DRIVE
+        mkfs.ext4 -F $SYSTESM_DRIVE
+        mkdir -p /mnt/fs-local-volume
+        mount -t ext4 $SYSTESM_DRIVE $SYSTEM_DRIVE_MOUNT || throw $Exception
+        mkdir -p /mnt/fs-local-volume/local-path-provisioner
+        sysctl -w vm.max_map_count=30000000 || throw $Exception
+    )
+    catch || {
+    # handle excption
+    case $ex_code in
+        $Exception)
+            echo "An Exception was thrown. Please check logs"
+            throw 1
+        ;;
+        $ConfigException)
+            echo "A ConfigException was thrown. Please check logs"
+            throw 1
+        ;;
+        *)
+            echo "An unexpected exception was thrown"
+            throw $ex_code # you can rethrow the "exception" causing the script to exit if not caught
+        ;;
+    esac
+    }    
 }
 
 #glusterfes requirements
@@ -155,12 +226,31 @@ function openldap_requiremenrs(){
 }
 
 function download_images(){
-    rm -rf /var/images
-    mkdir -p /var/images && pushd /var/images
-        wget -q -r -np -nH --cut-dirs=3 -A *.tar http://cortx-storage.colo.seagate.com/releases/cortx/images/
-        for file in $(ls -1); do docker load -i $file; done
-    popd
-    
+    try
+    (
+        rm -rf /var/images
+        mkdir -p /var/images && pushd /var/images
+            wget -q -r -np -nH --cut-dirs=3 -A *.tar http://cortx-storage.colo.seagate.com/releases/cortx/images/ || throw $Exception
+            for file in $(ls -1); do docker load -i $file || throw $Exception; done
+        popd
+    )
+    catch || {
+    # handle excption
+    case $ex_code in
+        $Exception)
+            echo "An Exception was thrown. Please check logs"
+            throw 1
+        ;;
+        $ConfigException)
+            echo "A ConfigException was thrown. Please check logs"
+            throw 1
+        ;;
+        *)
+            echo "An unexpected exception was thrown"
+            throw $ex_code # you can rethrow the "exception" causing the script to exit if not caught
+        ;;
+    esac
+    }    
 }
 
 function execute_prereq(){
