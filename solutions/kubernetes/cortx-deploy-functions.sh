@@ -221,7 +221,10 @@ function destroy(){
 }
 
 function print_pod_status(){
-     kubectl get pods -o wide
+echo "---------------------------------------[ POD Status ]--------------------------------------"
+    kubectl get pods -o wide
+echo "---------------------------------------[ hctl status ]--------------------------------------"
+    kubectl exec -it $(kubectl get pods | awk '/cortx-data-pod/{print $1; exit}') -c cortx-motr-hax -- hctl status
 }
 
 case $ACTION in
