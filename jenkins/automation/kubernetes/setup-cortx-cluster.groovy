@@ -87,6 +87,7 @@ pipeline {
                 manager.createSummary("${ICON}").appendText("<h3>CORTX Cluster Setup ${currentBuild.currentResult} </h3><p>Please check <a href=\"${BUILD_URL}/console\">cluster setup logs</a> for more info <h4>Cluster Status:</h4>${clusterStatusHTML}", false, false, false, "red")
 
                 // Email Notification
+                env.build_stage = "${build_stage}"
                 env.cluster_status = "${clusterStatusHTML}"
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
                 mailRecipients = "shailesh.vaidya@seagate.com"
@@ -104,7 +105,6 @@ pipeline {
         cleanup {
             sh label: 'Collect Artifacts', script: '''
             mkdir artifacts
-            ls -ltr
             pushd solutions/kubernetes/
                 HOST_FILE=$PWD/hosts
                 MASTER_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
