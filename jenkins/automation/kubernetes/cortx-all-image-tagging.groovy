@@ -72,7 +72,14 @@ pipeline {
                 env.docker_image_location = "https://github.com/Seagate/cortx-re/pkgs/container/cortx-all"
                 env.image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' | head -1", returnStdout: true).trim()
                 env.build_stage = "${build_stage}"
-
+                def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
+                if ( params.EMAIL_RECIPIENTS == "ALL" ) {
+                    mailRecipients = "cortx.sme@seagate.com, manoj.management.team@seagate.com, CORTX.SW.Architecture.Team@seagate.com, CORTX.DevOps.RE@seagate.com"
+                } else if ( params.EMAIL_RECIPIENTS == "DEVOPS" ) {
+                    mailRecipients = "CORTX.DevOps.RE@seagate.com"
+                } else if ( params.EMAIL_RECIPIENTS == "DEBUG" ) {
+                    mailRecipients = "shailesh.vaidya@seagate.com"
+                }
 
                 emailext ( 
                     body: '''${SCRIPT, template="docker-image-email.template"}''',
