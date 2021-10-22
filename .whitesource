@@ -3,13 +3,13 @@
     "configMode": "AUTO",
 	"configExternalURL": "",
 	"projectToken": "",
-	"baseBranches": []
+	"baseBranches": ["main-whitesource"]
   },
   "checkRunSettings": {
     "displayMode": "diff",
     "vulnerableCheckRunConclusionLevel": "failure"
   },
   "issueSettings": {
-    "minSeverityLevel": "LOW"
+    "minSeverityLevel": "NONE"
   }
 }
