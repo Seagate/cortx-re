@@ -75,7 +75,7 @@ pipeline {
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
                 if ( params.EMAIL_RECIPIENTS == "DEVOPS" ) {
                     mailRecipients = "CORTX.DevOps.RE@seagate.com"
-                } else ( params.EMAIL_RECIPIENTS == "DEBUG" ) {
+                } else {
                     mailRecipients = "shailesh.vaidya@seagate.com"
                 }
 
