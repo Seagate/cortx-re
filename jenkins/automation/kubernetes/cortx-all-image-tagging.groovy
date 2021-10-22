@@ -54,8 +54,9 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh encoding: 'utf-8', label: 'Build cortx-all docker image', script: """
+                    docker pull $BASE_IMAGE_NAME
                     docker tag $BASE_IMAGE_NAME $TAGGED_IMAGE_NAME
-                    docker push $TAG_NAME
+                    docker push $TAGGED_IMAGE_NAME
                     
                     docker logout  
                 """
