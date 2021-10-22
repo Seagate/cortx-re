@@ -6,7 +6,7 @@ pipeline {
     }
     
     options {
-        timeout(time: 120, unit: 'MINUTES')
+        timeout(time: 240, unit: 'MINUTES')
         timestamps()
         buildDiscarder(logRotator(daysToKeepStr: '30', numToKeepStr: '30'))
         ansiColor('xterm')
@@ -139,5 +139,21 @@ pipeline {
                 )
             }
         }
+
+        cleanup {
+            sh label: 'Collect Artifacts', script: '''
+            mkdir artifacts
+            pushd solutions/kubernetes/
+                HOST_FILE=$PWD/hosts
+                MASTER_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+                scp -q "$MASTER_NODE":/root/deploy-scripts/k8_cortx_cloud/solution.yaml $WORKSPACE/artifacts/
+                cp /var/tmp/cortx-cluster-status.txt $WORKSPACE/artifacts/
+            popd    
+            '''
+            script {
+                // Archive Deployment artifacts in jenkins build
+                archiveArtifacts artifacts: "artifacts/*.*", onlyIfSuccessful: false, allowEmptyArchive: true 
+            }    
+        }  
     }
 }
