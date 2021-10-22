@@ -74,7 +74,7 @@ pipeline {
                 env.build_stage = "${build_stage}"
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
                 if ( params.EMAIL_RECIPIENTS == "DEVOPS" ) {
-                    ailRecipients = "CORTX.DevOps.RE@seagate.com"
+                    mailRecipients = "CORTX.DevOps.RE@seagate.com"
                 } else ( params.EMAIL_RECIPIENTS == "DEBUG" ) {
                     mailRecipients = "shailesh.vaidya@seagate.com"
                 }
