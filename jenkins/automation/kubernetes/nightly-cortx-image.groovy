@@ -58,7 +58,7 @@ pipeline {
                             parameters: [
                                 string(name: 'CORTX_RE_URL', value: "https://github.com/Seagate/cortx-re"),
                                 string(name: 'CORTX_RE_BRANCH', value: "kubernetes"),
-                                string(name: 'BUILD', value: "custom-build-${env.custom_ci_build_id}"),
+                                string(name: 'BUILD', value: "kubernetes-build-${env.custom_ci_build_id}"),
                                 string(name: 'EMAIL_RECIPIENTS', value: "${EMAIL_RECIPIENTS}"),
                             ]
                     } catch (err) {
