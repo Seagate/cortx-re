@@ -214,8 +214,10 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Copy RPMS', script:'''
-                    RPM_COPY_PATH="/mnt/bigstorage/releases/cortx/components/github/main/$os_version/dev/"
+                    mkdir -p $integration_dir/$release_tag/cortx_iso
+                    cp $release_dir/github/integration-custom-ci/$os_version/custom-build-$BUILD_ID/cortx_iso/*  $integration_dir/$release_tag/cortx_iso/
 
+                    RPM_COPY_PATH="/mnt/bigstorage/releases/cortx/components/github/main/$os_version/dev/"
                     CUSTOM_COMPONENT_NAME="motr|s3server|hare|cortx-ha|provisioner|csm-agent|csm-web|sspl"
 
                     pushd $RPM_COPY_PATH
@@ -226,7 +228,7 @@ pipeline {
                             cp $component/last_successful/*.rpm $integration_dir/$release_tag/cortx_iso/
                         else
                             echo "Packages not available for $component. Exiting"
-                        exit 1    
+                        exit 1
                         fi
                     done
 
@@ -299,7 +301,7 @@ pipeline {
                     pushd scripts/rpm-signing
                     chmod +x rpm-sign.sh
                     cp RPM-GPG-KEY-Seagate $integration_dir/$release_tag/cortx_iso/
-                    
+
                     for rpm in `ls -1 $integration_dir/$release_tag/cortx_iso/*.rpm`
                     do
                     ./rpm-sign.sh ${passphrase} $rpm
