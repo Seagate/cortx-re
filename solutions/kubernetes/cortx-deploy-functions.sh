@@ -73,14 +73,15 @@ function update_solution_config(){
 
         yq e -i '.solution.images.openldap = "ghcr.io/seagate/symas-openldap:standalone"' solution.yaml
         yq e -i '.solution.images.consul = "hashicorp/consul:1.10.0"' solution.yaml
-        yq e -i '.solution.images.kafka = "bitnami/kafka"' solution.yaml
-        yq e -i '.solution.images.zookeeper = "bitnami/zookeeper"' solution.yaml
+        yq e -i '.solution.images.kafka = "bitnami/kafka:3.0.0-debian-10-r7"' solution.yaml
+        yq e -i '.solution.images.zookeeper = "bitnami/zookeeper:3.7.0-debian-10-r182"' solution.yaml
         yq e -i '.solution.images.gluster = "docker.io/gluster/gluster-centos"' solution.yaml
         yq e -i '.solution.images.rancher = "rancher/local-path-provisioner:v0.0.20"' solution.yaml
 	
         yq e -i '.solution.3rdparty.openldap.password = "seagate2"' solution.yaml
 
         yq e -i '.solution.common.cortx_io_svc_ingress = false' solution.yaml
+        drive=$SYSTEM_DRIVE_MOUNT yq e -i '.solution.common.storage_provisioner_path = env(drive)' solution.yaml
         yq e -i '.solution.common.storage.local = "/etc/cortx"' solution.yaml
         yq e -i '.solution.common.storage.shared = "/share"' solution.yaml
         yq e -i '.solution.common.storage.log = "/share/var/log/cortx"' solution.yaml
@@ -114,7 +115,6 @@ function update_solution_config(){
         for node in $(kubectl get node --selector='!node-role.kubernetes.io/master' | grep -v NAME | awk '{print $1}')
             do
             i=$node yq e -i '.solution.nodes['$count'].node'$count'.name = env(i)' solution.yaml
-            drive=$SYSTEM_DRIVE_MOUNT yq e -i '.solution.nodes['$count'].node'$count'.devices.system = env(drive)' solution.yaml
             count=$((count+1))
         done
         sed -i 's/- //g' solution.yaml
