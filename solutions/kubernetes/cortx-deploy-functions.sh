@@ -19,7 +19,7 @@
 #
 
 SYSTESM_DRIVE="/dev/sdb"
-SYSTEM_DRIVE_MOUNT="/mnt/fs-local-volume/"
+SYSTEM_DRIVE_MOUNT="/mnt/fs-local-volume"
 SCRIPT_LOCATION="/root/deploy-scripts"
 YQ_VERSION=v4.13.3
 YQ_BINARY=yq_linux_386
@@ -57,7 +57,7 @@ function update_solution_config(){
         yq e -i '.solution.namespace = "default"' solution.yaml
         
         yq e -i '.solution.secrets.name = "cortx-secret"' solution.yaml
-        yq e -i '.solution.secrets.content.openldap_admin_secret = "seagate2"' solution.yaml
+        yq e -i '.solution.secrets.content.openldap_admin_secret = "seagate1"' solution.yaml
         yq e -i '.solution.secrets.content.kafka_admin_secret = "Seagate@123"' solution.yaml
         yq e -i '.solution.secrets.content.consul_admin_secret = "Seagate@123"' solution.yaml
         yq e -i '.solution.secrets.content.common_admin_secret = "Seagate@123"' solution.yaml
@@ -75,11 +75,9 @@ function update_solution_config(){
         yq e -i '.solution.images.consul = "hashicorp/consul:1.10.0"' solution.yaml
         yq e -i '.solution.images.kafka = "bitnami/kafka:3.0.0-debian-10-r7"' solution.yaml
         yq e -i '.solution.images.zookeeper = "bitnami/zookeeper:3.7.0-debian-10-r182"' solution.yaml
-        yq e -i '.solution.images.gluster = "docker.io/gluster/gluster-centos"' solution.yaml
+        yq e -i '.solution.images.gluster = "docker.io/gluster/gluster-centos:latest"' solution.yaml
         yq e -i '.solution.images.rancher = "rancher/local-path-provisioner:v0.0.20"' solution.yaml
 	
-        yq e -i '.solution.3rdparty.openldap.password = "seagate2"' solution.yaml
-
         yq e -i '.solution.common.cortx_io_svc_ingress = false' solution.yaml
         drive=$SYSTEM_DRIVE_MOUNT yq e -i '.solution.common.storage_provisioner_path = env(drive)' solution.yaml
         yq e -i '.solution.common.storage.local = "/etc/cortx"' solution.yaml
