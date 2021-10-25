@@ -119,12 +119,12 @@ function cleanup_node(){
 
     #Stopping Services.
     for service_name in ${services_to_stop[@]}; do
-    if [ $(systemctl list-unit-files | grep $service_name.service -c) -gt 0 ]; then
-        systemctl stop $service_name.service
-    fi
-    echo "Stopping $service_name"
-    systemctl stop $service_name.service
+        if [ "$(systemctl list-unit-files | grep $service_name.service -c)" != "0" ]; then
+            echo "Stopping $service_name"
+            systemctl stop $service_name.service
+        fi
     done
+
 
     # Remove packages
     echo "Uninstalling packages"
