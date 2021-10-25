@@ -103,6 +103,10 @@ function cleanup_node(){
     fi
     echo "clean_requirements_on_remove=1" >> "$conffile"
 
+    #Stopping Services.
+    systemctl stop kubelet.service
+    systemctl stop docker.service
+
     # Remove packages
     echo "Uninstalling packages"
     for pkg in ${pkgs_to_remove[@]}; do
