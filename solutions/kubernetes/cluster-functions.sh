@@ -82,6 +82,10 @@ function print_cluster_status(){
 }
 
 function cleanup_node(){
+
+    # Cleanup kubeadm stuff
+    kubeadm reset -f
+
     pkgs_to_remove=(
         "docker-ce"
         "docker-ce-cli"
@@ -94,7 +98,9 @@ function cleanup_node(){
         "$HOME/.kube"
         "/etc/systemd/system/docker.service"
         "/etc/cni/net.d"
+        "/etc/kubernetes"
         "/var/lib/kubelet"
+        "/var/lib/etcd"
     )
     services_to_stop=(
         kubelet
@@ -214,7 +220,7 @@ function setup_master_node(){
     (
         #cleanup
         echo "y" | kubeadm reset
-
+        
         #initialize cluster
         kubeadm init || throw $Exception
 
