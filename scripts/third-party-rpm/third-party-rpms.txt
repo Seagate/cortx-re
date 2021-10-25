@@ -1,4 +1,4 @@
-PyYAML
+PyYAML-3.10
 attr
 compat-lua-libs
 consul >= 1.7.0, consul < 1.10.0
@@ -7,11 +7,11 @@ fence-agents-ipmilan
 findutils
 gdb
 genders
-gflags
-glog
+gflags-2.1.1
+glog-0.3.3
 haproxy
 hdparm == 9.43
-hiredis
+hiredis-0.12.1
 ipmitool == 1.8.18
 isa-l == 2.30.0
 jq
@@ -19,15 +19,15 @@ opendistroforelasticsearch == 1.12.0
 opendistroforelasticsearch-kibana == 1.12.0
 libaio
 libedit
-libxml2
-libyaml
-log4cxx_cortx
-log4cxx_cortx-devel
+libxml2-2.9.1
+libyaml-0.1.4
+log4cxx_cortx-0.10.0
+log4cxx_cortx-devel-0.10.0
 lshw == B.02.18
 symas-openldap == 2.4.58
 symas-openldap-servers == 2.4.58
 symas-openldap-clients == 2.4.58
-openssl
+openssl-1.0.2k
 pacemaker
 pcs
 perl
@@ -40,7 +40,7 @@ perl-Sereal
 perl-Try-Tiny
 perl-YAML-LibYAML
 perl-autodie
-pkgconfig
+pkgconfig-0.27.1
 puppet-agent >= 6.13.0
 python-magic
 python3-pip
@@ -48,9 +48,9 @@ python36 == 3.6.8
 python36-PyYAML
 python36-dbus == 1.2.4
 python36-gobject == 3.22.0
-python36-ldap
+python36-ldap-3.1.0
 python36-paramiko == 2.1.1
-python36-pika
+python36-pika-0.10.0
 python36-pip
 python36-ply
 python36-psutil == 5.6.7
@@ -67,5 +67,5 @@ statsd
 systemd-python36 == 1.0.0
 sysvinit-tools
 udisks2 == 2.8.4
-yaml-cpp
+yaml-cpp-0.5.1
 java-1.8.0-openjdk-headless
