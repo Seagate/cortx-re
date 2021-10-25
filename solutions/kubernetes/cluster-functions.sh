@@ -110,6 +110,7 @@ function cleanup_node(){
 
     # Remove packages
     echo "Uninstalling packages"
+    yum clean all && rm -rf /var/cache/yum
     for pkg in ${pkgs_to_remove[@]}; do
         if rpm -qa "$pkg"; then
             yum remove "$pkg" -y
