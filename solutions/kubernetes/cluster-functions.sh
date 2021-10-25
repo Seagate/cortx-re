@@ -93,6 +93,7 @@ function cleanup_node(){
         "/etc/docker/daemon.json"
         "$HOME/.kube"
         "/etc/systemd/system/docker.service"
+        "/etc/cni/net.d"
     )
     # Set directive to remove packages with dependencies.
     searchString="clean_requirements_on_remove*"
