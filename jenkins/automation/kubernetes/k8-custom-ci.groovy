@@ -427,7 +427,7 @@ pipeline {
         success {
                 sh label: 'Delete Old Builds', script: '''
                 set +x
-                find ${integration_dir}/* -maxdepth 0 -mtime +5 -type d -exec rm -rf {} \\;
+                find ${integration_dir}/* -maxdepth 0 -mtime +60 -type d -exec rm -rf {} \\;
                 '''
         }
     
