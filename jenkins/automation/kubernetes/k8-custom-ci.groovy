@@ -414,9 +414,7 @@ pipeline {
                 '''
                 sh label: 'Print Release Build and ISO location', script:'''
                 echo "Custom Release Build and ISO is available at,"
-                    echo "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/$os_version/$release_tag/"
-                    echo "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/$os_version/$release_tag/iso/$release_tag.iso"
-                    echo "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/$os_version/$release_tag/iso/$release_tag-single.iso"
+                    echo "http://cortx-storage.colo.seagate.com/releases/cortx/github/kubernetes/$os_version/$release_tag/"
                 '''
             }
         }
