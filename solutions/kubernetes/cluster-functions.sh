@@ -110,7 +110,7 @@ function cleanup_node(){
 
     #Stopping Services.
     for service in ${services_to_stop[@]}; do
-    echo "-------------------[ Stopping $service ]-----------------------------"
+    echo "Stopping $service"
     systemctl stop $service.service
     done
 
