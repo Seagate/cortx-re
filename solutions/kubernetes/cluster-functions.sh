@@ -95,6 +95,10 @@ function cleanup_node(){
         "/etc/systemd/system/docker.service"
         "/etc/cni/net.d"
     )
+    services_to_stop=(
+        kubelet
+        docker
+    )
     # Set directive to remove packages with dependencies.
     searchString="clean_requirements_on_remove*"
     conffile="/etc/yum.conf"
@@ -105,8 +109,10 @@ function cleanup_node(){
     echo "clean_requirements_on_remove=1" >> "$conffile"
 
     #Stopping Services.
-    systemctl stop kubelet.service
-    systemctl stop docker.service
+    for service in ${services_to_stop[@]}; do
+    echo "-------------------[ Stopping $service ]-----------------------------"
+    systemctl stop $service.service
+    done
 
     # Remove packages
     echo "Uninstalling packages"
@@ -219,7 +225,8 @@ function setup_master_node(){
         cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
         chown $(id -u):$(id -g) $HOME/.kube/config
         # untaint master node
-        if [ "$1" ]; then 
+        if [ "$1" ]; then
+            echo "Enabling POD creation on master node"
             kubectl taint nodes $(hostname) node-role.kubernetes.io/master- || throw $Exception
         fi    
 
