@@ -84,7 +84,9 @@ function print_cluster_status(){
 function cleanup_node(){
 
     # Cleanup kubeadm stuff
-    kubeadm reset -f
+    if [ -f /usr/bin/kubeadm ]; then
+        kubeadm reset -f
+    fi
 
     pkgs_to_remove=(
         "docker-ce"
@@ -116,9 +118,12 @@ function cleanup_node(){
     echo "clean_requirements_on_remove=1" >> "$conffile"
 
     #Stopping Services.
-    for service in ${services_to_stop[@]}; do
-    echo "Stopping $service"
-    systemctl stop $service.service
+    for service_name in ${services_to_stop[@]}; do
+    if [ $(systemctl list-unit-files | grep $service_name.service -c) -gt 0 ]; then
+        systemctl stop $service_name.service
+    fi
+    echo "Stopping $service_name"
+    systemctl stop $service_name.service
     done
 
     # Remove packages
