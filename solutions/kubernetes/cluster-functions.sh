@@ -94,6 +94,7 @@ function cleanup_node(){
         "$HOME/.kube"
         "/etc/systemd/system/docker.service"
         "/etc/cni/net.d"
+        "/var/lib/kubelet"
     )
     services_to_stop=(
         kubelet
