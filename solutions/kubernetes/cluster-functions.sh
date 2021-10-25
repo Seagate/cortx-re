@@ -216,6 +216,7 @@ function install_prerequisites(){
 }
 
 function setup_master_node(){
+    local UNTAINT_MASTER=$1
     try
     (
         #cleanup
@@ -232,8 +233,8 @@ function setup_master_node(){
         cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
         chown $(id -u):$(id -g) $HOME/.kube/config
         # untaint master node
-        echo $1
-        if [ "$1" ]; then
+        echo $UNTAINT_MASTER
+        if [ "$UNTAINT_MASTER" == "true" ]; then
             echo "Enabling POD creation on master node"
             kubectl taint nodes $(hostname) node-role.kubernetes.io/master- || throw $Exception
         fi    
