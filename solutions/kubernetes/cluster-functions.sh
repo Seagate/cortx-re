@@ -85,6 +85,7 @@ function cleanup_node(){
 
     # Cleanup kubeadm stuff
     if [ -f /usr/bin/kubeadm ]; then
+        echo "Cleaning up existing kubelet configuration"
         kubeadm reset -f
     fi
 
@@ -179,10 +180,10 @@ function install_prerequisites(){
         # enable cgroupfs 
         sed -i '/config.yaml/s/config.yaml"/config.yaml --cgroup-driver=cgroupfs"/g' /usr/lib/systemd/system/kubelet.service.d/10-kubeadm.conf || throw $ConfigException
 
-        (sudo systemctl enable docker && sudo systemctl daemon-reload && sudo systemctl restart docker) || throw $Exception
+        (systemctl restart docker && systemctl daemon-reload &&  systemctl enable docker) || throw $Exception
         echo "Docker Runtime Configured Successfully"
 
-        (systemctl enable kubelet && sudo systemctl daemon-reload && systemctl restart kubelet) || throw $Exception
+        (systemctl restart kubelet && systemctl daemon-reload && systemctl enable kubelet) || throw $Exception
         echo "kubelet Configured Successfully"
 
 
