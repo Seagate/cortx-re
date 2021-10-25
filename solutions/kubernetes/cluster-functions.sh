@@ -235,7 +235,7 @@ function setup_master_node(){
         # untaint master node
         echo $UNTAINT_MASTER
         if [ "$UNTAINT_MASTER" == "true" ]; then
-            echo "Enabling POD creation on master node"
+            echo "--------------------------[ Allow POD creation on master node ]--------------------------"
             kubectl taint nodes $(hostname) node-role.kubernetes.io/master- || throw $Exception
         fi    
 
