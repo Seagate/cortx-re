@@ -232,6 +232,7 @@ function setup_master_node(){
         cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
         chown $(id -u):$(id -g) $HOME/.kube/config
         # untaint master node
+        echo $1
         if [ "$1" ]; then
             echo "Enabling POD creation on master node"
             kubectl taint nodes $(hostname) node-role.kubernetes.io/master- || throw $Exception
