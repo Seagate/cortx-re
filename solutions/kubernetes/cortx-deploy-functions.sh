@@ -77,6 +77,9 @@ function update_solution_config(){
         yq e -i '.solution.images.zookeeper = "bitnami/zookeeper:3.7.0-debian-10-r182"' solution.yaml
         yq e -i '.solution.images.gluster = "docker.io/gluster/gluster-centos:latest"' solution.yaml
         yq e -i '.solution.images.rancher = "rancher/local-path-provisioner:v0.0.20"' solution.yaml
+
+        yq e -i '.solution.common.loadbal.control.externalips.ip1 = "192.168.1.2"' solution.yaml
+        yq e -i '.solution.common.loadbal.data.externalips.ip1 = "192.168.1.2"' solution.yaml
 	
         yq e -i '.solution.common.cortx_io_svc_ingress = false' solution.yaml
         drive=$SYSTEM_DRIVE_MOUNT yq e -i '.solution.common.storage_provisioner_path = env(drive)' solution.yaml
@@ -90,6 +93,7 @@ function update_solution_config(){
         yq e -i '.solution.common.storage_sets.name = "storage-set-1"' solution.yaml
         yq e -i '.solution.common.storage_sets.durability.sns = "1+0+0"' solution.yaml
         yq e -i '.solution.common.storage_sets.durability.dix = "1+0+0"' solution.yaml
+        yq e -i '.solution.common.glusterfs.size = "5Gi"' solution.yaml
 
         yq e -i '.solution.storage.cvg1.name = "cvg-01"' solution.yaml
         yq e -i '.solution.storage.cvg1.type = "ios"' solution.yaml
@@ -97,17 +101,13 @@ function update_solution_config(){
         yq e -i '.solution.storage.cvg1.devices.metadata.size = "5Gi"' solution.yaml
         yq e -i '.solution.storage.cvg1.devices.data.d1.device = "/dev/sdd"' solution.yaml
         yq e -i '.solution.storage.cvg1.devices.data.d1.size = "5Gi"' solution.yaml
-        yq e -i '.solution.storage.cvg1.devices.data.d2.device = "/dev/sde"' solution.yaml
-        yq e -i '.solution.storage.cvg1.devices.data.d2.size = "5Gi"' solution.yaml
         
         yq e -i '.solution.storage.cvg2.name = "cvg-02"' solution.yaml
         yq e -i '.solution.storage.cvg2.type = "ios"' solution.yaml
-        yq e -i '.solution.storage.cvg2.devices.metadata.device = "/dev/sdf"' solution.yaml
+        yq e -i '.solution.storage.cvg2.devices.metadata.device = "/dev/sde"' solution.yaml
         yq e -i '.solution.storage.cvg2.devices.metadata.size = "5Gi"' solution.yaml
-        yq e -i '.solution.storage.cvg2.devices.data.d1.device = "/dev/sdg"' solution.yaml
+        yq e -i '.solution.storage.cvg2.devices.data.d1.device = "/dev/sdf"' solution.yaml
         yq e -i '.solution.storage.cvg2.devices.data.d1.size = "5Gi"' solution.yaml
-        yq e -i '.solution.storage.cvg2.devices.data.d2.device = "/dev/sdh"' solution.yaml
-        yq e -i '.solution.storage.cvg2.devices.data.d2.size = "5Gi"' solution.yaml
         
         count=0
         for node in $(kubectl get nodes -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints[?(@.effect=='NoSchedule')].effect}{\"\n\"}{end}" | grep -v NoSchedule)
