@@ -110,7 +110,7 @@ function update_solution_config(){
         yq e -i '.solution.storage.cvg2.devices.data.d2.size = "5Gi"' solution.yaml
         
         count=0
-        for node in $(kubectl get node --selector='!node-role.kubernetes.io/master' | grep -v NAME | awk '{print $1}')
+        for node in $(kubectl get nodes -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints[?(@.effect=='NoSchedule')].effect}{\"\n\"}{end}" | grep -v NoSchedule)
             do
             i=$node yq e -i '.solution.nodes['$count'].node'$count'.name = env(i)' solution.yaml
             count=$((count+1))
