@@ -2,7 +2,7 @@ pipeline {
 	 	 
     agent {
 		node {
-			label 's3-dev-build-7.9.2009'
+			label 's3-dev-build-7.9.2009-Test'
 		}
 	}
 
@@ -11,10 +11,6 @@ pipeline {
 	    timeout(time: 360, unit: 'MINUTES')
         buildDiscarder(logRotator(daysToKeepStr: '7', numToKeepStr: '10'))
 	}
-
-    triggers { 
-        cron('30 22 * * *')
-    } 
 
     parameters {  
 	    string(name: 'S3_URL', defaultValue: 'https://github.com/Seagate/cortx-s3server', description: 'Repo for S3Server')
@@ -48,6 +44,14 @@ pipeline {
                 }
             } 
 
+            stage('Checkout-motr-main') {
+                steps {
+                    sh '''git --git-dir=${WORKSPACE}/third_party/motr/.git checkout main
+                    sleep 600
+                    exit 1
+                    '''
+                }
+            }
 
             stage ('Dev build & tests') {
                 steps {
@@ -108,7 +112,7 @@ pipeline {
                     }
                     env.build_stage = "${build_stage}"
 
-                    def mailRecipients = "nilesh.govande@seagate.com, basavaraj.kirunge@seagate.com, rajesh.nambiar@seagate.com, ajinkya.dhumal@seagate.com, amit.kumar@seagate.com"
+                    def mailRecipients = "abhijit.patil@seagate.com"
                                         
                     emailext body: '''${SCRIPT, template="mini_prov-email.template"}''',
                     mimeType: 'text/html',
