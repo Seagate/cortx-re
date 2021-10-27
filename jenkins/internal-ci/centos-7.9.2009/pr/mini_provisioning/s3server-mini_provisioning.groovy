@@ -136,7 +136,7 @@ Recommended VM specification:
 				script { build_stage = env.STAGE_NAME }
 
                 dir('cortx-re') {
-                    checkout([$class: 'GitSCM', branches: [[name: '*/EOS-25652']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 1, honorRefspec: true, noTags: true, reference: '', shallow: true], [$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/nikhilpatil2995/cortx-re']]])
+                    checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 1, honorRefspec: true, noTags: true, reference: '', shallow: true], [$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/seagate/cortx-re']]])
                 }
 
                 // Install tools required for release process
@@ -252,7 +252,7 @@ Recommended VM specification:
 
                             // Clone cortx-re repo
                             dir('cortx-re') {
-                                checkout([$class: 'GitSCM', branches: [[name: '*/EOS-25652']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/nikhilpatil2995/cortx-re']]])                
+                                checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/seagate/cortx-re']]])                
                             }
                             
                             if ( "${params.HOST}" == "-" ) {
