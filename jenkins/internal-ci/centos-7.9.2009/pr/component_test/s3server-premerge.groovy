@@ -47,8 +47,9 @@ pipeline {
             stage('Checkout-motr-main') {
                 steps {
                     sh '''git --git-dir=${WORKSPACE}/third_party/motr/.git checkout main
-                    sleep 600
-                    exit 1
+                          git --git-dir=${WORKSPACE}/third_party/motr/.git branch
+                          git --git-dir=${WORKSPACE}/third_party/motr/.git status
+                          sleep 600
                     '''
                 }
             }
