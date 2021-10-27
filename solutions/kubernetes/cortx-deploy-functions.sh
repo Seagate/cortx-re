@@ -110,7 +110,12 @@ function update_solution_config(){
         yq e -i '.solution.storage.cvg2.devices.metadata.size = "5Gi"' solution.yaml
         yq e -i '.solution.storage.cvg2.devices.data.d1.device = "/dev/sdf"' solution.yaml
         yq e -i '.solution.storage.cvg2.devices.data.d1.size = "5Gi"' solution.yaml
-        
+    popd
+}        
+
+
+function add_node_info_solution_config(){
+    pushd $SCRIPT_LOCATION/k8_cortx_cloud
         count=0
         for node in $(kubectl get node --selector='!node-role.kubernetes.io/master' | grep -v NAME | awk '{print $1}')
             do
@@ -125,8 +130,9 @@ copy_solution_config(){
 	if [ -z "$SOLUTION_CONFIG" ]; then echo "SOLUTION_CONFIG not provided.Exiting..."; exit 1; fi
 	echo "Copying $SOLUTION_CONFIG file" 
 	pushd $SCRIPT_LOCATION/k8_cortx_cloud
-                if [ -f "$SOLUTION_CONFIG" ]; then echo "file $SOLUTION_CONFIG not available..."; exit 1; fi	
+                if [ -f '$SOLUTION_CONFIG' ]; then echo "file $SOLUTION_CONFIG not available..."; exit 1; fi	
 		cp $SOLUTION_CONFIG .
+                yq eval -i 'del(.solution.nodes)' solution.yaml
         popd 
 
 }
@@ -222,6 +228,7 @@ echo "---------------------------------------[ Setting up Master Node $HOSTNAME 
     else
 	update_solution_config
     fi
+    add_node_info_solution_config
 }
 
 

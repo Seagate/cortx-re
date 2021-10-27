@@ -21,6 +21,7 @@
 source functions.sh
 
 HOST_FILE=$PWD/hosts
+SOLUTION_CONFIG="/var/tmp/solution.yaml"
 SSH_KEY_FILE=/root/.ssh/id_rsa
 
 function usage(){
@@ -33,9 +34,16 @@ where,
 HEREDOC
 }
 
+    if [ -z "$GITHUB_TOKEN" ]; then echo "GITHUB_TOKEN not provided.Exiting..."; exit 1; fi
+    if [ -z "$CORTX_SCRIPTS_REPO" ]; then echo "CORTX_SCRIPTS_REPO not provided.Exiting..."; exit 1; fi
+    if [ -z "$CORTX_SCRIPTS_BRANCH" ]; then echo "CORTX_SCRIPTS_BRANCH not provided.Exiting..."; exit 1; fi
+    if [ -z "$CORTX_IMAGE" ]; then echo "CORTX_IMAGE not provided.Exiting..."; exit 1; fi
+    if [ -z "$SOLUTION_CONFIG_TYPE" ]; then echo "SOLUTION_CONFIG_TYPE not provided.Exiting..."; exit 1; fi
+    if [ -z "$SOLUTION_CONFIG" ]; then echo "SOLUTION_CONFIG not provided.Exiting..."; exit 1; fi
 
 function setup_cluster {
 	
+   echo $SOLUTION_CONFIG_TYPE
     validation
     generate_rsa_key
     nodes_setup
@@ -50,7 +58,7 @@ function setup_cluster {
 
     for node in $ALL_NODES
 	do 
-	scp -q cortx-deploy-functions.sh functions.sh "$node":/var/tmp/
+	scp -q cortx-deploy-functions.sh functions.sh $SOLUTION_CONFIG "$node":/var/tmp/
 	done
 
     for worker_node in $WORKER_NODES
