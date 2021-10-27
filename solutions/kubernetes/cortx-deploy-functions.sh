@@ -78,9 +78,6 @@ function update_solution_config(){
         yq e -i '.solution.images.gluster = "docker.io/gluster/gluster-centos:latest"' solution.yaml
         yq e -i '.solution.images.rancher = "rancher/local-path-provisioner:v0.0.20"' solution.yaml
 
-        yq e -i '.solution.common.loadbal.control.externalips.ip1 = "192.168.1.2"' solution.yaml
-        yq e -i '.solution.common.loadbal.data.externalips.ip1 = "192.168.1.2"' solution.yaml
-	
         yq e -i '.solution.common.cortx_io_svc_ingress = false' solution.yaml
         drive=$SYSTEM_DRIVE_MOUNT yq e -i '.solution.common.storage_provisioner_path = env(drive)' solution.yaml
         yq e -i '.solution.common.storage.local = "/etc/cortx"' solution.yaml
