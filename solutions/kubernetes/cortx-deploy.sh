@@ -21,7 +21,7 @@
 source functions.sh
 
 HOST_FILE=$PWD/hosts
-SOLUTION_CONFIG="/var/tmp/solution.yaml"
+SOLUTION_CONFIG="$PWD/solution.yaml"
 SSH_KEY_FILE=/root/.ssh/id_rsa
 
 function usage(){
