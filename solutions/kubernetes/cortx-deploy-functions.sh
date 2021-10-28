@@ -106,13 +106,18 @@ function update_solution_config(){
 
 
 function add_image_info(){
+echo "Updating cortx-all image info in solution.yaml"   
+pushd $SCRIPT_LOCATION/k8_cortx_cloud
     image=$CORTX_IMAGE yq e -i '.solution.images.cortxcontrolprov = env(image)' solution.yaml	
     image=$CORTX_IMAGE yq e -i '.solution.images.cortxcontrol = env(image)' solution.yaml	
     image=$CORTX_IMAGE yq e -i '.solution.images.cortxdataprov = env(image)' solution.yaml
     image=$CORTX_IMAGE yq e -i '.solution.images.cortxdata = env(image)' solution.yaml
+popd 
+
 }
 
 function add_node_info_solution_config(){
+echo "Updating node info in solution.yaml"    
 
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         count=0
