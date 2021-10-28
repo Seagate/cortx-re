@@ -21,7 +21,6 @@
 source functions.sh
 
 HOST_FILE=$PWD/hosts
-SOLUTION_CONFIG="$PWD/solution.yaml"
 SSH_KEY_FILE=/root/.ssh/id_rsa
 
 function usage(){
@@ -39,11 +38,16 @@ HEREDOC
     if [ -z "$CORTX_SCRIPTS_BRANCH" ]; then echo "CORTX_SCRIPTS_BRANCH not provided.Exiting..."; exit 1; fi
     if [ -z "$CORTX_IMAGE" ]; then echo "CORTX_IMAGE not provided.Exiting..."; exit 1; fi
     if [ -z "$SOLUTION_CONFIG_TYPE" ]; then echo "SOLUTION_CONFIG_TYPE not provided.Exiting..."; exit 1; fi
-    if [ -z "$SOLUTION_CONFIG" ]; then echo "SOLUTION_CONFIG not provided.Exiting..."; exit 1; fi
-
+    
 function setup_cluster {
 	
    echo  "Using $SOLUTION_CONFIG_TYPE type for generating solution.yaml"
+
+    if [ "$SOLUTION_CONFIG_TYPE" == manual ]; then
+        SOLUTION_CONFIG="$PWD/solution.yaml"
+        if [ -f '$SOLUTION_CONFIG' ]; then echo "file $SOLUTION_CONFIG not available..."; exit 1; fi
+    fi
+
     validation
     generate_rsa_key
     nodes_setup
@@ -58,7 +62,7 @@ function setup_cluster {
 
     for node in $ALL_NODES
 	do 
-	scp -q cortx-deploy-functions.sh functions.sh $SOLUTION_CONFIG "$node":/var/tmp/
+	    scp -q cortx-deploy-functions.sh functions.sh $SOLUTION_CONFIG "$node":/var/tmp/
 	done
 
     for worker_node in $WORKER_NODES
