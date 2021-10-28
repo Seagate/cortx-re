@@ -67,12 +67,6 @@ function update_solution_config(){
         yq e -i '.solution.secrets.content.csm_auth_admin_secret = "seagate2"' solution.yaml
         yq e -i '.solution.secrets.content.csm_mgmt_admin_secret = "Cortxadmin@123"' solution.yaml
 
-
-        image=$CORTX_IMAGE yq e -i '.solution.images.cortxcontrolprov = env(image)' solution.yaml	
-        image=$CORTX_IMAGE yq e -i '.solution.images.cortxcontrol = env(image)' solution.yaml	
-        image=$CORTX_IMAGE yq e -i '.solution.images.cortxdataprov = env(image)' solution.yaml	
-        image=$CORTX_IMAGE yq e -i '.solution.images.cortxdata = env(image)' solution.yaml
-
         yq e -i '.solution.images.openldap = "ghcr.io/seagate/symas-openldap:standalone"' solution.yaml
         yq e -i '.solution.images.consul = "hashicorp/consul:1.10.0"' solution.yaml
         yq e -i '.solution.images.kafka = "bitnami/kafka:3.0.0-debian-10-r7"' solution.yaml
@@ -111,7 +105,15 @@ function update_solution_config(){
 }        
 
 
+function add_image_info(){
+    image=$CORTX_IMAGE yq e -i '.solution.images.cortxcontrolprov = env(image)' solution.yaml	
+    image=$CORTX_IMAGE yq e -i '.solution.images.cortxcontrol = env(image)' solution.yaml	
+    image=$CORTX_IMAGE yq e -i '.solution.images.cortxdataprov = env(image)' solution.yaml
+    image=$CORTX_IMAGE yq e -i '.solution.images.cortxdata = env(image)' solution.yaml
+}
+
 function add_node_info_solution_config(){
+
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         count=0
         for node in $(kubectl get node --selector='!node-role.kubernetes.io/master' | grep -v NAME | awk '{print $1}')
@@ -131,7 +133,6 @@ copy_solution_config(){
 		cp $SOLUTION_CONFIG .
                 yq eval -i 'del(.solution.nodes)' solution.yaml
         popd 
-
 }
 
 #execute script
@@ -225,6 +226,7 @@ echo "---------------------------------------[ Setting up Master Node $HOSTNAME 
     else
 	update_solution_config
     fi
+    add_image_info
     add_node_info_solution_config
 }
 
