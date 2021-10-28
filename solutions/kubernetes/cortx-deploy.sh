@@ -43,7 +43,7 @@ HEREDOC
 
 function setup_cluster {
 	
-   echo $SOLUTION_CONFIG_TYPE
+   echo  "Using $SOLUTION_CONFIG_TYPE type for generating solution.yaml"
     validation
     generate_rsa_key
     nodes_setup
