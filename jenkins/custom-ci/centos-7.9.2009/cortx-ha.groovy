@@ -2,7 +2,7 @@
 pipeline {
     agent {
         node {
-            label 'docker-centos-7.9.2009-node'
+            label 'cortx_motr_internal_ci_test'
         }
     }
     
@@ -108,14 +108,14 @@ EOF
             }
         }
 
-        stage ('Upload') {
-            steps {
-                script { build_stage = env.STAGE_NAME }
-                sh label: 'Copy RPMS', script: '''
-                    mkdir -p $build_upload_dir
-                    cp $WORKSPACE/cortx-ha/dist/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir
-                '''
-            }
-        }
+#        stage ('Upload') {
+#            steps {
+#                script { build_stage = env.STAGE_NAME }
+#                sh label: 'Copy RPMS', script: '''
+#                    mkdir -p $build_upload_dir
+#                    cp $WORKSPACE/cortx-ha/dist/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir
+#                '''
+#            }
+#        }
     }
 }
