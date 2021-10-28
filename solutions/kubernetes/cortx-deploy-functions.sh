@@ -19,7 +19,7 @@
 #
 
 SYSTESM_DRIVE="/dev/sdb"
-SYSTEM_DRIVE_MOUNT="/mnt/fs-local-volume/"
+SYSTEM_DRIVE_MOUNT="/mnt/fs-local-volume"
 SCRIPT_LOCATION="/root/deploy-scripts"
 YQ_VERSION=v4.13.3
 YQ_BINARY=yq_linux_386
@@ -28,6 +28,11 @@ YQ_BINARY=yq_linux_386
 #download CORTX k8 deployment scripts
 
 function download_deploy_script(){
+    if [ -z "$SCRIPT_LOCATION" ]; then echo "SCRIPT_LOCATION not provided.Exiting..."; exit 1; fi
+    if [ -z "$GITHUB_TOKEN" ]; then echo "GITHUB_TOKEN not provided.Exiting..."; exit 1; fi
+    if [ -z "$CORTX_SCRIPTS_REPO" ]; then echo "CORTX_SCRIPTS_REPO not provided.Exiting..."; exit 1; fi
+    if [ -z "$CORTX_SCRIPTS_BRANCH" ]; then echo "CORTX_SCRIPTS_BRANCH not provided.Exiting..."; exit 1; fi
+
     rm -rf $SCRIPT_LOCATION
     yum install git -y
     git clone https://$GITHUB_TOKEN@github.com/$CORTX_SCRIPTS_REPO $SCRIPT_LOCATION
@@ -52,7 +57,7 @@ function update_solution_config(){
         yq e -i '.solution.namespace = "default"' solution.yaml
         
         yq e -i '.solution.secrets.name = "cortx-secret"' solution.yaml
-        yq e -i '.solution.secrets.content.openldap_admin_secret = "seagate2"' solution.yaml
+        yq e -i '.solution.secrets.content.openldap_admin_secret = "seagate1"' solution.yaml
         yq e -i '.solution.secrets.content.kafka_admin_secret = "Seagate@123"' solution.yaml
         yq e -i '.solution.secrets.content.consul_admin_secret = "Seagate@123"' solution.yaml
         yq e -i '.solution.secrets.content.common_admin_secret = "Seagate@123"' solution.yaml
@@ -60,25 +65,32 @@ function update_solution_config(){
         yq e -i '.solution.secrets.content.csm_auth_admin_secret = "seagate2"' solution.yaml
         yq e -i '.solution.secrets.content.csm_mgmt_admin_secret = "Cortxadmin@123"' solution.yaml
 
-        yq e -i '.solution.images.cortxcontrolprov = "centos:7"' solution.yaml
-        yq e -i '.solution.images.cortxcontrol = "centos:7"' solution.yaml
-        yq e -i '.solution.images.cortxdataprov = "centos:7"' solution.yaml
-        yq e -i '.solution.images.cortxdata = "centos:7"' solution.yaml
-        yq e -i '.solution.images.cortxsupport = "centos:7"' solution.yaml
 
-        yq e -i '.solution.3rdparty.openldap.password = "seagate1"' solution.yaml
+        image=$CORTX_IMAGE yq e -i '.solution.images.cortxcontrolprov = env(image)' solution.yaml	
+        image=$CORTX_IMAGE yq e -i '.solution.images.cortxcontrol = env(image)' solution.yaml	
+        image=$CORTX_IMAGE yq e -i '.solution.images.cortxdataprov = env(image)' solution.yaml	
+        image=$CORTX_IMAGE yq e -i '.solution.images.cortxdata = env(image)' solution.yaml
+
+        yq e -i '.solution.images.openldap = "ghcr.io/seagate/symas-openldap:standalone"' solution.yaml
+        yq e -i '.solution.images.consul = "hashicorp/consul:1.10.0"' solution.yaml
+        yq e -i '.solution.images.kafka = "bitnami/kafka:3.0.0-debian-10-r7"' solution.yaml
+        yq e -i '.solution.images.zookeeper = "bitnami/zookeeper:3.7.0-debian-10-r182"' solution.yaml
+        yq e -i '.solution.images.gluster = "docker.io/gluster/gluster-centos:latest"' solution.yaml
+        yq e -i '.solution.images.rancher = "rancher/local-path-provisioner:v0.0.20"' solution.yaml
 
         yq e -i '.solution.common.cortx_io_svc_ingress = false' solution.yaml
+        drive=$SYSTEM_DRIVE_MOUNT yq e -i '.solution.common.storage_provisioner_path = env(drive)' solution.yaml
         yq e -i '.solution.common.storage.local = "/etc/cortx"' solution.yaml
         yq e -i '.solution.common.storage.shared = "/share"' solution.yaml
         yq e -i '.solution.common.storage.log = "/share/var/log/cortx"' solution.yaml
         yq e -i '.solution.common.s3.num_inst = 2' solution.yaml
         yq e -i '.solution.common.s3.start_port_num = 28051' solution.yaml
-        yq e -i '.solution.common.motr.num_client_inst = 1' solution.yaml
+        yq e -i '.solution.common.motr.num_client_inst = 0' solution.yaml
         yq e -i '.solution.common.motr.start_port_num = 29000' solution.yaml
         yq e -i '.solution.common.storage_sets.name = "storage-set-1"' solution.yaml
-        yq e -i '.solution.common.storage_sets.durability.sns = "8+7+0"' solution.yaml
+        yq e -i '.solution.common.storage_sets.durability.sns = "1+0+0"' solution.yaml
         yq e -i '.solution.common.storage_sets.durability.dix = "1+0+0"' solution.yaml
+        yq e -i '.solution.common.glusterfs.size = "5Gi"' solution.yaml
 
         yq e -i '.solution.storage.cvg1.name = "cvg-01"' solution.yaml
         yq e -i '.solution.storage.cvg1.type = "ios"' solution.yaml
@@ -93,12 +105,11 @@ function update_solution_config(){
         yq e -i '.solution.storage.cvg2.devices.metadata.size = "5Gi"' solution.yaml
         yq e -i '.solution.storage.cvg2.devices.data.d1.device = "/dev/sdf"' solution.yaml
         yq e -i '.solution.storage.cvg2.devices.data.d1.size = "5Gi"' solution.yaml
-
+        
         count=0
         for node in $(kubectl get node --selector='!node-role.kubernetes.io/master' | grep -v NAME | awk '{print $1}')
             do
             i=$node yq e -i '.solution.nodes['$count'].node'$count'.name = env(i)' solution.yaml
-            drive=$SYSTEM_DRIVE_MOUNT yq e -i '.solution.nodes['$count'].node'$count'.devices.system = env(drive)' solution.yaml
             count=$((count+1))
         done
         sed -i 's/- //g' solution.yaml
@@ -124,6 +135,7 @@ function mount_system_device(){
     mkdir -p /mnt/fs-local-volume
     mount -t ext4 $SYSTESM_DRIVE $SYSTEM_DRIVE_MOUNT
     mkdir -p /mnt/fs-local-volume/local-path-provisioner
+    sysctl -w vm.max_map_count=30000000
 }
 
 #glusterfes requirements
@@ -144,10 +156,20 @@ function openldap_requiremenrs(){
 }
 
 function download_images(){
+    rm -rf /var/images
     mkdir -p /var/images && pushd /var/images
-        wget -r -np -nH --cut-dirs=3 -A *.tar http://cortx-storage.colo.seagate.com/releases/cortx/images/
+        wget -q -r -np -nH --cut-dirs=3 -A *.tar http://cortx-storage.colo.seagate.com/releases/cortx/images/
         for file in $(ls -1); do docker load -i $file; done
-    popd 
+    popd
+    
+}
+
+function execute_prereq(){
+    pushd $SCRIPT_LOCATION/k8_cortx_cloud
+        umount -l $SYSTESM_DRIVE
+        ./prereq-deploy-cortx-cloud.sh $SYSTESM_DRIVE
+    popd    
+
 }
 
 function usage(){
@@ -176,7 +198,7 @@ if [ -z "$ACTION" ]; then
 fi
 
 function setup_master_node(){
-echo "---------------------------------------[ Setting up Master Node ]--------------------------------------"
+echo "---------------------------------------[ Setting up Master Node $HOSTNAME ]--------------------------------------"
     download_deploy_script $GITHUB_TOKEN
     download_images
     install_yq
@@ -185,11 +207,10 @@ echo "---------------------------------------[ Setting up Master Node ]---------
 
 
 function setup_worker_node(){
-echo "---------------------------------------[ Setting up Worker Node ]--------------------------------------"
-    mount_system_device
+echo "---------------------------------------[ Setting up Worker Node on $HOSTNAME ]--------------------------------------"
     download_images
-    glusterfs_requirements
-    openldap_requiremenrs
+    download_deploy_script
+    execute_prereq
 }
 
 function destroy(){
@@ -201,7 +222,10 @@ function destroy(){
 }
 
 function print_pod_status(){
-     kubectl get pods -o wide
+echo "---------------------------------------[ POD Status ]--------------------------------------"
+    kubectl get pods -o wide
+echo "---------------------------------------[ hctl status ]--------------------------------------"
+    kubectl exec -it $(kubectl get pods | awk '/cortx-data-pod/{print $1; exit}') -c cortx-motr-hax -- hctl status
 }
 
 case $ACTION in

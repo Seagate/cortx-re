@@ -55,13 +55,13 @@ function setup_cluster {
 
     for worker_node in $WORKER_NODES
 	do
-	ssh -o 'StrictHostKeyChecking=no' "$worker_node" "/var/tmp/cortx-deploy-functions.sh --setup-worker"
+	ssh -o 'StrictHostKeyChecking=no' "$worker_node" "export GITHUB_TOKEN=$GITHUB_TOKEN && export CORTX_SCRIPTS_REPO=$CORTX_SCRIPTS_REPO && export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH && /var/tmp/cortx-deploy-functions.sh --setup-worker"
 	done
 
 
     for master_node in $MASTER_NODE
 	    do
-    	ssh -o 'StrictHostKeyChecking=no' "$master_node" "export GITHUB_TOKEN=$GITHUB_TOKEN && export CORTX_SCRIPTS_REPO=$CORTX_SCRIPTS_REPO && export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH && /var/tmp/cortx-deploy-functions.sh --setup-master"
+    	ssh -o 'StrictHostKeyChecking=no' "$master_node" "export CORTX_IMAGE=$CORTX_IMAGE && export GITHUB_TOKEN=$GITHUB_TOKEN && export CORTX_SCRIPTS_REPO=$CORTX_SCRIPTS_REPO && export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH && /var/tmp/cortx-deploy-functions.sh --setup-master"
         done
 
     for master_node in $MASTER_NODE
