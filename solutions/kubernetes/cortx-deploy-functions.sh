@@ -203,7 +203,7 @@ echo "---------------------------------------[ Setting up Master Node $HOSTNAME 
     download_images
     install_yq
     update_solution_config
-    if [ "$(kubectl describe nodes $HOSTNAME | grep -o NoSchedule)" == "" ]; then
+    if [ "$(kubectl get  nodes $HOSTNAME  -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints}" | grep -o NoSchedule)" == "" ]; then
         execute_prereq
     fi
 }
