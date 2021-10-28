@@ -44,7 +44,7 @@ pipeline {
             }
         }
     
-    
+
         // Install third-party dependencies. This needs to be removed once components move away from self-contained binaries 
         stage('Install python packages') {
             steps {
@@ -58,8 +58,8 @@ timeout: 60
 index-url: http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/python-packages-2.0.0-latest/
 trusted-host: cortx-storage.colo.seagate.com
 EOF
-                pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/main/py-utils/python_requirements.txt
-                pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/main/py-utils/python_requirements.ext.txt
+                pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/kubernetes/py-utils/python_requirements.txt
+                pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/kubernetes/py-utils/python_requirements.ext.txt
                 rm -rf /etc/pip.conf
             '''        
             }
@@ -72,7 +72,7 @@ EOF
                 sh label: '', script: '''
                     yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/$os_version/$release_tag/cortx_iso/
                     yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
-                    
+
                     yum clean all && rm -rf /var/cache/yum
                     pushd $component
                         yum erase python36-PyYAML -y
