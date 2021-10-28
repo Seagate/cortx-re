@@ -23,6 +23,7 @@ SYSTEM_DRIVE_MOUNT="/mnt/fs-local-volume"
 SCRIPT_LOCATION="/root/deploy-scripts"
 YQ_VERSION=v4.13.3
 YQ_BINARY=yq_linux_386
+SOLUTION_CONFIG="/var/tmp/solution.yaml"
 
 #On master
 #download CORTX k8 deployment scripts
@@ -46,6 +47,7 @@ function download_deploy_script(){
 function install_yq(){
     pip3 uninstall yq -y
     wget https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${YQ_BINARY}.tar.gz -O - | tar xz && mv ${YQ_BINARY} /usr/bin/yq
+    if [ -f /usr/local/bin/yq ]; then rm -rf /usr/local/bin/yq; fi    
     ln -s /usr/bin/yq /usr/local/bin/yq
 }
 
@@ -64,12 +66,6 @@ function update_solution_config(){
         yq e -i '.solution.secrets.content.s3_auth_admin_secret = "ldapadmin"' solution.yaml
         yq e -i '.solution.secrets.content.csm_auth_admin_secret = "seagate2"' solution.yaml
         yq e -i '.solution.secrets.content.csm_mgmt_admin_secret = "Cortxadmin@123"' solution.yaml
-
-
-        image=$CORTX_IMAGE yq e -i '.solution.images.cortxcontrolprov = env(image)' solution.yaml	
-        image=$CORTX_IMAGE yq e -i '.solution.images.cortxcontrol = env(image)' solution.yaml	
-        image=$CORTX_IMAGE yq e -i '.solution.images.cortxdataprov = env(image)' solution.yaml	
-        image=$CORTX_IMAGE yq e -i '.solution.images.cortxdata = env(image)' solution.yaml
 
         yq e -i '.solution.images.openldap = "ghcr.io/seagate/symas-openldap:standalone"' solution.yaml
         yq e -i '.solution.images.consul = "hashicorp/consul:1.10.0"' solution.yaml
@@ -105,7 +101,25 @@ function update_solution_config(){
         yq e -i '.solution.storage.cvg2.devices.metadata.size = "5Gi"' solution.yaml
         yq e -i '.solution.storage.cvg2.devices.data.d1.device = "/dev/sdf"' solution.yaml
         yq e -i '.solution.storage.cvg2.devices.data.d1.size = "5Gi"' solution.yaml
-        
+    popd
+}        
+
+
+function add_image_info(){
+echo "Updating cortx-all image info in solution.yaml"   
+pushd $SCRIPT_LOCATION/k8_cortx_cloud
+    image=$CORTX_IMAGE yq e -i '.solution.images.cortxcontrolprov = env(image)' solution.yaml	
+    image=$CORTX_IMAGE yq e -i '.solution.images.cortxcontrol = env(image)' solution.yaml	
+    image=$CORTX_IMAGE yq e -i '.solution.images.cortxdataprov = env(image)' solution.yaml
+    image=$CORTX_IMAGE yq e -i '.solution.images.cortxdata = env(image)' solution.yaml
+popd 
+
+}
+
+function add_node_info_solution_config(){
+echo "Updating node info in solution.yaml"    
+
+    pushd $SCRIPT_LOCATION/k8_cortx_cloud
         count=0
         for node in $(kubectl get node --selector='!node-role.kubernetes.io/master' | grep -v NAME | awk '{print $1}')
             do
@@ -114,6 +128,16 @@ function update_solution_config(){
         done
         sed -i 's/- //g' solution.yaml
     popd
+}
+
+copy_solution_config(){
+	if [ -z "$SOLUTION_CONFIG" ]; then echo "SOLUTION_CONFIG not provided.Exiting..."; exit 1; fi
+	echo "Copying $SOLUTION_CONFIG file" 
+	pushd $SCRIPT_LOCATION/k8_cortx_cloud
+            if [ -f '$SOLUTION_CONFIG' ]; then echo "file $SOLUTION_CONFIG not available..."; exit 1; fi	
+            cp $SOLUTION_CONFIG .
+            yq eval -i 'del(.solution.nodes)' solution.yaml
+        popd 
 }
 
 #execute script
@@ -202,7 +226,13 @@ echo "---------------------------------------[ Setting up Master Node $HOSTNAME 
     download_deploy_script $GITHUB_TOKEN
     download_images
     install_yq
-    update_solution_config
+    if [ "$SOLUTION_CONFIG_TYPE" == "manual" ]; then
+	copy_solution_config
+    else
+	update_solution_config
+    fi
+    add_image_info
+    add_node_info_solution_config
 }
 
 
@@ -245,7 +275,7 @@ case $ACTION in
         print_pod_status
     ;;
     --setup-master)
-        setup_master_node
+        setup_master_node 
     ;;
     *)
         echo "ERROR : Please provide valid option"
