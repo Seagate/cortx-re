@@ -226,16 +226,17 @@ echo "---------------------------------------[ Setting up Master Node $HOSTNAME 
     download_deploy_script $GITHUB_TOKEN
     download_images
     install_yq
-    update_solution_config
+    
     if [ "$(kubectl get  nodes $HOSTNAME  -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints}" | grep -o NoSchedule)" == "" ]; then
         execute_prereq
     fi
 
     if [ "$SOLUTION_CONFIG_TYPE" == "manual" ]; then
-	      copy_solution_config
+        copy_solution_config
     else
         update_solution_config
     fi
+    
     add_image_info
     add_node_info_solution_config
 }
