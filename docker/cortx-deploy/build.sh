@@ -47,7 +47,7 @@ if [ -z "${BUILD}" ] ; then
     BUILD=last_successful_prod
 fi
 
-if echo $BUILD | grep -q custom; then BRANCH="integration-custom-ci"; else BRANCH="main"; fi
+if echo $BUILD | grep -q custom; then BRANCH="integration-custom-ci"; else BRANCH="kubernetes"; fi
 BUILD_URL="$ARTFACT_URL/$BRANCH/$OS/$BUILD"
 
 echo "Building cortx-all image from $BUILD_URL"
