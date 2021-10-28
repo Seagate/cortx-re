@@ -3,5 +3,4 @@ cortx-hare
 cortx-motr
 cortx-s3server
 cortx-csm_agent
-python36-cortx-prvsnr
 cortx-provisioner
