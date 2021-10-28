@@ -91,6 +91,8 @@ pipeline {
                         export GITHUB_TOKEN=${GITHUB_CRED}
                         export CORTX_SCRIPTS_BRANCH=${CORTX_SCRIPTS_BRANCH}
                         export CORTX_SCRIPTS_REPO=${CORTX_SCRIPTS_REPO}
+                        export CORTX_IMAGE=${CORTX_IMAGE}
+                        export SOLUTION_CONFIG_TYPE=automated
                         ./cortx-deploy.sh --cortx-cluster
                     popd
                 '''
