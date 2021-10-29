@@ -2,7 +2,7 @@ pipeline {
 	 	 
     agent {
 		node {
-			label 's3-dev-build-7.9.2009-Test'
+			label 's3-dev-build-7.9.2009'
 		}
 	}
 
@@ -11,6 +11,10 @@ pipeline {
 	    timeout(time: 360, unit: 'MINUTES')
         buildDiscarder(logRotator(daysToKeepStr: '7', numToKeepStr: '10'))
 	}
+
+    triggers { 
+        cron('30 22 * * *')
+    } 
 
     parameters {  
 	    string(name: 'S3_URL', defaultValue: 'https://github.com/Seagate/cortx-s3server', description: 'Repo for S3Server')
@@ -26,6 +30,7 @@ pipeline {
         S3_GPR_REFSEPEC = "+refs/pull/${ghprbPullId}/*:refs/remotes/origin/pr/${ghprbPullId}/*"
         S3_BRANCH_REFSEPEC = "+refs/heads/*:refs/remotes/origin/*"
         S3_PR_REFSEPEC = "${ghprbPullId != null ? S3_GPR_REFSEPEC : S3_BRANCH_REFSEPEC}"
+        BUILD_TRIGGER_BY = "${currentBuild.getBuildCauses()[0].shortDescription}"
     }
  	
 	stages {	
@@ -45,12 +50,11 @@ pipeline {
             } 
 
             stage('Checkout-motr-main') {
+                when {
+                    expression { env.BUILD_TRIGGER_BY == 'Started by timer' }
+                }
                 steps {
-                    sh '''git --git-dir=${WORKSPACE}/third_party/motr/.git checkout main
-                          git --git-dir=${WORKSPACE}/third_party/motr/.git branch
-                          git --git-dir=${WORKSPACE}/third_party/motr/.git status
-                          sleep 600
-                    '''
+                    sh '''git --git-dir=${WORKSPACE}/third_party/motr/.git checkout main'''
                 }
             }
 
@@ -113,7 +117,7 @@ pipeline {
                     }
                     env.build_stage = "${build_stage}"
 
-                    def mailRecipients = "abhijit.patil@seagate.com"
+                    def mailRecipients = "nilesh.govande@seagate.com, basavaraj.kirunge@seagate.com, rajesh.nambiar@seagate.com, ajinkya.dhumal@seagate.com, amit.kumar@seagate.com"
                                         
                     emailext body: '''${SCRIPT, template="mini_prov-email.template"}''',
                     mimeType: 'text/html',
