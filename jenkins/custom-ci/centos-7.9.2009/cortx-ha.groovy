@@ -2,7 +2,7 @@
 pipeline {
     agent {
         node {
-            label 'cortx_motr_internal_ci_test'
+            label 'docker-centos-7.9.2009-node'
         }
     }
     
