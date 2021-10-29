@@ -248,10 +248,16 @@ function setup_master_node(){
         if [ "$CALICO_PLUGIN_VERSION" == "latest" ]; then
             kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml || throw $Exception
         else
-        CALICO_PLUGIN_MAJOR_VERSION=$(echo $CALICO_PLUGIN_VERSION | awk -F[.] '{print $1"."$2}')
+            CALICO_PLUGIN_MAJOR_VERSION=$(echo $CALICO_PLUGIN_VERSION | awk -F[.] '{print $1"."$2}')
             curl https://docs.projectcalico.org/archive/$CALICO_PLUGIN_MAJOR_VERSION/manifests/calico.yaml -o calico-$CALICO_PLUGIN_VERSION.yaml || throw $Exception
             kubectl apply -f calico-$CALICO_PLUGIN_VERSION.yaml || throw $Exception
         fi
+        sleep 90
+        for podstatus in `kubectl get pods -A | grep calico | awk '{print $3}'`; do
+            if [[ ${podstatus} == "0/1" ]]; then
+                kubectl set env daemonset/calico-node -n kube-system IP_AUTODETECTION_METHOD=can-reach=www.google.com || throw $Exception
+            fi
+        done
         
         # Setup storage-class
         kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml || throw $Exception
