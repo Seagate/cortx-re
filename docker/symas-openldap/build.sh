@@ -20,7 +20,7 @@
 
 set -e -o pipefail
 
-usage() { echo "Usage: $0 [-b build url] [-p push docker-image to GHCR yes/no. Default yes] [ -t tag latest yes/no. Default no" ] 1>&2; exit 1; }
+usage() { echo "Usage: $0 [-p push docker-image to GHCR yes/no. Default yes] [ -t tag latest yes/no. Default no" ] 1>&2; exit 1; }
 
 VERSION=2.0.0
 DOCKER_PUSH=no
@@ -38,9 +38,9 @@ while getopts "b:p:t:" opt; do
     esac
 done
 
-if [ -z "${BUILD_URL}" ] ; then
-    usage
-fi
+#if [ -z "${BUILD_URL}" ] ; then
+#    usage
+#fi
 
 
 pushd ../.././

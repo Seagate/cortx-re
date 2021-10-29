@@ -23,10 +23,8 @@ ARG CENTOS_RELEASE
 FROM centos:${CENTOS_RELEASE}
 
 ARG CENTOS_RELEASE
-ARG ENVIRONMENT
-ARG GIT_HASH
-ARG BUILD_URL
 ARG CREATED_DATE
+ARG SYMAS_VERSION
 
 LABEL maintainer="cortx.opensource@seagate.com" \
       org.opencontainers.image.title="Symas Openldap Image" \
@@ -35,18 +33,17 @@ LABEL maintainer="cortx.opensource@seagate.com" \
 
 ENV GIT_HASH $GIT_HASH
 
-RUN yum-config-manager --add-repo http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/centos/centos-7.9.2009-2.0.0-k8/
+RUN yum-config-manager --add-repo https://repo.symas.com/configs/SOFL/rhel7/sofl.repo
 
 COPY ./docker/symas-openldap/entrypoint.sh /opt/
 
 COPY ./docker/symas-openldap/openldap-config /opt/openldap-config
 
-RUN yum install --nogpgcheck -y  symas-openldap-clients \
-    symas-openldap-servers \
+RUN yum install --nogpgcheck -y  symas-openldap-clients-$SYMAS_VERSION \
+    symas-openldap-servers-$SYMAS_VERSION \
     sysvinit-tools \
     && yum clean all \
     && rm -rf /var/cache/yum
 
-RUN rm -rf /etc/yum.repos.d/cortx-storage.colo.seagate.com_releases_cortx_* \
-    && yum clean all \
+RUN yum clean all \
     && rm -rf /var/cache/yum
