@@ -20,15 +20,15 @@
 
 set -e -o pipefail
 
-usage() { echo "Usage: $0 [-b build url] [-p push docker-image to GHCR yes/no. Default yes] [ -t tag latest yes/no. Default no" ] 1>&2; exit 1; }
+usage() { echo "Usage: $0 [ -v symas-version to build image ] [-p push docker-image to GHCR yes/no. Default yes] [ -t tag latest yes/no. Default no" ] 1>&2; exit 1; }
 
 VERSION=2.0.0
-DOCKER_PUSH=yes
+DOCKER_PUSH=no
 TAG_LATEST=no
 
-while getopts "b:p:t:" opt; do
+while getopts "v:p:t:" opt; do
     case $opt in
-        b ) BUILD_URL=$OPTARG;;
+        v ) SYMAS_VERSION=$OPTARG;;
         p ) DOCKER_PUSH=$OPTARG;;
         t ) TAG_LATEST=$OPTARG;;
         h ) usage
@@ -38,17 +38,17 @@ while getopts "b:p:t:" opt; do
     esac
 done
 
-if [ -z "${BUILD_URL}" ] ; then
-    usage
-fi
+#if [ -z "${BUILD_URL}" ] ; then
+#    usage
+#fi
 
 
 pushd ../.././
 
 export CREATED_DATE=$(date -u +'%Y-%m-%d %H:%M:%S%:z')
-export TAG=2.4.58
+export TAG=$SYMAS_VERSION
 
-docker-compose -f docker/symas-openldap/docker-compose.yml build --force-rm --no-cache --compress --build-arg GIT_HASH="$(git rev-parse --short HEAD)" --build-arg CREATED_DATE="$CREATED_DATE" --build-arg BUILD_URL=$BUILD_URL syams-openldap
+docker-compose -f docker/symas-openldap/docker-compose.yml build --force-rm --no-cache --compress --build-arg GIT_HASH="$(git rev-parse --short HEAD)" --build-arg CREATED_DATE="$CREATED_DATE" --build-arg SYMAS_VERSION=$SYMAS_VERSION syams-openldap
 
 if [ "$DOCKER_PUSH" == "yes" ];then
         echo "Pushing Docker image to GitHub Container Registry"
