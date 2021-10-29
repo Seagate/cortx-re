@@ -121,7 +121,7 @@ echo "Updating node info in solution.yaml"
 
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         count=0
-        for node in $(kubectl get node --selector='!node-role.kubernetes.io/master' | grep -v NAME | awk '{print $1}')
+        for node in $(kubectl get nodes -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints[?(@.effect=='NoSchedule')].effect}{\"\n\"}{end}" | grep -v NoSchedule)
             do
             i=$node yq e -i '.solution.nodes['$count'].node'$count'.name = env(i)' solution.yaml
             count=$((count+1))
@@ -226,15 +226,20 @@ echo "---------------------------------------[ Setting up Master Node $HOSTNAME 
     download_deploy_script $GITHUB_TOKEN
     download_images
     install_yq
-    if [ "$SOLUTION_CONFIG_TYPE" == "manual" ]; then
-	copy_solution_config
-    else
-	update_solution_config
+    
+    if [ "$(kubectl get  nodes $HOSTNAME  -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints}" | grep -o NoSchedule)" == "" ]; then
+        execute_prereq
     fi
+
+    if [ "$SOLUTION_CONFIG_TYPE" == "manual" ]; then
+        copy_solution_config
+    else
+        update_solution_config
+    fi
+    
     add_image_info
     add_node_info_solution_config
 }
-
 
 function setup_worker_node(){
 echo "---------------------------------------[ Setting up Worker Node on $HOSTNAME ]--------------------------------------"
