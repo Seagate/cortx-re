@@ -27,7 +27,7 @@ pipeline {
 
         choice(
             name: 'DEPLOY_TARGET',
-            choices: ['THIRD-PARTY-ONLY', 'CORTX-CLUSTER'],
+            choices: ['CORTX-CLUSTER', 'THIRD-PARTY-ONLY'],
             description: 'Deployment Target THIRD-PARTY-ONLY - This will only install third party components, CORTX-CLUSTER - This will install Third party and CORTX components both.'
         )
        
@@ -70,6 +70,8 @@ pipeline {
                         export GITHUB_TOKEN=${GITHUB_CRED}
                         export CORTX_SCRIPTS_BRANCH=${CORTX_SCRIPTS_BRANCH}
                         export CORTX_SCRIPTS_REPO=${CORTX_SCRIPTS_REPO}
+                        export CORTX_IMAGE=${CORTX_IMAGE}
+                        export SOLUTION_CONFIG_TYPE=automated
                         ./cortx-deploy.sh --third-party
                     popd
                 '''
@@ -89,6 +91,8 @@ pipeline {
                         export GITHUB_TOKEN=${GITHUB_CRED}
                         export CORTX_SCRIPTS_BRANCH=${CORTX_SCRIPTS_BRANCH}
                         export CORTX_SCRIPTS_REPO=${CORTX_SCRIPTS_REPO}
+                        export CORTX_IMAGE=${CORTX_IMAGE}
+                        export SOLUTION_CONFIG_TYPE=automated
                         ./cortx-deploy.sh --cortx-cluster
                     popd
                 '''
