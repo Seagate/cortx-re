@@ -38,9 +38,9 @@ while getopts "v:p:t:" opt; do
     esac
 done
 
-#if [ -z "${BUILD_URL}" ] ; then
-#    usage
-#fi
+if [ -z "${SYMAS_VERSION}" ] ; then
+    usage
+fi
 
 
 pushd ../.././
