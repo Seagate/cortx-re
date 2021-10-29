@@ -109,7 +109,7 @@ EOF
             }
         }
 
-/*        stage ('Upload') {
+        stage ('Upload') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Copy RPMS', script: '''
@@ -117,6 +117,6 @@ EOF
                     cp $WORKSPACE/cortx-ha/dist/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir
                 '''
             }
-        } */
+        } 
     }
 }
