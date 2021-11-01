@@ -59,7 +59,7 @@ def get_block_content(file_name):
             # print("f.seek", os.SEEK_END, os.SEEK_SET)
             if 'no issues found' in line:
                 continue
-            elif line.startswith(component):
+            elif line and line[0].isalpha():
                 filename = line
                 print ("Processing the %s" %filename)
                 file_dict[filename] = ''
