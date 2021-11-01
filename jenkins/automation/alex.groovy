@@ -64,13 +64,16 @@ pipeline {
               script {
                 def projects = readJSON file: "${env.WORKSPACE}/config.json"
                 projects.repository.each { entry ->
-                    def path = './' + entry.name + '/*'
-                    def file = entry.name + '.alex'
-                    sh ''' 
-                      set +e
-                      alex ''' + path + ''' >> ''' + file +''' 2>&1
-                      set -e
-                    '''
+                    dir(entry.name) {
+						def file = '../' + entry.name + '.alex'
+						sh ''' 
+						  set +e
+						  cp ../alexignore .alexignore
+						  cp ../alexrc .alexrc
+						  alex . >> ''' + file +''' 2>&1
+						  set -e
+						'''
+					}
                   }
               }
           }	
@@ -266,4 +269,3 @@ pipeline {
         }
     }
 }
-
