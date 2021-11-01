@@ -10,6 +10,13 @@ pipeline {
         pollSCM '*/5 * * * *'
     }
 
+    
+    parameters {
+        choice(
+            choices: ['libfabric' , 'lustre'],
+            description: '',
+            name: 'TRANSPORT')
+    }
         
     environment {
         version = "2.0.0"    
@@ -39,7 +46,23 @@ pipeline {
                 }
             }
         }
-    
+        
+	stage('Check TRANSPORT module') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                dir ('motr') {
+                    sh label: '', script: '''
+                        if [[ "$TRANSPORT" == "libfabric" ]]; then
+                                echo "We are using default 'libfabric' module/package"
+                        else
+                                sed -i '/libfabric/d' cortx-motr.spec.in
+				echo "Removed libfabric from spec file as we are going to use $TRANSPORT"
+			fi
+                    '''
+                }
+            }
+        }
+
         stage('Install Dependencies') {
             steps {
                 script { build_stage = env.STAGE_NAME }
