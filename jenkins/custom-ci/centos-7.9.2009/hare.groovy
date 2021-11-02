@@ -10,7 +10,7 @@ pipeline {
 	    string(name: 'HARE_URL', defaultValue: 'https://github.com/Seagate/cortx-hare/', description: 'Repository URL for Hare build')
         string(name: 'HARE_BRANCH', defaultValue: 'stable', description: 'Branch for Hare build')
 		string(name: 'CUSTOM_CI_BUILD_ID', defaultValue: '0', description: 'Custom CI Build Number')
-		
+		string(name: 'CORTX_UTILS_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX Utils', trim: true)		
 		choice(
             name: 'MOTR_BRANCH', 
             choices: ['custom-ci', 'stable', 'Cortx-v1.0.0_Beta'],
