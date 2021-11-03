@@ -69,8 +69,8 @@ function update_solution_config(){
 
         yq e -i '.solution.images.openldap = "ghcr.io/seagate/symas-openldap:2.4.58"' solution.yaml
         yq e -i '.solution.images.consul = "hashicorp/consul:1.10.0"' solution.yaml
-        yq e -i '.solution.images.kafka = "bitnami/kafka:3.0.0-debian-10-r7"' solution.yaml
-        yq e -i '.solution.images.zookeeper = "bitnami/zookeeper:3.7.0-debian-10-r182"' solution.yaml
+        yq e -i '.solution.images.kafka = "3.0.0-debian-10-r7"' solution.yaml
+        yq e -i '.solution.images.zookeeper = "3.7.0-debian-10-r182"' solution.yaml
         yq e -i '.solution.images.gluster = "docker.io/gluster/gluster-centos:latest"' solution.yaml
         yq e -i '.solution.images.rancher = "rancher/local-path-provisioner:v0.0.20"' solution.yaml
 
