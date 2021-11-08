@@ -1,0 +1,14 @@
+java-1.8.0-openjdk-headless
+sudo
+which
+haproxy22
+python3
+sshpass
+python36-m2crypto
+jq
+kafka
+python36-dbus
+symas-openldap-clients
+python36-psutil
+crontabs
+logrotate
