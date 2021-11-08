@@ -67,20 +67,20 @@ function update_solution_config(){
         yq e -i '.solution.secrets.content.csm_auth_admin_secret = "seagate2"' solution.yaml
         yq e -i '.solution.secrets.content.csm_mgmt_admin_secret = "Cortxadmin@123"' solution.yaml
 
-        yq e -i '.solution.images.openldap = "ghcr.io/seagate/symas-openldap:standalone"' solution.yaml
+        yq e -i '.solution.images.openldap = "ghcr.io/seagate/symas-openldap:2.4.58"' solution.yaml
         yq e -i '.solution.images.consul = "hashicorp/consul:1.10.0"' solution.yaml
-        yq e -i '.solution.images.kafka = "bitnami/kafka:3.0.0-debian-10-r7"' solution.yaml
-        yq e -i '.solution.images.zookeeper = "bitnami/zookeeper:3.7.0-debian-10-r182"' solution.yaml
+        yq e -i '.solution.images.kafka = "3.0.0-debian-10-r7"' solution.yaml
+        yq e -i '.solution.images.zookeeper = "3.7.0-debian-10-r182"' solution.yaml
         yq e -i '.solution.images.gluster = "docker.io/gluster/gluster-centos:latest"' solution.yaml
         yq e -i '.solution.images.rancher = "rancher/local-path-provisioner:v0.0.20"' solution.yaml
 
-        yq e -i '.solution.common.cortx_io_svc_ingress = false' solution.yaml
         drive=$SYSTEM_DRIVE_MOUNT yq e -i '.solution.common.storage_provisioner_path = env(drive)' solution.yaml
-        yq e -i '.solution.common.storage.local = "/etc/cortx"' solution.yaml
-        yq e -i '.solution.common.storage.shared = "/share"' solution.yaml
-        yq e -i '.solution.common.storage.log = "/share/var/log/cortx"' solution.yaml
+        yq e -i '.solution.common.container_path.local = "/etc/cortx"' solution.yaml
+        yq e -i '.solution.common.container_path.shared = "/share"' solution.yaml
+        yq e -i '.solution.common.container_path.log = "/share/var/log/cortx"' solution.yaml
         yq e -i '.solution.common.s3.num_inst = 2' solution.yaml
         yq e -i '.solution.common.s3.start_port_num = 28051' solution.yaml
+        yq e -i '.solution.common.s3.max_start_timeout = 240' solution.yaml
         yq e -i '.solution.common.motr.num_client_inst = 0' solution.yaml
         yq e -i '.solution.common.motr.start_port_num = 29000' solution.yaml
         yq e -i '.solution.common.storage_sets.name = "storage-set-1"' solution.yaml
@@ -94,13 +94,17 @@ function update_solution_config(){
         yq e -i '.solution.storage.cvg1.devices.metadata.size = "5Gi"' solution.yaml
         yq e -i '.solution.storage.cvg1.devices.data.d1.device = "/dev/sdd"' solution.yaml
         yq e -i '.solution.storage.cvg1.devices.data.d1.size = "5Gi"' solution.yaml
-        
+        yq e -i '.solution.storage.cvg1.devices.data.d2.device = "/dev/sde"' solution.yaml
+        yq e -i '.solution.storage.cvg1.devices.data.d2.size = "5Gi"' solution.yaml
+       
         yq e -i '.solution.storage.cvg2.name = "cvg-02"' solution.yaml
         yq e -i '.solution.storage.cvg2.type = "ios"' solution.yaml
-        yq e -i '.solution.storage.cvg2.devices.metadata.device = "/dev/sde"' solution.yaml
+        yq e -i '.solution.storage.cvg2.devices.metadata.device = "/dev/sdf"' solution.yaml
         yq e -i '.solution.storage.cvg2.devices.metadata.size = "5Gi"' solution.yaml
-        yq e -i '.solution.storage.cvg2.devices.data.d1.device = "/dev/sdf"' solution.yaml
+        yq e -i '.solution.storage.cvg2.devices.data.d1.device = "/dev/sdg"' solution.yaml
         yq e -i '.solution.storage.cvg2.devices.data.d1.size = "5Gi"' solution.yaml
+        yq e -i '.solution.storage.cvg2.devices.data.d2.device = "/dev/sdh"' solution.yaml
+        yq e -i '.solution.storage.cvg2.devices.data.d2.size = "5Gi"' solution.yaml
     popd
 }        
 
@@ -121,7 +125,7 @@ echo "Updating node info in solution.yaml"
 
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         count=0
-        for node in $(kubectl get node --selector='!node-role.kubernetes.io/master' | grep -v NAME | awk '{print $1}')
+        for node in $(kubectl get nodes -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints[?(@.effect=='NoSchedule')].effect}{\"\n\"}{end}" | grep -v NoSchedule)
             do
             i=$node yq e -i '.solution.nodes['$count'].node'$count'.name = env(i)' solution.yaml
             count=$((count+1))
@@ -226,15 +230,20 @@ echo "---------------------------------------[ Setting up Master Node $HOSTNAME 
     download_deploy_script $GITHUB_TOKEN
     download_images
     install_yq
-    if [ "$SOLUTION_CONFIG_TYPE" == "manual" ]; then
-	copy_solution_config
-    else
-	update_solution_config
+    
+    if [ "$(kubectl get  nodes $HOSTNAME  -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints}" | grep -o NoSchedule)" == "" ]; then
+        execute_prereq
     fi
+
+    if [ "$SOLUTION_CONFIG_TYPE" == "manual" ]; then
+        copy_solution_config
+    else
+        update_solution_config
+    fi
+    
     add_image_info
     add_node_info_solution_config
 }
-
 
 function setup_worker_node(){
 echo "---------------------------------------[ Setting up Worker Node on $HOSTNAME ]--------------------------------------"
