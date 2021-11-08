@@ -23,10 +23,8 @@ ARG CENTOS_RELEASE
 FROM centos:${CENTOS_RELEASE}
 
 ARG CENTOS_RELEASE
-ARG ENVIRONMENT
-ARG GIT_HASH
-ARG BUILD_URL
 ARG CREATED_DATE
+ARG SYMAS_VERSION
 
 LABEL maintainer="cortx.opensource@seagate.com" \
       org.opencontainers.image.title="Symas Openldap Image" \
@@ -35,25 +33,17 @@ LABEL maintainer="cortx.opensource@seagate.com" \
 
 ENV GIT_HASH $GIT_HASH
 
-RUN yum-config-manager --add-repo ${BUILD_URL}/cortx_iso/ \
-    && yum-config-manager --add-repo ${BUILD_URL}/3rd_party \
-    && curl ${BUILD_URL}/RELEASE.INFO -o RELEASE.INFO 
+RUN yum-config-manager --add-repo https://repo.symas.com/configs/SOFL/rhel7/sofl.repo
 
-COPY ./scripts/third-party-rpm/python_requirements*.txt ./docker/symas-openldap/entrypoint.sh  /opt/
+COPY ./docker/symas-openldap/entrypoint.sh /opt/
 
-RUN yum install --nogpgcheck -y sudo \
-    which \
-    python3-pip \
-    haproxy \ 
-    && pip3 install  --no-cache-dir --trusted-host $(echo $BUILD_URL | awk -F '/' '{print $3}')  -i $BUILD_URL/python_deps -r /opt/python_requirements.txt -r /opt/python_requirements.ext.txt
+COPY ./docker/symas-openldap/openldap-config /opt/openldap-config
 
-
-RUN yum install --nogpgcheck -y cortx-py-utils \
-    symas-openldap-clients \
-    symas-openldap-servers \
-    python36-ldap \
-    openldap-devel \
+RUN yum install --nogpgcheck -y  symas-openldap-clients-$SYMAS_VERSION \
+    symas-openldap-servers-$SYMAS_VERSION \
+    sysvinit-tools \
+    && yum clean all \
     && rm -rf /var/cache/yum
 
-RUN rm -rf /etc/yum.repos.d/cortx-storage.colo.seagate.com_releases_cortx_* \
+RUN yum clean all \
     && rm -rf /var/cache/yum
