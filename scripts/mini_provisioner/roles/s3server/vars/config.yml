@@ -1,4 +1,4 @@
-STX_PEM: https://raw.githubusercontent.com/Seagate/cortx-prvsnr/pre-cortx-1.0/srv/components/misc_pkgs/ssl_certs/files/stx.pem
+STX_PEM: https://raw.githubusercontent.com/Seagate/cortx-prvsnr/main/srv/components/misc_pkgs/ssl_certs/files/stx.pem
 S3_IAM_CLI_LOCATION: http://cortx-storage.colo.seagate.com/releases/cortx/github/main/centos-7.9.2009/last_successful/
 
 DATA_DEVICE: /dev/sdb
