@@ -232,4 +232,3 @@ def getAuthor(issue) {
     response = "* Author: "+author+"\n"
     return response
 }
-
