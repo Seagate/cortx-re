@@ -1,37 +1,48 @@
 {
-  "repository": [
-    {
-      "name": "cortx-motr"
-    },
-    {
-      "name": "cortx-posix"
-    },
-    {
-      "name": "cortx-monitor"
-    },
-    {
-      "name": "cortx-re"
-    },
-    {
-      "name": "cortx-hare"
-    },
-    {
-      "name": "cortx-prvsnr"
-    },
-    {
-      "name": "cortx-ha"
-    },
-    {
-      "name": "cortx-management-portal"
-    },
-    {
-      "name": "cortx-manager"
-    },
-    {
-      "name": "cortx-s3server"
-    },
-    {
-      "name": "cortx-utils"
-    }
-  ]
+	"scan_list": "western digital, lyve cloud, hamr",
+	"repository": [{
+			"name": "cortx-motr",
+			"custom_list": "Alex, Cortx-test, western digital"
+		},
+		{
+			"name": "cortx-posix",
+			"custom_list": ""
+		},
+		{
+			"name": "cortx-monitor",
+			"custom_list": ""
+		},
+		{
+			"name": "cortx-re",
+			"custom_list": ""
+		},
+		{
+			"name": "cortx-hare",
+			"custom_list": ""
+		},
+		{
+			"name": "cortx-prvsnr",
+			"custom_list": ""
+		},
+		{
+			"name": "cortx-ha",
+			"custom_list": ""
+		},
+		{
+			"name": "cortx-management-portal",
+			"custom_list": ""
+		},
+		{
+			"name": "cortx-manager",
+			"custom_list": ""
+		},
+		{
+			"name": "cortx-s3server",
+			"custom_list": ""
+		},
+		{
+			"name": "cortx-utils",
+			"custom_list": ""
+		}
+	]
 }
