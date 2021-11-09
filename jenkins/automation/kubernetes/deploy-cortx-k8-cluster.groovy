@@ -6,7 +6,7 @@ pipeline {
     }
     
     options {
-        timeout(time: 120, unit: 'MINUTES')
+        timeout(time: 240, unit: 'MINUTES')
         timestamps()
         buildDiscarder(logRotator(daysToKeepStr: '30', numToKeepStr: '30'))
         ansiColor('xterm')
@@ -23,11 +23,12 @@ pipeline {
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for CORTX Cluster scripts', trim: true)
         string(name: 'CORTX_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-all:2.0.0-latest-custom-ci', description: 'CORTX-ALL image', trim: true)
         text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used. First node will be used as Master', name: 'hosts')
+        booleanParam(name: 'TAINT', defaultValue: false, description: 'Allow to schedule pods on master node')
         // Please configure CORTX_SCRIPTS_BRANCH and CORTX_SCRIPTS_REPO parameter in Jenkins job configuration.
 
         choice(
             name: 'DEPLOY_TARGET',
-            choices: ['THIRD-PARTY-ONLY', 'CORTX-CLUSTER'],
+            choices: ['CORTX-CLUSTER', 'THIRD-PARTY-ONLY'],
             description: 'Deployment Target THIRD-PARTY-ONLY - This will only install third party components, CORTX-CLUSTER - This will install Third party and CORTX components both.'
         )
        
@@ -51,7 +52,7 @@ pipeline {
                     pushd solutions/kubernetes/
                         echo $hosts | tr ' ' '\n' > hosts
                         cat hosts
-                        ./cluster-setup.sh
+                        ./cluster-setup.sh ${TAINT}
                     popd
                 '''
             }
@@ -70,6 +71,8 @@ pipeline {
                         export GITHUB_TOKEN=${GITHUB_CRED}
                         export CORTX_SCRIPTS_BRANCH=${CORTX_SCRIPTS_BRANCH}
                         export CORTX_SCRIPTS_REPO=${CORTX_SCRIPTS_REPO}
+                        export CORTX_IMAGE=${CORTX_IMAGE}
+                        export SOLUTION_CONFIG_TYPE=automated
                         ./cortx-deploy.sh --third-party
                     popd
                 '''
@@ -89,6 +92,8 @@ pipeline {
                         export GITHUB_TOKEN=${GITHUB_CRED}
                         export CORTX_SCRIPTS_BRANCH=${CORTX_SCRIPTS_BRANCH}
                         export CORTX_SCRIPTS_REPO=${CORTX_SCRIPTS_REPO}
+                        export CORTX_IMAGE=${CORTX_IMAGE}
+                        export SOLUTION_CONFIG_TYPE=automated
                         ./cortx-deploy.sh --cortx-cluster
                     popd
                 '''
@@ -139,5 +144,21 @@ pipeline {
                 )
             }
         }
+
+        cleanup {
+            sh label: 'Collect Artifacts', script: '''
+            mkdir artifacts
+            pushd solutions/kubernetes/
+                HOST_FILE=$PWD/hosts
+                MASTER_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+                scp -q "$MASTER_NODE":/root/deploy-scripts/k8_cortx_cloud/solution.yaml $WORKSPACE/artifacts/
+                cp /var/tmp/cortx-cluster-status.txt $WORKSPACE/artifacts/
+            popd    
+            '''
+            script {
+                // Archive Deployment artifacts in jenkins build
+                archiveArtifacts artifacts: "artifacts/*.*", onlyIfSuccessful: false, allowEmptyArchive: true 
+            }    
+        }  
     }
 }
