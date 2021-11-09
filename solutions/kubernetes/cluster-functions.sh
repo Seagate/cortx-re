@@ -251,8 +251,7 @@ function setup_master_node(){
             CALICO_PLUGIN_MAJOR_VERSION=$(echo $CALICO_PLUGIN_VERSION | awk -F[.] '{print $1"."$2}')
             curl https://docs.projectcalico.org/archive/$CALICO_PLUGIN_MAJOR_VERSION/manifests/calico.yaml -o calico-$CALICO_PLUGIN_VERSION.yaml || throw $Exception    
         fi
-        sed  -i '/# Auto-detect the BGP IP address./i \            - name: IP_AUTODETECTION_METHOD' calico-$CALICO_PLUGIN_VERSION.yaml
-        sed  -i '/# Auto-detect the BGP IP address./i \              value: "can-reach=www.google.com"' calico-$CALICO_PLUGIN_VERSION.yaml
+        sed -i '/# Auto-detect the BGP IP address./i \            - name: IP_AUTODETECTION_METHOD\n              value: "can-reach=www.google.com"' calico-$CALICO_PLUGIN_VERSION.yaml
         kubectl apply -f calico-$CALICO_PLUGIN_VERSION.yaml || throw $Exception
         # Setup storage-class
         kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml || throw $Exception
