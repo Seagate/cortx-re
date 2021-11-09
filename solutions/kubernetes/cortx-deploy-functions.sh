@@ -80,7 +80,7 @@ function install_yq(){
     try
     (
         pip3 uninstall yq -y
-        wget https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${YQ_BINARY}.tar.gz -O - | tar xz && mv ${YQ_BINARY} /usr/bin/yq || throw $Exception
+        (wget https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${YQ_BINARY}.tar.gz -O - | tar xz && mv ${YQ_BINARY} /usr/bin/yq) || throw $Exception
         if [ -f /usr/local/bin/yq ]; then rm -rf /usr/local/bin/yq; fi
         ln -s /usr/bin/yq /usr/local/bin/yq || throw $Exception
     )
