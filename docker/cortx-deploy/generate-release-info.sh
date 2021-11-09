@@ -30,8 +30,10 @@ OS: $(cat /etc/redhat-release | sed -e 's/ $//g' -e 's/^/\"/g' -e 's/$/\"/g')
 DATETIME: $(date +"%d-%b-%Y %H:%M %Z" | sed -e 's/^/\"/g' -e 's/$/\"/g')
 COMPONENTS:
 $(for component in $(cat /opt/seagate/cortx/cortx-componenet-rpms.txt); do echo "    - \"$(rpm -qa $component).rpm\"" ; done)
-THIRD_PARTY_COMPONENTS
+THIRD_PARTY_RPM_PACKAGES:
 $(for component in $(cat /opt/seagate/cortx/third-party-rpms.txt); do echo "    - \"$(rpm -qa $component).rpm\"" ; done)
+THIRD_PARTY_PYTHON_PACKAGES:
+$(pip3 freeze | sed 's/^/    - /g')
 EOF
 popd || exit
 
