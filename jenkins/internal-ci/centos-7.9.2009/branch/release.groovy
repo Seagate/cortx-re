@@ -6,17 +6,24 @@ pipeline {
             label "docker-${os_version}-node"
         }
     }
-    
+
+    parameters {
+        choice(
+            choices: ['libfabric' , 'lustre'],
+            description: 'Transport name',
+            name: 'TRANSPORT')
+    }
+
     environment {
         version = "2.0.0"
         third_party_version = "2.0.0-latest"
         release_dir = "/mnt/bigstorage/releases/cortx"
-        integration_dir = "$release_dir/github/$branch/$os_version"
+        // integration_dir = "$release_dir/github/$branch/$os_version"
         components_dir = "$release_dir/components/github/$branch/$os_version"
         release_tag = "$BUILD_NUMBER"
         BUILD_TO_DELETE = ""
         passphrase = credentials('rpm-sign-passphrase')
-        ARTIFACT_LOCATION = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version"
+        // ARTIFACT_LOCATION = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version"
         third_party_dir = "$release_dir/third-party-deps/centos/$os_version-$third_party_version/"
         python_deps = "$release_dir/third-party-deps/python-deps/python-packages-2.0.0-latest"
         cortx_os_iso = "/mnt/bigstorage/releases/cortx_builds/custom-os-iso/cortx-2.0.0/cortx-os-2.0.0-7.iso"
@@ -32,7 +39,30 @@ pipeline {
     }
         
     stages {    
-    
+        
+        stage('Use lnet/lustre TRANPORT') {
+            when {
+                expression { params.TRANSPORT == 'lustre' }
+            }
+            steps {
+                script {
+                    env.integration_dir = "$release_dir/github/$branch/$os_version/lnet_transport"
+                    env.ARTIFACT_LOCATION = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/lnet_transport"
+                }
+            }
+        
+        stage('Use libfabric TRANPORT') {
+            when {
+                expression { params.TRANSPORT == 'libfabric' }
+            }
+            steps {
+                script {
+                    env.integration_dir = "$release_dir/github/$branch/$os_version/lnet_transport"
+                    env.ARTIFACT_LOCATION = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/lnet_transport"
+                }
+            }
+        }
+
         stage('Install Dependecies') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -299,7 +329,12 @@ pipeline {
             script {
                     
                 currentBuild.upstreamBuilds?.each { b -> env.upstream_project = "${b.getProjectName()}";env.upstream_build = "${b.getId()}" }
-                env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/${branch}/${os_version}/${env.release_tag}"
+                if ( params.TRANSPORT == 'libfabric' ) {
+                    env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/${branch}/${os_version}/${env.release_tag}"
+                }
+                if ( params.TRANSPORT == 'lustre' ) {
+                    env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/${branch}/${os_version}/lnet_transport/${env.release_tag}"
+                }
                 env.release_build = "${env.release_tag}"
                 env.build_stage = "${build_stage}"
 

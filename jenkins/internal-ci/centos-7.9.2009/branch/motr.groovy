@@ -10,7 +10,13 @@ pipeline {
         pollSCM '*/5 * * * *'
     }
 
-        
+    parameters {
+        choice(
+            choices: ['libfabric' , 'lustre'],
+            description: '',
+            name: 'TRANSPORT')
+    }
+
     environment {
         version = "2.0.0"    
         env = "dev"
@@ -40,6 +46,22 @@ pipeline {
             }
         }
     
+        stage('Check TRANSPORT module') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                dir ('motr') {
+                    sh label: '', script: '''
+                        if [[ "$TRANSPORT" == "libfabric" ]]; then
+                                echo "We are using default 'libfabric' module/package"
+                        else
+                                sed -i '/libfabric/d' cortx-motr.spec.in
+                                echo "Removed libfabric from spec file as we are going to use $TRANSPORT"
+                        fi
+                    '''
+                }
+            }
+        }
+
         stage('Install Dependencies') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -108,7 +130,8 @@ pipeline {
                             try {
                                 def s3Build = build job: 's3server', wait: true,
                                 parameters: [
-                                    string(name: 'branch', value: "${branch}")
+                                    string(name: 'branch', value: "${branch}"),
+                                    string(name: 'TRANSPORT', value: "${TRANSPORT}")
                                 ]
                                 env.S3_BUILD_NUMBER = s3Build.number
                             }catch (err) {
@@ -126,7 +149,8 @@ pipeline {
                             try {
                                 def hareBuild = build job: 'hare', wait: true,
                                 parameters: [
-                                    string(name: 'branch', value: "${branch}")
+                                    string(name: 'branch', value: "${branch}"),
+                                    string(name: 'TRANSPORT', value: "${TRANSPORT}")
                                 ]
                                 env.HARE_BUILD_NUMBER = hareBuild.number
                             }catch (err){
@@ -164,9 +188,17 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
-                    def releaseBuild = build job: 'Release', propagate: true
-                     env.release_build = releaseBuild.number
-                    env.release_build_location="http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/${env.release_build}"
+                    def releaseBuild = build job: 'Release', propagate: true,
+                    parameters: [
+                       string(name: 'TRANSPORT', value: "${TRANSPORT}")
+                    ]
+                    env.release_build = releaseBuild.number
+                    if ( params.TRANSPORT == 'libfabric' ) {
+                        env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/${env.release_build}"
+                    }
+                    if ( params.TRANSPORT == 'lustre' ) {
+                        env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/lnet_transport/${env.release_build}"
+                    }
                 }
             }
         }
@@ -260,3 +292,4 @@ def getAuthor(issue) {
     response = "* Author: "+author+"\n"
     return response
 }
+
