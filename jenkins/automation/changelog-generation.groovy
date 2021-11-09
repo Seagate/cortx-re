@@ -20,7 +20,7 @@ pipeline {
     stages {	
 		stage ('Checkout Script') {
 			steps {
-			    checkout([$class: 'GitSCM', branches: [[name: '*/changelog-generation']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/AbhijitPatil1992/cortx-re']]])
+			    checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
 			}
 		}
 		
