@@ -56,8 +56,8 @@ pipeline {
                     try {    
                         def docker_image_build = build job: 'cortx-all-docker-image', wait: true,
                             parameters: [
-                                string(name: 'CORTX_RE_URL', value: "https://github.com/shailesh-vaidya/cortx-re"),
-                                string(name: 'CORTX_RE_BRANCH', value: "fix-image-release-number"),
+                                string(name: 'CORTX_RE_URL', value: "https://github.com/Seagate/cortx-re"),
+                                string(name: 'CORTX_RE_BRANCH', value: "kubernetes"),
                                 string(name: 'BUILD', value: "kubernetes-build-${env.custom_ci_build_id}"),
                                 string(name: 'EMAIL_RECIPIENTS', value: "${EMAIL_RECIPIENTS}"),
                             ]
