@@ -1,48 +1,48 @@
 {
-	"scan_list": "western digital, lyve cloud, hamr",
+	"scan_list": "western digital, hamr",
 	"repository": [{
 			"name": "cortx-motr",
 			"custom_list": "Alex, Cortx-test, western digital"
 		},
 		{
 			"name": "cortx-posix",
-			"custom_list": ""
+			"custom_list": "lyve cloud"
 		},
 		{
 			"name": "cortx-monitor",
-			"custom_list": ""
+			"custom_list": "lyve cloud"
 		},
 		{
 			"name": "cortx-re",
-			"custom_list": ""
+			"custom_list": "lyve cloud"
 		},
 		{
 			"name": "cortx-hare",
-			"custom_list": ""
+			"custom_list": "lyve cloud"
 		},
 		{
 			"name": "cortx-prvsnr",
-			"custom_list": ""
+			"custom_list": "lyve cloud"
 		},
 		{
 			"name": "cortx-ha",
-			"custom_list": ""
+			"custom_list": "lyve cloud"
 		},
 		{
 			"name": "cortx-management-portal",
-			"custom_list": ""
+			"custom_list": "lyve cloud"
 		},
 		{
 			"name": "cortx-manager",
-			"custom_list": ""
+			"custom_list": "lyve cloud"
 		},
 		{
 			"name": "cortx-s3server",
-			"custom_list": ""
+			"custom_list": "lyve cloud"
 		},
 		{
 			"name": "cortx-utils",
-			"custom_list": ""
+			"custom_list": "lyve cloud"
 		}
 	]
 }
