@@ -23,7 +23,7 @@ pipeline {
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for CORTX Cluster scripts', trim: true)
         string(name: 'CORTX_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-all:2.0.0-latest-custom-ci', description: 'CORTX-ALL image', trim: true)
         text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used. First node will be used as Master', name: 'hosts')
-        booleanParam(name: 'TAINT', defaultValue: false, description: 'Allow to schedule pods on master node')
+        booleanParam(name: 'UNTAINT', defaultValue: true, description: 'Allow to schedule pods on master node')
         // Please configure CORTX_SCRIPTS_BRANCH and CORTX_SCRIPTS_REPO parameter in Jenkins job configuration.
 
         choice(
@@ -52,7 +52,13 @@ pipeline {
                     pushd solutions/kubernetes/
                         echo $hosts | tr ' ' '\n' > hosts
                         cat hosts
-                        ./cluster-setup.sh ${TAINT}
+                        if [ "$(cat hosts | wc -l)" -eq 2 ]
+                        then
+                           echo "Current configuration does not support 2 node Cortx cluster deployment. Please try with 1 or more than two nodes."
+                           echo "Exiting Jenkins job."
+                           exit 1
+                        fi
+                        ./cluster-setup.sh ${UNTAINT}
                     popd
                 '''
             }
