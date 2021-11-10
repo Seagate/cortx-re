@@ -53,7 +53,7 @@ RUN yum install --nogpgcheck -y python3-pip \
     && pip3 install  --no-cache-dir --trusted-host $(echo $BUILD_URL | awk -F '/' '{print $3}') -i $BUILD_URL/python_deps -r /opt/seagate/cortx/python_requirements.txt -r /opt/seagate/cortx/python_requirements.ext.txt \
    && yum clean all && rm -rf /var/cache/yum
 
-RUN yum install --nogpgcheck -y  $(cat /opt/seagate/cortx/*-rpms.txt) \
+RUN yum install --nogpgcheck -y  $(sed 's/#.*//g' /opt/seagate/cortx/*-rpms.txt) \
     && yum clean all && rm -rf /var/cache/yum
     
 RUN rm -f /etc/machine-id && ln -s /etc/cortx/solution/node/id /etc/machine-id \
