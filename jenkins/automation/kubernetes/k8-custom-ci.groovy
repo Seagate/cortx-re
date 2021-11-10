@@ -97,7 +97,8 @@ pipeline {
                                             parameters: [
                                             string(name: 'CORTX_RE_URL', value: "${CORTX_RE_URL}"),
                                             string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
-                                            string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}")
+                                            string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}"),
+                                            string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}")
                                             ]
                     } catch (err) {
                         build_stage = env.STAGE_NAME
@@ -152,7 +153,8 @@ pipeline {
                                                         string(name: 'S3_BRANCH', value: "${S3_BRANCH}"),
                                                         string(name: 'HARE_URL', value: "${HARE_URL}"),
                                                         string(name: 'HARE_BRANCH', value: "${HARE_BRANCH}"),
-                                                        string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}")
+                                                        string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}"),
+                                                        string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}")
                                                     ]
                             } catch (err) {
                                 build_stage = env.STAGE_NAME             
