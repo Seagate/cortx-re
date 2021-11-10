@@ -14,6 +14,7 @@ pipeline {
 
     environment {
         GITHUB_CRED = credentials('shailesh-github-token')
+        UNTAINT = "true"
     }
 
 
@@ -23,7 +24,7 @@ pipeline {
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for CORTX Cluster scripts', trim: true)
         string(name: 'CORTX_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-all:2.0.0-latest-custom-ci', description: 'CORTX-ALL image', trim: true)
         text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used. First node will be used as Master', name: 'hosts')
-        booleanParam(name: 'UNTAINT', defaultValue: true, description: 'Allow to schedule pods on master node')
+        //booleanParam(name: 'UNTAINT', defaultValue: true, description: 'Allow to schedule pods on master node')
         // Please configure CORTX_SCRIPTS_BRANCH and CORTX_SCRIPTS_REPO parameter in Jenkins job configuration.
 
         choice(
