@@ -182,7 +182,7 @@ pipeline {
 									      parameters: [
 									      	  string(name: 'HA_URL', value: "${HA_URL}"),
 									      	  string(name: 'HA_BRANCH', value: "${HA_BRANCH}"),
-										  string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}")	
+										  string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}"),	
 										  string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}")
 									      ]
 							} catch (err) {
