@@ -254,6 +254,23 @@ function destroy(){
         chmod +x *.sh
         ./destroy-cortx-cloud.sh
     popd
+    umount -l /mnt/fs-local-volume/
+    files_to_remove=(
+        "/mnt/fs-local-volume/"
+        "/root/deploy-scripts/"
+        "/root/get_helm.sh"
+        "/root/calico*"
+        "/root/.cache"
+        "/root/.config"
+        "/root/install.postnochroot.log"
+        "/root/original-ks.cfg"
+    )
+    for file in ${files_to_remove[@]}; do
+        if [ -f "$file" ] || [ -d "$file" ]; then
+            echo "Removing file/folder $file"
+            rm -rf $file
+        fi
+    done
 }
 
 function print_pod_status(){

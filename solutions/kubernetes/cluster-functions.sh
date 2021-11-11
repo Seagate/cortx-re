@@ -95,6 +95,7 @@ function cleanup_node(){
         "containerd"
         "kubernetes-cni"
         "kubeadm"
+        "kubectl"
     )
     files_to_remove=(
         "/etc/docker/daemon.json"
