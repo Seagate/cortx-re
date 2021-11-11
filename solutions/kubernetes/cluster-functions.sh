@@ -246,13 +246,13 @@ function setup_master_node(){
 
         # Apply calcio plugin 	
         if [ "$CALICO_PLUGIN_VERSION" == "latest" ]; then
-            kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml || throw $Exception
+            curl https://docs.projectcalico.org/manifests/calico.yaml -o calico-$CALICO_PLUGIN_VERSION.yaml || throw $Exception
         else
-        CALICO_PLUGIN_MAJOR_VERSION=$(echo $CALICO_PLUGIN_VERSION | awk -F[.] '{print $1"."$2}')
-            curl https://docs.projectcalico.org/archive/$CALICO_PLUGIN_MAJOR_VERSION/manifests/calico.yaml -o calico-$CALICO_PLUGIN_VERSION.yaml || throw $Exception
-            kubectl apply -f calico-$CALICO_PLUGIN_VERSION.yaml || throw $Exception
+            CALICO_PLUGIN_MAJOR_VERSION=$(echo $CALICO_PLUGIN_VERSION | awk -F[.] '{print $1"."$2}')
+            curl https://docs.projectcalico.org/archive/$CALICO_PLUGIN_MAJOR_VERSION/manifests/calico.yaml -o calico-$CALICO_PLUGIN_VERSION.yaml || throw $Exception    
         fi
-        
+        sed -i '/# Auto-detect the BGP IP address./i \            - name: IP_AUTODETECTION_METHOD\n              value: "can-reach=www.google.com"' calico-$CALICO_PLUGIN_VERSION.yaml
+        kubectl apply -f calico-$CALICO_PLUGIN_VERSION.yaml || throw $Exception
         # Setup storage-class
         kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml || throw $Exception
         kubectl patch storageclass local-path -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}' || throw $ConfigException
