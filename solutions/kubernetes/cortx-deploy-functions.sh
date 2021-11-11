@@ -77,7 +77,7 @@ function update_solution_config(){
         drive=$SYSTEM_DRIVE_MOUNT yq e -i '.solution.common.storage_provisioner_path = env(drive)' solution.yaml
         yq e -i '.solution.common.container_path.local = "/etc/cortx"' solution.yaml
         yq e -i '.solution.common.container_path.shared = "/share"' solution.yaml
-        yq e -i '.solution.common.container_path.log = "/share/var/log/cortx"' solution.yaml
+        yq e -i '.solution.common.container_path.log = "/etc/cortx/log"' solution.yaml
         yq e -i '.solution.common.s3.num_inst = 2' solution.yaml
         yq e -i '.solution.common.s3.start_port_num = 28051' solution.yaml
         yq e -i '.solution.common.s3.max_start_timeout = 240' solution.yaml
