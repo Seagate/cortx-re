@@ -22,20 +22,22 @@ set -e -o pipefail
 
 usage() { 
 echo "Generate cortx-all docker image from provided CORTX release build"
-echo "Usage: $0 [ -b build ] [ -p push docker-image to GHCR yes/no. Default no] [ -t tag latest yes/no. Default no" ] [ -h print help message ] 1>&2; exit 1; }
+echo "Usage: $0 [ -b build ] [ -p push docker-image to GHCR yes/no. Default no] [ -t tag latest yes/no. Default no" ] [ -e environment ] [ -h print help message ] 1>&2; exit 1; }
 
 VERSION=2.0.0
 DOCKER_PUSH=no
 TAG_LATEST=no
 OS=centos-7.9.2009
+ENV=opensource-ci
 ARTFACT_URL="http://cortx-storage.colo.seagate.com/releases/cortx/github/"
 
 
-while getopts "b:p:t:h:" opt; do
+while getopts "b:p:t:h:e:" opt; do
     case $opt in
         b ) BUILD=$OPTARG;;
         p ) DOCKER_PUSH=$OPTARG;;
         t ) TAG_LATEST=$OPTARG;;
+        e ) ENV=$OPTARG;;
         h ) usage
         exit 0;;
         *) usage
@@ -43,12 +45,23 @@ while getopts "b:p:t:h:" opt; do
     esac
 done
 
+
+echo ${BUILD}
+
 if [ -z "${BUILD}" ] ; then
-    BUILD=last_successful_prod
+    echo -e "CORTX Build URL is not provided.Exiting...\n"
+    usage
+    exit 1
 fi
 
+if [ "$ENV" == "opensource-ci" ]; then
+BUILD_URL=$BUILD
+SERVICE=cortx-all-local
+else
 if echo $BUILD | grep -q custom; then BRANCH="integration-custom-ci"; else BRANCH="kubernetes"; fi
 BUILD_URL="$ARTFACT_URL/$BRANCH/$OS/$BUILD"
+SERVICE=cortx-all
+fi
 
 echo "Building cortx-all image from $BUILD_URL"
 sleep 5
@@ -59,8 +72,8 @@ for component in cortx-py-utils cortx-s3server cortx-motr cortx-hare
 do
     echo $component:"$(awk -F['_'] '/'$component'-2.0.0/ { print $2 }' RELEASE.INFO | cut -d. -f1 | sed 's/git//g')",
 done
-echo cortx-csm_agent:"$(awk -F['_'] '/cortx-csm_agent-2.0.0/ { print $3 }' RELEASE.INFO | cut -d. -f1)",
-echo cortx-prvsnr:"$(awk -F['.'] '/cortx-prvsnr-2.0.0/ { print $4 }' RELEASE.INFO | sed 's/git//g')",
+    echo cortx-csm_agent:"$(awk -F['_'] '/cortx-csm_agent-2.0.0/ { print $3 }' RELEASE.INFO | cut -d. -f1)",
+    echo cortx-prvsnr:"$(awk -F['.'] '/cortx-prvsnr-2.0.0/ { print $4 }' RELEASE.INFO | sed 's/git//g')",
 }
 
 
@@ -83,7 +96,7 @@ fi
 
 CREATED_DATE=$(date -u +'%Y-%m-%d %H:%M:%S%:z')
 
-docker-compose -f docker/cortx-deploy/docker-compose.yml build --force-rm --compress --build-arg GIT_HASH="$CORTX_VERSION" --build-arg CREATED_DATE="$CREATED_DATE" --build-arg BUILD_URL=$BUILD_URL  cortx-all
+docker-compose -f docker/cortx-deploy/docker-compose.yml build --force-rm --compress --build-arg GIT_HASH="$CORTX_VERSION" --build-arg CREATED_DATE="$CREATED_DATE" --build-arg BUILD_URL=$BUILD_URL $SERVICE
 
 if [ "$DOCKER_PUSH" == "yes" ];then
         echo "Pushing Docker image to GitHub Container Registry"

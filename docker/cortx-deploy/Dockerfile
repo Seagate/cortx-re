@@ -42,6 +42,10 @@ RUN yum-config-manager --disable base,extras,updates
 #Add Internal and CORTX uploads repository
 COPY ./docker/cortx-deploy/${ENVIRONMENT}/C${CENTOS_RELEASE}.repo /etc/yum.repos.d/
 
+# Install EPEL repo for opensource-ci
+RUN if [ "$ENVIRONMENT" = "opensource-ci" ] ; then yum install epel-release -y ; fi && yum clean all \
+&& rm -rf /var/cache/yum
+
 RUN yum-config-manager --add-repo ${BUILD_URL}/cortx_iso/ \
     && yum-config-manager --add-repo ${BUILD_URL}/3rd_party \
     && curl ${BUILD_URL}/RELEASE.INFO -o RELEASE.INFO 

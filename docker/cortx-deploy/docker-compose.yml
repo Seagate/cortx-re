@@ -29,4 +29,13 @@ services:
        CENTOS_RELEASE: 7.9.2009
        ENVIRONMENT: internal-ci
        CREATED_DATE: $CREATED_DATE
-       BUILD_URL: http://cortx-storage.colo.seagate.com/releases/cortx/github/main/centos-7.9.2009/last_successful_prod/
+
+  cortx-all-local:
+    image: cortx-all:$TAG
+    build:
+      context: ../../
+      dockerfile: ./docker/cortx-deploy/Dockerfile
+      args:
+       CENTOS_RELEASE: 7.9.2009
+       ENVIRONMENT: opensource-ci
+       CREATED_DATE: $CREATED_DATE
