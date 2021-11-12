@@ -64,6 +64,12 @@ pipeline {
 			choices: ['cortx-2.0', 'custom'],
 			description: 'Third Party Python Version to use.'
 		)
+		
+		choice(
+			name: 'PYTHON_PACKAGE_VERSION',
+			choices: ['latest', 'stable', 'custom'],
+			description: 'Download packages from specific version'
+		)
 	}
 
 	stages {
@@ -153,7 +159,8 @@ pipeline {
 														string(name: 'HARE_BRANCH', value: "${HARE_BRANCH}"),
 														string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}"),
 														string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}"),
-														string(name: 'CORTX_UTILS_REPO_OWNER', value: "${CORTX_UTILS_REPO_OWNER}")
+														string(name: 'CORTX_UTILS_REPO_OWNER', value: "${CORTX_UTILS_REPO_OWNER}"),
+														string(name: 'PYTHON_PACKAGE_VERSION', value: "${PYTHON_PACKAGE_VERSION}")
                                             		]
 							} catch (err) {
 								build_stage = env.STAGE_NAME 			
@@ -180,7 +187,8 @@ pipeline {
 									      	  string(name: 'HA_BRANCH', value: "${HA_BRANCH}"),
 										  string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}"),	
 										  string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}"),
-										  string(name: 'CORTX_UTILS_REPO_OWNER', value: "${CORTX_UTILS_REPO_OWNER}")
+										  string(name: 'CORTX_UTILS_REPO_OWNER', value: "${CORTX_UTILS_REPO_OWNER}"),
+										  string(name: 'PYTHON_PACKAGE_VERSION', value: "${PYTHON_PACKAGE_VERSION}")
 									      ]
 							} catch (err) {
 								build_stage = env.STAGE_NAME
