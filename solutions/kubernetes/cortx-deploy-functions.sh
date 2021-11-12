@@ -151,6 +151,13 @@ function execute_deploy_script(){
         pushd $SCRIPT_LOCATION/k8_cortx_cloud
         chmod +x *.sh
         ./$SCRIPT_NAME
+        if [ $? -eq 0 ] 
+        then 
+           echo "Successfully executed $SCRIPT_NAME." 
+        else 
+           echo "Error in executing $SCRIPT_NAME. Please check cluster logs."
+           exit 1
+        fi
     popd
 }
 
