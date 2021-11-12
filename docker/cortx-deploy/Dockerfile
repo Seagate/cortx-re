@@ -46,14 +46,14 @@ RUN yum-config-manager --add-repo ${BUILD_URL}/cortx_iso/ \
     && yum-config-manager --add-repo ${BUILD_URL}/3rd_party \
     && curl ${BUILD_URL}/RELEASE.INFO -o RELEASE.INFO 
 
-COPY ./scripts/third-party-rpm/python_requirements*.txt ./docker/cortx-deploy/*-rpms.txt ./docker/cortx-deploy/generate-release-info.sh /opt/seagate/cortx/
+COPY ./docker/cortx-deploy/*.txt ./docker/cortx-deploy/*.sh /opt/seagate/cortx/
 
 RUN yum install --nogpgcheck -y python3-pip \
     && pip3 install yq \
     && pip3 install  --no-cache-dir --trusted-host $(echo $BUILD_URL | awk -F '/' '{print $3}') -i $BUILD_URL/python_deps -r /opt/seagate/cortx/python_requirements.txt -r /opt/seagate/cortx/python_requirements.ext.txt \
    && yum clean all && rm -rf /var/cache/yum
 
-RUN yum install --nogpgcheck -y  $(cat /opt/seagate/cortx/*-rpms.txt) \
+RUN yum install --nogpgcheck -y  $(sed 's/#.*//g' /opt/seagate/cortx/*-rpms.txt) \
     && yum clean all && rm -rf /var/cache/yum
     
 RUN rm -f /etc/machine-id && ln -s /etc/cortx/solution/node/id /etc/machine-id \
