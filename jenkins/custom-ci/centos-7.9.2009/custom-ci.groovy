@@ -68,7 +68,7 @@ pipeline {
 		choice(
 			name: 'PYTHON_PACKAGE_VERSION',
 			choices: ['latest', 'stable', 'custom'],
-			description: 'Download packages from specific version'
+			description: 'Python packages version repo dir name'
 		)
 	}
 

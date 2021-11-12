@@ -9,8 +9,8 @@ pipeline {
 	parameters {  
 	    string(name: 'HARE_URL', defaultValue: 'https://github.com/Seagate/cortx-hare/', description: 'Repository URL for Hare build')
             string(name: 'CORTX_UTILS_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX Utils', trim: true)
-	    string(name: 'CORTX_UTILS_REPO_OWNER', defaultValue: 'seagate', description: 'CORTX Utils Repository owner name', trim: true),
-	    string(name: 'PYTHON_PACKAGE_VERSION', defaultValue: 'python-packages-2.0.0-latest', description: 'Python packages version repo', trim: true)
+	    string(name: 'CORTX_UTILS_REPO_OWNER', defaultValue: 'seagate', description: 'CORTX Utils Repository owner name', trim: true)
+	    string(name: 'PYTHON_PACKAGE_VERSION', defaultValue: 'python-packages-2.0.0-latest', description: 'Python packages version repo dir name', trim: true)
         string(name: 'HARE_BRANCH', defaultValue: 'stable', description: 'Branch for Hare build')
 		string(name: 'CUSTOM_CI_BUILD_ID', defaultValue: '0', description: 'Custom CI Build Number')
 		string(name: 'CORTX_UTILS_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX Utils', trim: true)		

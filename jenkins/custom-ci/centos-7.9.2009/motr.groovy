@@ -24,7 +24,7 @@ pipeline {
 		string(name: 'CUSTOM_CI_BUILD_ID', defaultValue: '0', description: 'Custom CI Build Number')
 		string(name: 'CORTX_UTILS_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX Utils', trim: true)
 		string(name: 'CORTX_UTILS_REPO_OWNER', defaultValue: 'seagate', description: 'CORTX Utils Repository owner name', trim: true)
-		string(name: 'PYTHON_PACKAGE_VERSION', defaultValue: 'latest', description: 'Python packages version', trim: true)
+		string(name: 'PYTHON_PACKAGE_VERSION', defaultValue: 'latest', description: 'Python packages version repo dir name', trim: true)
 	}	
 
 	environment {
