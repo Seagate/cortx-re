@@ -264,6 +264,7 @@ function destroy(){
         "/root/.config"
         "/root/install.postnochroot.log"
         "/root/original-ks.cfg"
+        "/etc/pip.conf"
     )
     for file in ${files_to_remove[@]}; do
         if [ -f "$file" ] || [ -d "$file" ]; then
