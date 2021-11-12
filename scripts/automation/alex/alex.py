@@ -17,6 +17,7 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 import os
+import sys
 import re
 import argparse
 from datetime import datetime
@@ -25,6 +26,7 @@ from collections import defaultdict
 eof = ''
 TOTAL_WORDS_SCANNED = 0
 TOTAL_FILES_SCANNED = 0
+CUSTOM_CONT = []
 
 def get_args():
     """
@@ -75,7 +77,7 @@ def get_block_content(file_name):
                 count += 1
 
 
-def html_row_gen(file, word_cont):
+def html_row_gen(file, word_cont, component):
     """
     Generate the tables rows.
     Returns:
@@ -98,11 +100,61 @@ def html_row_gen(file, word_cont):
             rows += '<tr><td class="word_width">%s</td>' % word_obj.group()
             rows += '<td class="line_width">%s</td>' % word[0].split('-')[0]
             rows += '<td><pre>%s<pre></td></tr>' % recommand
+
+    component_name = component.replace('.alex', '.custom')
+    custom_scan_cont = ''
+    with open(component_name, "r") as fc:
+       custom_scan_cont = fc.read()
+       file = file.strip()
+       if file in custom_scan_cont:
+          #global CUSTOM_CONT
+          pattern = '%s[^>]+?\\n' %file
+          custom_word_obj = re.finditer(pattern, custom_scan_cont)
+          for cutom_obj in custom_word_obj:
+              line = cutom_obj.group().split(':')
+              TOTAL_WORDS_SCANNED += 1
+              rows += '<tr><td class="word_width">%s</td>' % line[2].strip()
+              rows += '<td class="line_width">%s:0</td>' % line[1]
+              rows += '<td><pre>`%s` may be restricted by the organization<pre></td></tr>' % line[2].strip()
+              CUSTOM_CONT.append(line[0])
+          custom_scan_cont = re.sub(pattern, '', custom_scan_cont)
+          #print('CUSTOM_CONT', CUSTOM_CONT)
+
+    with open (component_name, "w+") as fw:
+         fw.write(custom_scan_cont)
+         fw.flush()
+
     if rows == "":
         rows += '<tr><td class="word_width" colspan=3><pre>No words found</pre></tr>'
     rows += "</table></div></td></tr>"
 
     content = tabe_row + header + rows
+    return content
+
+def remaining_words(file):
+    global TOTAL_WORDS_SCANNED
+    rows = ""
+    content = ""
+    component = file.replace('.alex', '.custom')
+    with open (component, "r") as fr:
+        cont = fr.read()
+    if cont:
+       files_list = re.findall(r'\.\/([a-z][^:]+?)\:', cont)
+       files_list = list(set(files_list))
+       for file in files_list:
+           tabe_row = '<tr><td><h2>%s</h2><div class="file-diff"><table class="inner">' % file
+           header = '<tr><th class="word_width">Word</th><th class="line_width">Line Number</th><th>Recommendation</th></tr>'
+           pattern = '\.\/%s[^>]+?\\n' %file
+           custom_word_obj = re.finditer(pattern, cont)
+           for cutom_obj in custom_word_obj:
+               line = cutom_obj.group().split(':')
+               TOTAL_WORDS_SCANNED += 1
+               rows += '<tr><td class="word_width">%s</td>' % line[2].strip()
+               rows += '<td class="line_width">%s:0</td>' % line[1]
+               rows += '<td><pre>`%s` may be restricted by the organization<pre></td></tr>' % line[2].strip()
+           rows += "</table></div></td></tr>"
+           content += tabe_row + header + rows
+           rows = ''
     return content
 
 
@@ -122,16 +174,17 @@ def main():
             if words == '':
                 last_file_name = file_name
             else:
-                rows_cont += html_row_gen(file_name, words)
+                rows_cont += html_row_gen(file_name, words, component_name)
                 TOTAL_FILES_SCANNED += 1
         print('\n\n')
+    rows_cont += remaining_words(component_name)
 
     print ("Read the html template file..")
 
     with open("alex_template.html", "r") as fp:
         html_tmpl_cont = fp.read()
 
-    rows_cont += html_row_gen(last_file_name, eof)
+    rows_cont += html_row_gen(last_file_name, eof, component_name)
 
     if eof: TOTAL_FILES_SCANNED += 1
 
