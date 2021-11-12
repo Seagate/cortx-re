@@ -10,7 +10,7 @@ pipeline {
 	    string(name: 'HARE_URL', defaultValue: 'https://github.com/Seagate/cortx-hare/', description: 'Repository URL for Hare build')
         string(name: 'HARE_BRANCH', defaultValue: 'stable', description: 'Branch for Hare build')
 		string(name: 'CUSTOM_CI_BUILD_ID', defaultValue: '0', description: 'Custom CI Build Number')
-		
+		string(name: 'CORTX_UTILS_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX Utils', trim: true)		
 		choice(
             name: 'MOTR_BRANCH', 
             choices: ['custom-ci', 'stable', 'Cortx-v1.0.0_Beta'],
@@ -60,8 +60,8 @@ timeout: 60
 index-url: http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/python-packages-2.0.0-latest/
 trusted-host: cortx-storage.colo.seagate.com
 EOF
-					pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/kubernetes/py-utils/python_requirements.txt
-					pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/kubernetes/py-utils/python_requirements.ext.txt
+					pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/$CORTX_UTILS_BRANCH/py-utils/python_requirements.txt
+					pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/$CORTX_UTILS_BRANCH/py-utils/python_requirements.ext.txt
 					rm -rf /etc/pip.conf
 					
                 '''
