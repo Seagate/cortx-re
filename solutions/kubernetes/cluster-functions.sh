@@ -85,7 +85,8 @@ function cleanup_node(){
 
     # Cleanup kubeadm stuff
     if [ -f /usr/bin/kubeadm ]; then
-        echo "Cleaning up existing kubelet configuration"
+        echo "Cleaning up existing kubeadm configuration"
+        umount -l /var/lib/kubelet
         kubeadm reset -f
     fi
 
