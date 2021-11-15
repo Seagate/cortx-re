@@ -28,8 +28,7 @@ pipeline {
 		component = "hare"
 		release_tag = "custom-build-$CUSTOM_CI_BUILD_ID"
 		build_upload_dir = "$release_dir/github/integration-custom-ci/$os_version/$release_tag/cortx_iso"
-		third_party_dir = "${THIRD_PARTY_RPM_VERSION == 'cortx-2.0' ? "python-packages-2.0.0-latest" : THIRD_PARTY_RPM_VERSION == 'cortx-1.0' ?  "python-packages-2.0.0-latest" : "python-packages-2.0.0-custom"}"
-
+		python_deps = "${THIRD_PARTY_PYTHON_VERSION == 'cortx-2.0' ? "python-packages-2.0.0-latest" : THIRD_PARTY_PYTHON_VERSION == 'custom' ?  "python-packages-2.0.0-custom" : "python-packages-2.0.0-stable"}"
     }
 	
 	
@@ -62,7 +61,7 @@ pipeline {
 					cat <<EOF >>/etc/pip.conf
 [global]
 timeout: 60
-index-url: http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/$third_party_dir/
+index-url: http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/$python_deps/
 trusted-host: cortx-storage.colo.seagate.com
 EOF
 					pip3 install -r https://raw.githubusercontent.com/$CORTX_UTILS_REPO_OWNER/cortx-utils/$CORTX_UTILS_BRANCH/py-utils/python_requirements.txt
