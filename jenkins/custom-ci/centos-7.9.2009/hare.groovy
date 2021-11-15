@@ -7,18 +7,17 @@ pipeline {
 	}
 
 	parameters {  
-	    string(name: 'HARE_URL', defaultValue: 'https://github.com/Seagate/cortx-hare/', description: 'Repository URL for Hare build')
-            string(name: 'CORTX_UTILS_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX Utils', trim: true)
+	   	string(name: 'HARE_URL', defaultValue: 'https://github.com/Seagate/cortx-hare/', description: 'Repository URL for Hare build')
+            	string(name: 'CORTX_UTILS_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX Utils', trim: true)
 	  	string(name: 'CORTX_UTILS_URL', defaultValue: 'https://github.com/Seagate/cortx-utils', description: 'CORTX Utils Repository URL', trim: true)
 		string(name: 'THIRD_PARTY_PYTHON_VERSION', defaultValue: 'custom', description: 'Third Party Python Version to use', trim: true)
-        string(name: 'HARE_BRANCH', defaultValue: 'stable', description: 'Branch for Hare build')
+	        string(name: 'HARE_BRANCH', defaultValue: 'stable', description: 'Branch for Hare build')
 		string(name: 'CUSTOM_CI_BUILD_ID', defaultValue: '0', description: 'Custom CI Build Number')
-		string(name: 'CORTX_UTILS_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX Utils', trim: true)		
 		choice(
-            name: 'MOTR_BRANCH', 
-            choices: ['custom-ci', 'stable', 'Cortx-v1.0.0_Beta'],
-            description: 'Branch name to pick-up other components rpms'
-        )
+        		name: 'MOTR_BRANCH', 
+            		choices: ['custom-ci', 'stable', 'Cortx-v1.0.0_Beta'],
+           	 	description: 'Branch name to pick-up other components rpms'
+        	)
 	}
 	
 
