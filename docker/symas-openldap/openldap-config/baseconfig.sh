@@ -123,7 +123,25 @@ if [ ! -z $(pidof slapd) ]
 then
    kill -15 $(pidof slapd)
 fi
-/usr/sbin/slapd  -F $CONFIG_PATH/openldap/slapd.d -u ldap -h 'ldapi:/// ldap:///'
+/usr/sbin/slapd -F $CONFIG_PATH/openldap/slapd.d -u ldap -h 'ldapi:/// ldap:///'
+
+retry_count=1
+while [[ $(ldapsearch -x -b 'cn=admin,cn=config' -h localhost 2>/dev/null | grep matchedDN:* | awk '{print $2}' | tr -d '\r') != "cn=config" ]]
+do
+    if [ $retry_count -eq 4 ]
+    then
+        exit 1
+    fi
+    echo "Retry: $retry_count"
+    echo "Waiting for ldap service ..."
+    sleep 1
+    echo "Starting slapd process if not started yet"
+    if [[ -z $(pidof slapd) ]]
+    then
+        /usr/sbin/slapd  -F $CONFIG_PATH/openldap/slapd.d -u ldap -h 'ldapi:/// ldap:///'
+    fi
+    retry_count=$((retry_count+1)) 
+done
 echo "started slapd"
 
 # configure LDAP
