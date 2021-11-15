@@ -164,7 +164,10 @@ function install_prerequisites(){
         # stop and disable firewalld
         (systemctl stop firewalld && systemctl disable firewalld && sudo systemctl mask --now firewalld) || throw $Exception
         # install python packages
-        (yum install python3-pip && pip3 install jq yq) || throw $Exception
+        (yum install python3-pip -y && pip3 install jq yq) || throw $Exception
+
+        # install yum-utils and wget
+        yum install yum-utils wget -y || throw $Exception
 
         # set yum repositories for k8 and docker-ce
         rm -rf /etc/yum.repos.d/download.docker.com_linux_centos_7_x86_64_stable_.repo /etc/yum.repos.d/packages.cloud.google.com_yum_repos_kubernetes-el7-x86_64.repo
