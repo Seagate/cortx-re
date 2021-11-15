@@ -23,8 +23,8 @@ pipeline {
 		string(name: 'HARE_BRANCH', defaultValue: 'stable', description: 'Branch to be used for Hare build.')
 		string(name: 'CUSTOM_CI_BUILD_ID', defaultValue: '0', description: 'Custom CI Build Number')
 		string(name: 'CORTX_UTILS_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX Utils', trim: true)
-		string(name: 'CORTX_UTILS_REPO_OWNER', defaultValue: 'seagate', description: 'CORTX Utils Repository owner name', trim: true)
-		string(name: 'PYTHON_PACKAGE_VERSION', defaultValue: 'latest', description: 'Python packages version repo dir name', trim: true)
+		string(name: 'CORTX_UTILS_URL', defaultValue: 'https://github.com/Seagate/cortx-utils', description: 'CORTX Utils Repository URL', trim: true)
+		string(name: 'THIRD_PARTY_PYTHON_VERSION', defaultValue: 'custom', description: 'Third Party Python Version to use', trim: true)
 	}	
 
 	environment {
@@ -110,9 +110,9 @@ pipeline {
 									string(name: 'HARE_URL', value: "${HARE_URL}"),
 									string(name: 'CUSTOM_CI_BUILD_ID', value: "${CUSTOM_CI_BUILD_ID}"),
 									string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}"),
-									string(name: 'CORTX_UTILS_REPO_OWNER', value: "${CORTX_UTILS_REPO_OWNER}"),
-									string(name: 'PYTHON_PACKAGE_VERSION', value: "${PYTHON_PACKAGE_VERSION}")
-								]
+									string(name: 'CORTX_UTILS_URL', value: "${CORTX_UTILS_URL}"),
+									string(name: 'THIRD_PARTY_PYTHON_VERSION', value: "${THIRD_PARTY_PYTHON_VERSION}")	
+							]
 					}
 				}
 			}	
