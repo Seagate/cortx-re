@@ -86,7 +86,8 @@ function cleanup_node(){
     # Cleanup kubeadm stuff
     if [ -f /usr/bin/kubeadm ]; then
         echo "Cleaning up existing kubeadm configuration"
-        umount -l /var/lib/kubelet
+        # unmount /var/lib/kubelet is having problem while running `kubeadm reset` in k8s v1.19. It is fixed in 1.20
+        # Ref link - https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm/#kubeadm-reset-unmounts-var-lib-kubelet
         kubeadm reset -f
     fi
 
