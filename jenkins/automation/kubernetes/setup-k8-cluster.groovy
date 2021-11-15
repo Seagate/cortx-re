@@ -12,10 +12,6 @@ pipeline {
         ansiColor('xterm')
     }
 
-    environment {
-        UNTAINT = "true"
-    }
-
     parameters {
 
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'kubernetes', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
