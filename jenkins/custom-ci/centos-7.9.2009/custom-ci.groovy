@@ -70,6 +70,7 @@ pipeline {
 			choices: ['latest', 'stable', 'custom'],
 			description: 'Python packages version repo dir name'
 		)
+
 	}
 
 	stages {
