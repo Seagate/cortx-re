@@ -48,7 +48,6 @@ python36 == 3.6.8
 python36-PyYAML
 python36-dbus == 1.2.4
 python36-gobject == 3.22.0
-python36-ldap
 python36-paramiko == 2.1.1
 python36-pika
 python36-pip
