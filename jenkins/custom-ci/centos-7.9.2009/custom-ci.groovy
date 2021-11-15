@@ -48,6 +48,7 @@ pipeline {
 		string(name: 'SSPL_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for SSPL', trim: true)
 		string(name: 'SSPL_URL', defaultValue: 'https://github.com/Seagate/cortx-monitor.git', description: 'SSPL Repository URL', trim: true)
 		string(name: 'CORTX_UTILS_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX Utils', trim: true)
+		string(name: 'CORTX_UTILS_REPO_OWNER', defaultValue: 'seagate', description: 'CORTX Utils Repository owner name', trim: true)
 		string(name: 'CORTX_UTILS_URL', defaultValue: 'https://github.com/Seagate/cortx-utils', description: 'CORTX Utils Repository URL', trim: true)
 		string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX RE', trim: true)
 		string(name: 'CORTX_RE_URL', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'CORTX RE Repository URL', trim: true)
@@ -62,6 +63,12 @@ pipeline {
 			name: 'THIRD_PARTY_PYTHON_VERSION',
 			choices: ['cortx-2.0', 'custom'],
 			description: 'Third Party Python Version to use.'
+		)
+	
+		choice(
+			name: 'PYTHON_PACKAGE_VERSION',
+			choices: ['latest', 'stable', 'custom'],
+			description: 'Python packages version repo dir name'
 		)
 	}
 
@@ -151,7 +158,9 @@ pipeline {
 														string(name: 'HARE_URL', value: "${HARE_URL}"),
 														string(name: 'HARE_BRANCH', value: "${HARE_BRANCH}"),
 														string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}"),
-														string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}")
+														string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}"),
+														string(name: 'CORTX_UTILS_REPO_OWNER', value: "${CORTX_UTILS_REPO_OWNER}"),
+														string(name: 'PYTHON_PACKAGE_VERSION', value: "${PYTHON_PACKAGE_VERSION}")
                                             		]
 							} catch (err) {
 								build_stage = env.STAGE_NAME 			
@@ -177,7 +186,9 @@ pipeline {
 									      	  string(name: 'HA_URL', value: "${HA_URL}"),
 									      	  string(name: 'HA_BRANCH', value: "${HA_BRANCH}"),
 										  string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}"),	
-										  string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}")
+										  string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}"),
+										  string(name: 'CORTX_UTILS_REPO_OWNER', value: "${CORTX_UTILS_REPO_OWNER}"),
+										  string(name: 'PYTHON_PACKAGE_VERSION', value: "${PYTHON_PACKAGE_VERSION}")
 									      ]
 							} catch (err) {
 								build_stage = env.STAGE_NAME
