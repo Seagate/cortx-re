@@ -102,6 +102,7 @@ fi
 
 echo "Killing process used for base configuration"
 kill -15 $(pidof slapd)
+sleep 1
 
 # Start slapd
 echo "Starting slapd daemon process .."
