@@ -20,7 +20,7 @@
 
 HOST_FILE=$PWD/hosts
 SSH_KEY_FILE=/root/.ssh/id_rsa
-TAINT="$1"
+UNTAINT="$1"
 
 function validation {
     if [ ! -f "$HOST_FILE" ]; then
@@ -92,7 +92,7 @@ function setup_cluster {
     done
 
     echo "---------------------------------------[ Preparing Master Node $MASTER_NODE ]--------------------------------------"
-    ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" "/var/tmp/cluster-functions.sh --master ${TAINT}"
+    ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" "/var/tmp/cluster-functions.sh --master ${UNTAINT}"
     check_status
     sleep 10 #To be replaced with status check
     JOIN_COMMAND=$(ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" 'kubeadm token create --print-join-command --description "Token to join worker nodes"')
