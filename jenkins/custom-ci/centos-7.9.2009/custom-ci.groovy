@@ -17,8 +17,8 @@ pipeline {
 
 		python_deps = "${THIRD_PARTY_PYTHON_VERSION == 'cortx-2.0' ? "$release_dir/third-party-deps/python-deps/python-packages-2.0.0-latest" : THIRD_PARTY_PYTHON_VERSION == 'cortx-1.0' ?  "$release_dir/third-party-deps/python-packages" : "$release_dir/third-party-deps/python-deps/python-packages-2.0.0-custom"}"
 
-		cortx_os_iso = "/mnt/bigstorage/releases/cortx_builds/custom-os-iso/cortx-os-1.0.0-23.iso"
-		third_party_dir = "${THIRD_PARTY_RPM_VERSION == 'cortx-2.0' ? "$release_dir/third-party-deps/centos/$os_version-2.0.0-latest" : THIRD_PARTY_RPM_VERSION == 'cortx-1.0' ?  "$release_dir/third-party-deps/centos/$os_version-1.0.0-1" : "$release_dir/third-party-deps/centos/$os_version-custom"}"
+		cortx_os_iso = "/mnt/bigstorage/releases/cortx_builds/custom-os-iso/cortx-2.0.0/cortx-os-2.0.0-7.iso"
+		third_party_dir = "${THIRD_PARTY_RPM_VERSION == 'cortx-2.0' ? "$release_dir/third-party-deps/centos/$os_version-2.0.0-latest" : THIRD_PARTY_RPM_VERSION == 'cortx-2.0-k8' ?  "$release_dir/third-party-deps/centos/$os_version-2.0.0-k8" : "$release_dir/third-party-deps/centos/$os_version-custom"}"
 	}
 
 	options {
@@ -26,9 +26,8 @@ pipeline {
 		timestamps()
 		ansiColor('xterm')
 		parallelsAlwaysFailFast()
-		quietPeriod(60)
 		buildDiscarder(logRotator(daysToKeepStr: '5', numToKeepStr: '10'))
-	}
+  }
 
 	parameters {
 		string(name: 'CSM_AGENT_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CSM Agent', trim: true)
@@ -54,7 +53,7 @@ pipeline {
 
 		choice(
 			name: 'THIRD_PARTY_RPM_VERSION',
-			choices: ['cortx-2.0', 'custom'],
+			choices: ['cortx-2.0', 'cortx-2.0-k8', 'custom'],
 			description: 'Third Party RPM Version to use.'
 		)
 
@@ -63,6 +62,13 @@ pipeline {
 			choices: ['cortx-2.0', 'custom'],
 			description: 'Third Party Python Version to use.'
 		)
+
+		choice(
+			name: 'ISO_GENERATION',
+			choices: ['no', 'yes'],
+			description: 'Need ISO files'
+		)
+	
 	}
 
 	stages {
@@ -150,7 +156,8 @@ pipeline {
 														string(name: 'S3_BRANCH', value: "${S3_BRANCH}"),
 														string(name: 'HARE_URL', value: "${HARE_URL}"),
 														string(name: 'HARE_BRANCH', value: "${HARE_BRANCH}"),
-														string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}")
+														string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}"),
+														string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}")
                                             		]
 							} catch (err) {
 								build_stage = env.STAGE_NAME 			
@@ -175,7 +182,8 @@ pipeline {
 									      parameters: [
 									      	  string(name: 'HA_URL', value: "${HA_URL}"),
 									      	  string(name: 'HA_BRANCH', value: "${HA_BRANCH}"),
-											  string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}")	
+										  string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}"),	
+										  string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}")
 									      ]
 							} catch (err) {
 								build_stage = env.STAGE_NAME
@@ -388,6 +396,9 @@ pipeline {
 		}
 		
 		stage ('Generate ISO Image') {
+			when {
+                expression { params.ISO_GENERATION == 'yes' }
+            }
 		    steps {
 
 				sh label: 'Release ISO', script: '''
@@ -424,9 +435,15 @@ pipeline {
                     gpg --output $integration_dir/$release_tag/iso/cortx-$version-$release_tag-single.iso.sig --detach-sig $integration_dir/$release_tag/iso/cortx-$version-$release_tag-single.iso 
                 popd
                 '''
+			}
+		}
+
+		stage ('Additional Files') {
+		    steps {
 
 				sh label: 'Additional Files', script:'''
 				#Add cortx-prep.sh
+				mkdir -p $integration_dir/$release_tag/iso
                 cortx_prvsnr_preq=$(ls "$integration_dir/$release_tag/cortx_iso" | grep "python36-cortx-prvsnr" | cut -d- -f5 | cut -d_ -f2 | cut -d. -f1 | sed s/"git"//)                 
 				wget -O $integration_dir/$release_tag/iso/install-$version-$BUILD_NUMBER.sh https://raw.githubusercontent.com/Seagate/cortx-prvsnr/$cortx_prvsnr_preq/srv/components/provisioner/scripts/install.sh
 
