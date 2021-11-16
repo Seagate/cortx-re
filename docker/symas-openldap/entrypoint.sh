@@ -12,9 +12,9 @@ where:
 set -e
 
 # Default config and data directories
-CONFIG_PATH="/etc/cortx"
-DATA_PATH="/var/data/cortx"
-LOG_PATH="/var/log/cortx"
+CONFIG_PATH="/etc/3rd-party"
+DATA_PATH="/var/data/3rd-party"
+LOG_PATH="/var/log/3rd-party"
 LOG_LEVEL="1"
 ROOTDN_PASSWORD="seagate"
 
@@ -49,18 +49,21 @@ done
 # Check if CONFIG_PATH exists else create
 if [ ! -d "$CONFIG_PATH/openldap/" ]           
 then
+        echo "Creating config path"
 	mkdir -p $CONFIG_PATH/openldap
 fi
 
 # Check if DATA_PATH exists else create
 if [ ! -d "$DATA_PATH/ldap/" ]
 then
+        echo "Creating data path"
         mkdir -p $DATA_PATH/ldap
 fi
 
 # Check if LOG_PATH exists else create
 if [ ! -d "$LOG_PATH" ]
 then
+        echo "Creating log Path"
         mkdir -p $LOG_PATH
 fi
 
@@ -70,25 +73,37 @@ perform_base_config=false
 # If not present copy contents of /etc/openldap to CONFIG_PATH
 if [ -z "$(ls -A $CONFIG_PATH/openldap/)" ]
 then
+        echo "Copying RPM files to custom config path $CONFIG_PATH"
 	cp -r /etc/openldap/ $CONFIG_PATH
+        echo "Setting base config flag true"
         perform_base_config=true
 fi
 
 # Change permissions of pvc directory
+echo "Changing permissions for config path"
 chown -R ldap.ldap $CONFIG_PATH/openldap/
 
 # Start slapd
+echo "Intializing slapd process for base configuration"
 /usr/sbin/slapd -F $CONFIG_PATH/openldap/slapd.d -u ldap -h 'ldapi:/// ldap:///'
+
+echo "Wait 5 seconds for slapd process"
+sleep 5
 
 # Check if configuration already present
 # Perform base config
 if [ "$perform_base_config" == true ]
 then
   DATA_PATH=${DATA_PATH}/ldap
-  python3 -c "import sys;sys.path.insert(1, '/usr/lib/python3.6/site-packages/cortx/utils/setup/openldap/');from base_configure_ldap import BaseConfig;BaseConfig.perform_base_config('$ROOTDN_PASSWORD',True,{'base_dn':'dc=seagate,dc=com' , 'bind_base_dn':'cn=admin,dc=seagate,dc=com', 'install_dir': '$CONFIG_PATH', 'data_dir': '$DATA_PATH'})" 
+  echo "Started base configuration"
+  sh /opt/openldap-config/baseconfig.sh --rootdnpasswd $ROOTDN_PASSWORD --config_path $CONFIG_PATH --data_path $DATA_PATH
+  echo "Base configuration Done !!!"
 fi
 
+echo "Killing process used for base configuration"
 kill -15 $(pidof slapd)
+sleep 1
 
 # Start slapd
+echo "Starting slapd daemon process .."
 /usr/sbin/slapd -F $CONFIG_PATH/openldap/slapd.d -u ldap -h 'ldapi:/// ldap:///' -d $LOG_LEVEL &> $LOG_PATH/openldap.log

@@ -27,4 +27,4 @@ services:
       dockerfile: ./docker/symas-openldap/Dockerfile
       args:
        CENTOS_RELEASE: 7.9.2009
-       BUILD_URL: http://cortx-storage.colo.seagate.com/releases/cortx/github/main/centos-7.9.2009/last_successful_prod/
+       SYMAS_VERSION: 2.4.58

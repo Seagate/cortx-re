@@ -47,6 +47,9 @@
   delay: 40
   ignore_errors: true  
 
+- name: "[ Validate Cluster ] : Check Cluster Status for pcs status"
+  script: files/pcs_status.sh 5 30
+
 - name: "[ Validate Cluster ] : Check Cluster Status"
   shell: pcs status --full 2>&1 | tee -a {{ CORXT_DEPLOYMENT_LOG_PATH }}/pcs_status.log 
   delegate_to: "srvnode-1"
