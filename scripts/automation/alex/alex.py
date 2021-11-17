@@ -95,7 +95,7 @@ def html_row_gen(file, word_cont, component):
         word = word_line.split(' ')
         recommand = ' '.join(word[2:-2])
         word_obj = re.search(r'`[a-z]+`', recommand)
-        if len(word) > 2 and word_obj:
+        if len(word) > 2 and word_obj :
             TOTAL_WORDS_SCANNED += 1
             rows += '<tr><td class="word_width">%s</td>' % word_obj.group()
             rows += '<td class="line_width">%s</td>' % word[0].split('-')[0]
@@ -112,6 +112,7 @@ def html_row_gen(file, word_cont, component):
           custom_word_obj = re.finditer(pattern, custom_scan_cont)
           for cutom_obj in custom_word_obj:
               line = cutom_obj.group().split(':')
+              if line[2].strip() == 'null': continue
               TOTAL_WORDS_SCANNED += 1
               rows += '<tr><td class="word_width">%s</td>' % line[2].strip()
               rows += '<td class="line_width">%s:0</td>' % line[1]
@@ -148,12 +149,14 @@ def remaining_words(file):
            custom_word_obj = re.finditer(pattern, cont)
            for cutom_obj in custom_word_obj:
                line = cutom_obj.group().split(':')
+               if line[2].strip() == 'null': continue
                TOTAL_WORDS_SCANNED += 1
                rows += '<tr><td class="word_width">%s</td>' % line[2].strip()
                rows += '<td class="line_width">%s:0</td>' % line[1]
                rows += '<td><pre>`%s` may be restricted by the organization<pre></td></tr>' % line[2].strip()
-           rows += "</table></div></td></tr>"
-           content += tabe_row + header + rows
+           if rows != "":
+              rows += "</table></div></td></tr>"
+              content += tabe_row + header + rows
            rows = ''
     return content
 
