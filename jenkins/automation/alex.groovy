@@ -51,7 +51,7 @@ pipeline {
                     stage ('Checkout Repo:' + entry.name) {
                         dir (entry.name) {
                             timestamps {
-                              checkout([$class: 'GitSCM', branches: [[name: "main"]], doGenerateSubmoduleConfigurations: false, userRemoteConfigs: [[credentialsId: 'github-access', url: repourl]]])
+                              checkout([$class: 'GitSCM', branches: [[name: "main"]], doGenerateSubmoduleConfigurations: false, userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: repourl]]])
                             }
                         }
                     }
