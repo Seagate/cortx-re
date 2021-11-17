@@ -20,7 +20,7 @@ help : Makefile
 checkout:
 	@echo "*************** checkout code *********************"
 	pushd cortx-workspace && \
-		for component in $$(ls -1d cortx-* | grep -Evx 'cortx-experiments||cortx-posix||cortx-multisite'); do pushd $$component; git pull -p --all; git checkout $$BRANCH || exit 1; popd ; done  && \
+        for component in $$(ls -1d cortx-* | grep -Evx 'cortx-experiments||cortx-posix||cortx-multisite||cortx-s3samplecode'); do pushd $$component; git clean -fdx; git checkout .; git pull -p --all; git checkout $$BRANCH || exit 1; popd ; done  && \
 	popd || (echo "ERROR: Failed to checkout specified branch/tag Exiting..."; exit 1)
 
 ## clean: remove existing /var/artifacts/0 directory. 
@@ -285,13 +285,14 @@ _prvsnr_build:
 	@echo "***************  Building cortx-prvsnr RPMS *********************"
 	
 	pushd cortx-workspace/cortx-prvsnr/ && \
-        rm -rf ${RPM_DIR}/*cortx-prvsnr*.rpm /root/rpmbuild/RPMS/x86_64/*cortx-prvsnr*.rpm && \
+        rm -rf ${RPM_DIR}/*cortx-[prvsnr,provisioner]*.rpm /root/rpmbuild/RPMS/x86_64/*cortx-[prvsnr,provisioner]*.rpm && \
 		sh ./devops/rpms/buildrpm.sh -g "$$(git rev-parse --short HEAD)" -e ${RELEASE_VERSION} -b "${BUILD_ID}" && \
 		sh ./cli/buildrpm.sh -g "$$(git rev-parse --short HEAD)" -e ${RELEASE_VERSION} -b "${BUILD_ID}" && \
 		bash ./devops/rpms/api/build_python_api.sh -vv --out-dir /root/rpmbuild/RPMS/x86_64/ --pkg-ver ${BUILD_ID}_git$$(git rev-parse --short HEAD) && \
         if [ -f ./devops/rpms/lr-cli/build_python_cortx_setup.sh ]; then bash ./devops/rpms/lr-cli/build_python_cortx_setup.sh -vv --out-dir /root/rpmbuild/RPMS/x86_64/ --pkg-ver ${BUILD_ID}_git$$(git rev-parse --short HEAD); fi && \
 		sh ./devops/rpms/node_cli/node_cli_buildrpm.sh -g "$$(git rev-parse --short HEAD)" -e ${RELEASE_VERSION} -b ${BUILD_ID} && \
 		if [ -f ./jenkins/build.sh ]; then bash ./jenkins/build.sh -v ${RELEASE_VERSION} -b ${BUILD_ID} && cp ./dist/cortx-provisioner-*noarch.rpm ${RPM_DIR}; fi && \
+		cp /root/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
 		createrepo -v ${RPM_DIR} && \
 	popd
 
