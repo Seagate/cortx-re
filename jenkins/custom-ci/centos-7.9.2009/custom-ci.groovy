@@ -63,6 +63,7 @@ pipeline {
 			choices: ['cortx-2.0', 'custom'],
 			description: 'Third Party Python Version to use.'
 		)
+		
 	}
 
 	stages {
@@ -151,7 +152,9 @@ pipeline {
 														string(name: 'HARE_URL', value: "${HARE_URL}"),
 														string(name: 'HARE_BRANCH', value: "${HARE_BRANCH}"),
 														string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}"),
-														string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}")
+														string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}"),
+														string(name: 'CORTX_UTILS_URL', value: "${CORTX_UTILS_URL}"),
+														string(name: 'THIRD_PARTY_PYTHON_VERSION', value: "${THIRD_PARTY_PYTHON_VERSION}")
                                             		]
 							} catch (err) {
 								build_stage = env.STAGE_NAME 			
@@ -176,8 +179,10 @@ pipeline {
 									      parameters: [
 									      	  string(name: 'HA_URL', value: "${HA_URL}"),
 									      	  string(name: 'HA_BRANCH', value: "${HA_BRANCH}"),
-										  string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}")	
-										  string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}")
+										  string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}"),	
+										  string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}"),
+										  string(name: 'CORTX_UTILS_URL', value: "${CORTX_UTILS_URL}"),
+										  string(name: 'THIRD_PARTY_PYTHON_VERSION', value: "${THIRD_PARTY_PYTHON_VERSION}")
 									      ]
 							} catch (err) {
 								build_stage = env.STAGE_NAME
