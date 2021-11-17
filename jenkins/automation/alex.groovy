@@ -63,13 +63,24 @@ pipeline {
           steps {
               script {
                 def projects = readJSON file: "${env.WORKSPACE}/config.json"
+				def scan_list = projects.global_scope
                 projects.repository.each { entry ->
                     dir(entry.name) {
 						def file = '../' + entry.name + '.alex'
+						def file_custom = '../' + entry.name + '.custom'
+						def words = entry.local_scope
 						sh ''' 
 						  set +e
 						  cp ../alexignore .alexignore
 						  cp ../alexrc .alexrc
+						  #echo 'CORVault, lyve cloud.' >foo.txt
+						  repo_list=`echo '''+ words +'''`
+						  scan_words=`echo '''+ scan_list +'''`
+						  
+						  repo_list=${repo_list//,/\\|}
+						  scan_words=${scan_words//,/\\|}
+						  grep -rnwo '.' -e \"$repo_list\" >> '''+ file_custom +'''
+						  grep -rnwo '.' -e \"$scan_words\" >> '''+ file_custom +'''
 						  alex . >> ''' + file +''' 2>&1
 						  set -e
 						'''
@@ -77,7 +88,7 @@ pipeline {
                   }
               }
           }	
-      }
+	  }
       stage('Generate HTML report') {
           steps {
               script {
