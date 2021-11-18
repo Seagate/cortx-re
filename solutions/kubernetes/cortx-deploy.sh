@@ -93,7 +93,7 @@ function destroy-cluster(){
     generate_rsa_key
     nodes_setup
 	MASTER_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
-	echo "---------------------------------------[ Destroying cluster $MASTER_NODE ]----------------------------------------------"
+	echo "---------------------------------------[ Destroying cluster from $MASTER_NODE ]----------------------------------------------"
         scp -q cortx-deploy-functions.sh functions.sh "$MASTER_NODE":/var/tmp/
         ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" "/var/tmp/cortx-deploy-functions.sh --destroy"	
         ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" '/var/tmp/cortx-deploy-functions.sh --status' | tee /var/tmp/cortx-cluster-status.txt

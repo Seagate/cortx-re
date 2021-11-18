@@ -260,7 +260,6 @@ echo "---------------------------------------[ Setting up Worker Node on $HOSTNA
 }
 
 function destroy(){
-    #download_deploy_script $GITHUB_TOKEN
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         chmod +x *.sh
         ./destroy-cortx-cloud.sh
