@@ -21,7 +21,7 @@ pipeline {
     parameters {
 
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'kubernetes', description: 'Branch or GitHash for CORTX Cluster scripts', trim: true)
-        string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for CORTX Cluster scripts', trim: true)
+        string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/AbhijitPatil1992/cortx-re/', description: 'Repository for CORTX Cluster scripts', trim: true)
         string(name: 'CORTX_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-all:2.0.0-latest-custom-ci', description: 'CORTX-ALL image', trim: true)
         text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used. First node will be used as Master', name: 'hosts')
         //booleanParam(name: 'UNTAINT', defaultValue: true, description: 'Allow to schedule pods on master node')
@@ -140,7 +140,7 @@ pipeline {
                 // Email Notification
                 env.cluster_status = "${clusterStatusHTML}"
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
-                mailRecipients = "shailesh.vaidya@seagate.com"
+                mailRecipients = "abhijit.patil@seagate.com"
                 emailext ( 
                     body: '''${SCRIPT, template="cluster-setup-email.template"}''',
                     mimeType: 'text/html',
