@@ -285,7 +285,7 @@ _prvsnr_build:
 	@echo "***************  Building cortx-prvsnr RPMS *********************"
 	
 	pushd cortx-workspace/cortx-prvsnr/ && \
-        rm -rf ${RPM_DIR}/*cortx-[prvsnr,provisioner]*.rpm /root/rpmbuild/RPMS/x86_64/*cortx-[prvsnr,provisioner]*.rpm && \
+        rm -rf ${RPM_DIR}/cortx-pr*.rpm /root/rpmbuild/RPMS/x86_64/cortx-pr*.rpm && \
 		sh ./devops/rpms/buildrpm.sh -g "$$(git rev-parse --short HEAD)" -e ${RELEASE_VERSION} -b "${BUILD_ID}" && \
 		sh ./cli/buildrpm.sh -g "$$(git rev-parse --short HEAD)" -e ${RELEASE_VERSION} -b "${BUILD_ID}" && \
 		bash ./devops/rpms/api/build_python_api.sh -vv --out-dir /root/rpmbuild/RPMS/x86_64/ --pkg-ver ${BUILD_ID}_git$$(git rev-parse --short HEAD) && \
