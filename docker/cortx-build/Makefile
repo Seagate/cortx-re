@@ -32,6 +32,9 @@ clean:
 ## build: generate complete CORTX build including third-party-deps at "/var/artifacts/0"
 build: io-path control-path cortx-prereq release_build
 
+## cortx-image-build: generate packages required for cortx-all image including third-party-deps at "/var/artifacts/0"
+cortx-image-build: cortx-motr cortx-s3server cortx-hare cortx-prvsnr cortx-manager release_build
+
 ## control-path: generate control-path packages. cortx-provisioner, cortx-monitor, cortx-manager, cortx-management-portal and cortx-ha.
 control-path: cortx-prvsnr cortx-monitor cortx-manager cortx-management-portal cortx-ha
 
