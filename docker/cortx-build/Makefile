@@ -32,8 +32,8 @@ clean:
 ## build: generate complete CORTX build including third-party-deps at "/var/artifacts/0"
 build: io-path control-path cortx-prereq release_build
 
-## cortx-image-build: generate packages required for cortx-all image including third-party-deps at "/var/artifacts/0"
-cortx-image-build: cortx-motr cortx-s3server cortx-hare cortx-prvsnr cortx-manager release_build
+## cortx-all-image: generate packages required for cortx-all image including third-party-deps at "/var/artifacts/0"
+cortx-all-image: cortx-motr cortx-s3server cortx-hare cortx-prvsnr cortx-manager release_build
 
 ## control-path: generate control-path packages. cortx-provisioner, cortx-monitor, cortx-manager, cortx-management-portal and cortx-ha.
 control-path: cortx-prvsnr cortx-monitor cortx-manager cortx-management-portal cortx-ha
@@ -67,6 +67,9 @@ cortx-posix: _cortx-posix_prereq _cortx-posix_build
 
 ## cortx-prvsnr: generate cortx-prvsnr packages.
 cortx-prvsnr: _prvsnr_prereq _prvsnr_build
+
+## cortx-py-utils: genarate cortx-py-utils packages.
+cortx-py-utils: _cortx-py-utils_build
 
 #***********************************************************************************
 #   Component:  cortx-motr
@@ -385,10 +388,11 @@ release_build:
 		cortx_prvsnr_preq=$$(ls /var/artifacts/0/cortx_iso/python36-cortx-prvsnr* | awk -F'_' '{split($$(NF-1), A ,"."); gsub("git", "", A[1]); print A[1]}') && \
 		wget -O install-${RELEASE_VERSION}-${BUILD_ID}.sh https://raw.githubusercontent.com/Seagate/cortx-prvsnr/$$cortx_prvsnr_preq/srv/components/provisioner/scripts/install.sh && \
  		sh /opt/release_support/build_release_info.sh -b ${BRANCH} -v ${RELEASE_VERSION} -l ${RPM_DIR} -t ${RELEASE_BUILD}/3rd_party && \
+		cp ${RPM_DIR}/RELEASE.INFO ${RELEASE_BUILD}/ && \
 	popd
 
-## iso_generation: generate ISO file from release build.
-iso_generation:
+## iso-generation: generate ISO file from release build.
+iso-generation:
 	@echo "***************  Generating ISO file *********************"
 	
 	pushd ${RELEASE_BUILD} && \
