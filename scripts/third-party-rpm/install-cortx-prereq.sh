@@ -28,13 +28,6 @@ yum-config-manager --add-repo="$BUILD_URL"/cortx_iso/
 
 yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
 
-cat <<EOF >/etc/pip.conf
-[global]
-timeout: 60
-index-url: http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/$python_deps/
-trusted-host: cortx-storage.colo.seagate.com
-EOF
-
 echo "after pip.conf file"
 
 yum clean all && rm -rf /var/cache/yum
