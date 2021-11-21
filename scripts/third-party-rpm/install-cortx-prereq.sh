@@ -35,6 +35,8 @@ index-url: http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps
 trusted-host: cortx-storage.colo.seagate.com
 EOF
 
+echo "after pip.conf file"
+
 yum clean all && rm -rf /var/cache/yum
 if [ "$RPM_LOCATION" == "remote" ]; then
     yum install java-1.8.0-openjdk-headless -y && yum install cortx-prereq -y
@@ -43,4 +45,4 @@ else
 fi
 
 #Cleanup
-rm -rf  /etc/yum.repos.d/cortx-storage.colo.seagate.com_releases_cortx_* /etc/pip.conf
+#rm -rf  /etc/yum.repos.d/cortx-storage.colo.seagate.com_releases_cortx_* /etc/pip.conf
