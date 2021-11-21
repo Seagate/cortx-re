@@ -13,6 +13,7 @@ pipeline {
         release_dir = "/mnt/bigstorage/releases/cortx"
 		release_tag = "custom-build-$CUSTOM_CI_BUILD_ID"
 		build_upload_dir = "$release_dir/github/integration-custom-ci/$os_version/$release_tag/cortx_iso"
+		python_deps = "${THIRD_PARTY_PYTHON_VERSION == 'cortx-2.0' ? "python-packages-2.0.0-latest" : THIRD_PARTY_PYTHON_VERSION == 'custom' ?  "python-packages-2.0.0-custom" : "python-packages-2.0.0-stable"}"
     }
 
 	options {
@@ -26,6 +27,7 @@ pipeline {
         string(name: 'CSM_AGENT_URL', defaultValue: 'https://github.com/Seagate/cortx-management.git', description: 'Repository URL for cortx-management build.')
 		string(name: 'CSM_AGENT_BRANCH', defaultValue: 'stable', description: 'Branch for cortx-management build.')
 		string(name: 'CUSTOM_CI_BUILD_ID', defaultValue: '0', description: 'Custom CI Build Number')
+		string(name: 'THIRD_PARTY_PYTHON_VERSION', defaultValue: 'custom', description: 'Third Party Python Version to use', trim: true)
 	}	
 
 
@@ -52,6 +54,7 @@ pipeline {
 				script { build_stage = env.STAGE_NAME }
 
 				sh label: 'Install cortx-prereq package', script: """
+					export python_deps=$python_deps
 					pip3 uninstall pip -y && yum reinstall python3-pip -y && ln -s /usr/bin/pip3 /usr/local/bin/pip3
 					sh ./cortx-re/scripts/third-party-rpm/install-cortx-prereq.sh
 				"""

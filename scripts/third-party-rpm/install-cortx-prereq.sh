@@ -31,7 +31,7 @@ yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && y
 cat <<EOF >/etc/pip.conf
 [global]
 timeout: 60
-index-url: $BUILD_URL/python_deps
+index-url: http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/$python_deps/
 trusted-host: cortx-storage.colo.seagate.com
 EOF
 
