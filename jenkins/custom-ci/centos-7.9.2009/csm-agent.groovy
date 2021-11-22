@@ -56,7 +56,7 @@ pipeline {
 				sh label: 'Install cortx-prereq package', script: """
 					export python_deps=$python_deps
 					pip3 uninstall pip -y && yum reinstall python3-pip -y && ln -s /usr/bin/pip3 /usr/local/bin/pip3
-					sh ./cortx-re/scripts/third-party-rpm/install-cortx-prereq.sh
+					sh ./cortx-re/scripts/third-party-rpm/install-cortx-prereq.sh -b http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/$os_version/$release_tag/cortx_iso/
 				"""
 
 				sh label: 'Configure yum repositories', script: """
