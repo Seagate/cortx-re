@@ -87,7 +87,7 @@ docker-compose -f docker/cortx-deploy/docker-compose.yml build --force-rm --comp
 
 if [ "$DOCKER_PUSH" == "yes" ];then
         echo "Pushing Docker image to GitHub Container Registry"
-        docker-compose -f docker/cortx-deploy/docker-compose.yml push cortx-all
+#        docker-compose -f docker/cortx-deploy/docker-compose.yml push cortx-all
 else
         echo "Docker Image push skipped"
         exit 0
@@ -97,7 +97,7 @@ popd
 if [ "$TAG_LATEST" == "yes" ];then
         echo "Tagging generated image as latest"
         docker tag "$(docker images ghcr.io/seagate/cortx-all --format='{{.Repository}}:{{.Tag}}' | head -1)" ghcr.io/seagate/cortx-all:"${TAG//$DOCKER_BUILD_BUILD/latest}"
-        docker push ghcr.io/seagate/cortx-all:"${TAG//$DOCKER_BUILD_BUILD/latest}"
+#        docker push ghcr.io/seagate/cortx-all:"${TAG//$DOCKER_BUILD_BUILD/latest}"
 else
         echo "Latest tag creation skipped"
 fi
