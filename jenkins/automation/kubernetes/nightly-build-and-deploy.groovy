@@ -23,7 +23,10 @@ pipeline {
             description: 'Email Notification Recipients ',
             name: 'EMAIL_RECIPIENTS'
         )
-        text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used for K8 cluster setup. First node will be used as Master', name: 'hosts')
+        text(defaultValue: '''hostname=ssc-vm-rhev4-1625.colo.seagate.com,user=root,pass=seagate1
+hostname=ssc-vm-rhev4-1619.colo.seagate.com,user=root,pass=seagate1
+hostname=ssc-vm-rhev4-1618.colo.seagate.com,user=root,pass=seagate1
+hostname=ssc-vm-rhev4-1617.colo.seagate.com,user=root,pass=seagate1''', description: 'VM details to be used for K8 cluster setup. First node will be used as Master', name: 'hosts')
 	string(name: 'CORTX_SCRIPTS_BRANCH', defaultValue: 'v0.0.14', description: 'Release for cortx-k8s scripts (Services Team)', trim: true)
 	string(name: 'CORTX_SCRIPTS_REPO', defaultValue: 'Seagate/cortx-k8s', description: 'Repository for cortx-k8s scripts (Services Team)', trim: true)
     }
