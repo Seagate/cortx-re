@@ -10,6 +10,7 @@ pipeline {
         timestamps()
         buildDiscarder(logRotator(daysToKeepStr: '20', numToKeepStr: '20'))
     }
+    triggers { cron('35 14 * * *') }
     environment {
         PODS_ON_MASTER = false
         CORTX_RE_BRANCH = "kubernetes"
