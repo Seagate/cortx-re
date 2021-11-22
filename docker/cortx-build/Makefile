@@ -20,7 +20,7 @@ help : Makefile
 checkout:
 	@echo "*************** checkout code *********************"
 	pushd cortx-workspace && \
-		for component in $$(ls -1d cortx-* | grep -Evx 'cortx-experiments||cortx-posix||cortx-multisite'); do pushd $$component; git pull -p --all; git checkout $$BRANCH || exit 1; popd ; done  && \
+        for component in $$(ls -1d cortx-* | grep -Evx 'cortx-experiments||cortx-posix||cortx-multisite||cortx-s3samplecode'); do pushd $$component; git clean -fdx; git checkout .; git pull -p --all; git checkout $$BRANCH || exit 1; popd ; done  && \
 	popd || (echo "ERROR: Failed to checkout specified branch/tag Exiting..."; exit 1)
 
 ## clean: remove existing /var/artifacts/0 directory. 
@@ -31,6 +31,9 @@ clean:
 
 ## build: generate complete CORTX build including third-party-deps at "/var/artifacts/0"
 build: io-path control-path cortx-prereq release_build
+
+## cortx-all-image: generate packages required for cortx-all image including third-party-deps at "/var/artifacts/0"
+cortx-all-image: cortx-motr cortx-s3server cortx-hare cortx-prvsnr cortx-manager release_build
 
 ## control-path: generate control-path packages. cortx-provisioner, cortx-monitor, cortx-manager, cortx-management-portal and cortx-ha.
 control-path: cortx-prvsnr cortx-monitor cortx-manager cortx-management-portal cortx-ha
@@ -64,6 +67,9 @@ cortx-posix: _cortx-posix_prereq _cortx-posix_build
 
 ## cortx-prvsnr: generate cortx-prvsnr packages.
 cortx-prvsnr: _prvsnr_prereq _prvsnr_build
+
+## cortx-py-utils: genarate cortx-py-utils packages.
+cortx-py-utils: _cortx-py-utils_build
 
 #***********************************************************************************
 #   Component:  cortx-motr
@@ -285,13 +291,14 @@ _prvsnr_build:
 	@echo "***************  Building cortx-prvsnr RPMS *********************"
 	
 	pushd cortx-workspace/cortx-prvsnr/ && \
-        rm -rf ${RPM_DIR}/*cortx-prvsnr*.rpm /root/rpmbuild/RPMS/x86_64/*cortx-prvsnr*.rpm && \
-		sh ./devops/rpms/buildrpm.sh -g "$$(git rev-parse --short HEAD)" -e ${RELEASE_VERSION} -b "${BUILD_ID}" && \
+	    rm -rf ${RPM_DIR}/cortx-pr*.rpm ${RPM_DIR}/python36-cortx-prvsnr*.rpm ${RPM_DIR}/python36-cortx-setup*.rpm && \
+        sh ./devops/rpms/buildrpm.sh -g "$$(git rev-parse --short HEAD)" -e ${RELEASE_VERSION} -b "${BUILD_ID}" && \
 		sh ./cli/buildrpm.sh -g "$$(git rev-parse --short HEAD)" -e ${RELEASE_VERSION} -b "${BUILD_ID}" && \
 		bash ./devops/rpms/api/build_python_api.sh -vv --out-dir /root/rpmbuild/RPMS/x86_64/ --pkg-ver ${BUILD_ID}_git$$(git rev-parse --short HEAD) && \
         if [ -f ./devops/rpms/lr-cli/build_python_cortx_setup.sh ]; then bash ./devops/rpms/lr-cli/build_python_cortx_setup.sh -vv --out-dir /root/rpmbuild/RPMS/x86_64/ --pkg-ver ${BUILD_ID}_git$$(git rev-parse --short HEAD); fi && \
 		sh ./devops/rpms/node_cli/node_cli_buildrpm.sh -g "$$(git rev-parse --short HEAD)" -e ${RELEASE_VERSION} -b ${BUILD_ID} && \
-        cp /root/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
+		if [ -f ./jenkins/build.sh ]; then bash ./jenkins/build.sh -v ${RELEASE_VERSION} -b ${BUILD_ID} && mv ./dist/cortx-provisioner-*noarch.rpm ${RPM_DIR}; fi && \
+		mv /root/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
 		createrepo -v ${RPM_DIR} && \
 	popd
 
@@ -381,10 +388,11 @@ release_build:
 		cortx_prvsnr_preq=$$(ls /var/artifacts/0/cortx_iso/python36-cortx-prvsnr* | awk -F'_' '{split($$(NF-1), A ,"."); gsub("git", "", A[1]); print A[1]}') && \
 		wget -O install-${RELEASE_VERSION}-${BUILD_ID}.sh https://raw.githubusercontent.com/Seagate/cortx-prvsnr/$$cortx_prvsnr_preq/srv/components/provisioner/scripts/install.sh && \
  		sh /opt/release_support/build_release_info.sh -b ${BRANCH} -v ${RELEASE_VERSION} -l ${RPM_DIR} -t ${RELEASE_BUILD}/3rd_party && \
+		cp ${RPM_DIR}/RELEASE.INFO ${RELEASE_BUILD}/ && \
 	popd
 
-## iso_generation: generate ISO file from release build.
-iso_generation:
+## iso-generation: generate ISO file from release build.
+iso-generation:
 	@echo "***************  Generating ISO file *********************"
 	
 	pushd ${RELEASE_BUILD} && \
