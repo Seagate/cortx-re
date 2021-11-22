@@ -28,6 +28,13 @@ yum-config-manager --add-repo="$BUILD_URL"/cortx_iso/
 
 yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
 
+cat <<EOF >/etc/pip.conf
+[global]
+timeout: 60
+index-url: $BUILD_URL/python_deps
+trusted-host: cortx-storage.colo.seagate.com
+EOF
+
 yum clean all && rm -rf /var/cache/yum
 if [ "$RPM_LOCATION" == "remote" ]; then
     yum install java-1.8.0-openjdk-headless -y && yum install cortx-prereq -y
