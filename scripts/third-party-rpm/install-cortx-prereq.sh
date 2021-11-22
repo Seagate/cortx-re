@@ -4,7 +4,7 @@ usage() { echo "Usage: $0 [ -b build_url] [ -r RPM location]" 1>&2; exit 1; }
 
 #Define Default values
 BUILD_URL="http://cortx-storage.colo.seagate.com/releases/cortx/github/main/centos-7.8.2003/last_successful_prod/"
-RPM_LOCATION=local
+RPM_LOCATION=remote
 
 while getopts "b:r:" opt; do
     case $opt in
