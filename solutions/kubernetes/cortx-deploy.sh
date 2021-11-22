@@ -34,7 +34,6 @@ HEREDOC
 }
 
 function check_params {
-    if [ -z "$GITHUB_TOKEN" ]; then echo "GITHUB_TOKEN not provided.Exiting..."; exit 1; fi
     if [ -z "$CORTX_SCRIPTS_REPO" ]; then echo "CORTX_SCRIPTS_REPO not provided.Exiting..."; exit 1; fi
     if [ -z "$CORTX_SCRIPTS_BRANCH" ]; then echo "CORTX_SCRIPTS_BRANCH not provided.Exiting..."; exit 1; fi
     if [ -z "$CORTX_IMAGE" ]; then echo "CORTX_IMAGE not provided.Exiting..."; exit 1; fi
@@ -69,13 +68,13 @@ function setup_cluster {
 
     for worker_node in $WORKER_NODES
 	do
-	ssh -o 'StrictHostKeyChecking=no' "$worker_node" "export GITHUB_TOKEN=$GITHUB_TOKEN && export CORTX_SCRIPTS_REPO=$CORTX_SCRIPTS_REPO && export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH && /var/tmp/cortx-deploy-functions.sh --setup-worker"
+	ssh -o 'StrictHostKeyChecking=no' "$worker_node" "export CORTX_SCRIPTS_REPO=$CORTX_SCRIPTS_REPO && export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH && /var/tmp/cortx-deploy-functions.sh --setup-worker"
 	done
 
 
     for master_node in $MASTER_NODE
 	    do
-    	ssh -o 'StrictHostKeyChecking=no' "$master_node" "export SOLUTION_CONFIG_TYPE=$SOLUTION_CONFIG_TYPE && export CORTX_IMAGE=$CORTX_IMAGE && export GITHUB_TOKEN=$GITHUB_TOKEN && export CORTX_SCRIPTS_REPO=$CORTX_SCRIPTS_REPO && export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH && /var/tmp/cortx-deploy-functions.sh --setup-master"
+    	ssh -o 'StrictHostKeyChecking=no' "$master_node" "export SOLUTION_CONFIG_TYPE=$SOLUTION_CONFIG_TYPE && export CORTX_IMAGE=$CORTX_IMAGE && export CORTX_SCRIPTS_REPO=$CORTX_SCRIPTS_REPO && export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH && /var/tmp/cortx-deploy-functions.sh --setup-master"
         done
 
     for master_node in $MASTER_NODE

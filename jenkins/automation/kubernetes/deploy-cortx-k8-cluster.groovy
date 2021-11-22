@@ -13,7 +13,6 @@ pipeline {
     }
 
     environment {
-        GITHUB_CRED = credentials('shailesh-github-token')
         UNTAINT = "true"
     }
 
@@ -75,7 +74,6 @@ pipeline {
                     pushd solutions/kubernetes/
                         echo $hosts | tr ' ' '\n' > hosts
                         cat hosts
-                        export GITHUB_TOKEN=${GITHUB_CRED}
                         export CORTX_SCRIPTS_BRANCH=${CORTX_SCRIPTS_BRANCH}
                         export CORTX_SCRIPTS_REPO=${CORTX_SCRIPTS_REPO}
                         export CORTX_IMAGE=${CORTX_IMAGE}
@@ -96,7 +94,6 @@ pipeline {
                     pushd solutions/kubernetes/
                         echo $hosts | tr ' ' '\n' > hosts
                         cat hosts
-                        export GITHUB_TOKEN=${GITHUB_CRED}
                         export CORTX_SCRIPTS_BRANCH=${CORTX_SCRIPTS_BRANCH}
                         export CORTX_SCRIPTS_REPO=${CORTX_SCRIPTS_REPO}
                         export CORTX_IMAGE=${CORTX_IMAGE}
