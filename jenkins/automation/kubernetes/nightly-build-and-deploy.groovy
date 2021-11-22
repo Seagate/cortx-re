@@ -10,7 +10,11 @@ pipeline {
         timestamps()
         buildDiscarder(logRotator(daysToKeepStr: '20', numToKeepStr: '20'))
     }
-	
+    environment {
+        PODS_ON_MASTER = false
+        CORTX_RE_BRANCH = "kubernetes"
+        CORTX_RE_REPO = "https://github.com/Seagate/cortx-re/"
+    }	
     parameters {
         string(name: 'COMPONENT_BRANCH', defaultValue: 'kubernetes', description: 'Component Branch.')
 		choice (
@@ -18,12 +22,9 @@ pipeline {
             description: 'Email Notification Recipients ',
             name: 'EMAIL_RECIPIENTS'
         )
-		string(name: 'CORTX_RE_BRANCH', defaultValue: 'kubernetes', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
-        string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for Cluster Setup scripts', trim: true)
         text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used for K8 cluster setup. First node will be used as Master', name: 'hosts')
-        booleanParam(name: 'PODS_ON_MASTER', defaultValue: false, description: 'Selecting this option will allow to schedule pods on master node.')
-		string(name: 'CORTX_SCRIPTS_BRANCH', defaultValue: 'v0.0.14', description: 'Release for cortx-k8s scripts (Services Team)', trim: true)
-		string(name: 'CORTX_SCRIPTS_REPO', defaultValue: 'Seagate/cortx-k8s', description: 'Repository for cortx-k8s scripts (Services Team)', trim: true)
+	string(name: 'CORTX_SCRIPTS_BRANCH', defaultValue: 'v0.0.14', description: 'Release for cortx-k8s scripts (Services Team)', trim: true)
+	string(name: 'CORTX_SCRIPTS_REPO', defaultValue: 'Seagate/cortx-k8s', description: 'Repository for cortx-k8s scripts (Services Team)', trim: true)
     }
     stages {
 		stage ("Trigger build creation and k8s cluster setup jobs") {
@@ -71,7 +72,7 @@ pipeline {
 				script { build_stage = env.STAGE_NAME }
 				script {
 					try {
-						def docker_image_build = build job: '/Cortx-kubernetes/cortx-all-docker-image', wait: true,
+						def docker_image_build = build job: '/Release_Engineering/re-workspace/cortx-all-docker-image-abhijit-test', wait: true,
 							parameters: [
 								string(name: 'CORTX_RE_URL', value: "${CORTX_RE_REPO}"),
 								string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
