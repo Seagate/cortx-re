@@ -30,13 +30,12 @@ SOLUTION_CONFIG="/var/tmp/solution.yaml"
 
 function download_deploy_script(){
     if [ -z "$SCRIPT_LOCATION" ]; then echo "SCRIPT_LOCATION not provided.Exiting..."; exit 1; fi
-    if [ -z "$GITHUB_TOKEN" ]; then echo "GITHUB_TOKEN not provided.Exiting..."; exit 1; fi
     if [ -z "$CORTX_SCRIPTS_REPO" ]; then echo "CORTX_SCRIPTS_REPO not provided.Exiting..."; exit 1; fi
     if [ -z "$CORTX_SCRIPTS_BRANCH" ]; then echo "CORTX_SCRIPTS_BRANCH not provided.Exiting..."; exit 1; fi
 
     rm -rf $SCRIPT_LOCATION
     yum install git -y
-    git clone https://$GITHUB_TOKEN@github.com/$CORTX_SCRIPTS_REPO $SCRIPT_LOCATION
+    git clone https://github.com/$CORTX_SCRIPTS_REPO $SCRIPT_LOCATION
     pushd $SCRIPT_LOCATION
     git checkout $CORTX_SCRIPTS_BRANCH
     popd
@@ -234,7 +233,7 @@ fi
 
 function setup_master_node(){
 echo "---------------------------------------[ Setting up Master Node $HOSTNAME ]--------------------------------------"
-    download_deploy_script $GITHUB_TOKEN
+    download_deploy_script
     download_images
     install_yq
     
@@ -260,11 +259,28 @@ echo "---------------------------------------[ Setting up Worker Node on $HOSTNA
 }
 
 function destroy(){
-    download_deploy_script $GITHUB_TOKEN
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         chmod +x *.sh
         ./destroy-cortx-cloud.sh
     popd
+    umount -l /mnt/fs-local-volume/
+    files_to_remove=(
+        "/mnt/fs-local-volume/"
+        "/root/deploy-scripts/"
+        "/root/get_helm.sh"
+        "/root/calico*"
+        "/root/.cache"
+        "/root/.config"
+        "/root/install.postnochroot.log"
+        "/root/original-ks.cfg"
+        "/etc/pip.conf"
+    )
+    for file in ${files_to_remove[@]}; do
+        if [ -f "$file" ] || [ -d "$file" ]; then
+            echo "Removing file/folder $file"
+            rm -rf $file
+        fi
+    done
 }
 
 function print_pod_status(){
