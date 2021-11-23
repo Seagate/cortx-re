@@ -11,8 +11,6 @@ pipeline {
         buildDiscarder(logRotator(daysToKeepStr: '20', numToKeepStr: '20'))
     }
 
-    triggers { cron('31 17 * * *') }
-
     environment {
         PODS_ON_MASTER = false
         CORTX_RE_BRANCH = "kubernetes"
@@ -26,10 +24,7 @@ pipeline {
             description: 'Email Notification Recipients ',
             name: 'EMAIL_RECIPIENTS'
         )
-        text(defaultValue: '''hostname=ssc-vm-rhev4-1625.colo.seagate.com,user=root,pass=seagate1
-hostname=ssc-vm-rhev4-1619.colo.seagate.com,user=root,pass=seagate1
-hostname=ssc-vm-rhev4-1618.colo.seagate.com,user=root,pass=seagate1
-hostname=ssc-vm-rhev4-1617.colo.seagate.com,user=root,pass=seagate1''', description: 'VM details to be used for K8 cluster setup. First node will be used as Master', name: 'hosts')
+        text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used for K8 cluster setup. First node will be used as Master', name: 'hosts')
 	string(name: 'CORTX_SCRIPTS_BRANCH', defaultValue: 'v0.0.14', description: 'Release for cortx-k8s scripts (Services Team)', trim: true)
 	string(name: 'CORTX_SCRIPTS_REPO', defaultValue: 'Seagate/cortx-k8s', description: 'Repository for cortx-k8s scripts (Services Team)', trim: true)
     }
@@ -79,7 +74,7 @@ hostname=ssc-vm-rhev4-1617.colo.seagate.com,user=root,pass=seagate1''', descript
 				script { build_stage = env.STAGE_NAME }
 				script {
 					try {
-						def docker_image_build = build job: '/Release_Engineering/re-workspace/cortx-all-docker-image-abhijit-test', wait: true,
+						def docker_image_build = build job: '/Cortx-kubernetes/cortx-all-docker-image', wait: true,
 							parameters: [
 								string(name: 'CORTX_RE_URL', value: "${CORTX_RE_REPO}"),
 								string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
