@@ -54,6 +54,7 @@ RUN yum install --nogpgcheck -y python3-pip \
    && yum clean all && rm -rf /var/cache/yum
 
 RUN yum install --nogpgcheck -y  $(sed 's/#.*//g' /opt/seagate/cortx/*-rpms.txt) \
+    && yum install --nogpgcheck --downloadonly --downloaddir=/opt/seagate/cortx/debug-packages cortx-s3server-debuginfo cortx-hare-debuginfo cortx-motr-debuginfo \
     && yum clean all && rm -rf /var/cache/yum
     
 RUN rm -f /etc/machine-id && ln -s /etc/cortx/solution/node/id /etc/machine-id \
