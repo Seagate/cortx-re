@@ -57,7 +57,7 @@ pipeline {
 				steps {
 					script { build_stage = env.STAGE_NAME }
 					script {
-						def setupKubeCluster = build job: '/Cortx-kubernetes/setup-kubernetes-cluster', wait: true,
+						build job: '/Cortx-kubernetes/setup-kubernetes-cluster', wait: true,
 						parameters: [
 							string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
 							string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
@@ -74,7 +74,7 @@ pipeline {
 			script { build_stage = env.STAGE_NAME }
 			script {
 				try {
-					def dockerImageBuild = build job: '/Cortx-kubernetes/cortx-all-docker-image', wait: true,
+					build job: '/Release_Engineering/re-workspace/cortx-all-docker-image-abhijit-test', wait: true,
 					parameters: [
 						string(name: 'CORTX_RE_URL', value: "${CORTX_RE_REPO}"),
 						string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
@@ -93,7 +93,7 @@ pipeline {
 			script { build_stage = env.STAGE_NAME }
 			script {
 				CORTX_IMAGE="ghcr.io/seagate/cortx-all:2.0.0-${env.custom_ci_build_id}-custom-ci"
-				def cortxClusterDeployment = build job: '/Cortx-kubernetes/setup-cortx-cluster', wait: true,
+				build job: '/Cortx-kubernetes/setup-cortx-cluster', wait: true,
 				parameters: [
 					string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
 					string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
