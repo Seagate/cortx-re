@@ -12,7 +12,6 @@ pipeline {
     }
 
     environment {
-        PODS_ON_MASTER = false
         CORTX_RE_BRANCH = "kubernetes"
         CORTX_RE_REPO = "https://github.com/Seagate/cortx-re/"
     }	
@@ -29,9 +28,9 @@ pipeline {
 	string(name: 'CORTX_SCRIPTS_REPO', defaultValue: 'Seagate/cortx-k8s', description: 'Repository for cortx-k8s scripts (Services Team)', trim: true)
     }
     stages {
-	stage ("Trigger build creation and k8s cluster setup jobs") {
+	stage ("Build creation and k8s cluster setup jobs") {
 		parallel {
-			stage ("Trigger custom-ci") {
+			stage ("trigger custom-ci") {
 				steps {
 					script { build_stage = env.STAGE_NAME }
 					script {
@@ -53,28 +52,27 @@ pipeline {
 					}
 				}
 			}
-			stage ("Setup kubernetes-cluster") {
+			stage ("setup-kubernetes-cluster") {
 				steps {
 					script { build_stage = env.STAGE_NAME }
 					script {
-						build job: '/Cortx-kubernetes/setup-kubernetes-cluster', wait: true,
+						build job: '/Cortx-kubernetes/destroy-cluster', wait: true,
 						parameters: [
 							string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
 							string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
 							text(name: 'hosts', value: "${hosts}"),
-							booleanParam(name: 'PODS_ON_MASTER', value: "${PODS_ON_MASTER}"),
 						]
 					}
 				}
 			}
 		}
         }
-	stage ("Build cortx-all docker image") {
+	stage ("build-cortx-all-docker-image") {
 		steps {
 			script { build_stage = env.STAGE_NAME }
 			script {
 				try {
-					build job: '/Release_Engineering/re-workspace/cortx-all-docker-image-abhijit-test', wait: true,
+					build job: '/Cortx-kubernetes/cortx-all-docker-image', wait: true,
 					parameters: [
 						string(name: 'CORTX_RE_URL', value: "${CORTX_RE_REPO}"),
 						string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
@@ -88,7 +86,7 @@ pipeline {
 			}
 		}
 	}
-	stage ("Setup kubernetes-cluster") {
+	stage ("setup-cortx-cluster") {
 		steps {
 			script { build_stage = env.STAGE_NAME }
 			script {
