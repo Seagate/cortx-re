@@ -25,7 +25,7 @@ SSH_KEY_FILE=/root/.ssh/id_rsa
 
 function usage(){
     cat << HEREDOC
-Usage : $0 [--third-party, --cortx-cluster, destroy-cluster]
+Usage : $0 [--third-party, --cortx-cluster, --destroy-cluster]
 where,
     --third-party - Deploy third-party components
     --cortx-cluster - Deploy Third-Party and CORTX components
@@ -33,12 +33,13 @@ where,
 HEREDOC
 }
 
-    if [ -z "$GITHUB_TOKEN" ]; then echo "GITHUB_TOKEN not provided.Exiting..."; exit 1; fi
+function check_params {
     if [ -z "$CORTX_SCRIPTS_REPO" ]; then echo "CORTX_SCRIPTS_REPO not provided.Exiting..."; exit 1; fi
     if [ -z "$CORTX_SCRIPTS_BRANCH" ]; then echo "CORTX_SCRIPTS_BRANCH not provided.Exiting..."; exit 1; fi
     if [ -z "$CORTX_IMAGE" ]; then echo "CORTX_IMAGE not provided.Exiting..."; exit 1; fi
     if [ -z "$SOLUTION_CONFIG_TYPE" ]; then echo "SOLUTION_CONFIG_TYPE not provided.Exiting..."; exit 1; fi
-    
+}
+
 function setup_cluster {
 	
    echo  "Using $SOLUTION_CONFIG_TYPE type for generating solution.yaml"
@@ -67,13 +68,13 @@ function setup_cluster {
 
     for worker_node in $WORKER_NODES
 	do
-	ssh -o 'StrictHostKeyChecking=no' "$worker_node" "export GITHUB_TOKEN=$GITHUB_TOKEN && export CORTX_SCRIPTS_REPO=$CORTX_SCRIPTS_REPO && export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH && /var/tmp/cortx-deploy-functions.sh --setup-worker"
+	ssh -o 'StrictHostKeyChecking=no' "$worker_node" "export CORTX_SCRIPTS_REPO=$CORTX_SCRIPTS_REPO && export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH && /var/tmp/cortx-deploy-functions.sh --setup-worker"
 	done
 
 
     for master_node in $MASTER_NODE
 	    do
-    	ssh -o 'StrictHostKeyChecking=no' "$master_node" "export SOLUTION_CONFIG_TYPE=$SOLUTION_CONFIG_TYPE && export CORTX_IMAGE=$CORTX_IMAGE && export GITHUB_TOKEN=$GITHUB_TOKEN && export CORTX_SCRIPTS_REPO=$CORTX_SCRIPTS_REPO && export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH && /var/tmp/cortx-deploy-functions.sh --setup-master"
+    	ssh -o 'StrictHostKeyChecking=no' "$master_node" "export SOLUTION_CONFIG_TYPE=$SOLUTION_CONFIG_TYPE && export CORTX_IMAGE=$CORTX_IMAGE && export CORTX_SCRIPTS_REPO=$CORTX_SCRIPTS_REPO && export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH && /var/tmp/cortx-deploy-functions.sh --setup-master"
         done
 
     for master_node in $MASTER_NODE
@@ -87,15 +88,13 @@ function setup_cluster {
 
 
 function destroy-cluster(){
-
-        validation
-        generate_rsa_key
-        nodes_setup
-	
-	echo "---------------------------------------[ Destroying cluster ]----------------------------------------------"
+    validation
+    generate_rsa_key
+    nodes_setup
 	MASTER_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+	echo "---------------------------------------[ Destroying cluster from $MASTER_NODE ]----------------------------------------------"
         scp -q cortx-deploy-functions.sh functions.sh "$MASTER_NODE":/var/tmp/
-        ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" "export CORTX_SCRIPTS_REPO=$CORTX_SCRIPTS_REPO && export GITHUB_TOKEN=$GITHUB_TOKEN && export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH && /var/tmp/cortx-deploy-functions.sh --destroy"	
+        ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" "/var/tmp/cortx-deploy-functions.sh --destroy"	
         ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" '/var/tmp/cortx-deploy-functions.sh --status' | tee /var/tmp/cortx-cluster-status.txt
 }
 
@@ -110,13 +109,15 @@ fi
 
 case $ACTION in
     --third-party)
+        check_params
         setup_cluster third-party        
     ;;
     --cortx-cluster)
-       setup_cluster cortx-cluster
+        check_params
+        setup_cluster cortx-cluster
     ;;
     --destroy-cluster)
-       destroy-cluster
+        destroy-cluster
     ;;
     *)
         echo "ERROR : Please provide valid option"
