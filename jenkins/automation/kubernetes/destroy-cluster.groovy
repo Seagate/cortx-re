@@ -8,7 +8,6 @@ pipeline {
     options {
         timeout(time: 120, unit: 'MINUTES')
         timestamps()
-        disableConcurrentBuilds()
         buildDiscarder(logRotator(daysToKeepStr: '30', numToKeepStr: '30'))
         ansiColor('xterm')
     }
@@ -43,9 +42,6 @@ pipeline {
                     pushd solutions/kubernetes/
                         echo $hosts | tr ' ' '\n' > hosts
                         cat hosts
-                        export GITHUB_TOKEN=${GITHUB_CRED}
-                        export CORTX_SCRIPTS_BRANCH=${CORTX_SCRIPTS_BRANCH}
-                        export CORTX_SCRIPTS_REPO=${CORTX_SCRIPTS_REPO}
                         ./cortx-deploy.sh --destroy-cluster
                     popd
                 '''
