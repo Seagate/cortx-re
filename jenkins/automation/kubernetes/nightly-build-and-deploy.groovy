@@ -35,7 +35,7 @@ pipeline {
 				steps {
 					script { build_stage = env.STAGE_NAME }
 					script {
-						def custom_ci = build job: '/GitHub-custom-ci-builds/centos-7.9/nightly-k8-custom-ci', wait: true,
+						def customCI = build job: '/GitHub-custom-ci-builds/centos-7.9/nightly-k8-custom-ci', wait: true,
 						parameters: [
 							string(name: 'CSM_AGENT_BRANCH', value: "${COMPONENT_BRANCH}"),
 							string(name: 'CSM_WEB_BRANCH', value: "${COMPONENT_BRANCH}"),
@@ -49,7 +49,7 @@ pipeline {
 							string(name: 'CORTX_RE_BRANCH', value: "${COMPONENT_BRANCH}"),
 							string(name: 'THIRD_PARTY_RPM_VERSION', value: "cortx-2.0-k8"),
 						]
-						env.custom_ci_build_id = custom_ci.rawBuild.id
+						env.custom_ci_build_id = customCI.rawBuild.id
 					}
 				}
 			}
@@ -57,7 +57,7 @@ pipeline {
 				steps {
 					script { build_stage = env.STAGE_NAME }
 					script {
-						def setup_kube_cluster = build job: '/Cortx-kubernetes/setup-kubernetes-cluster', wait: true,
+						def setupKubeCluster = build job: '/Cortx-kubernetes/setup-kubernetes-cluster', wait: true,
 						parameters: [
 							string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
 							string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
@@ -74,7 +74,7 @@ pipeline {
 			script { build_stage = env.STAGE_NAME }
 			script {
 				try {
-					def docker_image_build = build job: '/Cortx-kubernetes/cortx-all-docker-image', wait: true,
+					def dockerImageBuild = build job: '/Cortx-kubernetes/cortx-all-docker-image', wait: true,
 					parameters: [
 						string(name: 'CORTX_RE_URL', value: "${CORTX_RE_REPO}"),
 						string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
@@ -93,7 +93,7 @@ pipeline {
 			script { build_stage = env.STAGE_NAME }
 			script {
 				CORTX_IMAGE="ghcr.io/seagate/cortx-all:2.0.0-${env.custom_ci_build_id}-custom-ci"
-				def cortx_cluster_deployment = build job: '/Cortx-kubernetes/setup-cortx-cluster', wait: true,
+				def cortxClusterDeployment = build job: '/Cortx-kubernetes/setup-cortx-cluster', wait: true,
 				parameters: [
 					string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
 					string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
