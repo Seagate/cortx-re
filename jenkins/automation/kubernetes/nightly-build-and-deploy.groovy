@@ -52,7 +52,7 @@ pipeline {
 					}
 				}
 			}
-			stage ("setup-kubernetes-cluster") {
+			stage ("destroy-cluster") {
 				steps {
 					script { build_stage = env.STAGE_NAME }
 					script {
