@@ -19,7 +19,7 @@ pipeline {
 
     parameters {
         string(name: 'COMPONENT_BRANCH', defaultValue: 'kubernetes', description: 'Component Branch.')
-		choice (
+	choice (
             choices: ['DEVOPS'],
             description: 'Email Notification Recipients ',
             name: 'EMAIL_RECIPIENTS'
@@ -29,81 +29,81 @@ pipeline {
 	string(name: 'CORTX_SCRIPTS_REPO', defaultValue: 'Seagate/cortx-k8s', description: 'Repository for cortx-k8s scripts (Services Team)', trim: true)
     }
     stages {
-		stage ("Trigger build creation and k8s cluster setup jobs") {
-			parallel {
-				stage ("Trigger custom-ci") {
-					steps {
-						script { build_stage = env.STAGE_NAME }
-						script {
-							def custom_ci = build job: '/GitHub-custom-ci-builds/centos-7.9/nightly-k8-custom-ci', wait: true,
-								parameters: [
-									string(name: 'CSM_AGENT_BRANCH', value: "${COMPONENT_BRANCH}"),
-									string(name: 'CSM_WEB_BRANCH', value: "${COMPONENT_BRANCH}"),
-									string(name: 'HARE_BRANCH', value: "${COMPONENT_BRANCH}"),
-									string(name: 'HA_BRANCH', value: "${COMPONENT_BRANCH}"),
-									string(name: 'MOTR_BRANCH', value: "${COMPONENT_BRANCH}"),
-									string(name: 'PRVSNR_BRANCH', value: "${COMPONENT_BRANCH}"),
-									string(name: 'S3_BRANCH', value: "${COMPONENT_BRANCH}"),
-									string(name: 'SSPL_BRANCH', value: "${COMPONENT_BRANCH}"),
-									string(name: 'CORTX_UTILS_BRANCH', value: "${COMPONENT_BRANCH}"),
-									string(name: 'CORTX_RE_BRANCH', value: "${COMPONENT_BRANCH}"),
-									string(name: 'THIRD_PARTY_RPM_VERSION', value: "cortx-2.0-k8"),
-								]
-								env.custom_ci_build_id = custom_ci.rawBuild.id
-						}
-					}
-				}
-				stage ("Setup kubernetes-cluster") {
-					steps {
-						script { build_stage = env.STAGE_NAME }
-						script {
-							def custom_ci = build job: '/Cortx-kubernetes/setup-kubernetes-cluster', wait: true,
-								parameters: [
-									string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
-									string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
-									text(name: 'hosts', value: "${hosts}"),
-									booleanParam(name: 'PODS_ON_MASTER', value: "${PODS_ON_MASTER}"),
-								]
-						}
+	stage ("Trigger build creation and k8s cluster setup jobs") {
+		parallel {
+			stage ("Trigger custom-ci") {
+				steps {
+					script { build_stage = env.STAGE_NAME }
+					script {
+						def custom_ci = build job: '/GitHub-custom-ci-builds/centos-7.9/nightly-k8-custom-ci', wait: true,
+						parameters: [
+							string(name: 'CSM_AGENT_BRANCH', value: "${COMPONENT_BRANCH}"),
+							string(name: 'CSM_WEB_BRANCH', value: "${COMPONENT_BRANCH}"),
+							string(name: 'HARE_BRANCH', value: "${COMPONENT_BRANCH}"),
+							string(name: 'HA_BRANCH', value: "${COMPONENT_BRANCH}"),
+							string(name: 'MOTR_BRANCH', value: "${COMPONENT_BRANCH}"),
+							string(name: 'PRVSNR_BRANCH', value: "${COMPONENT_BRANCH}"),
+							string(name: 'S3_BRANCH', value: "${COMPONENT_BRANCH}"),
+							string(name: 'SSPL_BRANCH', value: "${COMPONENT_BRANCH}"),
+							string(name: 'CORTX_UTILS_BRANCH', value: "${COMPONENT_BRANCH}"),
+							string(name: 'CORTX_RE_BRANCH', value: "${COMPONENT_BRANCH}"),
+							string(name: 'THIRD_PARTY_RPM_VERSION', value: "cortx-2.0-k8"),
+						]
+						env.custom_ci_build_id = custom_ci.rawBuild.id
 					}
 				}
 			}
-        }
-		stage ("Build cortx-all docker image") {
-			steps {
-				script { build_stage = env.STAGE_NAME }
-				script {
-					try {
-						def docker_image_build = build job: '/Cortx-kubernetes/cortx-all-docker-image', wait: true,
-							parameters: [
-								string(name: 'CORTX_RE_URL', value: "${CORTX_RE_REPO}"),
-								string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
-								string(name: 'BUILD', value: "kubernetes-build-${env.custom_ci_build_id}"),
-								string(name: 'EMAIL_RECIPIENTS', value: "${EMAIL_RECIPIENTS}"),
-							]
-					} catch (err) {
-						build_stage = env.STAGE_NAME
-						error "Failed to Build Docker Image"
-					}
-				}
-			}
-		}
-		stage ("Setup kubernetes-cluster") {
-			steps {
-				script { build_stage = env.STAGE_NAME }
-				script {
-					CORTX_IMAGE="ghcr.io/seagate/cortx-all:2.0.0-${env.custom_ci_build_id}-custom-ci"
-					def custom_ci = build job: '/Cortx-kubernetes/setup-cortx-cluster', wait: true,
+			stage ("Setup kubernetes-cluster") {
+				steps {
+					script { build_stage = env.STAGE_NAME }
+					script {
+						def setup_kube_cluster = build job: '/Cortx-kubernetes/setup-kubernetes-cluster', wait: true,
 						parameters: [
 							string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
 							string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
-							string(name: 'CORTX_IMAGE', value: "${CORTX_IMAGE}"),
 							text(name: 'hosts', value: "${hosts}"),
-							string(name: 'CORTX_SCRIPTS_BRANCH', value: "${CORTX_SCRIPTS_BRANCH}"),
-							string(name: 'CORTX_SCRIPTS_REPO', value: "${CORTX_SCRIPTS_REPO}"),
+							booleanParam(name: 'PODS_ON_MASTER', value: "${PODS_ON_MASTER}"),
 						]
+					}
 				}
 			}
 		}
-    }
+        }
+	stage ("Build cortx-all docker image") {
+		steps {
+			script { build_stage = env.STAGE_NAME }
+			script {
+				try {
+					def docker_image_build = build job: '/Cortx-kubernetes/cortx-all-docker-image', wait: true,
+					parameters: [
+						string(name: 'CORTX_RE_URL', value: "${CORTX_RE_REPO}"),
+						string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
+						string(name: 'BUILD', value: "kubernetes-build-${env.custom_ci_build_id}"),
+						string(name: 'EMAIL_RECIPIENTS', value: "${EMAIL_RECIPIENTS}"),
+					]
+				} catch (err) {
+					build_stage = env.STAGE_NAME
+					error "Failed to Build Docker Image"
+				}
+			}
+		}
+	}
+	stage ("Setup kubernetes-cluster") {
+		steps {
+			script { build_stage = env.STAGE_NAME }
+			script {
+				CORTX_IMAGE="ghcr.io/seagate/cortx-all:2.0.0-${env.custom_ci_build_id}-custom-ci"
+				def cortx_cluster_deployment = build job: '/Cortx-kubernetes/setup-cortx-cluster', wait: true,
+				parameters: [
+					string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
+					string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
+					string(name: 'CORTX_IMAGE', value: "${CORTX_IMAGE}"),
+					text(name: 'hosts', value: "${hosts}"),
+					string(name: 'CORTX_SCRIPTS_BRANCH', value: "${CORTX_SCRIPTS_BRANCH}"),
+					string(name: 'CORTX_SCRIPTS_REPO', value: "${CORTX_SCRIPTS_REPO}"),
+				]
+			}
+		}
+	}
+}
 }
