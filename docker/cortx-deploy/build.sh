@@ -91,7 +91,6 @@ else
         echo "Docker Image push skipped"
         exit 0
 fi
-popd
 
 if [ "$TAG_LATEST" == "yes" ];then
         echo "Tagging generated image as latest"
