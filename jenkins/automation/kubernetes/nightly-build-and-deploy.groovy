@@ -10,12 +10,15 @@ pipeline {
         timestamps()
         buildDiscarder(logRotator(daysToKeepStr: '20', numToKeepStr: '20'))
     }
-    triggers { cron('35 14 * * *') }
+
+    triggers { cron('31 17 * * *') }
+
     environment {
         PODS_ON_MASTER = false
         CORTX_RE_BRANCH = "kubernetes"
         CORTX_RE_REPO = "https://github.com/Seagate/cortx-re/"
     }	
+
     parameters {
         string(name: 'COMPONENT_BRANCH', defaultValue: 'kubernetes', description: 'Component Branch.')
 		choice (
