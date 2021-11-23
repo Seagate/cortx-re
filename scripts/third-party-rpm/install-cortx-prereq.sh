@@ -23,7 +23,7 @@ echo "BUILD URL:"  "$BUILD_URL"
 #Setup repositories and install packages
 yum install yum-utils -y
 
-yum-config-manager --add-repo="$BUILD_URL"/3rd_party/
+#yum-config-manager --add-repo="$BUILD_URL"/3rd_party/
 yum-config-manager --add-repo="$BUILD_URL"/cortx_iso/
 
 yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
