@@ -63,12 +63,13 @@ pipeline {
 			description: 'Third Party Python Version to use.'
 		)
 
+
 		choice(
 			name: 'ISO_GENERATION',
 			choices: ['no', 'yes'],
 			description: 'Need ISO files'
 		)
-	
+
 	}
 
 	stages {
