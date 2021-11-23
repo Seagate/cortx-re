@@ -25,7 +25,7 @@ yum install yum-utils -y
 
 THIRD_PARTY_BUILD_URL="http://cortx-storage.colo.seagate.com/releases/cortx/github/main/centos-7.9.2009/last_successful_prod/"
 
-#yum-config-manager --add-repo="$THIRD_PARTY_BUILD_URL"/3rd_party/
+yum-config-manager --add-repo="$THIRD_PARTY_BUILD_URL"/3rd_party/
 yum-config-manager --add-repo="$BUILD_URL"/cortx_iso/
 
 yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
