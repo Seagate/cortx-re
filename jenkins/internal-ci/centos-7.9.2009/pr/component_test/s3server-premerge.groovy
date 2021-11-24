@@ -19,7 +19,7 @@ pipeline {
     parameters {  
         string(name: 'S3_URL', defaultValue: 'https://github.com/Seagate/cortx-s3server', description: 'Repo for S3Server')
         string(name: 'S3_BRANCH', defaultValue: 'main', description: 'Branch for S3Server')
-        string(name: 'MOTR_BRANCH', defaultValue: 'main', description: 'Branch for  Cortx Motr')
+        string(name: 'MOTR_BRANCH', defaultValue: 'main', description: 'Give branch for  Cortx Motr from where we want to checkout')
 	}
 
     environment {
