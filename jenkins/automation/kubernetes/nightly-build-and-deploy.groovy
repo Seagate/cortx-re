@@ -27,7 +27,7 @@ pipeline {
 	string(name: 'CORTX_SCRIPTS_REPO', defaultValue: 'Seagate/cortx-k8s', description: 'Repository for cortx-k8s scripts (Services Team)', trim: true)
     }
     stages {
-	stage ("Build creation and k8s cluster setup jobs") {
+	stage ("cortx all build creation and destroy cortx old cluster") {
 		parallel {
 			stage ("trigger custom-ci") {
 				steps {
