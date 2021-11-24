@@ -71,7 +71,6 @@ pipeline {
 			script { build_stage = env.STAGE_NAME }
 			script {
 				try {
-					env.custom_ci_build_id = "450"
 					def buildCortxDockerImages = build job: '/Cortx-kubernetes/cortx-all-docker-image', wait: true,
 					parameters: [
 						string(name: 'CORTX_RE_URL', value: "${CORTX_RE_REPO}"),
