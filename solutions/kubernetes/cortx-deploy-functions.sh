@@ -190,12 +190,42 @@ function openldap_requiremenrs(){
 }
 
 function download_images(){
-    rm -rf /var/images
-    mkdir -p /var/images && pushd /var/images
-        wget -q -r -np -nH --cut-dirs=3 -A *.tar http://cortx-storage.colo.seagate.com/releases/cortx/images/
-        for file in $(ls -1); do docker load -i $file; done
-    popd
-    
+image_counter=0
+image_ids=(
+   6c1ae46a77ec
+   5dc2493b82da
+   6c1aa9572673
+   bfb59b8dbf5a
+   eeb6ee3f44bd
+   16ea53ea7c65
+   142addf2dfb9
+   933989e1174c
+   747e0258fcf2
+   8652b9f0cb4c
+   b2919ab8d731
+   )
+
+printf "%s\n" ${image_ids[@]} > /var/tmp/image_ids
+docker images -q  | grep -wFf /var/tmp/image_ids > /var/tmp/host_image_ids
+readarray -t host_image_ids < /var/tmp/host_image_ids
+
+for i in "${image_ids[@]}"; do
+   for j in "${host_image_ids[@]}"; do
+      if [ "$i" == "$j" ]; then
+         echo "Container image $j is already present on $HOSTNAME."
+         ((image_counter++))
+      fi
+   done
+done
+
+if [ "$image_counter" -ne 11 ]; then
+   echo "Container images are not present on $HOSTNAME. Downloading images:"
+   rm -rf /var/images
+   mkdir -p /var/images && pushd /var/images
+       wget -q -r -np -nH --cut-dirs=3 -A *.tar http://cortx-storage.colo.seagate.com/releases/cortx/images/
+       for file in $(ls -1); do docker load -i $file; done
+   popd
+fi
 }
 
 function execute_prereq(){

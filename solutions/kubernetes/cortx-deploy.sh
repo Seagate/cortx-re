@@ -40,6 +40,16 @@ function check_params {
     if [ -z "$SOLUTION_CONFIG_TYPE" ]; then echo "SOLUTION_CONFIG_TYPE not provided.Exiting..."; exit 1; fi
 }
 
+function pdsh_exec {
+    # commands to run in paralle on pdsh hosts (workers nodes).
+    commands=(
+       "export CORTX_SCRIPTS_REPO=$CORTX_SCRIPTS_REPO && export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH && /var/tmp/cortx-deploy-functions.sh --setup-worker"
+    )
+    for cmnds in "${commands[@]}"; do
+       pdsh -w ^$1 $cmnds
+    done
+}
+
 function setup_cluster {
 	
    echo  "Using $SOLUTION_CONFIG_TYPE type for generating solution.yaml"
@@ -61,16 +71,16 @@ function setup_cluster {
     echo "MASTER NODE:" $MASTER_NODE
     echo "WORKER NODE:" $WORKER_NODES
 
+    # pdsh hosts to run parallel implementations.
+    echo $WORKER_NODES > /var/tmp/pdsh-hosts
+
     for node in $ALL_NODES
 	do 
 	    scp -q cortx-deploy-functions.sh functions.sh $SOLUTION_CONFIG "$node":/var/tmp/
 	done
 
-    for worker_node in $WORKER_NODES
-	do
-	ssh -o 'StrictHostKeyChecking=no' "$worker_node" "export CORTX_SCRIPTS_REPO=$CORTX_SCRIPTS_REPO && export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH && /var/tmp/cortx-deploy-functions.sh --setup-worker"
-	done
-
+    # Setup all worker nodes in parallel.
+    pdsh_exec /var/tmp/pdsh-hosts
 
     for master_node in $MASTER_NODE
 	    do
