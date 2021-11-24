@@ -28,7 +28,6 @@ pipeline {
 	string(name: 'CORTX_SCRIPTS_REPO', defaultValue: 'Seagate/cortx-k8s', description: 'Repository for cortx-k8s scripts (Services Team)', trim: true)
     }
     stages {
-/*
 	stage ("Build creation and k8s cluster setup jobs") {
 		parallel {
 			stage ("trigger custom-ci") {
@@ -68,12 +67,10 @@ pipeline {
 			}
 		}
         }
-*/
 	stage ("build-cortx-all-docker-image") {
 		steps {
 			script { build_stage = env.STAGE_NAME }
 			script {
-				env.custom_ci_build_id = "443"
 				try {
 					def buildCortxDockerImages = build job: '/Release_Engineering/re-workspace/cortx-all-docker-image-abhijit-test', wait: true,
 					parameters: [
@@ -94,14 +91,11 @@ pipeline {
 		steps {
 			script { build_stage = env.STAGE_NAME }
 			script {
-				echo "${env.dockerimage_id}"
-				exit 1
-				CORTX_IMAGE="ghcr.io/seagate/cortx-all:2.0.0-${env.custom_ci_build_id}-custom-ci"
 				build job: '/Cortx-kubernetes/setup-cortx-cluster', wait: true,
 				parameters: [
 					string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
 					string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
-					string(name: 'CORTX_IMAGE', value: "${CORTX_IMAGE}"),
+					string(name: 'CORTX_IMAGE', value: "${env.dockerimage_id}"),
 					text(name: 'hosts', value: "${hosts}"),
 					string(name: 'CORTX_SCRIPTS_BRANCH', value: "${CORTX_SCRIPTS_BRANCH}"),
 					string(name: 'CORTX_SCRIPTS_REPO', value: "${CORTX_SCRIPTS_REPO}"),
