@@ -58,7 +58,7 @@ pipeline {
                     sh '''git --git-dir=${WORKSPACE}/third_party/motr/.git fetch
                           git --git-dir=${WORKSPACE}/third_party/motr/.git checkout ${MOTR_BRANCH}
                           git --git-dir=${WORKSPACE}/third_party/motr/.git pull
-                          git --git-dir=${WORKSPACE}/third_party/motr/.git log -1 --oneline
+                          echo "last commit id = $(git --git-dir=${WORKSPACE}/third_party/motr/.git log -1 --oneline)"
                        '''
                 }
             }
