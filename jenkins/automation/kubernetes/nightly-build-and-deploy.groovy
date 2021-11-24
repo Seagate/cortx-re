@@ -86,7 +86,7 @@ pipeline {
 					build_stage = env.STAGE_NAME
 					error "Failed to Build Docker Image"
 				}
-			env.dockerimage_id = buildCortxDockerImages.buildVariables.image
+			env.dockerimage_id = buildCortxDockerImages.buildVariables.dockerimage
 			}
 		}
 	}
