@@ -85,7 +85,6 @@ pipeline {
                     popd
                     docker logout  
                 """
-		script { env.dockerimage = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' | head -1", returnStdout: true).trim() }
             }
         }
 	}

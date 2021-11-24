@@ -71,6 +71,7 @@ pipeline {
 			script { build_stage = env.STAGE_NAME }
 			script {
 				try {
+					env.custom_ci_build_id = "450"
 					def buildCortxDockerImages = build job: '/Cortx-kubernetes/cortx-all-docker-image', wait: true,
 					parameters: [
 						string(name: 'CORTX_RE_URL', value: "${CORTX_RE_REPO}"),
@@ -78,7 +79,7 @@ pipeline {
 						string(name: 'BUILD', value: "kubernetes-build-${env.custom_ci_build_id}"),
 						string(name: 'EMAIL_RECIPIENTS', value: "${EMAIL_RECIPIENTS}"),
 					]
-                                        env.dockerimage_id = buildCortxDockerImages.buildVariables.dockerimage
+                                        env.dockerimage_id = buildCortxDockerImages.buildVariables.image
 				} catch (err) {
 					build_stage = env.STAGE_NAME
 					error "Failed to Build Docker Image"
