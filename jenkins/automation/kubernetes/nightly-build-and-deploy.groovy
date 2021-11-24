@@ -52,11 +52,11 @@ pipeline {
 					}
 				}
 			}
-			stage ("destroy-cluster") {
+			stage ("destroy-cortx-cluster") {
 				steps {
 					script { build_stage = env.STAGE_NAME }
 					script {
-						build job: '/Cortx-kubernetes/destroy-cluster', wait: true,
+						build job: '/Cortx-kubernetes/destroy-cortx-cluster', wait: true,
 						parameters: [
 							string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
 							string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
