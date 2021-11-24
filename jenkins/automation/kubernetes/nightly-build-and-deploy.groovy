@@ -82,11 +82,11 @@ pipeline {
 						string(name: 'BUILD', value: "kubernetes-build-${env.custom_ci_build_id}"),
 						string(name: 'EMAIL_RECIPIENTS', value: "${EMAIL_RECIPIENTS}"),
 					]
+                                        env.dockerimage_id = buildCortxDockerImages.buildVariables.dockerimage
 				} catch (err) {
 					build_stage = env.STAGE_NAME
 					error "Failed to Build Docker Image"
 				}
-			env.dockerimage_id = buildCortxDockerImages.buildVariables.dockerimage
 			}
 		}
 	}
