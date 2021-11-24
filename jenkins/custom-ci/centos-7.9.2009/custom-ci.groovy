@@ -203,6 +203,7 @@ pipeline {
 						                        			string(name: 'CSM_AGENT_BRANCH', value: "${CSM_AGENT_BRANCH}"),
 												string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}")
 												string(name: 'THIRD_PARTY_RPM_VERSION', value: "${THIRD_PARTY_PYTHON_VERSION}")
+												string(name: 'THIRD_PARTY_PYTHON_VERSION', value: "${THIRD_PARTY_PYTHON_VERSION}")
 										      ]
 							} catch (err) {
 								build_stage = env.STAGE_NAME
