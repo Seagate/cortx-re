@@ -23,9 +23,7 @@ echo "BUILD URL:"  "$BUILD_URL"
 #Setup repositories and install packages
 yum install yum-utils -y
 
-THIRD_PARTY_BUILD_URL="http://cortx-storage.colo.seagate.com/releases/cortx/github/main/centos-7.9.2009/last_successful_prod/"
-
-yum-config-manager --add-repo="$THIRD_PARTY_BUILD_URL"/3rd_party/
+yum-config-manager --add-repo="$BUILD_URL"/3rd_party/
 yum-config-manager --add-repo="$BUILD_URL"/cortx_iso/
 
 yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
@@ -33,13 +31,13 @@ yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && y
 cat <<EOF >/etc/pip.conf
 [global]
 timeout: 60
-index-url: http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/$python_deps/
+index-url: $BUILD_URL/python_deps
 trusted-host: cortx-storage.colo.seagate.com
 EOF
 
 yum clean all && rm -rf /var/cache/yum
 if [ "$RPM_LOCATION" == "remote" ]; then
-    yum install java-1.8.0-openjdk-headless -y && yum install cortx-prereq --nogpgcheck -y
+    yum install java-1.8.0-openjdk-headless -y && yum install cortx-prereq -y
 else
     yum install java-1.8.0-openjdk-headless -y && yum install /root/rpmbuild/RPMS/x86_64/*.rpm -y
 fi
