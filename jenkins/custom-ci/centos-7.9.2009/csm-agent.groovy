@@ -56,9 +56,7 @@ pipeline {
 				script { build_stage = env.STAGE_NAME }
 
 				sh label: 'Install cortx-prereq package', script: """
-					export python_deps=$python_deps
 					pip3 uninstall pip -y && yum reinstall python3-pip -y && ln -s /usr/bin/pip3 /usr/local/bin/pip3
-					sh label: 'Install cortx-prereq package', script: """
                                         yum install yum-utils -y
                                         yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/centos/$third_party_dir/
                                         yum-config-manager --add-repo=http://ssc-vm-g2-rhev4-1603.colo.seagate.com/releases/cortx/github/integration-custom-ci/$os_version/$release_tag/cortx_iso/
@@ -73,8 +71,6 @@ EOF
                                         yum install java-1.8.0-openjdk-headless -y && yum install cortx-prereq -y --nogpgcheck 
                                         rm -rf  /etc/yum.repos.d/cortx-storage.colo.seagate.com_releases_cortx_* /etc/pip.conf
                                 """
-					sh ./cortx-re/scripts/third-party-rpm/install-cortx-prereq.sh -b http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/$os_version/$release_tag/cortx_iso/
-				"""
 
 				sh label: 'Configure yum repositories', script: """
 					yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/$os_version/$release_tag/cortx_iso/
