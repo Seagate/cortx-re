@@ -15,11 +15,11 @@ pipeline {
         CORTX_RE_BRANCH = "kubernetes"
         CORTX_RE_REPO = "https://github.com/Seagate/cortx-re/"
     }	
-
+    triggers { cron('30 19 * * *') }
     parameters {
         string(name: 'COMPONENT_BRANCH', defaultValue: 'kubernetes', description: 'Component Branch.')
 	choice (
-            choices: ['DEVOPS', 'ALL'],
+            choices: ['ALL', 'DEVOPS'],
             description: 'Email Notification Recipients ',
             name: 'EMAIL_RECIPIENTS'
         )
