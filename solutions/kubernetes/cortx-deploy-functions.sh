@@ -295,12 +295,12 @@ echo "---------------------------------------[ hctl status ]--------------------
          echo "Time taken for service to start $(($SECONDS/60)) mins"
 	 exit 0
         else
-         echo "Failed to to start services withing 20mins. Exiting...."
-         exit 1 
+         echo "Waiting for services to become online. Sleeping for 1min.."
+         sleep 60
 	fi
-    sleep 60
-done
-
+    done
+        echo "Failed to to start services within 20mins. Exiting...."
+        exit 1
 }
 
 case $ACTION in
