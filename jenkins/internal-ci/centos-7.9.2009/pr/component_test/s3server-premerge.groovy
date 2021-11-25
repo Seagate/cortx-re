@@ -8,8 +8,8 @@ pipeline {
 
 	options {
 		timestamps() 
-	    timeout(time: 360, unit: 'MINUTES')
-        buildDiscarder(logRotator(daysToKeepStr: '7', numToKeepStr: '10'))
+	    timeout(time: 600, unit: 'MINUTES')
+        buildDiscarder(logRotator(daysToKeepStr: '7', numToKeepStr: '30'))
 	}
 
     triggers { 
@@ -30,6 +30,7 @@ pipeline {
         S3_GPR_REFSEPEC = "+refs/pull/${ghprbPullId}/*:refs/remotes/origin/pr/${ghprbPullId}/*"
         S3_BRANCH_REFSEPEC = "+refs/heads/*:refs/remotes/origin/*"
         S3_PR_REFSEPEC = "${ghprbPullId != null ? S3_GPR_REFSEPEC : S3_BRANCH_REFSEPEC}"
+        BUILD_TRIGGER_BY = "${currentBuild.getBuildCauses()[0].shortDescription}"
     }
  	
 	stages {	
@@ -48,6 +49,14 @@ pipeline {
                 }
             } 
 
+            stage('Checkout-motr-main') {
+                when {
+                    expression { env.BUILD_TRIGGER_BY == 'Started by timer' }
+                }
+                steps {
+                    sh '''git --git-dir=${WORKSPACE}/third_party/motr/.git checkout main'''
+                }
+            }
 
             stage ('Dev build & tests') {
                 steps {
