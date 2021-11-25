@@ -86,12 +86,11 @@ docker-compose -f ./docker-compose.yml build --force-rm --compress --build-arg G
 
 if [ "$DOCKER_PUSH" == "yes" ];then
         echo "Pushing Docker image to GitHub Container Registry"
-        docker-compose -f docker/cortx-deploy/docker-compose.yml push cortx-all
+        docker-compose -f ./docker-compose.yml push cortx-all
 else
         echo "Docker Image push skipped"
         exit 0
 fi
-popd
 
 if [ "$TAG_LATEST" == "yes" ];then
         echo "Tagging generated image as latest"
