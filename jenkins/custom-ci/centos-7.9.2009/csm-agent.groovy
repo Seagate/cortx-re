@@ -29,7 +29,7 @@ pipeline {
 		string(name: 'CSM_AGENT_BRANCH', defaultValue: 'stable', description: 'Branch for cortx-management build.')
 		string(name: 'CUSTOM_CI_BUILD_ID', defaultValue: '0', description: 'Custom CI Build Number')
 		string(name: 'THIRD_PARTY_PYTHON_VERSION', defaultValue: 'custom', description: 'Third Party Python Version to use', trim: true)
-		string(name: 'THIRD_PARTY_RPM_VERSION', defaultValue: 'centos-7.9.2009-custom', description: 'Third Party RPM Version to use', trim: true)
+		string(name: 'THIRD_PARTY_RPM_VERSION', defaultValue: 'cortx-2.0', description: 'Third Party RPM Version to use', trim: true)
 	}	
 
 
