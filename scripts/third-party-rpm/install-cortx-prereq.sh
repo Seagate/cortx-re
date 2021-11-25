@@ -44,3 +44,4 @@ fi
 
 #Cleanup
 rm -rf  /etc/yum.repos.d/cortx-storage.colo.seagate.com_releases_cortx_* /etc/pip.conf
+
