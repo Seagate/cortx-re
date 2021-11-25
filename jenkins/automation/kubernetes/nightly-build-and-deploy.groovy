@@ -26,6 +26,7 @@ pipeline {
 	string(name: 'CORTX_SCRIPTS_BRANCH', defaultValue: 'v0.0.14', description: 'Release for cortx-k8s scripts (Services Team)', trim: true)
 	string(name: 'CORTX_SCRIPTS_REPO', defaultValue: 'Seagate/cortx-k8s', description: 'Repository for cortx-k8s scripts (Services Team)', trim: true)
     }
+    // Please configure hosts parameter in Jenkins job configuration.
     stages {
 	stage ("Build Creation and Cluster Cleanup") {
 		parallel {
