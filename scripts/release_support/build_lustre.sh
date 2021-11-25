@@ -20,9 +20,11 @@
 
 set -eo pipefail
 
+yum install libtool kernel kernel-devel libyaml-devel zlib-devel mock rpm-build -y
+
 rm -rf lustre
 lustre_repo=https://github.com/Cray/lustre.git
-lustre_branch=cray-2.12-int
+lustre_branch=cray-2.12.4.3
 mock_cfg=/etc/mock/lustre/epel-7.7-x86_64.cfg
 
 case "$*" in
@@ -81,22 +83,32 @@ mdpolicy=group:primary
 best=1
 
 # repos
-[base]
-name=BaseOS
-baseurl=http://vault.centos.org/7.7.1908/os/x86_64/
-failovermethod=priority
-gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-7
-gpgcheck=0
-skip_if_unavailable=False
 
-[updates]
-name=updates
-baseurl=http://vault.centos.org/7.7.1908/updates/x86_64/
-enabled=0
-failovermethod=priority
-gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-7
+[base]
+name=CentOS-$releasever - Base
+mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=os&infra=$infra
+#baseurl=http://mirror.centos.org/centos/$releasever/os/$basearch/
 gpgcheck=0
-skip_if_unavailable=False
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+enabled = 1
+
+#released updates
+[updates]
+name=CentOS-$releasever - Updates
+mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=updates&infra=$infra
+#baseurl=http://mirror.centos.org/centos/$releasever/updates/$basearch/
+gpgcheck=0
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+enabled = 0
+
+#additional packages that may be useful
+[extras]
+name=CentOS-$releasever - Extras
+mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=extras&infra=$infra
+#baseurl=http://mirror.centos.org/centos/$releasever/extras/$basearch/
+gpgcheck=0
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+enabled = 1
 
 [epel]
 name=epel
@@ -106,14 +118,6 @@ gpgkey=file:///usr/share/distribution-gpg-keys/epel/RPM-GPG-KEY-EPEL-7
 gpgcheck=0
 skip_if_unavailable=False
 
-[extras]
-name=extras
-baseurl=http://vault.centos.org/7.7.1908/extras/x86_64/
-failovermethod=priority
-gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-7
-gpgcheck=1
-skip_if_unavailable=False
-
 [testing]
 name=epel-testing
 enabled=0
@@ -121,12 +125,19 @@ mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=testing-epel7&arch=x
 failovermethod=priority
 skip_if_unavailable=False
 
-[mlnx_ofed_4.7]
-name=Mellanox Technologies rhel7.7-$basearch mlnx_ofed 4.7
-baseurl=https://linux.mellanox.com/public/repo/mlnx_ofed/4.7-3.2.9.0/rhel7.7/x86_64/UPSTREAM_LIBS/
+[mlnx_ofed_5.1-2.5.8.0_base]
+name=Mellanox Technologies rhel7.9-$basearch mlnx_ofed 5.1-2.5.8.0 GA
+baseurl=http://linux.mellanox.com/public/repo/mlnx_ofed/5.1-2.5.8.0/rhel7.9/$basearch
 enabled=1
 gpgkey=http://www.mellanox.com/downloads/ofed/RPM-GPG-KEY-Mellanox
 gpgcheck=0
+
+#[mlnx_ofed_4.9]
+#name=Mellanox Technologies rhel7.7-$basearch mlnx_ofed 4.7
+#baseurl=https://linux.mellanox.com/public/repo/mlnx_ofed/4.9-0.1.7.0/rhel7.8/x86_64/UPSTREAM_LIBS/
+#enabled=1
+#gpgkey=http://www.mellanox.com/downloads/ofed/RPM-GPG-KEY-Mellanox
+#gpgcheck=0
 
 
 
@@ -135,6 +146,7 @@ END_MOCK_CFG
 
 log "Cloning Lustre from $lustre_repo"
 git clone --branch $lustre_branch --recursive $lustre_repo
+
 
 log 'Patching Lustre'
 cd lustre
@@ -151,46 +163,6 @@ cat > patch <<"END_PATCH"
 
 -echo $VN
 +echo $VN | sed -e 's/cray_//g' -e 's/_dirty//g'
---- a/lustre.spec.in
-+++ b/lustre.spec.in
-@@ -381,6 +381,18 @@
- clients in order to run
- %endif
-
-+%package devel
-+Summary: Lustre include headers
-+Group: Development/Kernel
-+Provides: %{lustre_name}-devel = %{version}
-+Requires: %{requires_kmod_name} = %{requires_kmod_version}
-+BuildRequires: rsync
-+Conflicts: %{lustre_name}-dkms
-+
-+%description devel
-+This package contains headers required to build ancillary kernel modules that
-+work closely with the standard lustre modules.
-+
- %if 0%{?suse_version}
- %debug_package
- %endif
-@@ -572,6 +584,18 @@
- fi
- %endif
-
-+%define lustre_src_dir %{_prefix}/src/%{lustre_name}-%{version}
-+
-+:> lustre-devel.files
-+mkdir -p $RPM_BUILD_ROOT%{lustre_src_dir}
-+cp Module.symvers config.h $RPM_BUILD_ROOT%{lustre_src_dir}
-+rsync -a libcfs/include            $RPM_BUILD_ROOT%{lustre_src_dir}/libcfs/
-+rsync -a lnet/include              $RPM_BUILD_ROOT%{lustre_src_dir}/lnet/
-+rsync -a lustre/include            $RPM_BUILD_ROOT%{lustre_src_dir}/lustre/
-+find $RPM_BUILD_ROOT -path "$RPM_BUILD_ROOT%{lustre_src_dir}/*" -fprintf lustre-devel.files '/%%P\n'
-+
-+%files devel -f lustre-devel.files
-+
- %files -f lustre.files
- %defattr(-,root,root)
- %{_sbindir}/*
 END_PATCH
 
 git apply patch
@@ -206,11 +178,11 @@ make srpm
 log 'Preparing mock environment'
 mock -r ${mock_cfg} clean
 mock -r ${mock_cfg} install \
-    kernel-3.10.0-1062.el7.x86_64 \
-    kernel-devel-3.10.0-1062.el7.x86_64 \
+    kernel-3.10.0-1160.el7.x86_64 \
+    kernel-devel-3.10.0-1160.el7.x86_64 \
     ${use_o2ib:+mlnx-ofa_kernel-devel}
 
-_KERNEL='3.10.0-1062.el7'
+_KERNEL='3.10.0-1160.el7'
 K_ARCH='x86_64'
 
 log "Building Lustre rpms ${use_o2ib:+with o2ib support}"

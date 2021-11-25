@@ -1,0 +1,48 @@
+{
+	"global_scope": "western digital,hamr",
+	"repository": [{
+			"name": "cortx-motr",
+			"local_scope": "lyve cloud"
+		},
+		{
+			"name": "cortx-posix",
+			"local_scope": "lyve cloud"
+		},
+		{
+			"name": "cortx-monitor",
+			"local_scope": "lyve cloud"
+		},
+		{
+			"name": "cortx-re",
+			"local_scope": "lyve cloud"
+		},
+		{
+			"name": "cortx-hare",
+			"local_scope": "lyve cloud"
+		},
+		{
+			"name": "cortx-prvsnr",
+			"local_scope": "lyve cloud"
+		},
+		{
+			"name": "cortx-ha",
+			"local_scope": "lyve cloud"
+		},
+		{
+			"name": "cortx-management-portal",
+			"local_scope": "lyve cloud"
+		},
+		{
+			"name": "cortx-manager",
+			"local_scope": "lyve cloud"
+		},
+		{
+			"name": "cortx-s3server",
+			"local_scope": "lyve cloud"
+		},
+		{
+			"name": "cortx-utils",
+			"local_scope": "lyve cloud"
+		}
+	]
+}
