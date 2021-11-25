@@ -85,7 +85,9 @@ function cleanup_node(){
 
     # Cleanup kubeadm stuff
     if [ -f /usr/bin/kubeadm ]; then
-        echo "Cleaning up existing kubelet configuration"
+        echo "Cleaning up existing kubeadm configuration"
+        # unmount /var/lib/kubelet is having problem while running `kubeadm reset` in k8s v1.19. It is fixed in 1.20
+        # Ref link - https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm/#kubeadm-reset-unmounts-var-lib-kubelet
         kubeadm reset -f
     fi
 
@@ -95,6 +97,7 @@ function cleanup_node(){
         "containerd"
         "kubernetes-cni"
         "kubeadm"
+        "kubectl"
     )
     files_to_remove=(
         "/etc/docker/daemon.json"
@@ -164,7 +167,10 @@ function install_prerequisites(){
         # stop and disable firewalld
         (systemctl stop firewalld && systemctl disable firewalld && sudo systemctl mask --now firewalld) || throw $Exception
         # install python packages
-        (yum install python3-pip && pip3 install jq yq) || throw $Exception
+        (yum install python3-pip -y && pip3 install jq yq) || throw $Exception
+
+        # install yum-utils and wget
+        yum install yum-utils wget -y || throw $Exception
 
         # set yum repositories for k8 and docker-ce
         rm -rf /etc/yum.repos.d/download.docker.com_linux_centos_7_x86_64_stable_.repo /etc/yum.repos.d/packages.cloud.google.com_yum_repos_kubernetes-el7-x86_64.repo
@@ -246,13 +252,14 @@ function setup_master_node(){
 
         # Apply calcio plugin 	
         if [ "$CALICO_PLUGIN_VERSION" == "latest" ]; then
-            kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml || throw $Exception
+            curl https://docs.projectcalico.org/manifests/calico.yaml -o calico-$CALICO_PLUGIN_VERSION.yaml || throw $Exception
         else
-        CALICO_PLUGIN_MAJOR_VERSION=$(echo $CALICO_PLUGIN_VERSION | awk -F[.] '{print $1"."$2}')
-            curl https://docs.projectcalico.org/archive/$CALICO_PLUGIN_MAJOR_VERSION/manifests/calico.yaml -o calico-$CALICO_PLUGIN_VERSION.yaml || throw $Exception
-            kubectl apply -f calico-$CALICO_PLUGIN_VERSION.yaml || throw $Exception
+            CALICO_PLUGIN_MAJOR_VERSION=$(echo $CALICO_PLUGIN_VERSION | awk -F[.] '{print $1"."$2}')
+            curl https://docs.projectcalico.org/archive/$CALICO_PLUGIN_MAJOR_VERSION/manifests/calico.yaml -o calico-$CALICO_PLUGIN_VERSION.yaml || throw $Exception    
         fi
-        
+        # Setup IP_AUTODETECTION_METHOD for determining calico network.
+        # sed -i '/# Auto-detect the BGP IP address./i \            - name: IP_AUTODETECTION_METHOD\n              value: "interface=eth-0"' calico-$CALICO_PLUGIN_VERSION.yaml
+        kubectl apply -f calico-$CALICO_PLUGIN_VERSION.yaml || throw $Exception
         # Setup storage-class
         kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml || throw $Exception
         kubectl patch storageclass local-path -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}' || throw $ConfigException

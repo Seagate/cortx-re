@@ -13,13 +13,16 @@ pipeline {
         release_dir = "/mnt/bigstorage/releases/cortx"
         release_tag = "custom-build-$CUSTOM_CI_BUILD_ID"
         build_upload_dir = "$release_dir/github/integration-custom-ci/$os_version/$release_tag/cortx_iso"
-
+	python_deps = "${THIRD_PARTY_PYTHON_VERSION == 'cortx-2.0' ? "python-packages-2.0.0-latest" : THIRD_PARTY_PYTHON_VERSION == 'custom' ?  "python-packages-2.0.0-custom" : "python-packages-2.0.0-stable"}"
     }
     
     parameters {
         string(name: 'HA_URL', defaultValue: 'https://github.com/Seagate/cortx-ha', description: 'Repository URL to be used for cortx-ha build.')
         string(name: 'HA_BRANCH', defaultValue: 'stable', description: 'Branch to be used for cortx-ha build.')
         string(name: 'CUSTOM_CI_BUILD_ID', defaultValue: '0', description: 'Custom CI Build Number')
+	string(name: 'CORTX_UTILS_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX Utils', trim: true)
+	string(name: 'CORTX_UTILS_URL', defaultValue: 'https://github.com/Seagate/cortx-utils', description: 'CORTX Utils Repository URL', trim: true)
+	string(name: 'THIRD_PARTY_PYTHON_VERSION', defaultValue: 'custom', description: 'Third Party Python Version to use', trim: true)
     }
     
     
@@ -50,16 +53,17 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: '', script: '''
+		CORTX_UTILS_REPO_OWNER=$(echo $CORTX_UTILS_URL | cut -d "/" -f4)
                 echo "VERSION: $version"
                 yum erase python36-PyYAML -y
                 cat <<EOF >>/etc/pip.conf
 [global]
 timeout: 60
-index-url: http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/python-packages-2.0.0-latest/
+index-url: http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/$python_deps/
 trusted-host: cortx-storage.colo.seagate.com
 EOF
-                pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/kubernetes/py-utils/python_requirements.txt
-                pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/kubernetes/py-utils/python_requirements.ext.txt
+                pip3 install -r https://raw.githubusercontent.com/$CORTX_UTILS_REPO_OWNER/cortx-utils/$CORTX_UTILS_BRANCH/py-utils/python_requirements.txt
+                pip3 install -r https://raw.githubusercontent.com/$CORTX_UTILS_REPO_OWNER/cortx-utils/$CORTX_UTILS_BRANCH/py-utils/python_requirements.ext.txt
                 rm -rf /etc/pip.conf
             '''        
             }
@@ -116,6 +120,6 @@ EOF
                     cp $WORKSPACE/cortx-ha/dist/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir
                 '''
             }
-        }
+        } 
     }
 }
