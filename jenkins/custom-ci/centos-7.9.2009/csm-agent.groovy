@@ -65,7 +65,7 @@ pipeline {
                                         cat <<EOF >>/etc/pip.conf
 [global]
 timeout: 60
-index-url: http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/$python_deps/
+index-url: http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/$python_deps
 trusted-host: cortx-storage.colo.seagate.com
 EOF
                                         yum install java-1.8.0-openjdk-headless -y && yum install cortx-prereq -y --nogpgcheck 
