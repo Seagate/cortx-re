@@ -287,7 +287,20 @@ function print_pod_status(){
 echo "---------------------------------------[ POD Status ]--------------------------------------"
     kubectl get pods -o wide
 echo "---------------------------------------[ hctl status ]--------------------------------------"
-    kubectl exec -it $(kubectl get pods | awk '/cortx-data-pod/{print $1; exit}') -c cortx-motr-hax -- hctl status
+    SECONDS=0
+    date
+    while [[ SECONDS -lt 1200 ]] ; do
+	if ! kubectl exec -it $(kubectl get pods | awk '/cortx-data-pod/{print $1; exit}') -c cortx-motr-hax -- hctl status| grep -q 'unknown\|offline'; then
+	 kubectl exec -it $(kubectl get pods | awk '/cortx-data-pod/{print $1; exit}') -c cortx-motr-hax -- hctl status
+         echo "Time taken for service to start $(($SECONDS/60)) mins"
+	 exit 0
+        else
+         echo "Failed to to start services withing 20mins. Exiting...."
+         exit 1 
+	fi
+    sleep 60
+done
+
 }
 
 case $ACTION in
