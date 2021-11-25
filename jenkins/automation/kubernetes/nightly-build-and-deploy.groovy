@@ -19,7 +19,7 @@ pipeline {
     parameters {
         string(name: 'COMPONENT_BRANCH', defaultValue: 'kubernetes', description: 'Component Branch.')
 	choice (
-            choices: ['DEVOPS'],
+            choices: ['DEVOPS', 'ALL'],
             description: 'Email Notification Recipients ',
             name: 'EMAIL_RECIPIENTS'
         )
@@ -27,9 +27,9 @@ pipeline {
 	string(name: 'CORTX_SCRIPTS_REPO', defaultValue: 'Seagate/cortx-k8s', description: 'Repository for cortx-k8s scripts (Services Team)', trim: true)
     }
     stages {
-	stage ("cortx all build creation and destroy cortx old cluster") {
+	stage ("Build Creation and Cluster Cleanup") {
 		parallel {
-			stage ("trigger custom-ci") {
+			stage ("Build Creation") {
 				steps {
 					script { build_stage = env.STAGE_NAME }
 					script {
@@ -51,7 +51,7 @@ pipeline {
 					}
 				}
 			}
-			stage ("destroy-cortx-cluster") {
+			stage ("Cluster Cleanup") {
 				steps {
 					script { build_stage = env.STAGE_NAME }
 					script {
@@ -66,7 +66,7 @@ pipeline {
 			}
 		}
         }
-	stage ("build-cortx-all-docker-image") {
+	stage ("CORTX-ALL image creation") {
 		steps {
 			script { build_stage = env.STAGE_NAME }
 			script {
@@ -86,7 +86,7 @@ pipeline {
 			}
 		}
 	}
-	stage ("setup-cortx-cluster") {
+	stage ("Deploy CORTX Cluster") {
 		steps {
 			script { build_stage = env.STAGE_NAME }
 			script {
