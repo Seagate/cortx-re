@@ -51,7 +51,8 @@ pipeline {
                         export CORTX_SCRIPTS_REPO=${CORTX_SCRIPTS_REPO}
                         export CORTX_IMAGE=${CORTX_IMAGE}
                         export SOLUTION_CONFIG_TYPE=automated
-                        ./cortx-deploy.sh --cortx-cluster
+                        #./cortx-deploy.sh --cortx-cluster
+                        exit 1
                     popd
                 '''
             }
