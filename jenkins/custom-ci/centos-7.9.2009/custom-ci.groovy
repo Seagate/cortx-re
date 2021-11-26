@@ -77,7 +77,7 @@ pipeline {
 										parameters: [
 											string(name: 'CORTX_UTILS_URL', value: "${CORTX_UTILS_URL}"),
 											string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}"),
-											string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}")	
+											string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}")
 										]
 					} catch (err) {
 						build_stage = env.STAGE_NAME
