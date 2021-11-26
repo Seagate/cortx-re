@@ -40,13 +40,13 @@ function check_params {
     if [ -z "$SOLUTION_CONFIG_TYPE" ]; then echo "SOLUTION_CONFIG_TYPE not provided.Exiting..."; exit 1; fi
 }
 
-function pdsh_exec {
+function pdsh_worker_exec {
     # commands to run in paralle on pdsh hosts (workers nodes).
     commands=(
        "export CORTX_SCRIPTS_REPO=$CORTX_SCRIPTS_REPO && export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH && /var/tmp/cortx-deploy-functions.sh --setup-worker"
     )
-    for cmnds in "${commands[@]}"; do
-       pdsh -w ^$1 $cmnds
+    for cmds in "${commands[@]}"; do
+       pdsh -w ^$1 $cmds
     done
 }
 
@@ -80,7 +80,7 @@ function setup_cluster {
 	done
 
     # Setup all worker nodes in parallel.
-    pdsh_exec /var/tmp/pdsh-hosts
+    pdsh_worker_exec /var/tmp/pdsh-hosts
 
     for master_node in $MASTER_NODE
 	    do

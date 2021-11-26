@@ -191,6 +191,8 @@ function openldap_requiremenrs(){
 
 function download_images(){
 image_counter=0
+
+# Image ids of containers imgages. Add new image ids here.
 image_ids=(
    6c1ae46a77ec
    5dc2493b82da
@@ -209,6 +211,7 @@ printf "%s\n" ${image_ids[@]} > /var/tmp/image_ids
 docker images -q  | grep -wFf /var/tmp/image_ids > /var/tmp/host_image_ids
 readarray -t host_image_ids < /var/tmp/host_image_ids
 
+# Check if provided container images are already present on the host.
 for i in "${image_ids[@]}"; do
    for j in "${host_image_ids[@]}"; do
       if [ "$i" == "$j" ]; then
@@ -218,6 +221,7 @@ for i in "${image_ids[@]}"; do
    done
 done
 
+# Verify total all images are present.
 if [ "$image_counter" -ne 11 ]; then
    echo "Container images are not present on $HOSTNAME. Downloading images:"
    rm -rf /var/images
