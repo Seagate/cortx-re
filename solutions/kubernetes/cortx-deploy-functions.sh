@@ -297,7 +297,7 @@ echo "---------------------------------------[ hctl status ]--------------------
     while [[ SECONDS -lt 1200 ]] ; do
 	if ! kubectl exec -it $(kubectl get pods | awk '/cortx-data-pod/{print $1; exit}') -c cortx-motr-hax -- hctl status| grep -q -E 'unknown|offline'; then
 	 kubectl exec -it $(kubectl get pods | awk '/cortx-data-pod/{print $1; exit}') -c cortx-motr-hax -- hctl status
-         echo "Time taken for service to start $(($SECONDS/60)) mins"
+         echo "Time taken for service to start $((SECONDS/60)) mins"
 	 exit 0
         else
          echo "Waiting for services to become online. Sleeping for 1min.."
