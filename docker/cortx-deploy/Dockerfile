@@ -27,6 +27,7 @@ ARG ENVIRONMENT
 ARG GIT_HASH
 ARG BUILD_URL
 ARG CREATED_DATE
+ARG VERSION
 
 LABEL maintainer="cortx.opensource@seagate.com" \
       org.opencontainers.image.title="CORTX ALL" \
