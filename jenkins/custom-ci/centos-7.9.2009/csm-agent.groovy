@@ -58,9 +58,9 @@ pipeline {
 				script { build_stage = env.STAGE_NAME }
 
 				sh label: 'Install cortx-prereq package', script: '''
-                    cortx_iso_path=$( echo $integration_dir | sed  's/[/]mnt[/]bigstorage[/]//g' )
-					echo $cortx_iso_path
-					pip3 uninstall pip -y && yum reinstall python3-pip -y && ln -s /usr/bin/pip3 /usr/local/bin/pip3
+										cortx_iso_path=$( echo $integration_dir | sed  's/[/]mnt[/]bigstorage[/]//g' )
+										echo $cortx_iso_path
+										pip3 uninstall pip -y && yum reinstall python3-pip -y && ln -s /usr/bin/pip3 /usr/local/bin/pip3
                                         yum install yum-utils -y
                                         yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/centos/$third_party_dir/
                                         yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/$cortx_iso_path$release_tag/cortx_iso/
