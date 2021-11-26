@@ -319,9 +319,27 @@ function destroy(){
 
 function print_pod_status(){
 echo "---------------------------------------[ POD Status ]--------------------------------------"
-    kubectl get pods -o wide
+    if ! kubectl get pods | grep -v STATUS | awk '{ print $3}' |  grep -v -q -i running; then
+      kubectl get pods -o wide
+    else
+echo "-----------[ All POD's are not in running state. Marking deployment as failed. Please check problematic pod events using kubectl describe pod <pod name> ]--------------------"
+      exit 1
+    fi
 echo "---------------------------------------[ hctl status ]--------------------------------------"
-    kubectl exec -it $(kubectl get pods | awk '/cortx-data-pod/{print $1; exit}') -c cortx-motr-hax -- hctl status
+    SECONDS=0
+    date
+    while [[ SECONDS -lt 1200 ]] ; do
+	if ! kubectl exec -it $(kubectl get pods | awk '/cortx-data-pod/{print $1; exit}') -c cortx-motr-hax -- hctl status| grep -q -E 'unknown|offline|failed'; then
+	 kubectl exec -it $(kubectl get pods | awk '/cortx-data-pod/{print $1; exit}') -c cortx-motr-hax -- hctl status
+         echo "-----------[ Time taken for service to start $((SECONDS/60)) mins ]--------------------"
+	 exit 0
+        else
+         echo "-----------[ Waiting for services to become online. Sleeping for 1min.... ]--------------------"
+         sleep 60
+	fi
+    done
+        echo "-----------[ Failed to to start services within 20mins. Exiting....]--------------------"
+        exit 1
 }
 
 case $ACTION in
