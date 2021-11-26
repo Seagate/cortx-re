@@ -18,6 +18,8 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
+set -eo pipefail
+
 SYSTESM_DRIVE="/dev/sdb"
 SYSTEM_DRIVE_MOUNT="/mnt/fs-local-volume"
 SCRIPT_LOCATION="/root/deploy-scripts"
@@ -44,7 +46,7 @@ function download_deploy_script(){
 #Install yq 4.13.3
 
 function install_yq(){
-    pip3 uninstall yq -y
+    pip3 show yq && pip3 uninstall yq -y
     wget https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${YQ_BINARY}.tar.gz -O - | tar xz && mv ${YQ_BINARY} /usr/bin/yq
     if [ -f /usr/local/bin/yq ]; then rm -rf /usr/local/bin/yq; fi    
     ln -s /usr/bin/yq /usr/local/bin/yq
@@ -164,7 +166,7 @@ function execute_deploy_script(){
 #format and mount system drive
 
 function mount_system_device(){
-    umount -l $SYSTESM_DRIVE
+    findmnt $SYSTESM_DRIVE && umount -l $SYSTESM_DRIVE
     mkfs.ext4 -F $SYSTESM_DRIVE
     mkdir -p /mnt/fs-local-volume
     mount -t ext4 $SYSTESM_DRIVE $SYSTEM_DRIVE_MOUNT
@@ -200,7 +202,7 @@ function download_images(){
 
 function execute_prereq(){
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
-        umount -l $SYSTESM_DRIVE
+        findmnt $SYSTESM_DRIVE && umount -l $SYSTESM_DRIVE
         ./prereq-deploy-cortx-cloud.sh $SYSTESM_DRIVE
     popd    
 
@@ -259,11 +261,12 @@ echo "---------------------------------------[ Setting up Worker Node on $HOSTNA
 }
 
 function destroy(){
+    download_deploy_script
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         chmod +x *.sh
         ./destroy-cortx-cloud.sh
     popd
-    umount -l /mnt/fs-local-volume/
+    findmnt /mnt/fs-local-volume/ && umount -l /mnt/fs-local-volume/
     files_to_remove=(
         "/mnt/fs-local-volume/"
         "/root/deploy-scripts/"

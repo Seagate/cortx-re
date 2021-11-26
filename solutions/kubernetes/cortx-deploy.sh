@@ -18,6 +18,8 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
+set -eo pipefail
+
 source functions.sh
 
 HOST_FILE=$PWD/hosts
@@ -94,8 +96,7 @@ function destroy-cluster(){
 	MASTER_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
 	echo "---------------------------------------[ Destroying cluster from $MASTER_NODE ]----------------------------------------------"
         scp -q cortx-deploy-functions.sh functions.sh "$MASTER_NODE":/var/tmp/
-        ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" "/var/tmp/cortx-deploy-functions.sh --destroy"	
-        ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" '/var/tmp/cortx-deploy-functions.sh --status' | tee /var/tmp/cortx-cluster-status.txt
+        ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" "export CORTX_SCRIPTS_REPO=$CORTX_SCRIPTS_REPO && export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH && /var/tmp/cortx-deploy-functions.sh --destroy"	
 }
 
 
