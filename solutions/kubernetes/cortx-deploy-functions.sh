@@ -285,7 +285,12 @@ function destroy(){
 
 function print_pod_status(){
 echo "---------------------------------------[ POD Status ]--------------------------------------"
-    kubectl get pods -o wide
+    if ! kubectl get pods | grep -v STATUS | awk '{ print $3}' |  grep -v -q -i running; then
+      kubectl get pods -o wide
+    else
+  echo "All POD's are not in running state. Marking deployment as failed. Please check problematic pod events using kubectl describe pod <pod name>"
+      exit 1
+    fi
 echo "---------------------------------------[ hctl status ]--------------------------------------"
     SECONDS=0
     date
