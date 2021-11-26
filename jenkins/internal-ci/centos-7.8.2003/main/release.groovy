@@ -276,6 +276,7 @@ pipeline {
             }
         }
 
+        /*
         stage ("Deploy") {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -300,7 +301,7 @@ pipeline {
                         ]       
                 }
             }
-        }
+        }*/
     }
     
     post {
