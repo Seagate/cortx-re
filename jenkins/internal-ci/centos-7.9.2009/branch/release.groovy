@@ -196,7 +196,7 @@ pipeline {
                 """
                 sh label: 'Generate Changelog', script: """
                     pushd scripts/release_support
-                        sh +x changelog.sh ${currentBuild.previousBuild.getNumber()} ${currentBuild.number} ${ARTIFACT_LOCATION}
+                        sh +x changelog.sh ${currentBuild.previousBuild.getNumber()} ${currentBuild.number}
                     popd
                     cp /root/git_build_checkin_stats/clone/git-build-checkin-report.txt CHANGESET.txt 
                     cp CHANGESET.txt $integration_dir/$release_tag/dev
