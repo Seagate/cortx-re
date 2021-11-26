@@ -26,6 +26,7 @@ pushd "$FILE_LOCATION" || exit
 cat <<EOF > RELEASE.INFO
 ---
 NAME: "CORTX"
+VERSION: "$VERSION"
 OS: $(cat /etc/redhat-release | sed -e 's/ $//g' -e 's/^/\"/g' -e 's/$/\"/g')
 DATETIME: $(date +"%d-%b-%Y %H:%M %Z" | sed -e 's/^/\"/g' -e 's/$/\"/g')
 COMPONENTS:
