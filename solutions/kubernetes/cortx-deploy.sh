@@ -65,7 +65,6 @@ function setup_cluster {
     else
     WORKER_NODES=$(cat "$HOST_FILE" | grep -v "$MASTER_NODE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
     fi
-    echo "Test out"
 
     echo "MASTER NODE:" $MASTER_NODE
     echo "WORKER NODE:" $WORKER_NODES

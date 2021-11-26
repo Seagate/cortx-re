@@ -265,7 +265,7 @@ function destroy(){
         chmod +x *.sh
         ./destroy-cortx-cloud.sh
     popd
-    findmnt /mnt/fs-local-volume/ && umount -l /mnt/fs-local-volume/
+    findmnt $SYSTESM_DRIVE && umount -l $SYSTESM_DRIVE    
     files_to_remove=(
         "/mnt/fs-local-volume/"
         "/root/deploy-scripts/"
