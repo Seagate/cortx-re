@@ -18,12 +18,27 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
-SYSTESM_DRIVE="/dev/sdb"
+SYSTEM_DRIVE="/dev/sdb"
 SYSTEM_DRIVE_MOUNT="/mnt/fs-local-volume"
 SCRIPT_LOCATION="/root/deploy-scripts"
 YQ_VERSION=v4.13.3
 YQ_BINARY=yq_linux_386
 SOLUTION_CONFIG="/var/tmp/solution.yaml"
+
+# Containers images. Add new images here.
+IMAGES=(
+   bitnami/kafka:3.0.0-debian-10-r7
+   hashicorp/consul:1.10.3
+   bitnami/zookeeper:3.7.0-debian-10-r157
+   bitnami/kafka:2.8.1-debian-10-r0
+   centos:7
+   busybox:latest
+   hashicorp/consul:1.10.2
+   rancher/local-path-provisioner:v0.0.20
+   hashicorp/consul:1.10.0
+   centos:7.9.2009
+   gluster/gluster-centos:latest
+   )
 
 #On master
 #download CORTX k8 deployment scripts
@@ -164,10 +179,10 @@ function execute_deploy_script(){
 #format and mount system drive
 
 function mount_system_device(){
-    umount -l $SYSTESM_DRIVE
-    mkfs.ext4 -F $SYSTESM_DRIVE
+    umount -l $SYSTEM_DRIVE
+    mkfs.ext4 -F $SYSTEM_DRIVE
     mkdir -p /mnt/fs-local-volume
-    mount -t ext4 $SYSTESM_DRIVE $SYSTEM_DRIVE_MOUNT
+    mount -t ext4 $SYSTEM_DRIVE $SYSTEM_DRIVE_MOUNT
     mkdir -p /mnt/fs-local-volume/local-path-provisioner
     sysctl -w vm.max_map_count=30000000
 }
@@ -192,28 +207,13 @@ function openldap_requiremenrs(){
 function download_images(){
 image_counter=0
 
-# Image ids of containers imgages. Add new image ids here.
-image_ids=(
-   6c1ae46a77ec
-   5dc2493b82da
-   6c1aa9572673
-   bfb59b8dbf5a
-   eeb6ee3f44bd
-   16ea53ea7c65
-   142addf2dfb9
-   933989e1174c
-   747e0258fcf2
-   8652b9f0cb4c
-   b2919ab8d731
-   )
-
-printf "%s\n" ${image_ids[@]} > /var/tmp/image_ids
-docker images -q  | grep -wFf /var/tmp/image_ids > /var/tmp/host_image_ids
-readarray -t host_image_ids < /var/tmp/host_image_ids
+printf "%s\n" ${IMAGES[@]} > /var/tmp/images
+docker images | awk '{ print $1":"$2 }' | tail -n +2 | grep -wFf /var/tmp/images > /var/tmp/host_images
+readarray -t HOST_IMAGES < /var/tmp/host_images
 
 # Check if provided container images are already present on the host.
-for i in "${image_ids[@]}"; do
-   for j in "${host_image_ids[@]}"; do
+for i in "${IMAGES[@]}"; do
+   for j in "${HOST_IMAGES[@]}"; do
       if [ "$i" == "$j" ]; then
          echo "Container image $j is already present on $HOSTNAME."
          ((image_counter++))
@@ -234,8 +234,8 @@ fi
 
 function execute_prereq(){
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
-        umount -l $SYSTESM_DRIVE
-        ./prereq-deploy-cortx-cloud.sh $SYSTESM_DRIVE
+        umount -l $SYSTEM_DRIVE
+        ./prereq-deploy-cortx-cloud.sh $SYSTEM_DRIVE
     popd    
 
 }
