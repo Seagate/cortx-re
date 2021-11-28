@@ -104,7 +104,7 @@ function destroy-cluster(){
         scp -q cortx-deploy-functions.sh functions.sh "$MASTER_NODE":/var/tmp/
         ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" "/var/tmp/cortx-deploy-functions.sh --destroy"
         echo "--------------------------------[ Print Kubernetes Cluster Status after Cleanup]----------------------------------------------"
-        ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" 'kubectl get pods -o wide -A' | tee /var/tmp/cortx-cluster-status.txt	
+        ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" 'kubectl get pods -o wide' | tee /var/tmp/cortx-cluster-status.txt	
 }
 
 
