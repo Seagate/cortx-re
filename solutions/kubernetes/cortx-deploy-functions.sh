@@ -18,7 +18,13 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
+<<<<<<< HEAD
 SYSTEM_DRIVE="/dev/sdb"
+=======
+set -eo pipefail
+
+SYSTESM_DRIVE="/dev/sdb"
+>>>>>>> 2c75a02... EOS-26145 - Mark Jenkins pipelines as failed for any of command failure.  (#713)
 SYSTEM_DRIVE_MOUNT="/mnt/fs-local-volume"
 SCRIPT_LOCATION="/root/deploy-scripts"
 YQ_VERSION=v4.13.3
@@ -59,7 +65,7 @@ function download_deploy_script(){
 #Install yq 4.13.3
 
 function install_yq(){
-    pip3 uninstall yq -y
+    pip3 show yq && pip3 uninstall yq -y
     wget https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${YQ_BINARY}.tar.gz -O - | tar xz && mv ${YQ_BINARY} /usr/bin/yq
     if [ -f /usr/local/bin/yq ]; then rm -rf /usr/local/bin/yq; fi    
     ln -s /usr/bin/yq /usr/local/bin/yq
@@ -179,8 +185,13 @@ function execute_deploy_script(){
 #format and mount system drive
 
 function mount_system_device(){
+<<<<<<< HEAD
     umount -l $SYSTEM_DRIVE
     mkfs.ext4 -F $SYSTEM_DRIVE
+=======
+    findmnt $SYSTESM_DRIVE && umount -l $SYSTESM_DRIVE
+    mkfs.ext4 -F $SYSTESM_DRIVE
+>>>>>>> 2c75a02... EOS-26145 - Mark Jenkins pipelines as failed for any of command failure.  (#713)
     mkdir -p /mnt/fs-local-volume
     mount -t ext4 $SYSTEM_DRIVE $SYSTEM_DRIVE_MOUNT
     mkdir -p /mnt/fs-local-volume/local-path-provisioner
@@ -234,8 +245,13 @@ fi
 
 function execute_prereq(){
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
+<<<<<<< HEAD
         umount -l $SYSTEM_DRIVE
         ./prereq-deploy-cortx-cloud.sh $SYSTEM_DRIVE
+=======
+        findmnt $SYSTESM_DRIVE && umount -l $SYSTESM_DRIVE
+        ./prereq-deploy-cortx-cloud.sh $SYSTESM_DRIVE
+>>>>>>> 2c75a02... EOS-26145 - Mark Jenkins pipelines as failed for any of command failure.  (#713)
     popd    
 
 }
@@ -297,7 +313,7 @@ function destroy(){
         chmod +x *.sh
         ./destroy-cortx-cloud.sh
     popd
-    umount -l /mnt/fs-local-volume/
+    findmnt $SYSTESM_DRIVE && umount -l $SYSTESM_DRIVE    
     files_to_remove=(
         "/mnt/fs-local-volume/"
         "/root/deploy-scripts/"

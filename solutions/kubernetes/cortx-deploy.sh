@@ -18,6 +18,8 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
+set -eo pipefail
+
 source functions.sh
 
 HOST_FILE=$PWD/hosts
@@ -66,7 +68,13 @@ function setup_cluster {
     TARGET=$1
     ALL_NODES=$(cat "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
     MASTER_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+     
+    if [ "$(wc -l < $HOST_FILE)" == "1" ]; then
+    echo "---------------------------------------[ Single node deployment ]----------------------------------"
+    WORKER_NODES=""
+    else
     WORKER_NODES=$(cat "$HOST_FILE" | grep -v "$MASTER_NODE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+    fi
 
     echo "MASTER NODE:" $MASTER_NODE
     echo "WORKER NODE:" $WORKER_NODES
@@ -104,8 +112,9 @@ function destroy-cluster(){
 	MASTER_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
 	echo "---------------------------------------[ Destroying cluster from $MASTER_NODE ]----------------------------------------------"
         scp -q cortx-deploy-functions.sh functions.sh "$MASTER_NODE":/var/tmp/
-        ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" "/var/tmp/cortx-deploy-functions.sh --destroy"	
-        ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" '/var/tmp/cortx-deploy-functions.sh --status' | tee /var/tmp/cortx-cluster-status.txt
+        ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" "/var/tmp/cortx-deploy-functions.sh --destroy"
+        echo "--------------------------------[ Print Kubernetes Cluster Status after Cleanup]----------------------------------------------"
+        ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" 'kubectl get pods -o wide' | tee /var/tmp/cortx-cluster-status.txt	
 }
 
 
