@@ -19,9 +19,13 @@
 #
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 SYSTEM_DRIVE="/dev/sdb"
 =======
 set -eo pipefail
+=======
+#set -eo pipefail
+>>>>>>> c288e4a... Commented set -eo pipefail to prevent download_images parallelization
 
 SYSTESM_DRIVE="/dev/sdb"
 >>>>>>> 2c75a02... EOS-26145 - Mark Jenkins pipelines as failed for any of command failure.  (#713)
