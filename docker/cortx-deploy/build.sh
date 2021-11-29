@@ -31,7 +31,7 @@ OS=centos-7.9.2009
 REGISTRY="ssc-vm-rhev4-1576.colo.seagate.com"
 PROJECT="seagate"
 ARTFACT_URL="http://cortx-storage.colo.seagate.com/releases/cortx/github/"
-
+SERVICE=cortx-all
 
 while getopts "b:p:t:r:h:" opt; do
     case $opt in
@@ -53,7 +53,7 @@ fi
 if echo $BUILD | grep -q custom; then BRANCH="integration-custom-ci"; else BRANCH="kubernetes"; fi
 BUILD_URL="$ARTFACT_URL/$BRANCH/$OS/$BUILD"
 
-echo "Building cortx-all image from $BUILD_URL"
+echo "Building $SERVICE image from $BUILD_URL"
 sleep 5
 
 function get_git_hash {
@@ -85,11 +85,12 @@ fi
 
 CREATED_DATE=$(date -u +'%Y-%m-%d %H:%M:%S%:z')
 
-docker-compose -f ./docker-compose.yml build --force-rm --compress --build-arg GIT_HASH="$CORTX_VERSION" --build-arg VERSION="$VERSION-$DOCKER_BUILD_BUILD" --build-arg CREATED_DATE="$CREATED_DATE" --build-arg BUILD_URL=$BUILD_URL  cortx-all
+docker-compose -f ./docker-compose.yml build --force-rm --compress --build-arg GIT_HASH="$CORTX_VERSION" --build-arg VERSION="$VERSION-$DOCKER_BUILD_BUILD" --build-arg CREATED_DATE="$CREATED_DATE" --build-arg BUILD_URL=$BUILD_URL $SERVICE
 
 if [ "$DOCKER_PUSH" == "yes" ];then
         echo "Pushing Docker image to GitHub Container Registry"
-        docker tag cortx-all:$TAG $REGISTRY/$PROJECT/cortx-all:$TAG
+        docker tag $SERVICE:$TAG $REGISTRY/$PROJECT/$SERVICE:$TAG
+        docker push $REGISTRY/$PROJECT/$SERVICE:$TAG 
 else
         echo "Docker Image push skipped"
         exit 0
@@ -97,8 +98,8 @@ fi
 
 if [ "$TAG_LATEST" == "yes" ];then
         echo "Tagging generated image as latest"
-        docker tag "$(docker images $REGISTRY/$PROJECT/cortx-all --format='{{.Repository}}:{{.Tag}}' | head -1)" $REGISTRY/$PROJECT/cortx-all:"${TAG//$DOCKER_BUILD_BUILD/latest}"
-        docker push $REGISTRY/$PROJECT/cortx-all:"${TAG//$DOCKER_BUILD_BUILD/latest}"
+        docker tag "$(docker images $REGISTRY/$PROJECT/$SERVICE --format='{{.Repository}}:{{.Tag}}' | head -1)" $REGISTRY/$PROJECT/$SERVICE:"${TAG//$DOCKER_BUILD_BUILD/latest}"
+        docker push $REGISTRY/$PROJECT/$SERVICE:"${TAG//$DOCKER_BUILD_BUILD/latest}"
 else
         echo "Latest tag creation skipped"
 fi
