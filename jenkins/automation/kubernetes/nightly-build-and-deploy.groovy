@@ -21,7 +21,7 @@ pipeline {
     parameters {
         string(name: 'COMPONENT_BRANCH', defaultValue: 'kubernetes', description: 'Component Branch.')
 	choice (
-            choices: ['ALL', 'DEVOPS'],
+            choices: ['DEVOPS', 'ALL', 'DEBUG'],
             description: 'Email Notification Recipients ',
             name: 'EMAIL_RECIPIENTS'
         )
@@ -138,8 +138,13 @@ pipeline {
 		                env.build_location = "${DOCKER_IMAGE_LOCATION}"
 		                env.deployment_status = "${MESSAGE}"
 				env.cluster_status = "${env.cortxcluster_build_url}"
-                		mailRecipients = "shailesh.vaidya@seagate.com, abhijit.patil@seagate.com"
-
+				if ( params.EMAIL_RECIPIENTS == "ALL" ) {
+					mailRecipients = "cortx.sme@seagate.com, manoj.management.team@seagate.com, CORTX.SW.Architecture.Team@seagate.com, CORTX.DevOps.RE@seagate.com"
+				} else if ( params.EMAIL_RECIPIENTS == "DEVOPS" ) {
+					mailRecipients = "CORTX.DevOps.RE@seagate.com"
+		                } else if ( params.EMAIL_RECIPIENTS == "DEBUG" ) {
+                			mailRecipients = "shailesh.vaidya@seagate.com"
+				}
 		                emailext (
                 			body: '''${SCRIPT, template="vm-deployment-email.template"}''',
 					mimeType: 'text/html',
