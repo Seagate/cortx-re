@@ -16,6 +16,7 @@ pipeline {
 
     environment {
         GITHUB_CRED = credentials('shailesh-github')
+        LOCAL_REG_CRED = credentials('local-registry-access')
     }
 
     parameters {  
@@ -74,7 +75,7 @@ pipeline {
                 if [ "$DOCKER_REGISTRY" == "ghcr.io" ]; then
                     docker login ghcr.io -u ${GITHUB_CRED_USR} -p ${GITHUB_CRED_PSW}
                 elif [ "$DOCKER_REGISTRY" == "ssc-vm-rhev4-1576.colo.seagate.com" ]; then
-                    docker login ssc-vm-rhev4-1576.colo.seagate.com -u admin -p Seagate123
+                    docker login ssc-vm-rhev4-1576.colo.seagate.com -u ${LOCAL_REG_CRED_USR} -p ${LOCAL_REG_CRED_PSW}
                 fi
                 '''
             }
