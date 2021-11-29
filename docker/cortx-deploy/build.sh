@@ -22,20 +22,23 @@ set -e -o pipefail
 
 usage() { 
 echo "Generate cortx-all docker image from provided CORTX release build"
-echo "Usage: $0 [ -b build ] [ -p push docker-image to GHCR yes/no. Default no] [ -t tag latest yes/no. Default no" ] [ -h print help message ] 1>&2; exit 1; }
+echo "Usage: $0 [ -b build ] [ -p push docker-image to GHCR yes/no. Default no] [ -t tag latest yes/no. Default no" ] [ -r registry location ] [ -h print help message ] 1>&2; exit 1; }
 
 VERSION=2.0.0
 DOCKER_PUSH=no
 TAG_LATEST=no
 OS=centos-7.9.2009
+REGISTRY="ssc-vm-rhev4-1576.colo.seagate.com"
+PROJECT="seagate"
 ARTFACT_URL="http://cortx-storage.colo.seagate.com/releases/cortx/github/"
 
 
-while getopts "b:p:t:h:" opt; do
+while getopts "b:p:t:r:h:" opt; do
     case $opt in
         b ) BUILD=$OPTARG;;
         p ) DOCKER_PUSH=$OPTARG;;
         t ) TAG_LATEST=$OPTARG;;
+        r ) REGISTRY=$OPTARG;;
         h ) usage
         exit 0;;
         *) usage
@@ -86,7 +89,7 @@ docker-compose -f ./docker-compose.yml build --force-rm --compress --build-arg G
 
 if [ "$DOCKER_PUSH" == "yes" ];then
         echo "Pushing Docker image to GitHub Container Registry"
-        docker-compose -f ./docker-compose.yml push cortx-all
+        docker tag cortx-all:$TAG $REGISTRY/$PROJECT/cortx-all:$TAG
 else
         echo "Docker Image push skipped"
         exit 0
@@ -94,8 +97,8 @@ fi
 
 if [ "$TAG_LATEST" == "yes" ];then
         echo "Tagging generated image as latest"
-        docker tag "$(docker images ghcr.io/seagate/cortx-all --format='{{.Repository}}:{{.Tag}}' | head -1)" ghcr.io/seagate/cortx-all:"${TAG//$DOCKER_BUILD_BUILD/latest}"
-        docker push ghcr.io/seagate/cortx-all:"${TAG//$DOCKER_BUILD_BUILD/latest}"
+        docker tag "$(docker images $REGISTRY/$PROJECT/cortx-all --format='{{.Repository}}:{{.Tag}}' | head -1)" $REGISTRY/$PROJECT/cortx-all:"${TAG//$DOCKER_BUILD_BUILD/latest}"
+        docker push $REGISTRY/$PROJECT/cortx-all:"${TAG//$DOCKER_BUILD_BUILD/latest}"
 else
         echo "Latest tag creation skipped"
 fi
