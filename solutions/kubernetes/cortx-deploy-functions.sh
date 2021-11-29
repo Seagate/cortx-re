@@ -18,6 +18,8 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
+set -eo pipefail
+
 SYSTESM_DRIVE="/dev/sdb"
 SYSTEM_DRIVE_MOUNT="/mnt/fs-local-volume"
 SCRIPT_LOCATION="/root/deploy-scripts"
@@ -44,7 +46,7 @@ function download_deploy_script(){
 #Install yq 4.13.3
 
 function install_yq(){
-    pip3 uninstall yq -y
+    pip3 show yq && pip3 uninstall yq -y
     wget https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${YQ_BINARY}.tar.gz -O - | tar xz && mv ${YQ_BINARY} /usr/bin/yq
     if [ -f /usr/local/bin/yq ]; then rm -rf /usr/local/bin/yq; fi    
     ln -s /usr/bin/yq /usr/local/bin/yq
@@ -164,7 +166,7 @@ function execute_deploy_script(){
 #format and mount system drive
 
 function mount_system_device(){
-    umount -l $SYSTESM_DRIVE
+    findmnt $SYSTESM_DRIVE && umount -l $SYSTESM_DRIVE
     mkfs.ext4 -F $SYSTESM_DRIVE
     mkdir -p /mnt/fs-local-volume
     mount -t ext4 $SYSTESM_DRIVE $SYSTEM_DRIVE_MOUNT
@@ -200,7 +202,7 @@ function download_images(){
 
 function execute_prereq(){
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
-        umount -l $SYSTESM_DRIVE
+        findmnt $SYSTESM_DRIVE && umount -l $SYSTESM_DRIVE
         ./prereq-deploy-cortx-cloud.sh $SYSTESM_DRIVE
     popd    
 
@@ -263,7 +265,7 @@ function destroy(){
         chmod +x *.sh
         ./destroy-cortx-cloud.sh
     popd
-    umount -l /mnt/fs-local-volume/
+    findmnt $SYSTESM_DRIVE && umount -l $SYSTESM_DRIVE    
     files_to_remove=(
         "/mnt/fs-local-volume/"
         "/root/deploy-scripts/"
@@ -285,9 +287,27 @@ function destroy(){
 
 function print_pod_status(){
 echo "---------------------------------------[ POD Status ]--------------------------------------"
-    kubectl get pods -o wide
+    if ! kubectl get pods | grep -v STATUS | awk '{ print $3}' |  grep -v -q -i running; then
+      kubectl get pods -o wide
+    else
+echo "-----------[ All POD's are not in running state. Marking deployment as failed. Please check problematic pod events using kubectl describe pod <pod name> ]--------------------"
+      exit 1
+    fi
 echo "---------------------------------------[ hctl status ]--------------------------------------"
-    kubectl exec -it $(kubectl get pods | awk '/cortx-data-pod/{print $1; exit}') -c cortx-motr-hax -- hctl status
+    SECONDS=0
+    date
+    while [[ SECONDS -lt 1200 ]] ; do
+	if ! kubectl exec -it $(kubectl get pods | awk '/cortx-data-pod/{print $1; exit}') -c cortx-motr-hax -- hctl status| grep -q -E 'unknown|offline|failed'; then
+	 kubectl exec -it $(kubectl get pods | awk '/cortx-data-pod/{print $1; exit}') -c cortx-motr-hax -- hctl status
+         echo "-----------[ Time taken for service to start $((SECONDS/60)) mins ]--------------------"
+	 exit 0
+        else
+         echo "-----------[ Waiting for services to become online. Sleeping for 1min.... ]--------------------"
+         sleep 60
+	fi
+    done
+        echo "-----------[ Failed to to start services within 20mins. Exiting....]--------------------"
+        exit 1
 }
 
 case $ACTION in
