@@ -30,6 +30,7 @@ pipeline {
     }
     // Please configure hosts parameter in Jenkins job configuration.
     stages {
+/*
 	stage ("Build Creation and Cluster Cleanup") {
 		parallel {
 			stage ("Build Creation") {
@@ -54,6 +55,7 @@ pipeline {
 					}
 				}
 			}
+*/
 			stage ("Cluster Cleanup") {
 				steps {
 					script { build_stage = env.STAGE_NAME }
@@ -67,8 +69,10 @@ pipeline {
 					}
 				}
 			}
+/*
 		}
         }
+
 	stage ("CORTX-ALL image creation") {
 		steps {
 			script { build_stage = env.STAGE_NAME }
@@ -89,10 +93,12 @@ pipeline {
 			}
 		}
 	}
+*/
 	stage ("Deploy CORTX Cluster") {
 		steps {
 			script { build_stage = env.STAGE_NAME }
 			script {
+				env.dockerimage_id = "ghcr.io/seagate/cortx-all:2.0.0-457-custom-ci"
 				build job: '/Cortx-kubernetes/setup-cortx-cluster', wait: true,
 				parameters: [
 					string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
