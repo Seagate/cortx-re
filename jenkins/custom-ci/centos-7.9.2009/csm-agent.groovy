@@ -15,7 +15,7 @@ pipeline {
 		build_upload_dir = "$release_dir/github/integration-custom-ci/$os_version/$release_tag/cortx_iso"
 		python_deps = "${THIRD_PARTY_PYTHON_VERSION == 'cortx-2.0' ? "python-packages-2.0.0-latest" : THIRD_PARTY_PYTHON_VERSION == 'custom' ?  "python-packages-2.0.0-custom" : "python-packages-2.0.0-stable"}"
  		third_party_dir = "${THIRD_PARTY_RPM_VERSION == 'cortx-2.0' ? "$os_version-2.0.0-latest" : THIRD_PARTY_RPM_VERSION == 'cortx-1.0' ?  "$os_version-1.0.0-1" : "$os_version-custom"}"
-		integration_dir = "${INTEGRATION_DIR_PATH}${release_tag}"
+		integration_dir = "${INTEGRATION_DIR_PATH == '/mnt/bigstorage/releases/cortx/github/integration-custom-ci/centos-7.9.2009/' ? "$release_dir/github/integration-custom-ci/$os_version/$release_tag" : "/mnt/bigstorage/releases/cortx/github/main/centos-7.9.2009/last_successful_prod"}"
 	}
 
 	options {
