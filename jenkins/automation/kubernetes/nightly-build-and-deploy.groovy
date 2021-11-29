@@ -15,6 +15,7 @@ pipeline {
     environment {
         CORTX_RE_BRANCH = "kubernetes"
         CORTX_RE_REPO = "https://github.com/Seagate/cortx-re/"
+	DOCKER_IMAGE_LOCATION = "https://github.com/Seagate/cortx-re/pkgs/container/cortx-all"
     }	
     triggers { cron('30 19 * * *') }
     parameters {
@@ -101,8 +102,52 @@ pipeline {
 					string(name: 'CORTX_SCRIPTS_BRANCH', value: "${CORTX_SCRIPTS_BRANCH}"),
 					string(name: 'CORTX_SCRIPTS_REPO', value: "${CORTX_SCRIPTS_REPO}"),
 				]
+				env.cortxcluster_build_url = cortxCluster.buildVariables.build_setupcortx_url
 			}
 		}
 	}
 }
+	post { 
+		always {
+			script {
+				if ( currentBuild.currentResult == "SUCCESS" ) {
+					MESSAGE = "#${build_id} 3node K8S Deployment Deployment=Passed, SanityTest=unstable"
+					ICON = "accept.gif"
+					STATUS = "UNSTABLE"
+					env.sanity_result = "UNSTABLE"
+				} else if ( currentBuild.currentResult == "FAILURE" ) {
+			                manager.buildFailure()
+			                MESSAGE = "#${build_id} 3node K8S Deployment Deployment=failed, SanityTest=failed"
+			                ICON = "error.gif"
+			                STATUS = "FAILURE"
+					env.sanity_result = "FAILURE"
+			        } else {
+			                manager.buildUnstable()
+			                MESSAGE = "#${build_id} 3node K8S Deployment Deployment=unstable, SanityTest=unstable"
+					ICON = "warning.gif"
+			                STATUS = "UNSTABLE"
+					env.sanity_result = "UNSTABLE"
+		                }
+				sh '''	echo $hosts > postactionhost1.txt
+					cat postactionhost1.txt
+				'''
+				env.allhost = sh( script: "cat postactionhost1.txt|tr ',' '\n'|grep hostname|rev|cut -d '=' -f1|rev|tr ' ' '\n'", returnStdout: true)
+				env.host = "${env.allhost}"
+                		env.build_id = "${env.dockerimage_id}"
+		                env.build_location = "${DOCKER_IMAGE_LOCATION}"
+		                env.deployment_status = "${MESSAGE}"
+				env.cluster_status = "${env.cortxcluster_build_url}"
+                		mailRecipients = "shailesh.vaidya@seagate.com, abhijit.patil@seagate.com"
+
+		                emailext (
+                			body: '''${SCRIPT, template="vm-deployment-email.template"}''',
+					mimeType: 'text/html',
+                 			subject: "${MESSAGE}",
+			                to: "${mailRecipients}",
+					recipientProviders: [[$class: 'RequesterRecipientProvider']]
+				)
+		                cleanWs()
+			}
+		}
+	}
 }
