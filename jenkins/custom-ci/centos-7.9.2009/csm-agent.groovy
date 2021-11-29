@@ -15,7 +15,7 @@ pipeline {
 		build_upload_dir = "$release_dir/github/integration-custom-ci/$os_version/$release_tag/cortx_iso"
 		python_deps = "${THIRD_PARTY_PYTHON_VERSION == 'cortx-2.0' ? "python-packages-2.0.0-latest" : THIRD_PARTY_PYTHON_VERSION == 'custom' ?  "python-packages-2.0.0-custom" : "python-packages-2.0.0-stable"}"
  		third_party_dir = "${THIRD_PARTY_RPM_VERSION == 'cortx-2.0' ? "$os_version-2.0.0-latest" : THIRD_PARTY_RPM_VERSION == 'cortx-1.0' ?  "$os_version-1.0.0-1" : "$os_version-custom"}"
-		integration_dir = "${INTEGRATION_DIR_PATH}"
+		integration_dir = "${INTEGRATION_DIR_PATH}${release_tag}"
 	}
 
 	options {
@@ -31,7 +31,7 @@ pipeline {
 		string(name: 'CUSTOM_CI_BUILD_ID', defaultValue: '0', description: 'Custom CI Build Number')
 		string(name: 'THIRD_PARTY_PYTHON_VERSION', defaultValue: 'cortx-2.0', description: 'Third Party Python Version to use', trim: true)
 		string(name: 'THIRD_PARTY_RPM_VERSION', defaultValue: 'cortx-2.0', description: 'Third Party RPM Version to use', trim: true)
-		string(name: 'INTEGRATION_DIR_PATH', defaultValue: '$release_dir/github/integration-custom-ci/$os_version/', description: 'Integration directory path', trim: true)
+		string(name: 'INTEGRATION_DIR_PATH', defaultValue: '/mnt/bigstorage/releases/cortx/github/main/centos-7.9.2009/last_successful_prod/', description: 'Integration directory path', trim: true)
 	}	
 
 
@@ -63,7 +63,7 @@ pipeline {
 										pip3 uninstall pip -y && yum reinstall python3-pip -y && ln -s /usr/bin/pip3 /usr/local/bin/pip3
                                         yum install yum-utils -y
                                         yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/centos/$third_party_dir/
-                                        yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/$cortx_iso_path$release_tag/cortx_iso/
+                                        yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/$cortx_iso_path/cortx_iso/
                                         yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
                                         yum clean all && rm -rf /var/cache/yum
                                         cat <<EOF >>/etc/pip.conf
