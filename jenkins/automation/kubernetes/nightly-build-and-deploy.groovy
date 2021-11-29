@@ -94,7 +94,7 @@ pipeline {
 		steps {
 			script { build_stage = env.STAGE_NAME }
 			script {
-				build job: '/Cortx-kubernetes/setup-cortx-cluster', wait: true,
+				def cortxCluster = build job: '/Cortx-kubernetes/setup-cortx-cluster', wait: true,
 				parameters: [
 					string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
 					string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
