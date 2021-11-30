@@ -83,7 +83,7 @@ pipeline {
                         build_stage = env.STAGE_NAME
                         error "Failed to Build CORTX Utils"
                     }
-                }                        
+                }
             }
         }
 
@@ -157,10 +157,10 @@ pipeline {
                                                         string(name: 'THIRD_PARTY_PYTHON_VERSION', value: "${THIRD_PARTY_PYTHON_VERSION}")
                                                     ]
                             } catch (err) {
-                                build_stage = env.STAGE_NAME             
+                                build_stage = env.STAGE_NAME
                                 error "Failed to Build Motr, Hare and S3Server"
                             }
-                        }                                        
+                        }
                     }
                 }
 
@@ -168,12 +168,12 @@ pipeline {
                     steps {
                         script { build_stage = env.STAGE_NAME }
                         script {
-                            try {                    
+                            try {
                                 def habuild = build job: '/GitHub-custom-ci-builds/centos-7.9/cortx-ha', wait: true,
                                           parameters: [
                                               string(name: 'HA_URL', value: "${HA_URL}"),
                                               string(name: 'HA_BRANCH', value: "${HA_BRANCH}"),
-                                              string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}"),    
+                                              string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}"),
                                               string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}"),
                                               string(name: 'CORTX_UTILS_URL', value: "${CORTX_UTILS_URL}"),
                                               string(name: 'THIRD_PARTY_PYTHON_VERSION', value: "${THIRD_PARTY_PYTHON_VERSION}")
@@ -193,7 +193,7 @@ pipeline {
                             try {
                                 def csm_agent_build = build job: '/GitHub-custom-ci-builds/centos-7.9/custom-csm-agent-build', wait: true,
                                               parameters: [
-                                                        string(name: 'CSM_AGENT_URL', value: "${CSM_AGENT_URL}"),
+                                                    string(name: 'CSM_AGENT_URL', value: "${CSM_AGENT_URL}"),
                                                     string(name: 'CSM_AGENT_BRANCH', value: "${CSM_AGENT_BRANCH}"),
                                                     string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}"),
                                                     string(name: 'THIRD_PARTY_RPM_VERSION', value: "${THIRD_PARTY_PYTHON_VERSION}"),
@@ -204,7 +204,7 @@ pipeline {
                                 build_stage = env.STAGE_NAME
                                 error "Failed to Build CSM Agent"
                             }
-                        }                        
+                        }
                     }
                 }
             }
@@ -227,7 +227,7 @@ pipeline {
                             cp $component/last_successful/*.rpm $integration_dir/$release_tag/cortx_iso/
                         else
                             echo "Packages not available for $component. Exiting"
-                        exit 1    
+                        exit 1
                         fi
                     done
 
@@ -259,7 +259,7 @@ pipeline {
                     do
                         if [ "${CSM_BRANCH}" == "Cortx-v1.0.0_Beta" ] || [ "${HARE_BRANCH}" == "Cortx-v1.0.0_Beta" ] || [ "${MOTR_BRANCH}" == "Cortx-v1.0.0_Beta" ] || [ "${PRVSNR_BRANCH}" == "Cortx-v1.0.0_Beta" ] || [ "${S3_BRANCH}" == "Cortx-v1.0.0_Beta" ] || [ "${SSPL_BRANCH}" == "Cortx-v1.0.0_Beta" ]; then
                              mero_dep=`echo $(rpm -qpR ${component} | grep -E "eos-core = |mero =") | cut -d= -f2 | tr -d '\040\011\012\015'`
-                        else     
+                        else
                             mero_dep=`echo $(rpm -qpR ${component} | grep -E "cortx-motr = |mero =") | cut -d= -f2 | tr -d '\040\011\012\015'`
                         fi
                         if [ -z "$mero_dep" ]
@@ -282,9 +282,9 @@ pipeline {
         stage ('Sign rpm') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                
+
                 checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
-                
+
                 sh label: 'Generate Key', script: '''
                     set +x
                     pushd scripts/rpm-signing
@@ -300,7 +300,7 @@ pipeline {
                     pushd scripts/rpm-signing
                     chmod +x rpm-sign.sh
                     cp RPM-GPG-KEY-Seagate $integration_dir/$release_tag/cortx_iso/
-                    
+
                     for rpm in `ls -1 $integration_dir/$release_tag/cortx_iso/*.rpm`
                     do
                     ./rpm-sign.sh ${passphrase} $rpm
@@ -310,7 +310,7 @@ pipeline {
                 '''
             }
         }
-        
+
         stage ('Repo Creation') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -344,7 +344,7 @@ pipeline {
                         sh build_release_info.sh -b $branch -v $version -l $integration_dir/$release_tag/cortx_iso/ -t $integration_dir/$release_tag/3rd_party
                         sh build_readme.sh $integration_dir/$release_tag
                     popd
-                    
+
                     cp $integration_dir/$release_tag/README.txt .
                     cp $integration_dir/$release_tag/cortx_iso/RELEASE.INFO .
                     cp $integration_dir/$release_tag/3rd_party/THIRD_PARTY_RELEASE.INFO $integration_dir/$release_tag
@@ -352,7 +352,7 @@ pipeline {
                 """
             }
         }
-        
+
         stage ('Generate ISO Image') {
             when {
                 expression { params.ISO_GENERATION == 'yes' }
@@ -364,7 +364,7 @@ pipeline {
                     genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -hide-rr-moved -publisher Seagate -o $integration_dir/$release_tag/iso/cortx-$version-$release_tag-single.iso $integration_dir/$release_tag
                 popd
                 '''
-                
+
                 sh label: 'Upgrade ISO', script: '''
                 #Create upgrade directorty structure
                 mkdir -p $integration_dir/$release_tag/sw_upgrade/{3rd_party,cortx_iso,python_deps}
@@ -373,24 +373,24 @@ pipeline {
 
                 #Copy all component packages
                 cp -r $integration_dir/$release_tag/cortx_iso/* $integration_dir/$release_tag/sw_upgrade/cortx_iso/
-                
-                #Copy RELEASE.INFO, Third Party RPM and Python index files. 
+
+                #Copy RELEASE.INFO, Third Party RPM and Python index files.
                 cp $integration_dir/$release_tag/3rd_party/THIRD_PARTY_RELEASE.INFO $integration_dir/$release_tag/sw_upgrade/3rd_party
                 sed -i -e /tar/d -e /rpm/d -e /tgz/d $integration_dir/$release_tag/sw_upgrade/3rd_party/THIRD_PARTY_RELEASE.INFO
                 cp $integration_dir/$release_tag/python_deps/index.html $integration_dir/$release_tag/sw_upgrade/python_deps/index.html
                 sed -i /href/d $integration_dir/$release_tag/sw_upgrade/python_deps/index.html
                 cp $integration_dir/$release_tag/cortx_iso/RELEASE.INFO $integration_dir/$release_tag/sw_upgrade/
-                
+
                 genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -hide-rr-moved -publisher Seagate -o $integration_dir/$release_tag/iso/cortx-$version-$release_tag-upgrade.iso $integration_dir/$release_tag/sw_upgrade
                 rm -rf $integration_dir/$release_tag/sw_upgrade
-                
+
                 '''
 
                 sh label: "Sign ISO files", script: '''
                 pushd scripts/rpm-signing
                     gpg --output $integration_dir/$release_tag/iso/cortx-$version-$release_tag-upgrade.iso.sig --detach-sig $integration_dir/$release_tag/iso/cortx-$version-$release_tag-upgrade.iso
                     sleep 5
-                    gpg --output $integration_dir/$release_tag/iso/cortx-$version-$release_tag-single.iso.sig --detach-sig $integration_dir/$release_tag/iso/cortx-$version-$release_tag-single.iso 
+                    gpg --output $integration_dir/$release_tag/iso/cortx-$version-$release_tag-single.iso.sig --detach-sig $integration_dir/$release_tag/iso/cortx-$version-$release_tag-single.iso
                 popd
                 '''
             }
@@ -402,7 +402,7 @@ pipeline {
                 sh label: 'Additional Files', script:'''
                 #Add cortx-prep.sh
                 mkdir -p $integration_dir/$release_tag/iso
-                cortx_prvsnr_preq=$(ls "$integration_dir/$release_tag/cortx_iso" | grep "python36-cortx-prvsnr" | cut -d- -f5 | cut -d_ -f2 | cut -d. -f1 | sed s/"git"//)                 
+                cortx_prvsnr_preq=$(ls "$integration_dir/$release_tag/cortx_iso" | grep "python36-cortx-prvsnr" | cut -d- -f5 | cut -d_ -f2 | cut -d. -f1 | sed s/"git"//)
                 wget -O $integration_dir/$release_tag/iso/install-$version-$BUILD_NUMBER.sh https://raw.githubusercontent.com/Seagate/cortx-prvsnr/$cortx_prvsnr_preq/srv/components/provisioner/scripts/install.sh
 
                 #Add custom-os ISO
@@ -419,6 +419,29 @@ pipeline {
                 '''
             }
         }
+
+        stage ("Build CORTX-ALL image") {
+                steps {
+                    script { build_stage = env.STAGE_NAME }
+                    script {
+                        try {
+                            def habuild = build job: '/Release_Engineering/job/re-workspace/job/sv_space/job/sv-cortx-all-image', wait: true,
+                                        parameters: [
+                                            string(name: 'CORTX_RE_URL', value: "https://github.com/Seagate/cortx-re.git"),
+                                            string(name: 'CORTX_RE_BRANCH', value: "kubernetes"),
+                                            string(name: 'BUILD', value: "kubernetes-build-${BUILD_NUMBER}"),
+                                            string(name: 'GITHUB_PUSH', value: "yes"),
+                                            string(name: 'TAG_LATEST', value: "yes"),
+                                            string(name: 'DOCKER_REGISTRY', value: "ssc-vm-rhev4-1576.colo.seagate.com")
+                                            string(name: 'EMAIL_RECIPIENTS', value: "DEBUG")
+                                            ]
+                        } catch (err) {
+                            build_stage = env.STAGE_NAME
+                            error "Failed to Build CORTX-ALL image"
+                        }
+                    }
+                }
+            }
     }
 
     post {
@@ -429,16 +452,16 @@ pipeline {
                 find ${integration_dir}/* -maxdepth 0 -mtime +5 -type d -exec rm -rf {} \\;
                 '''
         }
-    
+
         always {
             script {
                 env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/${env.os_version}/${env.release_tag}"
                 env.release_build = "${env.release_tag}"
                 env.build_stage = "${build_stage}"
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
-                
+
                 def mailRecipients = "shailesh.vaidya@seagate.com"
-                emailext ( 
+                emailext (
                     body: '''${SCRIPT, template="release-email.template"}''',
                     mimeType: 'text/html',
                     subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
