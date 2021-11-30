@@ -73,7 +73,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 script {
                     try {
-                        def cortx_utils_build = build job: 'custom-cortx-py-utils', wait: true,
+                        def cortx_utils_build = build job: '/GitHub-custom-ci-builds/centos-7.9/custom-cortx-py-utils', wait: true,
                                         parameters: [
                                             string(name: 'CORTX_UTILS_URL', value: "${CORTX_UTILS_URL}"),
                                             string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}"),
@@ -92,7 +92,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                         script {
                             try {
-                            def prereqbuild = build job: 'cortx-prereq-custom-build', wait: true,
+                            def prereqbuild = build job: '/GitHub-custom-ci-builds/centos-7.9/cortx-prereq-custom-build', wait: true,
                                             parameters: [
                                             string(name: 'CORTX_RE_URL', value: "${CORTX_RE_URL}"),
                                             string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
@@ -111,7 +111,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                                         script {
                                                 try {
-                        def prvsnrbuild = build job: 'prvsnr-custom-build', wait: true,
+                        def prvsnrbuild = build job: '/GitHub-custom-ci-builds/centos-7.9/prvsnr-custom-build', wait: true,
                                             parameters: [
                                             string(name: 'PRVSNR_URL', value: "${PRVSNR_URL}"),
                                             string(name: 'PRVSNR_BRANCH', value: "${PRVSNR_BRANCH}"),
@@ -143,7 +143,7 @@ pipeline {
                         script { build_stage = env.STAGE_NAME }
                         script {
                             try {
-                                def motrbuild = build job: 'motr-custom-build', wait: true,
+                                def motrbuild = build job: '/GitHub-custom-ci-builds/centos-7.9/motr-custom-build', wait: true,
                                         parameters: [
                                                         string(name: 'MOTR_URL', value: "${MOTR_URL}"),
                                                         string(name: 'MOTR_BRANCH', value: "${MOTR_BRANCH}"),
@@ -175,7 +175,7 @@ pipeline {
                                     exit 1
                                 fi
                                 '''
-                                def habuild = build job: 'cortx-ha', wait: true,
+                                def habuild = build job: '/GitHub-custom-ci-builds/centos-7.9/cortx-ha', wait: true,
                                           parameters: [
                                               string(name: 'HA_URL', value: "${HA_URL}"),
                                               string(name: 'HA_BRANCH', value: "${HA_BRANCH}"),
@@ -197,7 +197,7 @@ pipeline {
                         script { build_stage = env.STAGE_NAME }
                         script {
                             try {
-                                def csm_agent_build = build job: 'custom-csm-agent-build', wait: true,
+                                def csm_agent_build = build job: '/GitHub-custom-ci-builds/centos-7.9/custom-csm-agent-build', wait: true,
                                               parameters: [
                                                         string(name: 'CSM_AGENT_URL', value: "${CSM_AGENT_URL}"),
                                                     string(name: 'CSM_AGENT_BRANCH', value: "${CSM_AGENT_BRANCH}"),
