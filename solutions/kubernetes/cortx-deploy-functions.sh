@@ -227,10 +227,10 @@ docker images | awk '{ print $1":"$2 }' | tail -n +2 | grep -wFf /var/tmp/images
 readarray -t HOST_IMAGES < /var/tmp/host_images
 
 # Check if provided container images are already present on the host.
-for i in "${IMAGES[@]}"; do
-   for j in "${HOST_IMAGES[@]}"; do
-      if [ "$i" == "$j" ]; then
-         echo "Container image $j is already present on $HOSTNAME."
+for image in "${IMAGES[@]}"; do
+   for host_image in "${HOST_IMAGES[@]}"; do
+      if [ "$image" == "$host_image" ]; then
+         echo "Container image $image is already present on $HOSTNAME."
          ((image_counter++))
       fi
    done

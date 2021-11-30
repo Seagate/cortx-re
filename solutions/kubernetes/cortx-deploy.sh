@@ -43,7 +43,7 @@ function check_params {
 }
 
 function pdsh_worker_exec {
-    # commands to run in paralle on pdsh hosts (workers nodes).
+    # commands to run in parallel on pdsh hosts (workers nodes).
     commands=(
        "export CORTX_SCRIPTS_REPO=$CORTX_SCRIPTS_REPO && export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH && /var/tmp/cortx-deploy-functions.sh --setup-worker"
     )

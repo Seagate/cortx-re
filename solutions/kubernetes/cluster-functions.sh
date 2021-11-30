@@ -156,7 +156,7 @@ function cleanup_node(){
             rm -rf $file
         fi
     done
-    check_status "Node preparation failed on $HOSTNAME"
+    check_status "Node cleanup failed on $HOSTNAME"
 }
 
 function install_prerequisites(){
