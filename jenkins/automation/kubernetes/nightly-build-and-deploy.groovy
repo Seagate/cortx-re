@@ -114,20 +114,14 @@ pipeline {
 				if ( currentBuild.currentResult == "SUCCESS" ) {
 					MESSAGE = "#${build_id} 3node K8S Deployment Deployment=Passed, SanityTest=unstable"
 					ICON = "accept.gif"
-					STATUS = "UNSTABLE"
+					STATUS = "SUCCESS"
 					env.sanity_result = "UNSTABLE"
-				} else if ( currentBuild.currentResult == "FAILURE" ) {
-			                manager.buildFailure()
-			                MESSAGE = "#${build_id} 3node K8S Deployment Deployment=failed, SanityTest=failed"
-			                ICON = "error.gif"
-			                STATUS = "FAILURE"
-					env.sanity_result = "FAILURE"
 			        } else {
 			                manager.buildUnstable()
 			                MESSAGE = "#${build_id} 3node K8S Deployment Deployment=unstable, SanityTest=unstable"
 					ICON = "warning.gif"
 			                STATUS = "UNSTABLE"
-					env.sanity_result = "UNSTABLE"
+					env.sanity_result = "FAILED"
 		                }
 				sh '''	echo $hosts > postactionhost1.txt
 					cat postactionhost1.txt
