@@ -175,6 +175,13 @@ pipeline {
 					STATUS = "FAILURE"
 					env.sanity_result = "FAILURE"
 					env.deployment_result = "SUCCESS"
+				} else if ( env.cortxCluster_status == "SUCCESS" && env.qaSanity_status == "UNSTABLE" ) {
+					manager.buildUnstable()
+					MESSAGE = "#K8s ${build_id} 3node Deployment Deployment=Passed, SanityTest=unstable"
+					ICON = "warning.gif"
+					STATUS = "UNSTABLE"
+					env.deployment_result = "SUCCESS"
+					env.sanity_result = "UNSTABLE"
 				} else if ( env.cortxCluster_status == "FAILURE" ) {
 					manager.buildFailure()
 					MESSAGE = "#K8s ${build_id} 3node Deployment Deployment=failed, SanityTest=skipped"
