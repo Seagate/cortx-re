@@ -47,7 +47,7 @@ pipeline {
 
         choice(
             name: 'THIRD_PARTY_RPM_VERSION',
-            choices: ['cortx-2.0', 'cortx-2.0-k8', 'custom'],
+            choices: ['cortx-2.0-k8', 'cortx-2.0', 'custom'],
             description: 'Third Party RPM Version to use.'
         )
 
@@ -169,12 +169,6 @@ pipeline {
                         script { build_stage = env.STAGE_NAME }
                         script {
                             try {                    
-                                sh label: 'Copy RPMS', script:'''
-                                if [ "$HA_BRANCH" == "Cortx-v1.0.0_Beta"  ]; then
-                                    echo "cortx-ha does not have Cortx-v1.0.0_Beta branch."
-                                    exit 1
-                                fi
-                                '''
                                 def habuild = build job: '/GitHub-custom-ci-builds/centos-7.9/cortx-ha', wait: true,
                                           parameters: [
                                               string(name: 'HA_URL', value: "${HA_URL}"),
