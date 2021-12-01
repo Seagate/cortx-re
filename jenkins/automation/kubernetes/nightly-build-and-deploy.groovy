@@ -167,7 +167,7 @@ pipeline {
 				echo "${env.cortxCluster_status}"
 				echo "${env.qaSanity_status}"
 				if ( "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "SUCCESS" ) {
-					MESSAGE = "#K8s ${build_id} 3node Deployment Deployment=Passed, SanityTest=Passed"
+					MESSAGE = "K8s Build#${build_id} 3node Deployment Deployment=Passed, SanityTest=Passed"
 					ICON = "accept.gif"
 					STATUS = "SUCCESS"
 					env.deployment_result = "SUCCESS"
@@ -175,14 +175,14 @@ pipeline {
 					currentBuild.result = "SUCCESS"
 				} else if ( "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "FAILURE" ) {
 					manager.buildFailure()
-					MESSAGE = "#K8s ${build_id} 3node Deployment Deployment=Passed, SanityTest=failed"
+					MESSAGE = "K8s Build#${build_id} 3node Deployment Deployment=Passed, SanityTest=failed"
 					ICON = "error.gif"
 					STATUS = "FAILURE"
 					env.sanity_result = "FAILURE"
 					env.deployment_result = "SUCCESS"
 					currentBuild.result = "FAILURE"
 				} else if ( "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "UNSTABLE" ) {
-					MESSAGE = "#K8s ${build_id} 3node Deployment Deployment=Passed, SanityTest=unstable"
+					MESSAGE = "K8s Build#${build_id} 3node Deployment Deployment=Passed, SanityTest=unstable"
 					ICON = "unstable.gif"
 					STATUS = "UNSTABLE"
 					env.deployment_result = "SUCCESS"
@@ -190,14 +190,14 @@ pipeline {
 					currentBuild.result = "UNSTABLE"
 				} else if ( "${env.cortxCluster_status}" == "FAILURE" ) {
 					manager.buildFailure()
-					MESSAGE = "#K8s ${build_id} 3node Deployment Deployment=failed, SanityTest=skipped"
+					MESSAGE = "K8s Build#${build_id} 3node Deployment Deployment=failed, SanityTest=skipped"
 					ICON = "error.gif"
 					STATUS = "FAILURE"
 					env.sanity_result = "FAILURE"
 					env.deployment_result = "FAILURE"
 					currentBuild.result = "FAILURE"
 				} else {
-					MESSAGE = "#K8s ${build_id} 3node Deployment Deployment=unstable, SanityTest=unstable"
+					MESSAGE = "K8s Build#${build_id} 3node Deployment Deployment=unstable, SanityTest=unstable"
 					ICON = "unstable.gif"
 					STATUS = "UNSTABLE"
 					env.sanity_result = "UNSTABLE"
