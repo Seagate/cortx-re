@@ -23,7 +23,7 @@ pipeline {
 			description: 'Email Notification Recipients ',
 			name: 'EMAIL_RECIPIENTS'
 		)
-		string(name: 'CORTX_SCRIPTS_BRANCH', defaultValue: 'v0.0.14', description: 'Release for cortx-k8s scripts (Services Team)', trim: true)
+		string(name: 'CORTX_SCRIPTS_BRANCH', defaultValue: 'v0.0.15', description: 'Release for cortx-k8s scripts (Services Team)', trim: true)
 		string(name: 'CORTX_SCRIPTS_REPO', defaultValue: 'Seagate/cortx-k8s', description: 'Repository for cortx-k8s scripts (Services Team)', trim: true)
 		string(name: 'ADMIN_USER', defaultValue: "cortxadmin", description: 'CSM Admin login username for the given host')
 		password(name: 'ADMIN_PWD', defaultValue: 'Cortxadmin@123', description: 'CSM Admin login password for the given host    ')
