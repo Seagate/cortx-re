@@ -215,7 +215,7 @@ pipeline {
 				} else if ( params.EMAIL_RECIPIENTS == "DEVOPS" ) {
 					mailRecipients = "CORTX.DevOps.RE@seagate.com"
 				} else if ( params.EMAIL_RECIPIENTS == "DEBUG" ) {
-					mailRecipients = "shailesh.vaidya@seagate.com, abhijit.patil@seagate.com"
+					mailRecipients = "shailesh.vaidya@seagate.com, abhijit.patil@seagate.com, amit.kapil@seagate.com"
 				}
 				emailext (
 					body: '''${SCRIPT, template="K8s-deployment-email.template"}${SCRIPT, template="REL_QA_SANITY_CUS_EMAIL_3.template"}''',
