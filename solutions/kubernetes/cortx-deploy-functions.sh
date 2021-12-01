@@ -69,11 +69,11 @@ function update_solution_config(){
         yq e -i '.solution.secrets.content.csm_mgmt_admin_secret = "Cortxadmin@123"' solution.yaml
 
         yq e -i '.solution.images.openldap = "ghcr.io/seagate/symas-openldap:2.4.58"' solution.yaml
-        yq e -i '.solution.images.consul = "hashicorp/consul:1.10.0"' solution.yaml
-        yq e -i '.solution.images.kafka = "3.0.0-debian-10-r7"' solution.yaml
-        yq e -i '.solution.images.zookeeper = "3.7.0-debian-10-r182"' solution.yaml
-        yq e -i '.solution.images.gluster = "docker.io/gluster/gluster-centos:latest"' solution.yaml
-        yq e -i '.solution.images.rancher = "rancher/local-path-provisioner:v0.0.20"' solution.yaml
+        yq e -i '.solution.images.consul = "ghcr.io/seagate/consul:1.10.0"' solution.yaml
+        yq e -i '.solution.images.kafka = "ghcr.io/seagate/kafka:3.0.0-debian-10-r7"' solution.yaml
+        yq e -i '.solution.images.zookeeper = "ghcr.io/seagate/zookeeper:3.7.0-debian-10-r182"' solution.yaml
+        yq e -i '.solution.images.rancher = "ghcr.io/seagate/local-path-provisioner:v0.0.20"' solution.yaml
+        yq e -i '.solution.images.busybox = "ghcr.io/seagate/busybox:latest"' solution.yaml
 
         drive=$SYSTEM_DRIVE_MOUNT yq e -i '.solution.common.storage_provisioner_path = env(drive)' solution.yaml
         yq e -i '.solution.common.container_path.local = "/etc/cortx"' solution.yaml
@@ -87,7 +87,6 @@ function update_solution_config(){
         yq e -i '.solution.common.storage_sets.name = "storage-set-1"' solution.yaml
         yq e -i '.solution.common.storage_sets.durability.sns = "1+0+0"' solution.yaml
         yq e -i '.solution.common.storage_sets.durability.dix = "1+0+0"' solution.yaml
-        yq e -i '.solution.common.glusterfs.size = "5Gi"' solution.yaml
 
         yq e -i '.solution.storage.cvg1.name = "cvg-01"' solution.yaml
         yq e -i '.solution.storage.cvg1.type = "ios"' solution.yaml
