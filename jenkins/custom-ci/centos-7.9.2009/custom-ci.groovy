@@ -420,7 +420,7 @@ pipeline {
             }
         }
 
-        stage ("Build CORTX-ALL image") {
+        /*stage ("Build CORTX-ALL image") {
                 steps {
                     script { build_stage = env.STAGE_NAME }
                     script {
@@ -441,7 +441,7 @@ pipeline {
                         }
                     }
                 }
-            }
+            } */
     }
 
     post {
