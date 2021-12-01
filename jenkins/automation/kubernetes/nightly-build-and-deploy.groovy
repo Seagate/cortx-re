@@ -131,9 +131,9 @@ pipeline {
 				}
 			}
 		}
+/*
 		stage ("QA Sanity K8S") {
 			steps {
-				script { build_stage = env.STAGE_NAME }
 				script {
 					catchError(stageResult: 'FAILURE') {
 						def qaSanity = build job: '/QA-Sanity-Multinode-K8s', wait: true,
@@ -157,45 +157,52 @@ pipeline {
 				}
 			}
 		}
+*/
 	}
 	post {
 		always {
 			script {
-				junit allowEmptyResults: true, testResults: '*report.xml'
-				if ( env.cortxCluster_status == "SUCCESS" && env.qaSanity_status == "SUCCESS" ) {
+//				junit allowEmptyResults: true, testResults: '*report.xml'
+				env.qaSanity_status = "UNSTABLE"
+				echo "${env.cortxCluster_status}"
+				echo "${env.qaSanity_status}"
+				if ( "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "SUCCESS" ) {
 					MESSAGE = "#K8s ${build_id} 3node Deployment Deployment=Passed, SanityTest=Passed"
 					ICON = "accept.gif"
 					STATUS = "SUCCESS"
 					env.deployment_result = "SUCCESS"
 					env.sanity_result = "SUCCESS"
-				} else if ( env.cortxCluster_status == "SUCCESS" && env.qaSanity_status == "FAILURE" ) {
+					currentBuild.result = "SUCCESS"
+				} else if ( "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "FAILURE" ) {
 					manager.buildFailure()
 					MESSAGE = "#K8s ${build_id} 3node Deployment Deployment=Passed, SanityTest=failed"
 					ICON = "error.gif"
 					STATUS = "FAILURE"
 					env.sanity_result = "FAILURE"
 					env.deployment_result = "SUCCESS"
-				} else if ( env.cortxCluster_status == "SUCCESS" && env.qaSanity_status == "UNSTABLE" ) {
-					manager.buildUnstable()
+					currentBuild.result = "FAILURE"
+				} else if ( "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "UNSTABLE" ) {
 					MESSAGE = "#K8s ${build_id} 3node Deployment Deployment=Passed, SanityTest=unstable"
-					ICON = "warning.gif"
+					ICON = "unstable.gif"
 					STATUS = "UNSTABLE"
 					env.deployment_result = "SUCCESS"
 					env.sanity_result = "UNSTABLE"
-				} else if ( env.cortxCluster_status == "FAILURE" ) {
+					currentBuild.result = "UNSTABLE"
+				} else if ( "${env.cortxCluster_status}" == "FAILURE" ) {
 					manager.buildFailure()
 					MESSAGE = "#K8s ${build_id} 3node Deployment Deployment=failed, SanityTest=skipped"
 					ICON = "error.gif"
 					STATUS = "FAILURE"
 					env.sanity_result = "FAILURE"
 					env.deployment_result = "FAILURE"
+					currentBuild.result = "FAILURE"
 				} else {
-					manager.buildUnstable()
 					MESSAGE = "#K8s ${build_id} 3node Deployment Deployment=unstable, SanityTest=unstable"
-					ICON = "warning.gif"
+					ICON = "unstable.gif"
 					STATUS = "UNSTABLE"
 					env.sanity_result = "UNSTABLE"
 					env.deployment_result = "UNSTABLE"
+					currentBuild.result = "UNSTABLE"
 				}
 				env.host = "${env.allhost}"
 				env.build_id = "${env.dockerimage_id}"
