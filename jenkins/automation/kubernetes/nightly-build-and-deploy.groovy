@@ -126,7 +126,7 @@ pipeline {
 						string(name: 'CORTX_SCRIPTS_BRANCH', value: "${CORTX_SCRIPTS_BRANCH}"),
 						string(name: 'CORTX_SCRIPTS_REPO', value: "${CORTX_SCRIPTS_REPO}"),
 					]
-					env.cortxcluster_build_url = cortxCluster.buildVariables.build_setupcortx_url
+					env.cortxcluster_build_url = cortxCluster.absoluteUrl
 					env.cortxCluster_status = cortxCluster.currentResult
 				}
 			}
@@ -204,11 +204,12 @@ pipeline {
 					env.deployment_result = "UNSTABLE"
 					currentBuild.result = "UNSTABLE"
 				}
+				env.build_setupcortx_url = sh( script: "echo ${env.cortxcluster_build_url}/artifact/artifacts/cortx-cluster-status.txt", returnStdout: true)
 				env.host = "${env.allhost}"
 				env.build_id = "${env.dockerimage_id}"
 				env.build_location = "${DOCKER_IMAGE_LOCATION}"
 				env.deployment_status = "${MESSAGE}"
-				env.cluster_status = "${env.cortxcluster_build_url}"
+				env.cluster_status = "${env.build_setupcortx_url}"
 				if ( params.EMAIL_RECIPIENTS == "ALL" ) {
 					mailRecipients = "cortx.sme@seagate.com, manoj.management.team@seagate.com, CORTX.SW.Architecture.Team@seagate.com, CORTX.DevOps.RE@seagate.com"
 				} else if ( params.EMAIL_RECIPIENTS == "DEVOPS" ) {
