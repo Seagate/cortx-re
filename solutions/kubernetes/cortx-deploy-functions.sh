@@ -235,7 +235,8 @@ fi
 function setup_master_node(){
 echo "---------------------------------------[ Setting up Master Node $HOSTNAME ]--------------------------------------"
     download_deploy_script
-    download_images
+    #Third-party images are downloaed from GitHub container regsitry. 
+    #download_images
     install_yq
     
     if [ "$(kubectl get  nodes $HOSTNAME  -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints}" | grep -o NoSchedule)" == "" ]; then
@@ -254,7 +255,8 @@ echo "---------------------------------------[ Setting up Master Node $HOSTNAME 
 
 function setup_worker_node(){
 echo "---------------------------------------[ Setting up Worker Node on $HOSTNAME ]--------------------------------------"
-    download_images
+    #Third-party images are downloaed from GitHub container regsitry.
+    #download_images
     download_deploy_script
     execute_prereq
 }
