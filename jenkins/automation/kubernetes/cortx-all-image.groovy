@@ -37,7 +37,7 @@ pipeline {
         )
 
         choice (
-            choices: ['ssc-vm-rhev4-1576.colo.seagate.com' , 'ghcr.io'],
+            choices: ['cortx-docker.colo.seagate.com' , 'ghcr.io'],
             description: 'Docker Registry to be used',
             name: 'DOCKER_REGISTRY'
         )
