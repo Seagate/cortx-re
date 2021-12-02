@@ -88,8 +88,6 @@ pipeline {
                 manager.createSummary("${ICON}").appendText("<h3>CORTX Cluster Setup ${currentBuild.currentResult} </h3><p>Please check <a href=\"${BUILD_URL}/console\">cluster setup logs</a> for more info <h4>Cluster Status:</h4>${clusterStatusHTML}", false, false, false, "red")
 
                 // Email Notification
-		env.build_status = "${STATUS}"
-		env.build_setupcortx_url = sh( script: "echo ${BUILD_URL}/artifact/artifacts/cortx-cluster-status.txt", returnStdout: true)
                 env.build_stage = "${build_stage}"
                 env.cluster_status = "${clusterStatusHTML}"
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
