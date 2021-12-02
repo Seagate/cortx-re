@@ -124,13 +124,13 @@ function add_node_info_solution_config(){
 echo "Updating node info in solution.yaml"    
 
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
-        count=0
+        count=1
         for node in $(kubectl get nodes -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints[?(@.effect=='NoSchedule')].effect}{\"\n\"}{end}" | grep -v NoSchedule)
             do
             i=$node yq e -i '.solution.nodes['$count'].node'$count'.name = env(i)' solution.yaml
             count=$((count+1))
         done
-        sed -i 's/- //g' solution.yaml
+        sed -i -e 's/- //g' -e '/null/d' solution.yaml
     popd
 }
 
