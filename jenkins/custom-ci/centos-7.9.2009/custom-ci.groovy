@@ -419,29 +419,6 @@ pipeline {
                 '''
             }
         }
-
-        /*stage ("Build CORTX-ALL image") {
-                steps {
-                    script { build_stage = env.STAGE_NAME }
-                    script {
-                        try {
-                            def habuild = build job: '/Release_Engineering/job/re-workspace/job/sv_space/job/sv-cortx-all-image', wait: true,
-                                        parameters: [
-                                            string(name: 'CORTX_RE_URL', value: "https://github.com/Seagate/cortx-re.git"),
-                                            string(name: 'CORTX_RE_BRANCH', value: "kubernetes"),
-                                            string(name: 'BUILD', value: "kubernetes-build-${release_tag}"),
-                                            string(name: 'GITHUB_PUSH', value: "yes"),
-                                            string(name: 'TAG_LATEST', value: "yes"),
-                                            string(name: 'DOCKER_REGISTRY', value: "ssc-vm-rhev4-1576.colo.seagate.com"),
-                                            string(name: 'EMAIL_RECIPIENTS', value: "DEBUG")
-                                            ]
-                        } catch (err) {
-                            build_stage = env.STAGE_NAME
-                            error "Failed to Build CORTX-ALL image"
-                        }
-                    }
-                }
-            } */
     }
 
     post {
