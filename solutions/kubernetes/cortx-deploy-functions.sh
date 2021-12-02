@@ -298,14 +298,19 @@ echo "---------------------------------------[ hctl status ]--------------------
     SECONDS=0
     date
     while [[ SECONDS -lt 1200 ]] ; do
-	if ! kubectl exec -it $(kubectl get pods | awk '/cortx-data-pod/{print $1; exit}') -c cortx-motr-hax -- hctl status| grep -q -E 'unknown|offline|failed'; then
-	 kubectl exec -it $(kubectl get pods | awk '/cortx-data-pod/{print $1; exit}') -c cortx-motr-hax -- hctl status
-         echo "-----------[ Time taken for service to start $((SECONDS/60)) mins ]--------------------"
-	 exit 0
+        if kubectl exec -it $(kubectl get pods | awk '/cortx-data-pod/{print $1; exit}') -c cortx-motr-hax -- hctl status > /dev/null ; then
+                if ! kubectl exec -it $(kubectl get pods | awk '/cortx-data-pod/{print $1; exit}') -c cortx-motr-hax -- hctl status| grep -q -E 'unknown|offline|failed'; then
+                    kubectl exec -it $(kubectl get pods | awk '/cortx-data-pod/{print $1; exit}') -c cortx-motr-hax -- hctl status
+                    echo "-----------[ Time taken for service to start $((SECONDS/60)) mins ]--------------------"
+                    exit 0
+                else
+                    echo "-----------[ Waiting for services to become online. Sleeping for 1min.... ]--------------------"
+                    sleep 60
+                fi
         else
-         echo "-----------[ Waiting for services to become online. Sleeping for 1min.... ]--------------------"
-         sleep 60
-	fi
+           echo "----------------------[ hctl status not working yet. Sleeping for 1min.... ]-------------------------"
+           sleep 60
+        fi
     done
         echo "-----------[ Failed to to start services within 20mins. Exiting....]--------------------"
         exit 1
