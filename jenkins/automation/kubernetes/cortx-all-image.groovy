@@ -105,7 +105,7 @@ pipeline {
         always {
             cleanWs()
             script {
-                env.docker_image_location = "https://github.com/Seagate/cortx-re/pkgs/container/cortx-all"
+                env.docker_image_location = "https://github.com/Seagate/cortx/pkgs/container/cortx-all"
                 env.image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' | head -1", returnStdout: true).trim()
                 env.build_stage = "${build_stage}"
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
