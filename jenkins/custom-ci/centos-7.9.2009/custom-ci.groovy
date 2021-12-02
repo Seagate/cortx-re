@@ -432,7 +432,7 @@ pipeline {
                                         string(name: 'BUILD', value: "${release_tag}"),
                                         string(name: 'GITHUB_PUSH', value: "yes"),
                                         string(name: 'TAG_LATEST', value: "yes"),
-                                        string(name: 'DOCKER_REGISTRY', value: "ssc-vm-rhev4-1576.colo.seagate.com"),
+                                        string(name: 'DOCKER_REGISTRY', value: "cortx-docker.colo.seagate.com"),
                                         string(name: 'EMAIL_RECIPIENTS', value: "DEBUG")
                                         ]
                     } catch (err) {
