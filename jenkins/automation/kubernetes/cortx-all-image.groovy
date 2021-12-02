@@ -74,8 +74,8 @@ pipeline {
                 sh label: 'Docker Registry Login', script: '''
                 if [ "$DOCKER_REGISTRY" == "ghcr.io" ]; then
                     docker login ghcr.io -u ${GITHUB_CRED_USR} -p ${GITHUB_CRED_PSW}
-                elif [ "$DOCKER_REGISTRY" == "ssc-vm-rhev4-1576.colo.seagate.com" ]; then
-                    docker login ssc-vm-rhev4-1576.colo.seagate.com -u ${LOCAL_REG_CRED_USR} -p ${LOCAL_REG_CRED_PSW}
+                elif [ "$DOCKER_REGISTRY" == "cortx-docker.colo.seagate.com" ]; then
+                    docker login cortx-docker.colo.seagate.com -u ${LOCAL_REG_CRED_USR} -p ${LOCAL_REG_CRED_PSW}
                 fi
                 '''
             }
