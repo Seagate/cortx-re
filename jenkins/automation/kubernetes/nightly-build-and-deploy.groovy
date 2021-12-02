@@ -131,7 +131,6 @@ pipeline {
 				}
 			}
 		}
-/*
 		stage ("QA Sanity K8S") {
 			steps {
 				script {
@@ -150,6 +149,7 @@ pipeline {
 						env.Current_TP = qaSanity.buildVariables.Current_TP
 						env.Health = qaSanity.buildVariables.Health
 						env.qaSanity_status = qaSanity.currentResult
+						env.qaSanityK8sJob_URL = qaSanity.absoluteUrl
 					}
 					copyArtifacts filter: 'log/*report.xml', fingerprintArtifacts: true, flatten: true, optional: true, projectName: 'QA-Sanity-Multinode-K8s', selector: lastCompleted(), target: ''
 					copyArtifacts filter: 'log/*report.html', fingerprintArtifacts: true, flatten: true, optional: true, projectName: 'QA-Sanity-Multinode-K8s', selector: lastCompleted(), target: ''
@@ -157,13 +157,11 @@ pipeline {
 				}
 			}
 		}
-*/
 	}
 	post {
 		always {
 			script {
-//				junit allowEmptyResults: true, testResults: '*report.xml'
-				env.qaSanity_status = "UNSTABLE"
+				junit allowEmptyResults: true, testResults: '*report.xml'
 				echo "${env.cortxCluster_status}"
 				echo "${env.qaSanity_status}"
 				if ( "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "SUCCESS" ) {
@@ -181,7 +179,7 @@ pipeline {
 					env.sanity_result = "FAILURE"
 					env.deployment_result = "SUCCESS"
 					currentBuild.result = "FAILURE"
-				} else if ( "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "UNSTABLE" ) {
+				} else if ( "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "UNSTABLE" || "${env.qaSanity_status}" == null ) {
 					MESSAGE = "K8s Build#${build_id} 3node Deployment Deployment=Passed, SanityTest=unstable"
 					ICON = "unstable.gif"
 					STATUS = "UNSTABLE"
@@ -210,6 +208,7 @@ pipeline {
 				env.build_location = "${DOCKER_IMAGE_LOCATION}"
 				env.deployment_status = "${MESSAGE}"
 				env.cluster_status = "${env.build_setupcortx_url}"
+				env.CORTX_BUILD = "${env.dockerimage_id}"
 				if ( params.EMAIL_RECIPIENTS == "ALL" ) {
 					mailRecipients = "cortx.sme@seagate.com, manoj.management.team@seagate.com, CORTX.SW.Architecture.Team@seagate.com, CORTX.DevOps.RE@seagate.com"
 				} else if ( params.EMAIL_RECIPIENTS == "DEVOPS" ) {
@@ -218,7 +217,7 @@ pipeline {
 					mailRecipients = "shailesh.vaidya@seagate.com, abhijit.patil@seagate.com, amit.kapil@seagate.com"
 				}
 				emailext (
-					body: '''${SCRIPT, template="K8s-deployment-email.template"}${SCRIPT, template="REL_QA_SANITY_CUS_EMAIL_3.template"}''',
+					body: '''${SCRIPT, template="K8s-deployment-email_1.template"}${SCRIPT, template="REL_QA_SANITY_CUS_EMAIL_RETEAM_5.template"}''',
 					mimeType: 'text/html',
 					subject: "${MESSAGE}",
 					to: "${mailRecipients}",
