@@ -308,7 +308,7 @@ echo "---------------------------------------[ hctl status ]--------------------
                     sleep 60
                 fi
         else
-           echo "----------------------[ hctl status failed. existing .... ]-------------------------"
+           echo "----------------------[ hctl status not working yet. Sleeping for 1min.... ]-------------------------"
            sleep 60
         fi
     done
