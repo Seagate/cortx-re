@@ -254,7 +254,7 @@ echo "---------------------------------------[ Setting up Master Node $HOSTNAME 
 
 function setup_worker_node(){
 echo "---------------------------------------[ Setting up Worker Node on $HOSTNAME ]--------------------------------------"
-    download_images
+    #download_images
     download_deploy_script
     execute_prereq
 }
