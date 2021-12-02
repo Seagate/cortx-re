@@ -31,7 +31,7 @@ pipeline {
         S3_PR_REFSEPEC = "${ghprbPullId != null ? S3_GPR_REFSEPEC : S3_BRANCH_REFSEPEC}"
         BUILD_TRIGGER_BY = "${currentBuild.getBuildCauses()[0].shortDescription}"
 	MOTR_BRANCH = "main"
-	// Above variable used for when we trigger build by timer then motr branch will checkout from main branch
+	// MOTR_BRANCH variable used for when we trigger build by timer then motr branch will checkout from main branch
     }
  	
 	stages {	
