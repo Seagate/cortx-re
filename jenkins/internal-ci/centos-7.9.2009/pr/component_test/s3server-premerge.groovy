@@ -17,8 +17,9 @@ pipeline {
     } 
 
     parameters {  
-	    string(name: 'S3_URL', defaultValue: 'https://github.com/Seagate/cortx-s3server', description: 'Repo for S3Server')
-        string(name: 'S3_BRANCH', defaultValue: 'main', description: 'Branch for S3Server')     
+        string(name: 'S3_URL', defaultValue: 'https://github.com/Seagate/cortx-s3server', description: 'Repo for S3Server')
+        string(name: 'S3_BRANCH', defaultValue: 'main', description: 'Branch for S3Server')
+        string(name: 'MOTR_BRANCH', defaultValue: 'main', description: 'Give branch for  Cortx Motr from where we want to checkout')
 	}
 
     environment {
@@ -54,7 +55,11 @@ pipeline {
                     expression { env.BUILD_TRIGGER_BY == 'Started by timer' }
                 }
                 steps {
-                    sh '''git --git-dir=${WORKSPACE}/third_party/motr/.git checkout main'''
+                    sh '''git --git-dir=${WORKSPACE}/third_party/motr/.git fetch
+                          git --git-dir=${WORKSPACE}/third_party/motr/.git checkout ${MOTR_BRANCH}
+                          git --git-dir=${WORKSPACE}/third_party/motr/.git pull
+                          echo "last commit id = $(git --git-dir=${WORKSPACE}/third_party/motr/.git log -1 --oneline)"
+                       '''
                 }
             }
 
