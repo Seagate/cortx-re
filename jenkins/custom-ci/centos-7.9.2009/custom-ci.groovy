@@ -427,8 +427,8 @@ pipeline {
                     try {
                         def habuild = build job: '/Release_Engineering/re-workspace/sv_space/sv-cortx-all-image', wait: true,
                                     parameters: [
-                                        string(name: 'CORTX_RE_URL', value: "https://github.com/Seagate/cortx-re.git"),
-                                        string(name: 'CORTX_RE_BRANCH', value: "kubernetes"),
+                                        string(name: 'CORTX_RE_URL', value: "${CORTX_RE_URL}"),
+                                        string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
                                         string(name: 'BUILD', value: "${release_tag}"),
                                         string(name: 'GITHUB_PUSH', value: "yes"),
                                         string(name: 'TAG_LATEST', value: "yes"),
