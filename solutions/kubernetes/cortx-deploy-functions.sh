@@ -235,7 +235,7 @@ fi
 function setup_master_node(){
 echo "---------------------------------------[ Setting up Master Node $HOSTNAME ]--------------------------------------"
     download_deploy_script
-    download_images
+    #download_images
     install_yq
     
     if [ "$(kubectl get  nodes $HOSTNAME  -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints}" | grep -o NoSchedule)" == "" ]; then
