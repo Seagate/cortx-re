@@ -235,6 +235,7 @@ fi
 function setup_master_node(){
 echo "---------------------------------------[ Setting up Master Node $HOSTNAME ]--------------------------------------"
     download_deploy_script
+    #Third-party images are downloaed from GitHub container regsitry. 
     #download_images
     install_yq
     
@@ -254,6 +255,7 @@ echo "---------------------------------------[ Setting up Master Node $HOSTNAME 
 
 function setup_worker_node(){
 echo "---------------------------------------[ Setting up Worker Node on $HOSTNAME ]--------------------------------------"
+    #Third-party images are downloaed from GitHub container regsitry.
     #download_images
     download_deploy_script
     execute_prereq
