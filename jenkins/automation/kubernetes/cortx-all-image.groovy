@@ -109,9 +109,9 @@ pipeline {
                 env.image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' | head -1", returnStdout: true).trim()
                 env.build_stage = "${build_stage}"
                 
-                if ( params.EMAIL_RECIPIENTS == "ghcr.io" ) {
+                if ( params.DOCKER_REGISTRY == "ghcr.io" ) {
                     env.docker_image_location = "https://github.com/Seagate/cortx/pkgs/container/cortx-all"
-                } else if ( params.EMAIL_RECIPIENTS == "cortx-docker.colo.seagate.com" ) {
+                } else if ( params.DOCKER_REGISTRY == "cortx-docker.colo.seagate.com" ) {
                     env.docker_image_location = "http://cortx-docker.colo.seagate.com/harbor/projects/3/repositories/cortx-all"
                 }    
 
