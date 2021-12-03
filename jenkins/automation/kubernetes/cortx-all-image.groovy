@@ -105,9 +105,16 @@ pipeline {
         always {
             cleanWs()
             script {
-                env.docker_image_location = "https://github.com/Seagate/cortx/pkgs/container/cortx-all"
+
                 env.image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' | head -1", returnStdout: true).trim()
                 env.build_stage = "${build_stage}"
+                
+                if ( params.EMAIL_RECIPIENTS == "ghcr.io" ) {
+                    env.docker_image_location = "https://github.com/Seagate/cortx/pkgs/container/cortx-all"
+                } else if ( params.EMAIL_RECIPIENTS == "cortx-docker.colo.seagate.com" ) {
+                    env.docker_image_location = "http://cortx-docker.colo.seagate.com/harbor/projects/3/repositories/cortx-all"
+                }    
+
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
                 if ( params.EMAIL_RECIPIENTS == "ALL" ) {
                     mailRecipients = "cortx.sme@seagate.com, manoj.management.team@seagate.com, CORTX.SW.Architecture.Team@seagate.com, CORTX.DevOps.RE@seagate.com"
