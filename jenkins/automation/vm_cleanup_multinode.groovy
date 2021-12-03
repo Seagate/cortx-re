@@ -97,7 +97,7 @@ def runCleanup(host, sleepCount) {
                 playbook: 'prepare.yml',
                 inventory: 'inventories/hosts',
                 extraVars: [
-                    "NODE1"                 : [value: "${host}", hidden: false],
+                    "HOST"                 : [value: "${host}", hidden: false],
                     "CLUSTER_PASS"          : [value: "${NODE_PASS}", hidden: false],
                     "CLOUDFORM_API_CRED"    : [value: "${CLOUDFORM_API_CRED}", hidden: true],
                 ],
