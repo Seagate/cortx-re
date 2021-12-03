@@ -26,12 +26,13 @@ pushd "$FILE_LOCATION" || exit
 cat <<EOF > RELEASE.INFO
 ---
 NAME: "CORTX"
+VERSION: "$VERSION"
 OS: $(cat /etc/redhat-release | sed -e 's/ $//g' -e 's/^/\"/g' -e 's/$/\"/g')
 DATETIME: $(date +"%d-%b-%Y %H:%M %Z" | sed -e 's/^/\"/g' -e 's/$/\"/g')
 COMPONENTS:
-$(for component in $(sed 's/#.*//g' /opt/seagate/cortx/cortx-componenet-rpms.txt); do echo "    - \"$(rpm -qa $component).rpm\"" ; done)
+$(for component in $(sed 's/#.*//g' /opt/seagate/cortx/cortx-componenet-rpms.txt); do echo "    - \"$(rpm -q $component).rpm\"" ; done)
 THIRD_PARTY_RPM_PACKAGES:
-$(for component in $(sed 's/#.*//g' /opt/seagate/cortx/third-party-rpms.txt); do echo "    - \"$(rpm -qa $component).rpm\"" ; done)
+$(for component in $(sed 's/#.*//g' /opt/seagate/cortx/third-party-rpms.txt); do echo "    - \"$(rpm -q $component).rpm\"" ; done)
 THIRD_PARTY_PYTHON_PACKAGES:
 $(pip3 freeze | sed 's/^/    - /g')
 EOF

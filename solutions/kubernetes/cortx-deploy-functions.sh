@@ -18,6 +18,8 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
+set -eo pipefail
+
 SYSTESM_DRIVE="/dev/sdb"
 SYSTEM_DRIVE_MOUNT="/mnt/fs-local-volume"
 SCRIPT_LOCATION="/root/deploy-scripts"
@@ -44,7 +46,7 @@ function download_deploy_script(){
 #Install yq 4.13.3
 
 function install_yq(){
-    pip3 uninstall yq -y
+    pip3 show yq && pip3 uninstall yq -y
     wget https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${YQ_BINARY}.tar.gz -O - | tar xz && mv ${YQ_BINARY} /usr/bin/yq
     if [ -f /usr/local/bin/yq ]; then rm -rf /usr/local/bin/yq; fi    
     ln -s /usr/bin/yq /usr/local/bin/yq
@@ -67,11 +69,11 @@ function update_solution_config(){
         yq e -i '.solution.secrets.content.csm_mgmt_admin_secret = "Cortxadmin@123"' solution.yaml
 
         yq e -i '.solution.images.openldap = "ghcr.io/seagate/symas-openldap:2.4.58"' solution.yaml
-        yq e -i '.solution.images.consul = "hashicorp/consul:1.10.0"' solution.yaml
-        yq e -i '.solution.images.kafka = "3.0.0-debian-10-r7"' solution.yaml
-        yq e -i '.solution.images.zookeeper = "3.7.0-debian-10-r182"' solution.yaml
-        yq e -i '.solution.images.gluster = "docker.io/gluster/gluster-centos:latest"' solution.yaml
-        yq e -i '.solution.images.rancher = "rancher/local-path-provisioner:v0.0.20"' solution.yaml
+        yq e -i '.solution.images.consul = "ghcr.io/seagate/consul:1.10.0"' solution.yaml
+        yq e -i '.solution.images.kafka = "ghcr.io/seagate/kafka:3.0.0-debian-10-r7"' solution.yaml
+        yq e -i '.solution.images.zookeeper = "ghcr.io/seagate/zookeeper:3.7.0-debian-10-r182"' solution.yaml
+        yq e -i '.solution.images.rancher = "ghcr.io/seagate/local-path-provisioner:v0.0.20"' solution.yaml
+        yq e -i '.solution.images.busybox = "ghcr.io/seagate/busybox:latest"' solution.yaml
 
         drive=$SYSTEM_DRIVE_MOUNT yq e -i '.solution.common.storage_provisioner_path = env(drive)' solution.yaml
         yq e -i '.solution.common.container_path.local = "/etc/cortx"' solution.yaml
@@ -85,7 +87,6 @@ function update_solution_config(){
         yq e -i '.solution.common.storage_sets.name = "storage-set-1"' solution.yaml
         yq e -i '.solution.common.storage_sets.durability.sns = "1+0+0"' solution.yaml
         yq e -i '.solution.common.storage_sets.durability.dix = "1+0+0"' solution.yaml
-        yq e -i '.solution.common.glusterfs.size = "5Gi"' solution.yaml
 
         yq e -i '.solution.storage.cvg1.name = "cvg-01"' solution.yaml
         yq e -i '.solution.storage.cvg1.type = "ios"' solution.yaml
@@ -123,13 +124,13 @@ function add_node_info_solution_config(){
 echo "Updating node info in solution.yaml"    
 
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
-        count=0
+        count=1
         for node in $(kubectl get nodes -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints[?(@.effect=='NoSchedule')].effect}{\"\n\"}{end}" | grep -v NoSchedule)
             do
             i=$node yq e -i '.solution.nodes['$count'].node'$count'.name = env(i)' solution.yaml
             count=$((count+1))
         done
-        sed -i 's/- //g' solution.yaml
+        sed -i -e 's/- //g' -e '/null/d' solution.yaml
     popd
 }
 
@@ -164,7 +165,7 @@ function execute_deploy_script(){
 #format and mount system drive
 
 function mount_system_device(){
-    umount -l $SYSTESM_DRIVE
+    findmnt $SYSTESM_DRIVE && umount -l $SYSTESM_DRIVE
     mkfs.ext4 -F $SYSTESM_DRIVE
     mkdir -p /mnt/fs-local-volume
     mount -t ext4 $SYSTESM_DRIVE $SYSTEM_DRIVE_MOUNT
@@ -200,7 +201,7 @@ function download_images(){
 
 function execute_prereq(){
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
-        umount -l $SYSTESM_DRIVE
+        findmnt $SYSTESM_DRIVE && umount -l $SYSTESM_DRIVE
         ./prereq-deploy-cortx-cloud.sh $SYSTESM_DRIVE
     popd    
 
@@ -234,7 +235,8 @@ fi
 function setup_master_node(){
 echo "---------------------------------------[ Setting up Master Node $HOSTNAME ]--------------------------------------"
     download_deploy_script
-    download_images
+    #Third-party images are downloaed from GitHub container regsitry. 
+    #download_images
     install_yq
     
     if [ "$(kubectl get  nodes $HOSTNAME  -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints}" | grep -o NoSchedule)" == "" ]; then
@@ -253,7 +255,8 @@ echo "---------------------------------------[ Setting up Master Node $HOSTNAME 
 
 function setup_worker_node(){
 echo "---------------------------------------[ Setting up Worker Node on $HOSTNAME ]--------------------------------------"
-    download_images
+    #Third-party images are downloaed from GitHub container regsitry.
+    #download_images
     download_deploy_script
     execute_prereq
 }
@@ -263,7 +266,7 @@ function destroy(){
         chmod +x *.sh
         ./destroy-cortx-cloud.sh
     popd
-    umount -l /mnt/fs-local-volume/
+    findmnt $SYSTESM_DRIVE && umount -l $SYSTESM_DRIVE    
     files_to_remove=(
         "/mnt/fs-local-volume/"
         "/root/deploy-scripts/"
@@ -285,9 +288,32 @@ function destroy(){
 
 function print_pod_status(){
 echo "---------------------------------------[ POD Status ]--------------------------------------"
-    kubectl get pods -o wide
+    if ! kubectl get pods | grep -v STATUS | awk '{ print $3}' |  grep -v -q -i running; then
+      kubectl get pods -o wide
+    else
+echo "-----------[ All POD's are not in running state. Marking deployment as failed. Please check problematic pod events using kubectl describe pod <pod name> ]--------------------"
+      exit 1
+    fi
 echo "---------------------------------------[ hctl status ]--------------------------------------"
-    kubectl exec -it $(kubectl get pods | awk '/cortx-data-pod/{print $1; exit}') -c cortx-motr-hax -- hctl status
+    SECONDS=0
+    date
+    while [[ SECONDS -lt 1200 ]] ; do
+        if kubectl exec -it $(kubectl get pods | awk '/cortx-data-pod/{print $1; exit}') -c cortx-motr-hax -- hctl status > /dev/null ; then
+                if ! kubectl exec -it $(kubectl get pods | awk '/cortx-data-pod/{print $1; exit}') -c cortx-motr-hax -- hctl status| grep -q -E 'unknown|offline|failed'; then
+                    kubectl exec -it $(kubectl get pods | awk '/cortx-data-pod/{print $1; exit}') -c cortx-motr-hax -- hctl status
+                    echo "-----------[ Time taken for service to start $((SECONDS/60)) mins ]--------------------"
+                    exit 0
+                else
+                    echo "-----------[ Waiting for services to become online. Sleeping for 1min.... ]--------------------"
+                    sleep 60
+                fi
+        else
+           echo "----------------------[ hctl status not working yet. Sleeping for 1min.... ]-------------------------"
+           sleep 60
+        fi
+    done
+        echo "-----------[ Failed to to start services within 20mins. Exiting....]--------------------"
+        exit 1
 }
 
 case $ACTION in
