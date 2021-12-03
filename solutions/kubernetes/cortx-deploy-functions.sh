@@ -124,13 +124,13 @@ function add_node_info_solution_config(){
 echo "Updating node info in solution.yaml"    
 
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
-        count=0
+        count=1
         for node in $(kubectl get nodes -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints[?(@.effect=='NoSchedule')].effect}{\"\n\"}{end}" | grep -v NoSchedule)
             do
             i=$node yq e -i '.solution.nodes['$count'].node'$count'.name = env(i)' solution.yaml
             count=$((count+1))
         done
-        sed -i 's/- //g' solution.yaml
+        sed -i -e 's/- //g' -e '/null/d' solution.yaml
     popd
 }
 
@@ -235,7 +235,8 @@ fi
 function setup_master_node(){
 echo "---------------------------------------[ Setting up Master Node $HOSTNAME ]--------------------------------------"
     download_deploy_script
-    download_images
+    #Third-party images are downloaed from GitHub container regsitry. 
+    #download_images
     install_yq
     
     if [ "$(kubectl get  nodes $HOSTNAME  -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints}" | grep -o NoSchedule)" == "" ]; then
@@ -254,7 +255,8 @@ echo "---------------------------------------[ Setting up Master Node $HOSTNAME 
 
 function setup_worker_node(){
 echo "---------------------------------------[ Setting up Worker Node on $HOSTNAME ]--------------------------------------"
-    download_images
+    #Third-party images are downloaed from GitHub container regsitry.
+    #download_images
     download_deploy_script
     execute_prereq
 }
@@ -296,14 +298,19 @@ echo "---------------------------------------[ hctl status ]--------------------
     SECONDS=0
     date
     while [[ SECONDS -lt 1200 ]] ; do
-	if ! kubectl exec -it $(kubectl get pods | awk '/cortx-data-pod/{print $1; exit}') -c cortx-motr-hax -- hctl status| grep -q -E 'unknown|offline|failed'; then
-	 kubectl exec -it $(kubectl get pods | awk '/cortx-data-pod/{print $1; exit}') -c cortx-motr-hax -- hctl status
-         echo "-----------[ Time taken for service to start $((SECONDS/60)) mins ]--------------------"
-	 exit 0
+        if kubectl exec -it $(kubectl get pods | awk '/cortx-data-pod/{print $1; exit}') -c cortx-motr-hax -- hctl status > /dev/null ; then
+                if ! kubectl exec -it $(kubectl get pods | awk '/cortx-data-pod/{print $1; exit}') -c cortx-motr-hax -- hctl status| grep -q -E 'unknown|offline|failed'; then
+                    kubectl exec -it $(kubectl get pods | awk '/cortx-data-pod/{print $1; exit}') -c cortx-motr-hax -- hctl status
+                    echo "-----------[ Time taken for service to start $((SECONDS/60)) mins ]--------------------"
+                    exit 0
+                else
+                    echo "-----------[ Waiting for services to become online. Sleeping for 1min.... ]--------------------"
+                    sleep 60
+                fi
         else
-         echo "-----------[ Waiting for services to become online. Sleeping for 1min.... ]--------------------"
-         sleep 60
-	fi
+           echo "----------------------[ hctl status not working yet. Sleeping for 1min.... ]-------------------------"
+           sleep 60
+        fi
     done
         echo "-----------[ Failed to to start services within 20mins. Exiting....]--------------------"
         exit 1
