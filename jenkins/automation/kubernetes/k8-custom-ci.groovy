@@ -155,7 +155,7 @@ pipeline {
                                                         string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}"),
                                                         string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}"),
                                                         string(name: 'CORTX_UTILS_URL', value: "${CORTX_UTILS_URL}"),
-														string(name: 'THIRD_PARTY_PYTHON_VERSION', value: "${THIRD_PARTY_PYTHON_VERSION}")
+                                                        string(name: 'THIRD_PARTY_PYTHON_VERSION', value: "${THIRD_PARTY_PYTHON_VERSION}")
                                                     ]
                             } catch (err) {
                                 build_stage = env.STAGE_NAME             
@@ -183,7 +183,7 @@ pipeline {
                                                 string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}"),
                                                 string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}"),
                                                 string(name: 'CORTX_UTILS_URL', value: "${CORTX_UTILS_URL}"),
-										        string(name: 'THIRD_PARTY_PYTHON_VERSION', value: "${THIRD_PARTY_PYTHON_VERSION}")
+                                                string(name: 'THIRD_PARTY_PYTHON_VERSION', value: "${THIRD_PARTY_PYTHON_VERSION}")
                                           ]
                             } catch (err) {
                                 build_stage = env.STAGE_NAME
@@ -203,9 +203,9 @@ pipeline {
                                                     string(name: 'CSM_AGENT_URL', value: "${CSM_AGENT_URL}"),
                                                     string(name: 'CSM_AGENT_BRANCH', value: "${CSM_AGENT_BRANCH}"),
                                                     string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}"),
-													string(name: 'THIRD_PARTY_RPM_VERSION', value: "${THIRD_PARTY_PYTHON_VERSION}"),
-												    string(name: 'THIRD_PARTY_PYTHON_VERSION', value: "${THIRD_PARTY_PYTHON_VERSION}"),
-												    string(name: 'INTEGRATION_DIR_PATH', value: "${integration_dir}")
+                                                    string(name: 'THIRD_PARTY_RPM_VERSION', value: "${THIRD_PARTY_RPM_VERSION}"),
+                                                    string(name: 'THIRD_PARTY_PYTHON_VERSION', value: "${THIRD_PARTY_PYTHON_VERSION}"),
+                                                    string(name: 'INTEGRATION_DIR_PATH', value: "${integration_dir}")
                                               ]
                             } catch (err) {
                                 build_stage = env.STAGE_NAME
