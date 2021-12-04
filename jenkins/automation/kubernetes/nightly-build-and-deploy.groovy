@@ -179,7 +179,7 @@ pipeline {
 					env.sanity_result = "FAILURE"
 					env.deployment_result = "SUCCESS"
 					currentBuild.result = "FAILURE"
-				} else if ( "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "UNSTABLE" || "${env.qaSanity_status}" == null ) {
+				} else if ( "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "UNSTABLE" || "${env.qaSanity_status}" == "null" ) {
 					MESSAGE = "K8s Build#${build_id} 3node Deployment Deployment=Passed, SanityTest=unstable"
 					ICON = "unstable.gif"
 					STATUS = "UNSTABLE"
