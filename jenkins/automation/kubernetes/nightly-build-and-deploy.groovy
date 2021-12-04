@@ -4,13 +4,13 @@ pipeline {
 			label 'docker-centos-7.9.2009-node'
 		}
 	}
+	triggers { cron('30 19 * * *') }
 	options {
 		timeout(time: 600, unit: 'MINUTES')
 		timestamps()
 		buildDiscarder(logRotator(daysToKeepStr: '20', numToKeepStr: '20'))
 		disableConcurrentBuilds()
 	}
-	triggers { cron('30 19 * * *') }
 	environment {
 		CORTX_RE_BRANCH = "kubernetes"
 		CORTX_RE_REPO = "https://github.com/Seagate/cortx-re/"
@@ -135,7 +135,7 @@ pipeline {
 			steps {
 				script {
 					catchError(stageResult: 'FAILURE') {
-						def qaSanity = build job: '/QA-Sanity-Multinode-K8s', wait: true,
+						def qaSanity = build job: '/QA-Sanity-Multinode-K8s', wait: true, propagate: false,
 						parameters: [
 							string(name: 'M_NODE', value: "${env.master_node}"),
 							password(name: 'HOST_PASS', value: "${env.hostpasswd}"),
@@ -144,16 +144,17 @@ pipeline {
 							string(name: 'CORTX_IMAGE', value: "${env.dockerimage_id}"),
 							string(name: 'NUM_NODES', value: "${env.numberofnodes}"),
 						]
-						env.Sanity_Failed = qaSanity.buildnumber
+						env.Sanity_Failed = qaSanity.buildVariables.Sanity_Failed
 						env.sanity_result = qaSanity.currentResult
 						env.Current_TP = qaSanity.buildVariables.Current_TP
 						env.Health = qaSanity.buildVariables.Health
 						env.qaSanity_status = qaSanity.currentResult
 						env.qaSanityK8sJob_URL = qaSanity.absoluteUrl
 					}
+					copyArtifacts filter: 'log/*report.xml', fingerprintArtifacts: true, flatten: true, optional: true, projectName: 'QA-Sanity-Multinode-K8s', selector: lastCompleted(), target: 'log/'
+					copyArtifacts filter: 'log/*report.html', fingerprintArtifacts: true, flatten: true, optional: true, projectName: 'QA-Sanity-Multinode-K8s', selector: lastCompleted(), target: 'log/'
 					copyArtifacts filter: 'log/*report.xml', fingerprintArtifacts: true, flatten: true, optional: true, projectName: 'QA-Sanity-Multinode-K8s', selector: lastCompleted(), target: ''
 					copyArtifacts filter: 'log/*report.html', fingerprintArtifacts: true, flatten: true, optional: true, projectName: 'QA-Sanity-Multinode-K8s', selector: lastCompleted(), target: ''
-					
 				}
 			}
 		}
@@ -208,7 +209,7 @@ pipeline {
 				env.build_location = "${DOCKER_IMAGE_LOCATION}"
 				env.deployment_status = "${MESSAGE}"
 				env.cluster_status = "${env.build_setupcortx_url}"
-				env.CORTX_BUILD = "${env.dockerimage_id}"
+				env.CORTX_DOCKER_IMAGE = "${env.dockerimage_id}"
 				if ( params.EMAIL_RECIPIENTS == "ALL" ) {
 					mailRecipients = "cortx.sme@seagate.com, manoj.management.team@seagate.com, CORTX.SW.Architecture.Team@seagate.com, CORTX.DevOps.RE@seagate.com"
 				} else if ( params.EMAIL_RECIPIENTS == "DEVOPS" ) {
@@ -216,13 +217,16 @@ pipeline {
 				} else if ( params.EMAIL_RECIPIENTS == "DEBUG" ) {
 					mailRecipients = "shailesh.vaidya@seagate.com, abhijit.patil@seagate.com, amit.kapil@seagate.com"
 				}
-				emailext (
-					body: '''${SCRIPT, template="K8s-deployment-email_1.template"}${SCRIPT, template="REL_QA_SANITY_CUS_EMAIL_RETEAM_5.template"}''',
-					mimeType: 'text/html',
-					subject: "${MESSAGE}",
-					to: "${mailRecipients}",
-					recipientProviders: [[$class: 'RequesterRecipientProvider']]
-				)
+				catchError(stageResult: 'FAILURE') {
+					archiveArtifacts allowEmptyArchive: true, artifacts: 'log/*report.xml, log/*report.html, support_bundle/*.tar, crash_files/*.gz', followSymlinks: false
+					emailext (
+						body: '''${SCRIPT, template="K8s-deployment-email_1.template"}${SCRIPT, template="REL_QA_SANITY_CUS_EMAIL_RETEAM_5.template"}''',
+						mimeType: 'text/html',
+						subject: "${MESSAGE}",
+						to: "${mailRecipients}",
+						recipientProviders: [[$class: 'RequesterRecipientProvider']]
+					)
+				}
 				cleanWs()
 			}
 		}
