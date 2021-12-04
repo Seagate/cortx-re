@@ -20,12 +20,27 @@
 
 set -eo pipefail
 
-SYSTESM_DRIVE="/dev/sdb"
+SYSTEM_DRIVE="/dev/sdb"
 SYSTEM_DRIVE_MOUNT="/mnt/fs-local-volume"
 SCRIPT_LOCATION="/root/deploy-scripts"
 YQ_VERSION=v4.13.3
 YQ_BINARY=yq_linux_386
 SOLUTION_CONFIG="/var/tmp/solution.yaml"
+
+# Containers images. Add new images here.
+IMAGES=(
+   bitnami/kafka:3.0.0-debian-10-r7
+   hashicorp/consul:1.10.3
+   bitnami/zookeeper:3.7.0-debian-10-r157
+   bitnami/kafka:2.8.1-debian-10-r0
+   centos:7
+   busybox:latest
+   hashicorp/consul:1.10.2
+   rancher/local-path-provisioner:v0.0.20
+   hashicorp/consul:1.10.0
+   centos:7.9.2009
+   gluster/gluster-centos:latest
+   )
 
 #On master
 #download CORTX k8 deployment scripts
@@ -117,7 +132,6 @@ pushd $SCRIPT_LOCATION/k8_cortx_cloud
     image=$CORTX_IMAGE yq e -i '.solution.images.cortxdataprov = env(image)' solution.yaml
     image=$CORTX_IMAGE yq e -i '.solution.images.cortxdata = env(image)' solution.yaml
 popd 
-
 }
 
 function add_node_info_solution_config(){
@@ -165,10 +179,10 @@ function execute_deploy_script(){
 #format and mount system drive
 
 function mount_system_device(){
-    findmnt $SYSTESM_DRIVE && umount -l $SYSTESM_DRIVE
-    mkfs.ext4 -F $SYSTESM_DRIVE
+    findmnt $SYSTEM_DRIVE && umount -l $SYSTEM_DRIVE
+    mkfs.ext4 -F $SYSTEM_DRIVE
     mkdir -p /mnt/fs-local-volume
-    mount -t ext4 $SYSTESM_DRIVE $SYSTEM_DRIVE_MOUNT
+    mount -t ext4 $SYSTEM_DRIVE $SYSTEM_DRIVE_MOUNT
     mkdir -p /mnt/fs-local-volume/local-path-provisioner
     sysctl -w vm.max_map_count=30000000
 }
@@ -191,20 +205,38 @@ function openldap_requiremenrs(){
 }
 
 function download_images(){
-    rm -rf /var/images
-    mkdir -p /var/images && pushd /var/images
-        wget -q -r -np -nH --cut-dirs=3 -A *.tar http://cortx-storage.colo.seagate.com/releases/cortx/images/
-        for file in $(ls -1); do docker load -i $file; done
-    popd
-    
+image_counter=0
+
+printf "%s\n" ${IMAGES[@]} > /var/tmp/images
+docker images | awk '{ print $1":"$2 }' | tail -n +2 | grep -wFf /var/tmp/images > /var/tmp/host_images
+readarray -t HOST_IMAGES < /var/tmp/host_images
+
+# Check if provided container images are already present on the host.
+for image in "${IMAGES[@]}"; do
+   for host_image in "${HOST_IMAGES[@]}"; do
+      if [ "$image" == "$host_image" ]; then
+         echo "Container image $image is already present on $HOSTNAME."
+         ((image_counter++))
+      fi
+   done
+done
+
+# Verify total all images are present.
+if [ "$image_counter" -ne 11 ]; then
+   echo "Container images are not present on $HOSTNAME. Downloading images:"
+   rm -rf /var/images
+   mkdir -p /var/images && pushd /var/images
+       wget -q -r -np -nH --cut-dirs=3 -A *.tar http://cortx-storage.colo.seagate.com/releases/cortx/images/
+       for file in $(ls -1); do docker load -i $file; done
+   popd
+fi
 }
 
 function execute_prereq(){
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
-        findmnt $SYSTESM_DRIVE && umount -l $SYSTESM_DRIVE
-        ./prereq-deploy-cortx-cloud.sh $SYSTESM_DRIVE
+        findmnt $SYSTEM_DRIVE && umount -l $SYSTEM_DRIVE
+        ./prereq-deploy-cortx-cloud.sh $SYSTEM_DRIVE
     popd    
-
 }
 
 function usage(){
@@ -266,7 +298,7 @@ function destroy(){
         chmod +x *.sh
         ./destroy-cortx-cloud.sh
     popd
-    findmnt $SYSTESM_DRIVE && umount -l $SYSTESM_DRIVE    
+    findmnt $SYSTEM_DRIVE && umount -l $SYSTEM_DRIVE    
     files_to_remove=(
         "/mnt/fs-local-volume/"
         "/root/deploy-scripts/"
