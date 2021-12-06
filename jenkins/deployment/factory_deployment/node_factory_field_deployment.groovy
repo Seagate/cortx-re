@@ -1,4 +1,5 @@
 #!/usr/bin/env groovy
+
 pipeline { 
     agent {
         node {
@@ -7,11 +8,13 @@ pipeline {
     }
 	
     parameters {
-        string(name: 'CORTX_BUILD', defaultValue: '', description: 'Build URL', trim: true)
+        string(name: 'CORTX_BUILD', defaultValue: '', description: 'Build URL', trim: true)	    
 	string(name: 'MGMT_VIP', defaultValue: '', description: 'Management VIP', trim: true)
         string(name: 'HOST', defaultValue: '' , description: 'HW Deploy Host', trim: true)
         string(name: 'CONFIG', defaultValue: '' , description: 'HW config file raw file path', trim: true)
         choice(name: 'DEPLOY_TYPE', choices: [ 'DEPLOY-WITH-REIMAGE','DEPLOY-WITHOUT-REIMAGE','REIMAGE' ], description: 'Deployment Type')
+        string(name: 'NODEADMIN_USER', defaultValue: '' , description: 'nodeadmin user', trim: true)
+        string(name: 'NODEADMIN_NEW_PASSWORD', defaultValue: '' , description: 'Enter the new nodeadmin password, i.e different than the default password', trim: true)
     }
 
 	environment {
@@ -27,8 +30,8 @@ pipeline {
         CORTX_OS_ISO_NAME = getBuildArtifcatName("${ISO_PARENT_DIR}/", 'cortx-os')
         CORTX_PREP_URL = "${ISO_PARENT_DIR}/${CORTX_PREP_NAME}"
         CORTX_OS_ISO_URL = "${ISO_PARENT_DIR}/${CORTX_OS_ISO_NAME}"
-	
-	NODE_UN_PASS_CRED_ID = "cortx-re-cloudform"
+
+        NODE_UN_PASS_CRED_ID = "cortx-re-cloudform"
         RE_SAT_CRED_ID       = "RE-SAT-CRED"
         NODE_DEFAULT_SSH_CRED  = credentials("hw-deployment-ssh-cred")
         NODE_USER = "${NODE_DEFAULT_SSH_CRED_USR}"
@@ -63,7 +66,7 @@ pipeline {
                         echo "-----------------------------------------------------------"
                     """
                     dir('cortx-re') {
-                        checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/seagate/cortx-re']]])
+                        checkout([$class: 'GitSCM', branches: [[name: '*/nodecli']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/pujamudaliar/cortx-re']]])
                     }
                 }
             }
@@ -198,7 +201,7 @@ pipeline {
 
                 }
             } 
-        }
+        } 
 		
         stage('09. Storage config') {
             when { expression { DEPLOY_TYPE == "DEPLOY-WITH-REIMAGE" || DEPLOY_TYPE == "DEPLOY-WITHOUT-REIMAGE"  } }
@@ -237,7 +240,7 @@ pipeline {
 
                 }
             } 
-        }  
+        } 
 			
 	}
 	
@@ -315,7 +318,7 @@ def getBuild(buildURL) {
     buildID = sh(script: "curl -s  $buildURL/RELEASE.INFO  | grep BUILD | cut -d':' -f2 | tr -d '\"' | xargs", returnStdout: true).trim()
     buildBranch = sh(script: "curl -s  $buildURL/RELEASE.INFO  | grep BRANCH | cut -d':' -f2 | tr -d '\"' | xargs", returnStdout: true).trim()
 
- return "$buildBranch#$buildID"   
+ return "$buildBranch#$buildID"  
 }
 
 // Method returns host Name from config
@@ -353,23 +356,26 @@ def runAnsible(tags) {
         
         dir("cortx-re/scripts/deployment") {
             ansiblePlaybook(
-                playbook: 'cortx_deploy_factory.yml',
-                inventory: 'inventories/factory_deployment/hosts_srvnodes',
+                playbook: 'cortx_deploy_nodecli_factory.yml',
+                inventory: 'inventories/nodecli_factory_deployment/hosts_srvnodes',
                 tags: "${tags}",
                 extraVars: [
                     
-                    "DEPLOY_TYPE"           : [value: "${DEPLOY_TYPE}", hidden: false],
-                    "CONFIG_URL"            : [value: "${CONFIG}", hidden: false],
-                    "CORTX_BUILD_URL"       : [value: "${CORTX_BUILD}", hidden: false],
-                    "CORTX_PREP_URL"        : [value: "${CORTX_PREP_URL}", hidden: false],
-                    "CORTX_OS_ISO_URL"      : [value: "${CORTX_OS_ISO_URL}", hidden: false],
-                    "CLUSTER_PASS"          : [value: "${CLUSTER_PASS}", hidden: true],
-                    "SATELLITE_UN"          : [value: "${SATELLITE_UN}", hidden: true],
-                    "SATELLITE_PW"          : [value: "${SATELLITE_PW}", hidden: true],
-		    "MGMT_VIP"	            : [value: "${MGMT_VIP}", hidden: true],
-		    "USERS"                 : [value: "${USERS}", hidden: true],
+                    "DEPLOY_TYPE"            : [value: "${DEPLOY_TYPE}", hidden: false],
+                    "CONFIG_URL"             : [value: "${CONFIG}", hidden: false],
+                    "CORTX_BUILD_URL"        : [value: "${CORTX_BUILD}", hidden: false],	
+                    "CORTX_PREP_URL"         : [value: "${CORTX_PREP_URL}", hidden: false],
+                    "CORTX_OS_ISO_URL"       : [value: "${CORTX_OS_ISO_URL}", hidden: false],
+                    "CLUSTER_PASS"           : [value: "${CLUSTER_PASS}", hidden: true],
+                    "SATELLITE_UN"           : [value: "${SATELLITE_UN}", hidden: true],
+                    "SATELLITE_PW"           : [value: "${SATELLITE_PW}", hidden: true],
+		    "MGMT_VIP"		     : [value: "${MGMT_VIP}", hidden: true],
+	            "USERS"                  : [value: "${USERS}", hidden: true],
+                    "NODEADMIN_USER"         : [value: "${NODEADMIN_USER}", hidden: true],
+	            "NODEADMIN_NEW_PASSWORD" : [value: "${NODEADMIN_NEW_PASSWORD}", hidden: true],
 	            "BUILD_NO"               : [value: "${BUILD_NO}", hidden: true],
-		    "VERSION_NO"             : [value: "${VERSION_NO}", hidden: true]			
+		    "VERSION_NO"             : [value: "${VERSION_NO}", hidden: true]
+		    
                 ],
                 extras: '-v',
                 colorized: true
@@ -377,6 +383,7 @@ def runAnsible(tags) {
         }
     }
 }
+
 
 def info(msg) {
     echo "--------------------------------------------------------------"

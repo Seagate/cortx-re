@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Copyright (c) 2021 Seagate Technology LLC and/or its Affiliates
+# Copyright (c) 2020 Seagate Technology LLC and/or its Affiliates
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,6 +25,6 @@ split_dev = dev_list.read().splitlines()
 length = len(split_dev)
 middle_index = length//2
 first_half = split_dev[:middle_index]
-cvg0_data_list = first_half[0:7]
-cvg0_data_dev = ",".join(cvg0_data_list)
-print(cvg0_data_dev)
+cvg0_meta_list = first_half[7:8]
+cvg0_meta_dev = ",".join(cvg0_meta_list)
+print(cvg0_meta_dev)

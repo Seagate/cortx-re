@@ -1,6 +1,7 @@
-#!/usr/bin/python
+#!/bin/expect -f
+
 #
-# Copyright (c) 2021 Seagate Technology LLC and/or its Affiliates
+# Copyright (c) 2020 Seagate Technology LLC and/or its Affiliates
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,13 +19,26 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
-import subprocess
+set timeout 1200
+spawn ssh -p [lindex $argv 2] -o StrictHostKeyChecking=no [lindex $argv 0]@[lindex $argv 1]
 
-dev_list = subprocess.Popen(["multipath -ll|grep mpath |sort -k2|cut -d' ' -f1|sed 's|mpath|/dev/disk/by-id/dm-name-mpath|g'"], shell=True, stdout=subprocess.PIPE).stdout
-split_dev = dev_list.read().splitlines()
-length = len(split_dev)
-middle_index = length//2
-first_half = split_dev[:middle_index]
-cvg0_data_list = first_half[0:7]
-cvg0_data_dev = ",".join(cvg0_data_list)
-print(cvg0_data_dev)
+expect {
+    timeout {
+        puts "Connection timed out"
+        exit 1
+    }
+
+    -re "nodecli>" {
+         send "[lindex $argv 3]\r"
+         exp_continue
+    }
+
+    -re "Enter nodeadmin user password for.*" {
+         send -- "[lindex $argv 2]\r"
+         exp_continue
+    }
+    -re "Bootstrap Done.*" {
+         send -- "exit\r"
+         exp_continue
+    }
+}
