@@ -186,6 +186,9 @@ function install_prerequisites(){
         # enable cgroupfs 
         sed -i '/config.yaml/s/config.yaml"/config.yaml --cgroup-driver=cgroupfs"/g' /usr/lib/systemd/system/kubelet.service.d/10-kubeadm.conf || throw $ConfigException
 
+        # enable local docker registry.
+        echo '{"insecure-registries":"cortx-docker.colo.seagate.com"}' | jq '.' > /etc/docker/daemon.json
+
         (systemctl restart docker && systemctl daemon-reload &&  systemctl enable docker) || throw $Exception
         echo "Docker Runtime Configured Successfully"
 
