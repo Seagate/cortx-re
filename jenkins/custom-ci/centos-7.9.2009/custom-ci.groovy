@@ -420,7 +420,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 script {
                     try {
-                        def build_cortx_all_image = build job: '/Release_Engineering/re-workspace/sv_space/sv-cortx-all-image', wait: true,
+                        def build_cortx_all_image = build job: '/Cortx-Kubernetes/cortx-all-docker-image', wait: true,
                                     parameters: [
                                         string(name: 'CORTX_RE_URL', value: "https://github.com/shailesh-vaidya/cortx-re"),
                                         string(name: 'CORTX_RE_BRANCH', value: "local-registry"),
@@ -451,8 +451,6 @@ pipeline {
                 '''
             }
         }
-
-
     }
 
     post {
