@@ -106,7 +106,7 @@ pipeline {
             cleanWs()
             script {
 
-                env.image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' | head -1", returnStdout: true).trim()
+                env.image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' | grep $DOCKER_REGISTRY | head -1", returnStdout: true).trim()
                 env.build_stage = "${build_stage}"
                 
                 if ( params.DOCKER_REGISTRY == "ghcr.io" ) {
