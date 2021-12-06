@@ -235,7 +235,7 @@ function setup_master_node(){
         echo "y" | kubeadm reset
         
         #initialize cluster
-        kubeadm init --pod-network-cidr=10.237.64.0/22 || throw $Exception
+        kubeadm init --pod-network-cidr=192.168.0.0/16 || throw $Exception
 
         # Verify node added in cluster
         #kubectl get nodes || throw $Exception
