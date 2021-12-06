@@ -187,7 +187,7 @@ pipeline {
 					env.deployment_result = "SUCCESS"
 					env.sanity_result = "UNSTABLE"
 					currentBuild.result = "UNSTABLE"
-				} else if ( "${env.cortxCluster_status}" == "FAILURE" ) {
+				} else if ( "${env.cortxCluster_status}" == "FAILURE" || "${env.cortxCluster_status}" == "UNSTABLE" || "${env.cortxCluster_status}" == "null" ) {
 					manager.buildFailure()
 					MESSAGE = "K8s Build#${build_id} 3node Deployment Deployment=failed, SanityTest=skipped"
 					ICON = "error.gif"
