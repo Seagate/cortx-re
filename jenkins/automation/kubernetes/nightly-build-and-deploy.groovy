@@ -72,7 +72,7 @@ pipeline {
 								string(name: 'SSPL_BRANCH', value: "${COMPONENT_BRANCH}"),
 								string(name: 'CORTX_UTILS_BRANCH', value: "${COMPONENT_BRANCH}"),
 								string(name: 'CORTX_RE_BRANCH', value: "${COMPONENT_BRANCH}"),
-								string(name: 'THIRD_PARTY_RPM_VERSION', value: "cortx-2.0-k8"),
+								string(name: 'THIRD_PARTY_RPM_VERSION', value: "cortx-2.0-k8")
 							]
 							env.custom_ci_build_id = customCI.rawBuild.id
 						}
@@ -86,7 +86,7 @@ pipeline {
 							parameters: [
 								string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
 								string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
-								text(name: 'hosts', value: "${hosts}"),
+								text(name: 'hosts', value: "${hosts}")
 							]
 						}
 					}
@@ -103,7 +103,7 @@ pipeline {
 							string(name: 'CORTX_RE_URL', value: "${CORTX_RE_REPO}"),
 							string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
 							string(name: 'BUILD', value: "kubernetes-build-${env.custom_ci_build_id}"),
-							string(name: 'EMAIL_RECIPIENTS', value: "${EMAIL_RECIPIENTS}"),
+							string(name: 'EMAIL_RECIPIENTS', value: "${EMAIL_RECIPIENTS}")
 						]
 						env.dockerimage_id = buildCortxDockerImages.buildVariables.image
 					} catch (err) {
@@ -124,7 +124,7 @@ pipeline {
 						string(name: 'CORTX_IMAGE', value: "${env.dockerimage_id}"),
 						text(name: 'hosts', value: "${hosts}"),
 						string(name: 'CORTX_SCRIPTS_BRANCH', value: "${CORTX_SCRIPTS_BRANCH}"),
-						string(name: 'CORTX_SCRIPTS_REPO', value: "${CORTX_SCRIPTS_REPO}"),
+						string(name: 'CORTX_SCRIPTS_REPO', value: "${CORTX_SCRIPTS_REPO}")
 					]
 					env.cortxcluster_build_url = cortxCluster.absoluteUrl
 					env.cortxCluster_status = cortxCluster.currentResult
@@ -142,7 +142,7 @@ pipeline {
 							string(name: 'ADMIN_USER', value: "${ADMIN_USER}"),
 							password(name: 'ADMIN_PWD', value: "${ADMIN_PWD}"),
 							string(name: 'CORTX_IMAGE', value: "${env.dockerimage_id}"),
-							string(name: 'NUM_NODES', value: "${env.numberofnodes}"),
+							string(name: 'NUM_NODES', value: "${env.numberofnodes}")
 						]
 						env.Sanity_Failed = qaSanity.buildVariables.Sanity_Failed
 						env.sanity_result = qaSanity.currentResult
