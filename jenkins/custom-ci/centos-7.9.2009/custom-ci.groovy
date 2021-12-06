@@ -25,7 +25,7 @@ pipeline {
         ansiColor('xterm')
         parallelsAlwaysFailFast()
         buildDiscarder(logRotator(daysToKeepStr: '5', numToKeepStr: '10'))
-  }
+    }
 
     parameters {
         string(name: 'CSM_AGENT_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CSM Agent', trim: true)
@@ -101,8 +101,8 @@ pipeline {
                     } catch (err) {
                         build_stage = env.STAGE_NAME
                         error "Failed to Build cortx-prereq"
-                    }
-                }
+                            }
+                        }
             }
         }
 
@@ -120,8 +120,8 @@ pipeline {
                     } catch (err) {
                         build_stage = env.STAGE_NAME
                         error "Failed to Build Provisioner"
-                    }
-                }
+                                                }
+                                        }
             }
         }
 
@@ -135,7 +135,7 @@ pipeline {
                             yum install -y expect rpm-sign rng-tools genisoimage
                             systemctl start rngd
                             '''
-                        }
+                    }
                 }
 
                 stage ("Build Motr, Hare and S3Server") {
@@ -411,16 +411,11 @@ pipeline {
                 #Remove Build details from THIRD_PARTY_RELEASE.INFO
                 sed -i '/BUILD/d' $integration_dir/$release_tag/3rd_party/THIRD_PARTY_RELEASE.INFO
                 '''
-                sh label: 'Print Release Build and ISO location', script:'''
-                echo "Custom Release Build and ISO is available at,"
-                    echo "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/$os_version/$release_tag/"
-                    echo "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/$os_version/$release_tag/iso/$release_tag.iso"
-                    echo "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/$os_version/$release_tag/iso/$release_tag-single.iso"
-                '''
+
             }
         }
-		
-	   stage ("Build CORTX-ALL image") {
+        
+       stage ("Build CORTX-ALL image") {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
@@ -442,7 +437,22 @@ pipeline {
                     }
                 }
             }
-        } 
+       } 
+
+        stage ('Print Build Information') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+
+            sh label: 'Print Release Build and ISO location', script:'''
+                echo "Custom Release Build is available at,"
+                    echo "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/$os_version/$release_tag/"
+                echo "CORTX-ALL image is available at,"
+                    echo ${env.cortx_all_image}
+                '''
+            }
+        }
+
+
     }
 
     post {
