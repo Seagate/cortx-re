@@ -172,6 +172,14 @@ pipeline {
 					env.deployment_result = "SUCCESS"
 					env.sanity_result = "SUCCESS"
 					currentBuild.result = "SUCCESS"
+				} else if ( "${env.cortxCluster_status}" == "FAILURE" || "${env.cortxCluster_status}" == "UNSTABLE" || "${env.cortxCluster_status}" == "null" ) {
+					manager.buildFailure()
+					MESSAGE = "K8s Build#${build_id} 3node Deployment Deployment=failed, SanityTest=skipped"
+					ICON = "error.gif"
+					STATUS = "FAILURE"
+					env.sanity_result = "FAILURE"
+					env.deployment_result = "FAILURE"
+					currentBuild.result = "FAILURE"
 				} else if ( "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "FAILURE" ) {
 					manager.buildFailure()
 					MESSAGE = "K8s Build#${build_id} 3node Deployment Deployment=Passed, SanityTest=failed"
@@ -187,14 +195,6 @@ pipeline {
 					env.deployment_result = "SUCCESS"
 					env.sanity_result = "UNSTABLE"
 					currentBuild.result = "UNSTABLE"
-				} else if ( "${env.cortxCluster_status}" == "FAILURE" || "${env.cortxCluster_status}" == "UNSTABLE" || "${env.cortxCluster_status}" == "null" ) {
-					manager.buildFailure()
-					MESSAGE = "K8s Build#${build_id} 3node Deployment Deployment=failed, SanityTest=skipped"
-					ICON = "error.gif"
-					STATUS = "FAILURE"
-					env.sanity_result = "FAILURE"
-					env.deployment_result = "FAILURE"
-					currentBuild.result = "FAILURE"
 				} else {
 					MESSAGE = "K8s Build#${build_id} 3node Deployment Deployment=unstable, SanityTest=unstable"
 					ICON = "unstable.gif"
