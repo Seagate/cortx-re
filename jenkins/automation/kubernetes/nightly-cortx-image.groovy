@@ -5,8 +5,6 @@ pipeline {
         }
     }
 
-    triggers { cron('30 19 * * *') }
-
     options {
         timeout(time: 240, unit: 'MINUTES')
         timestamps()
@@ -56,12 +54,15 @@ pipeline {
                 script {
                     try {    
                         def docker_image_build = build job: 'cortx-all-docker-image', wait: true,
-                            parameters: [
-                                string(name: 'CORTX_RE_URL', value: "https://github.com/Seagate/cortx-re"),
-                                string(name: 'CORTX_RE_BRANCH', value: "kubernetes"),
-                                string(name: 'BUILD', value: "kubernetes-build-${env.custom_ci_build_id}"),
-                                string(name: 'EMAIL_RECIPIENTS', value: "${EMAIL_RECIPIENTS}"),
-                            ]
+                                    parameters: [
+                                        string(name: 'CORTX_RE_URL', value: "https://github.com/shailesh-vaidya/cortx-re"),
+                                        string(name: 'CORTX_RE_BRANCH', value: "local-registry"),
+                                        string(name: 'BUILD', value: "${release_tag}"),
+                                        string(name: 'GITHUB_PUSH', value: "yes"),
+                                        string(name: 'TAG_LATEST', value: "yes"),
+                                        string(name: 'DOCKER_REGISTRY', value: "ghcr.io"),
+                                        string(name: 'EMAIL_RECIPIENTS', value: "DEBUG")
+                                        ]
                     } catch (err) {
                         build_stage = env.STAGE_NAME
                         error "Failed to Build Docker Image"
