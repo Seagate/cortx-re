@@ -15,6 +15,7 @@ pipeline {
         string(name: 'NODE3', defaultValue: '', description: 'Node 3 Host FQDN',  trim: true)
         string(name: 'NODE_PASS', defaultValue: '', description: 'Host machine root user password',  trim: true)
         string(name: 'NODE_MGMT_VIP', defaultValue: '', description: 'The floating static VIP for management network interface.',  trim: true)
+	string(name: 'EMAIL_NOTIFICATION', defaultValue: '', description: 'Email Notification list', trim: true)
         booleanParam(name: 'DEBUG', defaultValue: false, description: 'Select this if you want to preserve the VM temporarily for troublshooting')
         booleanParam(name: 'CREATE_JIRA_ISSUE_ON_FAILURE', defaultValue: false, description: 'Internal Use : Select this if you want to create Jira issue on failure')
         booleanParam(name: 'AUTOMATED', defaultValue: false, description: 'Internal Use : Only for Internal RE workflow')
@@ -330,13 +331,13 @@ pipeline {
                 }
                 
                 if ( "FAILURE".equals(currentBuild.currentResult) && params.AUTOMATED && env.component_email ) {
-                    toEmail = "${env.component_email}, priyank.p.dalal@seagate.com, gaurav.chaudhari@seagate.com"
+                    toEmail = "${EMAIL_NOTIFICATION}, ${env.component_email}, priyank.p.dalal@seagate.com, gaurav.chaudhari@seagate.com"
                 } else {
-                    toEmail = "gaurav.chaudhari@seagate.com"
+                    toEmail = "${EMAIL_NOTIFICATION}, gaurav.chaudhari@seagate.com"
                 }
                 
                 emailext (
-                    body: '''${SCRIPT, template="vm-deployment-email.template"}''',
+                    body: '''${SCRIPT, template="vm-deployment-email.template"}, ${FILE,path="${BUILD_URL}/artifact/artifacts/srvnode1/cortx_deployment/log/hctl_status.log"}''',
                     mimeType: 'text/html',
                     subject: "${MESSAGE}",
                     to: toEmail,
