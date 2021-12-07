@@ -22,6 +22,11 @@ pipeline {
 			description: 'Email Notification Recipients ',
 			name: 'EMAIL_RECIPIENTS'
 		)
+		choice (
+			choices: ['ghcr.io', 'cortx-docker.colo.seagate.com'],
+			description: 'Docker Registry to be used',
+			name: 'DOCKER_REGISTRY'
+		)
 		string(name: 'CORTX_SCRIPTS_BRANCH', defaultValue: 'v0.0.15', description: 'Release for cortx-k8s scripts (Services Team)', trim: true)
 		string(name: 'CORTX_SCRIPTS_REPO', defaultValue: 'Seagate/cortx-k8s', description: 'Repository for cortx-k8s scripts (Services Team)', trim: true)
 		string(name: 'ADMIN_USER', defaultValue: "cortxadmin", description: 'CSM Admin login username for the given host')
@@ -101,7 +106,8 @@ pipeline {
 							string(name: 'CORTX_RE_URL', value: "${CORTX_RE_REPO}"),
 							string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
 							string(name: 'BUILD', value: "kubernetes-build-${env.custom_ci_build_id}"),
-							string(name: 'EMAIL_RECIPIENTS', value: "${EMAIL_RECIPIENTS}")
+							string(name: 'EMAIL_RECIPIENTS', value: "${EMAIL_RECIPIENTS}"),
+							string(name: 'DOCKER_REGISTRY', value: "${DOCKER_REGISTRY}")
 						]
 						env.dockerimage_id = buildCortxDockerImages.buildVariables.image
 					} catch (err) {
@@ -213,7 +219,7 @@ pipeline {
 				} else if ( params.EMAIL_RECIPIENTS == "DEVOPS" ) {
 					mailRecipients = "CORTX.DevOps.RE@seagate.com"
 				} else if ( params.EMAIL_RECIPIENTS == "DEBUG" ) {
-					mailRecipients = "akhil.bhansali@seagate.com, amit.kapil@seagate.com, amol.j.kongre@seagate.com, deepak.choudhary@seagate.com, jaikumar.gidwani@seagate.com, mandar.joshi@seagate.com, neerav.choudhari@seagate.com, pranay.kumar@seagate.com, swarajya.pendharkar@seagate.com, taizun.a.kachwala@seagate.com, trupti.patil@seagate.com, ujjwal.lanjewar@seagate.com, shailesh.vaidya@seagate.com, abhijit.patil@seagate.com, sonal.kalbende@seagate.com"
+					mailRecipients = "akhil.bhansali@seagate.com, amit.kapil@seagate.com, amol.j.kongre@seagate.com, deepak.choudhary@seagate.com, jaikumar.gidwani@seagate.com, mandar.joshi@seagate.com, neerav.choudhari@seagate.com, pranay.kumar@seagate.com, swarajya.pendharkar@seagate.com, taizun.a.kachwala@seagate.com, trupti.patil@seagate.com, ujjwal.lanjewar@seagate.com, shailesh.vaidya@seagate.com, abhijit.patil@seagate.com, sonal.kalbende@seagate.com, gaurav.chaudhari@seagate.com, don.r.bloyer@seagate.com"
 				}
 				catchError(stageResult: 'FAILURE') {
 					archiveArtifacts allowEmptyArchive: true, artifacts: 'log/*report.xml, log/*report.html, support_bundle/*.tar, crash_files/*.gz', followSymlinks: false
