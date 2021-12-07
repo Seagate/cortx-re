@@ -27,21 +27,6 @@ YQ_VERSION=v4.13.3
 YQ_BINARY=yq_linux_386
 SOLUTION_CONFIG="/var/tmp/solution.yaml"
 
-# Containers images. Add new images here.
-IMAGES=(
-   bitnami/kafka:3.0.0-debian-10-r7
-   hashicorp/consul:1.10.3
-   bitnami/zookeeper:3.7.0-debian-10-r157
-   bitnami/kafka:2.8.1-debian-10-r0
-   centos:7
-   busybox:latest
-   hashicorp/consul:1.10.2
-   rancher/local-path-provisioner:v0.0.20
-   hashicorp/consul:1.10.0
-   centos:7.9.2009
-   gluster/gluster-centos:latest
-   )
-
 #On master
 #download CORTX k8 deployment scripts
 
@@ -204,34 +189,6 @@ function openldap_requiremenrs(){
     mkdir -p /var/log/3rd-party
 }
 
-function download_images(){
-image_counter=0
-
-printf "%s\n" ${IMAGES[@]} > /var/tmp/images
-docker images | awk '{ print $1":"$2 }' | tail -n +2 | grep -wFf /var/tmp/images > /var/tmp/host_images
-readarray -t HOST_IMAGES < /var/tmp/host_images
-
-# Check if provided container images are already present on the host.
-for image in "${IMAGES[@]}"; do
-   for host_image in "${HOST_IMAGES[@]}"; do
-      if [ "$image" == "$host_image" ]; then
-         echo "Container image $image is already present on $HOSTNAME."
-         ((image_counter++))
-      fi
-   done
-done
-
-# Verify total all images are present.
-if [ "$image_counter" -ne 11 ]; then
-   echo "Container images are not present on $HOSTNAME. Downloading images:"
-   rm -rf /var/images
-   mkdir -p /var/images && pushd /var/images
-       wget -q -r -np -nH --cut-dirs=3 -A *.tar http://cortx-storage.colo.seagate.com/releases/cortx/images/
-       for file in $(ls -1); do docker load -i $file; done
-   popd
-fi
-}
-
 function execute_prereq(){
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         findmnt $SYSTEM_DRIVE && umount -l $SYSTEM_DRIVE
@@ -253,10 +210,6 @@ HEREDOC
 }
 
 
-#validation
-#download_deploy_script
-#update_solution_config
-
 ACTION="$1"
 if [ -z "$ACTION" ]; then
     echo "ERROR : No option provided"
@@ -268,7 +221,6 @@ function setup_master_node(){
 echo "---------------------------------------[ Setting up Master Node $HOSTNAME ]--------------------------------------"
     download_deploy_script
     #Third-party images are downloaed from GitHub container regsitry. 
-    #download_images
     install_yq
     
     if [ "$(kubectl get  nodes $HOSTNAME  -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints}" | grep -o NoSchedule)" == "" ]; then
@@ -288,7 +240,6 @@ echo "---------------------------------------[ Setting up Master Node $HOSTNAME 
 function setup_worker_node(){
 echo "---------------------------------------[ Setting up Worker Node on $HOSTNAME ]--------------------------------------"
     #Third-party images are downloaed from GitHub container regsitry.
-    #download_images
     download_deploy_script
     execute_prereq
 }
