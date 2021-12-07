@@ -4,7 +4,6 @@ pipeline {
 			label 'docker-centos-7.9.2009-node'
 		}
 	}
-	triggers { cron('30 19 * * *') }
 	options {
 		timeout(time: 600, unit: 'MINUTES')
 		timestamps()
@@ -35,7 +34,7 @@ pipeline {
 				script { build_stage = env.STAGE_NAME }
 				script {
 					env.allhost = sh( script: '''
-					echo $hosts | tr ' ' '\n' | awk -F["="] '{print $2}'
+					echo $hosts | tr ' ' '\n' | awk -F["="] '{print $2}'|cut -d',' -f1
 					''', returnStdout: true).trim()
                 
 					env.master_node = sh( script: '''
@@ -50,7 +49,6 @@ pipeline {
 					echo $hosts | tr ' ' '\n' | tail -n +2 | wc -l
 					''', returnStdout: true).trim()
 
-					echo "pass = ${env.hostpasswd}"
 				}
 			}
 		}
@@ -166,7 +164,7 @@ pipeline {
 				echo "${env.cortxCluster_status}"
 				echo "${env.qaSanity_status}"
 				if ( "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "SUCCESS" ) {
-					MESSAGE = "K8s Build#${build_id} 3node Deployment Deployment=Passed, SanityTest=Passed"
+					MESSAGE = "K8s Build#${build_id} 3node Deployment Deployment=Passed, SanityTest=Passed, Regression=Passed"
 					ICON = "accept.gif"
 					STATUS = "SUCCESS"
 					env.deployment_result = "SUCCESS"
@@ -174,29 +172,29 @@ pipeline {
 					currentBuild.result = "SUCCESS"
 				} else if ( "${env.cortxCluster_status}" == "FAILURE" || "${env.cortxCluster_status}" == "UNSTABLE" || "${env.cortxCluster_status}" == "null" ) {
 					manager.buildFailure()
-					MESSAGE = "K8s Build#${build_id} 3node Deployment Deployment=failed, SanityTest=skipped"
+					MESSAGE = "K8s Build#${build_id} 3node Deployment Deployment=failed, SanityTest=skipped, Regression=skipped"
 					ICON = "error.gif"
 					STATUS = "FAILURE"
-					env.sanity_result = "FAILURE"
+					env.sanity_result = "SKIPPED"
 					env.deployment_result = "FAILURE"
 					currentBuild.result = "FAILURE"
 				} else if ( "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "FAILURE" ) {
 					manager.buildFailure()
-					MESSAGE = "K8s Build#${build_id} 3node Deployment Deployment=Passed, SanityTest=failed"
+					MESSAGE = "K8s Build#${build_id} 3node Deployment Deployment=Passed, SanityTest=failed, Regression=skipped"
 					ICON = "error.gif"
 					STATUS = "FAILURE"
 					env.sanity_result = "FAILURE"
 					env.deployment_result = "SUCCESS"
 					currentBuild.result = "FAILURE"
 				} else if ( "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "UNSTABLE" || "${env.qaSanity_status}" == "null" ) {
-					MESSAGE = "K8s Build#${build_id} 3node Deployment Deployment=Passed, SanityTest=unstable"
+					MESSAGE = "K8s Build#${build_id} 3node Deployment Deployment=Passed, SanityTest=passed, Regression=failed"
 					ICON = "unstable.gif"
 					STATUS = "UNSTABLE"
 					env.deployment_result = "SUCCESS"
 					env.sanity_result = "UNSTABLE"
 					currentBuild.result = "UNSTABLE"
 				} else {
-					MESSAGE = "K8s Build#${build_id} 3node Deployment Deployment=unstable, SanityTest=unstable"
+					MESSAGE = "K8s Build#${build_id} 3node Deployment Deployment=unstable, SanityTest=unstable, Regression=unstable"
 					ICON = "unstable.gif"
 					STATUS = "UNSTABLE"
 					env.sanity_result = "UNSTABLE"
@@ -215,12 +213,12 @@ pipeline {
 				} else if ( params.EMAIL_RECIPIENTS == "DEVOPS" ) {
 					mailRecipients = "CORTX.DevOps.RE@seagate.com"
 				} else if ( params.EMAIL_RECIPIENTS == "DEBUG" ) {
-					mailRecipients = "shailesh.vaidya@seagate.com, abhijit.patil@seagate.com, amit.kapil@seagate.com"
+					mailRecipients = "akhil.bhansali@seagate.com, amit.kapil@seagate.com, amol.j.kongre@seagate.com, deepak.choudhary@seagate.com, jaikumar.gidwani@seagate.com, mandar.joshi@seagate.com, neerav.choudhari@seagate.com, pranay.kumar@seagate.com, swarajya.pendharkar@seagate.com, taizun.a.kachwala@seagate.com, trupti.patil@seagate.com, ujjwal.lanjewar@seagate.com, shailesh.vaidya@seagate.com, abhijit.patil@seagate.com, sonal.kalbende@seagate.com"
 				}
 				catchError(stageResult: 'FAILURE') {
 					archiveArtifacts allowEmptyArchive: true, artifacts: 'log/*report.xml, log/*report.html, support_bundle/*.tar, crash_files/*.gz', followSymlinks: false
 					emailext (
-						body: '''${SCRIPT, template="K8s-deployment-email_1.template"}${SCRIPT, template="REL_QA_SANITY_CUS_EMAIL_RETEAM_5.template"}''',
+						body: '''${SCRIPT, template="K8s-deployment-email_2.template"}${SCRIPT, template="REL_QA_SANITY_CUS_EMAIL_RETEAM_5.template"}''',
 						mimeType: 'text/html',
 						subject: "${MESSAGE}",
 						to: "${mailRecipients}",
