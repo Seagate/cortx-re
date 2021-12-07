@@ -57,7 +57,7 @@ pipeline {
                                     parameters: [
                                         string(name: 'CORTX_RE_URL', value: "https://github.com/Seagate/cortx-re"),
                                         string(name: 'CORTX_RE_BRANCH', value: "kubernetes"),
-                                        string(name: 'BUILD', value: "${release_tag}"),
+                                        string(name: 'BUILD', value: "kubernetes-build-${env.custom_ci_build_id}"),
                                         string(name: 'GITHUB_PUSH', value: "yes"),
                                         string(name: 'TAG_LATEST', value: "yes"),
                                         string(name: 'DOCKER_REGISTRY', value: "ghcr.io"),
