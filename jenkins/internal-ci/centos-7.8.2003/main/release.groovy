@@ -239,14 +239,14 @@ pipeline {
                 rm -rf $cortx_build_dir/$release_tag/sw_upgrade
                 
                 '''
-                sh label: "Sign ISO files", script: '''
+/*                sh label: "Sign ISO files", script: '''
                 pushd scripts/rpm-signing
                     ./file-sign.sh ${passphrase} $integration_dir/$release_tag/prod/iso/cortx-$version-$BUILD_NUMBER-upgrade.iso
                     sleep 5
                     ./file-sign.sh ${passphrase} $integration_dir/$release_tag/prod/iso/cortx-$version-$BUILD_NUMBER-single.iso 
                 popd
                 '''
-
+*/
                 sh label: 'Additional Files', script:'''
                 cortx_prvsnr_preq=$(ls "$cortx_build_dir/$release_tag/cortx_iso" | grep "python36-cortx-prvsnr" | cut -d- -f5 | cut -d_ -f2 | cut -d. -f1 | sed s/"git"//)
                     
@@ -275,7 +275,7 @@ pipeline {
                 '''
             }
         }
-
+/*
         stage ("Deploy") {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -301,6 +301,7 @@ pipeline {
                 }
             }
         }
+*/
     }
     
     post {
