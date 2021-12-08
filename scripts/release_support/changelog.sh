@@ -58,9 +58,24 @@ export TZ=$time_zone;ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ 
 
 pushd $clone_dir/clone
 
-wget -q $BUILD_LOCATION/$START_BUILD/dev/RELEASE.INFO -O start_build_manifest.txt
-wget -q $BUILD_LOCATION/$TARGET_BUILD/dev/RELEASE.INFO -O target_build_manifest.txt
+if [ -z $BUILD_LOCATION ]; then
 
+	wget -q $START_BUILD -O start_build_manifest.txt
+	if [ $? -ne 0 ]; then
+	    echo "ERROR:While downloading start build RELEASE INFO by wget command got failed for $START_BUILD"
+	    exit 1
+	fi
+	START_BUILD=$(echo "$START_BUILD"|awk -F "/" '{print $9}')
+	wget -q $TARGET_BUILD -O target_build_manifest.txt
+	if [ $? -ne 0 ]; then
+	    echo "ERROR:While downloading target build RELEASE INFO by wget command got failed $TARGET_BUILD"
+	    exit 1
+	fi
+	TARGET_BUILD=$(echo "$TARGET_BUILD"|awk -F "/" '{print $9}')
+else
+	wget -q $BUILD_LOCATION/$START_BUILD/dev/RELEASE.INFO -O start_build_manifest.txt
+	wget -q $BUILD_LOCATION/$TARGET_BUILD/dev/RELEASE.INFO -O target_build_manifest.txt
+fi
 for component in "${!COMPONENT_LIST[@]}"
 do
         echo "Component:$component"
