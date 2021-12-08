@@ -4,6 +4,7 @@ pipeline {
 			label 'docker-centos-7.9.2009-node'
 		}
 	}
+	triggers { cron('30 19 * * *') }
 	options {
 		timeout(time: 600, unit: 'MINUTES')
 		timestamps()
