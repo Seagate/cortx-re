@@ -185,7 +185,7 @@ pipeline {
 					env.sanity_result = "SKIPPED"
 					env.deployment_result = "FAILURE"
 					currentBuild.result = "FAILURE"
-				} else if ( "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "FAILURE" ) {
+				} else if ( "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "FAILURE" || "${env.qaSanity_status}" == "null" ) {
 					manager.buildFailure()
 					MESSAGE = "K8s Build#${build_id} 3node Deployment Deployment=Passed, SanityTest=failed, Regression=skipped"
 					ICON = "error.gif"
@@ -193,7 +193,7 @@ pipeline {
 					env.sanity_result = "FAILURE"
 					env.deployment_result = "SUCCESS"
 					currentBuild.result = "FAILURE"
-				} else if ( "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "UNSTABLE" || "${env.qaSanity_status}" == "null" ) {
+				} else if ( "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "UNSTABLE" ) {
 					MESSAGE = "K8s Build#${build_id} 3node Deployment Deployment=Passed, SanityTest=passed, Regression=failed"
 					ICON = "unstable.gif"
 					STATUS = "UNSTABLE"
