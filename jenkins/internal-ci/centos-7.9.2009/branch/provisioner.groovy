@@ -58,6 +58,13 @@ pipeline {
                 sh encoding: 'UTF-8', label: 'cortx-setup', script: '''
                     bash ./devops/rpms/lr-cli/build_python_cortx_setup.sh -vv --out-dir /root/rpmbuild/RPMS/x86_64/ --pkg-ver ${BUILD_NUMBER}_git$(git rev-parse --short HEAD)
                 '''
+
+                sh encoding: 'UTF-8', label: 'cortx-provisioner', script: '''
+                if [ -f "./jenkins/build.sh" ]; then
+                    bash ./jenkins/build.sh -v 2.0.0 -b ${BUILD_NUMBER}
+                else
+                    echo "cortx-provisioner package creation is not implemented"
+                fi  
             }
         }
 

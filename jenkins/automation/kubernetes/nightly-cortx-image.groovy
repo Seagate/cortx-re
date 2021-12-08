@@ -5,11 +5,10 @@ pipeline {
         }
     }
 
-    triggers { cron('30 19 * * *') }
-
     options {
-        timeout(time: 60, unit: 'MINUTES')
+        timeout(time: 240, unit: 'MINUTES')
         timestamps()
+        buildDiscarder(logRotator(daysToKeepStr: '20', numToKeepStr: '20'))
     }
     
 
@@ -29,7 +28,7 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
-                def custom_ci = build job: '../GitHub-custom-ci-builds/centos-7.9/cortx-all-image-custom-ci', wait: true,
+                def custom_ci = build job: '../GitHub-custom-ci-builds/centos-7.9/nightly-k8-custom-ci', wait: true,
                     parameters: [
                                 string(name: 'CSM_AGENT_BRANCH', value: "${COMPONENT_BRANCH}"),
                                 string(name: 'CSM_WEB_BRANCH', value: "${COMPONENT_BRANCH}"),
@@ -55,12 +54,15 @@ pipeline {
                 script {
                     try {    
                         def docker_image_build = build job: 'cortx-all-docker-image', wait: true,
-                            parameters: [
-                                string(name: 'CORTX_RE_URL', value: "https://github.com/shailesh-vaidya/cortx-re"),
-                                string(name: 'CORTX_RE_BRANCH', value: "kubernetes"),
-                                string(name: 'BUILD', value: "custom-build-${env.custom_ci_build_id}"),
-                                string(name: 'EMAIL_RECIPIENTS', value: "${EMAIL_RECIPIENTS}"),
-                            ]
+                                    parameters: [
+                                        string(name: 'CORTX_RE_URL', value: "https://github.com/Seagate/cortx-re"),
+                                        string(name: 'CORTX_RE_BRANCH', value: "kubernetes"),
+                                        string(name: 'BUILD', value: "kubernetes-build-${env.custom_ci_build_id}"),
+                                        string(name: 'GITHUB_PUSH', value: "yes"),
+                                        string(name: 'TAG_LATEST', value: "yes"),
+                                        string(name: 'DOCKER_REGISTRY', value: "ghcr.io"),
+                                        string(name: 'EMAIL_RECIPIENTS', value: "DEBUG")
+                                        ]
                     } catch (err) {
                         build_stage = env.STAGE_NAME
                         error "Failed to Build Docker Image"

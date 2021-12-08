@@ -21,10 +21,10 @@ version: "3"
 
 services:
   cortx-all:
-    image: ghcr.io/seagate/cortx-all:$TAG
+    image: cortx-all:$TAG
     build:
-      context: ../../
-      dockerfile: ./docker/cortx-deploy/Dockerfile
+      context: ./
+      dockerfile: ./Dockerfile
       args:
        CENTOS_RELEASE: 7.9.2009
        ENVIRONMENT: internal-ci

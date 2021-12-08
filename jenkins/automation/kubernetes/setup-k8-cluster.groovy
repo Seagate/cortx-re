@@ -1,24 +1,23 @@
 pipeline {
     agent {
         node {
-            label 'k8-executor'
+            label 'docker-k8-deployment-node'
         }
     }
     
     options {
-        timeout(time: 120, unit: 'MINUTES')
+        timeout(time: 240, unit: 'MINUTES')
         timestamps()
-        disableConcurrentBuilds()
         buildDiscarder(logRotator(daysToKeepStr: '30', numToKeepStr: '30'))
         ansiColor('xterm')
     }
-
 
     parameters {
 
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'kubernetes', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for Cluster Setup scripts', trim: true)
         text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used for K8 cluster setup. First node will be used as Master', name: 'hosts')
+        booleanParam(name: 'PODS_ON_MASTER', defaultValue: false, description: 'Selecting this option will allow to schedule pods on master node.')
     }    
 
     stages {
@@ -40,7 +39,7 @@ pipeline {
                     pushd solutions/kubernetes/
                         echo $hosts | tr ' ' '\n' > hosts
                         cat hosts
-                        ./cluster-setup.sh
+                        ./cluster-setup.sh ${PODS_ON_MASTER}
                     popd
                 '''
             }

@@ -21,11 +21,12 @@
 CALICO_PLUGIN_VERSION=latest
 K8_VERSION=1.19.0-0
 DOCKER_VERSION=latest
+OS_VERSION="CentOS 7.9.2009"
 export Exception=100
 export ConfigException=101
 
 
-usage(){
+function usage(){
     cat << HEREDOC
 Usage : $0 [--prepare, --master]
 where,
@@ -49,7 +50,7 @@ function throw()
 function catch()
 {
     export ex_code=$?
-    $SAVED_OPT_E && set +e
+    (( $SAVED_OPT_E )) && set +e
     return $ex_code
 } 
 
@@ -63,7 +64,15 @@ function ignoreErrors()
     set +e
 }
 
-print_cluster_status(){
+function verify_os() {
+    CURRENT_OS=$(cut -d ' ' -f 1,4 < /etc/redhat-release)
+    if [ "$CURRENT_OS" != "$OS_VERSION" ]; then
+        echo "ERROR : Operating System is not correct. Current OS : $CURRENT_OS, Required OS : $OS_VERSION"
+        exit 1
+    fi 
+}
+
+function print_cluster_status(){
 
     while kubectl get nodes | grep -v STATUS | awk '{print $2}' | tr '\n' ' ' | grep -q NotReady
     do
@@ -72,9 +81,81 @@ print_cluster_status(){
     kubectl get nodes -o wide
 }
 
-install_prerequisites(){
+function cleanup_node(){
+
+    # Cleanup kubeadm stuff
+    if [ -f /usr/bin/kubeadm ]; then
+        echo "Cleaning up existing kubeadm configuration"
+        # unmount /var/lib/kubelet is having problem while running `kubeadm reset` in k8s v1.19. It is fixed in 1.20
+        # Ref link - https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm/#kubeadm-reset-unmounts-var-lib-kubelet
+        kubeadm reset -f
+    fi
+
+    pkgs_to_remove=(
+        "docker-ce"
+        "docker-ce-cli"
+        "containerd"
+        "kubernetes-cni"
+        "kubeadm"
+        "kubectl"
+    )
+    files_to_remove=(
+        "/etc/docker/daemon.json"
+        "$HOME/.kube"
+        "/etc/systemd/system/docker.service"
+        "/etc/cni/net.d"
+        "/etc/kubernetes"
+        "/var/lib/kubelet"
+        "/var/lib/etcd"
+    )
+    services_to_stop=(
+        kubelet
+        docker
+    )
+    # Set directive to remove packages with dependencies.
+    searchString="clean_requirements_on_remove*"
+    conffile="/etc/yum.conf"
+    if grep -q "$searchString" "$conffile"
+    then
+        sed -i "/$searchString/d" "$conffile"
+    fi
+    echo "clean_requirements_on_remove=1" >> "$conffile"
+
+    #Stopping Services.
+    for service_name in ${services_to_stop[@]}; do
+        if [ "$(systemctl list-unit-files | grep $service_name.service -c)" != "0" ]; then
+            echo "Stopping $service_name"
+            systemctl stop $service_name.service
+        fi
+    done
+
+
+    # Remove packages
+    echo "Uninstalling packages"
+    yum clean all && rm -rf /var/cache/yum
+    for pkg in ${pkgs_to_remove[@]}; do
+        if rpm -qa "$pkg"; then
+            yum remove "$pkg" -y
+            if [ $? -ne 0 ]; then
+                echo "Failed to uninstall $pkg"
+                exit 1
+            fi
+        else
+            echo -e "\t$pkg is not installed"
+        fi
+    done
+    for file in ${files_to_remove[@]}; do
+        if [ -f "$file" ] || [ -d "$file" ]; then
+            echo "Removing file/folder $file"
+            rm -rf $file
+        fi
+    done
+}
+
+function install_prerequisites(){
     try
-    (   # disable swap 
+    (   # disable swap
+        verify_os 
         sudo swapoff -a
         # keeps the swaf off during reboot
         sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
@@ -86,7 +167,10 @@ install_prerequisites(){
         # stop and disable firewalld
         (systemctl stop firewalld && systemctl disable firewalld && sudo systemctl mask --now firewalld) || throw $Exception
         # install python packages
-        (yum install python3-pip && pip3 install jq yq) || throw $Exception
+        (yum install python3-pip -y && pip3 install jq yq) || throw $Exception
+
+        # install yum-utils and wget
+        yum install yum-utils wget -y || throw $Exception
 
         # set yum repositories for k8 and docker-ce
         rm -rf /etc/yum.repos.d/download.docker.com_linux_centos_7_x86_64_stable_.repo /etc/yum.repos.d/packages.cloud.google.com_yum_repos_kubernetes-el7-x86_64.repo
@@ -102,10 +186,13 @@ install_prerequisites(){
         # enable cgroupfs 
         sed -i '/config.yaml/s/config.yaml"/config.yaml --cgroup-driver=cgroupfs"/g' /usr/lib/systemd/system/kubelet.service.d/10-kubeadm.conf || throw $ConfigException
 
-        (sudo systemctl enable docker && sudo systemctl daemon-reload && sudo systemctl restart docker) || throw $Exception
+        # enable local docker registry.
+        jq -n '{"insecure-registries": $ARGS.positional}' --args "cortx-docker.colo.seagate.com" > /etc/docker/daemon.json
+
+        (systemctl restart docker && systemctl daemon-reload &&  systemctl enable docker) || throw $Exception
         echo "Docker Runtime Configured Successfully"
 
-        (systemctl enable kubelet && sudo systemctl daemon-reload && systemctl restart kubelet) || throw $Exception
+        (systemctl restart kubelet && systemctl daemon-reload && systemctl enable kubelet) || throw $Exception
         echo "kubelet Configured Successfully"
 
 
@@ -143,13 +230,13 @@ install_prerequisites(){
 
 }
 
-setup_master_node(){
+function setup_master_node(){
+    local UNTAINT_MASTER=$1
     try
     (
         #cleanup
         echo "y" | kubeadm reset
-        rm -rf $HOME/.kube
-
+        
         #initialize cluster
         kubeadm init || throw $Exception
 
@@ -160,16 +247,22 @@ setup_master_node(){
         mkdir -p $HOME/.kube
         cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
         chown $(id -u):$(id -g) $HOME/.kube/config
+        # untaint master node
+        if [ "$UNTAINT_MASTER" == "true" ]; then
+            echo "--------------------------[ Allow POD creation on master node ]--------------------------"
+            kubectl taint nodes $(hostname) node-role.kubernetes.io/master- || throw $Exception
+        fi    
 
         # Apply calcio plugin 	
         if [ "$CALICO_PLUGIN_VERSION" == "latest" ]; then
-            kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml || throw $Exception
+            curl https://docs.projectcalico.org/manifests/calico.yaml -o calico-$CALICO_PLUGIN_VERSION.yaml || throw $Exception
         else
-        CALICO_PLUGIN_MAJOR_VERSION=$(echo $CALICO_PLUGIN_VERSION | awk -F[.] '{print $1"."$2}')
-            curl https://docs.projectcalico.org/archive/$CALICO_PLUGIN_MAJOR_VERSION/manifests/calico.yaml -o calico-$CALICO_PLUGIN_VERSION.yaml || throw $Exception
-            kubectl apply -f calico-$CALICO_PLUGIN_VERSION.yaml || throw $Exception
+            CALICO_PLUGIN_MAJOR_VERSION=$(echo $CALICO_PLUGIN_VERSION | awk -F[.] '{print $1"."$2}')
+            curl https://docs.projectcalico.org/archive/$CALICO_PLUGIN_MAJOR_VERSION/manifests/calico.yaml -o calico-$CALICO_PLUGIN_VERSION.yaml || throw $Exception    
         fi
-        
+        # Setup IP_AUTODETECTION_METHOD for determining calico network.
+        # sed -i '/# Auto-detect the BGP IP address./i \            - name: IP_AUTODETECTION_METHOD\n              value: "interface=eth-0"' calico-$CALICO_PLUGIN_VERSION.yaml
+        kubectl apply -f calico-$CALICO_PLUGIN_VERSION.yaml || throw $Exception
         # Setup storage-class
         kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml || throw $Exception
         kubectl patch storageclass local-path -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}' || throw $ConfigException
@@ -207,6 +300,9 @@ if [ -z "$ACTION" ]; then
 fi
 
 case $ACTION in
+    --cleanup)
+        cleanup_node
+    ;;
     --prepare) 
         install_prerequisites
     ;;
@@ -214,7 +310,7 @@ case $ACTION in
         print_cluster_status
     ;;
     --master)
-        setup_master_node
+        setup_master_node "$2"
     ;;
     *)
         echo "ERROR : Please provide valid option"
