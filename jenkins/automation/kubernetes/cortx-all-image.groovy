@@ -56,7 +56,7 @@ pipeline {
                 sh encoding: 'utf-8', label: 'Validate Docker pre-requisite', script: """
                    systemctl status docker
                    /usr/local/bin/docker-compose --version
-                   docker rmi --force \$(docker images cortx-all -q)
+                   if docker images | grep cortx-all -q; then docker rmi --force \$(docker images cortx-all -q); fi
                    echo 'y' | docker image prune
                 """
             }
