@@ -8,8 +8,8 @@ pipeline {
 
 	options {
 		timestamps() 
-	    timeout(time: 360, unit: 'MINUTES')
-        buildDiscarder(logRotator(daysToKeepStr: '7', numToKeepStr: '10'))
+	    timeout(time: 600, unit: 'MINUTES')
+        buildDiscarder(logRotator(daysToKeepStr: '7', numToKeepStr: '30'))
 	}
 
     triggers { 
@@ -17,12 +17,11 @@ pipeline {
     } 
 
     parameters {  
-	    string(name: 'S3_URL', defaultValue: 'https://github.com/Seagate/cortx-s3server', description: 'Repo for S3Server')
-        string(name: 'S3_BRANCH', defaultValue: 'main', description: 'Branch for S3Server')     
+        string(name: 'S3_URL', defaultValue: 'https://github.com/Seagate/cortx-s3server', description: 'Repo for S3Server')
+        string(name: 'S3_BRANCH', defaultValue: 'main', description: 'Branch for S3Server')
 	}
 
     environment {
-        
         GPR_REPO = "https://github.com/${ghprbGhRepository}"
         S3_URL = "${ghprbGhRepository != null ? GPR_REPO : S3_URL}"
         S3_BRANCH = "${sha1 != null ? sha1 : S3_BRANCH}"
@@ -30,6 +29,9 @@ pipeline {
         S3_GPR_REFSEPEC = "+refs/pull/${ghprbPullId}/*:refs/remotes/origin/pr/${ghprbPullId}/*"
         S3_BRANCH_REFSEPEC = "+refs/heads/*:refs/remotes/origin/*"
         S3_PR_REFSEPEC = "${ghprbPullId != null ? S3_GPR_REFSEPEC : S3_BRANCH_REFSEPEC}"
+        BUILD_TRIGGER_BY = "${currentBuild.getBuildCauses()[0].shortDescription}"
+	MOTR_BRANCH = "main"
+	// MOTR_BRANCH variable used only if build is triggered by timer.
     }
  	
 	stages {	
@@ -48,6 +50,18 @@ pipeline {
                 }
             } 
 
+            stage('Checkout-motr-main') {
+                when {
+                    expression { env.BUILD_TRIGGER_BY == 'Started by timer' }
+                }
+                steps {
+                    sh '''git --git-dir=${WORKSPACE}/third_party/motr/.git fetch
+                          git --git-dir=${WORKSPACE}/third_party/motr/.git checkout ${MOTR_BRANCH}
+                          git --git-dir=${WORKSPACE}/third_party/motr/.git pull
+                          echo "last commit id = $(git --git-dir=${WORKSPACE}/third_party/motr/.git log -1 --oneline)"
+                       '''
+                }
+            }
 
             stage ('Dev build & tests') {
                 steps {
