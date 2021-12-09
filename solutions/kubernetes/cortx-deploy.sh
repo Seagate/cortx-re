@@ -40,6 +40,8 @@ function check_params {
     if [ -z "$CORTX_SCRIPTS_BRANCH" ]; then echo "CORTX_SCRIPTS_BRANCH not provided.Exiting..."; exit 1; fi
     if [ -z "$CORTX_IMAGE" ]; then echo "CORTX_IMAGE not provided.Exiting..."; exit 1; fi
     if [ -z "$SOLUTION_CONFIG_TYPE" ]; then echo "SOLUTION_CONFIG_TYPE not provided.Exiting..."; exit 1; fi
+    if [ -z "$SNS_CONFIG" ]; then SNS_CONFIG="1+0+0"; exit 1; fi
+    if [ -z "$DIX_CONFIG" ]; then DIX_CONFIG="1+0+0"; exit 1; fi
 }
 
 function setup_cluster {
