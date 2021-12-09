@@ -87,7 +87,7 @@ function update_solution_config(){
         yq e -i '.solution.common.storage_sets.name = "storage-set-1"' solution.yaml
 
         sns=$SNS_CONFIG yq e -i '.solution.common.storage_sets.durability.sns = env(sns)' solution.yaml
-        dix=$DIX_CONFIG yq e -i '.solution.common.storage_sets.durability.sns = env(dix)' solution.yaml
+        dix=$DIX_CONFIG yq e -i '.solution.common.storage_sets.durability.dix = env(dix)' solution.yaml
 
         yq e -i '.solution.storage.cvg1.name = "cvg-01"' solution.yaml
         yq e -i '.solution.storage.cvg1.type = "ios"' solution.yaml
