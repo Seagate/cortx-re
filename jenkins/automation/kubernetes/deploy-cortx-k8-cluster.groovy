@@ -31,7 +31,7 @@ pipeline {
         choice(
             name: 'DEPLOY_TARGET',
             choices: ['CORTX-CLUSTER', 'THIRD-PARTY-ONLY'],
-            description: 'Deployment Target THIRD-PARTY-ONLY - This will only install third party components, CORTX-CLUSTER - This will install Third party and CORTX components both.'
+            description: 'Deployment Target CORTX-CLUSTER - This will install Third party and CORTX components both.'
         )
        
     }    
