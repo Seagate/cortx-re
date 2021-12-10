@@ -22,6 +22,8 @@ pipeline {
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'kubernetes', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-all:2.0.0-latest-custom-ci', description: 'CORTX-ALL image', trim: true)
+        string(name: 'SNS_CONFIG', defaultValue: '1+0+0', description: 'sns configuration for deployment. Please select value based on disks available on nodes.', trim: true)
+        string(name: 'DIX_CONFIG', defaultValue: '1+0+0', description: 'dix configuration for deployment. Please select value based on disks available on nodes.', trim: true)
         text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used for CORTX cluster setup. First node will be used as Master', name: 'hosts')
         // Please configure CORTX_SCRIPTS_BRANCH and CORTX_SCRIPTS_REPO parameter in Jenkins job configuration.
        
@@ -46,11 +48,12 @@ pipeline {
                     pushd solutions/kubernetes/
                         echo $hosts | tr ' ' '\n' > hosts
                         cat hosts
-                        export GITHUB_TOKEN=${GITHUB_CRED}
                         export CORTX_SCRIPTS_BRANCH=${CORTX_SCRIPTS_BRANCH}
                         export CORTX_SCRIPTS_REPO=${CORTX_SCRIPTS_REPO}
                         export CORTX_IMAGE=${CORTX_IMAGE}
                         export SOLUTION_CONFIG_TYPE=automated
+                        export SNS_CONFIG=${SNS_CONFIG}
+                        export DIX_CONFIG=${DIX_CONFIG}
                         ./cortx-deploy.sh --cortx-cluster
                     popd
                 '''
