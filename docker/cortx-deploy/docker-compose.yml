@@ -21,7 +21,7 @@ version: "3"
 
 services:
   cortx-all:
-    image: ghcr.io/seagate/cortx-all:$TAG
+    image: cortx-all:$TAG
     build:
       context: ./
       dockerfile: ./Dockerfile
