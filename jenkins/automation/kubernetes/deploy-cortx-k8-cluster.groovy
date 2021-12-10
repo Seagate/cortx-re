@@ -22,6 +22,8 @@ pipeline {
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'kubernetes', description: 'Branch or GitHash for CORTX Cluster scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for CORTX Cluster scripts', trim: true)
         string(name: 'CORTX_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-all:2.0.0-latest-custom-ci', description: 'CORTX-ALL image', trim: true)
+        string(name: 'SNS_CONFIG', defaultValue: '1+0+0', description: 'sns configuration for deployment. Please select value based on disks available on nodes.', trim: true)
+        string(name: 'DIX_CONFIG', defaultValue: '1+0+0', description: 'dix configuration for deployment. Please select value based on disks available on nodes.', trim: true)
         text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used. First node will be used as Master', name: 'hosts')
         //booleanParam(name: 'UNTAINT', defaultValue: true, description: 'Allow to schedule pods on master node')
         // Please configure CORTX_SCRIPTS_BRANCH and CORTX_SCRIPTS_REPO parameter in Jenkins job configuration.
@@ -29,7 +31,7 @@ pipeline {
         choice(
             name: 'DEPLOY_TARGET',
             choices: ['CORTX-CLUSTER', 'THIRD-PARTY-ONLY'],
-            description: 'Deployment Target THIRD-PARTY-ONLY - This will only install third party components, CORTX-CLUSTER - This will install Third party and CORTX components both.'
+            description: 'Deployment Target CORTX-CLUSTER - This will install Third party and CORTX components both.'
         )
        
     }    
@@ -64,26 +66,6 @@ pipeline {
             }
         }
 
-        stage ("Deploy third-party components") {
-            when {
-                expression { params.DEPLOY_TARGET == 'THIRD-PARTY-ONLY' }
-            }
-            steps {
-                script { build_stage = env.STAGE_NAME }
-                sh label: 'Deploy third-party components', script: '''
-                    pushd solutions/kubernetes/
-                        echo $hosts | tr ' ' '\n' > hosts
-                        cat hosts
-                        export CORTX_SCRIPTS_BRANCH=${CORTX_SCRIPTS_BRANCH}
-                        export CORTX_SCRIPTS_REPO=${CORTX_SCRIPTS_REPO}
-                        export CORTX_IMAGE=${CORTX_IMAGE}
-                        export SOLUTION_CONFIG_TYPE=automated
-                        ./cortx-deploy.sh --third-party
-                    popd
-                '''
-            }
-        }
-
         stage ("Deploy CORTX components") {
             when {
                 expression { params.DEPLOY_TARGET == 'CORTX-CLUSTER' }
@@ -98,6 +80,8 @@ pipeline {
                         export CORTX_SCRIPTS_REPO=${CORTX_SCRIPTS_REPO}
                         export CORTX_IMAGE=${CORTX_IMAGE}
                         export SOLUTION_CONFIG_TYPE=automated
+                        export SNS_CONFIG=${SNS_CONFIG}
+                        export DIX_CONFIG=${DIX_CONFIG}
                         ./cortx-deploy.sh --cortx-cluster
                     popd
                 '''
