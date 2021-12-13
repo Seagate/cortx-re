@@ -28,8 +28,6 @@ pipeline {
 			description: 'Docker Registry to be used',
 			name: 'DOCKER_REGISTRY'
 		)
-		string(name: 'CORTX_SCRIPTS_BRANCH', defaultValue: 'v0.0.16', description: 'Release for cortx-k8s scripts (Services Team)', trim: true)
-		string(name: 'CORTX_SCRIPTS_REPO', defaultValue: 'Seagate/cortx-k8s', description: 'Repository for cortx-k8s scripts (Services Team)', trim: true)
 		string(name: 'ADMIN_USER', defaultValue: "cortxadmin", description: 'CSM Admin login username for the given host')
 		password(name: 'ADMIN_PWD', defaultValue: 'Cortxadmin@123', description: 'CSM Admin login password for the given host    ')
 		string(name: 'SNS_CONFIG', defaultValue: '1+0+0', description: 'sns configuration for deployment. Please select value based on disks available on nodes.', trim: true)
@@ -224,7 +222,8 @@ pipeline {
 				} else if ( params.EMAIL_RECIPIENTS == "DEVOPS" ) {
 					mailRecipients = "CORTX.DevOps.RE@seagate.com"
 				} else if ( params.EMAIL_RECIPIENTS == "DEBUG" ) {
-					mailRecipients = "akhil.bhansali@seagate.com, amit.kapil@seagate.com, amol.j.kongre@seagate.com, deepak.choudhary@seagate.com, jaikumar.gidwani@seagate.com, mandar.joshi@seagate.com, neerav.choudhari@seagate.com, pranay.kumar@seagate.com, swarajya.pendharkar@seagate.com, taizun.a.kachwala@seagate.com, trupti.patil@seagate.com, ujjwal.lanjewar@seagate.com, shailesh.vaidya@seagate.com, abhijit.patil@seagate.com, sonal.kalbende@seagate.com, gaurav.chaudhari@seagate.com, don.r.bloyer@seagate.com, kalpesh.chhajed@seagate.com"
+//					mailRecipients = "akhil.bhansali@seagate.com, amit.kapil@seagate.com, amol.j.kongre@seagate.com, deepak.choudhary@seagate.com, jaikumar.gidwani@seagate.com, mandar.joshi@seagate.com, neerav.choudhari@seagate.com, pranay.kumar@seagate.com, swarajya.pendharkar@seagate.com, taizun.a.kachwala@seagate.com, trupti.patil@seagate.com, ujjwal.lanjewar@seagate.com, shailesh.vaidya@seagate.com, abhijit.patil@seagate.com, sonal.kalbende@seagate.com, gaurav.chaudhari@seagate.com, don.r.bloyer@seagate.com, kalpesh.chhajed@seagate.com"
+					 mailRecipients = "shailesh.vaidya@seagate.com, abhijit.patil@seagate.com"
 				}
 				catchError(stageResult: 'FAILURE') {
 					archiveArtifacts allowEmptyArchive: true, artifacts: 'log/*report.xml, log/*report.html, support_bundle/*.tar, crash_files/*.gz', followSymlinks: false
