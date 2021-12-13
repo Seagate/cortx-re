@@ -6,6 +6,7 @@ pipeline {
 		}
 	}
 
+
 	options {
 		timestamps() 
 	    timeout(time: 360, unit: 'MINUTES')
@@ -54,6 +55,22 @@ pipeline {
 
                     script { build_stage = env.STAGE_NAME }
                     script {
+                        // to enable crash dump setting and clean old dumps
+                        sh label: 'Enable crash dump', script: """
+                            var1=$(sysctl kernel.printk|awk '{print $3}')
+                            var2=$(sysctl kernel.core_pattern|awk '{print $3}'|grep "/var/crash/core.%u.%e.%p"|wc -l)
+
+                            if [[ ( "$var1" -ne "8" && "$var2" -ne "1" ) ]]; then
+                                rm -fr /var/crash/*
+                                sysctl kernel.printk=8
+                                sysctl kernel.core_pattern=/var/crash/core.%u.%e.%p
+                                sysctl_changes_Status="Yes"
+                                sysctl -p
+                                echo "Crash dump is enabled successfully."
+                            else
+                                echo "Crash dump is already enabled"
+                            fi
+                        """
                         sh label: 'Script', script: """
                             git remote -v 
                             rm -rf /root/.seagate_src_cache/

@@ -7,6 +7,7 @@ pipeline {
         }
     }
 
+
     options { 
         skipDefaultCheckout()
         timeout(time: 180, unit: 'MINUTES')
@@ -102,6 +103,23 @@ Recommended VM specification:
                 dir("cortx-s3server") {
 
                     checkout([$class: 'GitSCM', branches: [[name: "${S3_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog'], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false], [$class: 'CloneOption', depth: 1, honorRefspec: true, noTags: true, reference: '', shallow: true]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${S3_URL}",  name: 'origin', refspec: "${S3_PR_REFSEPEC}"]]])
+
+                    // to enable crash dump setting and clean old dumps
+                    sh label: 'Enable crash dump', script: """
+                        var1=$(sysctl kernel.printk|awk '{print $3}')
+                        var2=$(sysctl kernel.core_pattern|awk '{print $3}'|grep "/var/crash/core.%u.%e.%p"|wc -l)
+
+                        if [[ ( "$var1" -ne "8" && "$var2" -ne "1" ) ]]; then
+                            rm -fr /var/crash/*
+                            sysctl kernel.printk=8
+                            sysctl kernel.core_pattern=/var/crash/core.%u.%e.%p
+                            sysctl_changes_Status="Yes"
+                            sysctl -p
+                            echo "Crash dump is enabled successfully."
+                        else
+                            echo "Crash dump is already enabled"
+                        fi
+                    """
 
                     sh label: 'prepare build env', script: """
                         yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/components/github/$BRANCH/$OS_VERSION/dev/motr/current_build/
