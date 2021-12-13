@@ -103,7 +103,7 @@ Recommended VM specification:
 
                     checkout([$class: 'GitSCM', branches: [[name: "${S3_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog'], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false], [$class: 'CloneOption', depth: 1, honorRefspec: true, noTags: true, reference: '', shallow: true]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${S3_URL}",  name: 'origin', refspec: "${S3_PR_REFSEPEC}"]]])
 
-                    sh label: 'Enable crash dump', script: """
+                    sh label: 'Enable crash dump', script: '''
                         var1=$(sysctl kernel.printk|awk '{print $3}')
                         var2=$(sysctl kernel.core_pattern|awk '{print $3}'|grep "/var/crash/core.%u.%e.%p"|wc -l)
 
@@ -117,7 +117,7 @@ Recommended VM specification:
                         else
                             echo "Crash dump is already enabled"
                         fi
-                    """
+                    '''
 
                     sh label: 'prepare build env', script: """
                         yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/components/github/$BRANCH/$OS_VERSION/dev/motr/current_build/

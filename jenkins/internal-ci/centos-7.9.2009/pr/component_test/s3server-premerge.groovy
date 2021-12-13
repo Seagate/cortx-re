@@ -69,7 +69,7 @@ pipeline {
                     script { build_stage = env.STAGE_NAME }
                     script {
 
-                        sh label: 'Enable crash dump', script: """
+                        sh label: 'Enable crash dump', script: '''
                             var1=$(sysctl kernel.printk|awk '{print $3}')
                             var2=$(sysctl kernel.core_pattern|awk '{print $3}'|grep "/var/crash/core.%u.%e.%p"|wc -l)
 
@@ -83,7 +83,7 @@ pipeline {
                             else
                                 echo "Crash dump is already enabled"
                             fi
-                        """
+                        '''
 
                         sh label: 'Script', script: """
                             git remote -v 
