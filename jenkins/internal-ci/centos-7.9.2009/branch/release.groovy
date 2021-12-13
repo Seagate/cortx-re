@@ -194,14 +194,14 @@ pipeline {
                     cp $integration_dir/$release_tag/dev/RELEASE.INFO .
                     
                 """
-                sh label: 'Generate Changelog', script: """
+                /*sh label: 'Generate Changelog', script: """
                     pushd scripts/release_support
                         sh +x changelog.sh ${currentBuild.previousBuild.getNumber()} ${currentBuild.number} ${ARTIFACT_LOCATION}
                     popd
                     cp /root/git_build_checkin_stats/clone/git-build-checkin-report.txt CHANGESET.txt 
                     cp CHANGESET.txt $integration_dir/$release_tag/dev
                     cp CHANGESET.txt $integration_dir/$release_tag/prod
-                """
+                """*/
             }
         }
         
