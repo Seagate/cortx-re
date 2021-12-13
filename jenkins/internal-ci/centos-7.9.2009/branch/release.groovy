@@ -264,14 +264,14 @@ pipeline {
                 script {
                     build job: "K8s-1N-deployment", propagate: false, wait: false,
                     parameters: [
-                        string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
-                        string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
+                        string(name: 'CORTX_RE_BRANCH', value: "kubernetes"),
+                        string(name: 'CORTX_RE_REPO', value: "https://github.com/Seagate/cortx-re/"),
                         string(name: 'CORTX_IMAGE', value: "${env.cortx_all_image}")
                     ]
                     build job: "K8s-3N-deployment", propagate: false, wait: false,
                     parameters: [
-                        string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
-                        string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
+                        string(name: 'CORTX_RE_BRANCH', value: "kubernetes"),
+                        string(name: 'CORTX_RE_REPO', value: "https://github.com/Seagate/cortx-re/"),
                         string(name: 'CORTX_IMAGE', value: "${env.cortx_all_image}")
                     ]
                 }
