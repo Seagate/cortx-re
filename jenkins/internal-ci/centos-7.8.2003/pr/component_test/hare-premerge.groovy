@@ -113,14 +113,21 @@ pipeline {
                         stage('Install Dependencies') {
                             steps {
                                 script {
-                                    def remote = getTestMachine(VM_FQDN)
-                                    def commandResult = sshCommand remote: remote, command: """                                    
-                                    yum install python3 python3-devel gcc rpm-build -y
-                                    yum install cortx-py-utils -y
-                                    yum install consul-1.9.1 -y
-                                    yum install cortx-motr{,-devel} -y                                    
-                                    """
-                                    echo "Result: " + commandResult
+                                        try {
+                                            def remote = getTestMachine(VM_FQDN)
+                                            def commandResult = sshCommand remote: remote, failOnError: true, command: """
+                                            pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/main/py-utils/python_requirements.txt
+					                        pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/main/py-utils/python_requirements.ext.txt                                
+                                            yum install python3 python3-devel gcc rpm-build -y
+                                            yum install cortx-py-utils -y
+                                            yum install consul-1.9.1 -y
+                                            yum install cortx-motr{,-devel} -y                                    
+                                            """
+                                            echo "Result: " + commandResult
+                                        }  catch (err) {
+                                            build_stage = env.STAGE_NAME
+                                            error "Failed to install dependencies"
+                                    }  
                                 }
                             }
                         }
