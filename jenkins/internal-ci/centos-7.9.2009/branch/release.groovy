@@ -258,23 +258,25 @@ pipeline {
             }
        } 
 
-        /*stage ("Deploy") {
+        stage ("Deploy") {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
-                    build job: "1n deployment", propagate: false, wait: false, parameters: [
-                            string(name: 'CORTX_BUILD', value: "http://cortx-storage.colo.seagate.com/releases/cortx/github/${branch}/${os_version}/${env.release_tag}/prod"),
-                            booleanParam(name: 'CREATE_JIRA_ISSUE_ON_FAILURE', value: true),
-                            booleanParam(name: 'AUTOMATED', value: true)
+                    build job: "K8s-1N-deployment", propagate: false, wait: false,
+                    parameters: [
+                        string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
+                        string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
+                        string(name: 'CORTX_IMAGE', value: "${env.cortx_all_image}")
                     ]
-                    build job: "3n deployment", propagate: false, wait: false, parameters: [
-                            string(name: 'CORTX_BUILD', value: "http://cortx-storage.colo.seagate.com/releases/cortx/github/${branch}/${os_version}/${env.release_tag}/prod"),
-                            booleanParam(name: 'CREATE_JIRA_ISSUE_ON_FAILURE', value: true),
-                            booleanParam(name: 'AUTOMATED', value: true)
-                    ]       
+                    build job: "K8s-3N-deployment", propagate: false, wait: false,
+                    parameters: [
+                        string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
+                        string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
+                        string(name: 'CORTX_IMAGE', value: "${env.cortx_all_image}")
+                    ]
                 }
             }
-        }*/
+        }
     }
     
     post {
