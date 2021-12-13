@@ -47,7 +47,7 @@ pipeline {
             }
         }
         
-	stage('Check TRANSPORT module') {
+    stage('Check TRANSPORT module') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 dir ('motr') {
@@ -56,8 +56,8 @@ pipeline {
                                 echo "We are using default 'libfabric' module/package"
                         else
                                 sed -i '/libfabric/d' cortx-motr.spec.in
-				echo "Removed libfabric from spec file as we are going to use $TRANSPORT"
-			fi
+                echo "Removed libfabric from spec file as we are going to use $TRANSPORT"
+            fi
                     '''
                 }
             }
