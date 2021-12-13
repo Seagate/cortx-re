@@ -194,17 +194,31 @@ pipeline {
                     cp $integration_dir/$release_tag/dev/RELEASE.INFO .
                     
                 """
-                /*sh label: 'Generate Changelog', script: """
+                sh label: 'Generate Changelog', script: """
                     pushd scripts/release_support
                         sh +x changelog.sh ${currentBuild.previousBuild.getNumber()} ${currentBuild.number} ${ARTIFACT_LOCATION}
                     popd
                     cp /root/git_build_checkin_stats/clone/git-build-checkin-report.txt CHANGESET.txt 
                     cp CHANGESET.txt $integration_dir/$release_tag/dev
                     cp CHANGESET.txt $integration_dir/$release_tag/prod
-                """*/
+                """
             }
         }
         
+        stage ('Additional Files') {
+            steps {
+
+                sh label: 'Additional Files', script:'''
+                mkdir -p $cortx_build_dir/$release_tag/cortx_iso
+                mv $integration_dir/$release_tag/prod/* $cortx_build_dir/$release_tag/cortx_iso
+                mkdir -p $integration_dir/$release_tag/prod/iso
+                mv $cortx_build_dir/$release_tag/* $integration_dir/$release_tag/prod
+                cp $integration_dir/$release_tag/prod/*/*.INFO $integration_dir/$release_tag/prod
+                        
+                rm -rf "$cortx_build_dir/$release_tag"
+                '''
+            }
+        }
 
        stage ('Tag last_successful') {
             steps {
