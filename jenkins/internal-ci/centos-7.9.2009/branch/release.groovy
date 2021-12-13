@@ -9,7 +9,7 @@ pipeline {
     
     environment {
         version = "2.0.0"
-        third_party_version = "cortx-2.0-k8"
+        third_party_version = "2.0.0-k8"
         release_dir = "/mnt/bigstorage/releases/cortx"
         integration_dir = "$release_dir/github/$branch/$os_version"
         components_dir = "$release_dir/components/github/$branch/$os_version"
