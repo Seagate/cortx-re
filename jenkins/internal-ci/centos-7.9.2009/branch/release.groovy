@@ -9,11 +9,11 @@ pipeline {
     
     environment {
         version = "2.0.0"
-        third_party_version = "2.0.0-latest"
+        third_party_version = "cortx-2.0-k8"
         release_dir = "/mnt/bigstorage/releases/cortx"
         integration_dir = "$release_dir/github/$branch/$os_version"
         components_dir = "$release_dir/components/github/$branch/$os_version"
-        release_tag = "$BUILD_NUMBER"
+        release_tag = "kubernetes-post-merge-build-$BUILD_ID"
         BUILD_TO_DELETE = ""
         passphrase = credentials('rpm-sign-passphrase')
         ARTIFACT_LOCATION = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version"
@@ -219,6 +219,30 @@ pipeline {
                 '''
             }
         }
+
+        stage ("Build CORTX-ALL image") {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                script {
+                    try {
+                        def build_cortx_all_image = build job: '/Cortx-Kubernetes/cortx-all-docker-image', wait: true,
+                                    parameters: [
+                                        string(name: 'CORTX_RE_URL', value: "https://github.com/Seagate/cortx-re"),
+                                        string(name: 'CORTX_RE_BRANCH', value: "kubernetes"),
+                                        string(name: 'BUILD', value: "${release_tag}"),
+                                        string(name: 'GITHUB_PUSH', value: "yes"),
+                                        string(name: 'TAG_LATEST', value: "yes"),
+                                        string(name: 'DOCKER_REGISTRY', value: "cortx-docker.colo.seagate.com"),
+                                        string(name: 'EMAIL_RECIPIENTS', value: "DEBUG")
+                                        ]
+                    env.cortx_all_image = build_cortx_all_image.buildVariables.image
+                    } catch (err) {
+                        build_stage = env.STAGE_NAME
+                        error "Failed to Build CORTX-ALL image"
+                    }
+                }
+            }
+       } 
 
         /*stage ("Deploy") {
             steps {
