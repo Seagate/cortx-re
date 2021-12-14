@@ -18,6 +18,8 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
+source /var/tmp/functions.sh
+
 CALICO_PLUGIN_VERSION=latest
 K8_VERSION=1.19.0-0
 DOCKER_VERSION=latest
@@ -30,8 +32,11 @@ function usage(){
     cat << HEREDOC
 Usage : $0 [--prepare, --master]
 where,
-    --prepare - Install prerequisites on nodes for kubernetes setup
+    --cleanup - Remove kubernetes and docker related packages on the nodes.
+    --prepare - Install prerequisites on nodes for kubernetes setup.
+    --status - Print cluster status.
     --master - Initialize K8 master node. 
+    --join-worker-nodes Join worker nodes to kubernetes cluster.
 HEREDOC
 }
 
@@ -83,6 +88,7 @@ function print_cluster_status(){
 
 function cleanup_node(){
 
+    echo "---------------------------------------[ Cleanup Node $HOSTNAME ]--------------------------------------"
     # Cleanup kubeadm stuff
     if [ -f /usr/bin/kubeadm ]; then
         echo "Cleaning up existing kubeadm configuration"
@@ -150,9 +156,11 @@ function cleanup_node(){
             rm -rf $file
         fi
     done
+    check_status "Node cleanup failed on $HOSTNAME"
 }
 
 function install_prerequisites(){
+    echo "---------------------------------------[ Preparing Node $HOSTNAME ]--------------------------------------"
     try
     (   # disable swap
         verify_os 
@@ -227,6 +235,7 @@ function install_prerequisites(){
         ;;
     esac
     }
+    check_status "Node preparation failed on $HOSTNAME"
 
 }
 
@@ -291,6 +300,11 @@ function setup_master_node(){
         
 }
 
+function join_worker_nodes() {
+    echo "---------------------------------------[ Joining Worker Node $HOSTNAME ]--------------------------------------"
+    echo 'y' | kubeadm reset && "${@:2}"
+    check_status "Failed to join $HOSTNAME node to cluster"
+}
 
 ACTION="$1"
 if [ -z "$ACTION" ]; then
@@ -311,6 +325,9 @@ case $ACTION in
     ;;
     --master)
         setup_master_node "$2"
+    ;;
+    --join-worker-nodes)
+        join_worker_nodes "$@"
     ;;
     *)
         echo "ERROR : Please provide valid option"
