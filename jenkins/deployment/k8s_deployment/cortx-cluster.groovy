@@ -98,21 +98,18 @@ pipeline {
                     ICON = "accept.gif"
                     STATUS = "SUCCESS"
                     env.deployment_result = "SUCCESS"
-                    env.sanity_result = "SUCCESS"
                     currentBuild.result = "SUCCESS"
                 } else if ( "${env.cortxCluster_status}" == "FAILURE") {
                     manager.buildFailure()
                     MESSAGE = "K8s Build#${build_id} 3node Deployment Deployment=failed"
                     ICON = "error.gif"
                     STATUS = "FAILURE"
-                    env.sanity_result = "SKIPPED"
                     env.deployment_result = "FAILURE"
                     currentBuild.result = "FAILURE"
                 } else {
-                    MESSAGE = "K8s Build#${build_id} 3node Deployment Deployment=unstable, SanityTest=unstable, Regression=unstable"
+                    MESSAGE = "K8s Build#${build_id} 3node Deployment Deployment=unstable"
                     ICON = "unstable.gif"
                     STATUS = "UNSTABLE"
-                    env.sanity_result = "UNSTABLE"
                     env.deployment_result = "UNSTABLE"
                     currentBuild.result = "UNSTABLE"
                 }
