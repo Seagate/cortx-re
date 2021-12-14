@@ -44,6 +44,16 @@ function check_params {
     if [ -z "$DIX_CONFIG" ]; then DIX_CONFIG="1+0+0"; exit 1; fi
 }
 
+function pdsh_worker_exec {
+    # commands to run in parallel on pdsh hosts (workers nodes).
+    commands=(
+       "export CORTX_SCRIPTS_REPO=$CORTX_SCRIPTS_REPO && export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH && /var/tmp/cortx-deploy-functions.sh --setup-worker"
+    )
+    for cmds in "${commands[@]}"; do
+       pdsh -w ^$1 $cmds
+    done
+}
+
 function setup_cluster {
 	
    echo  "Using $SOLUTION_CONFIG_TYPE type for generating solution.yaml"
@@ -60,27 +70,28 @@ function setup_cluster {
     TARGET=$1
     ALL_NODES=$(cat "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
     MASTER_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
-     
-    if [ "$(wc -l < $HOST_FILE)" == "1" ]; then
-    echo "---------------------------------------[ Single node deployment ]----------------------------------"
-    WORKER_NODES=""
-    else
-    WORKER_NODES=$(cat "$HOST_FILE" | grep -v "$MASTER_NODE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
-    fi
-
-    echo "MASTER NODE:" $MASTER_NODE
-    echo "WORKER NODE:" $WORKER_NODES
 
     for node in $ALL_NODES
-	do 
-	    scp -q cortx-deploy-functions.sh functions.sh $SOLUTION_CONFIG "$node":/var/tmp/
-	done
+        do
+            scp -q cortx-deploy-functions.sh functions.sh $SOLUTION_CONFIG "$node":/var/tmp/
+        done
+     
+    if [ "$(wc -l < $HOST_FILE)" == "1" ]; then
+       echo "---------------------------------------[ Single node deployment ]----------------------------------"
+       echo "NODE:" $MASTER_NODE
+       ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" "export SOLUTION_CONFIG_TYPE=$SOLUTION_CONFIG_TYPE && export CORTX_IMAGE=$CORTX_IMAGE && export CORTX_SCRIPTS_REPO=$CORTX_SCRIPTS_REPO && export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH && /var/tmp/cortx-deploy-functions.sh --setup-master"
+    else
+       WORKER_NODES=$(cat "$HOST_FILE" | grep -v "$MASTER_NODE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+    fi
 
-    for worker_node in $WORKER_NODES
-	do
-	ssh -o 'StrictHostKeyChecking=no' "$worker_node" "export CORTX_SCRIPTS_REPO=$CORTX_SCRIPTS_REPO && export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH && /var/tmp/cortx-deploy-functions.sh --setup-worker"
-	done
-
+    # Setup all worker nodes in parallel in case of multinode cluster.
+    if [ "$(wc -l < $HOST_FILE)" -ne "1" ]; then
+       echo "MASTER NODE:" $MASTER_NODE
+       echo "WORKER NODE:" $WORKER_NODES
+       # pdsh hosts to run parallel implementations.
+       echo $WORKER_NODES > /var/tmp/pdsh-hosts
+       pdsh_worker_exec /var/tmp/pdsh-hosts
+    fi
 
     for master_node in $MASTER_NODE
 	    do

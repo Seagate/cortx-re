@@ -20,7 +20,7 @@
 
 set -eo pipefail
 
-SYSTESM_DRIVE="/dev/sdb"
+SYSTEM_DRIVE="/dev/sdb"
 SYSTEM_DRIVE_MOUNT="/mnt/fs-local-volume"
 SCRIPT_LOCATION="/root/deploy-scripts"
 YQ_VERSION=v4.13.3
@@ -118,7 +118,6 @@ pushd $SCRIPT_LOCATION/k8_cortx_cloud
     image=$CORTX_IMAGE yq e -i '.solution.images.cortxdataprov = env(image)' solution.yaml
     image=$CORTX_IMAGE yq e -i '.solution.images.cortxdata = env(image)' solution.yaml
 popd 
-
 }
 
 function add_node_info_solution_config(){
@@ -166,10 +165,10 @@ function execute_deploy_script(){
 #format and mount system drive
 
 function mount_system_device(){
-    findmnt $SYSTESM_DRIVE && umount -l $SYSTESM_DRIVE
-    mkfs.ext4 -F $SYSTESM_DRIVE
+    findmnt $SYSTEM_DRIVE && umount -l $SYSTEM_DRIVE
+    mkfs.ext4 -F $SYSTEM_DRIVE
     mkdir -p /mnt/fs-local-volume
-    mount -t ext4 $SYSTESM_DRIVE $SYSTEM_DRIVE_MOUNT
+    mount -t ext4 $SYSTEM_DRIVE $SYSTEM_DRIVE_MOUNT
     mkdir -p /mnt/fs-local-volume/local-path-provisioner
     sysctl -w vm.max_map_count=30000000
 }
@@ -191,21 +190,11 @@ function openldap_requiremenrs(){
     mkdir -p /var/log/3rd-party
 }
 
-function download_images(){
-    rm -rf /var/images
-    mkdir -p /var/images && pushd /var/images
-        wget -q -r -np -nH --cut-dirs=3 -A *.tar http://cortx-storage.colo.seagate.com/releases/cortx/images/
-        for file in $(ls -1); do docker load -i $file; done
-    popd
-    
-}
-
 function execute_prereq(){
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
-        findmnt $SYSTESM_DRIVE && umount -l $SYSTESM_DRIVE
-        ./prereq-deploy-cortx-cloud.sh $SYSTESM_DRIVE
+        findmnt $SYSTEM_DRIVE && umount -l $SYSTEM_DRIVE
+        ./prereq-deploy-cortx-cloud.sh $SYSTEM_DRIVE
     popd    
-
 }
 
 function usage(){
@@ -222,10 +211,6 @@ HEREDOC
 }
 
 
-#validation
-#download_deploy_script
-#update_solution_config
-
 ACTION="$1"
 if [ -z "$ACTION" ]; then
     echo "ERROR : No option provided"
@@ -237,7 +222,6 @@ function setup_master_node(){
 echo "---------------------------------------[ Setting up Master Node $HOSTNAME ]--------------------------------------"
     download_deploy_script
     #Third-party images are downloaed from GitHub container regsitry. 
-    #download_images
     install_yq
     
     if [ "$(kubectl get  nodes $HOSTNAME  -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints}" | grep -o NoSchedule)" == "" ]; then
@@ -257,7 +241,6 @@ echo "---------------------------------------[ Setting up Master Node $HOSTNAME 
 function setup_worker_node(){
 echo "---------------------------------------[ Setting up Worker Node on $HOSTNAME ]--------------------------------------"
     #Third-party images are downloaed from GitHub container regsitry.
-    #download_images
     download_deploy_script
     execute_prereq
 }
@@ -267,7 +250,7 @@ function destroy(){
         chmod +x *.sh
         ./destroy-cortx-cloud.sh
     popd
-    findmnt $SYSTESM_DRIVE && umount -l $SYSTESM_DRIVE    
+    findmnt $SYSTEM_DRIVE && umount -l $SYSTEM_DRIVE    
     files_to_remove=(
         "/mnt/fs-local-volume/"
         "/root/deploy-scripts/"
