@@ -6,7 +6,7 @@ The purpose of this repository is to keep the scripts, tools, and other configur
 DevOps and Release Engineering team is responsible for the followings
 
 -   CORTX Project CI Build Process.
--   Managing cortx-storage for artifact hosting.
+-   Managing Artifact storage and Docker regsirty hosting.
 -   Automation to support cortx project.
 
 ## Repo Structure
