@@ -292,7 +292,7 @@ pipeline {
                 def toEmail = "shailesh.vaidya@seagate.com"
                 
                 emailext ( 
-                        body: '''${SCRIPT, template="release-email.template"}''',
+                        body: '''${SCRIPT, template="K8s-release-email.template"}''',
                         mimeType: 'text/html',
                         subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
                         attachLog: true,
