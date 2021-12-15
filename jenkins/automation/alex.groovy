@@ -33,9 +33,9 @@ pipeline {
       stage('Install Dependencies') {
           steps {
               sh label: 'Installed Dependencies', script: '''
-                  yum install epel-release
-                  yum install nodejs
-                  npm install alex --global
+                  yum install epel-release -y
+                  yum install nodejs -y
+                  npm install alex --global -y
                   pip install GitPython==2.1.15
               '''
           }
