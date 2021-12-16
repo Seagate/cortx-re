@@ -20,7 +20,7 @@
 
 set -eo pipefail
 
-SYSTESM_DRIVE="/dev/sdb"
+SYSTEM_DRIVE="/dev/sdb"
 SYSTEM_DRIVE_MOUNT="/mnt/fs-local-volume"
 SCRIPT_LOCATION="/root/deploy-scripts"
 YQ_VERSION=v4.13.3
@@ -220,10 +220,10 @@ function execute_deploy_script(){
 function mount_system_device(){
     try
     (
-        findmnt $SYSTESM_DRIVE && umount -l $SYSTESM_DRIVE
-        mkfs.ext4 -F $SYSTESM_DRIVE
+        findmnt $SYSTEM_DRIVE && umount -l $SYSTEM_DRIVE
+        mkfs.ext4 -F $SYSTEM_DRIVE
         mkdir -p /mnt/fs-local-volume
-        mount -t ext4 $SYSTESM_DRIVE $SYSTEM_DRIVE_MOUNT || throw $Exception
+        mount -t ext4 $SYSTEM_DRIVE $SYSTEM_DRIVE_MOUNT || throw $Exception
         mkdir -p /mnt/fs-local-volume/local-path-provisioner
         sysctl -w vm.max_map_count=30000000 || throw $Exception
     )
@@ -293,8 +293,8 @@ function download_images(){
 
 function execute_prereq(){
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
-        findmnt $SYSTESM_DRIVE && umount -l $SYSTESM_DRIVE
-        ./prereq-deploy-cortx-cloud.sh $SYSTESM_DRIVE
+        findmnt $SYSTEM_DRIVE && umount -l $SYSTEM_DRIVE
+        ./prereq-deploy-cortx-cloud.sh $SYSTEM_DRIVE
     popd    
 
 }
@@ -358,7 +358,7 @@ function destroy(){
         chmod +x *.sh
         ./destroy-cortx-cloud.sh
     popd
-    findmnt $SYSTESM_DRIVE && umount -l $SYSTESM_DRIVE    
+    findmnt $SYSTEM_DRIVE && umount -l $SYSTEM_DRIVE    
     files_to_remove=(
         "/mnt/fs-local-volume/"
         "/root/deploy-scripts/"
