@@ -13,15 +13,13 @@ pipeline {
     }
 
     parameters {
-
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'kubernetes', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for Cluster Setup scripts', trim: true)
-        text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used for K8 cluster setup. First node will be used as Master', name: 'hosts')
-        booleanParam(name: 'PODS_ON_MASTER', defaultValue: false, description: 'Selecting this option will allow to schedule pods on master node.')
+        text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used for K8 cluster setup. First node will be used as Primary', name: 'hosts')
+        booleanParam(name: 'PODS_ON_PRIMARY', defaultValue: false, description: 'Selecting this option will allow to schedule pods on Primary node.')
     }    
 
     stages {
-
         stage('Checkout Script') {
             steps { 
                 cleanWs()            
@@ -31,7 +29,6 @@ pipeline {
             }
         }
 
-
         stage ('Setup Cluster') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -39,7 +36,7 @@ pipeline {
                     pushd solutions/kubernetes/
                         echo $hosts | tr ' ' '\n' > hosts
                         cat hosts
-                        ./cluster-setup.sh ${PODS_ON_MASTER}
+                        ./cluster-setup.sh ${PODS_ON_PRIMARY}
                     popd
                 '''
             }
@@ -63,10 +60,9 @@ pipeline {
                     MESSAGE = "Cluster Setup Failed for the build ${build_id}"
                     ICON = "error.gif"
                     STATUS = "FAILURE"
- 
                 } else {
                     manager.buildUnstable()
-                    MESSAGE = "1 Node - Cortx Stack VM Deployment is Unstable"
+                    MESSAGE = "Cluster Setup unstable for the build ${build_id}"
                     ICON = "warning.gif"
                     STATUS = "UNSTABLE"
                 }
