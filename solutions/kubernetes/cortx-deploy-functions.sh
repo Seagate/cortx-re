@@ -263,40 +263,11 @@ function openldap_requiremenrs(){
     mkdir -p /var/log/3rd-party
 }
 
-function download_images(){
-    try
-    (
-        rm -rf /var/images
-        mkdir -p /var/images && pushd /var/images
-            wget -q -r -np -nH --cut-dirs=3 -A *.tar http://cortx-storage.colo.seagate.com/releases/cortx/images/ || throw $Exception
-            for file in $(ls -1); do docker load -i $file || throw $Exception; done
-        popd
-    )
-    catch || {
-    # handle excption
-    case $ex_code in
-        $Exception)
-            echo "An Exception was thrown. Please check logs"
-            throw 1
-        ;;
-        $ConfigException)
-            echo "A ConfigException was thrown. Please check logs"
-            throw 1
-        ;;
-        *)
-            echo "An unexpected exception was thrown"
-            throw $ex_code # you can rethrow the "exception" causing the script to exit if not caught
-        ;;
-    esac
-    }    
-}
-
 function execute_prereq(){
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         findmnt $SYSTEM_DRIVE && umount -l $SYSTEM_DRIVE
         ./prereq-deploy-cortx-cloud.sh $SYSTEM_DRIVE
-    popd    
-
+    popd
 }
 
 function usage(){
@@ -313,10 +284,6 @@ HEREDOC
 }
 
 
-#validation
-#download_deploy_script
-#update_solution_config
-
 ACTION="$1"
 if [ -z "$ACTION" ]; then
     echo "ERROR : No option provided"
@@ -327,8 +294,6 @@ fi
 function setup_master_node(){
 echo "---------------------------------------[ Setting up Master Node $HOSTNAME ]--------------------------------------"
     download_deploy_script
-    #Third-party images are downloaed from GitHub container regsitry. 
-    #download_images
     install_yq
     
     if [ "$(kubectl get  nodes $HOSTNAME  -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints}" | grep -o NoSchedule)" == "" ]; then
@@ -347,8 +312,6 @@ echo "---------------------------------------[ Setting up Master Node $HOSTNAME 
 
 function setup_worker_node(){
 echo "---------------------------------------[ Setting up Worker Node on $HOSTNAME ]--------------------------------------"
-    #Third-party images are downloaed from GitHub container regsitry.
-    #download_images
     download_deploy_script
     execute_prereq
 }
