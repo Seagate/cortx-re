@@ -50,8 +50,12 @@ if [ -z "${BUILD}" ] ; then
     BUILD=last_successful_prod
 fi
 
+if echo $BUILD | grep -q http;then
+BUILD_URL="$BUILD"
+else
 if echo $BUILD | grep -q custom; then BRANCH="integration-custom-ci"; else BRANCH="kubernetes"; fi
 BUILD_URL="$ARTFACT_URL/$BRANCH/$OS/$BUILD"
+fi
 
 echo "Building $SERVICE image from $BUILD_URL"
 sleep 5
@@ -77,7 +81,7 @@ done
 CORTX_VERSION=$(get_git_hash | tr '\n' ' ')
 rm -rf RELEASE.INFO
 
-if [ "$DOCKER_BUILD_BRANCH" != "stable" ]; then
+if [ "$DOCKER_BUILD_BRANCH" != "main" ]; then
         export TAG=$VERSION-$DOCKER_BUILD_BUILD-$DOCKER_BUILD_BRANCH
 else
         export TAG=$VERSION-$DOCKER_BUILD_BUILD
