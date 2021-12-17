@@ -86,6 +86,8 @@ function setup_cluster {
 
     # Setup master node and all worker nodes in parallel in case of multinode cluster.
     if [ "$(wc -l < $HOST_FILE)" -ne "1" ]; then
+       NODES=$(wc -l < $HOST_FILE)
+       echo "---------------------------------------[ $NODES node deployment ]----------------------------------"
        echo "MASTER NODE:" $MASTER_NODE
        echo "WORKER NODE:" $WORKER_NODES
        # pdsh hosts to run parallel implementations.
