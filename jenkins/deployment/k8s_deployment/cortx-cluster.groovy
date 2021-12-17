@@ -15,6 +15,7 @@ pipeline {
         CORTX_RE_BRANCH = "kubernetes"
         CORTX_RE_REPO = "https://github.com/Seagate/cortx-re/"
         DOCKER_IMAGE_LOCATION = "https://github.com/Seagate/cortx-re/pkgs/container/cortx-all"
+        // Need to make this variable dynamic based on repository selected
     }
     parameters {
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'kubernetes', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
