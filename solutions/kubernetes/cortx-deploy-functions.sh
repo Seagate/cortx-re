@@ -300,6 +300,10 @@ echo "---------------------------------------[ hctl status ]--------------------
         exit 1
 }
 
+function io_exec() {
+    
+}
+
 case $ACTION in
     --third-party)
         execute_deploy_script deploy-cortx-cloud-3rd-party.sh
@@ -315,6 +319,9 @@ case $ACTION in
     ;;
     --status) 
         print_pod_status
+    ;;
+    --io-test)
+        io_exec
     ;;
     --setup-master)
         setup_master_node 
