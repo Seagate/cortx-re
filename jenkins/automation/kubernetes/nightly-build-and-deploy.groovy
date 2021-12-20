@@ -134,33 +134,8 @@ pipeline {
                 }
             }
         }
-        stage ("QA Sanity K8S") {
-            steps {
-                script {
-                    catchError(stageResult: 'FAILURE') {
-                        def qaSanity = build job: '/QA-Sanity-Multinode-K8s', wait: true, propagate: false,
-                        parameters: [
-                            string(name: 'M_NODE', value: "${env.master_node}"),
-                            password(name: 'HOST_PASS', value: "${env.hostpasswd}"),
-                            string(name: 'ADMIN_USER', value: "${ADMIN_USER}"),
-                            password(name: 'ADMIN_PWD', value: "${ADMIN_PWD}"),
-                            string(name: 'CORTX_IMAGE', value: "${env.dockerimage_id}"),
-                            string(name: 'NUM_NODES', value: "${env.numberofnodes}")
-                        ]
-                        env.Sanity_Failed = qaSanity.buildVariables.Sanity_Failed
-                        env.sanity_result = qaSanity.currentResult
-                        env.Current_TP = qaSanity.buildVariables.Current_TP
-                        env.Health = qaSanity.buildVariables.Health
-                        env.qaSanity_status = qaSanity.currentResult
-                        env.qaSanityK8sJob_URL = qaSanity.absoluteUrl
-                    }
-                    copyArtifacts filter: 'log/*report.xml', fingerprintArtifacts: true, flatten: true, optional: true, projectName: 'QA-Sanity-Multinode-K8s', selector: lastCompleted(), target: 'log/'
-                    copyArtifacts filter: 'log/*report.html', fingerprintArtifacts: true, flatten: true, optional: true, projectName: 'QA-Sanity-Multinode-K8s', selector: lastCompleted(), target: 'log/'
-                    copyArtifacts filter: 'log/*report.xml', fingerprintArtifacts: true, flatten: true, optional: true, projectName: 'QA-Sanity-Multinode-K8s', selector: lastCompleted(), target: ''
-                    copyArtifacts filter: 'log/*report.html', fingerprintArtifacts: true, flatten: true, optional: true, projectName: 'QA-Sanity-Multinode-K8s', selector: lastCompleted(), target: ''
-                }
-            }
-        }
+
+
     }
     post {
         always {
@@ -219,7 +194,7 @@ pipeline {
                 } else if ( params.EMAIL_RECIPIENTS == "DEVOPS" ) {
                     mailRecipients = "CORTX.DevOps.RE@seagate.com"
                 } else if ( params.EMAIL_RECIPIENTS == "DEBUG" ) {
-                    mailRecipients = "shailesh.vaidya@seagate.com"
+                    mailRecipients = "CORTX.DevOps.RE@seagate.com"
                 }
                 catchError(stageResult: 'FAILURE') {
                     archiveArtifacts allowEmptyArchive: true, artifacts: 'log/*report.xml, log/*report.html, support_bundle/*.tar, crash_files/*.gz', followSymlinks: false
