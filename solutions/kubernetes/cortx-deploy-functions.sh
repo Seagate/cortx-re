@@ -27,6 +27,10 @@ YQ_VERSION=v4.13.3
 YQ_BINARY=yq_linux_386
 SOLUTION_CONFIG="/var/tmp/solution.yaml"
 
+LOG_SCRIPT_LOCATION="/root"
+LOG_SCRIPT_REPO="Seagate/cortx-k8s"
+LOG_SCRIPT_BRANCH="integration"
+
 #On master
 #download CORTX k8 deployment scripts
 
@@ -40,6 +44,16 @@ function download_deploy_script(){
     git clone https://github.com/$CORTX_SCRIPTS_REPO $SCRIPT_LOCATION
     pushd $SCRIPT_LOCATION
     git checkout $CORTX_SCRIPTS_BRANCH
+    popd
+}
+
+#On master
+#download CORTX Support Bundle log script
+
+function download_log_script(){
+    git clone https://github.com/$LOG_SCRIPT_REPO $LOG_SCRIPT_LOCATION
+    pushd $LOG_SCRIPT_LOCATION
+    git checkout $LOG_SCRIPT_BRANCH
     popd
 }
 
@@ -221,6 +235,7 @@ fi
 function setup_master_node(){
 echo "---------------------------------------[ Setting up Master Node $HOSTNAME ]--------------------------------------"
     download_deploy_script
+    download_log_script
     #Third-party images are downloaed from GitHub container regsitry. 
     install_yq
     
