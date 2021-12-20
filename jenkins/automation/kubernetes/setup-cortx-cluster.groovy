@@ -114,6 +114,9 @@ pipeline {
                 MASTER_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
                 scp -q "$MASTER_NODE":/root/deploy-scripts/k8_cortx_cloud/solution.yaml $WORKSPACE/artifacts/
                 cp /var/tmp/cortx-cluster-status.txt $WORKSPACE/artifacts/
+
+                # Copy the latest CORTX support bundle log tar file
+                scp -q "$MASTER_NODE":/root/$(ssh $MASTER_NODE 'ls -t /root | head -1') $WORKSPACE/artifacts/
             popd    
             '''
             script {
