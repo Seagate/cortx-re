@@ -26,10 +26,7 @@ SCRIPT_LOCATION="/root/deploy-scripts"
 YQ_VERSION=v4.13.3
 YQ_BINARY=yq_linux_386
 SOLUTION_CONFIG="/var/tmp/solution.yaml"
-
-LOG_SCRIPT_LOCATION="/root"
-LOG_SCRIPT_REPO="Seagate/cortx-k8s"
-LOG_SCRIPT_BRANCH="integration"
+LOG_SCRIPT="https://raw.githubusercontent.com/Seagate/cortx-k8s/integration/k8_cortx_cloud/logs-cortx-cloud.sh"
 
 #On master
 #download CORTX k8 deployment scripts
@@ -51,10 +48,7 @@ function download_deploy_script(){
 #download CORTX Support Bundle log script
 
 function download_log_script(){
-    git clone https://github.com/$LOG_SCRIPT_REPO $LOG_SCRIPT_LOCATION
-    pushd $LOG_SCRIPT_LOCATION
-    git checkout $LOG_SCRIPT_BRANCH
-    popd
+    wget $LOG_SCRIPT -P /var/tmp
 }
 
 #Install yq 4.13.3

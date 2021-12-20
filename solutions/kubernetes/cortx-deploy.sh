@@ -107,7 +107,7 @@ function setup_cluster {
 
         echo "---------------------------------------[ Collect Cortx Support Bundle Logs ]----------------------------------------------"
         SOLUTION_CONFIG_LOCATION="/root/deploy-scripts/k8_cortx_cloud/solution.yaml"
-        ssh -o 'StrictHostKeyChecking=no' "$master_node" '/root/cortx-k8s/k8_cortx_cloud/logs-cortx-cloud.sh $SOLUTION_CONFIG_LOCATION'
+        ssh -o 'StrictHostKeyChecking=no' "$master_node" '/var/tmp/logs-cortx-cloud.sh $SOLUTION_CONFIG_LOCATION'
         done
 }
 
