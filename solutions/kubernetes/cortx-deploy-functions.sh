@@ -278,7 +278,9 @@ echo "---------------------------------------[ POD Status ]---------------------
 echo "-----------[ All POD's are not in running state. Marking deployment as failed. Please check problematic pod events using kubectl describe pod <pod name> ]--------------------"
       exit 1
     fi
-echo "---------------------------------------[ hctl status ]--------------------------------------"
+echo "-----------[ Sleeping for 1min before checking hctl status.... ]--------------------"
+    sleep 60  
+echo "---------------------------------------[ hctl status ]-----------------------------------------"
     SECONDS=0
     date
     while [[ SECONDS -lt 1200 ]] ; do
