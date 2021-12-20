@@ -114,16 +114,25 @@ pipeline {
                 MASTER_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
                 scp -q "$MASTER_NODE":/root/deploy-scripts/k8_cortx_cloud/solution.yaml $WORKSPACE/artifacts/
                 cp /var/tmp/cortx-cluster-status.txt $WORKSPACE/artifacts/
-
-                # Copy the latest CORTX support bundle log tar file
-                LOG_FILE=$(ssh -o 'StrictHostKeyChecking=no' $MASTER_NODE 'ls -t /root | head -1')
-                scp -q "$MASTER_NODE":/root/$LOG_FILE $WORKSPACE/artifacts/
             popd    
             '''
             script {
                 // Archive Deployment artifacts in jenkins build
                 archiveArtifacts artifacts: "artifacts/*.*", onlyIfSuccessful: false, allowEmptyArchive: true 
             }    
-        }  
+        }
+
+        failure {
+            sh label: 'Collect CORTX support bundle logs in artifacts', script: '''
+            pushd solutions/kubernetes/
+                export SCRIPT_PATH="/root/deploy-scripts/k8_cortx_cloud"
+                ./cortx-deploy.sh --collect-logs
+                HOST_FILE=$PWD/hosts
+                MASTER_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+                LOG_FILE=$(ssh -o 'StrictHostKeyChecking=no' $MASTER_NODE 'ls -t /root | grep logs-cortx-cloud | grep .tar | head -1')
+                scp -q "$MASTER_NODE":/root/$LOG_FILE $WORKSPACE/artifacts/
+            popd
+            '''
+        }
     }
 }
