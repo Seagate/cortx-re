@@ -194,7 +194,7 @@ pipeline {
                 } else if ( params.EMAIL_RECIPIENTS == "DEVOPS" ) {
                     mailRecipients = "CORTX.DevOps.RE@seagate.com"
                 } else if ( params.EMAIL_RECIPIENTS == "DEBUG" ) {
-                    mailRecipients = "CORTX.DevOps.RE@seagate.com"
+                    mailRecipients = "shailesh.vaidya@seagate.com"
                 }
                 catchError(stageResult: 'FAILURE') {
                     archiveArtifacts allowEmptyArchive: true, artifacts: 'log/*report.xml, log/*report.html, support_bundle/*.tar, crash_files/*.gz', followSymlinks: false
