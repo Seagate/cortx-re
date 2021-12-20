@@ -1,15 +1,15 @@
 #!/usr/bin/env groovy
-pipeline { 
+pipeline {
     agent {
         node {
             label "docker-${os_version}-node"
         }
     }
-    
+
     triggers {
         pollSCM '*/5 * * * *'
     }
-    
+
     environment {
         version = "2.0.0"
         env = "dev"
@@ -21,10 +21,10 @@ pipeline {
     options {
         timeout(time: 120, unit: 'MINUTES')
         timestamps()
-        ansiColor('xterm') 
-        disableConcurrentBuilds()   
+        ansiColor('xterm')
+        disableConcurrentBuilds()
     }
-    
+
     stages {
 
         stage('Checkout') {
@@ -37,27 +37,6 @@ pipeline {
         stage('Build') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh encoding: 'utf-8', label: 'Provisioner RPMS', returnStdout: true, script: """
-                    sh ./devops/rpms/buildrpm.sh -g \$(git rev-parse --short HEAD) -e $version -b ${BUILD_NUMBER}
-                """
-                sh encoding: 'utf-8', label: 'Provisioner CLI RPMS', returnStdout: true, script: """
-                    sh ./cli/buildrpm.sh -g \$(git rev-parse --short HEAD) -e $version -b ${BUILD_NUMBER}
-                """
-                sh encoding: 'UTF-8', label: 'cortx-setup', script: """
-                if [ -f "./devops/rpms/node_cli/node_cli_buildrpm.sh" ]; then
-                    sh ./devops/rpms/node_cli/node_cli_buildrpm.sh -g \$(git rev-parse --short HEAD) -e $version -b ${BUILD_NUMBER}
-                else
-                    echo "node_cli package creation is not implemented"
-                fi
-                """
-                
-                sh encoding: 'UTF-8', label: 'api', script: '''
-                    bash ./devops/rpms/api/build_python_api.sh -vv --out-dir /root/rpmbuild/RPMS/x86_64/ --pkg-ver ${BUILD_NUMBER}_git$(git rev-parse --short HEAD)
-                '''
-
-                sh encoding: 'UTF-8', label: 'cortx-setup', script: '''
-                    bash ./devops/rpms/lr-cli/build_python_cortx_setup.sh -vv --out-dir /root/rpmbuild/RPMS/x86_64/ --pkg-ver ${BUILD_NUMBER}_git$(git rev-parse --short HEAD)
-                '''
 
                 sh encoding: 'UTF-8', label: 'cortx-provisioner', script: '''
                 if [ -f "./jenkins/build.sh" ]; then
@@ -73,7 +52,6 @@ pipeline {
             steps {
             sh encoding: 'utf-8', label: 'Provisioner RPMS', returnStdout: true, script: """
                 mkdir -p $build_upload_dir/$BUILD_NUMBER
-                cp /root/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir/$BUILD_NUMBER
                 shopt -s extglob
                 if ls ./dist/*.rpm; then
                     cp ./dist/!(*.src.rpm|*.tar.gz) $build_upload_dir/$BUILD_NUMBER
@@ -83,7 +61,7 @@ pipeline {
             """
             }
         }
-            
+
         stage ('Tag last_successful') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -138,14 +116,14 @@ pipeline {
     }
 
     post {
-        always {                
+        always {
             script {
-                env.release_build = (env.release_build != null) ? env.release_build : "" 
+                env.release_build = (env.release_build != null) ? env.release_build : ""
                 env.release_build_location = (env.release_build_location != null) ? env.release_build_location : ""
                 env.component = (env.component).capitalize()
                 env.build_stage = "${build_stage}"
 
-                env.vm_deployment = (env.deployVMURL != null) ? env.deployVMURL : "" 
+                env.vm_deployment = (env.deployVMURL != null) ? env.deployVMURL : ""
                 if ( env.deployVMStatus != null && env.deployVMStatus != "SUCCESS" && manager.build.result.toString() == "SUCCESS" ) {
                     manager.buildUnstable()
                 }
