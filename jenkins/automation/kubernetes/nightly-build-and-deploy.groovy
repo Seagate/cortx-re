@@ -143,8 +143,6 @@ pipeline {
                         parameters: [
                             string(name: 'M_NODE', value: "${env.master_node}"),
                             password(name: 'HOST_PASS', value: "${env.hostpasswd}"),
-                            string(name: 'ADMIN_USER', value: "${ADMIN_USER}"),
-                            password(name: 'ADMIN_PWD', value: "${ADMIN_PWD}"),
                             string(name: 'CORTX_IMAGE', value: "${env.dockerimage_id}"),
                             string(name: 'NUM_NODES', value: "${env.numberofnodes}")
                         ]
