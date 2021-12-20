@@ -202,93 +202,40 @@ pipeline {
 
         }
 
-        // Deploy Cortx-Stack
-        stage('Deploy') {
-            agent { 
-                node { 
-                    label params.HOST == "-" ? "mini_provisioner_s3_7_9 && !cleanup_req" : "vm_deployment_1n_user_host"
-                    customWorkspace "/var/jenkins/mini_provisioner/${JOB_NAME}_${BUILD_NUMBER}"
-                } 
-            }
-            when { expression { env.STAGE_DEPLOY == "yes" } }
-            environment {
-                // Credentials used to SSH node
-                NODE_DEFAULT_SSH_CRED =  credentials("${NODE_DEFAULT_SSH_CRED}")
-                NODE_USER = "${NODE_DEFAULT_SSH_CRED_USR}"
-                NODE1_HOST = "${HOST == '-' ? NODE1_HOST : HOST }"
-                NODES = "${NODE1_HOST}"
-                NODE_PASS = "${HOST_PASS == '-' ? NODE_DEFAULT_SSH_CRED_PSW : HOST_PASS}"
-                
-                NODE_UN_PASS_CRED_ID = "mini-prov-change-pass"
-                SETUP_TYPE = "single"
-            }
+        stage ("Build CORTX-ALL image") {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
-
-                    // Cleanup Workspace
-                    cleanWs()
-
-                    markNodeforCleanup()
-
-                    manager.addHtmlBadge("&emsp;<b>Deployment Host :</b><a href='${JENKINS_URL}/computer/${env.NODE_NAME}'> ${NODE1_HOST}</a>&emsp;")
-
-                    // Run Deployment
-                    catchError {
-                        
-                        dir('cortx-re') {
-                            checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 1, honorRefspec: true, noTags: true, reference: '', shallow: true], [$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
-                        }
-
-                        runAnsible("00_PREPARE, 01_DEPLOY_PREREQ, 02_1_PRVSNR_BOOTSTRAP, 02_2_PLATFORM_SETUP, 02_3_PREREQ, 02_4_UTILS, 02_5_IO_PATH, 02_6_CONTROL_PATH, 02_7_HA, 02_DEPLOY_VALIDATE, 03_VALIDATE")
-
+                    try {
+                        def build_cortx_all_image = build job: '/Cortx-Kubernetes/cortx-all-docker-image', wait: true,
+                            parameters: [
+                                string(name: 'CORTX_RE_URL', value: "https://github.com/Seagate/cortx-re"),
+                                string(name: 'CORTX_RE_BRANCH', value: "kubernetes"),
+                                string(name: 'BUILD', value: "${CORTX_BUILD}"),
+                                string(name: 'GITHUB_PUSH', value: "yes"),
+                                string(name: 'TAG_LATEST', value: "no"),
+                                string(name: 'DOCKER_REGISTRY', value: "cortx-docker.colo.seagate.com"),
+                                string(name: 'EMAIL_RECIPIENTS', value: "DEBUG")
+                            ]
+                        env.cortx_all_image = build_cortx_all_image.buildVariables.image
+                    } catch (err) {
+                        build_stage = env.STAGE_NAME
+                        error "Failed to Build CORTX-ALL image"
                     }
+                }
+            }
+        }
 
-                    // Collect logs from test node
-                    catchError {
-
-                        sh label: 'download_log_files', returnStdout: true, script: """ 
-                        mkdir -p artifacts/srvnode1 
-                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/log/seagate/cortx/ha artifacts/srvnode1 &>/dev/null || true
-                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/log/cluster artifacts/srvnode1 &>/dev/null || true
-                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/log/pacemaker.log artifacts/srvnode1 &>/dev/null || true
-                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/log/pcsd/pcsd.log artifacts/srvnode1 &>/dev/null || true
-                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/log/seagate/provisioner artifacts/srvnode1 &>/dev/null || true
-                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/opt/seagate/cortx_configs/provisioner_cluster.json artifacts/srvnode1 &>/dev/null || true
-                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/lib/hare/cluster.yaml artifacts/srvnode1 &>/dev/null || true
-                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/root/cortx_deployment artifacts/srvnode1 &>/dev/null || true
-                        """
-                        
-                        archiveArtifacts artifacts: "artifacts/**/*.*", onlyIfSuccessful: false, allowEmptyArchive: true 
-                    }
-                    
-                    hctlStatus = ""
-                    if ( fileExists('artifacts/srvnode1/cortx_deployment/log/hctl_status.log') && currentBuild.currentResult == "SUCCESS" ) {
-                        hctlStatus = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/hctl_status.log')
-                        MESSAGE = "Cortx Stack VM Deployment Success"
-                        ICON = "accept.gif"
-                        STATUS = "SUCCESS"
-                    } else {
-                        manager.buildFailure()
-                        MESSAGE = "Cortx Stack VM Deployment Failed"
-                        ICON = "error.gif"
-                        STATUS = "FAILURE"
-                    }
-
-                    hctlStatusHTML = "<textarea rows=20 cols=200 readonly style='margin: 0px; height: 392px; width: 843px;'>${hctlStatus}</textarea>"
-                    tableSummary = "<table border='1' cellspacing='0' cellpadding='0' width='400' align='left'> <tr> <td align='center'>Branch/Commit</td><td align='center'>${S3_BRANCH}</td></tr><tr> <td align='center'>Deploy VM</td><td align='center'>${NODE1_HOST}</td></tr></table>"
-                    manager.createSummary("${ICON}").appendText("<h3>${MESSAGE}.</h3><p>Please check <a href=\"${BUILD_URL}/artifact/setup.log\">setup.log</a> for more info <br /><br /><h4>Test Details:</h4> ${tableSummary} <br /><br /><br /><h4>Cluster Status:${hctlStatusHTML}</h4> ", false, false, false, "red")
-
-                    if ( "${HOST}" == "-" ) {
-                        if ( "${DEBUG}" == "yes" ) {  
-                            markNodeOffline("S3 Debug Mode Enabled on This Host  - ${BUILD_URL}")
-                        } else {
-                            build job: 'Cortx-Automation/Deployment/VM-Cleanup', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${env.NODE_NAME}")]                    
-                        }
-                    }
-
-                    // Cleanup Workspace
-                    cleanWs()
+        stage ("Deploy") {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                script {
+                    build job: "K8s-1N-deployment", wait: true,
+                    parameters: [
+                        string(name: 'CORTX_RE_REPO', value: "https://github.com/Seagate/cortx-re/"),
+                        string(name: 'CORTX_RE_BRANCH', value: "kubernetes"),
+                        string(name: 'CORTX_IMAGE', value: "${env.cortx_all_image}")
+                    ]
                 }
             }
         }
