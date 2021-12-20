@@ -52,7 +52,6 @@ pipeline {
             steps {
             sh encoding: 'utf-8', label: 'Provisioner RPMS', returnStdout: true, script: """
                 mkdir -p $build_upload_dir/$BUILD_NUMBER
-                cp /root/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir/$BUILD_NUMBER
                 shopt -s extglob
                 if ls ./dist/*.rpm; then
                     cp ./dist/!(*.src.rpm|*.tar.gz) $build_upload_dir/$BUILD_NUMBER
