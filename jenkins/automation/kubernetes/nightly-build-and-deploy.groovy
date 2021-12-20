@@ -28,12 +28,8 @@ pipeline {
 			description: 'Docker Registry to be used',
 			name: 'DOCKER_REGISTRY'
 		)
-		string(name: 'ADMIN_USER', defaultValue: "cortxadmin", description: 'CSM Admin login username for the given host')
-		password(name: 'ADMIN_PWD', defaultValue: 'Cortxadmin@123', description: 'CSM Admin login password for the given host    ')
-		string(name: 'SNS_CONFIG', defaultValue: '1+0+0', description: 'sns configuration for deployment. Please select value based on disks available on nodes.', trim: true)
-		string(name: 'DIX_CONFIG', defaultValue: '1+0+0', description: 'dix configuration for deployment. Please select value based on disks available on nodes.', trim: true)
 	}
-	// Please configure hosts parameter in Jenkins job configuration.
+	// Please configure hosts,SNS and DIX parameter in Jenkins job configuration.
 	stages {
 		stage ("Define Variable") {
 			steps {
