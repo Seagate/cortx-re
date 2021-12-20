@@ -116,7 +116,8 @@ pipeline {
                 cp /var/tmp/cortx-cluster-status.txt $WORKSPACE/artifacts/
 
                 # Copy the latest CORTX support bundle log tar file
-                scp -q "$MASTER_NODE":/root/$(ssh $MASTER_NODE 'ls -t /root | head -1') $WORKSPACE/artifacts/
+                LOG_FILE=$(ssh -o 'StrictHostKeyChecking=no' $MASTER_NODE 'ls -t /root | head -1')
+                scp -q "$MASTER_NODE":/root/$LOG_FILE $WORKSPACE/artifacts/
             popd    
             '''
             script {
