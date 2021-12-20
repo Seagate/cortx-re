@@ -105,9 +105,9 @@ function setup_cluster {
         rm -rf /var/tmp/cortx-cluster-status.txt
         ssh -o 'StrictHostKeyChecking=no' "$master_node" '/var/tmp/cortx-deploy-functions.sh --status' | tee /var/tmp/cortx-cluster-status.txt
 
-        echo "---------------------------------------[ Collect Cortx Support Bundle Logs ]----------------------------------------------"
+        echo "---------------------------------------[ Collect CORTX Support Bundle Logs ]----------------------------------------------"
         SOLUTION_CONFIG_LOCATION="/root/deploy-scripts/k8_cortx_cloud/solution.yaml"
-        ssh -o 'StrictHostKeyChecking=no' "$master_node" '/var/tmp/logs-cortx-cloud.sh $SOLUTION_CONFIG_LOCATION'
+        ssh -o 'StrictHostKeyChecking=no' "$master_node" '/var/tmp/logs-cortx-cloud.sh $SOLUTION_CONFIG_LOCATION' | grep 
         done
 }
 
