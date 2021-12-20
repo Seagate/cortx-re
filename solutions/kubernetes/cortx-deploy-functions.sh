@@ -26,8 +26,6 @@ SCRIPT_LOCATION="/root/deploy-scripts"
 YQ_VERSION=v4.13.3
 YQ_BINARY=yq_linux_386
 SOLUTION_CONFIG="/var/tmp/solution.yaml"
-LOG_SCRIPT="https://raw.githubusercontent.com/Seagate/cortx-k8s/integration/k8_cortx_cloud/logs-cortx-cloud.sh"
-LOG_PARSE_SCRIPT="https://raw.githubusercontent.com/Seagate/cortx-k8s/integration/k8_cortx_cloud/parse_scripts/parse_yaml.sh"
 
 #On master
 #download CORTX k8 deployment scripts
@@ -43,21 +41,6 @@ function download_deploy_script(){
     pushd $SCRIPT_LOCATION
     git checkout $CORTX_SCRIPTS_BRANCH
     popd
-}
-
-#On master
-#download CORTX support bundle log scripts
-
-function download_log_script(){
-    rm -rf /var/tmp/parse_scripts
-    rm -rf /var/tmp/logs-cortx-cloud.sh
-
-    mkdir -p /var/tmp/parse_scripts
-    wget $LOG_SCRIPT -P /var/tmp
-    wget $LOG_PARSE_SCRIPT -P /var/tmp/parse_scripts
-    
-    chmod +x /var/tmp/logs-cortx-cloud.sh
-    chmod +x /var/tmp/parse_scripts/parse_yaml.sh
 }
 
 #Install yq 4.13.3
@@ -238,7 +221,6 @@ fi
 function setup_master_node(){
 echo "---------------------------------------[ Setting up Master Node $HOSTNAME ]--------------------------------------"
     download_deploy_script
-    download_log_script
     #Third-party images are downloaed from GitHub container regsitry. 
     install_yq
     
