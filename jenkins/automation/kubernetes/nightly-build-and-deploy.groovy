@@ -15,6 +15,7 @@ pipeline {
         CORTX_RE_BRANCH = "kubernetes"
         CORTX_RE_REPO = "https://github.com/Seagate/cortx-re/"
         DOCKER_IMAGE_LOCATION = "https://github.com/Seagate/cortx-re/pkgs/container/cortx-all"
+        LOCAL_REG_CRED = credentials('local-registry-access')
     }
     parameters {
         string(name: 'CORTX_IMAGE', defaultValue: 'cortx-docker.colo.seagate.com/seagate/cortx-all:2.0.0-latest-kubernetes', description: 'CORTX-ALL image', trim: true)
@@ -85,7 +86,7 @@ pipeline {
             }
         }
 
-        stage('Prerequisite') {
+        stage('Push Image to GitHub') {
             agent {
                 node {
                 label 'docker-image-builder-centos-7.9.2009'
@@ -96,6 +97,11 @@ pipeline {
                    systemctl status docker
                    /usr/local/bin/docker-compose --version
                    echo 'y' | docker image prune
+                   docker pull $CORTX_IMAGE
+                   docker tag $CORTX_IMAGE cortx-docker.colo.seagate.com/seagate/cortx-all:2.0.0-$BUILD_NUMBER-cutom-ci-deploy-tested
+                   
+                   docker login cortx-docker.colo.seagate.com -u ${LOCAL_REG_CRED_USR} -p ${LOCAL_REG_CRED_PSW}
+                   docker push cortx-docker.colo.seagate.com/seagate/cortx-all:2.0.0-$BUILD_NUMBER-cutom-ci-deploy-tested
                 """
             }
         }
