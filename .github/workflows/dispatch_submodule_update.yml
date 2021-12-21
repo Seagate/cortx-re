@@ -1,4 +1,4 @@
-name: Dispatch event for cortx submodule
+name: Dispatch event for cortx submodules
 on:
   push:
     branches: [ main ]
