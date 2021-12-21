@@ -17,7 +17,7 @@ pipeline {
         DOCKER_IMAGE_LOCATION = "https://github.com/Seagate/cortx-re/pkgs/container/cortx-all"
     }
     parameters {
-        string(name: 'COMPONENT_BRANCH', defaultValue: 'kubernetes', description: 'Component Branch.')
+        string(name: 'CORTX_IMAGE', defaultValue: 'cortx-docker.colo.seagate.com/seagate/cortx-all:2.0.0-latest-kubernetes', description: 'CORTX-ALL image', trim: true)
         choice (
             choices: ['ALL', 'DEVOPS', 'DEBUG'],
             description: 'Email Notification Recipients ',
@@ -69,27 +69,6 @@ pipeline {
             }
         }
 
-        stage ("CORTX-ALL image creation") {
-            steps {
-                script { build_stage = env.STAGE_NAME }
-                script {
-                    try {
-                        def buildCortxDockerImages = build job: '/Cortx-kubernetes/cortx-all-docker-image', wait: true,
-                        parameters: [
-                            string(name: 'CORTX_RE_URL', value: "${CORTX_RE_REPO}"),
-                            string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
-                            string(name: 'BUILD', value: "kubernetes-build-${env.custom_ci_build_id}"),
-                            string(name: 'EMAIL_RECIPIENTS', value: "${EMAIL_RECIPIENTS}"),
-                            string(name: 'DOCKER_REGISTRY', value: "${DOCKER_REGISTRY}")
-                        ]
-                        env.dockerimage_id = buildCortxDockerImages.buildVariables.image
-                    } catch (err) {
-                        build_stage = env.STAGE_NAME
-                        error "Failed to Build Docker Image"
-                    }
-                }
-            }
-        }
         stage ("Deploy CORTX Cluster") {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -98,7 +77,7 @@ pipeline {
                     parameters: [
                         string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
                         string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
-                        string(name: 'CORTX_IMAGE', value: "${env.dockerimage_id}"),
+                        string(name: 'CORTX_IMAGE', value: "${CORTX_IMAGE}"),
                         text(name: 'hosts', value: "${hosts}"),
                         string(name: 'SNS_CONFIG', value: "${SNS_CONFIG}"),
                         string(name: 'DIX_CONFIG', value: "${DIX_CONFIG}"),
@@ -111,31 +90,6 @@ pipeline {
             }
         }
 
-        stage ("QA Sanity K8S") {
-            steps {
-                script {
-                    catchError(stageResult: 'FAILURE') {
-                        def qaSanity = build job: '/QA-Sanity-Multinode-K8s', wait: true, propagate: false,
-                        parameters: [
-                            string(name: 'M_NODE', value: "${env.master_node}"),
-                            password(name: 'HOST_PASS', value: "${env.hostpasswd}"),
-                            string(name: 'CORTX_IMAGE', value: "${env.dockerimage_id}"),
-                            string(name: 'NUM_NODES', value: "${env.numberofnodes}")
-                        ]
-                        env.Sanity_Failed = qaSanity.buildVariables.Sanity_Failed
-                        env.sanity_result = qaSanity.currentResult
-                        env.Current_TP = qaSanity.buildVariables.Current_TP
-                        env.Health = qaSanity.buildVariables.Health
-                        env.qaSanity_status = qaSanity.currentResult
-                        env.qaSanityK8sJob_URL = qaSanity.absoluteUrl
-                    }
-                    copyArtifacts filter: 'log/*report.xml', fingerprintArtifacts: true, flatten: true, optional: true, projectName: 'QA-Sanity-Multinode-K8s', selector: lastCompleted(), target: 'log/'
-                    copyArtifacts filter: 'log/*report.html', fingerprintArtifacts: true, flatten: true, optional: true, projectName: 'QA-Sanity-Multinode-K8s', selector: lastCompleted(), target: 'log/'
-                    copyArtifacts filter: 'log/*report.xml', fingerprintArtifacts: true, flatten: true, optional: true, projectName: 'QA-Sanity-Multinode-K8s', selector: lastCompleted(), target: ''
-                    copyArtifacts filter: 'log/*report.html', fingerprintArtifacts: true, flatten: true, optional: true, projectName: 'QA-Sanity-Multinode-K8s', selector: lastCompleted(), target: ''
-                }
-            }
-        }
     }
 
     post {
@@ -184,11 +138,11 @@ pipeline {
                 }
                 env.build_setupcortx_url = sh( script: "echo ${env.cortxcluster_build_url}/artifact/artifacts/cortx-cluster-status.txt", returnStdout: true)
                 env.host = "${env.allhost}"
-                env.build_id = "${env.dockerimage_id}"
+                env.build_id = "${CORTX_IMAGE}"
                 env.build_location = "${DOCKER_IMAGE_LOCATION}"
                 env.deployment_status = "${MESSAGE}"
                 env.cluster_status = "${env.build_setupcortx_url}"
-                env.CORTX_DOCKER_IMAGE = "${env.dockerimage_id}"
+                env.CORTX_DOCKER_IMAGE = "${CORTX_IMAGE}"
                 if ( params.EMAIL_RECIPIENTS == "ALL" ) {
                     mailRecipients = "akhil.bhansali@seagate.com, amit.kapil@seagate.com, amol.j.kongre@seagate.com, deepak.choudhary@seagate.com, jaikumar.gidwani@seagate.com, mandar.joshi@seagate.com, neerav.choudhari@seagate.com, pranay.kumar@seagate.com, swarajya.pendharkar@seagate.com, taizun.a.kachwala@seagate.com, trupti.patil@seagate.com, ujjwal.lanjewar@seagate.com, shailesh.vaidya@seagate.com, abhijit.patil@seagate.com, sonal.kalbende@seagate.com, gaurav.chaudhari@seagate.com, don.r.bloyer@seagate.com, kalpesh.chhajed@seagate.com"
                     //mailRecipients = "cortx.sme@seagate.com, manoj.management.team@seagate.com, CORTX.SW.Architecture.Team@seagate.com, CORTX.DevOps.RE@seagate.com"
