@@ -23,11 +23,6 @@ pipeline {
             description: 'Email Notification Recipients ',
             name: 'EMAIL_RECIPIENTS'
         )
-        choice (
-            choices: ['ghcr.io', 'cortx-docker.colo.seagate.com'],
-            description: 'Docker Registry to be used',
-            name: 'DOCKER_REGISTRY'
-        )
     }
     // Please configure hosts,SNS and DIX parameter in Jenkins job configuration.
     stages {
