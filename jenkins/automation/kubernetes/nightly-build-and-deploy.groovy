@@ -54,45 +54,21 @@ pipeline {
                 }
             }
         }
-        stage ("Build Creation and Cluster Cleanup") {
-            parallel {
-                stage ("Build Creation") {
-                    steps {
-                        script { build_stage = env.STAGE_NAME }
-                        script {
-                            def customCI = build job: '/GitHub-custom-ci-builds/centos-7.9/nightly-k8-custom-ci', wait: true,
-                            parameters: [
-                                string(name: 'CSM_AGENT_BRANCH', value: "${COMPONENT_BRANCH}"),
-                                string(name: 'CSM_WEB_BRANCH', value: "${COMPONENT_BRANCH}"),
-                                string(name: 'HARE_BRANCH', value: "${COMPONENT_BRANCH}"),
-                                string(name: 'HA_BRANCH', value: "${COMPONENT_BRANCH}"),
-                                string(name: 'MOTR_BRANCH', value: "${COMPONENT_BRANCH}"),
-                                string(name: 'PRVSNR_BRANCH', value: "${COMPONENT_BRANCH}"),
-                                string(name: 'S3_BRANCH', value: "${COMPONENT_BRANCH}"),
-                                string(name: 'SSPL_BRANCH', value: "${COMPONENT_BRANCH}"),
-                                string(name: 'CORTX_UTILS_BRANCH', value: "${COMPONENT_BRANCH}"),
-                                string(name: 'CORTX_RE_BRANCH', value: "${COMPONENT_BRANCH}"),
-                                string(name: 'THIRD_PARTY_RPM_VERSION', value: "cortx-2.0-k8")
-                            ]
-                            env.custom_ci_build_id = customCI.rawBuild.id
-                        }
-                    }
-                }
-                stage ("Cluster Cleanup") {
-                    steps {
-                        script { build_stage = env.STAGE_NAME }
-                        script {
-                            build job: '/Cortx-kubernetes/destroy-cortx-cluster', wait: true,
-                            parameters: [
-                                string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
-                                string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
-                                text(name: 'hosts', value: "${hosts}")
-                            ]
-                        }
-                    }
+
+        stage ("Cluster Cleanup") {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                script {
+                    build job: '/Cortx-kubernetes/destroy-cortx-cluster', wait: true,
+                    parameters: [
+                        string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
+                        string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
+                        text(name: 'hosts', value: "${hosts}")
+                    ]
                 }
             }
         }
+
         stage ("CORTX-ALL image creation") {
             steps {
                 script { build_stage = env.STAGE_NAME }
