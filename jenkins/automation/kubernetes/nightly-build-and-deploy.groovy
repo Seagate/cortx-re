@@ -85,6 +85,20 @@ pipeline {
             }
         }
 
+        stage('Prerequisite') {
+            agent {
+                node {
+                label 'docker-image-builder-centos-7.9.2009'
+                }
+            }
+           steps {
+                sh encoding: 'utf-8', label: 'Validate Docker pre-requisite', script: """
+                   systemctl status docker
+                   /usr/local/bin/docker-compose --version
+                   echo 'y' | docker image prune
+                """
+            }
+        }
     }
 
     post {
