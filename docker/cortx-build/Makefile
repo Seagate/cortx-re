@@ -102,6 +102,7 @@ _cortx-motr_build:
 		mv /root/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
 		createrepo -v ${RPM_DIR} && \
 	popd
+	
 
 #***********************************************************************************
 #   Component:  S3
