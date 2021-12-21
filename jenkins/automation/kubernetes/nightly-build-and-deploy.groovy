@@ -16,6 +16,7 @@ pipeline {
         CORTX_RE_REPO = "https://github.com/Seagate/cortx-re/"
         DOCKER_IMAGE_LOCATION = "https://github.com/Seagate/cortx-re/pkgs/container/cortx-all"
         LOCAL_REG_CRED = credentials('local-registry-access')
+        GITHUB_CRED = credentials('shailesh-github')
     }
     parameters {
         string(name: 'CORTX_IMAGE', defaultValue: 'cortx-docker.colo.seagate.com/seagate/cortx-all:2.0.0-latest-kubernetes', description: 'CORTX-ALL image', trim: true)
@@ -97,11 +98,12 @@ pipeline {
                    systemctl status docker
                    /usr/local/bin/docker-compose --version
                    echo 'y' | docker image prune
-                   docker pull $CORTX_IMAGE
-                   docker tag $CORTX_IMAGE cortx-docker.colo.seagate.com/seagate/cortx-all:2.0.0-$BUILD_NUMBER-cutom-ci-deploy-tested
                    
-                   docker login cortx-docker.colo.seagate.com -u ${LOCAL_REG_CRED_USR} -p ${LOCAL_REG_CRED_PSW}
-                   docker push cortx-docker.colo.seagate.com/seagate/cortx-all:2.0.0-$BUILD_NUMBER-cutom-ci-deploy-tested
+                   docker pull $CORTX_IMAGE
+                   docker tag $CORTX_IMAGE ghcr.io/seagate/cortx-all:2.0.0-$BUILD_NUMBER-cutom-ci-deploy-tested
+                   
+                   docker login ghcr.io -u ${GITHUB_CRED_USR} -p ${GITHUB_CRED_PSW}
+                   docker push ghcr.io/seagate/cortx-all:2.0.0-$BUILD_NUMBER-cutom-ci-deploy-tested
                 """
             }
         }
