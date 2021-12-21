@@ -1,15 +1,15 @@
 #!/usr/bin/env groovy
-pipeline { 
+pipeline {
     agent {
         node {
             label "docker-${os_version}-node"
         }
     }
-    
+
     triggers {
         pollSCM '*/5 * * * *'
     }
-    
+
     environment {
         version = "2.0.0"
         env = "dev"
@@ -21,10 +21,10 @@ pipeline {
     options {
         timeout(time: 120, unit: 'MINUTES')
         timestamps()
-        ansiColor('xterm') 
-        disableConcurrentBuilds()   
+        ansiColor('xterm')
+        disableConcurrentBuilds()
     }
-    
+
     stages {
 
         stage('Checkout') {
@@ -37,60 +37,40 @@ pipeline {
         stage('Build') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh encoding: 'utf-8', label: 'Provisioner RPMS', returnStdout: true, script: """
-                    sh ./devops/rpms/buildrpm.sh -g \$(git rev-parse --short HEAD) -e $version -b ${BUILD_NUMBER}
-                """
-                sh encoding: 'utf-8', label: 'Provisioner CLI RPMS', returnStdout: true, script: """
-                    sh ./cli/buildrpm.sh -g \$(git rev-parse --short HEAD) -e $version -b ${BUILD_NUMBER}
-                """
-                sh encoding: 'UTF-8', label: 'cortx-setup', script: """
-                if [ -f "./devops/rpms/node_cli/node_cli_buildrpm.sh" ]; then
-                    sh ./devops/rpms/node_cli/node_cli_buildrpm.sh -g \$(git rev-parse --short HEAD) -e $version -b ${BUILD_NUMBER}
-                else
-                    echo "node_cli package creation is not implemented"
-                fi
-                """
-                
-                sh encoding: 'UTF-8', label: 'api', script: '''
-                    bash ./devops/rpms/api/build_python_api.sh -vv --out-dir /root/rpmbuild/RPMS/x86_64/ --pkg-ver ${BUILD_NUMBER}_git$(git rev-parse --short HEAD)
-                '''
-
-                sh encoding: 'UTF-8', label: 'cortx-setup', script: '''
-                    bash ./devops/rpms/lr-cli/build_python_cortx_setup.sh -vv --out-dir /root/rpmbuild/RPMS/x86_64/ --pkg-ver ${BUILD_NUMBER}_git$(git rev-parse --short HEAD)
-                '''
 
                 sh encoding: 'UTF-8', label: 'cortx-provisioner', script: '''
                 if [ -f "./jenkins/build.sh" ]; then
                     bash ./jenkins/build.sh -v 2.0.0 -b ${BUILD_NUMBER}
                 else
                     echo "cortx-provisioner package creation is not implemented"
-                fi  
+                fi
+                '''
             }
         }
 
         stage ('Upload') {
             steps {
-                script { build_stage = env.STAGE_NAME }
-                sh label: 'Copy RPMS', script: '''
-                    mkdir -p $build_upload_dir/$BUILD_NUMBER
-                    cp /root/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir/$BUILD_NUMBER
-                '''
-                sh label: 'Repo Creation', script: '''pushd $build_upload_dir/$BUILD_NUMBER
-                    rpm -qi createrepo || yum install -y createrepo
-                    createrepo .
-                    popd
-                '''
+            sh encoding: 'utf-8', label: 'Provisioner RPMS', returnStdout: true, script: """
+                mkdir -p $build_upload_dir/$BUILD_NUMBER
+                shopt -s extglob
+                if ls ./dist/*.rpm; then
+                    cp ./dist/!(*.src.rpm|*.tar.gz) $build_upload_dir/$BUILD_NUMBER
+                fi
+                rpm -qi createrepo || yum install -y createrepo
+                createrepo -v .
+            """
             }
         }
-            
+
         stage ('Tag last_successful') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Tag last_successful', script: '''pushd $build_upload_dir/
+                sh encoding: 'utf-8', label: 'Provisioner RPMS', returnStdout: true, script: """
+                    pushd $build_upload_dir/
                     test -d $build_upload_dir/last_successful && rm -f last_successful
                     ln -s $build_upload_dir/$BUILD_NUMBER last_successful
                     popd
-                '''
+                """
             }
         }
 
@@ -105,22 +85,23 @@ pipeline {
                 }
             }
         }
-    stage('Update Jira') {
-        when { expression { return env.release_build != null } }    
-        steps {
-            script { build_stage=env.STAGE_NAME }
+
+        stage('Update Jira') {
+            when { expression { return env.release_build != null } }
+            steps {
+                script { build_stage=env.STAGE_NAME }
                 script {
                     def jiraIssues = jiraIssueSelector(issueSelector: [$class: 'DefaultIssueSelector'])
                     jiraIssues.each { issue ->
                         def author =  getAuthor(issue)
-                        jiraAddComment(
+                        jiraAddComment(    
                             idOrKey: issue,
                             site: "SEAGATE_JIRA",
-                                        comment: "{panel:bgColor=#c1c7d0}"+
+                            comment: "{panel:bgColor=#c1c7d0}"+
                                 "h2. ${component} - ${branch} branch build pipeline SUCCESS\n"+
                                 "h3. Build Info:  \n"+
-                                    author+
-                                        "* Component Build  :  ${BUILD_NUMBER} \n"+
+                                     author+
+                                         "* Component Build  :  ${BUILD_NUMBER} \n"+
                                         "* Release Build    :  ${release_build}  \n\n  "+
                                 "h3. Artifact Location  :  \n"+
                                     "*  "+"${release_build_location} "+"\n"+
@@ -128,26 +109,21 @@ pipeline {
                             failOnError: false,
                             auditLog: false
                         )
-                                     //def jiraFileds = jiraGetIssue idOrKey: issue, site: "SEAGATE_JIRA", failOnError: false
-                                    //if(jiraFileds.data != null){
-                                   //def labels_data =  jiraFileds.data.fields.labels + "cortx_stable_b${release_build}"
-                              //jiraEditIssue idOrKey: issue, issue: [fields: [ labels: labels_data ]], site: "SEAGATE_JIRA", failOnError: false
-                              // }
                     }
                 }
+            }
         }
-    }    
     }
 
     post {
-        always {                
+        always {
             script {
-                env.release_build = (env.release_build != null) ? env.release_build : "" 
+                env.release_build = (env.release_build != null) ? env.release_build : ""
                 env.release_build_location = (env.release_build_location != null) ? env.release_build_location : ""
                 env.component = (env.component).capitalize()
                 env.build_stage = "${build_stage}"
 
-                env.vm_deployment = (env.deployVMURL != null) ? env.deployVMURL : "" 
+                env.vm_deployment = (env.deployVMURL != null) ? env.deployVMURL : ""
                 if ( env.deployVMStatus != null && env.deployVMStatus != "SUCCESS" && manager.build.result.toString() == "SUCCESS" ) {
                     manager.buildUnstable()
                 }
