@@ -85,9 +85,8 @@ pipeline {
                 dir ('motr') {    
                     sh label: '', script: '''
                         rm -rf /root/rpmbuild/RPMS/x86_64/*.rpm
-                        KERNEL=/lib/modules/$(yum list installed kernel | tail -n1 | awk '{ print $2 }').x86_64/build
                         ./autogen.sh
-                        ./configure --with-linux=$KERNEL
+                        ./configure --with-user-mode-only
                         export build_number=${BUILD_ID}
                         make rpms
                     '''
