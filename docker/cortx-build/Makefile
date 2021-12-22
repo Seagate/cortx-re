@@ -93,16 +93,16 @@ _cortx-motr_build:
 	
 	pushd cortx-workspace/cortx-motr && \
 		echo "***************  Building cortx-motr RPMS from $$(git rev-parse --short HEAD) *********************" && \
-		KERNEL=/lib/modules/$$(yum list installed kernel | tail -n1 | awk '{ print $$2 }').x86_64/build && \
 		./autogen.sh || \
 		./autogen.sh && \
-		./configure --with-linux=$$KERNEL && \
+		./configure --with-user-mode-only && \
 		export build_number=${BUILD_ID} && \
 		make rpms && \
 		rm -rf ${RPM_DIR}/cortx-motr*.rpm && \
 		mv /root/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
 		createrepo -v ${RPM_DIR} && \
 	popd
+	
 
 #***********************************************************************************
 #   Component:  S3
