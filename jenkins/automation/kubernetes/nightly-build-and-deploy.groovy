@@ -17,6 +17,8 @@ pipeline {
         DOCKER_IMAGE_LOCATION = "https://github.com/Seagate/cortx-re/pkgs/container/cortx-all"
         LOCAL_REG_CRED = credentials('local-registry-access')
         GITHUB_CRED = credentials('shailesh-github')
+        VERSION = "2.0.0"
+        GITHUB_TAG_SUFFIX = "custom-ci" 
     }
     parameters {
         string(name: 'CORTX_IMAGE', defaultValue: 'cortx-docker.colo.seagate.com/seagate/cortx-all:2.0.0-latest-kubernetes', description: 'CORTX-ALL image', trim: true)
@@ -100,15 +102,15 @@ pipeline {
                    echo 'y' | docker image prune
    
                    docker pull $CORTX_IMAGE
-                   docker tag $CORTX_IMAGE ghcr.io/seagate/cortx-all:2.0.0-$BUILD_NUMBER-cutom-ci
-                   docker tag $CORTX_IMAGE ghcr.io/seagate/cortx-all:2.0.0-latest-cutom-ci
+                   docker tag $CORTX_IMAGE ghcr.io/seagate/cortx-all:$VERSION-$BUILD_NUMBER-$GITHUB_TAG_SUFFIX
+                   docker tag $CORTX_IMAGE ghcr.io/seagate/cortx-all:$VERSION-latest-$GITHUB_TAG_SUFFIX
                    
                    docker login ghcr.io -u ${GITHUB_CRED_USR} -p ${GITHUB_CRED_PSW}
-                   docker push ghcr.io/seagate/cortx-all:2.0.0-latest-cutom-ci 
-                   docker push ghcr.io/seagate/cortx-all:2.0.0-$BUILD_NUMBER-cutom-ci
+                   docker push ghcr.io/seagate/cortx-all:$VERSION-latest-$GITHUB_TAG_SUFFIX 
+                   docker push ghcr.io/seagate/cortx-all:$VERSION-$BUILD_NUMBER-$GITHUB_TAG_SUFFIX
 
-                   docker rmi ghcr.io/seagate/cortx-all:2.0.0-latest-cutom-ci
-                   docker rmi ghcr.io/seagate/cortx-all:2.0.0-$BUILD_NUMBER-cutom-ci
+                   docker rmi ghcr.io/seagate/cortx-all:$VERSION-latest-$GITHUB_TAG_SUFFIX
+                   docker rmi ghcr.io/seagate/cortx-all:$VERSION-$BUILD_NUMBER-$GITHUB_TAG_SUFFIX
                 """
             }
         }
