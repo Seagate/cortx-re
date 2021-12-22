@@ -107,7 +107,7 @@ function setup_cluster {
 
         # IO test
         scp -qrp io_scripts/ "$master_node":/var/tmp/
-        ssh -o 'StrictHostKeyChecking=no' "$master_node" '/var/tmp/cortx-deploy-functions.sh --io-test'
+        ssh -o 'StrictHostKeyChecking=no' "$master_node" "export CORTX_IMAGE=$CORTX_IMAGE && /var/tmp/cortx-deploy-functions.sh --io-test"
         done
 }
 
