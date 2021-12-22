@@ -20,8 +20,6 @@
 
 set -euo pipefail # exit on failures
 
-source ./config.sh
-source ./env.sh
 source ./functions.sh
 
 set -x # print each statement before execution
@@ -39,35 +37,15 @@ if ! which aws; then
   exit 1
 fi
 
-# Add Service IP address to /etc/hosts file, for s3.seagate.com and iam.seagate.com
-#sed -i \
-#  -e 's,\b\(dummy\.\)*\(iam\|s3\)\.seagate\.com\b,dummy.\2.seagate.com,g' \
-#  -e "/$CORTX_IO_SVC/d" \
-#  /etc/hosts
-
 CORTX_IO_SVC=$(kubectl get pods -o wide | grep cortx-data-pod | awk '{print $6}' | head -1)
 echo "$CORTX_IO_SVC s3.seagate.com iam.seagate.com" >> /etc/hosts
 
 mkdir -p /share/var/log/seagate/auth/
-
-# initial run of s3iamcli -- this creates config file.  This will fail (due to
-# hard-coded log path), then we can edit it in config file.  So we're ignoring
-# retcode in this call.
-rm -f /root/.sgs3iamcli/config.yaml
-s3iamcli ListAccounts \
-    --ldapuser sgiamadmin --ldappasswd ldapadmin \
-    --no-ssl \
-    &>/dev//null \
-  || true
-sed -i 's/\/var\/\log/\/share\/var\/log/g' /root/.sgs3iamcli/config.yaml
+touch /var/log/seagate/auth/s3iamcli.log
 
 s3iamcli ListAccounts --ldapuser sgiamadmin --ldappasswd ldapadmin --no-ssl
 
 mkdir -p /root/.aws/
-#cat clients/aws.config > /root/.aws/config
-
-mkdir -p /etc/ssl/stx-s3-clients/s3/
-#cat clients/ca.crt > /etc/ssl/stx-s3-clients/s3/ca.crt
 
 s3iamcli CreateAccount -n admin -e admin@seagate.com \
     --ldapuser sgiamadmin --ldappasswd ldapadmin --no-ssl \

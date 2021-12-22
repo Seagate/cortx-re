@@ -106,8 +106,8 @@ function setup_cluster {
         ssh -o 'StrictHostKeyChecking=no' "$master_node" '/var/tmp/cortx-deploy-functions.sh --status' | tee /var/tmp/cortx-cluster-status.txt
 
         # IO test
-        scp -qrp io_scripts/ "$master_node":/var/tmp/
-        ssh -o 'StrictHostKeyChecking=no' "$master_node" "export CORTX_IMAGE=$CORTX_IMAGE && /var/tmp/cortx-deploy-functions.sh --io-test"
+        scp -q io-testing.sh s3-client-setup.sh "$master_node":/var/tmp/
+        ssh -o 'StrictHostKeyChecking=no' "$master_node" '/var/tmp/cortx-deploy-functions.sh --io-test'
         done
 }
 

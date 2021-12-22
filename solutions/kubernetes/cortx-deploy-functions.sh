@@ -302,15 +302,8 @@ echo "---------------------------------------[ hctl status ]--------------------
 
 function io_exec(){
     echo "----------------------[ Performing IO testing ]-------------------------"
-    pushd /var/tmp/io_scripts
-        echo "Updating config.sh..."
-        sed -i "s/NODE_NAME=node1/NODE_NAME=$HOSTNAME/g" config.sh
-        IMAGE_TAG=$(echo $CORTX_IMAGE | awk -F ":" '{print $NF}')
-        sed -i "s/S3_CORTX_ALL_IMAGE_TAG='2.0.0-258-custom-ci'/S3_CORTX_ALL_IMAGE_TAG='$IMAGE_TAG'/g" config.sh
-        sed -i "s/MOTR_CORTX_ALL_IMAGE_TAG='2.0.0-2042-custom-ci'/MOTR_CORTX_ALL_IMAGE_TAG='$IMAGE_TAG'/g" config.sh
+    pushd /var/tmp/
         chmod +x *.sh
-        echo "Auto-detected environment parameters..."
-        ./create-env.sh
         # "Setting up S3 client..."
         ./s3-client-setup.sh
         # "Running IO test..."

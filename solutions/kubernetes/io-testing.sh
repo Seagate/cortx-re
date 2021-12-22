@@ -20,8 +20,6 @@
 
 set -euo pipefail # exit on failures
 
-source ./config.sh
-source ./env.sh
 source ./functions.sh
 
 set -x # print each statement before execution
@@ -31,8 +29,8 @@ add_separator IO TESTING.
 aws s3 mb s3://test
 aws s3 ls
 dd if=/dev/zero of=file10mb bs=1M count=10
-aws s3 cp file10mb s3://test/file10MB
 date > test-obj.bin
+aws s3 cp file10mb s3://test/file10MB
 aws s3 cp test-obj.bin s3://test
 aws s3 ls s3://test
 aws s3 cp s3://test/file10MB file10mbDn
