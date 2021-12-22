@@ -64,10 +64,10 @@ sed -i 's/\/var\/\log/\/share\/var\/log/g' /root/.sgs3iamcli/config.yaml
 s3iamcli ListAccounts --ldapuser sgiamadmin --ldappasswd ldapadmin --no-ssl
 
 mkdir -p /root/.aws/
-cat clients/aws.config > /root/.aws/config
+#cat clients/aws.config > /root/.aws/config
 
 mkdir -p /etc/ssl/stx-s3-clients/s3/
-cat clients/ca.crt > /etc/ssl/stx-s3-clients/s3/ca.crt
+#cat clients/ca.crt > /etc/ssl/stx-s3-clients/s3/ca.crt
 
 s3iamcli CreateAccount -n admin -e admin@seagate.com \
     --ldapuser sgiamadmin --ldappasswd ldapadmin --no-ssl \
