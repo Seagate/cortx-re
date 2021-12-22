@@ -35,7 +35,7 @@ aws s3 cp file10mb s3://test/file10MB
 date > test-obj.bin
 aws s3 cp test-obj.bin s3://test
 aws s3 ls s3://test
-aws s3 cp s3://mybucket/file10MB file10mbDn
+aws s3 cp s3://test/file10MB file10mbDn
 diff file10mb file10mbDn
 aws s3 rm s3://test --recursive
 aws s3 rb s3://test
