@@ -39,7 +39,7 @@ pipeline {
 
         COMPONENT_NAME = "motr".trim()
         BRANCH = "${ghprbTargetBranch != null ? ghprbTargetBranch : COMPONENTS_BRANCH}"
-        THIRD_PARTY_VERSION = "${OS_VERSION}-2.0.0-latest"
+        THIRD_PARTY_VERSION = "${OS_VERSION}-2.0.0-k8"
         VERSION = "2.0.0"
         RELEASE_TAG = "last_successful_prod"
         PASSPHARASE = credentials('rpm-sign-passphrase')
