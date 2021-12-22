@@ -19,7 +19,7 @@
 #
 
 function add_separator {
-    set +x +e
+    set +xe
     echo -e '\n\n\n========================= '"$*"' =========================\n'
 }
 

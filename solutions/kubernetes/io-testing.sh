@@ -24,32 +24,43 @@ source /var/tmp/functions.sh
 
 add_separator Starting IO testing.
 
-echo -e "\nCreating bucket:- 'test'\n"
-aws s3 mb s3://test
+BUCKET="test-bucket"
+FILE1="file10mb"
+FILE2="test-obj.bin"
+
+echo -e "\nCreating S3 bucket:- '$BUCKET'\n"
+aws s3 mb s3://$BUCKET
 aws s3 ls
 
-echo -e "\nCreating files to upload to 'test' bucket:-\n"
-echo "Creating 'file10mb'"
-dd if=/dev/zero of=file10mb bs=1M count=10
-echo "Creating 'test-obj.bin'"
-date > test-obj.bin
+echo -e "\nCreating files to upload to '$BUCKET' bucket:-"
+echo -e "\nCreating '$FILE1'"
+dd if=/dev/zero of=$FILE1 bs=1M count=10
+echo -e "\nCreating '$FILE2'"
+date > $FILE2
 
-echo -e "\nUploading 'file10mb' file to 'test' bucket:-\n"
-aws s3 cp file10mb s3://test/file10MB
-echo -e "\nUploading 'test-obj.bin' file to 'test' bucket:-\n"
-aws s3 cp test-obj.bin s3://test
+echo -e "\nUploading '$FILE1' file to '$BUCKET' bucket:-\n"
+aws s3 cp $FILE1 s3://$BUCKET/file10MB
+echo -e "\nUploading '$FILE2' file to '$BUCKET' bucket:-\n"
+aws s3 cp $FILE2 s3://$BUCKET
 
-echo -e "\nList files in 'test' bucket:-\n"
-aws s3 ls s3://test
+echo -e "\nList files in '$BUCKET' bucket:-\n"
+aws s3 ls s3://$BUCKET
 
-echo -e "\nDownload 'file10MB' as 'file10mbDn' and check diff:-\n"
-aws s3 cp s3://test/file10MB file10mbDn
-diff file10mb file10mbDn
+echo -e "\nDownload '$FILE1' as 'file10mbDn' and check diff:-\n"
+aws s3 cp s3://$BUCKET/file10MB file10mbDn
+FILE_DIFF=$(diff $FILE1 file10mbDn)
 
-echo -e "\nRemove all files in 'test' bucket:-\n"
-aws s3 rm s3://test --recursive
+if [[ $FILE_DIFF ]]; then
+   echo -e "\nDIFF Status: $FILE_DIFF"
+else
+   echo -e "\nDIFF Status: The files $FILE1 and file10mbDn are similar."
+fi
 
-echo -e "\nRemove 'test' bucket:-\n"
-aws s3 rb s3://test
+
+echo -e "\nRemove all files in '$BUCKET' bucket:-\n"
+aws s3 rm s3://$BUCKET --recursive
+
+echo -e "\nRemove '$BUCKET' bucket:-\n"
+aws s3 rb s3://$BUCKET
 
 add_separator Successfully passed IO testing.
