@@ -301,7 +301,6 @@ echo "---------------------------------------[ hctl status ]--------------------
 }
 
 function io_exec(){
-    echo "----------------------[ Performing IO testing ]-------------------------"
     pushd /var/tmp/
         chmod +x *.sh
         # "Setting up S3 client..."

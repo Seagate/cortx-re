@@ -20,11 +20,11 @@
 
 set -euo pipefail # exit on failures
 
-source ./functions.sh
+source /var/tmp/functions.sh
 
 set -x # print each statement before execution
 
-add_separator IO TESTING.
+add_separator Starting IO testing.
 
 aws s3 mb s3://test
 aws s3 ls
@@ -38,4 +38,4 @@ diff file10mb file10mbDn
 aws s3 rm s3://test --recursive
 aws s3 rb s3://test
 
-add_separator SUCCESSFULLY PASSED IO TESTING.
+add_separator Successfully passed IO testing.
