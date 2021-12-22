@@ -19,7 +19,7 @@
 #
 
 source ./config.sh
-source ./sh/functions.sh
+source ./functions.sh
 
 set -euo pipefail # exit on failures
 set -x # print each statement before execution

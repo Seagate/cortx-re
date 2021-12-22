@@ -22,7 +22,7 @@ set -euo pipefail # exit on failures
 
 source ./config.sh
 source ./env.sh
-source ./sh/functions.sh
+source ./functions.sh
 
 set -x # print each statement before execution
 

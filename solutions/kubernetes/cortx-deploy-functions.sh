@@ -300,8 +300,20 @@ echo "---------------------------------------[ hctl status ]--------------------
         exit 1
 }
 
-function io_exec() {
-    
+function io_exec(){
+    echo "----------------------[ Performing IO testing ]-------------------------"
+    pushd $SCRIPT_LOCATION/k8_cortx_cloud/io_scripts
+        echo "Updating config.sh..."
+        #sed
+
+        chmod +x *.sh
+        echo "Auto-detected environment parameters..."
+        ./create-env.sh
+        # "Setting up S3 client..."
+        ./s3-client-setup.sh
+        # "Running IO test..."
+        ./io-testing.sh
+    popd
 }
 
 case $ACTION in
