@@ -26,7 +26,7 @@ source ./functions.sh
 
 set -x # print each statement before execution
 
-add_separator CONFIGURING S3 CLIENTS.
+add_separator CONFIGURING S3 CLIENTS AND ENDPOINTS.
 
 yum-config-manager --add-repo http://cortx-storage.colo.seagate.com/releases/cortx/uploads/centos/centos-7.8.2003/s3server_uploads/ || true
 yum-config-manager --add-repo http://cortx-storage.colo.seagate.com/releases/cortx/github/main/centos-7.8.2003/last_successful/ || true
@@ -92,4 +92,10 @@ aws_access_key_id = $access_key
 aws_secret_access_key = $secret_key
 EOF
 
-add_separator SUCCESSFULLY CONFIGURED S3 CLIENTS.
+aws configure set plugins.endpoint awscli_plugin_endpoint
+aws configure set s3.endpoint_url http://s3.seagate.com
+aws configure set s3api.endpoint_url http://s3.seagate.com
+
+cat /root/.aws/config
+
+add_separator SUCCESSFULLY CONFIGURED S3 CLIENTS AND ENDPOINTS.

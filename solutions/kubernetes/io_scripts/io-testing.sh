@@ -30,9 +30,13 @@ add_separator IO TESTING.
 
 aws s3 mb s3://test
 aws s3 ls
+dd if=/dev/zero of=file10mb bs=1M count=10
+aws s3 cp file10mb s3://test/file10MB
 date > test-obj.bin
 aws s3 cp test-obj.bin s3://test
 aws s3 ls s3://test
+aws s3 cp s3://mybucket/file10MB file10mbDn
+diff file10mb file10mbDn
 aws s3 rm s3://test --recursive
 aws s3 rb s3://test
 
