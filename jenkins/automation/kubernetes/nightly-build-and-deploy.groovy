@@ -98,12 +98,17 @@ pipeline {
                    systemctl status docker
                    /usr/local/bin/docker-compose --version
                    echo 'y' | docker image prune
-                   
+   
                    docker pull $CORTX_IMAGE
-                   docker tag $CORTX_IMAGE ghcr.io/seagate/cortx-all:2.0.0-$BUILD_NUMBER-cutom-ci-deploy-tested
+                   docker tag $CORTX_IMAGE ghcr.io/seagate/cortx-all:2.0.0-$BUILD_NUMBER-cutom-ci
+                   docker tag $CORTX_IMAGE ghcr.io/seagate/cortx-all:2.0.0-latest-cutom-ci
                    
                    docker login ghcr.io -u ${GITHUB_CRED_USR} -p ${GITHUB_CRED_PSW}
-                   docker push ghcr.io/seagate/cortx-all:2.0.0-$BUILD_NUMBER-cutom-ci-deploy-tested
+                   docker push ghcr.io/seagate/cortx-all:2.0.0-latest-cutom-ci 
+                   docker push ghcr.io/seagate/cortx-all:2.0.0-$BUILD_NUMBER-cutom-ci
+
+                   docker rmi ghcr.io/seagate/cortx-all:2.0.0-latest-cutom-ci
+                   docker rmi ghcr.io/seagate/cortx-all:2.0.0-$BUILD_NUMBER-cutom-ci
                 """
             }
         }
