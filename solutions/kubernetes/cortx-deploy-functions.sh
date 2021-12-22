@@ -308,6 +308,7 @@ function io_exec(){
         IMAGE_TAG=$(echo $CORTX_IMAGE | awk -F ":" '{print $NF}')
         sed -i "s/S3_CORTX_ALL_IMAGE_TAG='2.0.0-258-custom-ci'/S3_CORTX_ALL_IMAGE_TAG=$IMAGE_TAG/g" config.sh
         sed -i "s/MOTR_CORTX_ALL_IMAGE_TAG='2.0.0-258-custom-ci'/MOTR_CORTX_ALL_IMAGE_TAG=$IMAGE_TAG/g" config.sh
+        chmod +x *.sh
         echo "Auto-detected environment parameters..."
         ./create-env.sh
         # "Setting up S3 client..."

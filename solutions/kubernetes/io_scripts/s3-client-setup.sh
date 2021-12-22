@@ -40,11 +40,12 @@ if ! which aws; then
 fi
 
 # Add Service IP address to /etc/hosts file, for s3.seagate.com and iam.seagate.com
-sed -i \
-  -e 's,\b\(dummy\.\)*\(iam\|s3\)\.seagate\.com\b,dummy.\2.seagate.com,g' \
-  -e "/$CORTX_IO_SVC/d" \
-  /etc/hosts
+#sed -i \
+#  -e 's,\b\(dummy\.\)*\(iam\|s3\)\.seagate\.com\b,dummy.\2.seagate.com,g' \
+#  -e "/$CORTX_IO_SVC/d" \
+#  /etc/hosts
 
+CORTX_IO_SVC=$(kubectl get pods -o wide | grep cortx-data-pod | awk '{print $6}' | head -1)
 echo "$CORTX_IO_SVC s3.seagate.com iam.seagate.com" >> /etc/hosts
 
 mkdir -p /share/var/log/seagate/auth/
