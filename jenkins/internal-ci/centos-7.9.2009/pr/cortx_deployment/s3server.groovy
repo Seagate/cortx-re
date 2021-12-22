@@ -17,10 +17,7 @@ pipeline {
     parameters {  
 	    string(name: 'S3_URL', defaultValue: 'https://github.com/Seagate/cortx-s3server', description: 'Repo for S3Server')
         string(name: 'S3_BRANCH', defaultValue: 'main', description: 'Branch for S3Server')
-        choice(name: 'MESSAGING_PLATFORM', choices: ["rabbit_mq", "message_bus"], description: 'MESSAGING_PLATFORM')
-        choice(name: 'DEBUG', choices: ["no", "yes" ], description: 'Keep Host for Debuging')
-        string(name: 'HOST', defaultValue: '-', description: 'Host FQDN',  trim: true)
-        password(name: 'HOST_PASS', defaultValue: '-', description: 'Host machine root user password')   
+        choice(name: 'MESSAGING_PLATFORM', choices: ["rabbit_mq", "message_bus"], description: 'MESSAGING_PLATFORM')  
 	}
 
     environment {
@@ -60,7 +57,6 @@ pipeline {
 
         ////////////////////////////////// DEPLOYMENT VARS /////////////////////////////////////////////////////
 
-        // NODE1_HOST - Env variables added in the node configurations
         build_id = sh(script: "echo ${CORTX_BUILD} | rev | cut -d '/' -f2,3 | rev", returnStdout: true).trim()
 
         STAGE_DEPLOY = "yes"
@@ -235,6 +231,7 @@ pipeline {
                         string(name: 'CORTX_RE_REPO', value: "https://github.com/Seagate/cortx-re/"),
                         string(name: 'CORTX_RE_BRANCH', value: "kubernetes"),
                         string(name: 'CORTX_IMAGE', value: "${env.cortx_all_image}")
+                        string(name: 'hosts', value: "${host}")
                     ]
                 }
             }
