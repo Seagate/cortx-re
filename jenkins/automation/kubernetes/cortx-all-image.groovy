@@ -56,7 +56,6 @@ pipeline {
                    systemctl status docker
                    /usr/local/bin/docker-compose --version
                    echo 'y' | docker image prune
-                   if docker images | grep cortx-all -q; then docker rmi --force \$(docker images cortx-all -q); fi
                    if docker images | grep cortx-all -q; then docker rmi --force \$(docker images --filter=reference='*/*/cortx-all:*' -q); fi
                 """
             }
