@@ -305,7 +305,7 @@ echo "---------------------------------------[ hctl status ]--------------------
 function logs_generation(){
     echo -e "\n-----------[ Generating CORTX Support Bundle Logs... ]--------------------"
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
-        ./logs-cortx-cloud.sh -s solution.yaml
+        ./logs-cortx-cloud.sh
     popd
 }
 
