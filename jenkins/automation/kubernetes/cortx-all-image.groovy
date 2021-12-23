@@ -87,11 +87,11 @@ pipeline {
                 sh encoding: 'utf-8', label: 'Build cortx-all docker image', script: """
                     pushd ./docker/cortx-deploy
                         if [ $GITHUB_PUSH == yes ] && [ $TAG_LATEST == yes ];then
-                                sh ./build.sh -b $BUILD -p yes -t yes -r $DOCKER_REGISTRY
+                                sh ./build.sh -b $BUILD -p yes -t yes -r $DOCKER_REGISTRY -e internal-ci
                         elif [ $GITHUB_PUSH == yes ] && [ $TAG_LATEST == no ]; then
-                                 sh ./build.sh -b $BUILD -p yes -t no -r $DOCKER_REGISTRY
+                                 sh ./build.sh -b $BUILD -p yes -t no -r $DOCKER_REGISTRY -e internal-ci
                         else
-                                 sh ./build.sh -b $BUILD -p no
+                                 sh ./build.sh -b $BUILD -p no -e internal-ci
                         fi
                     popd
                     docker logout  
