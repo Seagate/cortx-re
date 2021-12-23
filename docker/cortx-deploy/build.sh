@@ -34,7 +34,7 @@ PROJECT="seagate"
 ARTFACT_URL="http://cortx-storage.colo.seagate.com/releases/cortx/github/"
 SERVICE=cortx-all
 
-while getopts "b:p:t:r:h:" opt; do
+while getopts "b:p:t:r:e:h:" opt; do
     case $opt in
         b ) BUILD=$OPTARG;;
         p ) DOCKER_PUSH=$OPTARG;;
