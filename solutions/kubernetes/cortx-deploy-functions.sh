@@ -302,6 +302,13 @@ echo "---------------------------------------[ hctl status ]--------------------
         exit 1
 }
 
+function logs_generation(){
+    echo -e "\n-----------[ Generating CORTX Support Bundle Logs... ]--------------------"
+    pushd $SCRIPT_LOCATION/k8_cortx_cloud
+        ./logs-cortx-cloud.sh -s solution.yaml
+    popd
+}
+
 case $ACTION in
     --third-party)
         execute_deploy_script deploy-cortx-cloud-3rd-party.sh
@@ -317,6 +324,9 @@ case $ACTION in
     ;;
     --status) 
         print_pod_status
+    ;;
+    --generate-logs)
+        logs_generation
     ;;
     --setup-master)
         setup_master_node 

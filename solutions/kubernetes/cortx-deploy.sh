@@ -24,7 +24,6 @@ source functions.sh
 
 HOST_FILE=$PWD/hosts
 SSH_KEY_FILE=/root/.ssh/id_rsa
-SCRIPT_PATH="/root/deploy-scripts/k8_cortx_cloud"
 
 function usage(){
     cat << HEREDOC
@@ -115,10 +114,10 @@ EOF
         done
 }
 
-function logs_generation(){
+function support_bundle(){
     MASTER_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
-    echo "---------------------------------------[ Collect CORTX Support Bundle Logs ]----------------------------------------------"
-    ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" "$SCRIPT_PATH/logs-cortx-cloud.sh -s $SCRIPT_PATH/solution.yaml"
+    echo -e "\n---------------------------------------[ Collect CORTX Support Bundle Logs ]----------------------------------------------"
+    ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" '/var/tmp/cortx-deploy-functions.sh --generate-logs'
 }
 
 function destroy-cluster(){
@@ -151,8 +150,8 @@ case $ACTION in
         check_params
         setup_cluster cortx-cluster
     ;;
-    --generate-logs)
-        logs_generation
+    --support-bundle)
+        support_bundle
     ;;
     --destroy-cluster)
         destroy-cluster

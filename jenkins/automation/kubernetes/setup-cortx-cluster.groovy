@@ -126,11 +126,11 @@ pipeline {
             sh label: 'Collect CORTX support bundle logs in artifacts', script: '''
             mkdir -p artifacts
             pushd solutions/kubernetes/
-                ./cortx-deploy.sh --generate-logs
+                ./cortx-deploy.sh --support-bundle
                 HOST_FILE=$PWD/hosts
                 MASTER_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
-                LOG_FILE=$(ssh -o 'StrictHostKeyChecking=no' $MASTER_NODE 'ls -t /root | grep logs-cortx-cloud | grep .tar | head -1')
-                scp -q "$MASTER_NODE":/root/$LOG_FILE $WORKSPACE/artifacts/
+                LOG_FILE=$(ssh -o 'StrictHostKeyChecking=no' $MASTER_NODE 'ls -t /root/deploy-scripts/k8_cortx_cloud | grep logs-cortx-cloud | grep .tar | head -1')
+                scp -q "$MASTER_NODE":/root/deploy-scripts/k8_cortx_cloud/$LOG_FILE $WORKSPACE/artifacts/
             popd
             '''
         }
