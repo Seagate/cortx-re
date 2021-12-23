@@ -47,6 +47,9 @@ pipeline {
                 sh encoding: 'utf-8', label: 'Provisioner CLI RPMS', returnStdout: true, script: """
                     sh ./cli/buildrpm.sh -g \$(git rev-parse --short HEAD) -e 2.0.0 -b ${CUSTOM_CI_BUILD_ID}
                 """
+                sh encoding: 'UTF-8', label: 'api', script: '''
+                    bash ./devops/rpms/api/build_python_api.sh -vv --out-dir /root/rpmbuild/RPMS/x86_64/ --pkg-ver ${CUSTOM_CI_BUILD_ID}_git$(git rev-parse --short HEAD)
+                '''
                 sh encoding: 'UTF-8', label: 'cortx-provisioner', script: '''
                 if [ -f "./jenkins/build.sh" ]; then
                     bash ./jenkins/build.sh -v 2.0.0 -b ${CUSTOM_CI_BUILD_ID}
