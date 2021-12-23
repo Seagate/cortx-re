@@ -67,7 +67,7 @@ pipeline {
 						sh label: '', script: '''
 						rm -rf /root/rpmbuild/RPMS/x86_64/*.rpm
 						./autogen.sh
-						if [ $MOTR_BUILD_MODE == "kernel" ]; then
+						if [ "${MOTR_BUILD_MODE}" == "kernel" ]; then
 							KERNEL=/lib/modules/$(yum list installed kernel | tail -n1 | awk '{ print $2 }').x86_64/build
 							./configure --with-linux=$KERNEL
 						else
