@@ -312,6 +312,13 @@ function io_exec(){
     popd
 }
 
+function logs_generation(){
+    echo -e "\n-----------[ Generating CORTX Support Bundle Logs... ]--------------------"
+    pushd $SCRIPT_LOCATION/k8_cortx_cloud
+        ./logs-cortx-cloud.sh
+    popd
+}
+
 case $ACTION in
     --third-party)
         execute_deploy_script deploy-cortx-cloud-3rd-party.sh
@@ -330,6 +337,9 @@ case $ACTION in
     ;;
     --io-test)
         io_exec
+    ;;
+    --generate-logs)
+        logs_generation
     ;;
     --setup-master)
         setup_master_node 
