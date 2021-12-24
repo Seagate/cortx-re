@@ -114,6 +114,11 @@ EOF
         done
 }
 
+function support_bundle(){
+    MASTER_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+    echo -e "\n---------------------------------------[ Collect CORTX Support Bundle Logs ]----------------------------------------------"
+    ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" '/var/tmp/cortx-deploy-functions.sh --generate-logs'
+}
 
 function destroy-cluster(){
     validation
@@ -144,6 +149,9 @@ case $ACTION in
     --cortx-cluster)
         check_params
         setup_cluster cortx-cluster
+    ;;
+    --support-bundle)
+        support_bundle
     ;;
     --destroy-cluster)
         destroy-cluster
