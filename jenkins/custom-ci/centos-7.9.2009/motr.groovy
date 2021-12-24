@@ -17,7 +17,7 @@ pipeline {
 	parameters {  
         string(name: 'MOTR_URL', defaultValue: 'https://github.com/Seagate/cortx-motr', description: 'Branch for Motr.')
 		string(name: 'MOTR_BRANCH', defaultValue: 'stable', description: 'Branch for Motr.')
-		string(name: 'MOTR_BUILD_MODE', defaultValue: 'kernel', description: 'Build motr rpm using kernel or user-mode.', trim: true)
+		string(name: 'MOTR_BUILD_MODE', defaultValue: 'user-mode', description: 'Build motr rpm using kernel or user-mode.', trim: true)
 		string(name: 'S3_URL', defaultValue: 'https://github.com/Seagate/cortx-s3server', description: 'Branch for S3Server')
 		string(name: 'S3_BRANCH', defaultValue: 'stable', description: 'Branch for S3Server')
 		string(name: 'HARE_URL', defaultValue: 'https://github.com/Seagate/cortx-hare', description: 'Branch to be used for Hare build.')

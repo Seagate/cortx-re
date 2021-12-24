@@ -53,7 +53,7 @@ pipeline {
 
         choice(
             name: 'MOTR_BUILD_MODE',
-            choices: ['kernel', 'user-mode'],
+            choices: ['user-mode', 'kernel'],
             description: 'Build motr rpm using kernel or user-mode.'
         )
 
