@@ -7,7 +7,7 @@ pipeline {
 	}
 
 	options {
-		timeout(time: 120, unit: 'MINUTES')
+		timeout(time: 60, unit: 'MINUTES')
 		timestamps()
 		buildDiscarder(logRotator(daysToKeepStr: '5', numToKeepStr: '10'))
 		parallelsAlwaysFailFast()
@@ -65,10 +65,9 @@ pipeline {
 				script { build_stage = env.STAGE_NAME }
 						sh label: '', script: '''
 						rm -rf /root/rpmbuild/RPMS/x86_64/*.rpm
-						./autogen.sh
 						KERNEL=/lib/modules/$(yum list installed kernel | tail -n1 | awk '{ print $2 }').x86_64/build
+						./autogen.sh
 						./configure --with-linux=$KERNEL
-			
 						export build_number=${CUSTOM_CI_BUILD_ID}
 						make rpms
 					'''
