@@ -15,18 +15,17 @@ pipeline {
         CORTX_RE_BRANCH = "kubernetes"
         CORTX_RE_REPO = "https://github.com/Seagate/cortx-re/"
         DOCKER_IMAGE_LOCATION = "https://github.com/Seagate/cortx-re/pkgs/container/cortx-all"
+        LOCAL_REG_CRED = credentials('local-registry-access')
+        GITHUB_CRED = credentials('shailesh-github')
+        VERSION = "2.0.0"
+        GITHUB_TAG_SUFFIX = "custom-ci" 
     }
     parameters {
-        string(name: 'COMPONENT_BRANCH', defaultValue: 'kubernetes', description: 'Component Branch.')
+        string(name: 'CORTX_IMAGE', defaultValue: 'cortx-docker.colo.seagate.com/seagate/cortx-all:2.0.0-latest-kubernetes', description: 'CORTX-ALL image', trim: true)
         choice (
             choices: ['ALL', 'DEVOPS', 'DEBUG'],
             description: 'Email Notification Recipients ',
             name: 'EMAIL_RECIPIENTS'
-        )
-        choice (
-            choices: ['ghcr.io', 'cortx-docker.colo.seagate.com'],
-            description: 'Docker Registry to be used',
-            name: 'DOCKER_REGISTRY'
         )
     }
     // Please configure hosts,SNS and DIX parameter in Jenkins job configuration.
@@ -54,66 +53,21 @@ pipeline {
                 }
             }
         }
-        stage ("Build Creation and Cluster Cleanup") {
-            parallel {
-                stage ("Build Creation") {
-                    steps {
-                        script { build_stage = env.STAGE_NAME }
-                        script {
-                            def customCI = build job: '/GitHub-custom-ci-builds/centos-7.9/nightly-k8-custom-ci', wait: true,
-                            parameters: [
-                                string(name: 'CSM_AGENT_BRANCH', value: "${COMPONENT_BRANCH}"),
-                                string(name: 'CSM_WEB_BRANCH', value: "${COMPONENT_BRANCH}"),
-                                string(name: 'HARE_BRANCH', value: "${COMPONENT_BRANCH}"),
-                                string(name: 'HA_BRANCH', value: "${COMPONENT_BRANCH}"),
-                                string(name: 'MOTR_BRANCH', value: "${COMPONENT_BRANCH}"),
-                                string(name: 'PRVSNR_BRANCH', value: "${COMPONENT_BRANCH}"),
-                                string(name: 'S3_BRANCH', value: "${COMPONENT_BRANCH}"),
-                                string(name: 'SSPL_BRANCH', value: "${COMPONENT_BRANCH}"),
-                                string(name: 'CORTX_UTILS_BRANCH', value: "${COMPONENT_BRANCH}"),
-                                string(name: 'CORTX_RE_BRANCH', value: "${COMPONENT_BRANCH}"),
-                                string(name: 'THIRD_PARTY_RPM_VERSION', value: "cortx-2.0-k8")
-                            ]
-                            env.custom_ci_build_id = customCI.rawBuild.id
-                        }
-                    }
-                }
-                stage ("Cluster Cleanup") {
-                    steps {
-                        script { build_stage = env.STAGE_NAME }
-                        script {
-                            build job: '/Cortx-kubernetes/destroy-cortx-cluster', wait: true,
-                            parameters: [
-                                string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
-                                string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
-                                text(name: 'hosts', value: "${hosts}")
-                            ]
-                        }
-                    }
-                }
-            }
-        }
-        stage ("CORTX-ALL image creation") {
+
+        stage ("Cluster Cleanup") {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
-                    try {
-                        def buildCortxDockerImages = build job: '/Cortx-kubernetes/cortx-all-docker-image', wait: true,
-                        parameters: [
-                            string(name: 'CORTX_RE_URL', value: "${CORTX_RE_REPO}"),
-                            string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
-                            string(name: 'BUILD', value: "kubernetes-build-${env.custom_ci_build_id}"),
-                            string(name: 'EMAIL_RECIPIENTS', value: "${EMAIL_RECIPIENTS}"),
-                            string(name: 'DOCKER_REGISTRY', value: "${DOCKER_REGISTRY}")
-                        ]
-                        env.dockerimage_id = buildCortxDockerImages.buildVariables.image
-                    } catch (err) {
-                        build_stage = env.STAGE_NAME
-                        error "Failed to Build Docker Image"
-                    }
+                    build job: '/Cortx-kubernetes/destroy-cortx-cluster', wait: true,
+                    parameters: [
+                        string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
+                        string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
+                        text(name: 'hosts', value: "${hosts}")
+                    ]
                 }
             }
         }
+
         stage ("Deploy CORTX Cluster") {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -122,7 +76,7 @@ pipeline {
                     parameters: [
                         string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
                         string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
-                        string(name: 'CORTX_IMAGE', value: "${env.dockerimage_id}"),
+                        string(name: 'CORTX_IMAGE', value: "${CORTX_IMAGE}"),
                         text(name: 'hosts', value: "${hosts}"),
                         string(name: 'SNS_CONFIG', value: "${SNS_CONFIG}"),
                         string(name: 'DIX_CONFIG', value: "${DIX_CONFIG}"),
@@ -135,6 +89,32 @@ pipeline {
             }
         }
 
+        stage('Push Image to GitHub') {
+            agent {
+                node {
+                label 'docker-image-builder-centos-7.9.2009'
+                }
+            }
+           steps {
+                sh encoding: 'utf-8', label: 'Validate Docker pre-requisite', script: """
+                   systemctl status docker
+                   /usr/local/bin/docker-compose --version
+                   echo 'y' | docker image prune
+   
+                   docker pull $CORTX_IMAGE
+                   docker tag $CORTX_IMAGE ghcr.io/seagate/cortx-all:$VERSION-$BUILD_NUMBER-$GITHUB_TAG_SUFFIX
+                   docker tag $CORTX_IMAGE ghcr.io/seagate/cortx-all:$VERSION-latest-$GITHUB_TAG_SUFFIX
+                   
+                   docker login ghcr.io -u ${GITHUB_CRED_USR} -p ${GITHUB_CRED_PSW}
+                   docker push ghcr.io/seagate/cortx-all:$VERSION-latest-$GITHUB_TAG_SUFFIX 
+                   docker push ghcr.io/seagate/cortx-all:$VERSION-$BUILD_NUMBER-$GITHUB_TAG_SUFFIX
+
+                   docker rmi ghcr.io/seagate/cortx-all:$VERSION-latest-$GITHUB_TAG_SUFFIX
+                   docker rmi ghcr.io/seagate/cortx-all:$VERSION-$BUILD_NUMBER-$GITHUB_TAG_SUFFIX
+                """
+            }
+        }
+
         stage ("QA Sanity K8S") {
             steps {
                 script {
@@ -143,7 +123,7 @@ pipeline {
                         parameters: [
                             string(name: 'M_NODE', value: "${env.master_node}"),
                             password(name: 'HOST_PASS', value: "${env.hostpasswd}"),
-                            string(name: 'CORTX_IMAGE', value: "${env.dockerimage_id}"),
+                            string(name: 'CORTX_IMAGE', value: "${CORTX_IMAGE}"),
                             string(name: 'NUM_NODES', value: "${env.numberofnodes}")
                         ]
                         env.Sanity_Failed = qaSanity.buildVariables.Sanity_Failed
@@ -208,11 +188,11 @@ pipeline {
                 }
                 env.build_setupcortx_url = sh( script: "echo ${env.cortxcluster_build_url}/artifact/artifacts/cortx-cluster-status.txt", returnStdout: true)
                 env.host = "${env.allhost}"
-                env.build_id = "${env.dockerimage_id}"
+                env.build_id = "${CORTX_IMAGE}"
                 env.build_location = "${DOCKER_IMAGE_LOCATION}"
                 env.deployment_status = "${MESSAGE}"
                 env.cluster_status = "${env.build_setupcortx_url}"
-                env.CORTX_DOCKER_IMAGE = "${env.dockerimage_id}"
+                env.CORTX_DOCKER_IMAGE = "${CORTX_IMAGE}"
                 if ( params.EMAIL_RECIPIENTS == "ALL" ) {
                     mailRecipients = "akhil.bhansali@seagate.com, amit.kapil@seagate.com, amol.j.kongre@seagate.com, deepak.choudhary@seagate.com, jaikumar.gidwani@seagate.com, mandar.joshi@seagate.com, neerav.choudhari@seagate.com, pranay.kumar@seagate.com, swarajya.pendharkar@seagate.com, taizun.a.kachwala@seagate.com, trupti.patil@seagate.com, ujjwal.lanjewar@seagate.com, shailesh.vaidya@seagate.com, abhijit.patil@seagate.com, sonal.kalbende@seagate.com, gaurav.chaudhari@seagate.com, don.r.bloyer@seagate.com, kalpesh.chhajed@seagate.com"
                     //mailRecipients = "cortx.sme@seagate.com, manoj.management.team@seagate.com, CORTX.SW.Architecture.Team@seagate.com, CORTX.DevOps.RE@seagate.com"
