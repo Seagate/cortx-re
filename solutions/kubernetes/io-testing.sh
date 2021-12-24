@@ -63,4 +63,23 @@ aws s3 rm s3://$BUCKET --recursive
 echo -e "\nRemove '$BUCKET' bucket:-\n"
 aws s3 rb s3://$BUCKET
 
+echo -e "\nDelete S3 account and clear aws config/credentials:-\n"
+echo "List accounts:"
+s3iamcli ListAccounts --ldapuser sgiamadmin --ldappasswd ldapadmin --no-ssl
+set_VAL_for_key() {
+  key="$1"
+  VAL="$(cat s3-account.txt | sed 's/ *, */\n/g' | grep "$key" | sed "s,^$key *= *,,")"
+}
+set_VAL_for_key AccessKeyId
+access_key="$VAL"
+set_VAL_for_key SecretKey
+secret_key="$VAL"
+echo -e "\nDeleting account:"
+s3iamcli DeleteAccount -n admin --access_key $access_key --secret_key $secret_key --no-ssl
+echo -e "\nList accounts:"
+s3iamcli ListAccounts --ldapuser sgiamadmin --ldappasswd ldapadmin --no-ssl
+echo -e "\nDelete awscli files."
+rm -rf ~/.aws/credentials
+rm -rf ~/.aws/config
+
 add_separator Successfully passed IO testing.
