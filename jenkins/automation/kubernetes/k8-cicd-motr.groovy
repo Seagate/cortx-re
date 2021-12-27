@@ -9,7 +9,7 @@ pipeline {
 	}
 	parameters {
 		string(name: 'MOTR_URL', defaultValue: 'https://github.com/Seagate/cortx-motr', description: 'Repo for Motr')
-		string(name: 'MOTR_BRANCH', defaultValue: 'main', description: 'Branch for Motr')
+		string(name: 'MOTR_BRANCH', defaultValue: 'kubernetes', description: 'Branch for Motr')
 		choice (
             choices: ['DEBUG', 'ALL', 'DEVOPS'],
             description: 'Email Notification Recipients ',
@@ -206,7 +206,7 @@ EOF
                         sh build_release_info.sh -v ${VERSION} -l ${CORTX_ISO_LOCATION} -t ${THIRD_PARTY_LOCATION}
                         sh build_readme.sh "${DESTINATION_RELEASE_LOCATION}"
                     popd
-                    sed -i -e 's/BRANCH:.*/'BRANCH: "motr-pr"'/g' ${CORTX_ISO_LOCATION}/RELEASE.INFO
+                    sed -i -e 's/BRANCH:.*/BRANCH: "motr-pr"/g' ${CORTX_ISO_LOCATION}/RELEASE.INFO
                     cp "${THIRD_PARTY_LOCATION}/THIRD_PARTY_RELEASE.INFO" "${DESTINATION_RELEASE_LOCATION}"
                     cp "${CORTX_ISO_LOCATION}/RELEASE.INFO" "${DESTINATION_RELEASE_LOCATION}"
                     cp "${CORTX_ISO_LOCATION}/RELEASE.INFO" .
