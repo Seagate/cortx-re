@@ -18,6 +18,11 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
+function add_separator {
+    set +xe
+    echo -e '\n\n\n========================= '"$*"' =========================\n'
+}
+
 function validation {
     if [ "$SOLUTION_CONFIG_TYPE" == "manual" ]; then
 	if [ ! -f "$SOLUTION_CONFIG" ]; then
@@ -29,7 +34,6 @@ function validation {
         echo "$HOST_FILE is not present"
         exit 1
     fi	
-    
 }
 
 function generate_rsa_key {
