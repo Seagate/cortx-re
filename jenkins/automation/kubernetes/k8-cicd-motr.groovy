@@ -10,18 +10,16 @@ pipeline {
 	parameters {
 		string(name: 'MOTR_URL', defaultValue: 'https://github.com/Seagate/cortx-motr', description: 'Repo for Motr')
 		string(name: 'MOTR_BRANCH', defaultValue: 'main', description: 'Branch for Motr')
-		choice(name: 'OS_VERSION', choices: ["centos-7.9.2009", "centos-7.8.2003"], description: 'Keep os version here')
-		string(name: 'COMPONENTS_BRANCH', defaultValue: 'kubernetes', description: 'Branch for All Components')
-		text(
-			defaultValue: '''hostname=ssc-vm-rhev4-1625.colo.seagate.com,user=root,pass=seagate
-hostname=ssc-vm-rhev4-1619.colo.seagate.com,user=root,pass=seagate
-hostname=ssc-vm-rhev4-1618.colo.seagate.com,user=root,pass=seagate
-hostname=ssc-vm-rhev4-1617.colo.seagate.com,user=root,pass=seagate''', 
-			description: 'VM details to be used for K8s CI/CD for Motr build. First node will be used as Master', 
-			name: 'hosts'
-		)
+		choice (
+            choices: ['DEBUG', 'ALL', 'DEVOPS'],
+            description: 'Email Notification Recipients ',
+            name: 'EMAIL_RECIPIENTS'
+        )
 	}
 	environment {
+		CORTX_RE_BRANCH = "kubernetes"
+		CORTX_RE_REPO = "https://github.com/Seagate/cortx-re/"
+
 		GPR_REPO = "https://github.com/${ghprbGhRepository}"
 		MOTR_URL = "${ghprbGhRepository != null ? GPR_REPO : MOTR_URL}"
 		MOTR_BRANCH = "${sha1 != null ? sha1 : MOTR_BRANCH}"
@@ -30,7 +28,7 @@ hostname=ssc-vm-rhev4-1617.colo.seagate.com,user=root,pass=seagate''',
 		MOTR_PR_REFSEPEC = "${ghprbPullId != null ? MOTR_GPR_REFSEPEC : MOTR_BRANCH_REFSEPEC}"
 		
 		//////////////////////////////// BUILD VARS //////////////////////////////////////////////////
-		// OS_VERSION and COMPONENTS_BRANCH are manually created parameters in jenkins job.
+		// OS_VERSION, hosts and COMPONENTS_BRANCH are manually created parameters in jenkins job.
 		
 		COMPONENT_NAME = "motr".trim()
 		BRANCH = "${ghprbTargetBranch != null ? ghprbTargetBranch : COMPONENTS_BRANCH}"
@@ -60,7 +58,16 @@ hostname=ssc-vm-rhev4-1617.colo.seagate.com,user=root,pass=seagate''',
 		STAGE_DEPLOY = "yes"
 	}
 	stages {
-
+		stage ("Define Variable") {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                script {
+                    env.allhost = sh( script: '''
+                    echo $hosts | tr ' ' '\n' | awk -F["="] '{print $2}'|cut -d',' -f1
+                    ''', returnStdout: true).trim()
+                }
+            }
+        }
         // Build motr fromm PR source code
         stage('Build') {
             steps {
@@ -199,11 +206,70 @@ EOF
                         sh build_release_info.sh -v ${VERSION} -l ${CORTX_ISO_LOCATION} -t ${THIRD_PARTY_LOCATION}
                         sh build_readme.sh "${DESTINATION_RELEASE_LOCATION}"
                     popd
+                    sed -i -e 's/BRANCH:.*/'BRANCH: "motr-pr"'/g' ${CORTX_ISO_LOCATION}/RELEASE.INFO
                     cp "${THIRD_PARTY_LOCATION}/THIRD_PARTY_RELEASE.INFO" "${DESTINATION_RELEASE_LOCATION}"
                     cp "${CORTX_ISO_LOCATION}/RELEASE.INFO" "${DESTINATION_RELEASE_LOCATION}"
                     cp "${CORTX_ISO_LOCATION}/RELEASE.INFO" .
                 '''		
                 archiveArtifacts artifacts: "RELEASE.INFO", onlyIfSuccessful: false, allowEmptyArchive: true
+            }
+        }
+		stage ("Clean Cluster and create image") {
+			parallel {
+				stage ("Cluster Cleanup") {
+					steps {
+						script { build_stage = env.STAGE_NAME }
+						script {
+							build job: '/Cortx-kubernetes/destroy-cortx-cluster', wait: true,
+							parameters: [
+								string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
+								string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
+								text(name: 'hosts', value: "${hosts}")
+							]
+						}
+					}
+				}
+				stage ("CORTX-ALL image creation") {
+					steps {
+						script { build_stage = env.STAGE_NAME }
+						script {
+							try {
+								def buildCortxDockerImages = build job: '/Cortx-kubernetes/cortx-all-docker-image', wait: true,
+								parameters: [
+									string(name: 'CORTX_RE_URL', value: "${CORTX_RE_REPO}"),
+									string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
+									string(name: 'BUILD', value: "${CORTX_BUILD}"),
+									string(name: 'EMAIL_RECIPIENTS', value: "${EMAIL_RECIPIENTS}"),
+									string(name: 'GITHUB_PUSH', value: "yes"),
+									string(name: 'TAG_LATEST', value: "no"),
+									string(name: 'DOCKER_REGISTRY', value: "cortx-docker.colo.seagate.com")
+								]
+								env.dockerimage_id = buildCortxDockerImages.buildVariables.image
+							} catch (err) {
+								build_stage = env.STAGE_NAME
+								error "Failed to Build Docker Image"
+							}
+						}
+					}
+				}
+			}
+		}
+        stage ("Deploy CORTX Cluster") {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                script {
+                    def cortxCluster = build job: '/Cortx-kubernetes/setup-cortx-cluster', wait: true,
+                    parameters: [
+                        string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
+                        string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
+						string(name: 'CORTX_IMAGE', value: "${env.dockerimage_id}"),
+                        text(name: 'hosts', value: "${hosts}"),
+                        string(name: 'SNS_CONFIG', value: "1+0+0"),
+                        string(name: 'DIX_CONFIG', value: "1+0+0"),
+                        string(name: 'CORTX_SCRIPTS_BRANCH', value: "v0.0.16"),
+                        string(name: 'CORTX_SCRIPTS_REPO', value: "Seagate/cortx-k8s")
+                    ]
+                }
             }
         }
 	}
