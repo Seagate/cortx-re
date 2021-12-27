@@ -1,6 +1,8 @@
 pipeline {
 	agent {
-		node {label "docker-${OS_VERSION}-node"}
+		node {
+			label "docker-${OS_VERSION}-node"
+		}
 	}
 	options {
 		timeout(time: 180, unit: 'MINUTES')
