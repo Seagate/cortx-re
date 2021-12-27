@@ -129,7 +129,7 @@ pipeline {
                     manager.buildUnstable()
                 }
 
-                def toEmail = ""
+                def toEmail = "shailesh.vaidya@seagate.com"
                 def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
                 if( manager.build.result.toString() == "FAILURE" ) {
                     toEmail = "shailesh.vaidya@seagate.com"
