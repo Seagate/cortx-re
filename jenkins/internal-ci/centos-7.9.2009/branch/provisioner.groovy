@@ -137,7 +137,7 @@ pipeline {
                 }
 
                 emailext (
-                    body: '''${SCRIPT, template="component-email-dev-test.template"}''',
+                    body: '''${SCRIPT, template="component-email-dev.template"}''',
                     mimeType: 'text/html',
                     subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
                     attachLog: true,
