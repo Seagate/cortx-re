@@ -19,6 +19,7 @@ pipeline {
 		)
 	}
 	environment {
+		OS_VERSION = "centos-7.9.2009"
 		CORTX_RE_BRANCH = "kubernetes"
 		CORTX_RE_REPO = "https://github.com/Seagate/cortx-re/"
 
@@ -30,10 +31,10 @@ pipeline {
 		MOTR_PR_REFSEPEC = "${ghprbPullId != null ? MOTR_GPR_REFSEPEC : MOTR_BRANCH_REFSEPEC}"
 		
 		//////////////////////////////// BUILD VARS //////////////////////////////////////////////////
-		// OS_VERSION, hosts and COMPONENTS_BRANCH are manually created parameters in jenkins job.
+		// hosts,SNS_CONFIG, DIX_CONFIG, CORTX_SCRIPTS_BRANCH, CORTX_SCRIPTS_REPO, DOCKER_REGISTRY, PUSH_IMAGE and TAG_LATEST are manually created parameters in jenkins job.
 		
 		COMPONENT_NAME = "motr".trim()
-		BRANCH = "${ghprbTargetBranch != null ? ghprbTargetBranch : COMPONENTS_BRANCH}"
+		BRANCH = "${ghprbTargetBranch != null ? ghprbTargetBranch : MOTR_BRANCH}"
 		THIRD_PARTY_VERSION = "${OS_VERSION}-2.0.0-k8"
 		THIRD_PARTY_DEPS = "/mnt/bigstorage/releases/cortx/third-party-deps/centos/${THIRD_PARTY_VERSION}/"
 		VERSION = "2.0.0"
@@ -98,7 +99,7 @@ pipeline {
 						rm -rf /root/rpmbuild/RPMS/x86_64/*.rpm
 						KERNEL=/lib/modules/$(yum list installed kernel | tail -n1 | awk '{ print $2 }').x86_64/build
 						./autogen.sh
-						./configure --with-linux=$KERNEL
+						./configure --with-user-mode-only
 						export build_number=${BUILD_ID}
 						make rpms
 					'''
