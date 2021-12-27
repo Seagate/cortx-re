@@ -58,6 +58,12 @@ pipeline {
 			description: 'Third Party RPM Version to use.'
 		)
 
+        choice(
+            name: 'MOTR_BUILD_MODE',
+            choices: ['user-mode', 'kernel'],
+            description: 'Build motr rpm using kernel or user-mode.'
+        )
+
 		choice(
 			name: 'THIRD_PARTY_PYTHON_VERSION',
 			choices: ['cortx-2.0', 'custom'],
@@ -147,6 +153,7 @@ pipeline {
 										parameters: [
 														string(name: 'MOTR_URL', value: "${MOTR_URL}"),
 														string(name: 'MOTR_BRANCH', value: "${MOTR_BRANCH}"),
+                                                        string(name: 'MOTR_BUILD_MODE', value: "${MOTR_BUILD_MODE}"),
 														string(name: 'S3_URL', value: "${S3_URL}"),
 														string(name: 'S3_BRANCH', value: "${S3_BRANCH}"),
 														string(name: 'HARE_URL', value: "${HARE_URL}"),
