@@ -309,11 +309,11 @@ EOF
                 env.cluster_status = "${env.build_setupcortx_url}"
                 env.CORTX_DOCKER_IMAGE = "${env.dockerimage_id}"
                 if ( params.EMAIL_RECIPIENTS == "ALL" ) {
-                    mailRecipients = "shailesh.vaidya@seagate.com, abhijit.patil@seagate.com"
+                    mailRecipients = "shailesh.vaidya@seagate.com, abhijit.patil@seagate.com, gaurav.chaudhari@seagate.com"
                 } else if ( params.EMAIL_RECIPIENTS == "DEVOPS" ) {
                     mailRecipients = "CORTX.DevOps.RE@seagate.com"
                 } else if ( params.EMAIL_RECIPIENTS == "DEBUG" ) {
-                    mailRecipients = "shailesh.vaidya@seagate.com, abhijit.patil@seagate.com"
+                    mailRecipients = "shailesh.vaidya@seagate.com, abhijit.patil@seagate.com, gaurav.chaudhari@seagate.com"
                 }
                 catchError(stageResult: 'FAILURE') {
                     archiveArtifacts allowEmptyArchive: true, artifacts: 'log/*report.xml, log/*report.html, support_bundle/*.tar, crash_files/*.gz', followSymlinks: false
