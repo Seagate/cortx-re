@@ -63,13 +63,12 @@ echo "Building $SERVICE image from $BUILD_URL"
 sleep 5
 
 function get_git_hash {
-
-for component in cortx-py-utils cortx-s3server cortx-motr cortx-hare
+sed -i '/KERNEL/d' RELEASE.INFO
+for component in cortx-py-utils cortx-s3server cortx-motr cortx-hare cortx-provisioner
 do
-    echo $component:"$(awk -F['_'] '/'$component'-2.0.0/ { print $2 }' RELEASE.INFO | cut -d. -f1 | sed 's/git//g')",
+    echo $component:"$(awk -F['_'] '/'$component'-'$VERSION'/ { print $2 }' RELEASE.INFO | cut -d. -f1 | sed 's/git//g')",
 done
-echo cortx-csm_agent:"$(awk -F['_'] '/cortx-csm_agent-2.0.0/ { print $3 }' RELEASE.INFO | cut -d. -f1)",
-echo cortx-prvsnr:"$(awk -F['.'] '/cortx-prvsnr-2.0.0/ { print $4 }' RELEASE.INFO | sed 's/git//g')",
+echo cortx-csm_agent:"$(awk -F['_'] '/cortx-csm_agent-'$VERSION'/ { print $3 }' RELEASE.INFO | cut -d. -f1)",
 }
 
 
