@@ -100,7 +100,6 @@ pipeline {
                    systemctl status docker
                    /usr/local/bin/docker-compose --version
                    echo 'y' | docker image prune
-   
                    docker pull $CORTX_IMAGE
 
                    #Update VERSION details in RELEASE.INFO file
@@ -119,8 +118,6 @@ pipeline {
                 """
            }
         }
-
-
     }
 
     post {
