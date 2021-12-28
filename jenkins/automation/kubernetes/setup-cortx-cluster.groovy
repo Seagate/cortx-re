@@ -14,7 +14,7 @@ pipeline {
 
     environment {
         GITHUB_CRED = credentials('shailesh-github-token')
-        PODS_COUNT = sh(script: "kubectl get pods --no-headers | wc -l", returnStdout: true).trim()
+        PODS_COUNT = sh(script: "/usr/bin/kubectl get pods --no-headers | wc -l", returnStdout: true).trim()
     }
 
 
