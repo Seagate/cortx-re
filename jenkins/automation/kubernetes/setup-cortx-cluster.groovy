@@ -40,7 +40,7 @@ pipeline {
             }
         }
 
-        stage ('Destory Cluster') {
+        stage ('Destory Pre-existing Cluster') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Destroy existing Cluster', script: '''
