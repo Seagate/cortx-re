@@ -187,8 +187,8 @@ EOF
                 sh label: 'RPM Signing', script: '''
                     pushd cortx-re/scripts/release_support
                         sh build_readme.sh "${DESTINATION_RELEASE_LOCATION}"
-                        sed -i -e 's/BRANCH:.*/BRANCH: "hare-pr"/g' ${CORTX_ISO_LOCATION}/RELEASE.INFO
                         sh build_release_info.sh -v ${VERSION} -l ${CORTX_ISO_LOCATION} -t ${THIRD_PARTY_LOCATION}
+                        sed -i -e 's/BRANCH:.*/BRANCH: "hare-pr"/g' ${CORTX_ISO_LOCATION}/RELEASE.INFO
                     popd
 
                     cp "${THIRD_PARTY_LOCATION}/THIRD_PARTY_RELEASE.INFO" "${DESTINATION_RELEASE_LOCATION}"
