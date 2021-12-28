@@ -14,6 +14,7 @@ pipeline {
 
     environment {
         GITHUB_CRED = credentials('shailesh-github-token')
+        PODS_COUNT = sh(script: "kubectl get pods --no-headers | wc -l", returnStdout: true).trim()
     }
 
 
@@ -41,6 +42,7 @@ pipeline {
         }
 
         stage ('Destory Cluster') {
+            when { expression { env.PODS_COUNT > 0 } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Destroy existing Cluster', script: '''
