@@ -16,7 +16,7 @@ pipeline {
 
     parameters {  
 	    string(name: 'S3_URL', defaultValue: 'https://github.com/Seagate/cortx-s3server', description: 'Repo for S3Server')
-        string(name: 'S3_BRANCH', defaultValue: 'main', description: 'Branch for S3Server')
+        string(name: 'S3_BRANCH', defaultValue: 'kubernetes', description: 'Branch for S3Server')
         choice(name: 'MESSAGING_PLATFORM', choices: ["rabbit_mq", "message_bus"], description: 'MESSAGING_PLATFORM')  
 	}
 
@@ -33,7 +33,7 @@ pipeline {
         S3_PR_REFSEPEC = "${ghprbPullId != null ? S3_GPR_REFSEPEC : S3_BRANCH_REFSEPEC}"
 
         //////////////////////////////// BUILD VARS //////////////////////////////////////////////////
-        // OS_VERSION and COMPONENTS_BRANCH are manually created parameters in jenkins job.
+        // OS_VERSION, host and COMPONENTS_BRANCH are manually created parameters in jenkins job.
 
         COMPONENT_NAME = "s3server".trim()
         BRANCH = "${ghprbTargetBranch != null ? ghprbTargetBranch : COMPONENTS_BRANCH}"
@@ -184,6 +184,7 @@ pipeline {
                 sh label: 'RPM Signing', script: '''
                     pushd cortx-re/scripts/release_support
                         sh build_release_info.sh -v ${VERSION} -l ${CORTX_ISO_LOCATION} -t ${THIRD_PARTY_LOCATION}
+                        sed -i -e 's/BRANCH:.*/BRANCH: "s3server-pr"/g' ${CORTX_ISO_LOCATION}/RELEASE.INFO
                         sh build_readme.sh "${DESTINATION_RELEASE_LOCATION}"
                     popd
 

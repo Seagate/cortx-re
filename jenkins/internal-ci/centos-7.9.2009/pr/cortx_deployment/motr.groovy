@@ -16,10 +16,7 @@ pipeline {
 
     parameters {  
 	    string(name: 'MOTR_URL', defaultValue: 'https://github.com/Seagate/cortx-motr', description: 'Repo for Motr')
-        string(name: 'MOTR_BRANCH', defaultValue: 'main', description: 'Branch for Motr')  
-        choice(name: 'DEBUG', choices: ["no", "yes" ], description: 'Keep Host for Debuging')  
-        string(name: 'HOST', defaultValue: '-', description: 'Host FQDN',  trim: true)
-        password(name: 'HOST_PASS', defaultValue: '-', description: 'Host machine root user password')    
+        string(name: 'MOTR_BRANCH', defaultValue: 'kubernetes', description: 'Branch for Motr')
 	}
 
     environment {
@@ -35,7 +32,7 @@ pipeline {
         MOTR_PR_REFSEPEC = "${ghprbPullId != null ? MOTR_GPR_REFSEPEC : MOTR_BRANCH_REFSEPEC}"
 
         //////////////////////////////// BUILD VARS //////////////////////////////////////////////////
-        // OS_VERSION and COMPONENTS_BRANCH are manually created parameters in jenkins job.
+        // OS_VERSION, host and COMPONENTS_BRANCH are manually created parameters in jenkins job.
 
         COMPONENT_NAME = "motr".trim()
         BRANCH = "${ghprbTargetBranch != null ? ghprbTargetBranch : COMPONENTS_BRANCH}"
@@ -223,6 +220,7 @@ EOF
                 sh label: 'RPM Signing', script: '''
                     pushd cortx-re/scripts/release_support
                         sh build_release_info.sh -v ${VERSION} -l ${CORTX_ISO_LOCATION} -t ${THIRD_PARTY_LOCATION}
+                        sed -i -e 's/BRANCH:.*/BRANCH: "motr-pr"/g' ${CORTX_ISO_LOCATION}/RELEASE.INFO
                         sh build_readme.sh "${DESTINATION_RELEASE_LOCATION}"
                     popd
                     cp "${THIRD_PARTY_LOCATION}/THIRD_PARTY_RELEASE.INFO" "${DESTINATION_RELEASE_LOCATION}"
