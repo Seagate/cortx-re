@@ -31,7 +31,7 @@ pipeline {
 		MOTR_PR_REFSEPEC = "${ghprbPullId != null ? MOTR_GPR_REFSEPEC : MOTR_BRANCH_REFSEPEC}"
 		
 		//////////////////////////////// BUILD VARS //////////////////////////////////////////////////
-		// hosts,SNS_CONFIG, DIX_CONFIG, CORTX_SCRIPTS_BRANCH, CORTX_SCRIPTS_REPO, DOCKER_REGISTRY, PUSH_IMAGE and TAG_LATEST are manually created parameters in jenkins job.
+		// hosts,SNS_CONFIG, DIX_CONFIG, CORTX_SCRIPTS_BRANCH and CORTX_SCRIPTS_REPO are manually created parameters in jenkins job.
 		
 		COMPONENT_NAME = "motr".trim()
 		BRANCH = "${ghprbTargetBranch != null ? ghprbTargetBranch : MOTR_BRANCH}"
@@ -216,42 +216,25 @@ EOF
 				archiveArtifacts artifacts: "RELEASE.INFO", onlyIfSuccessful: false, allowEmptyArchive: true
 			}
 		}
-		stage ("Clean Cluster and create image") {
-			parallel {
-				stage ("Cluster Cleanup") {
-					steps {
-						script { build_stage = env.STAGE_NAME }
-						script {
-							build job: '/Cortx-kubernetes/destroy-cortx-cluster', wait: true,
-							parameters: [
-								string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
-								string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
-								text(name: 'hosts', value: "${hosts}")
-							]
-						}
-					}
-				}
-				stage ("CORTX-ALL image creation") {
-					steps {
-						script { build_stage = env.STAGE_NAME }
-						script {
-							try {
-								def buildCortxDockerImages = build job: '/Cortx-kubernetes/cortx-all-docker-image', wait: true,
-								parameters: [
-									string(name: 'CORTX_RE_URL', value: "${CORTX_RE_REPO}"),
-									string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
-									string(name: 'BUILD', value: "${CORTX_BUILD}"),
-									string(name: 'EMAIL_RECIPIENTS', value: "${EMAIL_RECIPIENTS}"),
-									string(name: 'GITHUB_PUSH', value: "${PUSH_IMAGE}"),
-									string(name: 'TAG_LATEST', value: "${TAG_LATEST}"),
-									string(name: 'DOCKER_REGISTRY', value: "${DOCKER_REGISTRY}")
-								]
-								env.dockerimage_id = buildCortxDockerImages.buildVariables.image
-							} catch (err) {
-								build_stage = env.STAGE_NAME
-								error "Failed to Build Docker Image"
-							}
-						}
+		stage ("CORTX-ALL image creation") {
+			steps {
+				script { build_stage = env.STAGE_NAME }
+				script {
+					try {
+						def buildCortxDockerImages = build job: '/Cortx-kubernetes/cortx-all-docker-image', wait: true,
+						parameters: [
+							string(name: 'CORTX_RE_URL', value: "${CORTX_RE_REPO}"),
+							string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
+							string(name: 'BUILD', value: "${CORTX_BUILD}"),
+							string(name: 'EMAIL_RECIPIENTS', value: "DEBUG"),
+							string(name: 'GITHUB_PUSH', value: "yes"),
+							string(name: 'TAG_LATEST', value: "no"),
+							string(name: 'DOCKER_REGISTRY', value: "cortx-docker.colo.seagate.com")
+						]
+						env.dockerimage_id = buildCortxDockerImages.buildVariables.image
+					} catch (err) {
+						build_stage = env.STAGE_NAME
+						error "Failed to Build Docker Image"
 					}
 				}
 			}
@@ -260,76 +243,20 @@ EOF
 			steps {
 				script { build_stage = env.STAGE_NAME }
 				script {
-					def cortxCluster = build job: '/Cortx-kubernetes/setup-cortx-cluster', wait: true,
+					def cortxCluster = build job: 'K8s-3N-deployment', wait: true,
 					parameters: [
 						string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
 						string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
 						string(name: 'CORTX_IMAGE', value: "${env.dockerimage_id}"),
 						text(name: 'hosts', value: "${hosts}"),
+						string(name: 'EMAIL_RECIPIENTS', value: "DEBUG"),
 						string(name: 'SNS_CONFIG', value: "${SNS_CONFIG}"),
 						string(name: 'DIX_CONFIG', value: "${DIX_CONFIG}"),
 						string(name: 'CORTX_SCRIPTS_BRANCH', value: "${CORTX_SCRIPTS_BRANCH}"),
 						string(name: 'CORTX_SCRIPTS_REPO', value: "${CORTX_SCRIPTS_REPO}")
 					]
-					env.cortxCluster_status = cortxCluster.currentResult
-					env.cortxcluster_build_url = cortxCluster.absoluteUrl
 				}
 			}
 		}
 	}
-	post {
-        always {
-            script {
-                echo "${env.cortxCluster_status}"
-                if ( "${env.cortxCluster_status}" == "SUCCESS" && currentBuild.currentResult == "SUCCESS" ) {
-                    MESSAGE = "K8s Motr Build#${build_id} 3Node Deployment Deployment=Passed"
-                    ICON = "accept.gif"
-                    STATUS = "SUCCESS"
-                    currentBuild.result = "SUCCESS"
-                } else if ( "${env.cortxCluster_status}" == "FAILURE" || "${env.cortxCluster_status}" == "UNSTABLE" || "${env.cortxCluster_status}" == "null" ) {
-                    manager.buildFailure()
-		    MESSAGE = "K8s Motr Build#${build_id} 3Node Deployment Deployment=failed"
-                    ICON = "error.gif"
-                    STATUS = "FAILURE"
-                    currentBuild.result = "FAILURE"
-                } else if ( "${env.cortxCluster_status}" == "SUCCESS" && currentBuild.currentResult == "FAILURE" || currentBuild.currentResult == "null") {
-                    manager.buildFailure()
-                    MESSAGE = "K8s Motr Build#${build_id} 3Node Deployment Deployment=failed"
-                    ICON = "error.gif"
-                    STATUS = "FAILURE"
-                    currentBuild.result = "FAILURE"
-                } else {
-                    MESSAGE = "K8s Motr Build#${build_id} 3Node Deployment Deployment=unstable"
-                    ICON = "unstable.gif"
-                    STATUS = "UNSTABLE"
-                    currentBuild.result = "UNSTABLE"
-                }
-                env.build_setupcortx_url = sh( script: "echo ${env.cortxcluster_build_url}/artifact/artifacts/cortx-cluster-status.txt", returnStdout: true)
-                env.host = "${env.allhost}"
-                env.build_id = "${env.dockerimage_id}"
-                env.build_location = "http://${DOCKER_REGISTRY}"
-                env.deployment_status = "${MESSAGE}"
-                env.cluster_status = "${env.build_setupcortx_url}"
-                env.CORTX_DOCKER_IMAGE = "${env.dockerimage_id}"
-                if ( params.EMAIL_RECIPIENTS == "ALL" ) {
-                    mailRecipients = "shailesh.vaidya@seagate.com, abhijit.patil@seagate.com, gaurav.chaudhari@seagate.com"
-                } else if ( params.EMAIL_RECIPIENTS == "DEVOPS" ) {
-                    mailRecipients = "CORTX.DevOps.RE@seagate.com"
-                } else if ( params.EMAIL_RECIPIENTS == "DEBUG" ) {
-                    mailRecipients = "shailesh.vaidya@seagate.com, abhijit.patil@seagate.com, gaurav.chaudhari@seagate.com"
-                }
-                catchError(stageResult: 'FAILURE') {
-                    archiveArtifacts allowEmptyArchive: true, artifacts: 'log/*report.xml, log/*report.html, support_bundle/*.tar, crash_files/*.gz', followSymlinks: false
-                    emailext (
-                        body: '''${SCRIPT, template="K8s-deployment-email_2.template"}''',
-                        mimeType: 'text/html',
-                        subject: "${MESSAGE}",
-                        to: "${mailRecipients}",
-                        recipientProviders: [[$class: 'RequesterRecipientProvider']]
-                    )
-                }
-                cleanWs()
-            }
-        }
-    }
 }
