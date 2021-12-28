@@ -14,7 +14,6 @@ pipeline {
 
     environment {
         GITHUB_CRED = credentials('shailesh-github-token')
-        PODS_COUNT = sh(script: "/usr/bin/kubectl get pods --no-headers | wc -l", returnStdout: true).trim()
     }
 
 
@@ -42,15 +41,18 @@ pipeline {
         }
 
         stage ('Destory Cluster') {
-            when { expression { env.PODS_COUNT > 0 } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Destroy existing Cluster', script: '''
+                if [ "$(/usr/bin/kubectl get pods --no-headers | wc -l)" > 0 ]; then
                     pushd solutions/kubernetes/
                         echo $hosts | tr ' ' '\n' > hosts
                         cat hosts
                         ./cortx-deploy.sh --destroy-cluster
                     popd
+                else
+                    echo "CORTX Cluster is not already deployed"
+                fi
                 '''
             }
         }
