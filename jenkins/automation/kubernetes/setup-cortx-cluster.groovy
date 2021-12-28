@@ -44,15 +44,11 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Destroy existing Cluster', script: '''
-                if [ "$(/usr/bin/kubectl get pods --no-headers | wc -l)" > 0 ]; then
                     pushd solutions/kubernetes/
                         echo $hosts | tr ' ' '\n' > hosts
                         cat hosts
                         ./cortx-deploy.sh --destroy-cluster
                     popd
-                else
-                    echo "CORTX Cluster is not already deployed"
-                fi
                 '''
             }
         }
