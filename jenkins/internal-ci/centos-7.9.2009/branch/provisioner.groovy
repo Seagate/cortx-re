@@ -80,8 +80,9 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 script {
                     def releaseBuild = build job: 'Release', propagate: true
-                     env.release_build = releaseBuild.number
+                    env.release_build = releaseBuild.number
                     env.release_build_location="http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/${env.release_build}"
+                    env.cortx_all_image = releaseBuild.buildVariables.cortx_all_image
                 }
             }
         }
@@ -101,7 +102,7 @@ pipeline {
                                 "h2. ${component} - ${branch} branch build pipeline SUCCESS\n"+
                                 "h3. Build Info:  \n"+
                                      author+
-                                         "* Component Build  :  ${BUILD_NUMBER} \n"+
+                                        "* Component Build  :  ${BUILD_NUMBER} \n"+
                                         "* Release Build    :  ${release_build}  \n\n  "+
                                 "h3. Artifact Location  :  \n"+
                                     "*  "+"${release_build_location} "+"\n"+
@@ -128,7 +129,7 @@ pipeline {
                     manager.buildUnstable()
                 }
 
-                def toEmail = ""
+                def toEmail = "shailesh.vaidya@seagate.com"
                 def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
                 if( manager.build.result.toString() == "FAILURE" ) {
                     toEmail = "shailesh.vaidya@seagate.com"
