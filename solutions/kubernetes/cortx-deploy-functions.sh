@@ -302,6 +302,16 @@ echo "---------------------------------------[ hctl status ]--------------------
         exit 1
 }
 
+function io_exec(){
+    pushd /var/tmp/
+        chmod +x *.sh
+        # "Setting up S3 client..."
+        ./s3-client-setup.sh
+        # "Running IO test..."
+        ./io-testing.sh
+    popd
+}
+
 function logs_generation(){
     echo -e "\n-----------[ Generating CORTX Support Bundle Logs... ]--------------------"
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
@@ -324,6 +334,9 @@ case $ACTION in
     ;;
     --status) 
         print_pod_status
+    ;;
+    --io-test)
+        io_exec
     ;;
     --generate-logs)
         logs_generation
