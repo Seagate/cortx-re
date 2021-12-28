@@ -96,8 +96,8 @@ pipeline {
                 }
             }
            steps {
-				sh label: 'Push Image to GitHub', script: '''                   
-				   systemctl status docker
+                sh label: 'Push Image to GitHub', script: '''                   
+                   systemctl status docker
                    /usr/local/bin/docker-compose --version
                    echo \'y\' | docker image prune
                    docker pull $CORTX_IMAGE
@@ -115,8 +115,34 @@ pipeline {
                    
                    docker rmi ghcr.io/seagate/cortx-all:${VERSION}-latest-${GITHUB_TAG_SUFFIX}
                    docker rmi ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}-${GITHUB_TAG_SUFFIX}
-				'''
+                '''
            }
+        }
+
+        stage ("QA Sanity K8S") {
+            steps {
+                script {
+                    catchError(stageResult: 'FAILURE') {
+                        def qaSanity = build job: '/QA-Sanity-Multinode-K8s', wait: true, propagate: false,
+                        parameters: [
+                            string(name: 'M_NODE', value: "${env.master_node}"),
+                            password(name: 'HOST_PASS', value: "${env.hostpasswd}"),
+                            string(name: 'CORTX_IMAGE', value: "${CORTX_IMAGE}"),
+                            string(name: 'NUM_NODES', value: "${env.numberofnodes}")
+                        ]
+                        env.Sanity_Failed = qaSanity.buildVariables.Sanity_Failed
+                        env.sanity_result = qaSanity.currentResult
+                        env.Current_TP = qaSanity.buildVariables.Current_TP
+                        env.Health = qaSanity.buildVariables.Health
+                        env.qaSanity_status = qaSanity.currentResult
+                        env.qaSanityK8sJob_URL = qaSanity.absoluteUrl
+                    }
+                    copyArtifacts filter: 'log/*report.xml', fingerprintArtifacts: true, flatten: true, optional: true, projectName: 'QA-Sanity-Multinode-K8s', selector: lastCompleted(), target: 'log/'
+                    copyArtifacts filter: 'log/*report.html', fingerprintArtifacts: true, flatten: true, optional: true, projectName: 'QA-Sanity-Multinode-K8s', selector: lastCompleted(), target: 'log/'
+                    copyArtifacts filter: 'log/*report.xml', fingerprintArtifacts: true, flatten: true, optional: true, projectName: 'QA-Sanity-Multinode-K8s', selector: lastCompleted(), target: ''
+                    copyArtifacts filter: 'log/*report.html', fingerprintArtifacts: true, flatten: true, optional: true, projectName: 'QA-Sanity-Multinode-K8s', selector: lastCompleted(), target: ''
+                }
+            }
         }
     }
 
