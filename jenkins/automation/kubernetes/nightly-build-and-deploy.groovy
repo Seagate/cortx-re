@@ -96,26 +96,26 @@ pipeline {
                 }
             }
            steps {
-                sh encoding: 'utf-8', label: 'Validate Docker pre-requisite', script: """
-                   systemctl status docker
+				sh label: 'Push Image to GitHub', script: '''                   
+				   systemctl status docker
                    /usr/local/bin/docker-compose --version
-                   echo 'y' | docker image prune
+                   echo \'y\' | docker image prune
                    docker pull $CORTX_IMAGE
 
                    #Update VERSION details in RELEASE.INFO file
 
-                   docker commit \$(docker run -d cortx-docker.colo.seagate.com/seagate/cortx-all:2.0.0-latest-kubernetes sed -i /VERSION/s/2.0.0.*/${VERSION}-${BUILD_NUMBER}\"/ /opt/seagate/cortx/RELEASE.INFO) ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}-${GITHUB_TAG_SUFFIX}
+                   docker commit $(docker run -d cortx-docker.colo.seagate.com/seagate/cortx-all:2.0.0-latest-kubernetes sed -i /VERSION/s/\"2.0.0.*\"/\"${VERSION}-${BUILD_NUMBER}\"/ /opt/seagate/cortx/RELEASE.INFO) ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}-${GITHUB_TAG_SUFFIX}
 
                    docker tag ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}-${GITHUB_TAG_SUFFIX} ghcr.io/seagate/cortx-all:${VERSION}-latest-${GITHUB_TAG_SUFFIX}
 
                    docker login ghcr.io -u ${GITHUB_CRED_USR} -p ${GITHUB_CRED_PSW}
                    
                    docker push ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}-${GITHUB_TAG_SUFFIX}
-                   docker push ghcr.io/seagate/cortx-all:${VERSION}-latest-${GITHUB_TAG_SUFFIX}
+                   #docker push ghcr.io/seagate/cortx-all:${VERSION}-latest-${GITHUB_TAG_SUFFIX}
                    
                    docker rmi ghcr.io/seagate/cortx-all:${VERSION}-latest-${GITHUB_TAG_SUFFIX}
                    docker rmi ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}-${GITHUB_TAG_SUFFIX}
-                """
+				'''
            }
         }
     }
