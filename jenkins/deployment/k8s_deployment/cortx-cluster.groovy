@@ -12,7 +12,7 @@ pipeline {
         disableConcurrentBuilds()
     }
     environment {
-        CORTX_RE_BRANCH = "kubernetes"
+        CORTX_RE_BRANCH = "main"
         CORTX_RE_REPO = "https://github.com/Seagate/cortx-re/"
         DOCKER_IMAGE_LOCATION = "https://github.com/Seagate/cortx-re/pkgs/container/cortx-all"
         // Need to make this variable dynamic based on repository selected
