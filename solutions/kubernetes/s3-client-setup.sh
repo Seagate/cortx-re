@@ -41,7 +41,7 @@ fi
 CORTX_IO_SVC=$(kubectl get pods -o wide | grep cortx-data-pod | awk '{print $6}' | head -1)
 echo "$CORTX_IO_SVC s3.seagate.com iam.seagate.com" >> /etc/hosts
 
-mkdir -p /var/log/seagate/auth
+mkdir -p /var/log/cortx/auth
 touch /var/log/cortx/auth/s3iamcli.log
 
 s3iamcli ListAccounts --ldapuser sgiamadmin --ldappasswd ldapadmin --no-ssl
