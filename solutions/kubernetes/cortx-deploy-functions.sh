@@ -43,11 +43,6 @@ function download_deploy_script(){
     popd
 }
 
-function pull_cortx_image(){
-    echo "Pulling latest CORTX-ALL image"
-    docker pull $CORTX_IMAGE || echo "Failed to pull $CORTX_IMAGE"
-}
-
 #Install yq 4.13.3
 
 function install_yq(){
@@ -196,6 +191,8 @@ function openldap_requiremenrs(){
 }
 
 function execute_prereq(){
+    echo "Pulling latest CORTX-ALL image"
+    docker pull $CORTX_IMAGE || echo "Failed to pull $CORTX_IMAGE"
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         findmnt $SYSTEM_DRIVE && umount -l $SYSTEM_DRIVE
         ./prereq-deploy-cortx-cloud.sh $SYSTEM_DRIVE
@@ -247,7 +244,6 @@ function setup_worker_node(){
 echo "---------------------------------------[ Setting up Worker Node on $HOSTNAME ]--------------------------------------"
     #Third-party images are downloaed from GitHub container regsitry.
     download_deploy_script
-    pull_cortx_image
     execute_prereq
 }
 
