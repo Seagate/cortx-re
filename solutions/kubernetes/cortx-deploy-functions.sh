@@ -20,6 +20,8 @@
 
 set -eo pipefail
 
+source functions.sh
+
 SYSTEM_DRIVE="/dev/sdb"
 SYSTEM_DRIVE_MOUNT="/mnt/fs-local-volume"
 SCRIPT_LOCATION="/root/deploy-scripts"
@@ -44,6 +46,7 @@ function download_deploy_script(){
 }
 
 function pull_cortx_image(){
+    add_separator Pull latest cortx image
     docker pull $CORTX_IMAGE || echo "Failed to pull $CORTX_IMAGE"
 }
 
