@@ -25,6 +25,12 @@ pipeline {
 		string(name: 'CORTX_UTILS_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX Utils', trim: true)
 		string(name: 'CORTX_UTILS_URL', defaultValue: 'https://github.com/Seagate/cortx-utils', description: 'CORTX Utils Repository URL', trim: true)
 		string(name: 'THIRD_PARTY_PYTHON_VERSION', defaultValue: 'custom', description: 'Third Party Python Version to use', trim: true)
+
+		choice(
+            name: 'MOTR_BUILD_MODE',
+            choices: ['user-mode', 'kernel'],
+            description: 'Build motr rpm using kernel or user-mode.'
+        )
 	}	
 
 	environment {
@@ -66,7 +72,12 @@ pipeline {
 						sh label: '', script: '''
 						rm -rf /root/rpmbuild/RPMS/x86_64/*.rpm
 						./autogen.sh
-						./configure --with-user-mode-only
+						if [ "${MOTR_BUILD_MODE}" == "kernel" ]; then
+							KERNEL=/lib/modules/$(yum list installed kernel | tail -n1 | awk '{ print $2 }').x86_64/build
+							./configure --with-linux=$KERNEL
+						else
+							./configure --with-user-mode-only
+						fi
 						export build_number=${CUSTOM_CI_BUILD_ID}
 						make rpms
 					'''

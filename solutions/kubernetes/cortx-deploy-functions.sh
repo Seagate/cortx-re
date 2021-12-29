@@ -270,28 +270,32 @@ echo "---------------------------------------[ Setting up Worker Node on $HOSTNA
 }
 
 function destroy(){
-    pushd $SCRIPT_LOCATION/k8_cortx_cloud
-        chmod +x *.sh
-        ./destroy-cortx-cloud.sh
-    popd
-    findmnt $SYSTEM_DRIVE && umount -l $SYSTEM_DRIVE    
-    files_to_remove=(
-        "/mnt/fs-local-volume/"
-        "/root/deploy-scripts/"
-        "/root/get_helm.sh"
-        "/root/calico*"
-        "/root/.cache"
-        "/root/.config"
-        "/root/install.postnochroot.log"
-        "/root/original-ks.cfg"
-        "/etc/pip.conf"
-    )
-    for file in ${files_to_remove[@]}; do
-        if [ -f "$file" ] || [ -d "$file" ]; then
-            echo "Removing file/folder $file"
-            rm -rf $file
-        fi
-    done
+   if [ "$(/usr/bin/kubectl get pods --no-headers | wc -l)" -gt 0 ]; then 
+        pushd "$SCRIPT_LOCATION"/k8_cortx_cloud || echo "CORTX Deploy Scripts are not available on system"
+            chmod +x *.sh
+            ./destroy-cortx-cloud.sh
+        popd || exit
+        findmnt "$SYSTEM_DRIVE" && umount -l "$SYSTEM_DRIVE"
+        files_to_remove=(
+            "/mnt/fs-local-volume/"
+            "/root/deploy-scripts/"
+            "/root/get_helm.sh"
+            "/root/calico*"
+            "/root/.cache"
+            "/root/.config"
+            "/root/install.postnochroot.log"
+            "/root/original-ks.cfg"
+            "/etc/pip.conf"
+        )
+        for file in "${files_to_remove[@]}"; do
+            if [ -f "$file" ] || [ -d "$file" ]; then
+                echo "Removing file/folder $file"
+                rm -rf "$file"
+            fi
+        done
+    else 
+        echo "CORTX Cluster is not already deployed"
+    fi
 }
 
 function print_pod_status(){
@@ -326,6 +330,16 @@ echo "---------------------------------------[ hctl status ]--------------------
         exit 1
 }
 
+function io_exec(){
+    pushd /var/tmp/
+        chmod +x *.sh
+        # "Setting up S3 client..."
+        ./s3-client-setup.sh
+        # "Running IO test..."
+        ./io-testing.sh
+    popd
+}
+
 function logs_generation(){
     echo -e "\n-----------[ Generating CORTX Support Bundle Logs... ]--------------------"
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
@@ -348,6 +362,9 @@ case $ACTION in
     ;;
     --status) 
         print_pod_status
+    ;;
+    --io-test)
+        io_exec
     ;;
     --generate-logs)
         logs_generation
