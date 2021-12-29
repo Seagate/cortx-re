@@ -242,7 +242,7 @@ pipeline {
                         def build_cortx_all_image = build job: '/Cortx-Kubernetes/cortx-all-docker-image', wait: true,
                                     parameters: [
                                         string(name: 'CORTX_RE_URL', value: "https://github.com/Seagate/cortx-re"),
-                                        string(name: 'CORTX_RE_BRANCH', value: "kubernetes"),
+                                        string(name: 'CORTX_RE_BRANCH', value: "${branch}"),
                                         string(name: 'BUILD', value: "${release_tag}/prod"),
                                         string(name: 'GITHUB_PUSH', value: "yes"),
                                         string(name: 'TAG_LATEST', value: "yes"),
@@ -264,13 +264,13 @@ pipeline {
                 script {
                     build job: "K8s-1N-deployment", propagate: false, wait: false,
                     parameters: [
-                        string(name: 'CORTX_RE_BRANCH', value: "kubernetes"),
+                        string(name: 'CORTX_RE_BRANCH', value: "${branch}"),
                         string(name: 'CORTX_RE_REPO', value: "https://github.com/Seagate/cortx-re/"),
                         string(name: 'CORTX_IMAGE', value: "${env.cortx_all_image}")
                     ]
                     build job: "K8s-3N-deployment", propagate: false, wait: false,
                     parameters: [
-                        string(name: 'CORTX_RE_BRANCH', value: "kubernetes"),
+                        string(name: 'CORTX_RE_BRANCH', value: "${branch}"),
                         string(name: 'CORTX_RE_REPO', value: "https://github.com/Seagate/cortx-re/"),
                         string(name: 'CORTX_IMAGE', value: "${env.cortx_all_image}")
                     ]
