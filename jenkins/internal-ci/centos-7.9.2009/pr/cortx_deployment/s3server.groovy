@@ -17,7 +17,7 @@ pipeline {
 
     parameters {  
 	    string(name: 'S3_URL', defaultValue: 'https://github.com/Seagate/cortx-s3server', description: 'Repo for S3Server')
-        string(name: 'S3_BRANCH', defaultValue: 'kubernetes', description: 'Branch for S3Server')
+        string(name: 'S3_BRANCH', defaultValue: 'main', description: 'Branch for S3Server')
         choice(name: 'MESSAGING_PLATFORM', choices: ["rabbit_mq", "message_bus"], description: 'MESSAGING_PLATFORM')  
 	}
 
@@ -208,7 +208,7 @@ pipeline {
                         def build_cortx_all_image = build job: '/Cortx-Kubernetes/cortx-all-docker-image', wait: true,
                             parameters: [
                                 string(name: 'CORTX_RE_URL', value: "https://github.com/Seagate/cortx-re"),
-                                string(name: 'CORTX_RE_BRANCH', value: "kubernetes"),
+                                string(name: 'CORTX_RE_BRANCH', value: "main"),
                                 string(name: 'BUILD', value: "${CORTX_BUILD}"),
                                 string(name: 'GITHUB_PUSH', value: "yes"),
                                 string(name: 'TAG_LATEST', value: "no"),
@@ -231,7 +231,7 @@ pipeline {
                     build job: "K8s-1N-deployment", wait: true,
                     parameters: [
                         string(name: 'CORTX_RE_REPO', value: "https://github.com/Seagate/cortx-re/"),
-                        string(name: 'CORTX_RE_BRANCH', value: "kubernetes"),
+                        string(name: 'CORTX_RE_BRANCH', value: "main"),
                         string(name: 'CORTX_IMAGE', value: "${env.cortx_all_image}"),
                         string(name: 'hosts', value: "${host}")
                     ]

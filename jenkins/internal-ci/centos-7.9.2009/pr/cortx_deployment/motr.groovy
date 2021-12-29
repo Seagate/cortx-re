@@ -17,7 +17,7 @@ pipeline {
 
     parameters {  
 	    string(name: 'MOTR_URL', defaultValue: 'https://github.com/Seagate/cortx-motr', description: 'Repo for Motr')
-        string(name: 'MOTR_BRANCH', defaultValue: 'kubernetes', description: 'Branch for Motr')
+        string(name: 'MOTR_BRANCH', defaultValue: 'main', description: 'Branch for Motr')
 	}
 
     environment {
@@ -243,7 +243,7 @@ EOF
                         def build_cortx_all_image = build job: '/Cortx-Kubernetes/cortx-all-docker-image', wait: true,
                             parameters: [
                                 string(name: 'CORTX_RE_URL', value: "https://github.com/Seagate/cortx-re"),
-                                string(name: 'CORTX_RE_BRANCH', value: "kubernetes"),
+                                string(name: 'CORTX_RE_BRANCH', value: "main"),
                                 string(name: 'BUILD', value: "${CORTX_BUILD}"),
                                 string(name: 'GITHUB_PUSH', value: "yes"),
                                 string(name: 'TAG_LATEST', value: "no"),
@@ -266,7 +266,7 @@ EOF
                     build job: "K8s-1N-deployment", wait: true,
                     parameters: [
                         string(name: 'CORTX_RE_REPO', value: "https://github.com/Seagate/cortx-re/"),
-                        string(name: 'CORTX_RE_BRANCH', value: "kubernetes"),
+                        string(name: 'CORTX_RE_BRANCH', value: "main"),
                         string(name: 'CORTX_IMAGE', value: "${env.cortx_all_image}"),
                         string(name: 'hosts', value: "${host}")
                     ]
