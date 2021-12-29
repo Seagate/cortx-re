@@ -43,8 +43,8 @@ function download_deploy_script(){
     popd
 }
 
-function download_cortx_iamge(){
-    docker pull $CORTX_IMAGE
+function pull_cortx_image(){
+    docker pull $CORTX_IMAGE || echo "Failed to pull $CORTX_IMAGE"
 }
 
 #Install yq 4.13.3
@@ -246,6 +246,7 @@ function setup_worker_node(){
 echo "---------------------------------------[ Setting up Worker Node on $HOSTNAME ]--------------------------------------"
     #Third-party images are downloaed from GitHub container regsitry.
     download_deploy_script
+    pull_cortx_image
     execute_prereq
 }
 
