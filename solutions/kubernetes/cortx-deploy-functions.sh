@@ -43,6 +43,10 @@ function download_deploy_script(){
     popd
 }
 
+function download_cortx_iamge(){
+    docker pull $CORTX_IMAGE
+}
+
 #Install yq 4.13.3
 
 function install_yq(){
