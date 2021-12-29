@@ -81,5 +81,7 @@ s3iamcli ListAccounts --ldapuser sgiamadmin --ldappasswd ldapadmin --no-ssl
 echo -e "\nDelete awscli files."
 rm -rf ~/.aws/credentials
 rm -rf ~/.aws/config
+echo -e "\nClean up /etc/hosts entries."
+sed -i '/s3.seagate.com/d' /etc/hosts
 
 add_separator Successfully passed IO testing.
