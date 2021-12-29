@@ -12,7 +12,7 @@ pipeline {
         disableConcurrentBuilds()
     }
     environment {
-        CORTX_RE_BRANCH = "kubernetes"
+        CORTX_RE_BRANCH = "main"
         CORTX_RE_REPO = "https://github.com/Seagate/cortx-re/"
         DOCKER_IMAGE_LOCATION = "https://github.com/Seagate/cortx-re/pkgs/container/cortx-all"
         LOCAL_REG_CRED = credentials('local-registry-access')
@@ -21,7 +21,7 @@ pipeline {
         GITHUB_TAG_SUFFIX = "custom-ci" 
     }
     parameters {
-        string(name: 'CORTX_IMAGE', defaultValue: 'cortx-docker.colo.seagate.com/seagate/cortx-all:2.0.0-latest-kubernetes', description: 'CORTX-ALL image', trim: true)
+        string(name: 'CORTX_IMAGE', defaultValue: 'cortx-docker.colo.seagate.com/seagate/cortx-all:2.0.0-latest', description: 'CORTX-ALL image', trim: true)
         choice (
             choices: ['ALL', 'DEVOPS', 'DEBUG'],
             description: 'Email Notification Recipients ',
