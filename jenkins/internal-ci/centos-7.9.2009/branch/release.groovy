@@ -241,8 +241,8 @@ pipeline {
                     try {
                         def build_cortx_all_image = build job: '/Cortx-Kubernetes/cortx-all-docker-image', wait: true,
                                     parameters: [
-                                        string(name: 'CORTX_RE_URL', value: "https://github.com/Seagate/cortx-re"),
-                                        string(name: 'CORTX_RE_BRANCH', value: "${branch}"),
+                                        string(name: 'CORTX_RE_URL', value: "https://github.com/shailesh-vaidya/cortx-re-1"),
+                                        string(name: 'CORTX_RE_BRANCH', value: "branch-change"),
                                         string(name: 'BUILD', value: "${release_tag}/prod"),
                                         string(name: 'GITHUB_PUSH', value: "yes"),
                                         string(name: 'TAG_LATEST', value: "yes"),
