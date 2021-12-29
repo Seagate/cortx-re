@@ -11,7 +11,7 @@ pipeline {
 	}
 	parameters {
 		string(name: 'MOTR_URL', defaultValue: 'https://github.com/Seagate/cortx-motr', description: 'Repo for Motr')
-		string(name: 'MOTR_BRANCH', defaultValue: 'kubernetes', description: 'Branch for Motr')
+		string(name: 'MOTR_BRANCH', defaultValue: 'main', description: 'Branch for Motr')
 		choice (
 			choices: ['DEBUG', 'ALL', 'DEVOPS'],
 			description: 'Email Notification Recipients ',
