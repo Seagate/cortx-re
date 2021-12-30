@@ -208,7 +208,7 @@ EOF
                 script { build_stage = env.STAGE_NAME }
                 script {
                     try {
-                        def build_cortx_all_image = build job: '/Cortx-Kubernetes/cortx-all-docker-image', wait: true,
+                        def buildCortxAllImage = build job: '/Cortx-Kubernetes/cortx-all-docker-image', wait: true,
                             parameters: [
                                 string(name: 'CORTX_RE_URL', value: "https://github.com/Seagate/cortx-re"),
                                 string(name: 'CORTX_RE_BRANCH', value: "main"),
@@ -218,7 +218,7 @@ EOF
                                 string(name: 'DOCKER_REGISTRY', value: "cortx-docker.colo.seagate.com"),
                                 string(name: 'EMAIL_RECIPIENTS', value: "DEBUG")
                             ]
-                        env.cortx_all_image = build_cortx_all_image.buildVariables.image
+                        env.cortx_all_image = buildCortxAllImage.buildVariables.image
                     } catch (err) {
                         build_stage = env.STAGE_NAME
                         error "Failed to Build CORTX-ALL image"
