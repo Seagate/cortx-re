@@ -274,6 +274,8 @@ function print_pod_status(){
 echo "---------------------------------------[ POD Status ]--------------------------------------"
     if ! kubectl get pods | grep -v STATUS | awk '{ print $3}' |  grep -v -q -i running; then
       kubectl get pods -o wide
+      echo "---------------------------------------[ Image Details ]--------------------------------------"
+      kubectl get pods -o jsonpath="{.items[*].spec.containers[*].image}" | tr ' ' '\n' | uniq 
     else
 echo "-----------[ All POD's are not in running state. Marking deployment as failed. Please check problematic pod events using kubectl describe pod <pod name> ]--------------------"
       exit 1
