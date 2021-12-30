@@ -15,7 +15,7 @@ pipeline {
 
 
     parameters {
-        string(name: 'CORTX_RE_BRANCH', defaultValue: 'kubernetes', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
+        string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for Cluster Setup scripts', trim: true)
         string(name: 'NODE', defaultValue: '', description: 'Node 1 Host FQDN',  trim: true)
         password(name: 'NODE_PASS', defaultValue: '', description: 'Host machine root user password')
