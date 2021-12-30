@@ -27,7 +27,7 @@ SSH_KEY_FILE=/root/.ssh/id_rsa
 
 function usage(){
     cat << HEREDOC
-Usage : $0 [--third-party, --cortx-cluster, --destroy-cluster]
+Usage : $0 [--third-party, --cortx-cluster, --destroy-cluster, --io-test]
 where,
     --third-party - Deploy third-party components
     --cortx-cluster - Deploy Third-Party and CORTX components
