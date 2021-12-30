@@ -277,6 +277,8 @@ function destroy(){
 }
 
 function print_pod_status(){
+echo "------------------------------------[ Image Details ]--------------------------------------"
+      kubectl get pods -o jsonpath="{.items[*].spec.containers[*].image}" | tr ' ' '\n' | uniq 
 echo "---------------------------------------[ POD Status ]--------------------------------------"
     if ! kubectl get pods | grep -v STATUS | awk '{ print $3}' |  grep -v -q -i running; then
       kubectl get pods -o wide
