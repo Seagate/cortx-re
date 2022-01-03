@@ -5,9 +5,11 @@ pipeline {
 		}
 	}
 	options {
+		skipDefaultCheckout()
 		timeout(time: 180, unit: 'MINUTES')
 		timestamps()
-		skipDefaultCheckout()
+		disableConcurrentBuilds()
+		ansiColor('xterm')
 	}
 	parameters {
 		string(name: 'MOTR_URL', defaultValue: 'https://github.com/Seagate/cortx-motr', description: 'Repo for Motr')
