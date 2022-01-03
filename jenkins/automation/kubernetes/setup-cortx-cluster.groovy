@@ -19,7 +19,7 @@ pipeline {
 
     parameters {
 
-        string(name: 'CORTX_RE_BRANCH', defaultValue: 'kubernetes', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
+        string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-all:2.0.0-latest-custom-ci', description: 'CORTX-ALL image', trim: true)
         string(name: 'SNS_CONFIG', defaultValue: '1+0+0', description: 'sns configuration for deployment. Please select value based on disks available on nodes.', trim: true)
@@ -40,6 +40,19 @@ pipeline {
             }
         }
 
+        stage ('Destory Pre-existing Cluster') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'Destroy existing Cluster', script: '''
+                    pushd solutions/kubernetes/
+                        echo $hosts | tr ' ' '\n' > hosts
+                        cat hosts
+                        ./cortx-deploy.sh --destroy-cluster
+                    popd
+                '''
+            }
+        }
+
 
         stage ('Deploy CORTX Components') {
             steps {
@@ -55,6 +68,19 @@ pipeline {
                         export SNS_CONFIG=${SNS_CONFIG}
                         export DIX_CONFIG=${DIX_CONFIG}
                         ./cortx-deploy.sh --cortx-cluster
+                    popd
+                '''
+            }
+        }
+
+        stage ('IO Sanity Test') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'Deploy CORTX Components', script: '''
+                    pushd solutions/kubernetes/
+                        echo $hosts | tr ' ' '\n' > hosts
+                        cat hosts
+                        ./cortx-deploy.sh --io-test
                     popd
                 '''
             }
