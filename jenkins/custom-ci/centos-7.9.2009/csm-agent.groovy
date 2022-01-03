@@ -85,7 +85,6 @@ pipeline {
         }
         
         stage ('Upload') {
-            when { expression { false } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Copy RPMS', script: '''
