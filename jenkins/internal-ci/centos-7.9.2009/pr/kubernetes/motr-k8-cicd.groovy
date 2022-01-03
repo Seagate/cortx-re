@@ -245,7 +245,7 @@ EOF
 			steps {
 				script { build_stage = env.STAGE_NAME }
 				script {
-					def cortxCluster = build job: 'K8s-3N-deployment', wait: true,
+					build job: 'K8s-3N-deployment', wait: true,
 					parameters: [
 						string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
 						string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
