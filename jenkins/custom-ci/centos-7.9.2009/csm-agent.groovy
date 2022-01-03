@@ -57,34 +57,15 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
 
-                sh label: 'Install cortx-prereq package', script: '''
-                                        cortx_iso_path=$( echo $integration_dir | sed  's/[/]mnt[/]bigstorage[/]//g' )
-                                        echo $cortx_iso_path
-                                        pip3 uninstall pip -y && yum reinstall python3-pip -y && ln -s /usr/bin/pip3 /usr/local/bin/pip3
-                                        yum install yum-utils -y
-                                        yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/centos/$third_party_rpm_dir/
-                                        yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/$cortx_iso_path/cortx_iso/
-                                        yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
-                                        yum clean all && rm -rf /var/cache/yum
-                                        cat <<EOF >>/etc/pip.conf
-[global]
-timeout: 60
-index-url: http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/$python_deps
-trusted-host: cortx-storage.colo.seagate.com
-EOF
-                                        yum install java-1.8.0-openjdk-headless -y && yum install cortx-prereq -y --nogpgcheck 
-                                        rm -rf  /etc/yum.repos.d/cortx-storage.colo.seagate.com_releases_cortx_* /etc/pip.conf
-                                '''
+                sh label: 'Configure yum repository for cortx-py-utils', script: """
+                    yum-config-manager --nogpgcheck --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/kubernetes/centos-7.9.2009/last_successful_prod/cortx_iso/
 
-                sh label: 'Configure yum repositories', script: """
-                    yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/$os_version/$release_tag/cortx_iso/
-                    yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
-                    yum clean all && rm -rf /var/cache/yum
+                    pip3 install --no-cache-dir --trusted-host cortx-storage.colo.seagate.com -i http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/python-packages-2.0.0-latest/ -r https://raw.githubusercontent.com/Seagate/cortx-utils/kubernetes/py-utils/python_requirements.txt -r https://raw.githubusercontent.com/Seagate/cortx-utils/kubernetes/py-utils/python_requirements.ext.txt
                 """
 
                 sh label: 'Install pyinstaller', script: """
                         pip3.6 install  pyinstaller==3.5
-                    """
+                """
             }
         }    
         
