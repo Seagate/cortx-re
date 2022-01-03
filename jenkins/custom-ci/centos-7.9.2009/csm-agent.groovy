@@ -14,8 +14,6 @@ pipeline {
         release_tag = "custom-build-$CUSTOM_CI_BUILD_ID"
         build_upload_dir = "$release_dir/github/integration-custom-ci/$os_version/$release_tag/cortx_iso"
         python_deps = "${THIRD_PARTY_PYTHON_VERSION == 'cortx-2.0' ? "python-packages-2.0.0-latest" : THIRD_PARTY_PYTHON_VERSION == 'custom' ?  "python-packages-2.0.0-custom" : "python-packages-2.0.0-stable"}"
-        third_party_rpm_dir = "${THIRD_PARTY_RPM_VERSION == 'cortx-2.0' ? "$os_version-2.0.0-latest" : THIRD_PARTY_RPM_VERSION == 'cortx-1.0' ?  "$os_version-1.0.0-1" : "$os_version-custom"}"
-        integration_dir = "${INTEGRATION_DIR_PATH == '/mnt/bigstorage/releases/cortx/github/integration-custom-ci/centos-7.9.2009/' ? "$release_dir/github/integration-custom-ci/$os_version/$release_tag" : "/mnt/bigstorage/releases/cortx/github/main/centos-7.9.2009/last_successful_prod"}"
     }
 
     options {
@@ -29,9 +27,9 @@ pipeline {
         string(name: 'CSM_AGENT_URL', defaultValue: 'https://github.com/Seagate/cortx-management.git', description: 'Repository URL for cortx-management build.')
         string(name: 'CSM_AGENT_BRANCH', defaultValue: 'stable', description: 'Branch for cortx-management build.')
         string(name: 'CUSTOM_CI_BUILD_ID', defaultValue: '0', description: 'Custom CI Build Number')
-        string(name: 'THIRD_PARTY_PYTHON_VERSION', defaultValue: 'cortx-2.0', description: 'Third Party Python Version to use', trim: true)
-        string(name: 'THIRD_PARTY_RPM_VERSION', defaultValue: 'cortx-2.0', description: 'Third Party RPM Version to use', trim: true)
-        string(name: 'INTEGRATION_DIR_PATH', defaultValue: '/mnt/bigstorage/releases/cortx/github/main/centos-7.9.2009/last_successful_prod/', description: 'Integration directory path', trim: true)
+        string(name: 'CORTX_UTILS_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX Utils', trim: true)
+        string(name: 'CORTX_UTILS_URL', defaultValue: 'https://github.com/Seagate/cortx-utils', description: 'CORTX Utils Repository URL', trim: true)
+        string(name: 'THIRD_PARTY_PYTHON_VERSION', defaultValue: 'custom', description: 'Third Party Python Version to use', trim: true)
     }    
 
 
@@ -60,7 +58,7 @@ pipeline {
                 sh label: 'Configure yum repository for cortx-py-utils', script: """
                     yum-config-manager --nogpgcheck --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/kubernetes/centos-7.9.2009/last_successful_prod/cortx_iso/
 
-                    pip3 install --no-cache-dir --trusted-host cortx-storage.colo.seagate.com -i http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/python-packages-2.0.0-latest/ -r https://raw.githubusercontent.com/Seagate/cortx-utils/kubernetes/py-utils/python_requirements.txt -r https://raw.githubusercontent.com/Seagate/cortx-utils/kubernetes/py-utils/python_requirements.ext.txt
+                    pip3 install --no-cache-dir --trusted-host cortx-storage.colo.seagate.com -i http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/$python_deps/ -r https://raw.githubusercontent.com/Seagate/cortx-utils/$CORTX_UTILS_BRANCH/py-utils/python_requirements.txt -r https://raw.githubusercontent.com/Seagate/cortx-utils/$CORTX_UTILS_BRANCH/py-utils/python_requirements.ext.txt
                 """
 
                 sh label: 'Install pyinstaller', script: """
