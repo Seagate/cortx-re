@@ -37,7 +37,6 @@ check_status "Failed to list buckets."
 echo -e "\nCreating files to upload to '$BUCKET' bucket:-"
 echo -e "\nCreating '$FILE1'"
 dd if=/dev/zero of=$FILE1 bs=1M count=10
-check_status
 echo -e "\nCreating '$FILE2'"
 date > $FILE2
 
