@@ -20,7 +20,7 @@ help : Makefile
 checkout:
 	@echo "*************** checkout code *********************"
 	pushd cortx-workspace && \
-        for component in $$(ls -1d cortx-* | grep -Evx 'cortx-experiments||cortx-posix||cortx-multisite||cortx-s3samplecode'); do pushd $$component; git clean -fdx; git checkout .; git pull -p --all; git checkout $$BRANCH || exit 1; popd ; done  && \
+        for component in $$(ls -1d cortx-* | grep -Evx 'cortx-k8s||cortx-experiments||cortx-posix||cortx-multisite||cortx-s3samplecode'); do pushd $$component; git clean -fdx; git checkout .; git pull -p --all; git checkout $$BRANCH || exit 1; popd ; done  && \
 	popd || (echo "ERROR: Failed to checkout specified branch/tag Exiting..."; exit 1)
 
 ## clean: remove existing /var/artifacts/0 directory. 
@@ -93,16 +93,16 @@ _cortx-motr_build:
 	
 	pushd cortx-workspace/cortx-motr && \
 		echo "***************  Building cortx-motr RPMS from $$(git rev-parse --short HEAD) *********************" && \
-		KERNEL=/lib/modules/$$(yum list installed kernel | tail -n1 | awk '{ print $$2 }').x86_64/build && \
 		./autogen.sh || \
 		./autogen.sh && \
-		./configure --with-linux=$$KERNEL && \
+		./configure --with-user-mode-only && \
 		export build_number=${BUILD_ID} && \
 		make rpms && \
 		rm -rf ${RPM_DIR}/cortx-motr*.rpm && \
 		mv /root/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
 		createrepo -v ${RPM_DIR} && \
 	popd
+	
 
 #***********************************************************************************
 #   Component:  S3

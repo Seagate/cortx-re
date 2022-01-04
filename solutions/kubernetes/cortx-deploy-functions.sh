@@ -191,6 +191,8 @@ function openldap_requiremenrs(){
 }
 
 function execute_prereq(){
+    echo "Pulling latest CORTX-ALL image"
+    docker pull $CORTX_IMAGE || echo "Failed to pull $CORTX_IMAGE"
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         findmnt $SYSTEM_DRIVE && umount -l $SYSTEM_DRIVE
         ./prereq-deploy-cortx-cloud.sh $SYSTEM_DRIVE
@@ -246,31 +248,37 @@ echo "---------------------------------------[ Setting up Worker Node on $HOSTNA
 }
 
 function destroy(){
-    pushd $SCRIPT_LOCATION/k8_cortx_cloud
-        chmod +x *.sh
-        ./destroy-cortx-cloud.sh
-    popd
-    findmnt $SYSTEM_DRIVE && umount -l $SYSTEM_DRIVE    
-    files_to_remove=(
-        "/mnt/fs-local-volume/"
-        "/root/deploy-scripts/"
-        "/root/get_helm.sh"
-        "/root/calico*"
-        "/root/.cache"
-        "/root/.config"
-        "/root/install.postnochroot.log"
-        "/root/original-ks.cfg"
-        "/etc/pip.conf"
-    )
-    for file in ${files_to_remove[@]}; do
-        if [ -f "$file" ] || [ -d "$file" ]; then
-            echo "Removing file/folder $file"
-            rm -rf $file
-        fi
-    done
+   if [ "$(/usr/bin/kubectl get pods --no-headers | wc -l)" -gt 0 ]; then 
+        pushd "$SCRIPT_LOCATION"/k8_cortx_cloud || echo "CORTX Deploy Scripts are not available on system"
+            chmod +x *.sh
+            ./destroy-cortx-cloud.sh
+        popd || exit
+        findmnt "$SYSTEM_DRIVE" && umount -l "$SYSTEM_DRIVE"
+        files_to_remove=(
+            "/mnt/fs-local-volume/"
+            "/root/deploy-scripts/"
+            "/root/get_helm.sh"
+            "/root/calico*"
+            "/root/.cache"
+            "/root/.config"
+            "/root/install.postnochroot.log"
+            "/root/original-ks.cfg"
+            "/etc/pip.conf"
+        )
+        for file in "${files_to_remove[@]}"; do
+            if [ -f "$file" ] || [ -d "$file" ]; then
+                echo "Removing file/folder $file"
+                rm -rf "$file"
+            fi
+        done
+    else 
+        echo "CORTX Cluster is not already deployed"
+    fi
 }
 
 function print_pod_status(){
+echo "------------------------------------[ Image Details ]--------------------------------------"
+      kubectl get pods -o jsonpath="{.items[*].spec.containers[*].image}" | tr ' ' '\n' | uniq 
 echo "---------------------------------------[ POD Status ]--------------------------------------"
     if ! kubectl get pods | grep -v STATUS | awk '{ print $3}' |  grep -v -q -i running; then
       kubectl get pods -o wide
@@ -278,7 +286,9 @@ echo "---------------------------------------[ POD Status ]---------------------
 echo "-----------[ All POD's are not in running state. Marking deployment as failed. Please check problematic pod events using kubectl describe pod <pod name> ]--------------------"
       exit 1
     fi
-echo "---------------------------------------[ hctl status ]--------------------------------------"
+echo "-----------[ Sleeping for 1min before checking hctl status.... ]--------------------"
+    sleep 60  
+echo "---------------------------------------[ hctl status ]-----------------------------------------"
     SECONDS=0
     date
     while [[ SECONDS -lt 1200 ]] ; do
@@ -300,6 +310,23 @@ echo "---------------------------------------[ hctl status ]--------------------
         exit 1
 }
 
+function io_exec(){
+    pushd /var/tmp/
+        chmod +x *.sh
+        # "Setting up S3 client..."
+        ./s3-client-setup.sh
+        # "Running IO test..."
+        ./io-testing.sh
+    popd
+}
+
+function logs_generation(){
+    echo -e "\n-----------[ Generating CORTX Support Bundle Logs... ]--------------------"
+    pushd $SCRIPT_LOCATION/k8_cortx_cloud
+        ./logs-cortx-cloud.sh
+    popd
+}
+
 case $ACTION in
     --third-party)
         execute_deploy_script deploy-cortx-cloud-3rd-party.sh
@@ -315,6 +342,12 @@ case $ACTION in
     ;;
     --status) 
         print_pod_status
+    ;;
+    --io-test)
+        io_exec
+    ;;
+    --generate-logs)
+        logs_generation
     ;;
     --setup-master)
         setup_master_node 

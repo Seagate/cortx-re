@@ -85,9 +85,8 @@ pipeline {
                 dir ('motr') {    
                     sh label: '', script: '''
                         rm -rf /root/rpmbuild/RPMS/x86_64/*.rpm
-                        KERNEL=/lib/modules/$(yum list installed kernel | tail -n1 | awk '{ print $2 }').x86_64/build
                         ./autogen.sh
-                        ./configure --with-linux=$KERNEL
+                        ./configure --with-user-mode-only
                         export build_number=${BUILD_ID}
                         make rpms
                     '''
@@ -188,8 +187,9 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 script {
                     def releaseBuild = build job: 'Release', propagate: true
-                     env.release_build = releaseBuild.number
+                    env.release_build = releaseBuild.number
                     env.release_build_location="http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/${env.release_build}"
+                    env.cortx_all_image = releaseBuild.buildVariables.cortx_all_image
                 }
             }
         }
