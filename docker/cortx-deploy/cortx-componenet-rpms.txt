@@ -5,3 +5,4 @@ cortx-s3server
 cortx-csm_agent
 cortx-provisioner
 cortx-ha
+cortx-py-utils-test
