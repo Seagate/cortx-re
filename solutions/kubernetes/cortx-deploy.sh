@@ -134,7 +134,6 @@ function destroy-cluster(){
 }
 
 function io-test(){
-    validation
     generate_rsa_key
     nodes_setup
     	MASTER_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
