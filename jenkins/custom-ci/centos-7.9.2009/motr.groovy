@@ -78,6 +78,7 @@ pipeline {
 						else
 							./configure --with-user-mode-only
 						fi
+						./configure --enable-dtm0
 						export build_number=${CUSTOM_CI_BUILD_ID}
 						make rpms
 					'''
