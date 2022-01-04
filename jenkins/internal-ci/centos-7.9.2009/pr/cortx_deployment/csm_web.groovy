@@ -89,8 +89,7 @@ pipeline {
                         BUILD=$(git rev-parse --short HEAD)
                         echo "Executing build script"
                         echo "Python:$(python --version)"
-                        ls -la
-                        ./cortx-management-portal/cicd/build.sh $VERSION -b $BUILD_NUMBER -t
+                        ./cicd/build.sh $VERSION -b $BUILD_NUMBER -t
                     '''
 
                     sh label: 'Collect Release Artifacts', script: '''
