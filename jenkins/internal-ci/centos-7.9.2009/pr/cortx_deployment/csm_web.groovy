@@ -97,9 +97,9 @@ pipeline {
                         rm -rf "${DESTINATION_RELEASE_LOCATION}"
                         mkdir -p "${DESTINATION_RELEASE_LOCATION}"
             
-                        if [[ ( ! -z `ls ./dist/rpmbuild/RPMS/x86_64/*.rpm `)]]; then
+                        if [[ ( ! -z `ls /root/rpmbuild/RPMS/x86_64/*.rpm `)]]; then
                             mkdir -p "${CORTX_ISO_LOCATION}"
-                            cp ./dist/rpmbuild/RPMS/x86_64/*.rpm "${CORTX_ISO_LOCATION}"
+                            cp /root/rpmbuild/RPMS/x86_64/*.rpm "${CORTX_ISO_LOCATION}"
                         else
                             echo "RPM not exists !!!"
                             exit 1
