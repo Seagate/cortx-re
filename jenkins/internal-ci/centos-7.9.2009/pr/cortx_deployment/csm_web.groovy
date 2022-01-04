@@ -92,19 +92,19 @@ pipeline {
                         ./cicd/build.sh $VERSION -b $BUILD_NUMBER -t
                     '''
 
-                    sh label: 'Collect Release Artifacts', script: '''
+                    // sh label: 'Collect Release Artifacts', script: '''
                     
-                        rm -rf "${DESTINATION_RELEASE_LOCATION}"
-                        mkdir -p "${DESTINATION_RELEASE_LOCATION}"
+                    //     rm -rf "${DESTINATION_RELEASE_LOCATION}"
+                    //     mkdir -p "${DESTINATION_RELEASE_LOCATION}"
             
-                        if [[ ( ! -z `ls /root/rpmbuild/RPMS/x86_64/*.rpm `)]]; then
-                            mkdir -p "${CORTX_ISO_LOCATION}"
-                            cp /root/rpmbuild/RPMS/x86_64/*.rpm "${CORTX_ISO_LOCATION}"
-                        else
-                            echo "RPM not exists !!!"
-                            exit 1
-                        fi
-                    '''	
+                    //     if [[ ( ! -z `ls /root/rpmbuild/RPMS/x86_64/*.rpm `)]]; then
+                    //         mkdir -p "${CORTX_ISO_LOCATION}"
+                    //         cp ./dist/rpmbuild/RPMS/x86_64/*.rpm "${CORTX_ISO_LOCATION}"
+                    //     else
+                    //         echo "RPM not exists !!!"
+                    //         exit 1
+                    //     fi
+                    // '''	
                 }
             }
         }
