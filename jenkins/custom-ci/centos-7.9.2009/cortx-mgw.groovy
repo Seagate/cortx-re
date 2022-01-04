@@ -45,6 +45,8 @@ pipeline {
                 popd
 
                 pushd /mnt/rgw-build/rpmbuild/
+                    sed -i '/Requires.*ceph-mon/d' ./SPECS/ceph.spec
+                    sed -i '/Requires.*ceph-mgr/d' ./SPECS/ceph.spec
                     rpmbuild --define "debug_package %{nil}" --without cmake_verbose_logging --without jaeger --without lttng --without seastar --without kafka_endpoint --without zbd --without cephfs_java --without cephfs_shell --without ocf --without selinux --without ceph_test_package --without make_check --define "_binary_payload w2T16.xzdio" --define "_topdir `pwd`" -ba ./SPECS/ceph.spec
                 popd
             '''    
