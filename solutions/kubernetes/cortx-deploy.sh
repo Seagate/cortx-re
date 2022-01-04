@@ -27,11 +27,12 @@ SSH_KEY_FILE=/root/.ssh/id_rsa
 
 function usage(){
     cat << HEREDOC
-Usage : $0 [--third-party, --cortx-cluster, --destroy-cluster]
+Usage : $0 [--third-party, --cortx-cluster, --destroy-cluster, --io-test]
 where,
     --third-party - Deploy third-party components
     --cortx-cluster - Deploy Third-Party and CORTX components
     --destroy-cluster  - Destroy CORTX cluster
+    --io-test - Perform IO sanity test
 HEREDOC
 }
 
@@ -47,7 +48,7 @@ function check_params {
 function pdsh_worker_exec {
     # commands to run in parallel on pdsh hosts (workers nodes).
     commands=(
-       "export CORTX_SCRIPTS_REPO=$CORTX_SCRIPTS_REPO && export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH && /var/tmp/cortx-deploy-functions.sh --setup-worker"
+       "export CORTX_IMAGE=$CORTX_IMAGE && export CORTX_SCRIPTS_REPO=$CORTX_SCRIPTS_REPO && export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH && /var/tmp/cortx-deploy-functions.sh --setup-worker"
     )
     for cmds in "${commands[@]}"; do
        pdsh -w ^$1 $cmds
@@ -111,11 +112,6 @@ EOF
         echo "---------------------------------------[ Print Cluster Status ]----------------------------------------------"
         rm -rf /var/tmp/cortx-cluster-status.txt
         ssh -o 'StrictHostKeyChecking=no' "$master_node" '/var/tmp/cortx-deploy-functions.sh --status' | tee /var/tmp/cortx-cluster-status.txt
-
-        # IO test
-        add_separator Setting up IO testing
-        scp -q io-testing.sh s3-client-setup.sh "$master_node":/var/tmp/
-        ssh -o 'StrictHostKeyChecking=no' "$master_node" '/var/tmp/cortx-deploy-functions.sh --io-test'
         done
 }
 
@@ -135,6 +131,20 @@ function destroy-cluster(){
         ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" "/var/tmp/cortx-deploy-functions.sh --destroy"
         echo "--------------------------------[ Print Kubernetes Cluster Status after Cleanup]----------------------------------------------"
         ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" 'kubectl get pods -o wide' | tee /var/tmp/cortx-cluster-status.txt	
+}
+
+function io-test(){
+    validation
+    generate_rsa_key
+    nodes_setup
+    	MASTER_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+    for master_node in $MASTER_NODE
+        do
+        # IO test
+        add_separator Setting up IO testing
+        scp -q io-testing.sh s3-client-setup.sh "$master_node":/var/tmp/
+        ssh -o 'StrictHostKeyChecking=no' "$master_node" '/var/tmp/cortx-deploy-functions.sh --io-test'
+        done
 }
 
 
@@ -160,6 +170,9 @@ case $ACTION in
     ;;
     --destroy-cluster)
         destroy-cluster
+    ;;
+    --io-test)
+        io-test
     ;;
     *)
         echo "ERROR : Please provide valid option"

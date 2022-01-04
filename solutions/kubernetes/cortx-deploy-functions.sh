@@ -215,6 +215,8 @@ function openldap_requiremenrs(){
 }
 
 function execute_prereq(){
+    echo "Pulling latest CORTX-ALL image"
+    docker pull $CORTX_IMAGE || echo "Failed to pull $CORTX_IMAGE"
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         findmnt $SYSTEM_DRIVE && umount -l $SYSTEM_DRIVE
         ./prereq-deploy-cortx-cloud.sh $SYSTEM_DRIVE
@@ -299,6 +301,8 @@ function destroy(){
 }
 
 function print_pod_status(){
+echo "------------------------------------[ Image Details ]--------------------------------------"
+      kubectl get pods -o jsonpath="{.items[*].spec.containers[*].image}" | tr ' ' '\n' | uniq 
 echo "---------------------------------------[ POD Status ]--------------------------------------"
     if ! kubectl get pods | grep -v STATUS | awk '{ print $3}' |  grep -v -q -i running; then
       kubectl get pods -o wide
