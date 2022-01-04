@@ -76,7 +76,7 @@ pipeline {
         stage ('IO Sanity Test') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Deploy CORTX Components', script: '''
+                sh label: 'Perform IO Sanity Test', script: '''
                     pushd solutions/kubernetes/
                         echo $hosts | tr ' ' '\n' > hosts
                         cat hosts
