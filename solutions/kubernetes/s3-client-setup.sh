@@ -26,9 +26,7 @@ add_separator Configuring S3 clients and endpoints.
 
 echo -e "\nAdding cortx-s3iamcli repo:-\n"
 yum-config-manager --add-repo http://cortx-storage.colo.seagate.com/releases/cortx/uploads/centos/centos-7.9.2009/s3server_uploads/
-check_status
 yum-config-manager --add-repo http://cortx-storage.colo.seagate.com/releases/cortx/github/kubernetes/centos-7.9.2009/last_successful/
-check_status
 
 echo -e "\nInstalling cortx-s3iamcli and awscli package:-\n"
 yum install -y cortx-s3iamcli --nogpgcheck
