@@ -108,6 +108,8 @@ pipeline {
                     rm -rf "${DESTINATION_RELEASE_LOCATION}"
                     mkdir -p "${DESTINATION_RELEASE_LOCATION}"
                     shopt -s extglob
+                    pwd
+                    ls -la
                     if ls ./dist/*.rpm; then
                         mkdir -p "${CORTX_ISO_LOCATION}"
                         cp ./dist/!(*.src.rpm|*.tar.gz) "${CORTX_ISO_LOCATION}"
