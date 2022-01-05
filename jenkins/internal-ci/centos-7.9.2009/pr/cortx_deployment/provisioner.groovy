@@ -67,24 +67,24 @@ pipeline {
                     echo "-----------------------------------------------------------"
                 """
 
-				//dir('provisioner') {	
-					checkout([$class: 'GitSCM', branches: [[name: "${PROVISIONER_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${PROVISIONER_URL}", refspec: "${PROVISIONER_PR_REFSPEC}"]]])
+					
+				checkout([$class: 'GitSCM', branches: [[name: "${PROVISIONER_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${PROVISIONER_URL}", refspec: "${PROVISIONER_PR_REFSPEC}"]]])
             
-					sh encoding: 'UTF-8', label: 'cortx-provisioner', script: '''
-                        if [ -f "./jenkins/build.sh" ]; then
-                            bash ./jenkins/build.sh -v 2.0.0 -b ${BUILD_NUMBER}
-                        else
-                            echo "cortx-provisioner package creation is not implemented"
-                        fi
+                sh encoding: 'UTF-8', label: 'cortx-provisioner', script: '''
+                    if [ -f "./jenkins/build.sh" ]; then
+                        bash ./jenkins/build.sh -v 2.0.0 -b ${BUILD_NUMBER}
+                    else
+                        echo "cortx-provisioner package creation is not implemented"
+                    fi
                 '''
 
-					sh label: 'Repo Creation', script: '''mkdir -p $DESTINATION_RELEASE_LOCATION
-					    pushd $DESTINATION_RELEASE_LOCATION
-						rpm -qi createrepo || yum install -y createrepo
-						createrepo .
-						popd
-					'''
-				//}	
+                sh label: 'Repo Creation', script: '''mkdir -p $DESTINATION_RELEASE_LOCATION
+                    pushd $DESTINATION_RELEASE_LOCATION
+                    rpm -qi createrepo || yum install -y createrepo
+                    createrepo .
+                    popd
+                '''
+					
 			}
         }
         // Release cortx deployment stack
@@ -108,8 +108,6 @@ pipeline {
                     rm -rf "${DESTINATION_RELEASE_LOCATION}"
                     mkdir -p "${DESTINATION_RELEASE_LOCATION}"
                     shopt -s extglob
-                    pwd
-                    ls -la
                     if ls ./dist/*.rpm; then
                         mkdir -p "${CORTX_ISO_LOCATION}"
                         cp ./dist/!(*.src.rpm|*.tar.gz) "${CORTX_ISO_LOCATION}"
