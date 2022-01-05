@@ -29,7 +29,7 @@ pipeline {
         CSM_PR_REFSEPEC = "${ghprbPullId != null ? CSM_GPR_REFSEPEC : CSM_BRANCH_REFSEPEC}"
 
         //////////////////////////////// BUILD VARS //////////////////////////////////////////////////
-        // OS_VERSION and COMPONENTS_BRANCH are manually created parameters in jenkins job.
+        // OS_VERSION, host and COMPONENTS_BRANCH are manually created parameters in jenkins job.
 
         COMPONENT_NAME = "csm-agent".trim()
         BRANCH = "${ghprbTargetBranch != null ? ghprbTargetBranch : COMPONENTS_BRANCH}"

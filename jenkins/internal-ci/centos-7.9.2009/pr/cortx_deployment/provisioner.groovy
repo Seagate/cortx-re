@@ -27,7 +27,7 @@ pipeline {
         PROVISIONER_PR_REFSPEC = "${ghprbPullId != null ? PROVISIONER_GPR_REFSPEC : PROVISIONER_BRANCH_REFSEPEC}"
         
         //////////////////////////////// BUILD VARS //////////////////////////////////////////////////
-        // OS_VERSION and COMPONENTS_BRANCH are manually created parameters in jenkins job.
+        // OS_VERSION, host and COMPONENTS_BRANCH are manually created parameters in jenkins job.
 
         VERSION = "2.0.0"
         COMPONENT_NAME = "provisioner".trim()
