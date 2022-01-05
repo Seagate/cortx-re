@@ -82,17 +82,16 @@ pipeline {
                     checkout([$class: 'GitSCM', branches: [[name: "${HA_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 0, noTags: false, reference: '', shallow: false, timeout: 15], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false, timeout: 15]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${HA_URL}",  name: 'origin', refspec: "${HA_PR_REFSPEC}"]]])
 
                     sh label: 'prepare build env', script: """
-                        yum clean all;rm -rf /var/cache/yum
-                        yum erase python36-PyYAML -y
-                        cat <<EOF >>/etc/pip.conf
+                    yum erase python36-PyYAML -y
+                    cat <<EOF >>/etc/pip.conf
 [global]
 timeout: 60
 index-url: http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/python-packages-2.0.0-latest/
 trusted-host: cortx-storage.colo.seagate.com
 EOF
-                        pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/$BRANCH/py-utils/python_requirements.txt
-                        pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/$BRANCH/py-utils/python_requirements.ext.txt
-                        rm -rf /etc/pip.conf
+					pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/$BRANCH/py-utils/python_requirements.txt
+                    pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/$BRANCH/py-utils/python_requirements.ext.txt
+					rm -rf /etc/pip.conf
                     """    
                     sh label: 'Configure yum repositories', script: """
                         yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/$BRANCH/$OS_VERSION/$RELEASE_TAG/cortx_iso/
