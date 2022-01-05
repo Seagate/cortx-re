@@ -54,23 +54,7 @@ pipeline {
             }
         }
 
-        stage ("Cluster Cleanup") {
-            when { expression { false } }
-            steps {
-                script { build_stage = env.STAGE_NAME }
-                script {
-                    build job: '/Cortx-kubernetes/destroy-cortx-cluster', wait: true,
-                    parameters: [
-                        string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
-                        string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
-                        text(name: 'hosts', value: "${hosts}")
-                    ]
-                }
-            }
-        }
-
         stage ("Deploy CORTX Cluster") {
-            when { expression { false } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
