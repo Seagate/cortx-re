@@ -22,7 +22,7 @@ pipeline {
 	}
 	environment {
 		OS_VERSION = "centos-7.9.2009"
-		CORTX_RE_BRANCH = "kubernetes"
+		CORTX_RE_BRANCH = "main"
 		CORTX_RE_REPO = "https://github.com/Seagate/cortx-re/"
 		GPR_REPO = "https://github.com/${ghprbGhRepository}"
 		MOTR_URL = "${ghprbGhRepository != null ? GPR_REPO : MOTR_URL}"
