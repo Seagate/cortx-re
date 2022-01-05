@@ -107,6 +107,7 @@ pipeline {
                     echo -e "Gathering all component RPM's and create release"
                     rm -rf "${DESTINATION_RELEASE_LOCATION}"
                     mkdir -p "${DESTINATION_RELEASE_LOCATION}"
+                    shopt -s extglob
                     if ls ./dist/*.rpm; then
                         mkdir -p "${CORTX_ISO_LOCATION}"
                         cp ./dist/!(*.src.rpm|*.tar.gz) "${CORTX_ISO_LOCATION}"
