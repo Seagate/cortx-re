@@ -107,9 +107,9 @@ pipeline {
                     echo -e "Gathering all component RPM's and create release"
                     rm -rf "${DESTINATION_RELEASE_LOCATION}"
                     mkdir -p "${DESTINATION_RELEASE_LOCATION}"
-                    if [[ ( ! -z `ls /root/rpmbuild/RPMS/x86_64/*.rpm `)]]; then
+                    if ls ./dist/*.rpm; then
                         mkdir -p "${CORTX_ISO_LOCATION}"
-                        cp /root/rpmbuild/RPMS/x86_64/*.rpm "${CORTX_ISO_LOCATION}"
+                        cp ./dist/!(*.src.rpm|*.tar.gz) "${CORTX_ISO_LOCATION}"
                     else
                         echo "RPM not exists !!!"
                         exit 1
