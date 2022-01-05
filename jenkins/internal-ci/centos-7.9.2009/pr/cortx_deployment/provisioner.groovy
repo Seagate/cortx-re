@@ -67,7 +67,7 @@ pipeline {
                     echo "-----------------------------------------------------------"
                 """
 
-				dir('provisioner') {	
+				//dir('provisioner') {	
 					checkout([$class: 'GitSCM', branches: [[name: "${PROVISIONER_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${PROVISIONER_URL}", refspec: "${PROVISIONER_PR_REFSPEC}"]]])
             
 					sh encoding: 'UTF-8', label: 'cortx-provisioner', script: '''
@@ -84,7 +84,7 @@ pipeline {
 						createrepo .
 						popd
 					'''
-				}	
+				//}	
 			}
         }
         // Release cortx deployment stack
