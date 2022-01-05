@@ -55,11 +55,13 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
 
-                sh label: 'Configure yum repository for cortx-py-utils', script: """
+                sh label: 'Configure yum repository for cortx-py-utils', script: '''
+                    CORTX_UTILS_REPO_OWNER=$(echo $CORTX_UTILS_URL | cut -d "/" -f4)
+
                     yum-config-manager --nogpgcheck --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/kubernetes/centos-7.9.2009/last_successful_prod/cortx_iso/
 
-                    pip3 install --no-cache-dir --trusted-host cortx-storage.colo.seagate.com -i http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/$python_deps/ -r https://raw.githubusercontent.com/Seagate/cortx-utils/$CORTX_UTILS_BRANCH/py-utils/python_requirements.txt -r https://raw.githubusercontent.com/Seagate/cortx-utils/$CORTX_UTILS_BRANCH/py-utils/python_requirements.ext.txt
-                """
+                    pip3 install --no-cache-dir --trusted-host cortx-storage.colo.seagate.com -i http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/$python_deps/ -r https://raw.githubusercontent.com/$CORTX_UTILS_REPO_OWNER/cortx-utils/$CORTX_UTILS_BRANCH/py-utils/python_requirements.txt -r https://raw.githubusercontent.com/$CORTX_UTILS_REPO_OWNER/cortx-utils/$CORTX_UTILS_BRANCH/py-utils/python_requirements.ext.txt
+                '''
 
                 sh label: 'Install pyinstaller', script: """
                         pip3.6 install  pyinstaller==3.5

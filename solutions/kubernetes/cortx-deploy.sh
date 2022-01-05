@@ -134,6 +134,13 @@ function destroy-cluster(){
 }
 
 function io-test(){
+
+    if [ "$SOLUTION_CONFIG_TYPE" == manual ]; then
+        SOLUTION_CONFIG="$PWD/solution.yaml"
+        if [ -f '$SOLUTION_CONFIG' ]; then echo "file $SOLUTION_CONFIG not available..."; exit 1; fi
+    fi
+
+    validation
     generate_rsa_key
     nodes_setup
     	MASTER_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
