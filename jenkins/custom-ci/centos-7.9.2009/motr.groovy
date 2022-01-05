@@ -30,7 +30,7 @@ pipeline {
             name: 'MOTR_BUILD_MODE',
             choices: ['user-mode', 'kernel'],
             description: 'Build motr rpm using kernel or user-mode.'
-        )
+        	)
 		choice(
 			name: 'ENABLE_MOTR_DTM',
 			choices: ['yes', 'no'],
