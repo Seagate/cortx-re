@@ -71,7 +71,7 @@ pipeline {
         )
 	choice(
         	name: 'ENABLE_MOTR_DTM',
-                choices: ['yes', 'no'],
+                choices: ['no', 'yes'],
                 description: 'Build motr rpm using dtm mode.'
         )
 
