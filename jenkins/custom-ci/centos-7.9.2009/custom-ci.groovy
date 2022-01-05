@@ -69,6 +69,11 @@ pipeline {
             choices: ['no', 'yes'],
             description: 'Need ISO files'
         )
+	choice(
+        	name: 'ENABLE_MOTR_DTM',
+                choices: ['yes', 'no'],
+                description: 'Build motr rpm using dtm mode.'
+        )
 
     }
 
@@ -154,6 +159,7 @@ pipeline {
                                                         string(name: 'MOTR_URL', value: "${MOTR_URL}"),
                                                         string(name: 'MOTR_BRANCH', value: "${MOTR_BRANCH}"),
                                                         string(name: 'MOTR_BUILD_MODE', value: "${MOTR_BUILD_MODE}"),
+							string(name: 'ENABLE_MOTR_DTM', value: "${ENABLE_MOTR_DTM}"),
                                                         string(name: 'S3_URL', value: "${S3_URL}"),
                                                         string(name: 'S3_BRANCH', value: "${S3_BRANCH}"),
                                                         string(name: 'HARE_URL', value: "${HARE_URL}"),

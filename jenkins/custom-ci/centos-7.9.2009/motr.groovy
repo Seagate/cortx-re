@@ -31,6 +31,11 @@ pipeline {
             choices: ['user-mode', 'kernel'],
             description: 'Build motr rpm using kernel or user-mode.'
         )
+		choice(
+			name: 'ENABLE_MOTR_DTM',
+			choices: ['yes', 'no'],
+			description: 'Build motr rpm using dtm mode.'
+		)
 	}	
 
 	environment {
@@ -78,7 +83,9 @@ pipeline {
 						else
 							./configure --with-user-mode-only
 						fi
-						./configure --enable-dtm0
+						if [ "${ENABLE_MOTR_DTM}" == "yes" ]; then
+							./configure --enable-dtm0
+						fi
 						export build_number=${CUSTOM_CI_BUILD_ID}
 						make rpms
 					'''
