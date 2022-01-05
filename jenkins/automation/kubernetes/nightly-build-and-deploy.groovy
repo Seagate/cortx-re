@@ -102,6 +102,9 @@ pipeline {
                    echo \'y\' | docker image prune
                    docker pull $CORTX_IMAGE
 
+                   echo "\n RPM Build URL used for Nightly Image"
+                   docker inspect cortx-docker.colo.seagate.com/seagate/cortx-all:2.0.0-latest | jq -r '.[] | (.ContainerConfig.Cmd)' | grep 'BUILD_URL='
+
                    #Update VERSION details in RELEASE.INFO file
 
                    docker commit $(docker run -d ${CORTX_IMAGE} sed -i /VERSION/s/\\"2.0.0.*\\"/\\"${VERSION}-${BUILD_NUMBER}\\"/ /opt/seagate/cortx/RELEASE.INFO) ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}-${GITHUB_TAG_SUFFIX}
