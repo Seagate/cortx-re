@@ -70,23 +70,13 @@ pipeline {
 				dir('provisioner') {	
 					checkout([$class: 'GitSCM', branches: [[name: "${PROVISIONER_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${PROVISIONER_URL}", refspec: "${PROVISIONER_PR_REFSPEC}"]]])
             
-					sh encoding: 'utf-8', label: 'Provisioner RPMS', returnStdout: true, script: """
-					    echo -e "Building Provisioner RPM's"
-						sh ./devops/rpms/buildrpm.sh -g \$(git rev-parse --short HEAD) -e $VERSION -b ${BUILD_NUMBER}
-					"""
-					sh encoding: 'utf-8', label: 'Provisioner CLI RPMS', returnStdout: true, script: """
-						echo -e "Building Provisioner CLI RPM's"
-						sh ./cli/buildrpm.sh -g \$(git rev-parse --short HEAD) -e $VERSION -b ${BUILD_NUMBER}
-					"""
-				
-					sh encoding: 'UTF-8', label: 'api', script: '''
-					    echo -e "Setup Provisioner python API"
-						bash ./devops/rpms/api/build_python_api.sh -vv --out-dir /root/rpmbuild/RPMS/x86_64/ --pkg-ver ${BUILD_NUMBER}_git$(git rev-parse --short HEAD)
-					'''
-
-                    sh encoding: 'UTF-8', label: 'cortx-setup', script: '''
-                        bash ./devops/rpms/lr-cli/build_python_cortx_setup.sh -vv --out-dir /root/rpmbuild/RPMS/x86_64/ --pkg-ver ${BUILD_NUMBER}_git$(git rev-parse --short HEAD)
-                    '''
+					sh encoding: 'UTF-8', label: 'cortx-provisioner', script: '''
+                        if [ -f "./jenkins/build.sh" ]; then
+                            bash ./jenkins/build.sh -v 2.0.0 -b ${BUILD_NUMBER}
+                        else
+                            echo "cortx-provisioner package creation is not implemented"
+                        fi
+                '''
 
 					sh label: 'Repo Creation', script: '''mkdir -p $DESTINATION_RELEASE_LOCATION
 					    pushd $DESTINATION_RELEASE_LOCATION
