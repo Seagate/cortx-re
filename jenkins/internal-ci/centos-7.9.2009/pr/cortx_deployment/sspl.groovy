@@ -97,96 +97,97 @@ pipeline {
             }
         }
 
-                // Release cortx deployment stack
-        // stage('Release') {
-        //     steps {
-		// 		script { build_stage = env.STAGE_NAME }
+        // Release cortx deployment stack
+        stage('Release') {
+            when { expression { false } }
+            steps {
+				script { build_stage = env.STAGE_NAME }
 
-        //         dir('cortx-re') {
-        //             checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 1, honorRefspec: true, noTags: true, reference: '', shallow: true], [$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
-        //         }
+                dir('cortx-re') {
+                    checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 1, honorRefspec: true, noTags: true, reference: '', shallow: true], [$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
+                }
 
-        //         // Install tools required for release process
-        //         sh label: 'Installed Dependecies', script: '''
-        //             yum install -y expect rpm-sign rng-tools python3-pip
-        //             systemctl start rngd
-        //         '''
+                // Install tools required for release process
+                sh label: 'Installed Dependecies', script: '''
+                    yum install -y expect rpm-sign rng-tools python3-pip
+                    systemctl start rngd
+                '''
 
-        //         // Integrate components rpms
-        //         sh label: 'Collect Release Artifacts', script: '''
+                // Integrate components rpms
+                sh label: 'Collect Release Artifacts', script: '''
                     
-        //             rm -rf "${DESTINATION_RELEASE_LOCATION}"
-        //             mkdir -p "${DESTINATION_RELEASE_LOCATION}"
+                    rm -rf "${DESTINATION_RELEASE_LOCATION}"
+                    mkdir -p "${DESTINATION_RELEASE_LOCATION}"
 
-        //             if [[ ( ! -z `ls /root/rpmbuild/RPMS/x86_64/*.rpm `)]]; then
-        //                 mkdir -p "${CORTX_ISO_LOCATION}"
-        //                 cp /root/rpmbuild/RPMS/x86_64/*.rpm "${CORTX_ISO_LOCATION}"
-        //                 cp /root/rpmbuild/RPMS/noarch/*.rpm "${CORTX_ISO_LOCATION}"
-        //             else
-        //                 echo "RPM not exists !!!"
-        //                 exit 1
-        //             fi 
+                    if [[ ( ! -z `ls /root/rpmbuild/RPMS/x86_64/*.rpm `)]]; then
+                        mkdir -p "${CORTX_ISO_LOCATION}"
+                        cp /root/rpmbuild/RPMS/x86_64/*.rpm "${CORTX_ISO_LOCATION}"
+                        cp /root/rpmbuild/RPMS/noarch/*.rpm "${CORTX_ISO_LOCATION}"
+                    else
+                        echo "RPM not exists !!!"
+                        exit 1
+                    fi 
 
-        //             pushd ${COMPONENTS_RPM}
-        //                 for component in `ls -1 | grep -E -v "${COMPONENT_NAME}"`
-        //                 do
-        //                     echo -e "Copying RPM's for $component"
-        //                     if ls $component/last_successful/*.rpm 1> /dev/null 2>&1; then
-        //                         cp $component/last_successful/*.rpm "${CORTX_ISO_LOCATION}"
-        //                     fi
-        //                 done
-        //             popd
+                    pushd ${COMPONENTS_RPM}
+                        for component in `ls -1 | grep -E -v "${COMPONENT_NAME}"`
+                        do
+                            echo -e "Copying RPM's for $component"
+                            if ls $component/last_successful/*.rpm 1> /dev/null 2>&1; then
+                                cp $component/last_successful/*.rpm "${CORTX_ISO_LOCATION}"
+                            fi
+                        done
+                    popd
 
-        //             # Symlink 3rdparty repo artifacts
-        //             ln -s "${THIRD_PARTY_DEPS}" "${THIRD_PARTY_LOCATION}"
+                    # Symlink 3rdparty repo artifacts
+                    ln -s "${THIRD_PARTY_DEPS}" "${THIRD_PARTY_LOCATION}"
                         
-        //             # Symlink python dependencies
-        //             ln -s "${PYTHON_DEPS}" "${PYTHON_LIB_LOCATION}"
-        //         '''
+                    # Symlink python dependencies
+                    ln -s "${PYTHON_DEPS}" "${PYTHON_LIB_LOCATION}"
+                '''
 
-        //         sh label: 'RPM Signing', script: '''
-        //             pushd cortx-re/scripts/rpm-signing
-        //                 cat gpgoptions >>  ~/.rpmmacros
-        //                 sed -i 's/passphrase/'${PASSPHARASE}'/g' genkey-batch
-        //                 gpg --batch --gen-key genkey-batch
-        //                 gpg --export -a 'Seagate'  > RPM-GPG-KEY-Seagate
-        //                 rpm --import RPM-GPG-KEY-Seagate
-        //             popd
+                sh label: 'RPM Signing', script: '''
+                    pushd cortx-re/scripts/rpm-signing
+                        cat gpgoptions >>  ~/.rpmmacros
+                        sed -i 's/passphrase/'${PASSPHARASE}'/g' genkey-batch
+                        gpg --batch --gen-key genkey-batch
+                        gpg --export -a 'Seagate'  > RPM-GPG-KEY-Seagate
+                        rpm --import RPM-GPG-KEY-Seagate
+                    popd
 
-        //             pushd cortx-re/scripts/rpm-signing
-        //                 chmod +x rpm-sign.sh
-        //                 cp RPM-GPG-KEY-Seagate ${CORTX_ISO_LOCATION}
-        //                 for rpm in `ls -1 ${CORTX_ISO_LOCATION}/*.rpm`
-        //                 do
-        //                     ./rpm-sign.sh ${PASSPHARASE} ${rpm}
-        //                 done
-        //             popd
+                    pushd cortx-re/scripts/rpm-signing
+                        chmod +x rpm-sign.sh
+                        cp RPM-GPG-KEY-Seagate ${CORTX_ISO_LOCATION}
+                        for rpm in `ls -1 ${CORTX_ISO_LOCATION}/*.rpm`
+                        do
+                            ./rpm-sign.sh ${PASSPHARASE} ${rpm}
+                        done
+                    popd
 
-        //         '''
+                '''
                 
-        //         sh label: 'RPM Signing', script: '''
-        //             pushd ${CORTX_ISO_LOCATION}
-        //                 rpm -qi createrepo || yum install -y createrepo
-        //                 createrepo .
-        //             popd
-        //         '''	
+                sh label: 'RPM Signing', script: '''
+                    pushd ${CORTX_ISO_LOCATION}
+                        rpm -qi createrepo || yum install -y createrepo
+                        createrepo .
+                    popd
+                '''	
 
-        //         sh label: 'RPM Signing', script: '''
-        //             pushd cortx-re/scripts/release_support
-        //                 sh build_readme.sh "${DESTINATION_RELEASE_LOCATION}"
-        //                 sh build_release_info.sh -v ${VERSION} -l ${CORTX_ISO_LOCATION} -t ${THIRD_PARTY_LOCATION}
-        //             popd
+                sh label: 'RPM Signing', script: '''
+                    pushd cortx-re/scripts/release_support
+                        sh build_readme.sh "${DESTINATION_RELEASE_LOCATION}"
+                        sh build_release_info.sh -v ${VERSION} -l ${CORTX_ISO_LOCATION} -t ${THIRD_PARTY_LOCATION}
+                    popd
 
-        //             cp "${THIRD_PARTY_LOCATION}/THIRD_PARTY_RELEASE.INFO" "${DESTINATION_RELEASE_LOCATION}"
-        //             cp "${CORTX_ISO_LOCATION}/RELEASE.INFO" "${DESTINATION_RELEASE_LOCATION}"
+                    cp "${THIRD_PARTY_LOCATION}/THIRD_PARTY_RELEASE.INFO" "${DESTINATION_RELEASE_LOCATION}"
+                    cp "${CORTX_ISO_LOCATION}/RELEASE.INFO" "${DESTINATION_RELEASE_LOCATION}"
 
-        //             cp "${CORTX_ISO_LOCATION}/RELEASE.INFO" .
-        //         '''		
+                    cp "${CORTX_ISO_LOCATION}/RELEASE.INFO" .
+                '''		
 
-        //         archiveArtifacts artifacts: "RELEASE.INFO", onlyIfSuccessful: false, allowEmptyArchive: true
-        //     }
+                archiveArtifacts artifacts: "RELEASE.INFO", onlyIfSuccessful: false, allowEmptyArchive: true
+            }
 
-        // }
+        }
 
 	}
 
