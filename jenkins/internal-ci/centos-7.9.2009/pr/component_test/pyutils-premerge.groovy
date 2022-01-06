@@ -233,6 +233,7 @@ pipeline {
                     NODE_USER=$( cat server_info.txt | awk -F ' ' '{ print $2 }')
                     NODE_PASS=$( cat server_info.txt | awk -F ' ' '{ print $3 }')
                     yum install sshpass -y
+                    sshpass -p ${NODE_PASS} ssh -o StrictHostKeyChecking=no ${NODE_USER}@${NODE_HOST} 'kubectl exec $(kubectl get pods | grep "data-pod") --container cortx-motr-hax --  yum install http://cortx-storage.colo.seagate.com/releases/cortx/github/pr-build/${BRANCH}/${COMPONENT_NAME}/${BUILD_NUMBER}/cortx_iso/cortx-py-utils-test-1.0.0-1.noarch.rpm'
                     sshpass -p ${NODE_PASS} ssh -o StrictHostKeyChecking=no ${NODE_USER}@${NODE_HOST} 'kubectl exec $(kubectl get pods | grep "data-pod") --container cortx-motr-hax -- /opt/seagate/cortx/utils/bin/utils_setup test --config yaml:///etc/cortx/cluster.conf --plan sanity'
                 '''
                 
