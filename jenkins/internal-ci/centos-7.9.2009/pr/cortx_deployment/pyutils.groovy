@@ -168,7 +168,7 @@ pipeline {
                     cp "${THIRD_PARTY_LOCATION}/THIRD_PARTY_RELEASE.INFO" "${DESTINATION_RELEASE_LOCATION}"
                     cp "${CORTX_ISO_LOCATION}/RELEASE.INFO" "${DESTINATION_RELEASE_LOCATION}" 
                     
-		    cp "${CORTX_ISO_LOCATION}/RELEASE.INFO" .
+                    cp "${CORTX_ISO_LOCATION}/RELEASE.INFO" .
                 '''	
 
                 archiveArtifacts artifacts: "RELEASE.INFO", onlyIfSuccessful: false, allowEmptyArchive: true	
