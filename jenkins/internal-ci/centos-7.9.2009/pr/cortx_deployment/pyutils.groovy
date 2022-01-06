@@ -111,11 +111,13 @@ pipeline {
                     echo -e "Gathering all component RPM's and create release"
                     rm -rf "${DESTINATION_RELEASE_LOCATION}"
                     mkdir -p "${DESTINATION_RELEASE_LOCATION}"
+
                     mkdir -p "${CORTX_ISO_LOCATION}"
                     shopt -s extglob
                     ls
                     cp ./cortx_utils/py-utils/dist/!(*.src.rpm|*.tar.gz) "${CORTX_ISO_LOCATION}"
                     cp ./cortx_utils/statsd-utils/dist/rpmbuild/RPMS/x86_64/*.rpm "${CORTX_ISO_LOCATION}"
+
                     pushd ${COMPONENTS_RPM}
                         for component in `ls -1 | grep -E -v "${COMPONENT_NAME}"`
                         do
@@ -165,6 +167,7 @@ pipeline {
                     popd
                     cp "${THIRD_PARTY_LOCATION}/THIRD_PARTY_RELEASE.INFO" "${DESTINATION_RELEASE_LOCATION}"
                     cp "${CORTX_ISO_LOCATION}/RELEASE.INFO" "${DESTINATION_RELEASE_LOCATION}"
+                    
                     cp "${CORTX_ISO_LOCATION}/RELEASE.INFO" .
                 '''	
 
