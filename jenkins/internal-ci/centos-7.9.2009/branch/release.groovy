@@ -72,7 +72,7 @@ pipeline {
                     cp -n -r $integration_dir/$release_tag/dev/* $integration_dir/$release_tag/prod/
 
                     pushd $integration_dir/$release_tag/prod
-                        rm -rf cortx-[hlp]*-debuginfo-*.rpm
+                        rm -rf cortx-[lp]*-debuginfo-*.rpm
                         rm -f cortx-s3iamcli*.rpm
                         rm -f cortx-s3-test*.rpm
                     popd
