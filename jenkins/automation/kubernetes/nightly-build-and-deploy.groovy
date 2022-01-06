@@ -89,7 +89,7 @@ pipeline {
                    docker pull $CORTX_IMAGE
 
                    echo "\n RPM Build URL used for Nightly Image"
-                   docker inspect cortx-docker.colo.seagate.com/seagate/cortx-all:2.0.0-latest | jq -r '.[] | (.ContainerConfig.Cmd)' | grep 'BUILD_URL='
+                   docker inspect $CORTX_IMAGE | jq -r '.[] | (.ContainerConfig.Cmd)' | grep 'BUILD_URL='
 
                    #Update VERSION details in RELEASE.INFO file
 
