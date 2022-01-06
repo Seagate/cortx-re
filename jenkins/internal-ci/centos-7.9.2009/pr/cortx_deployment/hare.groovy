@@ -11,15 +11,13 @@ pipeline {
         skipDefaultCheckout()
         timeout(time: 180, unit: 'MINUTES')
         timestamps()
+        disableConcurrentBuilds()
         ansiColor('xterm')  
     }
 
     parameters {  
 	    string(name: 'HARE_URL', defaultValue: 'https://github.com/Seagate/cortx-hare', description: 'Repo for Hare')
-        string(name: 'HARE_BRANCH', defaultValue: 'main', description: 'Branch for Hare')
-        choice(name: 'DEBUG', choices: ["no", "yes" ], description: 'Keep Host for Debuging') 
-        string(name: 'HOST', defaultValue: '-', description: 'Host FQDN',  trim: true)
-        password(name: 'HOST_PASS', defaultValue: '-', description: 'Host machine root user password')     
+        string(name: 'HARE_BRANCH', defaultValue: 'main', description: 'Branch for Hare')     
 	}
 
     environment {
@@ -35,11 +33,11 @@ pipeline {
         HARE_PR_REFSPEC = "${ghprbPullId != null ? HARE_GPR_REFSPEC : HARE_BRANCH_REFSEPEC}"
 
         //////////////////////////////// BUILD VARS //////////////////////////////////////////////////
-        // OS_VERSION and COMPONENTS_BRANCH are manually created parameters in jenkins job.
+        // OS_VERSION , host and COMPONENTS_BRANCH are manually created parameters in jenkins job.
 
         COMPONENT_NAME = "hare".trim()
         BRANCH = "${ghprbTargetBranch != null ? ghprbTargetBranch : COMPONENTS_BRANCH}"
-        THIRD_PARTY_VERSION = "${OS_VERSION}-2.0.0-latest"
+        THIRD_PARTY_VERSION = "${OS_VERSION}-2.0.0-k8"
         VERSION = "2.0.0"
         RELEASE_TAG = "last_successful_prod"
         PASSPHARASE = credentials('rpm-sign-passphrase')
@@ -191,6 +189,7 @@ EOF
                     pushd cortx-re/scripts/release_support
                         sh build_readme.sh "${DESTINATION_RELEASE_LOCATION}"
                         sh build_release_info.sh -v ${VERSION} -l ${CORTX_ISO_LOCATION} -t ${THIRD_PARTY_LOCATION}
+                        sed -i -e 's/BRANCH:.*/BRANCH: "hare-pr"/g' ${CORTX_ISO_LOCATION}/RELEASE.INFO
                     popd
 
                     cp "${THIRD_PARTY_LOCATION}/THIRD_PARTY_RELEASE.INFO" "${DESTINATION_RELEASE_LOCATION}"
@@ -204,96 +203,45 @@ EOF
 
         }
 
-        // Deploy Cortx-Stack
-        stage('Deploy') {
-            agent { 
-                node { 
-                    label params.HOST == "-" ? "vm_deployment_1n_7_9 && !cleanup_req" : "vm_deployment_1n_user_host"
-                    customWorkspace "/var/jenkins/mini_provisioner/${JOB_NAME}_${BUILD_NUMBER}"
-                } 
-            }
-            when { expression { env.STAGE_DEPLOY == "yes" } }
-            environment {
-                // Credentials used to SSH node
-                NODE_DEFAULT_SSH_CRED =  credentials("${NODE_DEFAULT_SSH_CRED}")
-                NODE_USER = "${NODE_DEFAULT_SSH_CRED_USR}"
-                NODE1_HOST = "${HOST == '-' ? NODE1_HOST : HOST }"
-                NODES = "${NODE1_HOST}"
-                NODE_PASS = "${HOST_PASS == '-' ? NODE_DEFAULT_SSH_CRED_PSW : HOST_PASS}"
-
-                NODE_UN_PASS_CRED_ID = "mini-prov-change-pass"
-                SETUP_TYPE = "single"
-            }
+        stage ("Build CORTX-ALL image") {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
-
-                    // Cleanup Workspace
-                    cleanWs()
-
-                    markNodeforCleanup()
-
-                    manager.addHtmlBadge("&emsp;<b>Deployment Host :</b><a href='${JENKINS_URL}/computer/${env.NODE_NAME}'> ${NODE1_HOST}</a>&emsp;")
-
-                    // Run Deployment
-                    catchError {
-                        
-                        dir('cortx-re') {
-                            checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 1, honorRefspec: true, noTags: true, reference: '', shallow: true], [$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
-                        }
-
-                        runAnsible("00_PREPARE, 01_DEPLOY_PREREQ, 02_1_PRVSNR_BOOTSTRAP, 02_2_PLATFORM_SETUP, 02_3_PREREQ, 02_4_UTILS, 02_5_IO_PATH, 02_6_CONTROL_PATH, 02_7_HA, 02_DEPLOY_VALIDATE, 03_VALIDATE")
-
+                    try {
+                        def buildCortxAllImage = build job: '/Cortx-Kubernetes/cortx-all-docker-image', wait: true,
+                            parameters: [
+                                string(name: 'CORTX_RE_URL', value: "https://github.com/Seagate/cortx-re"),
+                                string(name: 'CORTX_RE_BRANCH', value: "main"),
+                                string(name: 'BUILD', value: "${CORTX_BUILD}"),
+                                string(name: 'GITHUB_PUSH', value: "yes"),
+                                string(name: 'TAG_LATEST', value: "no"),
+                                string(name: 'DOCKER_REGISTRY', value: "cortx-docker.colo.seagate.com"),
+                                string(name: 'EMAIL_RECIPIENTS', value: "DEBUG")
+                            ]
+                        env.cortx_all_image = buildCortxAllImage.buildVariables.image
+                    } catch (err) {
+                        build_stage = env.STAGE_NAME
+                        error "Failed to Build CORTX-ALL image"
                     }
-
-                    // Collect logs from test node
-                    catchError {
-
-                        sh label: 'download_log_files', returnStdout: true, script: """ 
-                        mkdir -p artifacts/srvnode1 
-                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/log/seagate/cortx/ha artifacts/srvnode1 &>/dev/null || true
-                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/log/cluster artifacts/srvnode1 &>/dev/null || true
-                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/log/pacemaker.log artifacts/srvnode1 &>/dev/null || true
-                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/log/pcsd/pcsd.log artifacts/srvnode1 &>/dev/null || true
-                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/log/seagate/provisioner artifacts/srvnode1 &>/dev/null || true
-                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/opt/seagate/cortx_configs/provisioner_cluster.json artifacts/srvnode1 &>/dev/null || true
-                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/var/lib/hare/cluster.yaml artifacts/srvnode1 &>/dev/null || true
-                        sshpass -p '${NODE_PASS}' scp -r -o StrictHostKeyChecking=no ${NODE_USER}@${NODE1_HOST}:/root/cortx_deployment artifacts/srvnode1 &>/dev/null || true
-                        """
-                        
-                        archiveArtifacts artifacts: "artifacts/**/*.*", onlyIfSuccessful: false, allowEmptyArchive: true 
-                    }
-
-                    hctlStatus = ""
-                    if ( fileExists('artifacts/srvnode1/cortx_deployment/log/hctl_status.log') && currentBuild.currentResult == "SUCCESS" ) {
-                        hctlStatus = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/hctl_status.log')
-                        MESSAGE = "Cortx Stack VM Deployment Success"
-                        ICON = "accept.gif"
-                        STATUS = "SUCCESS"
-                    } else {
-                        manager.buildFailure()
-                        MESSAGE = "Cortx Stack VM Deployment Failed"
-                        ICON = "error.gif"
-                        STATUS = "FAILURE"
-                    }
-
-                    hctlStatusHTML = "<textarea rows=20 cols=200 readonly style='margin: 0px; height: 392px; width: 843px;'>${hctlStatus}</textarea>"
-                    tableSummary = "<table border='1' cellspacing='0' cellpadding='0' width='400' align='left'> <tr> <td align='center'>Branch/Commit</td><td align='center'>${HARE_BRANCH}</td></tr><tr> <td align='center'>Deploy VM</td><td align='center'>${NODE1_HOST}</td></tr></table>"
-                    manager.createSummary("${ICON}").appendText("<h3>${MESSAGE}.</h3><p>Please check <a href=\"${BUILD_URL}/artifact/setup.log\">setup.log</a> for more info <br /><br /><h4>Test Details:</h4> ${tableSummary} <br /><br /><br /><h4>Cluster Status:${hctlStatusHTML}</h4> ", false, false, false, "red")
-
-                    if ( "${HOST}" == "-" ) {
-                        if ( "${DEBUG}" == "yes" ) {  
-                            markNodeOffline("Hare Debug Mode Enabled on This Host  - ${BUILD_URL}")
-                        } else {
-                            build job: 'Cortx-Automation/Deployment/VM-Cleanup', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${env.NODE_NAME}")]                    
-                        }
-                    }
-
-                    // Cleanup Workspace
-                    cleanWs()
                 }
             }
         }
+
+        stage ("Deploy") {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                script {
+                    build job: "K8s-1N-deployment", wait: true,
+                    parameters: [
+                        string(name: 'CORTX_RE_REPO', value: "https://github.com/Seagate/cortx-re/"),
+                        string(name: 'CORTX_RE_BRANCH', value: "main"),
+                        string(name: 'CORTX_IMAGE', value: "${env.cortx_all_image}"),
+                        string(name: 'hosts', value: "${host}")
+                    ]
+                }
+            }
+        }
+        
 	}
 
     post {
@@ -308,73 +256,4 @@ EOF
             }  
         }
     }
-}	
-
-// Method returns VM Host Information ( host, ssh cred)
-def getTestMachine(host, user, pass) {
-
-    def remote = [:]
-    remote.name = 'cortx'
-    remote.host = host
-    remote.user =  user
-    remote.password = pass
-    remote.allowAnyHosts = true
-    remote.fileTransfer = 'scp'
-    return remote
-}
-
-
-// Used Jenkins ansible plugin to execute ansible command
-def runAnsible(tags) {
-    
-    dir("cortx-re/scripts/deployment") {
-        ansiblePlaybook(
-            playbook: 'cortx_deploy_vm.yml',
-            inventory: 'inventories/vm_deployment/hosts_srvnodes',
-            tags: "${tags}",
-            extraVars: [
-                "HOST"          : [value: "${NODES}", hidden: false],
-                "CORTX_BUILD"   : [value: "${CORTX_BUILD}", hidden: false] ,
-                "CLUSTER_PASS"  : [value: "${NODE_PASS}", hidden: false],
-                "SETUP_TYPE"    : [value: "${SETUP_TYPE}", hidden: false],
-            ],
-            extras: '-v',
-            colorized: true
-        )
-    }
-}
-def markNodeforCleanup() {
-	nodeLabel = "cleanup_req"
-    node = getCurrentNode(env.NODE_NAME)
-	node.setLabelString(node.getLabelString() + " " + nodeLabel)
-	node.save()
-    node = null
-}
-
-def getCurrentNode(nodeName) {
-  for (node in Jenkins.instance.nodes) {
-      if (node.getNodeName() == nodeName) {
-        echo "Found node for $nodeName"
-        return node
-    }
-  }
-  throw new Exception("No node for $nodeName")
-}
-
-// Make failed node offline
-def markNodeOffline(message) {
-    node = getCurrentNode(env.NODE_NAME)
-    computer = node.toComputer()
-    computer.setTemporarilyOffline(true)
-    computer.doChangeOfflineCause(message)
-    computer = null
-    node = null
-}
-
-def getBuild(buildURL) {
-
-    buildID = sh(script: "curl -s  $buildURL/RELEASE.INFO  | grep BUILD | cut -d':' -f2 | tr -d '\"' | xargs", returnStdout: true).trim()
-    buildBranch = sh(script: "curl -s  $buildURL/RELEASE.INFO  | grep BRANCH | cut -d':' -f2 | tr -d '\"' | xargs", returnStdout: true).trim()
-
- return "$buildBranch#$buildID"   
 }
