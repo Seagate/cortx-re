@@ -98,18 +98,19 @@ pipeline {
 
                    docker tag ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}-${GITHUB_TAG_SUFFIX} ghcr.io/seagate/cortx-all:${VERSION}-latest-${GITHUB_TAG_SUFFIX}
 
-                   docker login ghcr.io -u ${GITHUB_CRED_USR} -p ${GITHUB_CRED_PSW}
+                   #docker login ghcr.io -u ${GITHUB_CRED_USR} -p ${GITHUB_CRED_PSW}
                    
-                   docker push ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}-${GITHUB_TAG_SUFFIX}
-                   docker push ghcr.io/seagate/cortx-all:${VERSION}-latest-${GITHUB_TAG_SUFFIX}
+                   #docker push ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}-${GITHUB_TAG_SUFFIX}
+                   #docker push ghcr.io/seagate/cortx-all:${VERSION}-latest-${GITHUB_TAG_SUFFIX}
                    
-                   docker rmi ghcr.io/seagate/cortx-all:${VERSION}-latest-${GITHUB_TAG_SUFFIX}
-                   docker rmi ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}-${GITHUB_TAG_SUFFIX}
+                   #docker rmi ghcr.io/seagate/cortx-all:${VERSION}-latest-${GITHUB_TAG_SUFFIX}
+                   #docker rmi ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}-${GITHUB_TAG_SUFFIX}
                 '''
            }
         }
 
         stage ("K8s QA Sanity") {
+            when { expression { false } }
             steps {
                 script {
                     catchError(stageResult: 'FAILURE') {
