@@ -166,8 +166,8 @@ pipeline {
                         sh build_readme.sh "${DESTINATION_RELEASE_LOCATION}"
                     popd
                     cp "${THIRD_PARTY_LOCATION}/THIRD_PARTY_RELEASE.INFO" "${DESTINATION_RELEASE_LOCATION}"
-                    cp "${CORTX_ISO_LOCATION}/RELEASE.INFO" "${DESTINATION_RELEASE_LOCATION}" 
-                    
+                    cp "${CORTX_ISO_LOCATION}/RELEASE.INFO" "${DESTINATION_RELEASE_LOCATION}"
+
                     cp "${CORTX_ISO_LOCATION}/RELEASE.INFO" .
                 '''	
 
