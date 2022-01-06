@@ -18,6 +18,9 @@ pipeline {
     parameters {  
 	    string(name: 'MOTR_URL', defaultValue: 'https://github.com/Seagate/cortx-motr', description: 'Repo for Motr')
         string(name: 'MOTR_BRANCH', defaultValue: 'main', description: 'Branch for Motr')
+        choice(name: 'DEPLOY_BUILD_ON_NODES', choices: ["Both", "1node", "3node" ], description: '''<pre>If you select Both then build will be deploy on 1 node as well as 3 node. If you select 1 node then build will be deploy on 1 node only. If you select 3 node then build will be deploy on 3 node only. 
+
+</pre>''')
 	}
 
     environment {
@@ -33,7 +36,7 @@ pipeline {
         MOTR_PR_REFSEPEC = "${ghprbPullId != null ? MOTR_GPR_REFSEPEC : MOTR_BRANCH_REFSEPEC}"
 
         //////////////////////////////// BUILD VARS //////////////////////////////////////////////////
-        // OS_VERSION, host and COMPONENTS_BRANCH are manually created parameters in jenkins job.
+        // OS_VERSION, 1node_host, 3node_hosts and COMPONENTS_BRANCH are manually created parameters in jenkins job.
 
         COMPONENT_NAME = "motr".trim()
         BRANCH = "${ghprbTargetBranch != null ? ghprbTargetBranch : COMPONENTS_BRANCH}"
@@ -259,7 +262,8 @@ EOF
             }
         }
 
-        stage ("Deploy") {
+        stage ("Deploy 1Node") {
+            when { expression { params.DEPLOY_BUILD_ON_NODES ==~ /Both|1node/ } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
@@ -268,10 +272,26 @@ EOF
                         string(name: 'CORTX_RE_REPO', value: "https://github.com/Seagate/cortx-re/"),
                         string(name: 'CORTX_RE_BRANCH', value: "main"),
                         string(name: 'CORTX_IMAGE', value: "${env.cortx_all_image}"),
-                        string(name: 'hosts', value: "${host}")
+                        string(name: 'hosts', value: "${1node_host}")
                     ]
                 }
             }
+        }
+	stage ("Deploy 3Node") {
+             when { expression { params.DEPLOY_BUILD_ON_NODES ==~ /Both|3node/ } }
+             steps {
+                  script { build_stage = env.STAGE_NAME }
+                  script {
+                       build job: 'K8s-3N-deployment', wait: true,
+                       parameters: [
+                              string(name: 'CORTX_RE_BRANCH', value: "main"),
+                              string(name: 'CORTX_RE_REPO', value: "https://github.com/Seagate/cortx-re/"),
+                              string(name: 'CORTX_IMAGE', value: "${env.cortx_all_image}"),
+                              text(name: 'hosts', value: "${3node_hosts}"),
+                              string(name: 'EMAIL_RECIPIENTS', value: "DEBUG"),
+                       ]
+                  }
+              }
         }
 	}
 
