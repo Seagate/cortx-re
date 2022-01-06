@@ -16,7 +16,9 @@ pipeline {
 
 
     parameters {  
-	    string(name: 'PY_UTILS_URL', defaultValue: 'https://github.com/Seagate/cortx-utils', description: 'Repo for Py-Utils Agent')
+	    string(name: 'CORTX_RE_URL', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repo for cortx-re')
+        string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch for cortx-re')
+        string(name: 'PY_UTILS_URL', defaultValue: 'https://github.com/Seagate/cortx-utils', description: 'Repo for Py-Utils Agent')
         string(name: 'PY_UTILS_BRANCH', defaultValue: 'main', description: 'Branch for Py-Utils Agent')     
         string(name: 'HOST', defaultValue: '-', description: 'Host=FQDN,user=USERNAME,pass=PASSWORD',  trim: true)
         string(name: 'COMPONENTS_BRANCH', defaultValue: 'main', description: 'Branch for other components',  trim: true)
@@ -189,8 +191,8 @@ pipeline {
                     try {
                         def buildCortxAllImage = build job: '/Cortx-Kubernetes/cortx-all-docker-image', wait: true,
                             parameters: [
-                                string(name: 'CORTX_RE_URL', value: "https://github.com/nikhilpatil2995/cortx-re-1"),
-                                string(name: 'CORTX_RE_BRANCH', value: "EOS-26792-py-utils-test-k8s"),
+                                string(name: 'CORTX_RE_URL', value: "${CORTX_RE_URL}"),
+                                string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
                                 string(name: 'BUILD', value: "${CORTX_BUILD}"),
                                 string(name: 'GITHUB_PUSH', value: "yes"),
                                 string(name: 'TAG_LATEST', value: "no"),
