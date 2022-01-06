@@ -36,7 +36,7 @@ pipeline {
         MOTR_PR_REFSEPEC = "${ghprbPullId != null ? MOTR_GPR_REFSEPEC : MOTR_BRANCH_REFSEPEC}"
 
         //////////////////////////////// BUILD VARS //////////////////////////////////////////////////
-        // OS_VERSION, 1node_host, 3node_hosts and COMPONENTS_BRANCH are manually created parameters in jenkins job.
+        // OS_VERSION, singlenode_host, multinode_hosts and COMPONENTS_BRANCH are manually created parameters in jenkins job.
 
         COMPONENT_NAME = "motr".trim()
         BRANCH = "${ghprbTargetBranch != null ? ghprbTargetBranch : COMPONENTS_BRANCH}"
@@ -272,7 +272,7 @@ EOF
                         string(name: 'CORTX_RE_REPO', value: "https://github.com/Seagate/cortx-re/"),
                         string(name: 'CORTX_RE_BRANCH', value: "main"),
                         string(name: 'CORTX_IMAGE', value: "${env.cortx_all_image}"),
-                        string(name: 'hosts', value: "${1node_host}")
+                        string(name: 'hosts', value: "${singlenode_host}")
                     ]
                 }
             }
@@ -287,7 +287,7 @@ EOF
                               string(name: 'CORTX_RE_BRANCH', value: "main"),
                               string(name: 'CORTX_RE_REPO', value: "https://github.com/Seagate/cortx-re/"),
                               string(name: 'CORTX_IMAGE', value: "${env.cortx_all_image}"),
-                              text(name: 'hosts', value: "${3node_hosts}"),
+                              text(name: 'hosts', value: "${multinode_hosts}"),
                               string(name: 'EMAIL_RECIPIENTS', value: "DEBUG"),
                        ]
                   }
