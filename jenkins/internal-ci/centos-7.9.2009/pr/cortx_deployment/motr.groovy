@@ -261,39 +261,42 @@ EOF
                 }
             }
         }
-
-        stage ("Deploy 1Node") {
-            when { expression { params.DEPLOY_BUILD_ON_NODES ==~ /Both|1node/ } }
-            steps {
-                script { build_stage = env.STAGE_NAME }
-                script {
-                    build job: "K8s-1N-deployment", wait: true,
-                    parameters: [
-                        string(name: 'CORTX_RE_REPO', value: "https://github.com/Seagate/cortx-re/"),
-                        string(name: 'CORTX_RE_BRANCH', value: "main"),
-                        string(name: 'CORTX_IMAGE', value: "${env.cortx_all_image}"),
-                        string(name: 'hosts', value: "${singlenode_host}")
-                    ]
+	stage ('Deploy Cortx Cluster') {
+             parallel {
+                  stage ("Deploy 1Node") {
+                       when { expression { params.DEPLOY_BUILD_ON_NODES ==~ /Both|1node/ } }
+                       steps {
+                             script { build_stage = env.STAGE_NAME }
+                             script {
+                                  build job: "K8s-1N-deployment", wait: true,
+                                  parameters: [
+                                       string(name: 'CORTX_RE_REPO', value: "https://github.com/Seagate/cortx-re/"),
+                                       string(name: 'CORTX_RE_BRANCH', value: "main"),
+                                       string(name: 'CORTX_IMAGE', value: "${env.cortx_all_image}"),
+                                       string(name: 'hosts', value: "${singlenode_host}")
+                                 ] 
+                             }
+                       }
                 }
-            }
+         	stage ("Deploy 3Node") {
+                     when { expression { params.DEPLOY_BUILD_ON_NODES ==~ /Both|3node/ } }
+                     steps {
+                          script { build_stage = env.STAGE_NAME }
+                          script {
+                                build job: 'K8s-3N-deployment', wait: true,
+                                parameters: [
+                                     string(name: 'CORTX_RE_BRANCH', value: "main"),
+                                     string(name: 'CORTX_RE_REPO', value: "https://github.com/Seagate/cortx-re/"),
+                                     string(name: 'CORTX_IMAGE', value: "${env.cortx_all_image}"),
+                                     text(name: 'hosts', value: "${multinode_hosts}"),
+                                     string(name: 'EMAIL_RECIPIENTS', value: "DEBUG"),
+                                ]
+                          }
+                      }
+                 } 
+             }
         }
-	stage ("Deploy 3Node") {
-             when { expression { params.DEPLOY_BUILD_ON_NODES ==~ /Both|3node/ } }
-             steps {
-                  script { build_stage = env.STAGE_NAME }
-                  script {
-                       build job: 'K8s-3N-deployment', wait: true,
-                       parameters: [
-                              string(name: 'CORTX_RE_BRANCH', value: "main"),
-                              string(name: 'CORTX_RE_REPO', value: "https://github.com/Seagate/cortx-re/"),
-                              string(name: 'CORTX_IMAGE', value: "${env.cortx_all_image}"),
-                              text(name: 'hosts', value: "${multinode_hosts}"),
-                              string(name: 'EMAIL_RECIPIENTS', value: "DEBUG"),
-                       ]
-                  }
-              }
-        }
-	}
+    }
 
     post {
         always {
