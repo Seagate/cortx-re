@@ -273,7 +273,7 @@ EOF
                                        string(name: 'CORTX_RE_REPO', value: "https://github.com/Seagate/cortx-re/"),
                                        string(name: 'CORTX_RE_BRANCH', value: "main"),
                                        string(name: 'CORTX_IMAGE', value: "${env.cortx_all_image}"),
-                                       string(name: 'hosts', value: "${1node_host}")
+                                       string(name: 'hosts', value: "${singlenode_host}")
                                  ] 
                              }
                        }
@@ -288,7 +288,7 @@ EOF
                                      string(name: 'CORTX_RE_BRANCH', value: "main"),
                                      string(name: 'CORTX_RE_REPO', value: "https://github.com/Seagate/cortx-re/"),
                                      string(name: 'CORTX_IMAGE', value: "${env.cortx_all_image}"),
-                                     text(name: 'hosts', value: "${3node_hosts}"),
+                                     text(name: 'hosts', value: "${threenode_hosts}"),
                                      string(name: 'EMAIL_RECIPIENTS', value: "DEBUG"),
                                 ]
                           }
