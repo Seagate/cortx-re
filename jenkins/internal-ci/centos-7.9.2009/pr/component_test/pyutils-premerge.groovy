@@ -238,8 +238,8 @@ pipeline {
                 }
             }
         }
-	}
-    
+    }
+
     post {
         always {
             script {
