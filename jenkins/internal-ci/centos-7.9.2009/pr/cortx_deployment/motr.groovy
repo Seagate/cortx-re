@@ -288,7 +288,6 @@ EOF
                                      string(name: 'CORTX_RE_REPO', value: "https://github.com/Seagate/cortx-re/"),
                                      string(name: 'CORTX_IMAGE', value: "${env.cortx_all_image}"),
                                      text(name: 'hosts', value: "${threenode_hosts}"),
-                                     string(name: 'EMAIL_RECIPIENTS', value: "DEBUG"),
                                 ]
                           }
                       }
