@@ -58,8 +58,38 @@ export TZ=$time_zone;ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ 
 
 pushd $clone_dir/clone
 
-wget -q $BUILD_LOCATION/$START_BUILD/dev/RELEASE.INFO -O start_build_manifest.txt
-wget -q $BUILD_LOCATION/$TARGET_BUILD/dev/RELEASE.INFO -O target_build_manifest.txt
+if [ -z $BUILD_LOCATION ]; then
+	NOT_DOCKER_IMAGE=$(echo "$START_BUILD"|grep RELEASE.INFO|wc -l)
+	if [ $NOT_DOCKER_IMAGE == "0" ]; then
+		docker pull "$START_BUILD"
+		firstfilecontainerid="$(docker run -it -d $START_BUILD bash)"
+		docker cp "$firstfilecontainerid":RELEASE.INFO start_build_manifest.txt
+		START_BUILD=$(cat start_build_manifest.txt |grep "BUILD:"|awk '{print $2}'|tr -d '"')
+		docker rm -f "$firstfilecontainerid"
+		docker pull "$TARGET_BUILD"
+		secondfilecontainerid=$(docker run -it -d $TARGET_BUILD bash)
+		docker cp "$secondfilecontainerid":RELEASE.INFO target_build_manifest.txt
+		TARGET_BUILD=$(cat target_build_manifest.txt |grep "BUILD:"|awk '{print $2}'|tr -d '"')
+		docker rm -f "$secondfilecontainerid"
+	else
+
+		wget -q $START_BUILD -O start_build_manifest.txt
+		if [ $? -ne 0 ]; then
+		    echo "ERROR:While downloading start build RELEASE INFO by wget command got failed for $START_BUILD"
+		    exit 1
+		fi
+		START_BUILD=$(echo "$START_BUILD"|awk -F "/" '{print $9}')
+		wget -q $TARGET_BUILD -O target_build_manifest.txt
+		if [ $? -ne 0 ]; then
+		    echo "ERROR:While downloading target build RELEASE INFO by wget command got failed $TARGET_BUILD"
+		    exit 1
+		fi
+	fi
+	TARGET_BUILD=$(echo "$TARGET_BUILD"|awk -F "/" '{print $9}')
+else
+	wget -q $BUILD_LOCATION/$START_BUILD/dev/RELEASE.INFO -O start_build_manifest.txt
+	wget -q $BUILD_LOCATION/$TARGET_BUILD/dev/RELEASE.INFO -O target_build_manifest.txt
+fi
 
 for component in "${!COMPONENT_LIST[@]}"
 do
