@@ -84,8 +84,8 @@ if [ -z $BUILD_LOCATION ]; then
 		    echo "ERROR:While downloading target build RELEASE INFO by wget command got failed $TARGET_BUILD"
 		    exit 1
 		fi
+		TARGET_BUILD=$(echo "$TARGET_BUILD"|awk -F "/" '{print $9}')
 	fi
-	TARGET_BUILD=$(echo "$TARGET_BUILD"|awk -F "/" '{print $9}')
 else
 	wget -q $BUILD_LOCATION/$START_BUILD/dev/RELEASE.INFO -O start_build_manifest.txt
 	wget -q $BUILD_LOCATION/$TARGET_BUILD/dev/RELEASE.INFO -O target_build_manifest.txt
