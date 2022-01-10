@@ -88,6 +88,36 @@ function update_solution_config(){
 
         sns=$SNS_CONFIG yq e -i '.solution.common.storage_sets.durability.sns = env(sns)' solution.yaml
         dix=$DIX_CONFIG yq e -i '.solution.common.storage_sets.durability.dix = env(dix)' solution.yaml
+        yq e -i '.solution.common.external_services.type = "LoadBalancer"' solution.yaml
+
+        yq e -i '.solution.common.resource_allocation.consul.server.storage = "10Gi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.consul.server.resources.requests.memory = "100Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.consul.server.resources.requests.cpu = "100m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.consul.server.resources.limits.memory = "300Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.consul.server.resources.limits.cpu = "100m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.consul.client.resources.requests.memory = "100Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.consul.client.resources.requests.cpu = "100m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.consul.client.resources.limits.memory = "300Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.consul.client.resources.limits.cpu = "100m"' solution.yaml
+
+        yq e -i '.solution.common.resource_allocation.openldap.resources.requests.memory = "1Gi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.openldap.resources.requests.cpu = 2' solution.yaml
+        yq e -i '.solution.common.resource_allocation.openldap.resources.limits.memory = "1Gi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.openldap.resources.limits.cpu = 2' solution.yaml
+
+        yq e -i '.solution.common.resource_allocation.zookeeper.storage_request_size = "8Gi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.zookeeper.data_log_dir_request_size = "8Gi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.zookeeper.resources.requests.memory = "256Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.zookeeper.resources.requests.cpu = "250m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.zookeeper.resources.limits.memory = "512Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.zookeeper.resources.limits.cpu = "500m"' solution.yaml
+
+        yq e -i '.solution.common.resource_allocation.kafka.storage_request_size = "8Gi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.kafka.log_persistence_request_size = "8Gi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.kafka.resources.requests.memory = "1Gi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.kafka.resources.requests.cpu = "250m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.kafka.resources.limits.memory = "2Gi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.kafka.resources.limits.cpu = 1' solution.yaml
 
         yq e -i '.solution.storage.cvg1.name = "cvg-01"' solution.yaml
         yq e -i '.solution.storage.cvg1.type = "ios"' solution.yaml
@@ -191,6 +221,8 @@ function openldap_requiremenrs(){
 }
 
 function execute_prereq(){
+    echo "Pulling latest CORTX-ALL image"
+    docker pull $CORTX_IMAGE || echo "Failed to pull $CORTX_IMAGE"
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         findmnt $SYSTEM_DRIVE && umount -l $SYSTEM_DRIVE
         ./prereq-deploy-cortx-cloud.sh $SYSTEM_DRIVE
@@ -246,31 +278,37 @@ echo "---------------------------------------[ Setting up Worker Node on $HOSTNA
 }
 
 function destroy(){
-    pushd $SCRIPT_LOCATION/k8_cortx_cloud
-        chmod +x *.sh
-        ./destroy-cortx-cloud.sh
-    popd
-    findmnt $SYSTEM_DRIVE && umount -l $SYSTEM_DRIVE    
-    files_to_remove=(
-        "/mnt/fs-local-volume/"
-        "/root/deploy-scripts/"
-        "/root/get_helm.sh"
-        "/root/calico*"
-        "/root/.cache"
-        "/root/.config"
-        "/root/install.postnochroot.log"
-        "/root/original-ks.cfg"
-        "/etc/pip.conf"
-    )
-    for file in ${files_to_remove[@]}; do
-        if [ -f "$file" ] || [ -d "$file" ]; then
-            echo "Removing file/folder $file"
-            rm -rf $file
-        fi
-    done
+   if [ "$(/usr/bin/kubectl get pods --no-headers | wc -l)" -gt 0 ]; then 
+        pushd "$SCRIPT_LOCATION"/k8_cortx_cloud || echo "CORTX Deploy Scripts are not available on system"
+            chmod +x *.sh
+            ./destroy-cortx-cloud.sh
+        popd || exit
+        findmnt "$SYSTEM_DRIVE" && umount -l "$SYSTEM_DRIVE"
+        files_to_remove=(
+            "/mnt/fs-local-volume/"
+            "/root/deploy-scripts/"
+            "/root/get_helm.sh"
+            "/root/calico*"
+            "/root/.cache"
+            "/root/.config"
+            "/root/install.postnochroot.log"
+            "/root/original-ks.cfg"
+            "/etc/pip.conf"
+        )
+        for file in "${files_to_remove[@]}"; do
+            if [ -f "$file" ] || [ -d "$file" ]; then
+                echo "Removing file/folder $file"
+                rm -rf "$file"
+            fi
+        done
+    else 
+        echo "CORTX Cluster is not already deployed"
+    fi
 }
 
 function print_pod_status(){
+echo "------------------------------------[ Image Details ]--------------------------------------"
+      kubectl get pods -o jsonpath="{.items[*].spec.containers[*].image}" | tr ' ' '\n' | uniq 
 echo "---------------------------------------[ POD Status ]--------------------------------------"
     if ! kubectl get pods | grep -v STATUS | awk '{ print $3}' |  grep -v -q -i running; then
       kubectl get pods -o wide
