@@ -20,8 +20,8 @@
 
 set -eo pipefail
 
-SCRIPT_LOCATION="/root/deploy-scripts"
-PRVSNR_SCRIPTS="cortx-prvsnr/test/deploy/kubernetes"
+SCRIPT_LOCATION="/root/deploy-scripts/cortx-prvsnr"
+PRVSNR_SCRIPTS="test/deploy/kubernetes"
 
 function usage(){
     cat << HEREDOC
