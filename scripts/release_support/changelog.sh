@@ -41,7 +41,7 @@ declare -A COMPONENT_LIST=(
 [cortx-motr]="https://github.com/Seagate/cortx-motr.git"
 [cortx-hare]="https://github.com/Seagate/cortx-hare.git"
 [cortx-ha]="https://github.com/Seagate/cortx-ha.git"
-[cortx-prvsnr]="https://github.com/Seagate/cortx-prvsnr.git"
+[cortx-provisioner]="https://github.com/Seagate/cortx-prvsnr.git"
 [cortx-sspl]="https://github.com/Seagate/cortx-sspl.git"
 [cortx-csm_agent]="https://github.com/Seagate/cortx-manager.git"
 [cortx-csm_web]="https://github.com/Seagate/cortx-management-portal.git"
@@ -62,15 +62,11 @@ if [ -z $BUILD_LOCATION ]; then
 	NOT_DOCKER_IMAGE=$(echo "$START_BUILD"|grep RELEASE.INFO|wc -l)
 	if [ $NOT_DOCKER_IMAGE == "0" ]; then
 		docker pull "$START_BUILD"
-		firstfilecontainerid="$(docker run -it -d $START_BUILD bash)"
-		docker cp "$firstfilecontainerid":RELEASE.INFO start_build_manifest.txt
-		START_BUILD=$(grep "BUILD:" start_build_manifest.txt| awk '{print $2}'|tr -d '"')
-		docker rm -f "$firstfilecontainerid"
+		docker run --rm "$START_BUILD" cat /RELEASE.INFO > start_build_manifest.txt
 		docker pull "$TARGET_BUILD"
-		secondfilecontainerid=$(docker run -it -d $TARGET_BUILD bash)
-		docker cp "$secondfilecontainerid":RELEASE.INFO target_build_manifest.txt
+		docker run --rm "$TARGET_BUILD" cat /RELEASE.INFO > start_build_manifest.txt
+		START_BUILD=$(grep "BUILD:" start_build_manifest.txt| awk '{print $2}'|tr -d '"')
 		TARGET_BUILD=$(grep "BUILD:" target_build_manifest.txt| awk '{print $2}'|tr -d '"')
-		docker rm -f "$secondfilecontainerid"
 	else
 
 		wget -q $START_BUILD -O start_build_manifest.txt
@@ -109,7 +105,7 @@ do
                 elif [ "$component" == "cortx-csm_agent" ] || [ "$component" == "cortx-csm_web" ]; then
                         start_hash=$(grep "$component-" start_build_manifest.txt | head -1 | awk -F['_'] '{print $3}' |  cut -d. -f1); echo "$start_hash"
                         target_hash=$(grep "$component-" target_build_manifest.txt | head -1 | awk -F['_'] '{print $3}' |  cut -d. -f1); echo "$target_hash"
-                elif [ "$component" == "cortx-prvsnr" ]; then
+                elif [ "$component" == "cortx-provisioner" ]; then
                         start_hash=$(grep "$component-" start_build_manifest.txt | tail -1 | awk -F['_'] '{print $2}' | sed 's/git//g' | cut -d. -f1); echo "$start_hash"
                         target_hash=$(grep "$component-" target_build_manifest.txt | tail -1 | awk -F['_'] '{print $2}' | sed 's/git//g' | cut -d. -f1); echo "$target_hash"
                 else
