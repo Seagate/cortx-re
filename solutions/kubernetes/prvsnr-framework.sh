@@ -57,7 +57,7 @@ function setup_cluster(){
         done
 
     if [ "$(wc -l < $HOST_FILE)" == "1" ]; then
-       echo "---------------------------------------[ Single node deployment ]----------------------------------"
+       add_separator Single node deployment
        echo "NODE:" $MASTER_NODE
        ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" "export CORTX_IMAGE=$CORTX_IMAGE && export CORTX_PRVSNR_REPO=$CORTX_PRVSNR_REPO && export CORTX_PRVSNR_BRANCH=$CORTX_PRVSNR_BRANCH && /var/tmp/prvsnr-framework-functions.sh --setup-master"
     else
@@ -72,7 +72,7 @@ kubectl get nodes -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints[?
 EOF
 )
        NODES="$((NODES-TAINTED_NODES))"
-       echo "---------------------------------------[ $NODES node deployment ]----------------------------------"
+       add_separator $NODES node deployment
        echo "MASTER NODE:" $MASTER_NODE
        echo "WORKER NODE:" $WORKER_NODES
        echo $WORKER_NODES > /var/tmp/pdsh-hosts
@@ -103,7 +103,7 @@ function upgrade_cluster(){
     nodes_setup
 
 	MASTER_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
-	echo "---------------------------------------[ Upgrading cluster from $MASTER_NODE ]----------------------------------------------"
+	add_separator Upgrading cluster from $MASTER_NODE
         scp -q cortx-deploy-functions.sh prvsnr-framework-functions.sh "$MASTER_NODE":/var/tmp/
         ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" "export CORTX_PRVSNR_REPO=$CORTX_PRVSNR_REPO && export CORTX_PRVSNR_BRANCH=$CORTX_PRVSNR_BRANCH && /var/tmp/prvsnr-framework-functions.sh --upgrade"
         echo "--------------------------------[ Print Cluster Status after Upgrade ]----------------------------------------------"
@@ -122,7 +122,7 @@ function destroy_cluster(){
     nodes_setup
 
 	MASTER_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
-	echo "---------------------------------------[ Destroying cluster from $MASTER_NODE ]----------------------------------------------"
+	add_separator Destroying cluster from $MASTER_NODE
         scp -q  prvsnr-framework-functions.sh "$MASTER_NODE":/var/tmp/
         ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" "export CORTX_PRVSNR_REPO=$CORTX_PRVSNR_REPO && export CORTX_PRVSNR_BRANCH=$CORTX_PRVSNR_BRANCH && /var/tmp/prvsnr-framework-functions.sh --destroy"
         echo "--------------------------------[ Print Kubernetes Cluster Status after Cleanup]----------------------------------------------"
