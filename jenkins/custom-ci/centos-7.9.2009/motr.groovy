@@ -30,7 +30,12 @@ pipeline {
             name: 'MOTR_BUILD_MODE',
             choices: ['user-mode', 'kernel'],
             description: 'Build motr rpm using kernel or user-mode.'
-        )
+        	)
+		choice(
+			name: 'ENABLE_MOTR_DTM',
+			choices: ['no', 'yes'],
+			description: 'Build motr rpm using dtm mode.'
+		)
 	}	
 
 	environment {
@@ -74,9 +79,17 @@ pipeline {
 						./autogen.sh
 						if [ "${MOTR_BUILD_MODE}" == "kernel" ]; then
 							KERNEL=/lib/modules/$(yum list installed kernel | tail -n1 | awk '{ print $2 }').x86_64/build
-							./configure --with-linux=$KERNEL
+							if [ "${ENABLE_MOTR_DTM}" == "yes" ]; then
+								./configure --with-linux=$KERNEL --enable-dtm0
+							else
+								./configure --with-linux=$KERNEL
+							fi
 						else
-							./configure --with-user-mode-only
+							if [ "${ENABLE_MOTR_DTM}" == "yes" ]; then
+								./configure --with-user-mode-only --enable-dtm0
+							else
+								./configure --with-user-mode-only
+							fi
 						fi
 						export build_number=${CUSTOM_CI_BUILD_ID}
 						make rpms
