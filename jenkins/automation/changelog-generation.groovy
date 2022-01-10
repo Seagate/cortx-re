@@ -34,7 +34,7 @@ pipeline {
                         cp /root/git_build_checkin_stats/clone/git-build-checkin-report.txt CHANGESET.txt 
                     """
                 }   
-			}
+		}
 		}
 		
 	}
