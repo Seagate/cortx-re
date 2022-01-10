@@ -34,10 +34,11 @@ pipeline {
                 sh label: 'Build', script: '''
 
                 rm -rf /mnt/rgw-build/rpmbuild/SOURCES/ceph*.tar.bz2
+                rm -rf  /mnt/rgw-build/rpmbuild/BUILD/ceph*
 
                 pushd ceph
                     sed -i 's/centos|/rocky|centos|/' install-deps.sh
-                    ./install-deps.sh
+                    #./install-deps.sh
                     ./make-dist
                     mv ceph*.tar.bz2 /mnt/rgw-build/rpmbuild/SOURCES/
                     mkdir -p /mnt/rgw-build/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
@@ -45,9 +46,7 @@ pipeline {
                 popd
 
                 pushd /mnt/rgw-build/rpmbuild/
-                    sed -i '/Requires.*ceph-mon/d' ./SPECS/ceph.spec
-                    sed -i '/Requires.*ceph-mgr/d' ./SPECS/ceph.spec
-                    rpmbuild --define "debug_package %{nil}" --without cmake_verbose_logging --without jaeger --without lttng --without seastar --without kafka_endpoint --without zbd --without cephfs_java --without cephfs_shell --without ocf --without selinux --without ceph_test_package --without make_check --define "_binary_payload w2T16.xzdio" --define "_topdir `pwd`" -ba ./SPECS/ceph.spec
+                     rpmbuild --define "_unpackaged_files_terminate_build 0" --define "build_type rgw" --define "debug_package %{nil}" --without prometheus-alerts --without grafana-dashboards --without  mgr-dashboard --without cmake_verbose_logging --without jaeger --without lttng --without seastar --without kafka_endpoint --without zbd --without cephfs_java --without cephfs_shell --without ocf --without selinux --without ceph_test_package --without make_check --define "_binary_payload w2T16.xzdio" --define "_topdir `pwd`" -ba ./SPECS/ceph.spec
                 popd
             '''    
             }
