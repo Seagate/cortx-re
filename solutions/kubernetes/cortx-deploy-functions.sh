@@ -137,6 +137,11 @@ function update_solution_config(){
         yq e -i '.solution.storage.cvg2.devices.data.d2.device = "/dev/sdh"' solution.yaml
         yq e -i '.solution.storage.cvg2.devices.data.d2.size = "5Gi"' solution.yaml
     popd
+
+    echo "---------------------------------------[ ADDING QUICKFIX FOR UDX-7070 ]--------------------------------------"
+    pushd $SCRIPT_LOCATION/k8_cortx_cloud/cortx-cloud-helm-pkg/cortx-configmap/templates
+        yq e -i '.cortx.common.setup_size = "small"' config-template.yaml
+    popd
 }        
 
 
@@ -325,9 +330,9 @@ echo "---------------------------------------[ hctl status ]--------------------
     SECONDS=0
     date
     while [[ SECONDS -lt 1200 ]] ; do
-        if kubectl exec -it $(kubectl get pods | awk '/cortx-data/{print $1; exit}') -c cortx-hax -- hctl status > /dev/null ; then
-                if ! kubectl exec -it $(kubectl get pods | awk '/cortx-data/{print $1; exit}') -c cortx-hax -- hctl status| grep -q -E 'unknown|offline|failed'; then
-                    kubectl exec -it $(kubectl get pods | awk '/cortx-data/{print $1; exit}') -c cortx-hax -- hctl status
+        if kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-hax -- hctl status > /dev/null ; then
+                if ! kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-hax -- hctl status| grep -q -E 'unknown|offline|failed'; then
+                    kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-hax -- hctl status
                     echo "-----------[ Time taken for service to start $((SECONDS/60)) mins ]--------------------"
                     exit 0
                 else
