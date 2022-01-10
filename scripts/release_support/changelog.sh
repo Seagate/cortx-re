@@ -64,7 +64,7 @@ if [ -z $BUILD_LOCATION ]; then
 		docker pull "$START_BUILD"
 		docker run --rm "$START_BUILD" cat /RELEASE.INFO > start_build_manifest.txt
 		docker pull "$TARGET_BUILD"
-		docker run --rm "$TARGET_BUILD" cat /RELEASE.INFO > start_build_manifest.txt
+		docker run --rm "$TARGET_BUILD" cat /RELEASE.INFO > target_build_manifest.txt
 		START_BUILD=$(grep "BUILD:" start_build_manifest.txt| awk '{print $2}'|tr -d '"')
 		TARGET_BUILD=$(grep "BUILD:" target_build_manifest.txt| awk '{print $2}'|tr -d '"')
 	else
