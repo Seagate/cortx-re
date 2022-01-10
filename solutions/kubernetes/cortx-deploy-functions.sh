@@ -137,6 +137,13 @@ function update_solution_config(){
         yq e -i '.solution.storage.cvg2.devices.data.d2.device = "/dev/sdh"' solution.yaml
         yq e -i '.solution.storage.cvg2.devices.data.d2.size = "5Gi"' solution.yaml
     popd
+
+    echo "---------------------------------------[ ADDING QUICKFIX FOR UDX-7070 ]--------------------------------------"
+    echo "Replacing setup_size in $SCRIPT_LOCATION/k8_cortx_cloud/cortx-cloud-helm-pkg/cortx-configmap/templates/config-template.yaml from large to small."
+    echo "This fix is only for Release v0.0.18 and is to be removed on next release."
+    pushd $SCRIPT_LOCATION/k8_cortx_cloud/cortx-cloud-helm-pkg/cortx-configmap/templates
+        sed -i 's/large/small/g' config-template.yaml
+    popd
 }        
 
 
@@ -147,6 +154,9 @@ pushd $SCRIPT_LOCATION/k8_cortx_cloud
     image=$CORTX_IMAGE yq e -i '.solution.images.cortxcontrol = env(image)' solution.yaml	
     image=$CORTX_IMAGE yq e -i '.solution.images.cortxdataprov = env(image)' solution.yaml
     image=$CORTX_IMAGE yq e -i '.solution.images.cortxdata = env(image)' solution.yaml
+    image=$CORTX_IMAGE yq e -i '.solution.images.cortxserver = env(image)' solution.yaml
+    image=$CORTX_IMAGE yq e -i '.solution.images.cortxha = env(image)' solution.yaml
+    image=$CORTX_IMAGE yq e -i '.solution.images.cortxclient = env(image)' solution.yaml
 popd 
 }
 
@@ -322,9 +332,9 @@ echo "---------------------------------------[ hctl status ]--------------------
     SECONDS=0
     date
     while [[ SECONDS -lt 1200 ]] ; do
-        if kubectl exec -it $(kubectl get pods | awk '/cortx-data-pod/{print $1; exit}') -c cortx-motr-hax -- hctl status > /dev/null ; then
-                if ! kubectl exec -it $(kubectl get pods | awk '/cortx-data-pod/{print $1; exit}') -c cortx-motr-hax -- hctl status| grep -q -E 'unknown|offline|failed'; then
-                    kubectl exec -it $(kubectl get pods | awk '/cortx-data-pod/{print $1; exit}') -c cortx-motr-hax -- hctl status
+        if kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-hax -- hctl status > /dev/null ; then
+                if ! kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-hax -- hctl status| grep -q -E 'unknown|offline|failed'; then
+                    kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-hax -- hctl status
                     echo "-----------[ Time taken for service to start $((SECONDS/60)) mins ]--------------------"
                     exit 0
                 else
