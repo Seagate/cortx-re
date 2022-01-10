@@ -39,11 +39,6 @@ function pdsh_worker_exec {
 }
 
 function setup_cluster(){
-    if [ "$SOLUTION_CONFIG_TYPE" == manual ]; then
-        SOLUTION_CONFIG="$PWD/solution.yaml"
-        if [ -f '$SOLUTION_CONFIG' ]; then echo "file $SOLUTION_CONFIG not available..."; exit 1; fi
-    fi
-
     validation
     generate_rsa_key
     nodes_setup
@@ -93,11 +88,6 @@ EOF
 }
 
 function upgrade_cluster(){
-    if [ "$SOLUTION_CONFIG_TYPE" == manual ]; then
-        SOLUTION_CONFIG="$PWD/solution.yaml"
-        if [ -f '$SOLUTION_CONFIG' ]; then echo "file $SOLUTION_CONFIG not available..."; exit 1; fi
-    fi
-
     validation
     generate_rsa_key
     nodes_setup
@@ -112,11 +102,6 @@ function upgrade_cluster(){
 }
 
 function destroy_cluster(){
-    if [ "$SOLUTION_CONFIG_TYPE" == manual ]; then
-        SOLUTION_CONFIG="$PWD/solution.yaml"
-        if [ -f '$SOLUTION_CONFIG' ]; then echo "file $SOLUTION_CONFIG not available..."; exit 1; fi
-    fi
-
     validation
     generate_rsa_key
     nodes_setup

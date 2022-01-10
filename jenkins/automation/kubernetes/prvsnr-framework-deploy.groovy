@@ -47,6 +47,7 @@ pipeline {
                         export CORTX_PRVSNR_BRANCH=${CORTX_PRVSNR_BRANCH}
                         export CORTX_PRVSNR_REPO=${CORTX_PRVSNR_REPO}
                         export CORTX_IMAGE=${CORTX_IMAGE}
+                        export SOLUTION_CONFIG_TYPE=automated
                         ./prvsnr-framework.sh --destroy-cluster
                     popd
                 '''
@@ -61,6 +62,7 @@ pipeline {
                         export CORTX_PRVSNR_BRANCH=${CORTX_PRVSNR_BRANCH}
                         export CORTX_PRVSNR_REPO=${CORTX_PRVSNR_REPO}
                         export CORTX_IMAGE=${CORTX_IMAGE}
+                        export SOLUTION_CONFIG_TYPE=automated
                         ./prvsnr-framework.sh --deploy-cluster
                     popd
                 '''
