@@ -23,6 +23,17 @@ set -eo pipefail
 SCRIPT_LOCATION="/root/deploy-scripts"
 PRVSNR_SCRIPTS="cortx-prvsnr/test/deploy/kubernetes"
 
+function usage(){
+    cat << HEREDOC
+Usage : $0 [--setup-master, --setup-worker, --upgrade, --destroy]
+where,
+    --setup-master - Setup master node for CORTX deployment
+    --setup-worker - Setup worker node for CORTX deployment
+    --upgrade - Upgrade CORTX cluster
+    --destroy  - Destroy CORTX cluster
+HEREDOC
+}
+
 function download_prvsnr_script(){
     if [ -z "$SCRIPT_LOCATION" ]; then echo "SCRIPT_LOCATION not provided.Exiting..."; exit 1; fi
     if [ -z "$CORTX_PRVSNR_REPO" ]; then echo "CORTX_PRVSNR_REPO not provided.Exiting..."; exit 1; fi

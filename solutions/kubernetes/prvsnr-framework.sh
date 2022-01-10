@@ -22,6 +22,20 @@ set -eo pipefail
 
 source functions.sh
 
+HOST_FILE=$PWD/hosts
+SSH_KEY_FILE=/root/.ssh/id_rsa
+
+function usage(){
+    cat << HEREDOC
+Usage : $0 [--deploy-cluster, --upgrade-cluster, --destroy-cluster]
+where,
+    --deploy-cluster - Deploy CORTX cluster
+    --upgrade-cluster - Upgrade CORTX cluster
+    --destroy-cluster  - Destroy CORTX cluster
+HEREDOC
+}
+
+
 function check_params {
     if [ -z "$CORTX_PRVSNR_REPO" ]; then echo "CORTX_PRVVSNR_REPO not provided.Exiting..."; exit 1; fi
     if [ -z "$CORTX_PRVSNR_BRANCH" ]; then echo "CORTX_PRVSNR_BRANCH not provided.Exiting..."; exit 1; fi
