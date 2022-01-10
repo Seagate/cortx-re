@@ -147,6 +147,9 @@ pushd $SCRIPT_LOCATION/k8_cortx_cloud
     image=$CORTX_IMAGE yq e -i '.solution.images.cortxcontrol = env(image)' solution.yaml	
     image=$CORTX_IMAGE yq e -i '.solution.images.cortxdataprov = env(image)' solution.yaml
     image=$CORTX_IMAGE yq e -i '.solution.images.cortxdata = env(image)' solution.yaml
+    image=$CORTX_IMAGE yq e -i '.solution.images.cortxserver = env(image)' solution.yaml
+    image=$CORTX_IMAGE yq e -i '.solution.images.cortxha = env(image)' solution.yaml
+    image=$CORTX_IMAGE yq e -i '.solution.images.cortxclient = env(image)' solution.yaml
 popd 
 }
 
