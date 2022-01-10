@@ -38,7 +38,7 @@ if ! which aws; then
   exit 1
 fi
 
-CORTX_IO_SVC=$(kubectl get pods -o wide | grep cortx-data-pod | awk '{print $6}' | head -1)
+CORTX_IO_SVC=$(kubectl get pods -o wide | grep cortx-server | awk '{print $6}' | head -1)
 echo "$CORTX_IO_SVC s3.seagate.com iam.seagate.com" >> /etc/hosts
 
 mkdir -p /var/log/cortx/auth
