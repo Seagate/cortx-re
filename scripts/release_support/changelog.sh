@@ -64,12 +64,12 @@ if [ -z $BUILD_LOCATION ]; then
 		docker pull "$START_BUILD"
 		firstfilecontainerid="$(docker run -it -d $START_BUILD bash)"
 		docker cp "$firstfilecontainerid":RELEASE.INFO start_build_manifest.txt
-		START_BUILD=$(cat start_build_manifest.txt |grep "BUILD:"|awk '{print $2}'|tr -d '"')
+		START_BUILD=$(grep "BUILD:" start_build_manifest.txt| awk '{print $2}'|tr -d '"')
 		docker rm -f "$firstfilecontainerid"
 		docker pull "$TARGET_BUILD"
 		secondfilecontainerid=$(docker run -it -d $TARGET_BUILD bash)
 		docker cp "$secondfilecontainerid":RELEASE.INFO target_build_manifest.txt
-		TARGET_BUILD=$(cat target_build_manifest.txt |grep "BUILD:"|awk '{print $2}'|tr -d '"')
+		TARGET_BUILD=$(grep "BUILD:" target_build_manifest.txt| awk '{print $2}'|tr -d '"')
 		docker rm -f "$secondfilecontainerid"
 	else
 
