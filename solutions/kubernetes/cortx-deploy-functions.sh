@@ -139,8 +139,10 @@ function update_solution_config(){
     popd
 
     echo "---------------------------------------[ ADDING QUICKFIX FOR UDX-7070 ]--------------------------------------"
+    echo "Replacing setup_size in $SCRIPT_LOCATION/k8_cortx_cloud/cortx-cloud-helm-pkg/cortx-configmap/templates/config-template.yaml from large to small."
+    echo "This fix is only for Release v0.0.18 and is to be removed on next release."
     pushd $SCRIPT_LOCATION/k8_cortx_cloud/cortx-cloud-helm-pkg/cortx-configmap/templates
-        yq e -i '.cortx.common.setup_size = "small"' config-template.yaml
+        sed -i 's/large/small/g' config-template.yaml
     popd
 }        
 
