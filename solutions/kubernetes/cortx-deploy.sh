@@ -143,13 +143,13 @@ function io-test(){
     validation
     generate_rsa_key
     nodes_setup
-    	MASTER_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+    MASTER_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
     for master_node in $MASTER_NODE
         do
         # IO test
         add_separator Setting up IO testing
         scp -q io-testing.sh s3-client-setup.sh "$master_node":/var/tmp/
-        ssh -o 'StrictHostKeyChecking=no' "$master_node" '/var/tmp/cortx-deploy-functions.sh --io-test'
+        ssh -o 'StrictHostKeyChecking=no' "$master_node" "export DEPLOYMENT_TYPE=$DEPLOYMENT_TYPE && /var/tmp/cortx-deploy-functions.sh --io-test"
         done
 }
 

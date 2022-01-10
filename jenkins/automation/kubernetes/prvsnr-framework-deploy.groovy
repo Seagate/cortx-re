@@ -21,7 +21,7 @@ pipeline {
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_PRVSNR_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
-        string(name: 'CORTX_PRVSNR_REPO', defaultValue: 'https://github.com/Seagate/cortx-prvsnr/', description: 'Repository for Cluster Setup scripts', trim: true)
+        string(name: 'CORTX_PRVSNR_REPO', defaultValue: 'Seagate/cortx-prvsnr', description: 'Repository for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-all:2.0.0-latest-custom-ci', description: 'CORTX-ALL image', trim: true)
         text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used for CORTX cluster setup. First node will be used as Master', name: 'hosts')       
     }    
@@ -63,6 +63,7 @@ pipeline {
                         export CORTX_PRVSNR_REPO=${CORTX_PRVSNR_REPO}
                         export CORTX_IMAGE=${CORTX_IMAGE}
                         export SOLUTION_CONFIG_TYPE=automated
+                        export DEPLOYMENT_TYPE=provisioner
                         ./prvsnr-framework.sh --deploy-cluster
                     popd
                 '''
@@ -74,8 +75,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Perform IO Sanity Test', script: '''
                     pushd solutions/kubernetes/
-                        echo $hosts | tr ' ' '\n' > hosts
-                        cat hosts
+                        export DEPLOYMENT_TYPE=provisioner
                         ./cortx-deploy.sh --io-test
                     popd
                 '''

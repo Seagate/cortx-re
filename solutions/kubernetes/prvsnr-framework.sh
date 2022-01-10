@@ -97,7 +97,7 @@ EOF
         do
         echo "---------------------------------------[ Print Cluster Status ]----------------------------------------------"
         rm -rf /var/tmp/cortx-cluster-status.txt
-        ssh -o 'StrictHostKeyChecking=no' "$master_node" '/var/tmp/cortx-deploy-functions.sh --status' | tee /var/tmp/cortx-cluster-status.txt
+        ssh -o 'StrictHostKeyChecking=no' "$master_node" "export DEPLOYMENT_TYPE=$DEPLOYMENT_TYPE && /var/tmp/cortx-deploy-functions.sh --status" | tee /var/tmp/cortx-cluster-status.txt
         done
 }
 
@@ -112,7 +112,7 @@ function upgrade_cluster(){
         ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" "export CORTX_PRVSNR_REPO=$CORTX_PRVSNR_REPO && export CORTX_PRVSNR_BRANCH=$CORTX_PRVSNR_BRANCH && /var/tmp/prvsnr-framework-functions.sh --upgrade"
         echo "--------------------------------[ Print Cluster Status after Upgrade ]----------------------------------------------"
         rm -rf /var/tmp/cortx-cluster-status.txt
-        ssh -o 'StrictHostKeyChecking=no' "$master_node" '/var/tmp/cortx-deploy-functions.sh --status' | tee /var/tmp/cortx-cluster-status.txt
+        ssh -o 'StrictHostKeyChecking=no' "$master_node" "export DEPLOYMENT_TYPE=$DEPLOYMENT_TYPE && /var/tmp/cortx-deploy-functions.sh --status" | tee /var/tmp/cortx-cluster-status.txt
 }
 
 function destroy_cluster(){
