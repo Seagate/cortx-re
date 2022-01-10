@@ -54,20 +54,6 @@ pipeline {
             }
         }
 
-        stage ("Cluster Cleanup") {
-            steps {
-                script { build_stage = env.STAGE_NAME }
-                script {
-                    build job: '/Cortx-kubernetes/destroy-cortx-cluster', wait: true,
-                    parameters: [
-                        string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
-                        string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
-                        text(name: 'hosts', value: "${hosts}")
-                    ]
-                }
-            }
-        }
-
         stage ("Deploy CORTX Cluster") {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -101,6 +87,9 @@ pipeline {
                    /usr/local/bin/docker-compose --version
                    echo \'y\' | docker image prune
                    docker pull $CORTX_IMAGE
+
+                   echo "\n RPM Build URL used for Nightly Image"
+                   docker inspect $CORTX_IMAGE | jq -r '.[] | (.ContainerConfig.Cmd)' | grep 'BUILD_URL='
 
                    #Update VERSION details in RELEASE.INFO file
 
@@ -154,7 +143,7 @@ pipeline {
                 echo "${env.cortxCluster_status}"
                 echo "${env.qaSanity_status}"
                 if ( "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "SUCCESS" ) {
-                    MESSAGE = "K8s Build#${build_id} 3node Deployment Deployment=Passed, SanityTest=Passed, Regression=Passed"
+                    MESSAGE = "K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=Passed, SanityTest=Passed, Regression=Passed"
                     ICON = "accept.gif"
                     STATUS = "SUCCESS"
                     env.deployment_result = "SUCCESS"
@@ -162,7 +151,7 @@ pipeline {
                     currentBuild.result = "SUCCESS"
                 } else if ( "${env.cortxCluster_status}" == "FAILURE" || "${env.cortxCluster_status}" == "UNSTABLE" || "${env.cortxCluster_status}" == "null" ) {
                     manager.buildFailure()
-                    MESSAGE = "K8s Build#${build_id} 3node Deployment Deployment=failed, SanityTest=skipped, Regression=skipped"
+                    MESSAGE = "K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=failed, SanityTest=skipped, Regression=skipped"
                     ICON = "error.gif"
                     STATUS = "FAILURE"
                     env.sanity_result = "SKIPPED"
@@ -170,21 +159,21 @@ pipeline {
                     currentBuild.result = "FAILURE"
                 } else if ( "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "FAILURE" || "${env.qaSanity_status}" == "null" ) {
                     manager.buildFailure()
-                    MESSAGE = "K8s Build#${build_id} 3node Deployment Deployment=Passed, SanityTest=failed, Regression=skipped"
+                    MESSAGE = "K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=Passed, SanityTest=failed, Regression=skipped"
                     ICON = "error.gif"
                     STATUS = "FAILURE"
                     env.sanity_result = "FAILURE"
                     env.deployment_result = "SUCCESS"
                     currentBuild.result = "FAILURE"
                 } else if ( "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "UNSTABLE" ) {
-                    MESSAGE = "K8s Build#${build_id} 3node Deployment Deployment=Passed, SanityTest=passed, Regression=failed"
+                    MESSAGE = "K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=Passed, SanityTest=passed, Regression=failed"
                     ICON = "unstable.gif"
                     STATUS = "UNSTABLE"
                     env.deployment_result = "SUCCESS"
                     env.sanity_result = "UNSTABLE"
                     currentBuild.result = "UNSTABLE"
                 } else {
-                    MESSAGE = "K8s Build#${build_id} 3node Deployment Deployment=unstable, SanityTest=unstable, Regression=unstable"
+                    MESSAGE = "K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=unstable, SanityTest=unstable, Regression=unstable"
                     ICON = "unstable.gif"
                     STATUS = "UNSTABLE"
                     env.sanity_result = "UNSTABLE"
