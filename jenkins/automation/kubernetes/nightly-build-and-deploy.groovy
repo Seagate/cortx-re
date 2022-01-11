@@ -12,7 +12,7 @@ pipeline {
         disableConcurrentBuilds()
     }
     environment {
-        CORTX_RE_BRANCH = "main"
+        CORTX_RE_BRANCH = "nightly-revert-0.0.17"
         CORTX_RE_REPO = "https://github.com/Seagate/cortx-re/"
         DOCKER_IMAGE_LOCATION = "https://github.com/Seagate/cortx-re/pkgs/container/cortx-all"
         LOCAL_REG_CRED = credentials('local-registry-access')
