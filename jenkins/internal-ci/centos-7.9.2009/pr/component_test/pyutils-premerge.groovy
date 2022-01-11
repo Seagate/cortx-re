@@ -27,11 +27,6 @@ pipeline {
             choices: ['centos-7.9.2009', 'centos-7.8.2003'],
             description: 'OS version of HOST'
         )
-        choice (
-            choices: ['no' , 'yes'],
-            description: 'Push newly built test rpm into the new image ',
-            name: 'PUSH_TEST_RPMS'
-        )
         choice(
             name: 'DEPLOY_BUILD_ON_NODES',
             choices: ["Both", "1node", "3node" ],
