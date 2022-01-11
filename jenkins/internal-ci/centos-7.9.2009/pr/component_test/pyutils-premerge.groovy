@@ -27,6 +27,11 @@ pipeline {
             choices: ['centos-7.9.2009', 'centos-7.8.2003'],
             description: 'OS version of HOST'
         )
+        choice (
+            choices: ['no' , 'yes'],
+            description: 'Push newly built test rpm into the new image ',
+            name: 'PUSH_TEST_RPMS'
+        )
         choice(
             name: 'DEPLOY_BUILD_ON_NODES',
             choices: ["Both", "1node", "3node" ],
@@ -201,6 +206,7 @@ pipeline {
                                 string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
                                 string(name: 'BUILD', value: "${CORTX_BUILD}"),
                                 string(name: 'GITHUB_PUSH', value: "yes"),
+                                string(name: 'PUSH_TEST_RPMS', value: "yes"),
                                 string(name: 'TAG_LATEST', value: "no"),
                                 string(name: 'DOCKER_REGISTRY', value: "cortx-docker.colo.seagate.com"),
                                 string(name: 'EMAIL_RECIPIENTS', value: "DEBUG")

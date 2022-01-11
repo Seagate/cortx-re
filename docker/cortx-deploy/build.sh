@@ -34,13 +34,14 @@ PROJECT="seagate"
 ARTFACT_URL="http://cortx-storage.colo.seagate.com/releases/cortx/github/"
 SERVICE=cortx-all
 
-while getopts "b:p:t:r:e:h:" opt; do
+while getopts "b:p:t:r:e:h:tr:" opt; do
     case $opt in
         b ) BUILD=$OPTARG;;
         p ) DOCKER_PUSH=$OPTARG;;
         t ) TAG_LATEST=$OPTARG;;
         e ) ENVIRONMENT=$OPTARG;;
         r ) REGISTRY=$OPTARG;;
+        tr ) TEST_RPMS=$OPTARG;;
         h ) usage
         exit 0;;
         *) usage
@@ -86,6 +87,12 @@ if [ "$DOCKER_BUILD_BRANCH" != "main" ]; then
         export TAG=$VERSION-$DOCKER_BUILD_BUILD-$DOCKER_BUILD_BRANCH
 else
         export TAG=$VERSION-$DOCKER_BUILD_BUILD
+fi
+
+if [ "$TEST_RPMS" == "yes" ]; then
+        sed -i '$ cortx-py-utils-test' cortx-componenet-rpms.txt
+else
+        echo "No test rpm needs to push"
 fi
 
 CREATED_DATE=$(date -u +'%Y-%m-%d %H:%M:%S%:z')
