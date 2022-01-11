@@ -76,10 +76,13 @@ function upgrade_cluster(){
 }
 
 function destroy_cluster(){
-    download_prvsnr_script
-    pushd $SCRIPT_LOCATION/$PRVSNR_SCRIPTS
-        ./destroy.sh
-    popd
+   if [ "$(/usr/bin/kubectl get pods --no-headers | wc -l)" -gt 0 ]; then 
+        pushd $SCRIPT_LOCATION/$PRVSNR_SCRIPTS
+            ./destroy.sh
+        popd || exit
+    else 
+        echo "CORTX Cluster is not already deployed."
+    fi
 }
 
 ACTION="$1"

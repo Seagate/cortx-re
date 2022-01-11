@@ -112,7 +112,7 @@ function upgrade_cluster(){
         ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" "export CORTX_IMAGE=$CORTX_IMAGE && export CORTX_PRVSNR_REPO=$CORTX_PRVSNR_REPO && export CORTX_PRVSNR_BRANCH=$CORTX_PRVSNR_BRANCH && /var/tmp/prvsnr-framework-functions.sh --upgrade"
         echo "--------------------------------[ Print Cluster Status after Upgrade ]----------------------------------------------"
         rm -rf /var/tmp/cortx-cluster-status.txt
-        ssh -o 'StrictHostKeyChecking=no' "$master_node" "export DEPLOYMENT_TYPE=$DEPLOYMENT_TYPE && /var/tmp/cortx-deploy-functions.sh --status" | tee /var/tmp/cortx-cluster-status.txt
+        ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" "export DEPLOYMENT_TYPE=$DEPLOYMENT_TYPE && /var/tmp/cortx-deploy-functions.sh --status" | tee /var/tmp/cortx-cluster-status.txt
 }
 
 function destroy_cluster(){
@@ -125,6 +125,7 @@ function destroy_cluster(){
         scp -q  prvsnr-framework-functions.sh "$MASTER_NODE":/var/tmp/
         ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" "export CORTX_PRVSNR_REPO=$CORTX_PRVSNR_REPO && export CORTX_PRVSNR_BRANCH=$CORTX_PRVSNR_BRANCH && /var/tmp/prvsnr-framework-functions.sh --destroy"
         echo "--------------------------------[ Print Kubernetes Cluster Status after Cleanup]----------------------------------------------"
+        rm -rf /var/tmp/cortx-cluster-status.txt
         ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" 'kubectl get pods -o wide' | tee /var/tmp/cortx-cluster-status.txt	
 }
 
