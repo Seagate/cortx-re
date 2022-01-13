@@ -74,8 +74,6 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Deploy third-party components', script: '''
                     pushd solutions/kubernetes/
-                        echo $hosts | tr ' ' '\n' > hosts
-                        cat hosts
                         export CORTX_SCRIPTS_BRANCH=${CORTX_SCRIPTS_BRANCH}
                         export CORTX_SCRIPTS_REPO=${CORTX_SCRIPTS_REPO}
                         export CORTX_IMAGE=${CORTX_IMAGE}
@@ -93,8 +91,6 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Perform IO Sanity Test', script: '''
                     pushd solutions/kubernetes/
-                        echo $hosts | tr ' ' '\n' > hosts
-                        cat hosts
                         ./cortx-deploy.sh --io-test
                     popd
                 '''
