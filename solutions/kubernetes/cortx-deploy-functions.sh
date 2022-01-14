@@ -76,6 +76,7 @@ function update_solution_config(){
         yq e -i '.solution.images.busybox = "ghcr.io/seagate/busybox:latest"' solution.yaml
 
         drive=$SYSTEM_DRIVE_MOUNT yq e -i '.solution.common.storage_provisioner_path = env(drive)' solution.yaml
+        yq e -i '.solution.common.setup_size = "small"' solution.yaml
         yq e -i '.solution.common.container_path.local = "/etc/cortx"' solution.yaml
         yq e -i '.solution.common.container_path.shared = "/share"' solution.yaml
         yq e -i '.solution.common.container_path.log = "/etc/cortx/log"' solution.yaml
@@ -136,13 +137,6 @@ function update_solution_config(){
         yq e -i '.solution.storage.cvg2.devices.data.d1.size = "5Gi"' solution.yaml
         yq e -i '.solution.storage.cvg2.devices.data.d2.device = "/dev/sdh"' solution.yaml
         yq e -i '.solution.storage.cvg2.devices.data.d2.size = "5Gi"' solution.yaml
-    popd
-
-    echo "---------------------------------------[ ADDING QUICKFIX FOR UDX-7070 ]--------------------------------------"
-    echo "Replacing setup_size in $SCRIPT_LOCATION/k8_cortx_cloud/cortx-cloud-helm-pkg/cortx-configmap/templates/config-template.yaml from large to small."
-    echo "This fix is only for Release v0.0.18 and is to be removed on next release."
-    pushd $SCRIPT_LOCATION/k8_cortx_cloud/cortx-cloud-helm-pkg/cortx-configmap/templates
-        sed -i 's/large/small/g' config-template.yaml
     popd
 }        
 
