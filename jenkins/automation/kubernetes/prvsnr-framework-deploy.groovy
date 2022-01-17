@@ -4,7 +4,9 @@ pipeline {
             label 'docker-k8-deployment-node'
         }
     }
-    
+
+    triggers { cron('30 19 * * *') }
+
     options {
         timeout(time: 240, unit: 'MINUTES')
         timestamps()
@@ -116,7 +118,7 @@ pipeline {
                 env.build_stage = "${build_stage}"
                 env.cluster_status = "${clusterStatusHTML}"
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
-                mailRecipients = "shailesh.vaidya@seagate.com"
+                mailRecipients = "shailesh.vaidya@seagate.com, CORTX.Provisioner@seagate.com"
                 emailext ( 
                     body: '''${SCRIPT, template="cluster-setup-email.template"}''',
                     mimeType: 'text/html',
