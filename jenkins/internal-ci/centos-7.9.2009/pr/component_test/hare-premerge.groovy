@@ -168,8 +168,8 @@ pipeline {
                     def commandResult = sshCommand remote: remote, command: """
                         cd "${REPO_NAME}"
                         export PATH=/opt/seagate/cortx/hare/bin:\$PATH
-                        #make check
-                        #make test
+                        make check
+                        make test
                         """
                     echo "Result: " + commandResult
                 }
