@@ -40,14 +40,17 @@ pipeline {
                     sed -i 's/centos|/rocky|centos|/' install-deps.sh
                     #./install-deps.sh
                     ./make-dist
-                    mv ceph*.tar.bz2 /mnt/rgw-build/rpmbuild/SOURCES/
-                    mkdir -p /mnt/rgw-build/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
-                    tar --strip-components=1 -C /mnt/rgw-build/rpmbuild/SPECS/ --no-anchored -xvjf /mnt/rgw-build/rpmbuild/SOURCES/ceph*.tar.bz2 "ceph.spec"
+                    mkdir -p /mnt/rgw-build/rpmbuild/$BUILD_NUMBER/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
+                    mv ceph*.tar.bz2 /mnt/rgw-build/rpmbuild/$BUILD_NUMBER/SOURCES/
+                    tar --strip-components=1 -C /mnt/rgw-build/rpmbuild/$BUILD_NUMBER/SPECS/ --no-anchored -xvjf /mnt/rgw-build/rpmbuild/$BUILD_NUMBER/SOURCES/ceph*.tar.bz2 "ceph.spec"
                 popd
 
-                pushd /mnt/rgw-build/rpmbuild/
+                pushd /mnt/rgw-build/rpmbuild/$BUILD_NUMBER
                      rpmbuild --define "_unpackaged_files_terminate_build 0" --define "build_type rgw" --define "debug_package %{nil}" --without prometheus-alerts --without grafana-dashboards --without  mgr-dashboard --without cmake_verbose_logging --without jaeger --without lttng --without seastar --without kafka_endpoint --without zbd --without cephfs_java --without cephfs_shell --without ocf --without selinux --without ceph_test_package --without make_check --define "_binary_payload w2T16.xzdio" --define "_topdir `pwd`" -ba ./SPECS/ceph.spec
                 popd
+
+                echo "Packages are available at "
+                ls -la /mnt/rgw-build/rpmbuild/$BUILD_NUMBER/RPMS/*/*.rpm
             '''    
             }
         }    
