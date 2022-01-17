@@ -161,20 +161,20 @@ pipeline {
                 }
             }
         }
-        // stage('Unit-tests') {
-        //     steps {
-        //         script {
-        //             def remote = getTestMachine(VM_FQDN)
-        //             def commandResult = sshCommand remote: remote, command: """
-        //                 cd "${REPO_NAME}"
-        //                 export PATH=/opt/seagate/cortx/hare/bin:\$PATH
-        //                 #make check
-        //                 #make test
-        //                 """
-        //             echo "Result: " + commandResult
-        //         }
-        //     }
-        // }
+        stage('Unit-tests') {
+            steps {
+                script {
+                    def remote = getTestMachine(VM_FQDN)
+                    def commandResult = sshCommand remote: remote, command: """
+                        cd "${REPO_NAME}"
+                        export PATH=/opt/seagate/cortx/hare/bin:\$PATH
+                        #make check
+                        #make test
+                        """
+                    echo "Result: " + commandResult
+                }
+            }
+        }
         stage('Stop cluster') {
             options {
                 timeout(time: 10, unit: 'MINUTES')
