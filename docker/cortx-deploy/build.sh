@@ -22,7 +22,7 @@ set -e -o pipefail
 
 usage() { 
 echo "Generate cortx-all docker image from provided CORTX release build"
-echo "Usage: $0 [ -b build ] [ -p push docker-image to GHCR yes/no. Default no] [ -t tag latest yes/no. Default no" ] [ -r registry location ] [ -e environment ] [ -h print help message ] 1>&2; exit 1; }
+echo "Usage: $0 [ -b build ] [ -p push docker-image to GHCR yes/no. Default no] [ -t tag latest yes/no. Default no" ] [ -r registry location ] [ -e environment ] [ -s service ] [ -h print help message ] 1>&2; exit 1; }
 
 VERSION=2.0.0
 DOCKER_PUSH=no
@@ -32,14 +32,16 @@ ENVIRONMENT=opensource-ci
 REGISTRY="cortx-docker.colo.seagate.com"
 PROJECT="seagate"
 ARTFACT_URL="http://cortx-storage.colo.seagate.com/releases/cortx/github/"
-SERVICE=cortx-all
+DOCKER_BUILD_BUILD=0
+#SERVICE=cortx-all
 
-while getopts "b:p:t:r:e:h:" opt; do
+while getopts "b:p:t:r:e:s:h:" opt; do
     case $opt in
         b ) BUILD=$OPTARG;;
         p ) DOCKER_PUSH=$OPTARG;;
         t ) TAG_LATEST=$OPTARG;;
         e ) ENVIRONMENT=$OPTARG;;
+        s ) SERVICE=$OPTARG;;
         r ) REGISTRY=$OPTARG;;
         h ) usage
         exit 0;;
@@ -72,21 +74,21 @@ echo cortx-csm_agent:"$(awk -F['_'] '/cortx-csm_agent-'$VERSION'/ { print $3 }' 
 }
 
 
-curl -s $BUILD_URL/RELEASE.INFO -o RELEASE.INFO
-if grep -q "404 Not Found" RELEASE.INFO ; then echo "Provided Build does not have required structure..existing"; exit 1; fi
+#curl -s $BUILD_URL/RELEASE.INFO -o RELEASE.INFO
+#if grep -q "404 Not Found" RELEASE.INFO ; then echo "Provided Build does not have required structure..existing"; exit 1; fi
 
-for PARAM in BRANCH BUILD
-do
-export DOCKER_BUILD_$PARAM="$(grep $PARAM RELEASE.INFO | cut -d'"' -f2)"
-done
-CORTX_VERSION=$(get_git_hash | tr '\n' ' ')
-rm -rf RELEASE.INFO
+#for PARAM in BRANCH BUILD
+#do
+#export DOCKER_BUILD_$PARAM="$(grep $PARAM RELEASE.INFO | cut -d'"' -f2)"
+#done
+#CORTX_VERSION=$(get_git_hash | tr '\n' ' ')
+#rm -rf RELEASE.INFO
 
-if [ "$DOCKER_BUILD_BRANCH" != "main" ]; then
-        export TAG=$VERSION-$DOCKER_BUILD_BUILD-$DOCKER_BUILD_BRANCH
-else
+#if [ "$DOCKER_BUILD_BRANCH" != "main" ]; then
+#        export TAG=$VERSION-$DOCKER_BUILD_BUILD-$DOCKER_BUILD_BRANCH
+#else
         export TAG=$VERSION-$DOCKER_BUILD_BUILD
-fi
+#fi
 
 CREATED_DATE=$(date -u +'%Y-%m-%d %H:%M:%S%:z')
 

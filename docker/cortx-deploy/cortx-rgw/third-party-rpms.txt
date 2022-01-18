@@ -1,0 +1,5 @@
+which #cortx-motr
+snappy 
+leveldb 
+gdisk 
+gperftools-libs
