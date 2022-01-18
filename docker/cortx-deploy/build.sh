@@ -116,4 +116,3 @@ if [ "$TAG_LATEST" == "yes" ];then
 else
         echo "Latest tag creation skipped"
 fi
-
