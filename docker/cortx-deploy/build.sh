@@ -20,9 +20,9 @@
 
 set -e -o pipefail
 
-usage() { 
+usage() {
 echo "Generate cortx-all docker image from provided CORTX release build"
-echo "Usage: $0 [ -b build ] [ -p push docker-image to GHCR yes/no. Default no] [ -t tag latest yes/no. Default no" ] [ -r registry location ] [ -e environment ] [ -o operating-system ] [ -h print help message ] 1>&2; exit 1; }
+echo "Usage: $0 [ -b build ] [ -p push docker-image to GHCR yes/no. Default no] [ -t tag latest yes/no. Default no" ] [ -r registry location ] [ -e environment ] [ -o operating-system ][ -s service ] [ -h print help message ] 1>&2; exit 1; }
 
 VERSION=2.0.0
 DOCKER_PUSH=no
@@ -34,13 +34,14 @@ ARTFACT_URL="http://cortx-storage.colo.seagate.com/releases/cortx/github/"
 SERVICE=cortx-all
 OS=centos-7.9.2009
 
-while getopts "b:p:t:r:e:o:h:" opt; do
+while getopts "b:p:t:r:e:o:s:h:" opt; do
     case $opt in
         b ) BUILD=$OPTARG;;
         p ) DOCKER_PUSH=$OPTARG;;
         t ) TAG_LATEST=$OPTARG;;
         e ) ENVIRONMENT=$OPTARG;;
         r ) REGISTRY=$OPTARG;;
+        s ) SERVICE=$OPTARG;;
         o ) OS=$OPTARG;;
         h ) usage
         exit 0;;
@@ -54,10 +55,24 @@ if [ -z "${BUILD}" ] ; then
 fi
 
 if echo $BUILD | grep -q http;then
-	BUILD_URL="$BUILD"
+        BUILD_URL="$BUILD"
 else
-	if echo $BUILD | grep -q custom; then BRANCH="integration-custom-ci"; else BRANCH="main"; fi
-	BUILD_URL="$ARTFACT_URL/$BRANCH/$OS/$BUILD"
+        if echo $BUILD | grep -q custom; then BRANCH="integration-custom-ci"; else BRANCH="main"; fi
+        BUILD_URL="$ARTFACT_URL/$BRANCH/$OS/$BUILD"
+fi
+
+if [ "$SERVICE" == "cortx-rgw" ] && [ "$OS" == "centos-7.9.2009" ]; then
+echo -e "#####################################################################"
+echo -e "# SERVICE: $SERVICE Image Build is NOT supported on $OS              "
+echo -e "#####################################################################"
+exit 1
+fi
+
+if [ "$SERVICE" == "cortx-rgw" ] && [ "$OS" == "centos-7.9.2009" ]; then 
+echo -e "#####################################################################"
+echo -e "# SERVICE: $SERVICE Image Build is NOT supported on $OS              "
+echo -e "#####################################################################"
+exit 1
 fi
 
 OS_TYPE=$(echo $OS | awk -F[-] '{print $1}')
@@ -103,7 +118,7 @@ docker-compose -f ./docker-compose.yml build --force-rm --compress --build-arg G
 if [ "$DOCKER_PUSH" == "yes" ];then
         echo "Pushing Docker image to GitHub Container Registry"
         docker tag $SERVICE:$TAG $REGISTRY/$PROJECT/$SERVICE:$TAG
-        docker push $REGISTRY/$PROJECT/$SERVICE:$TAG 
+        docker push $REGISTRY/$PROJECT/$SERVICE:$TAG
 else
         echo "Docker Image push skipped"
         exit 0
@@ -116,4 +131,3 @@ if [ "$TAG_LATEST" == "yes" ];then
 else
         echo "Latest tag creation skipped"
 fi
-
