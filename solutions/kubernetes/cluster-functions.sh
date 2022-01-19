@@ -214,7 +214,9 @@ function install_prerequisites(){
             fi
             CALICO_IMAGE_VERSION=$(grep 'docker.io/calico/cni' calico-$CALICO_PLUGIN_VERSION.yaml | uniq | awk -F':' '{ print $3}')	
             wget -c https://github.com/projectcalico/calico/releases/download/$CALICO_IMAGE_VERSION/release-$CALICO_IMAGE_VERSION.tgz -O - | tar -xz || throw $Exception
-            cd release-$CALICO_IMAGE_VERSION/images && for file in calico-node.tar calico-kube-controllers.tar  calico-cni.tar calico-pod2daemon-flexvol.tar; do docker load -i $file || throw $Exception; done
+            pushd release-$CALICO_IMAGE_VERSION/images 
+                ls *tar | xargs -I{} docker image load -i {} || throw $Exception
+            popd
         popd
     )
     catch || {
