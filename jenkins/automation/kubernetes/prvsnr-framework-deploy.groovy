@@ -4,7 +4,9 @@ pipeline {
             label 'docker-k8-deployment-node'
         }
     }
-    
+
+    triggers { cron('30 19 * * *') }
+
     options {
         timeout(time: 240, unit: 'MINUTES')
         timestamps()
@@ -23,7 +25,7 @@ pipeline {
         string(name: 'CORTX_PRVSNR_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_PRVSNR_REPO', defaultValue: 'Seagate/cortx-prvsnr', description: 'Repository for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-all:2.0.0-latest-custom-ci', description: 'CORTX-ALL image', trim: true)
-        text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used for CORTX cluster setup. First node will be used as Master', name: 'hosts')       
+        // Please configure hosts parameter in the Jenkins job configuration.
     }    
 
     stages {
@@ -116,7 +118,7 @@ pipeline {
                 env.build_stage = "${build_stage}"
                 env.cluster_status = "${clusterStatusHTML}"
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
-                mailRecipients = "shailesh.vaidya@seagate.com"
+                mailRecipients = "shailesh.vaidya@seagate.com, CORTX.Provisioner@seagate.com"
                 emailext ( 
                     body: '''${SCRIPT, template="cluster-setup-email.template"}''',
                     mimeType: 'text/html',
