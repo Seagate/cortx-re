@@ -30,12 +30,12 @@ export ConfigException=101
 
 function usage(){
     cat << HEREDOC
-Usage : $0 [--prepare, --master]
+Usage : $0 [--prepare, --primary]
 where,
     --cleanup - Remove kubernetes and docker related packages on the nodes.
     --prepare - Install prerequisites on nodes for kubernetes setup.
     --status - Print cluster status.
-    --master - Initialize K8 master node. 
+    --primary - Initialize K8 primary node. 
     --join-worker-nodes Join worker nodes to kubernetes cluster.
 HEREDOC
 }
@@ -240,8 +240,8 @@ function install_prerequisites(){
 
 }
 
-function setup_master_node(){
-    local UNTAINT_MASTER=$1
+function setup_primary_node(){
+    local UNTAINT_PRIMARY=$1
     try
     (
         #cleanup
@@ -257,9 +257,9 @@ function setup_master_node(){
         mkdir -p $HOME/.kube
         cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
         chown $(id -u):$(id -g) $HOME/.kube/config
-        # untaint master node
-        if [ "$UNTAINT_MASTER" == "true" ]; then
-            echo "--------------------------[ Allow POD creation on master node ]--------------------------"
+        # untaint primary node
+        if [ "$UNTAINT_PRIMARY" == "true" ]; then
+            echo "--------------------------[ Allow POD creation on primary node ]--------------------------"
             kubectl taint nodes $(hostname) node-role.kubernetes.io/master- || throw $Exception
         fi    
 
@@ -321,8 +321,8 @@ case $ACTION in
     --status) 
         print_cluster_status
     ;;
-    --master)
-        setup_master_node "$2"
+    --primary)
+        setup_primary_node "$2"
     ;;
     --join-worker-nodes)
         join_worker_nodes "$@"
