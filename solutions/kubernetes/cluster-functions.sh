@@ -273,9 +273,6 @@ function setup_master_node(){
         # Setup IP_AUTODETECTION_METHOD for determining calico network.
         # sed -i '/# Auto-detect the BGP IP address./i \            - name: IP_AUTODETECTION_METHOD\n              value: "interface=eth-0"' calico-$CALICO_PLUGIN_VERSION.yaml
         kubectl apply -f calico-$CALICO_PLUGIN_VERSION.yaml || throw $Exception
-        # Setup storage-class
-        kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml || throw $Exception
-        kubectl patch storageclass local-path -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}' || throw $ConfigException
 
         # Install helm
         curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 || throw $Exception

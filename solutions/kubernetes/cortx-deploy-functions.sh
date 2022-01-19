@@ -267,7 +267,7 @@ echo "---------------------------------------[ Setting up Master Node $HOSTNAME 
     #Third-party images are downloaded from GitHub container registry. 
     download_deploy_script
     install_yq
-    download_images
+    #download_images
     
     if [ "$(kubectl get  nodes $HOSTNAME  -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints}" | grep -o NoSchedule)" == "" ]; then
         execute_prereq
@@ -288,7 +288,7 @@ echo "---------------------------------------[ Setting up Worker Node on $HOSTNA
     #Third-party images are downloaded from GitHub container registry.
     download_deploy_script
     execute_prereq
-    download_images
+    #download_images
 }
 
 function destroy(){
