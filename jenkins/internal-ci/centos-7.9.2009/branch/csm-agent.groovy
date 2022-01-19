@@ -76,7 +76,6 @@ pipeline {
         }
         
         stage ('Upload') {
-            when { expression { false } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Copy RPMS', script: '''
@@ -92,7 +91,6 @@ pipeline {
         }
 
         stage ('Tag last_successful') {
-            when { expression { false } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Tag last_successful', script: '''pushd $build_upload_dir/
