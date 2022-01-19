@@ -195,6 +195,14 @@ function execute_deploy_script(){
     popd
 }
 
+#Adding quick fix for all nodes to pull busybox images from ghcr.io/seagate.
+#On fresh system when CORTX deployment is done docker pulls busybox image from docker hub by default even though ghcr.io/seagate location is mentioned in code. 
+#This is to be removed after issue is resolved.
+function download_images(){
+    echo "---------------------------------------[ Download busybox image from ghcr.io/seagate/busybox ]--------------------------------------"
+    docker pull ghcr.io/seagate/busybox:latest
+}
+
 #On worker
 #format and mount system drive
 
@@ -256,9 +264,10 @@ fi
 
 function setup_master_node(){
 echo "---------------------------------------[ Setting up Master Node $HOSTNAME ]--------------------------------------"
+    #Third-party images are downloaded from GitHub container registry. 
     download_deploy_script
-    #Third-party images are downloaed from GitHub container regsitry. 
     install_yq
+    download_images
     
     if [ "$(kubectl get  nodes $HOSTNAME  -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints}" | grep -o NoSchedule)" == "" ]; then
         execute_prereq
@@ -276,9 +285,10 @@ echo "---------------------------------------[ Setting up Master Node $HOSTNAME 
 
 function setup_worker_node(){
 echo "---------------------------------------[ Setting up Worker Node on $HOSTNAME ]--------------------------------------"
-    #Third-party images are downloaed from GitHub container regsitry.
+    #Third-party images are downloaded from GitHub container registry.
     download_deploy_script
     execute_prereq
+    download_images
 }
 
 function destroy(){
