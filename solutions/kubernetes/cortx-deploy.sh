@@ -94,7 +94,7 @@ EOF
 )
        NODES="$((NODES-TAINTED_NODES))"
        echo "---------------------------------------[ $NODES node deployment ]----------------------------------"
-       echo "PRIMARY NODE:" $PRIMARYPRIMARY_NODE
+       echo "PRIMARY NODE:" $PRIMARY_NODE
        echo "WORKER NODE:" $WORKER_NODES
        # pdsh hosts to run parallel implementations.
        echo $WORKER_NODES > /var/tmp/pdsh-hosts
