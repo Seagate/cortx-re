@@ -55,20 +55,6 @@ pipeline {
             }
         }
 
-        stage ("Cluster Cleanup") {
-            steps {
-                script { build_stage = env.STAGE_NAME }
-                script {
-                    build job: '/Cortx-kubernetes/destroy-cortx-cluster', wait: true,
-                    parameters: [
-                        string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
-                        string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
-                        text(name: 'hosts', value: "${hosts}")
-                    ]
-                }
-            }
-        }
-
         stage ("Deploy CORTX Cluster") {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -80,7 +66,9 @@ pipeline {
                         string(name: 'CORTX_IMAGE', value: "${CORTX_IMAGE}"),
                         text(name: 'hosts', value: "${hosts}"),
                         string(name: 'CORTX_SCRIPTS_BRANCH', value: "${CORTX_SCRIPTS_BRANCH}"),
-                        string(name: 'CORTX_SCRIPTS_REPO', value: "${CORTX_SCRIPTS_REPO}")
+                        string(name: 'CORTX_SCRIPTS_REPO', value: "${CORTX_SCRIPTS_REPO}"),
+                        string(name: 'SNS_CONFIG', value: "${SNS_CONFIG}"),
+                        string(name: 'DIX_CONFIG', value: "${DIX_CONFIG}")
                     ]
                     env.cortxcluster_build_url = cortxCluster.absoluteUrl
                     env.cortxCluster_status = cortxCluster.currentResult
@@ -93,20 +81,20 @@ pipeline {
             script {
                 echo "${env.cortxCluster_status}"
                 if ( "${env.cortxCluster_status}" == "SUCCESS") {
-                    MESSAGE = "K8s Build#${build_id} 3node Deployment Deployment=Passed"
+                    MESSAGE = "Post Merge K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=Passed"
                     ICON = "accept.gif"
                     STATUS = "SUCCESS"
                     env.deployment_result = "SUCCESS"
                     currentBuild.result = "SUCCESS"
                 } else if ( "${env.cortxCluster_status}" == "FAILURE") {
                     manager.buildFailure()
-                    MESSAGE = "K8s Build#${build_id} 3node Deployment Deployment=failed"
+                    MESSAGE = "Post Merge K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=failed"
                     ICON = "error.gif"
                     STATUS = "FAILURE"
                     env.deployment_result = "FAILURE"
                     currentBuild.result = "FAILURE"
                 } else {
-                    MESSAGE = "K8s Build#${build_id} 3node Deployment Deployment=unstable"
+                    MESSAGE = "Post Merge K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=unstable"
                     ICON = "unstable.gif"
                     STATUS = "UNSTABLE"
                     env.deployment_result = "UNSTABLE"
