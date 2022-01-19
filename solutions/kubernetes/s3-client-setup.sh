@@ -39,7 +39,12 @@ if ! which aws; then
 fi
 
 echo -e "\nAdd CORTX data pod IP to /etc/hosts and create s3iamcli auth directory and log file."
-CORTX_IO_SVC=$(kubectl get pods -o wide | grep cortx-server | awk '{print $6}' | head -1)
+if [ "$DEPLOYMENT_TYPE" == "provisioner" ]; then
+    echo "Deployment type is: $DEPLOYMENT_TYPE"
+    CORTX_IO_SVC=$(kubectl get pods -o wide | grep server-node | awk '{print $6}' | head -1)
+else
+  CORTX_IO_SVC=$(kubectl get pods -o wide | grep cortx-server | awk '{print $6}' | head -1)
+fi
 echo "$CORTX_IO_SVC s3.seagate.com iam.seagate.com" >> /etc/hosts
 
 mkdir -p /var/log/cortx/auth
