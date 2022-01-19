@@ -9,11 +9,11 @@ pipeline {
     
     environment {
         version = "2.0.0"
-        third_party_version = "2.0.0-latest"
+        third_party_version = "2.0.0-k8"
         release_dir = "/mnt/bigstorage/releases/cortx"
         integration_dir = "$release_dir/github/$branch/$os_version"
         components_dir = "$release_dir/components/github/$branch/$os_version"
-        release_tag = "$BUILD_NUMBER"
+        release_tag = "kubernetes-post-merge-build-$BUILD_ID"
         BUILD_TO_DELETE = ""
         passphrase = credentials('rpm-sign-passphrase')
         ARTIFACT_LOCATION = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version"
@@ -72,7 +72,7 @@ pipeline {
                     cp -n -r $integration_dir/$release_tag/dev/* $integration_dir/$release_tag/prod/
 
                     pushd $integration_dir/$release_tag/prod
-                        rm -rf cortx-[hlp]*-debuginfo-*.rpm
+                        rm -rf cortx-[lp]*-debuginfo-*.rpm
                         rm -f cortx-s3iamcli*.rpm
                         rm -f cortx-s3-test*.rpm
                     popd
@@ -205,53 +205,13 @@ pipeline {
             }
         }
         
-
-        stage ('Generate Release ISO') {
+        stage ('Additional Files') {
             steps {
 
-                sh label: 'Release ISO', script: '''
+                sh label: 'Additional Files', script:'''
                 mkdir -p $cortx_build_dir/$release_tag/cortx_iso
                 mv $integration_dir/$release_tag/prod/* $cortx_build_dir/$release_tag/cortx_iso
                 mkdir -p $integration_dir/$release_tag/prod/iso
-                
-                genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -hide-rr-moved -publisher Seagate -o $integration_dir/$release_tag/prod/iso/cortx-$version-$BUILD_NUMBER-single.iso $cortx_build_dir/$release_tag
-                '''
-
-                sh label: 'Upgrade ISO', script: '''
-                #Create upgrade directorty structure
-                mkdir -p $cortx_build_dir/$release_tag/sw_upgrade/{3rd_party,cortx_iso,python_deps}
-                createrepo -v $cortx_build_dir/$release_tag/sw_upgrade/3rd_party/
-                find $cortx_build_dir/$release_tag/3rd_party/ -not -path '*repodata*' -type d  -printf '%P\n' | xargs -t -I % sh -c '{ mkdir -p $cortx_build_dir/$release_tag/sw_upgrade/3rd_party/%; createrepo -v $cortx_build_dir/$release_tag/sw_upgrade/3rd_party/%; }'
-                
-                #Copy all component packages
-                cp -r $cortx_build_dir/$release_tag/cortx_iso/* $cortx_build_dir/$release_tag/sw_upgrade/cortx_iso
-                
-                #Copy RELEASE.INFO, Third Party RPM and Python index files.
-                cp $cortx_build_dir/$release_tag/3rd_party/THIRD_PARTY_RELEASE.INFO $cortx_build_dir/$release_tag/sw_upgrade/3rd_party
-                sed -i -e /tar/d -e /rpm/d -e /tgz/d $cortx_build_dir/$release_tag/sw_upgrade/3rd_party/THIRD_PARTY_RELEASE.INFO
-                cp $cortx_build_dir/$release_tag/python_deps/index.html $cortx_build_dir/$release_tag/sw_upgrade/python_deps/index.html
-                sed -i /href/d $cortx_build_dir/$release_tag/sw_upgrade/python_deps/index.html
-                cp $cortx_build_dir/$release_tag/cortx_iso/RELEASE.INFO $cortx_build_dir/$release_tag/sw_upgrade/
-                
-                genisoimage -input-charset iso8859-1 -f -J -joliet-long -r -allow-lowercase -allow-multidot -hide-rr-moved -publisher Seagate -o $integration_dir/$release_tag/prod/iso/cortx-$version-$BUILD_NUMBER-upgrade.iso $cortx_build_dir/$release_tag/sw_upgrade
-                rm -rf $cortx_build_dir/$release_tag/sw_upgrade
-                
-                '''
-                sh label: "Sign ISO files", script: '''
-                pushd scripts/rpm-signing
-                    gpg --output $integration_dir/$release_tag/prod/iso/cortx-$version-$BUILD_NUMBER-upgrade.iso.sig --detach-sig $integration_dir/$release_tag/prod/iso/cortx-$version-$BUILD_NUMBER-upgrade.iso 
-                    sleep 5
-                    gpg --output $integration_dir/$release_tag/prod/iso/cortx-$version-$BUILD_NUMBER-single.iso.sig --detach-sig $integration_dir/$release_tag/prod/iso/cortx-$version-$BUILD_NUMBER-single.iso 
-                popd
-                '''
-
-                sh label: 'Additional Files', script:'''
-                cortx_prvsnr_preq=$(ls "$cortx_build_dir/$release_tag/cortx_iso" | grep "python36-cortx-prvsnr" | cut -d- -f5 | cut -d_ -f2 | cut -d. -f1 | sed s/"git"//)
-                    
-                wget -O $integration_dir/$release_tag/prod/iso/install-$version-$BUILD_NUMBER.sh https://raw.githubusercontent.com/Seagate/cortx-prvsnr/$cortx_prvsnr_preq/srv/components/provisioner/scripts/install.sh
-
-                ln -s $cortx_os_iso $integration_dir/$release_tag/prod/iso/$(basename $cortx_os_iso)
- 
                 mv $cortx_build_dir/$release_tag/* $integration_dir/$release_tag/prod
                 cp $integration_dir/$release_tag/prod/*/*.INFO $integration_dir/$release_tag/prod
                         
@@ -259,8 +219,8 @@ pipeline {
                 '''
             }
         }
-            
-        stage ('Tag last_successful') {
+
+       stage ('Tag last_successful') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Tag last_successful', script: '''
@@ -274,20 +234,46 @@ pipeline {
             }
         }
 
+        stage ("Build CORTX-ALL image") {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                script {
+                    try {
+                        def build_cortx_all_image = build job: '/Cortx-Kubernetes/cortx-all-docker-image', wait: true,
+                                    parameters: [
+                                        string(name: 'CORTX_RE_URL', value: "https://github.com/Seagate/cortx-re/"),
+                                        string(name: 'CORTX_RE_BRANCH', value: "${branch}"),
+                                        string(name: 'BUILD', value: "${release_tag}/prod"),
+                                        string(name: 'GITHUB_PUSH', value: "yes"),
+                                        string(name: 'TAG_LATEST', value: "yes"),
+                                        string(name: 'DOCKER_REGISTRY', value: "cortx-docker.colo.seagate.com"),
+                                        string(name: 'EMAIL_RECIPIENTS', value: "DEBUG")
+                                        ]
+                    env.cortx_all_image = build_cortx_all_image.buildVariables.image
+                    } catch (err) {
+                        build_stage = env.STAGE_NAME
+                        error "Failed to Build CORTX-ALL image"
+                    }
+                }
+            }
+       } 
+
         stage ("Deploy") {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
-                    build job: "1n deployment", propagate: false, wait: false, parameters: [
-                            string(name: 'CORTX_BUILD', value: "http://cortx-storage.colo.seagate.com/releases/cortx/github/${branch}/${os_version}/${env.release_tag}/prod"),
-                            booleanParam(name: 'CREATE_JIRA_ISSUE_ON_FAILURE', value: true),
-                            booleanParam(name: 'AUTOMATED', value: true)
+                    build job: "K8s-1N-deployment", propagate: false, wait: false,
+                    parameters: [
+                        string(name: 'CORTX_RE_BRANCH', value: "${branch}"),
+                        string(name: 'CORTX_RE_REPO', value: "https://github.com/Seagate/cortx-re/"),
+                        string(name: 'CORTX_IMAGE', value: "${env.cortx_all_image}")
                     ]
-                    build job: "3n deployment", propagate: false, wait: false, parameters: [
-                            string(name: 'CORTX_BUILD', value: "http://cortx-storage.colo.seagate.com/releases/cortx/github/${branch}/${os_version}/${env.release_tag}/prod"),
-                            booleanParam(name: 'CREATE_JIRA_ISSUE_ON_FAILURE', value: true),
-                            booleanParam(name: 'AUTOMATED', value: true)
-                    ]       
+                    build job: "K8s-3N-deployment", propagate: false, wait: false,
+                    parameters: [
+                        string(name: 'CORTX_RE_BRANCH', value: "${branch}"),
+                        string(name: 'CORTX_RE_REPO', value: "https://github.com/Seagate/cortx-re/"),
+                        string(name: 'CORTX_IMAGE', value: "${env.cortx_all_image}")
+                    ]
                 }
             }
         }
@@ -306,7 +292,7 @@ pipeline {
                 def toEmail = "shailesh.vaidya@seagate.com"
                 
                 emailext ( 
-                        body: '''${SCRIPT, template="release-email.template"}''',
+                        body: '''${SCRIPT, template="K8s-release-email.template"}''',
                         mimeType: 'text/html',
                         subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
                         attachLog: true,

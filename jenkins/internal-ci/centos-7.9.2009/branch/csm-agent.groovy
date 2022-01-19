@@ -49,22 +49,17 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
 
-                sh label: 'Install cortx-prereq package', script: """
-                    pip3 uninstall pip -y && yum reinstall python3-pip -y && ln -s /usr/bin/pip3 /usr/local/bin/pip3
-                    sh ./cortx-re/scripts/third-party-rpm/install-cortx-prereq.sh
-                """
-                
-                sh label: 'Configure yum repositories', script: """
-                    yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/$release_tag/cortx_iso/
-                    yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
-                    yum clean all && rm -rf /var/cache/yum
+                sh label: 'Configure yum repository for cortx-py-utils', script: """
+                    yum-config-manager --nogpgcheck --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/kubernetes/centos-7.9.2009/last_successful_prod/cortx_iso/
+
+                    pip3 install --no-cache-dir --trusted-host cortx-storage.colo.seagate.com -i http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/python-packages-2.0.0-latest/ -r https://raw.githubusercontent.com/Seagate/cortx-utils/$branch/py-utils/python_requirements.txt -r https://raw.githubusercontent.com/Seagate/cortx-utils/$branch/py-utils/python_requirements.ext.txt
                 """
 
                 sh label: 'Install pyinstaller', script: """
                         pip3.6 install  pyinstaller==3.5
                 """
             }
-        }        
+        }           
         
         stage('Build') {
             steps {
@@ -75,8 +70,8 @@ pipeline {
                     echo "Executing build script"
                     echo "Python:$(python --version)"
                     ./cicd/build.sh -v $version -b $BUILD_NUMBER -t -n ldr -l $WORKSPACE/seagate-ldr
-                popd    
-                '''    
+                popd
+                '''
             }
         }
         
@@ -114,6 +109,7 @@ pipeline {
                     def releaseBuild = build job: 'Release', propagate: true
                      env.release_build = releaseBuild.number
                     env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/${env.release_build}"
+                    env.cortx_all_image = releaseBuild.buildVariables.cortx_all_image
                 }
             }
         }
