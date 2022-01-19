@@ -31,7 +31,7 @@ pipeline {
 
     }
     stages {
-        stage ("Define Variable") {
+        stage ("Define Build Variables") {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
@@ -81,20 +81,20 @@ pipeline {
             script {
                 echo "${env.cortxCluster_status}"
                 if ( "${env.cortxCluster_status}" == "SUCCESS") {
-                    MESSAGE = "Post Merge K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=Passed"
+                    MESSAGE = "K8s Post Merge Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=Passed"
                     ICON = "accept.gif"
                     STATUS = "SUCCESS"
                     env.deployment_result = "SUCCESS"
                     currentBuild.result = "SUCCESS"
                 } else if ( "${env.cortxCluster_status}" == "FAILURE") {
                     manager.buildFailure()
-                    MESSAGE = "Post Merge K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=failed"
+                    MESSAGE = "K8s Post Merge Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=failed"
                     ICON = "error.gif"
                     STATUS = "FAILURE"
                     env.deployment_result = "FAILURE"
                     currentBuild.result = "FAILURE"
                 } else {
-                    MESSAGE = "Post Merge K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=unstable"
+                    MESSAGE = "K8s Post Merge Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=unstable"
                     ICON = "unstable.gif"
                     STATUS = "UNSTABLE"
                     env.deployment_result = "UNSTABLE"
@@ -102,7 +102,7 @@ pipeline {
                 }
                 env.build_setupcortx_url = sh( script: "echo ${env.cortxcluster_build_url}/artifact/artifacts/cortx-cluster-status.txt", returnStdout: true)
                 env.host = "${env.allhost}"
-                env.build_id = "${env.dockerimage_id}"
+                env.build_id = "${CORTX_IMAGE}"
                 env.build_location = "${DOCKER_IMAGE_LOCATION}"
                 env.deployment_status = "${MESSAGE}"
                 env.cluster_status = "${env.build_setupcortx_url}"
