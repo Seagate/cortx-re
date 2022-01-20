@@ -88,6 +88,15 @@ function setup_cluster {
     # Setup master node and all worker nodes in parallel in case of multinode cluster.
     if [ "$(wc -l < $HOST_FILE)" -ne "1" ]; then
        NODES=$(wc -l < $HOST_FILE)
+
+        if [ "$NODES" != "$(ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" bash << EOF
+kubectl get nodes -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints[?(@.effect=='NoSchedule')].effect}{\"\n\"}{end}" | grep -cv NoSchedule
+EOF
+)" ]; then
+        echo " Node count does not match. exiting..."
+        exit 1
+        fi
+
        TAINTED_NODES=$(ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" bash << EOF
 kubectl get nodes -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints[?(@.effect=='NoSchedule')].effect}{\"\n\"}{end}" | grep  NoSchedule | wc -l
 EOF
@@ -102,7 +111,7 @@ EOF
 
        for master_node in $MASTER_NODE
            do
-               ssh -o 'StrictHostKeyChecking=no' "$master_node" "export NODES=$NODES && export SOLUTION_CONFIG_TYPE=$SOLUTION_CONFIG_TYPE && export CORTX_IMAGE=$CORTX_IMAGE && export CORTX_SCRIPTS_REPO=$CORTX_SCRIPTS_REPO && export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH && export SNS_CONFIG=$SNS_CONFIG && export DIX_CONFIG=$DIX_CONFIG && /var/tmp/cortx-deploy-functions.sh --setup-master"
+               ssh -o 'StrictHostKeyChecking=no' "$master_node" "export SOLUTION_CONFIG_TYPE=$SOLUTION_CONFIG_TYPE && export CORTX_IMAGE=$CORTX_IMAGE && export CORTX_SCRIPTS_REPO=$CORTX_SCRIPTS_REPO && export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH && export SNS_CONFIG=$SNS_CONFIG && export DIX_CONFIG=$DIX_CONFIG && /var/tmp/cortx-deploy-functions.sh --setup-master"
            done
     fi
 
