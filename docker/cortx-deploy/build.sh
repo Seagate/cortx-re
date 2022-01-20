@@ -20,9 +20,12 @@
 
 set -e -o pipefail
 
-usage() { 
-echo "Generate cortx-all docker image from provided CORTX release build"
-echo "Usage: $0 [ -b build ] [ -p push docker-image to GHCR yes/no. Default no] [ -t tag latest yes/no. Default no" ] [ -r registry location ] [ -e environment ] [ -h print help message ] 1>&2; exit 1; }
+usage() 
+{ 
+        echo "Generate CORTX components docker images from provided CORTX release build"
+        echo "Usage: $0 [ -b build ] [ -p push docker-image to GHCR yes/no. Default no] [ -t tag latest yes/no. Default no ] [ -r registry location ] [ -e environment ] [ -s service-name ] [ -h print help message ]"
+        exit 1 
+}
 
 VERSION=2.0.0
 DOCKER_PUSH=no
@@ -41,6 +44,7 @@ while getopts "b:p:t:r:e:h:" opt; do
         t ) TAG_LATEST=$OPTARG;;
         e ) ENVIRONMENT=$OPTARG;;
         r ) REGISTRY=$OPTARG;;
+        s ) SERVICE=$OPTARG;;
         h ) usage
         exit 0;;
         *) usage
@@ -93,7 +97,7 @@ CREATED_DATE=$(date -u +'%Y-%m-%d %H:%M:%S%:z')
 docker-compose -f ./docker-compose.yml build --force-rm --compress --build-arg GIT_HASH="$CORTX_VERSION" --build-arg VERSION="$VERSION-$DOCKER_BUILD_BUILD" --build-arg CREATED_DATE="$CREATED_DATE" --build-arg BUILD_URL=$BUILD_URL --build-arg ENVIRONMENT=$ENVIRONMENT $SERVICE
 
 if [ "$DOCKER_PUSH" == "yes" ];then
-        echo "Pushing Docker image to GitHub Container Registry"
+        echo "Pushing Docker image to $REGISTRY"
         docker tag $SERVICE:$TAG $REGISTRY/$PROJECT/$SERVICE:$TAG
         docker push $REGISTRY/$PROJECT/$SERVICE:$TAG 
 else
