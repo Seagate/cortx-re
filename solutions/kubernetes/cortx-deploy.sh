@@ -89,7 +89,7 @@ function setup_cluster {
     if [ "$(wc -l < $HOST_FILE)" -ne "1" ]; then
        NODES=$(wc -l < $HOST_FILE)
 
-        if [ "$NODES" != "$(ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" "kubectl get nodes -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints[?(@.effect=='NoSchedule')].effect}{\"\n\"}{end}" | grep -cv NoSchedule)" ]; then
+        if [ "$NODES" != '$(ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" "kubectl get nodes -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints[?(@.effect=='NoSchedule')].effect}{\"\n\"}{end}" | grep -cv NoSchedule)' ]; then
             echo "Provided Node count and Available Nodes for POD schedule does not match. Exiting..."
             echo "Provided Nodes $(awk -F[,] '{print $1}' $HOST_FILE | cut -d'=' -f2)
             echo "Available Nodes $(ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" "kubectl get nodes -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints[?(@.effect=='NoSchedule')].effect}{\"\n\"}{end}" | grep -v NoSchedule)"
