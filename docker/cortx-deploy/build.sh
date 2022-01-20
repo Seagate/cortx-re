@@ -59,7 +59,7 @@ fi
 if echo $BUILD | grep -q http;then
 BUILD_URL="$BUILD"
 else
-if echo $BUILD | grep -q custom; then BRANCH="integration-custom-ci"; else BRANCH="kubernetes"; fi
+if echo $BUILD | grep -q custom; then BRANCH="integration-custom-ci"; else BRANCH="main"; fi
 BUILD_URL="$ARTFACT_URL/$BRANCH/$OS/$BUILD"
 fi
 
