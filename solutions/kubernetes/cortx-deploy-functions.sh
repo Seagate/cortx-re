@@ -155,6 +155,14 @@ popd
 }
 
 function add_node_info_solution_config(){
+echo "Checking node resource status"
+    echo "Provided Node count $NODES"
+    echo "Available Node count $(kubectl get nodes -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints[?(@.effect=='NoSchedule')].effect}{\"\n\"}{end}" | grep -cv NoSchedule)"
+
+    if [ "$NODES" != "$(kubectl get nodes -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints[?(@.effect=='NoSchedule')].effect}{\"\n\"}{end}" | grep -cv NoSchedule)" ]; then
+	    echo " Node count does not match. exiting..."
+	    exit 1
+    fi
 
 echo "Updating node info in solution.yaml"
 
