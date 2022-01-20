@@ -89,25 +89,27 @@ function setup_cluster {
     if [ "$(wc -l < $HOST_FILE)" -ne "1" ]; then
        NODES=$(wc -l < $HOST_FILE)
 
-        if [ "$NODES" != "$(ssh -o 'StrictHostKeyChecking=no' "$PRIMARY_NODE" bash << EOF 
-kubectl get nodes -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints[?(@.effect=='NoSchedule')].effect}{\"\n\"}{end}" | grep -cv NoSchedule
-EOF
-)" ]; then
-            echo -e "Provided Nodes and Available Nodes for POD schedule count does not match. Exiting...\n"
-            echo "Provided  Nodes: $(cat $HOST_FILE | awk -F[,] '{print $1}' | cut -d'=' -f2 | tr '\n' ' ')"
-            echo "Available Nodes: $(ssh -o 'StrictHostKeyChecking=no' "$PRIMARY_NODE" bash << EOF 
-kubectl get nodes -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints[?(@.effect=='NoSchedule')].effect}{\"\n\"}{end}" | grep -v NoSchedule | tr '\n' ' '
-EOF
-)"
-            echo -e "\nExiting.........."
-	    exit 1
-       fi
-
        TAINTED_NODES=$(ssh -o 'StrictHostKeyChecking=no' "$PRIMARY_NODE" bash << EOF
 kubectl get nodes -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints[?(@.effect=='NoSchedule')].effect}{\"\n\"}{end}" | grep  NoSchedule | wc -l
 EOF
 )
        NODES="$((NODES-TAINTED_NODES))"
+       AVAILABLE_NODES="$(ssh -o 'StrictHostKeyChecking=no' "$PRIMARY_NODE" bash << EOF 
+kubectl get nodes -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints[?(@.effect=='NoSchedule')].effect}{\"\n\"}{end}" | grep -cv NoSchedule
+EOF
+)"
+
+    if [ "$NODES" != "$AVAILABLE_NODES" ]; then
+        echo -e "Provided Nodes count ($NODES) and Available Nodes for POD schedule count ($AVAILABLE_NODES) does not match. Exiting...\n"
+        echo "Provided  Nodes: $(cat $HOST_FILE | grep -v $PRIMARY_NODE | awk -F[,] '{print $1}' | cut -d'=' -f2 | tr '\n' ' ')"
+        echo "Available Nodes: $(ssh -o 'StrictHostKeyChecking=no' "$PRIMARY_NODE" bash << EOF 
+kubectl get nodes -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints[?(@.effect=='NoSchedule')].effect}{\"\n\"}{end}" | grep -v NoSchedule | tr '\n' ' '
+EOF
+)"
+        echo -e "\nExiting.........."
+        exit 1
+    fi
+
        echo "---------------------------------------[ $NODES node deployment ]----------------------------------"
        echo "PRIMARY NODE:" $PRIMARY_NODE
        echo "WORKER NODE:" $WORKER_NODES
