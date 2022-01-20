@@ -9,7 +9,7 @@ pipeline {
     parameters {
         string(name: 'MOTR_URL', defaultValue: 'https://github.com/Seagate/cortx-motr', description: 'Repository URL for Motr build')
         string(name: 'MOTR_BRANCH', defaultValue: 'main', description: 'Branch for Motr build')
-        string(name: 'CEPH_URL', defaultValue: 'https://github.com/ceph/ceph', description: 'Repository URL for ceph build')
+        string(name: 'CEPH_URL', defaultValue: 'https://github.com/Seagate/cortx-rgw', description: 'Repository URL for ceph build')
         string(name: 'CEPH_BRANCH', defaultValue: 'main', description: 'Branch for ceph build')
     }
     
@@ -93,10 +93,12 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Copy RPMS', script: '''
-                    ls -la /mnt/rgw-build/rpmbuild/$BUILD_NUMBER/RPMS/*/*.rpm
-                    createrepo -v /mnt/rgw-build/rpmbuild/$BUILD_NUMBER/RPMS/
-                    echo "Ceph Packages are available at "
-                    echo "http://cortx-storage.colo.seagate.com/releases/cortx/rgw-build/rpmbuild/$BUILD_NUMBER/RPMS/"
+                    mkdir -p /mnt/rgw-build/release/$BUILD_NUMBER
+                    mv /mnt/rgw-build/rpmbuild/$BUILD_NUMBER/RPMS/*/*.rpm /mnt/rgw-build/release/$BUILD_NUMBER/
+                    mv /root/rpmbuild/RPMS/x86_64/*.rpm /mnt/rgw-build/release/$BUILD_NUMBER/
+                    createrepo -v /mnt/rgw-build/release/$BUILD_NUMBER/
+                    echo "Ceph and Motr Packages are available at "
+                    echo "http://cortx-storage.colo.seagate.com/releases/cortx/rgw-build/$BUILD_NUMBER/"
                 '''
             }
         }
