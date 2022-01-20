@@ -58,7 +58,7 @@ function setup_cluster(){
     nodes_setup
 
     ALL_NODES=$(cat "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
-    MASTER_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+    PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
 
     for node in $ALL_NODES
         do
@@ -67,37 +67,37 @@ function setup_cluster(){
 
     if [ "$(wc -l < $HOST_FILE)" == "1" ]; then
        add_separator Single node deployment
-       echo "NODE:" $MASTER_NODE
-       ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" "export CORTX_IMAGE=$CORTX_IMAGE && export CORTX_PRVSNR_REPO=$CORTX_PRVSNR_REPO && export CORTX_PRVSNR_BRANCH=$CORTX_PRVSNR_BRANCH && /var/tmp/prvsnr-framework-functions.sh --setup-master"
+       echo "NODE:" $PRIMARY_NODE
+       ssh -o 'StrictHostKeyChecking=no' "$PRIMARY_NODE" "export CORTX_IMAGE=$CORTX_IMAGE && export CORTX_PRVSNR_REPO=$CORTX_PRVSNR_REPO && export CORTX_PRVSNR_BRANCH=$CORTX_PRVSNR_BRANCH && /var/tmp/prvsnr-framework-functions.sh --setup-primary"
     else
-       WORKER_NODES=$(cat "$HOST_FILE" | grep -v "$MASTER_NODE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+       WORKER_NODES=$(cat "$HOST_FILE" | grep -v "$PRIMARY_NODE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
     fi
 
-    # Setup master node and all worker nodes in parallel in case of multinode cluster.
+    # Setup primary node and all worker nodes in parallel in case of multinode cluster.
     if [ "$(wc -l < $HOST_FILE)" -ne "1" ]; then
        NODES=$(wc -l < $HOST_FILE)
-       TAINTED_NODES=$(ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" bash << EOF
+       TAINTED_NODES=$(ssh -o 'StrictHostKeyChecking=no' "$PRIMARY_NODE" bash << EOF
 kubectl get nodes -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints[?(@.effect=='NoSchedule')].effect}{\"\n\"}{end}" | grep  NoSchedule | wc -l
 EOF
 )
        NODES="$((NODES-TAINTED_NODES))"
        add_separator $NODES node deployment
-       echo "MASTER NODE:" $MASTER_NODE
+       echo "PRIMARY NODE:" $PRIMARY_NODE
        echo "WORKER NODE:" $WORKER_NODES
        echo $WORKER_NODES > /var/tmp/pdsh-hosts
        pdsh_worker_exec /var/tmp/pdsh-hosts
 
-       for master_node in $MASTER_NODE
+       for primary_node in $PRIMARY_NODE
            do
-               ssh -o 'StrictHostKeyChecking=no' "$master_node" "export CORTX_IMAGE=$CORTX_IMAGE && export CORTX_PRVSNR_REPO=$CORTX_PRVSNR_REPO && export CORTX_PRVSNR_BRANCH=$CORTX_PRVSNR_BRANCH && /var/tmp/prvsnr-framework-functions.sh --setup-master"
+               ssh -o 'StrictHostKeyChecking=no' "$primary_node" "export CORTX_IMAGE=$CORTX_IMAGE && export CORTX_PRVSNR_REPO=$CORTX_PRVSNR_REPO && export CORTX_PRVSNR_BRANCH=$CORTX_PRVSNR_BRANCH && /var/tmp/prvsnr-framework-functions.sh --setup-primary"
            done
     fi
 
-    for master_node in $MASTER_NODE
+    for primary_node in $PRIMARY_NODE
         do
         echo "---------------------------------------[ Print Cluster Status ]----------------------------------------------"
         rm -rf /var/tmp/cortx-cluster-status.txt
-        ssh -o 'StrictHostKeyChecking=no' "$master_node" "export DEPLOYMENT_TYPE=$DEPLOYMENT_TYPE && /var/tmp/cortx-deploy-functions.sh --status" | tee /var/tmp/cortx-cluster-status.txt
+        ssh -o 'StrictHostKeyChecking=no' "$primary_node" "export DEPLOYMENT_TYPE=$DEPLOYMENT_TYPE && /var/tmp/cortx-deploy-functions.sh --status" | tee /var/tmp/cortx-cluster-status.txt
         done
 }
 
@@ -106,13 +106,13 @@ function upgrade_cluster(){
     generate_rsa_key
     nodes_setup
 
-	MASTER_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
-	add_separator Upgrading cluster from $MASTER_NODE
-        scp -q cortx-deploy-functions.sh prvsnr-framework-functions.sh "$MASTER_NODE":/var/tmp/
-        ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" "export CORTX_IMAGE=$CORTX_IMAGE && export CORTX_PRVSNR_REPO=$CORTX_PRVSNR_REPO && export CORTX_PRVSNR_BRANCH=$CORTX_PRVSNR_BRANCH && /var/tmp/prvsnr-framework-functions.sh --upgrade"
+	PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+	add_separator Upgrading cluster from $PRIMARY_NODE
+        scp -q cortx-deploy-functions.sh prvsnr-framework-functions.sh "$PRIMARY_NODE":/var/tmp/
+        ssh -o 'StrictHostKeyChecking=no' "$PRIMARY_NODE" "export CORTX_IMAGE=$CORTX_IMAGE && export CORTX_PRVSNR_REPO=$CORTX_PRVSNR_REPO && export CORTX_PRVSNR_BRANCH=$CORTX_PRVSNR_BRANCH && /var/tmp/prvsnr-framework-functions.sh --upgrade"
         echo "--------------------------------[ Print Cluster Status after Upgrade ]----------------------------------------------"
         rm -rf /var/tmp/cortx-cluster-status.txt
-        ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" "export DEPLOYMENT_TYPE=$DEPLOYMENT_TYPE && /var/tmp/cortx-deploy-functions.sh --status" | tee /var/tmp/cortx-cluster-status.txt
+        ssh -o 'StrictHostKeyChecking=no' "$PRIMARY_NODE" "export DEPLOYMENT_TYPE=$DEPLOYMENT_TYPE && /var/tmp/cortx-deploy-functions.sh --status" | tee /var/tmp/cortx-cluster-status.txt
 }
 
 function destroy_cluster(){
@@ -120,13 +120,13 @@ function destroy_cluster(){
     generate_rsa_key
     nodes_setup
 
-	MASTER_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
-	add_separator Destroying cluster from $MASTER_NODE
-        scp -q  prvsnr-framework-functions.sh "$MASTER_NODE":/var/tmp/
-        ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" "export CORTX_PRVSNR_REPO=$CORTX_PRVSNR_REPO && export CORTX_PRVSNR_BRANCH=$CORTX_PRVSNR_BRANCH && /var/tmp/prvsnr-framework-functions.sh --destroy"
+	PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+	add_separator Destroying cluster from $PRIMARY_NODE
+        scp -q  prvsnr-framework-functions.sh "$PRIMARY_NODE":/var/tmp/
+        ssh -o 'StrictHostKeyChecking=no' "$PRIMARY_NODE" "export CORTX_PRVSNR_REPO=$CORTX_PRVSNR_REPO && export CORTX_PRVSNR_BRANCH=$CORTX_PRVSNR_BRANCH && /var/tmp/prvsnr-framework-functions.sh --destroy"
         echo "--------------------------------[ Print Kubernetes Cluster Status after Cleanup]----------------------------------------------"
         rm -rf /var/tmp/cortx-cluster-status.txt
-        ssh -o 'StrictHostKeyChecking=no' "$MASTER_NODE" 'kubectl get pods -o wide' | tee /var/tmp/cortx-cluster-status.txt	
+        ssh -o 'StrictHostKeyChecking=no' "$PRIMARY_NODE" 'kubectl get pods -o wide' | tee /var/tmp/cortx-cluster-status.txt	
 }
 
 ACTION="$1"
