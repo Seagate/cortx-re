@@ -156,11 +156,11 @@ popd
 
 function add_node_info_solution_config(){
 echo "Checking node resource status"
-    echo "Provided Node count $NODES"
-    echo "Available Node count $(kubectl get nodes -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints[?(@.effect=='NoSchedule')].effect}{\"\n\"}{end}" | grep -cv NoSchedule)"
+    echo " Provided Nodes count: $NODES"
+    echo "Available Nodes count: $(kubectl get nodes -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints[?(@.effect=='NoSchedule')].effect}{\"\n\"}{end}" | grep -cv NoSchedule)"
 
     if [ "$NODES" != "$(kubectl get nodes -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints[?(@.effect=='NoSchedule')].effect}{\"\n\"}{end}" | grep -cv NoSchedule)" ]; then
-	    echo " Node count does not match. exiting..."
+	    echo -e "Provided Nodes and Available Nodes for POD schedule count does not match. Exiting...\n"
 	    exit 1
     fi
 
