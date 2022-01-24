@@ -6,6 +6,8 @@ pipeline {
         }
     }
 
+    triggers { cron('30 22 * * *') }
+
     environment {
         version = "2.0.0"
     }
@@ -78,7 +80,7 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'prepare', script: '''
-                yum install systemd-devel libuuid libuuid-devel libaio-devel openssl openssl-devel perl-File-Slurp gcc cmake3 cmake rpm-build rpmdevtools autoconf automake libtool gcc-c++ -y 
+                yum install createrepo systemd-devel libuuid libuuid-devel libaio-devel openssl openssl-devel perl-File-Slurp gcc cmake3 cmake rpm-build rpmdevtools autoconf automake libtool gcc-c++ -y 
                 rpmdev-setuptree
                 '''
             }
@@ -93,7 +95,7 @@ pipeline {
                 popd
                 pip3 install --no-cache-dir --trusted-host cortx-storage.colo.seagate.com -i http://cortx-storage.colo.seagate.com/releases/cortx/github/main/centos-7.9.2009/last_successful_prod/python_deps/ -r https://raw.githubusercontent.com/Seagate/cortx-utils/main/py-utils/python_requirements.txt -r https://raw.githubusercontent.com/Seagate/cortx-utils/main/py-utils/python_requirements.ext.txt
                 rpm -ivh --nodeps ./cortx-py-utils/py-utils/dist/cortx-py-utils-2.0.0*.noarch.rpm
-                mv ./cortx-py-utils/py-utils/dist/cortx-py-utils-2.0.0*.noarch.rpm /root/rpmbuild/RPMS/x86_64/*.rpm 
+                mv ./cortx-py-utils/py-utils/dist/cortx-py-utils-2.0.0*.noarch.rpm /root/rpmbuild/RPMS/x86_64/
                 '''
             }
         }
@@ -162,7 +164,7 @@ pipeline {
                     mv /root/rpmbuild/RPMS/x86_64/*.rpm /mnt/rgw-build/release/$BUILD_NUMBER/
                     createrepo -v /mnt/rgw-build/release/$BUILD_NUMBER/
                     echo "Ceph and Motr Packages are available at "
-                    echo "http://cortx-storage.colo.seagate.com/releases/rgw-build/$BUILD_NUMBER/"
+                    echo "http://cortx-storage.colo.seagate.com/releases/cortx/rgw-build/release/$BUILD_NUMBER/"
                 '''
             }
         }
