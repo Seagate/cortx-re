@@ -39,7 +39,7 @@ ARTFACT_URL="http://cortx-storage.colo.seagate.com/releases/cortx/github/"
 SERVICE=cortx-all
 COMPONENTS=""
 
-while getopts "b:p:t:r:e:h:" opt; do
+while getopts "b:p:t:r:e:s:h:" opt; do
     case $opt in
         b ) BUILD=$OPTARG;;
         p ) DOCKER_PUSH=$OPTARG;;
@@ -67,13 +67,13 @@ sleep 5
 function get_git_hash {
         sed -i '/KERNEL/d' RELEASE.INFO
         if [ "$SERVICE" == "cortx-data" ]; then 
-                COMPONENTS = "cortx-hare cortx-motr cortx-py-utils cortx-provisioner"
+                COMPONENTS="cortx-hare cortx-motr cortx-py-utils cortx-provisioner"
         elif [ "$SERVICE" == "cortx-control" ]; then
-                COMPONENTS = "cortx-py-utils cortx-provisioner"
+                COMPONENTS="cortx-py-utils cortx-provisioner"
         elif [ "$SERVICE" == "cortx-ha" ]; then
-                COMPONENTS = "cortx-ha cortx-py-utils cortx-provisioner"    
+                COMPONENTS="cortx-ha cortx-py-utils cortx-provisioner"    
         else
-                COMPONENTS = "cortx-ha cortx-hare cortx-motr cortx-py-utils cortx-provisioner" 
+                COMPONENTS="cortx-ha cortx-hare cortx-motr cortx-py-utils cortx-provisioner" 
         fi
 
         for component in $COMPONENTS
