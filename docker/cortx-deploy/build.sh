@@ -32,10 +32,12 @@ DOCKER_PUSH=no
 TAG_LATEST=no
 OS=centos-7.9.2009
 ENVIRONMENT=opensource-ci
+BUILD=last_successful_prod
 REGISTRY="cortx-docker.colo.seagate.com"
 PROJECT="seagate"
 ARTFACT_URL="http://cortx-storage.colo.seagate.com/releases/cortx/github/"
 SERVICE=cortx-all
+COMPONENTS=""
 
 while getopts "b:p:t:r:e:h:" opt; do
     case $opt in
@@ -52,10 +54,6 @@ while getopts "b:p:t:r:e:h:" opt; do
     esac
 done
 
-if [ -z "${BUILD}" ] ; then
-    BUILD=last_successful_prod
-fi
-
 if echo $BUILD | grep -q http;then
 BUILD_URL="$BUILD"
 else
@@ -67,12 +65,24 @@ echo "Building $SERVICE image from $BUILD_URL"
 sleep 5
 
 function get_git_hash {
-sed -i '/KERNEL/d' RELEASE.INFO
-for component in cortx-py-utils cortx-s3server cortx-motr cortx-hare cortx-provisioner
-do
-    echo $component:"$(awk -F['_'] '/'$component'-'$VERSION'/ { print $2 }' RELEASE.INFO | cut -d. -f1 | sed 's/git//g')",
-done
-echo cortx-csm_agent:"$(awk -F['_'] '/cortx-csm_agent-'$VERSION'/ { print $3 }' RELEASE.INFO | cut -d. -f1)",
+        sed -i '/KERNEL/d' RELEASE.INFO
+        if [ "$SERVICE" == "cortx-data" ]; then 
+                COMPONENTS = "cortx-hare cortx-motr cortx-py-utils cortx-provisioner"
+        elif [ "$SERVICE" == "cortx-control" ]; then
+                COMPONENTS = "cortx-py-utils cortx-provisioner"
+        elif [ "$SERVICE" == "cortx-ha" ]; then
+                COMPONENTS = "cortx-ha cortx-py-utils cortx-provisioner"    
+        else
+                COMPONENTS = "cortx-ha cortx-hare cortx-motr cortx-py-utils cortx-provisioner" 
+        fi
+
+        for component in $COMPONENTS
+        do
+                echo $component:"$(awk -F['_'] '/'$component'-'$VERSION'/ { print $2 }' RELEASE.INFO | cut -d. -f1 | sed 's/git//g')",
+        done
+        if [ "$SERVICE" == "cortx-control" ]; then
+                echo cortx-csm_agent:"$(awk -F['_'] '/cortx-csm_agent-'$VERSION'/ { print $3 }' RELEASE.INFO | cut -d. -f1)",
+        fi        
 }
 
 
