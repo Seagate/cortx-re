@@ -25,9 +25,9 @@ PRVSNR_SCRIPTS="test/deploy/kubernetes"
 
 function usage(){
     cat << HEREDOC
-Usage : $0 [--setup-master, --setup-worker, --upgrade, --destroy]
+Usage : $0 [--setup-primary, --setup-worker, --upgrade, --destroy]
 where,
-    --setup-master - Setup master node for CORTX deployment
+    --setup-primary - Setup primary node for CORTX deployment
     --setup-worker - Setup worker node for CORTX deployment
     --upgrade - Upgrade CORTX cluster
     --destroy  - Destroy CORTX cluster
@@ -56,7 +56,7 @@ function setup_worker_node(){
 
 }
 
-function setup_master_node(){
+function setup_primary_node(){
     download_prvsnr_script
     pushd $SCRIPT_LOCATION/$PRVSNR_SCRIPTS
         echo "---------------------------------------[ Prerequisite for Deployment ]----------------------------------"
@@ -93,8 +93,8 @@ if [ -z "$ACTION" ]; then
 fi
 
 case $ACTION in
-    --setup-master)
-        setup_master_node        
+    --setup-primary)
+        setup_primary_node        
     ;;
     --setup-worker)
         setup_worker_node        

@@ -27,7 +27,7 @@ YQ_VERSION=v4.13.3
 YQ_BINARY=yq_linux_386
 SOLUTION_CONFIG="/var/tmp/solution.yaml"
 
-#On master
+#On primary
 #download CORTX k8 deployment scripts
 
 function download_deploy_script(){
@@ -235,10 +235,10 @@ function execute_prereq(){
 
 function usage(){
     cat << HEREDOC
-Usage : $0 [--setup-worker, --setup-master, --third-party, --cortx-cluster, --destroy, --status]
+Usage : $0 [--setup-worker, --setup-primary, --third-party, --cortx-cluster, --destroy, --status]
 where,
     --setup-worker - Setup k8 worker node for CORTX deployment
-    --setup-master - Setup k8 master node for CORTX deployment
+    --setup-primary - Setup k8 primary node for CORTX deployment
     --third-party - Deploy third-party components
     --cortx-cluster - Deploy Third-Party and CORTX components
     --destroy - Destroy CORTX Cluster
@@ -254,10 +254,10 @@ if [ -z "$ACTION" ]; then
     exit 1
 fi
 
-function setup_master_node(){
-echo "---------------------------------------[ Setting up Master Node $HOSTNAME ]--------------------------------------"
+function setup_primary_node(){
+echo "---------------------------------------[ Setting up Primary Node $HOSTNAME ]--------------------------------------"
+    #Third-party images are downloaded from GitHub container registry. 
     download_deploy_script
-    #Third-party images are downloaed from GitHub container regsitry. 
     install_yq
     
     if [ "$(kubectl get  nodes $HOSTNAME  -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints}" | grep -o NoSchedule)" == "" ]; then
@@ -276,7 +276,7 @@ echo "---------------------------------------[ Setting up Master Node $HOSTNAME 
 
 function setup_worker_node(){
 echo "---------------------------------------[ Setting up Worker Node on $HOSTNAME ]--------------------------------------"
-    #Third-party images are downloaed from GitHub container regsitry.
+    #Third-party images are downloaded from GitHub container registry.
     download_deploy_script
     execute_prereq
 }
@@ -400,8 +400,8 @@ case $ACTION in
     --generate-logs)
         logs_generation
     ;;
-    --setup-master)
-        setup_master_node 
+    --setup-primary)
+        setup_primary_node 
     ;;
     *)
         echo "ERROR : Please provide valid option"
