@@ -59,8 +59,8 @@ export TZ=$time_zone;ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ 
 pushd $clone_dir/clone
 
 if [ -z $BUILD_LOCATION ]; then
-	DOCKER_IMAGE=$(echo "$START_BUILD"|grep RELEASE.INFO|wc -l)
-	if [ $DOCKER_IMAGE == "0" ]; then
+	CHECK_INPUT_VARIABLE_STATUS=$(echo "$START_BUILD"|grep RELEASE.INFO|wc -l)
+	if [ $CHECK_INPUT_VARIABLE_STATUS == "0" ]; then
 		docker pull "$START_BUILD"
 		docker run --rm "$START_BUILD" cat /RELEASE.INFO > start_build_manifest.txt
 		docker pull "$TARGET_BUILD"
