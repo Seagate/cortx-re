@@ -92,18 +92,18 @@ pipeline {
                 clusterStatus = ""
                 if ( fileExists('/var/tmp/cortx-cluster-status.txt') && currentBuild.currentResult == "SUCCESS" ) {
                     clusterStatus = readFile(file: '/var/tmp/cortx-cluster-status.txt')
-                    MESSAGE = "CORTX Cluster Setup Success for the build ${build_id}"
+                    MESSAGE = "CORTX Cluster Setup Success on ${env.NODES} for the build ${build_id}"
                     ICON = "accept.gif"
                     STATUS = "SUCCESS"
                 } else if ( currentBuild.currentResult == "FAILURE" ) {
                     manager.buildFailure()
-                    MESSAGE = "CORTX Cluster Setup Failed for the build ${build_id}"
+                    MESSAGE = "CORTX Cluster Setup Failed on ${env.NODES} for the build ${build_id}"
                     ICON = "error.gif"
                     STATUS = "FAILURE"
  
                 } else {
                     manager.buildUnstable()
-                    MESSAGE = "CORTX Cluster Setup is Unstable"
+                    MESSAGE = "CORTX Cluster Setup is Unstable on ${env.NODES} for the build ${build_id}"
                     ICON = "warning.gif"
                     STATUS = "UNSTABLE"
                 }
