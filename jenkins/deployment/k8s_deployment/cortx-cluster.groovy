@@ -20,7 +20,7 @@ pipeline {
     parameters {
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'kubernetes', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for Cluster Setup scripts', trim: true)
-        string(name: 'CORTX_IMAGE', defaultValue: 'cortx-docker.colo.seagate.com/seagate/cortx-all:2.0.0-latest-kubernetes', description: 'CORTX-ALL image', trim: true)
+        string(name: 'CORTX_IMAGE', defaultValue: 'cortx-docker.colo.seagate.com/seagate/cortx-all:2.0.0-latest', description: 'CORTX-ALL image', trim: true)
 
         choice (
             choices: ['DEVOPS', 'ALL', 'DEBUG'],
