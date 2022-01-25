@@ -48,7 +48,13 @@ pipeline {
                     ''', returnStdout: true).trim()
 
                     env.numberofnodes = sh( script: '''
-                    echo $hosts | tr ' ' '\n' | tail -n +2 | wc -l
+                    if kubectl get nodes -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints[?(@.effect=='NoSchedule')].effect}{\"\n\"}{end}" --selector='node-role.kubernetes.io/master' | grep NoSchedule; then
+                        #Primary node is tainted
+                        echo $hosts | tr ' ' '\n' | tail -n +2 | wc -l
+                    else
+                        #Primary node is un-tainted
+                        echo $hosts | tr ' ' '\n' | tail -n +1 | wc -l
+                    fi
                     ''', returnStdout: true).trim()
 
                 }
