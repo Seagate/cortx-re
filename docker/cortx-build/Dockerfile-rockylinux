@@ -21,7 +21,7 @@
 ARG OSNAME
 ARG OS_VERSION
 
-FROM ${OSNAME}/:${OSNAME}:${OS_VERSION} AS base
+FROM ${OSNAME}/${OSNAME}:${OS_VERSION} AS base
 
 ARG OSNAME
 ARG OS_VERSION
@@ -49,7 +49,7 @@ RUN rm -rf /etc/yum.repos.d/${OSNAME}-*
 COPY ./docker/cortx-build/${ENVIRONMENT}/${OSNAME}-${OS_VERSION}.repo /etc/yum.repos.d/
 
 # Install EPEL repo for opensource-ci
-RUN if [ "${ENVIRONMENT}" = "opensource-ci" ] ; then yum install epel-release -y ; fi && yum clean all \
+RUN if [ "${ENVIRONMENT}" = "opensource-ci" ] ; then dnf install epel-release -y ; fi && dnf clean all \
 && rm -rf /var/cache/yum
 
 # Enable SCL repos
@@ -57,7 +57,7 @@ RUN if [ "${ENVIRONMENT}" = "opensource-ci" ] ; then yum install epel-release -y
 #&& rm -rf /var/cache/yum
 
 # install common tools
-RUN yum -y install python3{,-{devel,pip,setuptools}} \
+RUN dnf -y install python3{,-{devel,pip,setuptools}} \
 createrepo \
 file \
 git \
@@ -75,7 +75,6 @@ gcc \
 cmake \
 gcc-c++ \
 sudo \
-yum-utils \
 libtool \
 graphviz check-devel \
 jemalloc \
@@ -92,7 +91,7 @@ flex \
 dbus-devel \
 expect \
 rpm-sign \
-genisoimage && yum clean all \
+genisoimage && dnf clean all \
 && rm -rf /var/cache/yum
 
 # enable Git from SLC repo (it's more up to date version)
@@ -123,13 +122,13 @@ RUN sh /opt/systemctl-replacement.sh \
 
 # For Provisioner
 RUN bash /opt/setup_fpm.sh ${OSNAME} \
-&& rm -f /opt/setup_fpm.sh && yum clean all \
+&& rm -f /opt/setup_fpm.sh && dnf clean all \
 && rm -rf /var/cache/yum \
 && rm -rf rh-ruby23.sh
 
 # yum repo from GitHub Release 
 RUN sh /opt/set-githubrelease-repo.sh ${OSNAME} \
-&& yum clean all \
+&& dnf clean all \
 && rm -rf /var/cache/yum \
 && rm -f /opt/set-githubrelease-repo.sh
 
