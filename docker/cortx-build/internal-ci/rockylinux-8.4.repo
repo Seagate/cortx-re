@@ -1,6 +1,6 @@
 [EOS_Mellanox_mlnx_ofed_rhel8_4]
 name = mlnx_ofed_rhel8.4
-baseurl = https://ssc-satellite1.colo.seagate.com/pulp/repos/EOS/Production/Rocky_8_Content_View/custom/Mellanox/mlnx_ofed_rhel8_4
+baseurl = http://ssc-satellite1.colo.seagate.com/pulp/repos/EOS/Production/Rocky_8_Content_View/custom/Mellanox/mlnx_ofed_rhel8_4
 enabled = 0
 gpgcheck = 0
 sslverify = 1
@@ -12,7 +12,7 @@ enabled_metadata = 0
 
 [EOS_Rocky_8_AppStream]
 name = Rocky Linux 8 - AppStream
-baseurl = https://ssc-satellite1.colo.seagate.com/pulp/repos/EOS/Production/Rocky_8_Content_View/custom/Rocky_8/AppStream
+baseurl = http://ssc-satellite1.colo.seagate.com/pulp/repos/EOS/Production/Rocky_8_Content_View/custom/Rocky_8/AppStream
 enabled = 1
 gpgcheck = 0
 sslverify = 1
@@ -24,7 +24,7 @@ enabled_metadata = 1
 
 [EOS_Rocky_8_Extras]
 name = Rocky Linux 8 - Extras
-baseurl = https://ssc-satellite1.colo.seagate.com/pulp/repos/EOS/Production/Rocky_8_Content_View/custom/Rocky_8/Extras
+baseurl = http://ssc-satellite1.colo.seagate.com/pulp/repos/EOS/Production/Rocky_8_Content_View/custom/Rocky_8/Extras
 enabled = 1
 gpgcheck = 0
 sslverify = 1
@@ -36,7 +36,7 @@ enabled_metadata = 1
 
 [EOS_Rocky_8_PowerTools]
 name = Rocky Linux 8 - PowerTools
-baseurl = https://ssc-satellite1.colo.seagate.com/pulp/repos/EOS/Production/Rocky_8_Content_View/custom/Rocky_8/PowerTools
+baseurl = http://ssc-satellite1.colo.seagate.com/pulp/repos/EOS/Production/Rocky_8_Content_View/custom/Rocky_8/PowerTools
 enabled = 1
 gpgcheck = 0
 sslverify = 1
@@ -48,10 +48,10 @@ enabled_metadata = 1
 
 [EOS_EPEL-8_EPEL-8]
 name = EPEL-8
-baseurl = https://ssc-satellite1.colo.seagate.com/pulp/repos/EOS/Production/Rocky_8_Content_View/custom/EPEL-8/EPEL-8
+baseurl = http://ssc-satellite1.colo.seagate.com/pulp/repos/EOS/Production/Rocky_8_Content_View/custom/EPEL-8/EPEL-8
 enabled = 1
 gpgcheck = 1
-gpgkey = https://ssc-satellite1.colo.seagate.com/katello/api/v2/repositories/231/gpg_key_content
+gpgkey = http://ssc-satellite1.colo.seagate.com/katello/api/v2/repositories/231/gpg_key_content
 sslverify = 1
 sslcacert = /etc/rhsm/ca/katello-server-ca.pem
 sslclientkey = /etc/pki/entitlement/856540173310713595-key.pem
@@ -61,7 +61,7 @@ enabled_metadata = 1
 
 [EOS_Rocky_8_ResilientStorage]
 name = Rocky Linux 8 - ResilientStorage
-baseurl = https://ssc-satellite1.colo.seagate.com/pulp/repos/EOS/Production/Rocky_8_Content_View/custom/Rocky_8/ResilientStorage
+baseurl = http://ssc-satellite1.colo.seagate.com/pulp/repos/EOS/Production/Rocky_8_Content_View/custom/Rocky_8/ResilientStorage
 enabled = 1
 gpgcheck = 0
 sslverify = 1
@@ -73,7 +73,7 @@ enabled_metadata = 1
 
 [EOS_Rocky_8_OS_x86_64_Rocky_8]
 name = Rocky Linux 8 - BaseOS
-baseurl = https://ssc-satellite1.colo.seagate.com/pulp/repos/EOS/Production/Rocky_8_Content_View/custom/Rocky_8/OS_x86_64_Rocky_8
+baseurl = http://ssc-satellite1.colo.seagate.com/pulp/repos/EOS/Production/Rocky_8_Content_View/custom/Rocky_8/OS_x86_64_Rocky_8
 enabled = 1
 gpgcheck = 0
 sslverify = 1
