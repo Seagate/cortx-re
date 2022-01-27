@@ -23,8 +23,6 @@ pipeline {
         build_upload_dir = "$release_dir/github/integration-custom-ci/$os_version/$release_tag/cortx_iso"
     }
     
-    
-    
     options {
         timeout(time: 35, unit: 'MINUTES')
         timestamps() 
