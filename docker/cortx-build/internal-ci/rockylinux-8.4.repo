@@ -1,0 +1,17 @@
+[base]
+gpgcheck=0
+enabled=1
+baseurl=http://ssc-satellite1.colo.seagate.com/pulp/repos/EOS/Library/custom/Rocky_8/OS_x86_64_Rocky_8/
+name=local-base
+
+[epel]
+gpgcheck=0
+enabled=1
+baseurl=http://ssc-satellite1.colo.seagate.com/pulp/repos/EOS/Library/custom/Rocky_8/EPEL/
+name=local-epel
+
+[extras]
+gpgcheck=0
+enabled=1
+baseurl=http://ssc-satellite1.colo.seagate.com/pulp/repos/EOS/Library/custom/Rocky_8/Extras/
+name=local-extras
