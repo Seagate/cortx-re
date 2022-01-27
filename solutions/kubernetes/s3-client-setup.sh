@@ -38,19 +38,28 @@ if ! which aws; then
   exit 1
 fi
 
-CORTX_IO_SVC=$(kubectl get pods -o wide | grep cortx-data-pod | awk '{print $6}' | head -1)
+echo -e "\nAdd CORTX data pod IP to /etc/hosts and create s3iamcli auth directory and log file."
+if [ "$DEPLOYMENT_TYPE" == "provisioner" ]; then
+    echo "Deployment type is: $DEPLOYMENT_TYPE"
+    CORTX_IO_SVC=$(kubectl get pods -o wide | grep server-node | awk '{print $6}' | head -1)
+else
+  CORTX_IO_SVC=$(kubectl get pods -o wide | grep cortx-server | awk '{print $6}' | head -1)
+fi
 echo "$CORTX_IO_SVC s3.seagate.com iam.seagate.com" >> /etc/hosts
 
 mkdir -p /var/log/cortx/auth
 touch /var/log/cortx/auth/s3iamcli.log
 
 s3iamcli ListAccounts --ldapuser sgiamadmin --ldappasswd ldapadmin --no-ssl
+check_status "Failed to list s3 accounts."
+
 mkdir -p /root/.aws/
 
 echo -e "\nCreate s3 account credentials:-\n"
 s3iamcli CreateAccount -n admin -e admin@seagate.com \
     --ldapuser sgiamadmin --ldappasswd ldapadmin --no-ssl \
   > s3-account.txt
+check_status "Failed to create s3 account."
 
 cat s3-account.txt
 
@@ -72,8 +81,11 @@ EOF
 
 echo -e "\nSetup aws s3 endpoints:-\n"
 aws configure set plugins.endpoint awscli_plugin_endpoint
+check_status "Failed to set awscli s3 plugin endpoint."
 aws configure set s3.endpoint_url http://s3.seagate.com
+check_status "Failed to set awscli s3 plugin endpoint."
 aws configure set s3api.endpoint_url http://s3.seagate.com
+check_status "Failed to set awscli s3 plugin endpoint."
 
 cat /root/.aws/config
 
