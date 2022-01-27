@@ -23,9 +23,8 @@ pipeline {
     
 
        environment {
-         release_dir = "/mnt/bigstorage/releases/cortx"
+        release_dir = "/mnt/bigstorage/releases/cortx"
         branch = "custom-ci"
-        os_version = "centos-7.9.2009"
         component = "hare"
         release_tag = "custom-build-$CUSTOM_CI_BUILD_ID"
         build_upload_dir = "$release_dir/github/integration-custom-ci/$os_version/$release_tag/cortx_iso"
