@@ -60,6 +60,7 @@ jq \
 rpm-build \
 rpmdevtools \
 scl-utils \
+python3-Levenshtein \
 wget \
 which \
 openssh-server \
