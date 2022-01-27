@@ -4,7 +4,9 @@ pipeline {
             label 'docker-k8-deployment-node'
         }
     }
-    
+
+    triggers { cron('30 19 * * *') }
+
     options {
         timeout(time: 240, unit: 'MINUTES')
         timestamps()
@@ -18,15 +20,12 @@ pipeline {
 
 
     parameters {
-
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for Cluster Setup scripts', trim: true)
+        string(name: 'CORTX_PRVSNR_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
+        string(name: 'CORTX_PRVSNR_REPO', defaultValue: 'Seagate/cortx-prvsnr', description: 'Repository for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-all:2.0.0-latest-custom-ci', description: 'CORTX-ALL image', trim: true)
-        string(name: 'SNS_CONFIG', defaultValue: '1+0+0', description: 'sns configuration for deployment. Please select value based on disks available on nodes.', trim: true)
-        string(name: 'DIX_CONFIG', defaultValue: '1+0+0', description: 'dix configuration for deployment. Please select value based on disks available on nodes.', trim: true)
-        text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used for CORTX cluster setup. First node will be used as Master', name: 'hosts')
-        // Please configure CORTX_SCRIPTS_BRANCH and CORTX_SCRIPTS_REPO parameter in Jenkins job configuration.
-       
+        // Please configure hosts parameter in the Jenkins job configuration.
     }    
 
     stages {
@@ -40,32 +39,34 @@ pipeline {
             }
         }
 
-        stage ('Destory Pre-existing Cluster') {
+        stage ('Destory Pre-existing Cluster Deployment') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Destroy existing Cluster', script: '''
+                sh label: 'Destroy existing cluster deployment:', script: '''
                     pushd solutions/kubernetes/
                         echo $hosts | tr ' ' '\n' > hosts
                         cat hosts
-                        ./cortx-deploy.sh --destroy-cluster
+                        export CORTX_PRVSNR_BRANCH=${CORTX_PRVSNR_BRANCH}
+                        export CORTX_PRVSNR_REPO=${CORTX_PRVSNR_REPO}
+                        export CORTX_IMAGE=${CORTX_IMAGE}
+                        export SOLUTION_CONFIG_TYPE=automated
+                        ./prvsnr-framework.sh --destroy-cluster
                     popd
                 '''
             }
         }
 
-
-        stage ('Deploy CORTX Components') {
+        stage ('Deploy Provisioner Deployment POD') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Deploy CORTX Components', script: '''
+                sh label: 'Deploy Provisioner Deployment POD', script: '''
                     pushd solutions/kubernetes/
-                        export CORTX_SCRIPTS_BRANCH=${CORTX_SCRIPTS_BRANCH}
-                        export CORTX_SCRIPTS_REPO=${CORTX_SCRIPTS_REPO}
+                        export CORTX_PRVSNR_BRANCH=${CORTX_PRVSNR_BRANCH}
+                        export CORTX_PRVSNR_REPO=${CORTX_PRVSNR_REPO}
                         export CORTX_IMAGE=${CORTX_IMAGE}
                         export SOLUTION_CONFIG_TYPE=automated
-                        export SNS_CONFIG=${SNS_CONFIG}
-                        export DIX_CONFIG=${DIX_CONFIG}
-                        ./cortx-deploy.sh --cortx-cluster
+                        export DEPLOYMENT_TYPE=provisioner
+                        ./prvsnr-framework.sh --deploy-cluster
                     popd
                 '''
             }
@@ -76,6 +77,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Perform IO Sanity Test', script: '''
                     pushd solutions/kubernetes/
+                        export DEPLOYMENT_TYPE=provisioner
                         ./cortx-deploy.sh --io-test
                     popd
                 '''
@@ -116,7 +118,7 @@ pipeline {
                 env.build_stage = "${build_stage}"
                 env.cluster_status = "${clusterStatusHTML}"
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
-                mailRecipients = "shailesh.vaidya@seagate.com"
+                mailRecipients = "shailesh.vaidya@seagate.com, CORTX.Provisioner@seagate.com"
                 emailext ( 
                     body: '''${SCRIPT, template="cluster-setup-email.template"}''',
                     mimeType: 'text/html',
@@ -131,30 +133,12 @@ pipeline {
         cleanup {
             sh label: 'Collect Artifacts', script: '''
             mkdir -p artifacts
-            pushd solutions/kubernetes/
-                HOST_FILE=$PWD/hosts
-                MASTER_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
-                scp -q "$MASTER_NODE":/root/deploy-scripts/k8_cortx_cloud/solution.yaml $WORKSPACE/artifacts/
-                cp /var/tmp/cortx-cluster-status.txt $WORKSPACE/artifacts/
-            popd    
+            cp /var/tmp/cortx-cluster-status.txt $WORKSPACE/artifacts/
             '''
             script {
                 // Archive Deployment artifacts in jenkins build
                 archiveArtifacts artifacts: "artifacts/*.*", onlyIfSuccessful: false, allowEmptyArchive: true 
             }
-        }
-
-        failure {
-            sh label: 'Collect CORTX support bundle logs in artifacts', script: '''
-            mkdir -p artifacts
-            pushd solutions/kubernetes/
-                ./cortx-deploy.sh --support-bundle
-                HOST_FILE=$PWD/hosts
-                MASTER_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
-                LOG_FILE=$(ssh -o 'StrictHostKeyChecking=no' $MASTER_NODE 'ls -t /root/deploy-scripts/k8_cortx_cloud | grep logs-cortx-cloud | grep .tar | head -1')
-                scp -q "$MASTER_NODE":/root/deploy-scripts/k8_cortx_cloud/$LOG_FILE $WORKSPACE/artifacts/
-            popd
-            '''
         }
     }
 }
