@@ -18,9 +18,15 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
-FROM rockylinux/rockylinux:8.4 AS base
+ARG OSNAME
+ARG OS_VERSION
 
+FROM ${OSNAME}/:${OSNAME}:${OS_VERSION} AS base
+
+ARG OSNAME
+ARG OS_VERSION
 ARG GIT_HASH
+ARG ENVIRONMENT
 
 LABEL maintainer="cortx.opensource@seagate.com" \
       org.opencontainers.image.title="CORTX Build Image" \
@@ -32,19 +38,18 @@ LABEL maintainer="cortx.opensource@seagate.com" \
 
 ENV BASH_ENV "/etc/profile"
 ENV GIT_HASH $GIT_HASH
-ENV OSNAME="rockylinux"
 ENV PATH="/root/.nvm/versions/node/v12.13.0/bin:${PATH}"
-ENV LANG=en_US.UTF-8 \
-    LC_ALL=en_US.UTF-8
+#ENV LANG=en_US.UTF-8 \
+#    LC_ALL=en_US.UTF-8
 
 #Disable default repositories. 
-RUN rm -rf /etc/yum.repos.d/rockylinux-*
+RUN rm -rf /etc/yum.repos.d/${OSNAME}-*
 
 #Add Internal and CORTX uploads repository
-COPY ./docker/cortx-build/internal-ci/rockylinux-8.4.repo /etc/yum.repos.d/
+COPY ./docker/cortx-build/${ENVIRONMENT}/${OSNAME}-${OS_VERSION}.repo /etc/yum.repos.d/
 
 # Install EPEL repo for opensource-ci
-RUN if [ "internal-ci" = "opensource-ci" ] ; then yum install epel-release -y ; fi && yum clean all \
+RUN if [ "${ENVIRONMENT}" = "opensource-ci" ] ; then yum install epel-release -y ; fi && yum clean all \
 && rm -rf /var/cache/yum
 
 # Enable SCL repos

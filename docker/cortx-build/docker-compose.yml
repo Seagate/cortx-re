@@ -20,6 +20,19 @@
 version: "3"
 
 services:
+  cortx-build-rockylinux-8.4:
+    image: ghcr.io/seagate/cortx-build:rockylinux-8.4
+    build:
+      context: ../../
+      dockerfile: ./docker/cortx-build/Dockerfile-rockylinux
+      args:
+        OSNAME: rockylinux
+        OS_VERSION: 8.4
+        ENVIRONMENT: internal-ci
+      volumes:
+       - /var/artifacts:/var/artifacts
+       - /root/cortx:/cortx-workspace
+
   cortx-build-centos-7.8.2003:
     image: ghcr.io/seagate/cortx-build:centos-7.8.2003
     build:
