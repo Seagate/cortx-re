@@ -63,8 +63,8 @@ pipeline {
                         export build_number=${BUILD_ID}
                         kernel_src=$(ls -1rd /lib/modules/*/build | head -n1)
                         cp cortx-motr.spec.in cortx-motr.spec
-                        sed -i "/BuildRequires: kernel*/d" cortx-motr.spec
-                        sed -i "/BuildRequires: %{lustre_devel}/d" cortx-motr.spec
+                        sed -i "/BuildRequires.*kernel*/d" cortx-motr.spec
+                        sed -i "/BuildRequires.*%{lustre_devel}/d" cortx-motr.spec
                         sed -i 's/@BUILD_DEPEND_LIBFAB@//g' cortx-motr.spec
                         sed -i 's/@.*@/111/g' cortx-motr.spec
                         yum-builddep -y cortx-motr.spec
