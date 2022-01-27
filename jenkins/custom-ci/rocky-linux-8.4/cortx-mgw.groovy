@@ -163,6 +163,7 @@ pipeline {
                     mv /mnt/rgw-build/rpmbuild/$BUILD_NUMBER/RPMS/*/*.rpm /mnt/rgw-build/release/$BUILD_NUMBER/
                     mv /root/rpmbuild/RPMS/x86_64/*.rpm /mnt/rgw-build/release/$BUILD_NUMBER/
                     createrepo -v /mnt/rgw-build/release/$BUILD_NUMBER/
+                    rm -rf last_successful
                     ln -s $BUILD_NUMBER last_successful 
                     echo "Ceph and Motr Packages are available at "
                     echo "http://cortx-storage.colo.seagate.com/releases/cortx/rgw-build/release/$BUILD_NUMBER/"
