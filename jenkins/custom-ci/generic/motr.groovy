@@ -126,7 +126,6 @@ pipeline {
                 }
 
                 stage ("build Hare") {
-                    when { expression { false } }
                     steps {
                         script { build_stage = env.STAGE_NAME }
                         build job: 'hare-custom-build', wait: true,

@@ -2,7 +2,7 @@
 pipeline {
     agent {
         node {
-            label 'docker-${os_version}-node'
+            label "docker-${os_version}-node"
         }
     }
 
@@ -15,8 +15,8 @@ pipeline {
         string(name: 'CUSTOM_CI_BUILD_ID', defaultValue: '0', description: 'Custom CI Build Number')
         choice(
                 name: 'MOTR_BRANCH', 
-                    choices: ['custom-ci', 'stable', 'Cortx-v1.0.0_Beta'],
-                    description: 'Branch name to pick-up other components rpms'
+                choices: ['custom-ci', 'stable', 'Cortx-v1.0.0_Beta'],
+                description: 'Branch name to pick-up other components rpms'
             )
         // Add os_version parameter in jenkins configuration    
     }
