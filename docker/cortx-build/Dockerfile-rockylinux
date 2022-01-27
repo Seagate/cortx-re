@@ -72,6 +72,7 @@ openssh-server \
 java-1.8.0-openjdk \
 make \
 gcc \
+yum-utils \
 cmake \
 gcc-c++ \
 sudo \
