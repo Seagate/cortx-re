@@ -64,6 +64,7 @@ pipeline {
 
                     #Install cortx-py-utils package with --nodeps    
                     wget -r -np -nH --cut-dirs=7 -A "cortx-py-utils*.rpm" http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/$os_version/$release_tag/cortx_iso/
+                    rpm -ivh --nodeps cortx-py-utils*.rpm
                 '''
 
                 sh label: 'Install pyinstaller', script: """
