@@ -8,7 +8,7 @@ pipeline {
 
     parameters {
         string(name: 'PRVSNR_URL', defaultValue: 'https://github.com/Seagate/cortx-prvsnr', description: 'Repository URL for Provisioner.')
-        string(name: 'PRVSNR_BRANCH', defaultValue: 'stable', description: 'Branch for Provisioner.')
+        string(name: 'PRVSNR_BRANCH', defaultValue: 'main', description: 'Branch for Provisioner.')
         string(name: 'CUSTOM_CI_BUILD_ID', defaultValue: '0', description: 'Custom CI Build Number')
         // Add os_version parameter in jenkins configuration
     }
