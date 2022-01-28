@@ -272,6 +272,7 @@ echo "---------------------------------------[ Setting up Primary Node $HOSTNAME
     
     add_image_info
     add_node_info_solution_config
+    cleanup
 }
 
 function setup_worker_node(){
@@ -279,6 +280,7 @@ echo "---------------------------------------[ Setting up Worker Node on $HOSTNA
     #Third-party images are downloaded from GitHub container registry.
     download_deploy_script
     execute_prereq
+    cleanup
 }
 
 function destroy(){
@@ -298,6 +300,7 @@ function destroy(){
             "/root/install.postnochroot.log"
             "/root/original-ks.cfg"
             "/etc/pip.conf"
+            "/var/cache"
         )
         for file in "${files_to_remove[@]}"; do
             if [ -f "$file" ] || [ -d "$file" ]; then
@@ -376,6 +379,11 @@ function logs_generation(){
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         ./logs-cortx-cloud.sh
     popd
+}
+
+function cleanup(){
+    echo -e "\n-----------[ Clean up untagged/unused images and stopped containers... ]--------------------"
+    docker system prune -a -f
 }
 
 case $ACTION in
