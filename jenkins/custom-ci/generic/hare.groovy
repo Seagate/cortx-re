@@ -76,7 +76,7 @@ EOF
                     yum clean all;rm -rf /var/cache/yum
                 '''    
                 sh label: 'Install packages', script: '''    
-                    yum install cortx-py-utils --skip-broken
+                    yum install --downloadonly --downloaddir=/tmp cortx-py-utils && rpm -ivh /tmp/cortx-py-utils*.rpm
                     yum install cortx-motr{,-devel} -y
                 '''
             }
