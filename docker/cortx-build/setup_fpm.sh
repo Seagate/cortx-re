@@ -22,10 +22,7 @@
 set -ex
 
 #yum install -y ruby-devel gcc make rpm-build rubygems python36
-if [ "$1" = "rockylinux" ]; then
-	dnf install -y ruby-devel gcc make rpm-build rubygems python36
-	dnf install ruby -y
-else
+if [ "x$1" = "x" ]; then
 	yum --enablerepo=centos-sclo-rh install rh-ruby23 rh-ruby23-ruby-devel gcc make rpm-build rubygems -y
 cat <<EOF >>rh-ruby23.sh
 #!/bin/bash
@@ -35,6 +32,9 @@ EOF
 
 source rh-ruby23.sh
 	cp rh-ruby23.sh /etc/profile.d/
+elif [ "$1" = "rockylinux" ]; then
+	dnf install -y ruby-devel gcc make rpm-build rubygems python36
+	dnf install ruby -y
 fi
 
 
