@@ -1,15 +1,14 @@
 pipeline {
     agent {
           node {
-             label "ssc-vm-g4-rhev4-0465.colo.seagate.com"
-             // label "cortx-test-ssc-vm-4103"
+             label "${j_agent}"
           }
       }
       parameters {
           string(
               defaultValue: 'centos-7.9.2009',
-              name: 'os_version',
-              description: 'OS version of the build',
+              name: 'j_agent',
+              description: 'Jenkins Agent',
               trim: true
           )
       string(
