@@ -18,7 +18,7 @@ pipeline {
         release_dir = "/mnt/bigstorage/releases/cortx"
         version = "2.0.0"
         branch = "custom-ci"
-        component = "hare"
+        component = "cortx-utils"
         release_tag = "custom-build-$CUSTOM_CI_BUILD_ID"
         build_upload_dir = "$release_dir/github/integration-custom-ci/$os_version/$release_tag/cortx_iso"
     }
