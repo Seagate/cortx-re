@@ -256,6 +256,8 @@ fi
 
 function setup_primary_node(){
 echo "---------------------------------------[ Setting up Primary Node $HOSTNAME ]--------------------------------------"
+    #Clean up untagged docker images and stopped docker containers.
+    cleanup
     #Third-party images are downloaded from GitHub container registry. 
     download_deploy_script
     install_yq
@@ -272,15 +274,15 @@ echo "---------------------------------------[ Setting up Primary Node $HOSTNAME
     
     add_image_info
     add_node_info_solution_config
-    cleanup
 }
 
 function setup_worker_node(){
 echo "---------------------------------------[ Setting up Worker Node on $HOSTNAME ]--------------------------------------"
+    #Clean up untagged docker images and stopped docker containers.
+    cleanup
     #Third-party images are downloaded from GitHub container registry.
     download_deploy_script
     execute_prereq
-    cleanup
 }
 
 function destroy(){
