@@ -166,27 +166,26 @@ COPY ./scripts/third-party-rpm/ /opt/third-party-rpm
 # Makefile for build
 COPY ./docker/cortx-build/Makefile . 
 
-#FROM base as lustre-rpm-builder
-#
-#ARG LUSTRE_VERSION 
-#ARG ENVIRONMENT
-#ENV LUSTRE_VERSION=2.12.7
-#
-#ADD https://downloads.whamcloud.com/public/lustre/lustre-${LUSTRE_VERSION}/el7/client/SRPMS/lustre-${LUSTRE_VERSION}-1.src.rpm . 
-#RUN rpm -i lustre-${LUSTRE_VERSION}-1.src.rpm 
-#
-#COPY ./docker/cortx-build/lustre-2.9.0.spec.patch .
+FROM base as lustre-rpm-builder
 
-#RUN patch -p1 -i lustre-2.9.0.spec.patch /root/rpmbuild/SPECS/lustre.spec
+ARG LUSTRE_VERSION 
+ARG ENVIRONMENT
 
-#RUN yum -y install kernel{,-devel}  \
-#	&& yum-builddep -y /root/rpmbuild/SPECS/lustre.spec \
-#        && yum clean all \
-#        && rm -rf /var/cache/yum
-#	
-#RUN QA_RPATHS=255 rpmbuild -bb --without servers --without lustre-tests \
-#        --define 'configure_args --disable-gss-keyring' \
-#        --define "kver `ls -1r /lib/modules | head -n1`" \
+ADD https://downloads.whamcloud.com/public/lustre/lustre-${LUSTRE_VERSION}/el7/client/SRPMS/lustre-${LUSTRE_VERSION}-1.src.rpm . 
+RUN rpm -i lustre-${LUSTRE_VERSION}-1.src.rpm 
+
+COPY ./docker/cortx-build/lustre-2.9.0.spec.patch .
+
+RUN patch -p1 -i lustre-2.9.0.spec.patch /root/rpmbuild/SPECS/lustre.spec
+
+RUN yum -y install kernel{,-devel}  \
+	&& yum-builddep -y /root/rpmbuild/SPECS/lustre.spec \
+        && yum clean all \
+        && rm -rf /var/cache/yum
+	
+RUN QA_RPATHS=255 rpmbuild -bb --without servers --without lustre-tests \
+        --define 'configure_args --disable-gss-keyring' \
+        --define "kver `ls -1r /lib/modules | head -n1`" 
 #        /root//rpmbuild/SPECS/lustre.spec
 
 #FROM base as io-build 
