@@ -116,7 +116,7 @@ redhat-lsb && dnf clean all \
 #RUN yum-config-manager --disable centos-sclo*
 
 # set locale
-#RUN localedef -i en_US -f UTF-8 en_US.UTF-8
+RUN localedef -i en_US -f UTF-8 en_US.UTF-8
 
 # set up rpmbuild directory
 RUN rpmdev-setuptree
@@ -151,10 +151,10 @@ COPY ./scripts/rpm-signing/* /opt/rpm-signing/
 
 RUN  cat /opt/rpm-signing/gpgoptions >>  ~/.rpmmacros && \
      sed -i '/passphrase/d' /opt/rpm-signing/genkey-batch && \
-     sed -i -e 's/$argv 1/$argv 0/g' -e 's/${PASSPHRASE}/ /g' -e '/PASSPHRASE/d' /opt/rpm-signing/rpm-sign.sh
-#     /usr/bin/gpg --batch --gen-key /opt/rpm-signing/genkey-batch && \
-#     /usr/bin/gpg --export -a 'Seagate'  > /opt/rpm-signing/RPM-GPG-KEY-Seagate && \
-#     rpm --import /opt/rpm-signing/RPM-GPG-KEY-Seagate
+     sed -i -e 's/$argv 1/$argv 0/g' -e 's/${PASSPHRASE}/ /g' -e '/PASSPHRASE/d' /opt/rpm-signing/rpm-sign.sh && \
+     /usr/bin/gpg --pinentry-mode loopback --passphrase '' --batch --gen-key /opt/rpm-signing/genkey-batch && \
+     /usr/bin/gpg --export -a 'Seagate'  > /opt/rpm-signing/RPM-GPG-KEY-Seagate && \
+     rpm --import /opt/rpm-signing/RPM-GPG-KEY-Seagate
 
 # release helper scripts
 COPY ./scripts/release_support/build_release_info.sh /opt/release_support/
