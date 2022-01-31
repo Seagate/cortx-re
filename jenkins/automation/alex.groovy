@@ -18,9 +18,13 @@ pipeline {
               trim: true
           )
       }
+      
+      triggers { 
+          cron('0 0 1-7 * 1') 
+      }
 
       stages {
-        stage('Checkout source code') {
+      stage('Checkout source code') {
               steps {
                   script {
                       checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/seagate/cortx-re/']]])
@@ -39,7 +43,7 @@ pipeline {
                   virtualenv alex --python=python2.7
                   source ./alex/bin/activate
                   pip install GitPython==2.1.15
-                  node --version
+                  
               '''
           }
       }
@@ -47,6 +51,9 @@ pipeline {
           steps {
               // cleanWs()
               script {
+                  sh """ rm -f """ + "${env.WORKSPACE}/cortx-*.html"
+                  sh """ rm -f """ + "${env.WORKSPACE}/cortx-*.alex"
+                  sh """ rm -f """ + "${env.WORKSPACE}/cortx-*.custom"
                   def projects = readJSON file: "${env.WORKSPACE}/config.json"
                   projects.repository.each { entry ->
                     echo entry.name
@@ -110,7 +117,7 @@ pipeline {
               script {
                   def useEmailList = ''
                   if ( params.environment == 'prod') {
-                    useEmailList = 'shailesh.vaidya@seagate.com, priyank.p.dalal@seagate.com, john.bent@seagate.com, venkatesh.k@seagate.com'
+                    useEmailList = 'trupti.patil@seagate.com, john.bent@seagate.com, venkatesh.k@seagate.com'
                   }
                   env.ForEmailPlugin = env.WORKSPACE
                   emailext mimeType: 'text/html',
@@ -127,7 +134,7 @@ pipeline {
               script {
                   def useEmailList = ''
                   if ( params.environment == 'prod') {
-                    useEmailList = 'shailesh.vaidya@seagate.com, priyank.p.dalal@seagate.com, john.bent@seagate.com, venkatesh.k@seagate.com'
+                    useEmailList = 'shailesh.vaidya@seagate.com, mukul.malhotra@seagate.com, john.bent@seagate.com, venkatesh.k@seagate.com'
                   }
                   env.ForEmailPlugin = env.WORKSPACE
                   emailext mimeType: 'text/html',
@@ -143,7 +150,7 @@ pipeline {
               script {
                   def useEmailList = ''
                   if ( params.environment == 'prod') {
-                    useEmailList = 'shailesh.vaidya@seagate.com, priyank.p.dalal@seagate.com, john.bent@seagate.com, venkatesh.k@seagate.com'
+                    useEmailList = 'nilesh.govande@seagate.com, basavaraj.kirunge@seagate.com, ivan.tishchenko@seagate.com, john.bent@seagate.com, venkatesh.k@seagate.com'
                   }
                   env.ForEmailPlugin = env.WORKSPACE
                   emailext mimeType: 'text/html',
@@ -159,7 +166,7 @@ pipeline {
               script {
                   def useEmailList = ''
                   if ( params.environment == 'prod') {
-                    useEmailList = 'shailesh.vaidya@seagate.com, priyank.p.dalal@seagate.com, john.bent@seagate.com, venkatesh.k@seagate.com'
+                    useEmailList = 'archana.limaye@seagate.com, ajay.paratmandali@seagate.com, indrajit.zagade@seagate.com, ajay.srivastava@seagate.com, john.bent@seagate.com, venkatesh.k@seagate.com'
                   }
                   env.ForEmailPlugin = env.WORKSPACE
                   emailext mimeType: 'text/html',
@@ -175,7 +182,7 @@ pipeline {
               script {
                   def useEmailList = ''
                   if ( params.environment == 'prod') {
-                    useEmailList = 'shailesh.vaidya@seagate.com, priyank.p.dalal@seagate.com, john.bent@seagate.com, venkatesh.k@seagate.com'
+                    useEmailList = 'mandar.sawant@seagate.com, john.bent@seagate.com, venkatesh.k@seagate.com'
                   }
                   env.ForEmailPlugin = env.WORKSPACE
                   emailext mimeType: 'text/html',
@@ -191,7 +198,7 @@ pipeline {
               script {
                   def useEmailList = ''
                   if ( params.environment == 'prod') {
-                    useEmailList = 'shailesh.vaidya@seagate.com, priyank.p.dalal@seagate.com, john.bent@seagate.com, venkatesh.k@seagate.com'
+                    useEmailList = 'ajay.srivastava@seagate.com, soniya.moholkar@seagate.com, john.bent@seagate.com, venkatesh.k@seagate.com'
                   }
                   env.ForEmailPlugin = env.WORKSPACE
                   emailext mimeType: 'text/html',
@@ -207,7 +214,7 @@ pipeline {
               script {
                   def useEmailList = ''
                   if ( params.environment == 'prod') {
-                    useEmailList = 'shailesh.vaidya@seagate.com, priyank.p.dalal@seagate.com, john.bent@seagate.com, venkatesh.k@seagate.com'
+                    useEmailList = 'ajay.srivastava@seagate.com, soniya.moholkar@seagate.com, john.bent@seagate.com, venkatesh.k@seagate.com'
                   }
                   env.ForEmailPlugin = env.WORKSPACE
                   emailext mimeType: 'text/html',
@@ -223,7 +230,7 @@ pipeline {
               script {
                   def useEmailList = ''
                   if ( params.environment == 'prod') {
-                    useEmailList = 'shailesh.vaidya@seagate.com, priyank.p.dalal@seagate.com, john.bent@seagate.com, venkatesh.k@seagate.com'
+                    useEmailList = 'chetan.deshmukh@seagate.com, john.bent@seagate.com, venkatesh.k@seagate.com'
                   }
                   env.ForEmailPlugin = env.WORKSPACE
                   emailext mimeType: 'text/html',
@@ -234,12 +241,12 @@ pipeline {
               }
           }
         }
-        stage('Send Email to Provisioner') {
+      stage('Send Email to Provisioner') {
             steps {
                 script {
                     def useEmailList = ''
                     if ( params.environment == 'prod') {
-                      useEmailList = 'shailesh.vaidya@seagate.com, priyank.p.dalal@seagate.com, john.bent@seagate.com, venkatesh.k@seagate.com'
+                      useEmailList = 'nitin.nimran@seagate.com, john.bent@seagate.com, venkatesh.k@seagate.com'
                     }
                     env.ForEmailPlugin = env.WORKSPACE
                     emailext mimeType: 'text/html',
@@ -250,12 +257,12 @@ pipeline {
                 }
             }
         }
-        stage('Send Email to Utils') {
+      stage('Send Email to Utils') {
             steps {
                 script {
                     def useEmailList = ''
                     if ( params.environment == 'prod') {
-                      useEmailList = 'shailesh.vaidya@seagate.com, priyank.p.dalal@seagate.com, john.bent@seagate.com, venkatesh.k@seagate.com'
+                      useEmailList = 'sachin.punadikar@seagate.com, ajay.srivastava@seagate.com, john.bent@seagate.com, venkatesh.k@seagate.com'
                     }
                     env.ForEmailPlugin = env.WORKSPACE
                     emailext mimeType: 'text/html',
@@ -266,12 +273,12 @@ pipeline {
                 }
             }
         }
-        stage('Send Email to Posix') {
+      stage('Send Email to Posix') {
             steps {
                 script {
                     def useEmailList = ''
                     if ( params.environment == 'prod') {
-                      useEmailList = 'shailesh.vaidya@seagate.com, priyank.p.dalal@seagate.com, john.bent@seagate.com, venkatesh.k@seagate.com'
+                      useEmailList = 'sachin.punadikar@seagate.com, john.bent@seagate.com, venkatesh.k@seagate.com'
                     }
                     env.ForEmailPlugin = env.WORKSPACE
                     emailext mimeType: 'text/html',
@@ -283,4 +290,5 @@ pipeline {
             }
         }
     }
+    
 }
