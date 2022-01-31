@@ -12,7 +12,7 @@ pipeline {
         disableConcurrentBuilds()
     }
     environment {
-        CORTX_RE_BRANCH = "kubernetes"
+        CORTX_RE_BRANCH = "main"
         CORTX_RE_REPO = "https://github.com/Seagate/cortx-re/"
         DOCKER_IMAGE_LOCATION = "https://github.com/Seagate/cortx-re/pkgs/container/cortx-all"
         LOCAL_REG_CRED = credentials('local-registry-access')
@@ -21,7 +21,7 @@ pipeline {
         GITHUB_TAG_SUFFIX = "custom-ci" 
     }
     parameters {
-        string(name: 'CORTX_IMAGE', defaultValue: 'cortx-docker.colo.seagate.com/seagate/cortx-all:2.0.0-latest-kubernetes', description: 'CORTX-ALL image', trim: true)
+        string(name: 'CORTX_IMAGE', defaultValue: 'cortx-docker.colo.seagate.com/seagate/cortx-all:2.0.0-latest', description: 'CORTX-ALL image', trim: true)
         choice (
             choices: ['ALL', 'DEVOPS', 'DEBUG'],
             description: 'Email Notification Recipients ',
@@ -54,20 +54,6 @@ pipeline {
             }
         }
 
-        stage ("Cluster Cleanup") {
-            steps {
-                script { build_stage = env.STAGE_NAME }
-                script {
-                    build job: '/Cortx-kubernetes/destroy-cortx-cluster', wait: true,
-                    parameters: [
-                        string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
-                        string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
-                        text(name: 'hosts', value: "${hosts}")
-                    ]
-                }
-            }
-        }
-
         stage ("Deploy CORTX Cluster") {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -96,26 +82,34 @@ pipeline {
                 }
             }
            steps {
-                sh encoding: 'utf-8', label: 'Validate Docker pre-requisite', script: """
+                sh label: 'Push Image to GitHub', script: '''                   
                    systemctl status docker
                    /usr/local/bin/docker-compose --version
-                   echo 'y' | docker image prune
-   
+                   echo \'y\' | docker image prune
                    docker pull $CORTX_IMAGE
-                   docker tag $CORTX_IMAGE ghcr.io/seagate/cortx-all:$VERSION-$BUILD_NUMBER-$GITHUB_TAG_SUFFIX
-                   docker tag $CORTX_IMAGE ghcr.io/seagate/cortx-all:$VERSION-latest-$GITHUB_TAG_SUFFIX
-                   
-                   docker login ghcr.io -u ${GITHUB_CRED_USR} -p ${GITHUB_CRED_PSW}
-                   docker push ghcr.io/seagate/cortx-all:$VERSION-latest-$GITHUB_TAG_SUFFIX 
-                   docker push ghcr.io/seagate/cortx-all:$VERSION-$BUILD_NUMBER-$GITHUB_TAG_SUFFIX
 
-                   docker rmi ghcr.io/seagate/cortx-all:$VERSION-latest-$GITHUB_TAG_SUFFIX
-                   docker rmi ghcr.io/seagate/cortx-all:$VERSION-$BUILD_NUMBER-$GITHUB_TAG_SUFFIX
-                """
-            }
+                   echo "\n RPM Build URL used for Nightly Image"
+                   docker inspect $CORTX_IMAGE | jq -r '.[] | (.ContainerConfig.Cmd)' | grep 'BUILD_URL='
+
+                   #Update VERSION details in RELEASE.INFO file
+
+                   docker commit $(docker run -d ${CORTX_IMAGE} sed -i /VERSION/s/\\"2.0.0.*\\"/\\"${VERSION}-${BUILD_NUMBER}\\"/ /opt/seagate/cortx/RELEASE.INFO) ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}-${GITHUB_TAG_SUFFIX}
+
+
+                   docker tag ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}-${GITHUB_TAG_SUFFIX} ghcr.io/seagate/cortx-all:${VERSION}-latest-${GITHUB_TAG_SUFFIX}
+
+                   docker login ghcr.io -u ${GITHUB_CRED_USR} -p ${GITHUB_CRED_PSW}
+                   
+                   docker push ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}-${GITHUB_TAG_SUFFIX}
+                   docker push ghcr.io/seagate/cortx-all:${VERSION}-latest-${GITHUB_TAG_SUFFIX}
+                   
+                   docker rmi ghcr.io/seagate/cortx-all:${VERSION}-latest-${GITHUB_TAG_SUFFIX}
+                   docker rmi ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}-${GITHUB_TAG_SUFFIX}
+                '''
+           }
         }
 
-        stage ("QA Sanity K8S") {
+        stage ("K8s QA Sanity") {
             steps {
                 script {
                     catchError(stageResult: 'FAILURE') {
@@ -123,7 +117,7 @@ pipeline {
                         parameters: [
                             string(name: 'M_NODE', value: "${env.master_node}"),
                             password(name: 'HOST_PASS', value: "${env.hostpasswd}"),
-                            string(name: 'CORTX_IMAGE', value: "${CORTX_IMAGE}"),
+                            string(name: 'CORTX_IMAGE', value: "ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}-${GITHUB_TAG_SUFFIX}"),
                             string(name: 'NUM_NODES', value: "${env.numberofnodes}")
                         ]
                         env.Sanity_Failed = qaSanity.buildVariables.Sanity_Failed
@@ -149,7 +143,7 @@ pipeline {
                 echo "${env.cortxCluster_status}"
                 echo "${env.qaSanity_status}"
                 if ( "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "SUCCESS" ) {
-                    MESSAGE = "K8s Build#${build_id} 3node Deployment Deployment=Passed, SanityTest=Passed, Regression=Passed"
+                    MESSAGE = "K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=Passed, SanityTest=Passed, Regression=Passed"
                     ICON = "accept.gif"
                     STATUS = "SUCCESS"
                     env.deployment_result = "SUCCESS"
@@ -157,7 +151,7 @@ pipeline {
                     currentBuild.result = "SUCCESS"
                 } else if ( "${env.cortxCluster_status}" == "FAILURE" || "${env.cortxCluster_status}" == "UNSTABLE" || "${env.cortxCluster_status}" == "null" ) {
                     manager.buildFailure()
-                    MESSAGE = "K8s Build#${build_id} 3node Deployment Deployment=failed, SanityTest=skipped, Regression=skipped"
+                    MESSAGE = "K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=failed, SanityTest=skipped, Regression=skipped"
                     ICON = "error.gif"
                     STATUS = "FAILURE"
                     env.sanity_result = "SKIPPED"
@@ -165,21 +159,21 @@ pipeline {
                     currentBuild.result = "FAILURE"
                 } else if ( "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "FAILURE" || "${env.qaSanity_status}" == "null" ) {
                     manager.buildFailure()
-                    MESSAGE = "K8s Build#${build_id} 3node Deployment Deployment=Passed, SanityTest=failed, Regression=skipped"
+                    MESSAGE = "K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=Passed, SanityTest=failed, Regression=skipped"
                     ICON = "error.gif"
                     STATUS = "FAILURE"
                     env.sanity_result = "FAILURE"
                     env.deployment_result = "SUCCESS"
                     currentBuild.result = "FAILURE"
                 } else if ( "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "UNSTABLE" ) {
-                    MESSAGE = "K8s Build#${build_id} 3node Deployment Deployment=Passed, SanityTest=passed, Regression=failed"
+                    MESSAGE = "K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=Passed, SanityTest=passed, Regression=failed"
                     ICON = "unstable.gif"
                     STATUS = "UNSTABLE"
                     env.deployment_result = "SUCCESS"
                     env.sanity_result = "UNSTABLE"
                     currentBuild.result = "UNSTABLE"
                 } else {
-                    MESSAGE = "K8s Build#${build_id} 3node Deployment Deployment=unstable, SanityTest=unstable, Regression=unstable"
+                    MESSAGE = "K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=unstable, SanityTest=unstable, Regression=unstable"
                     ICON = "unstable.gif"
                     STATUS = "UNSTABLE"
                     env.sanity_result = "UNSTABLE"
@@ -188,11 +182,11 @@ pipeline {
                 }
                 env.build_setupcortx_url = sh( script: "echo ${env.cortxcluster_build_url}/artifact/artifacts/cortx-cluster-status.txt", returnStdout: true)
                 env.host = "${env.allhost}"
-                env.build_id = "${CORTX_IMAGE}"
+                env.build_id = "ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}-${GITHUB_TAG_SUFFIX}"
                 env.build_location = "${DOCKER_IMAGE_LOCATION}"
                 env.deployment_status = "${MESSAGE}"
                 env.cluster_status = "${env.build_setupcortx_url}"
-                env.CORTX_DOCKER_IMAGE = "${CORTX_IMAGE}"
+                env.CORTX_DOCKER_IMAGE = "ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}-${GITHUB_TAG_SUFFIX}"
                 if ( params.EMAIL_RECIPIENTS == "ALL" ) {
                     mailRecipients = "akhil.bhansali@seagate.com, amit.kapil@seagate.com, amol.j.kongre@seagate.com, deepak.choudhary@seagate.com, jaikumar.gidwani@seagate.com, mandar.joshi@seagate.com, neerav.choudhari@seagate.com, pranay.kumar@seagate.com, swarajya.pendharkar@seagate.com, taizun.a.kachwala@seagate.com, trupti.patil@seagate.com, ujjwal.lanjewar@seagate.com, shailesh.vaidya@seagate.com, abhijit.patil@seagate.com, sonal.kalbende@seagate.com, gaurav.chaudhari@seagate.com, mukul.malhotra@seagate.com, swanand.s.gadre@seagate.com, don.r.bloyer@seagate.com, kalpesh.chhajed@seagate.com"
                     //mailRecipients = "cortx.sme@seagate.com, manoj.management.team@seagate.com, CORTX.SW.Architecture.Team@seagate.com, CORTX.DevOps.RE@seagate.com"
