@@ -183,9 +183,9 @@ RUN yum -y install kernel{,-devel}  \
         && yum clean all \
         && rm -rf /var/cache/yum
 	
-RUN QA_RPATHS=255 rpmbuild -bb --without servers --without lustre-tests \
-        --define 'configure_args --disable-gss-keyring' \
-        --define "kver `ls -1r /lib/modules | head -n1`" 
+#RUN QA_RPATHS=255 rpmbuild -bb --without servers --without lustre-tests \
+#        --define 'configure_args --disable-gss-keyring' \
+#        --define "kver `ls -1r /lib/modules | head -n1`" 
 #        /root//rpmbuild/SPECS/lustre.spec
 
 #FROM base as io-build 
