@@ -22,25 +22,26 @@ set -e -o pipefail
 
 usage() { 
 echo "Generate cortx-all docker image from provided CORTX release build"
-echo "Usage: $0 [ -b build ] [ -p push docker-image to GHCR yes/no. Default no] [ -t tag latest yes/no. Default no" ] [ -r registry location ] [ -e environment ] [ -h print help message ] 1>&2; exit 1; }
+echo "Usage: $0 [ -b build ] [ -p push docker-image to GHCR yes/no. Default no] [ -t tag latest yes/no. Default no" ] [ -r registry location ] [ -e environment ] [ -o operating-system ][ -h print help message ] 1>&2; exit 1; }
 
 VERSION=2.0.0
 DOCKER_PUSH=no
 TAG_LATEST=no
-OS=centos-7.9.2009
+#OS=centos-7.9.2009
 ENVIRONMENT=opensource-ci
 REGISTRY="cortx-docker.colo.seagate.com"
 PROJECT="seagate"
 ARTFACT_URL="http://cortx-storage.colo.seagate.com/releases/cortx/github/"
 SERVICE=cortx-all
 
-while getopts "b:p:t:r:e:h:" opt; do
+while getopts "b:p:t:r:e:o:h:" opt; do
     case $opt in
         b ) BUILD=$OPTARG;;
         p ) DOCKER_PUSH=$OPTARG;;
         t ) TAG_LATEST=$OPTARG;;
         e ) ENVIRONMENT=$OPTARG;;
         r ) REGISTRY=$OPTARG;;
+        o ) OS=$OPTARG;;
         h ) usage
         exit 0;;
         *) usage
@@ -58,6 +59,10 @@ else
 if echo $BUILD | grep -q custom; then BRANCH="integration-custom-ci"; else BRANCH="main"; fi
 BUILD_URL="$ARTFACT_URL/$BRANCH/$OS/$BUILD"
 fi
+
+
+OS_TYPE=$(echo $OS | awk -F[-] '{print $1}')
+OS_RELEASE=$( echo $OS | awk -F[-] '{print $2}')
 
 echo "Building $SERVICE image from $BUILD_URL"
 sleep 5
@@ -90,7 +95,7 @@ fi
 
 CREATED_DATE=$(date -u +'%Y-%m-%d %H:%M:%S%:z')
 
-docker-compose -f ./docker-compose.yml build --force-rm --compress --build-arg GIT_HASH="$CORTX_VERSION" --build-arg VERSION="$VERSION-$DOCKER_BUILD_BUILD" --build-arg CREATED_DATE="$CREATED_DATE" --build-arg BUILD_URL=$BUILD_URL --build-arg ENVIRONMENT=$ENVIRONMENT $SERVICE
+docker-compose -f ./docker-compose.yml build --force-rm --compress --build-arg GIT_HASH="$CORTX_VERSION" --build-arg VERSION="$VERSION-$DOCKER_BUILD_BUILD" --build-arg CREATED_DATE="$CREATED_DATE" --build-arg BUILD_URL=$BUILD_URL --build-arg ENVIRONMENT=$ENVIRONMENT --build-arg OS_TYPE=$OS_TYPE --build-arg OS_RELEASE=$OS_RELEASE $SERVICE
 
 if [ "$DOCKER_PUSH" == "yes" ];then
         echo "Pushing Docker image to GitHub Container Registry"

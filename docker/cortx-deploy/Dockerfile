@@ -18,11 +18,13 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
-ARG CENTOS_RELEASE
+ARG OS_TYPE
+ARG OS_RELEASE
 
-FROM centos:${CENTOS_RELEASE}
+FROM ${OS_TYPE}:${OS_RELEASE}
 
-ARG CENTOS_RELEASE
+ARG OS_TYPE
+ARG OS_RELEASE
 ARG ENVIRONMENT
 ARG GIT_HASH
 ARG BUILD_URL
