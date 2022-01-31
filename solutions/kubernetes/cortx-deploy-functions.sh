@@ -256,6 +256,8 @@ fi
 
 function setup_primary_node(){
 echo "---------------------------------------[ Setting up Primary Node $HOSTNAME ]--------------------------------------"
+    #Clean up untagged docker images and stopped docker containers.
+    cleanup
     #Third-party images are downloaded from GitHub container registry. 
     download_deploy_script
     install_yq
@@ -276,6 +278,8 @@ echo "---------------------------------------[ Setting up Primary Node $HOSTNAME
 
 function setup_worker_node(){
 echo "---------------------------------------[ Setting up Worker Node on $HOSTNAME ]--------------------------------------"
+    #Clean up untagged docker images and stopped docker containers.
+    cleanup
     #Third-party images are downloaded from GitHub container registry.
     download_deploy_script
     execute_prereq
@@ -376,6 +380,11 @@ function logs_generation(){
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         ./logs-cortx-cloud.sh
     popd
+}
+
+function cleanup(){
+    echo -e "\n-----------[ Clean up untagged/unused images and stopped containers... ]--------------------"
+    docker system prune -a -f
 }
 
 case $ACTION in
