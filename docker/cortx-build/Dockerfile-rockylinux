@@ -58,6 +58,7 @@ RUN if [ "${ENVIRONMENT}" = "opensource-ci" ] ; then dnf install epel-release -y
 
 # install common tools
 RUN dnf -y install python3{,-{devel,pip,setuptools}} \
+yum-utils \
 createrepo \
 file \
 git \
@@ -65,19 +66,23 @@ jq \
 rpm-build \
 rpmdevtools \
 scl-utils \
-python3-Levenshtein \
 wget \
 which \
 openssh-server \
 java-1.8.0-openjdk \
 make \
 gcc \
-yum-utils \
 cmake \
 gcc-c++ \
 sudo \
+python3-Levenshtein \
 libtool \
-graphviz check-devel \
+python3-pycodestyle \
+graphviz \
+check-devel \
+userspace-rcu-devel \
+libcmocka.x86_64 \
+libcmocka-devel.x86_64 \
 jemalloc \
 json-c-devel \
 json-c \
@@ -85,14 +90,22 @@ openssl \
 openssl-devel \
 cmake3 \
 jemalloc-devel \
+libini_config-devel \
 autoconf \
-libtool \
 bison \
-flex \
+flex  \
+doxygen \
 dbus-devel \
 expect \
 rpm-sign \
-genisoimage && dnf clean all \
+glibc-langpack-en \
+glibc-locale-source \
+pinentry \
+kernel-abi-whitelists \
+glibc-langpack-en \
+glibc-locale-source \
+genisoimage \
+redhat-lsb && dnf clean all \
 && rm -rf /var/cache/yum
 
 # enable Git from SLC repo (it's more up to date version)
@@ -136,9 +149,9 @@ RUN sh /opt/set-githubrelease-repo.sh ${OSNAME} \
 # rpm signing
 COPY ./scripts/rpm-signing/* /opt/rpm-signing/
 
-#RUN  cat /opt/rpm-signing/gpgoptions >>  ~/.rpmmacros && \
-#     sed -i '/passphrase/d' /opt/rpm-signing/genkey-batch && \
-#     sed -i -e 's/$argv 1/$argv 0/g' -e 's/${PASSPHRASE}/ /g' -e '/PASSPHRASE/d' /opt/rpm-signing/rpm-sign.sh && \
+RUN  cat /opt/rpm-signing/gpgoptions >>  ~/.rpmmacros && \
+     sed -i '/passphrase/d' /opt/rpm-signing/genkey-batch && \
+     sed -i -e 's/$argv 1/$argv 0/g' -e 's/${PASSPHRASE}/ /g' -e '/PASSPHRASE/d' /opt/rpm-signing/rpm-sign.sh
 #     /usr/bin/gpg --batch --gen-key /opt/rpm-signing/genkey-batch && \
 #     /usr/bin/gpg --export -a 'Seagate'  > /opt/rpm-signing/RPM-GPG-KEY-Seagate && \
 #     rpm --import /opt/rpm-signing/RPM-GPG-KEY-Seagate
