@@ -163,7 +163,7 @@ function install_prerequisites(){
     echo "---------------------------------------[ Preparing Node $HOSTNAME ]--------------------------------------"
     try
     (   # disable swap
-        verify_os 
+        #verify_os 
         sudo swapoff -a
         # keeps the swaf off during reboot
         sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
