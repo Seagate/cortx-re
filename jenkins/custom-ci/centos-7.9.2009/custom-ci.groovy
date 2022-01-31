@@ -69,6 +69,11 @@ pipeline {
             choices: ['no', 'yes'],
             description: 'Need ISO files'
         )
+	choice(
+        	name: 'ENABLE_MOTR_DTM',
+                choices: ['no', 'yes'],
+                description: 'Build motr rpm using dtm mode.'
+        )
 
     }
 
@@ -153,7 +158,8 @@ pipeline {
                                         parameters: [
                                                         string(name: 'MOTR_URL', value: "${MOTR_URL}"),
                                                         string(name: 'MOTR_BRANCH', value: "${MOTR_BRANCH}"),
-														string(name: 'MOTR_BUILD_MODE', value: "${MOTR_BUILD_MODE}"),
+                                                        string(name: 'MOTR_BUILD_MODE', value: "${MOTR_BUILD_MODE}"),
+							string(name: 'ENABLE_MOTR_DTM', value: "${ENABLE_MOTR_DTM}"),
                                                         string(name: 'S3_URL', value: "${S3_URL}"),
                                                         string(name: 'S3_BRANCH', value: "${S3_BRANCH}"),
                                                         string(name: 'HARE_URL', value: "${HARE_URL}"),
@@ -203,9 +209,9 @@ pipeline {
                                                     string(name: 'CSM_AGENT_URL', value: "${CSM_AGENT_URL}"),
                                                     string(name: 'CSM_AGENT_BRANCH', value: "${CSM_AGENT_BRANCH}"),
                                                     string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}"),
-                                                    string(name: 'THIRD_PARTY_RPM_VERSION', value: "${THIRD_PARTY_RPM_VERSION}"),
-                                                    string(name: 'THIRD_PARTY_PYTHON_VERSION', value: "${THIRD_PARTY_PYTHON_VERSION}"),
-                                                    string(name: 'INTEGRATION_DIR_PATH', value: "${integration_dir}")
+                                                    string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}"),
+                                                    string(name: 'CORTX_UTILS_URL', value: "${CORTX_UTILS_URL}"),
+                                                    string(name: 'THIRD_PARTY_PYTHON_VERSION', value: "${THIRD_PARTY_PYTHON_VERSION}")
                                               ]
                             } catch (err) {
                                 build_stage = env.STAGE_NAME

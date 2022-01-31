@@ -19,7 +19,7 @@ pipeline {
 
     parameters {
 
-        string(name: 'CORTX_RE_BRANCH', defaultValue: 'kubernetes', description: 'Branch or GitHash for CORTX Cluster scripts', trim: true)
+        string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX Cluster scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for CORTX Cluster scripts', trim: true)
         string(name: 'CORTX_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-all:2.0.0-latest-custom-ci', description: 'CORTX-ALL image', trim: true)
         string(name: 'SNS_CONFIG', defaultValue: '1+0+0', description: 'sns configuration for deployment. Please select value based on disks available on nodes.', trim: true)
@@ -74,8 +74,6 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Deploy third-party components', script: '''
                     pushd solutions/kubernetes/
-                        echo $hosts | tr ' ' '\n' > hosts
-                        cat hosts
                         export CORTX_SCRIPTS_BRANCH=${CORTX_SCRIPTS_BRANCH}
                         export CORTX_SCRIPTS_REPO=${CORTX_SCRIPTS_REPO}
                         export CORTX_IMAGE=${CORTX_IMAGE}
@@ -83,6 +81,17 @@ pipeline {
                         export SNS_CONFIG=${SNS_CONFIG}
                         export DIX_CONFIG=${DIX_CONFIG}
                         ./cortx-deploy.sh --cortx-cluster
+                    popd
+                '''
+            }
+        }
+
+        stage ('IO Sanity Test') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'Perform IO Sanity Test', script: '''
+                    pushd solutions/kubernetes/
+                        ./cortx-deploy.sh --io-test
                     popd
                 '''
             }
@@ -147,6 +156,19 @@ pipeline {
                 // Archive Deployment artifacts in jenkins build
                 archiveArtifacts artifacts: "artifacts/*.*", onlyIfSuccessful: false, allowEmptyArchive: true 
             }    
+        }
+
+        failure {
+            sh label: 'Collect CORTX support bundle logs in artifacts', script: '''
+            mkdir -p artifacts
+            pushd solutions/kubernetes/
+                ./cortx-deploy.sh --support-bundle
+                HOST_FILE=$PWD/hosts
+                MASTER_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+                LOG_FILE=$(ssh -o 'StrictHostKeyChecking=no' $MASTER_NODE 'ls -t /root/deploy-scripts/k8_cortx_cloud | grep logs-cortx-cloud | grep .tar | head -1')
+                scp -q "$MASTER_NODE":/root/deploy-scripts/k8_cortx_cloud/$LOG_FILE $WORKSPACE/artifacts/
+            popd
+            '''
         }  
     }
 }
