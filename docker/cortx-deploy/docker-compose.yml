@@ -26,7 +26,8 @@ services:
       context: ./
       dockerfile: ./Dockerfile
       args:
-       CENTOS_RELEASE: 7.9.2009
+       OS_TYPE: centos
+       OS_RELEASE: 7.9.2009
        ENVIRONMENT: internal-ci
        CREATED_DATE: $CREATED_DATE
        BUILD_URL: http://cortx-storage.colo.seagate.com/releases/cortx/github/main/centos-7.9.2009/last_successful_prod/
