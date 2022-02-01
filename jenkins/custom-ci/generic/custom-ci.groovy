@@ -2,7 +2,7 @@
 pipeline {
     agent {
         node {
-            label 'docker-${os_version}-node'
+            label "docker-${os_version}-node"
         }
     }
 
@@ -15,7 +15,7 @@ pipeline {
         passphrase = credentials('rpm-sign-passphrase')
         python_deps = "${THIRD_PARTY_PYTHON_VERSION == 'cortx-2.0' ? "$release_dir/third-party-deps/python-deps/python-packages-2.0.0-latest" : THIRD_PARTY_PYTHON_VERSION == 'cortx-1.0' ?  "$release_dir/third-party-deps/python-packages" : "$release_dir/third-party-deps/python-deps/python-packages-2.0.0-custom"}"
         cortx_os_iso = "/mnt/bigstorage/releases/cortx_builds/custom-os-iso/cortx-2.0.0/cortx-os-2.0.0-7.iso"
-        third_party_rpm_dir = "${THIRD_PARTY_RPM_VERSION == 'cortx-2.0' ? "$release_dir/third-party-deps/centos/$os_version-2.0.0-latest" : THIRD_PARTY_RPM_VERSION == 'cortx-2.0-k8' ?  "$release_dir/third-party-deps/centos/$os_version-2.0.0-k8" : "$release_dir/third-party-deps/centos/$os_version-custom"}"
+        third_party_rpm_dir = "${THIRD_PARTY_RPM_VERSION == 'cortx-2.0' ? "$release_dir/third-party-deps/rockylinux/$os_version-2.0.0-latest" : THIRD_PARTY_RPM_VERSION == 'cortx-2.0-k8' ?  "$release_dir/third-party-deps/rockylinux/$os_version-2.0.0-k8" : "$release_dir/third-party-deps/rockylinux/$os_version-custom"}"
     }
 
     options {
@@ -71,10 +71,10 @@ pipeline {
         )
         
         choice(
-                name: 'ENABLE_MOTR_DTM',
-                    choices: ['no', 'yes'],
-                    description: 'Build motr rpm using dtm mode.'
-            )
+            name: 'ENABLE_MOTR_DTM',
+                choices: ['no', 'yes'],
+                description: 'Build motr rpm using dtm mode.'
+        )
 
     }
 
@@ -85,12 +85,12 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 script {
                     try {
-                        def cortx_utils_build = build job: '/GitHub-custom-ci-builds/centos-7.9/custom-cortx-py-utils', wait: true,
-                                        parameters: [
-                                            string(name: 'CORTX_UTILS_URL', value: "${CORTX_UTILS_URL}"),
-                                            string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}"),
-                                            string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}")
-                                        ]
+                        def cortx_utils_build = build job: '/GitHub-custom-ci-builds/generic/custom-cortx-py-utils', wait: true,
+                        parameters: [
+                            string(name: 'CORTX_UTILS_URL', value: "${CORTX_UTILS_URL}"),
+                            string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}"),
+                            string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}")
+                        ]
                     } catch (err) {
                         build_stage = env.STAGE_NAME
                         error "Failed to Build CORTX Utils"
@@ -99,63 +99,43 @@ pipeline {
             }
         }
 
-        stage ("Build cortx-prereq") {
-            steps {
-                script { build_stage = env.STAGE_NAME }
-                        script {
-                            try {
-                            def prereqbuild = build job: '/GitHub-custom-ci-builds/centos-7.9/cortx-prereq-custom-build', wait: true,
-                                            parameters: [
-                                            string(name: 'CORTX_RE_URL', value: "${CORTX_RE_URL}"),
-                                            string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
-                                            string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}")
-                                            ]
-                    } catch (err) {
-                        build_stage = env.STAGE_NAME
-                        error "Failed to Build cortx-prereq"
-                            }
-                        }
-            }
-        }
-
         stage ("Build Provisioner") {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                                        script {
-                                                try {
-                        def prvsnrbuild = build job: '/GitHub-custom-ci-builds/centos-7.9/prvsnr-custom-build', wait: true,
-                                            parameters: [
-                                            string(name: 'PRVSNR_URL', value: "${PRVSNR_URL}"),
-                                            string(name: 'PRVSNR_BRANCH', value: "${PRVSNR_BRANCH}"),
-                                            string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}")
-                                            ]
+                script {
+                    try {
+                        def prvsnrbuild = build job: '/GitHub-custom-ci-builds/generic/prvsnr-custom-build', wait: true,
+                        parameters: [
+                        string(name: 'PRVSNR_URL', value: "${PRVSNR_URL}"),
+                        string(name: 'PRVSNR_BRANCH', value: "${PRVSNR_BRANCH}"),
+                        string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}")
+                        ]
                     } catch (err) {
                         build_stage = env.STAGE_NAME
                         error "Failed to Build Provisioner"
-                                                }
-                                        }
+                    }
+                }
             }
         }
 
         stage ("Trigger Component Jobs") {
             parallel {
-
                 stage('Install Dependecies') {
                     steps {
                         script { build_stage = env.STAGE_NAME }
                         sh label: 'Installed Dependecies', script: '''
                             yum install -y expect rpm-sign rng-tools genisoimage
-                            systemctl start rngd
+                            #systemctl start rngd
                             '''
                     }
                 }
 
-                stage ("Build Motr, Hare and S3Server") {
+                stage ("Build Motr and Hare") {
                     steps {
                         script { build_stage = env.STAGE_NAME }
                         script {
                             try {
-                                def motrbuild = build job: '/GitHub-custom-ci-builds/centos-7.9/motr-custom-build', wait: true,
+                                def motrbuild = build job: '/GitHub-custom-ci-builds/generic/motr-custom-build', wait: true,
                                         parameters: [
                                                         string(name: 'MOTR_URL', value: "${MOTR_URL}"),
                                                         string(name: 'MOTR_BRANCH', value: "${MOTR_BRANCH}"),
@@ -179,11 +159,12 @@ pipeline {
                 }
 
                 stage ("Build HA") {
+                    when { expression { false } }
                     steps {
                         script { build_stage = env.STAGE_NAME }
                         script {
                             try {
-                                def habuild = build job: '/GitHub-custom-ci-builds/centos-7.9/cortx-ha', wait: true,
+                                def habuild = build job: '/GitHub-custom-ci-builds/generic/cortx-ha', wait: true,
                                           parameters: [
                                               string(name: 'HA_URL', value: "${HA_URL}"),
                                               string(name: 'HA_BRANCH', value: "${HA_BRANCH}"),
@@ -205,7 +186,7 @@ pipeline {
                         script { build_stage = env.STAGE_NAME }
                         script {
                             try {
-                                def csm_agent_build = build job: '/GitHub-custom-ci-builds/centos-7.9/custom-csm-agent-build', wait: true,
+                                def csm_agent_build = build job: '/GitHub-custom-ci-builds/generic/custom-csm-agent-build', wait: true,
                                               parameters: [
                                                     string(name: 'CSM_AGENT_URL', value: "${CSM_AGENT_URL}"),
                                                     string(name: 'CSM_AGENT_BRANCH', value: "${CSM_AGENT_BRANCH}"),
@@ -228,6 +209,9 @@ pipeline {
         stage ('Collect Component RPMS') {
             steps {
                 script { build_stage = env.STAGE_NAME }
+
+                checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
+
                 sh label: 'Copy RPMS', script:'''
                     RPM_COPY_PATH="/mnt/bigstorage/releases/cortx/components/github/main/$os_version/dev/"
 
@@ -264,7 +248,7 @@ pipeline {
                     if [ "${CSM_BRANCH}" == "Cortx-v1.0.0_Beta" ] || [ "${HARE_BRANCH}" == "Cortx-v1.0.0_Beta" ] || [ "${MOTR_BRANCH}" == "Cortx-v1.0.0_Beta" ] || [ "${PRVSNR_BRANCH}" == "Cortx-v1.0.0_Beta" ] || [ "${S3_BRANCH}" == "Cortx-v1.0.0_Beta" ] || [ "${SSPL_BRANCH}" == "Cortx-v1.0.0_Beta" ]; then
                             mero_rpm=$(ls -1 | grep "eos-core" | grep -E -v "eos-core-debuginfo|eos-core-devel|eos-core-tests")
                         else
-                            mero_rpm=$(ls -1 | grep "cortx-motr" | grep -E -v "cortx-motr-debuginfo|cortx-motr-devel|cortx-motr-tests|cortx-motr-ivt")
+                            mero_rpm=$(ls -1 | grep "cortx-motr" | grep -E -v "cortx-motr-debuginfo|cortx-motr-devel|cortx-motr-tests|cortx-motr-ivt|cortx-motr-debugsource")
                         fi
                     mero_rpm_release=`rpm -qp ${mero_rpm} --qf '%{RELEASE}' | tr -d '\040\011\012\015'`
                     mero_rpm_version=`rpm -qp ${mero_rpm} --qf '%{VERSION}' | tr -d '\040\011\012\015'`
@@ -294,10 +278,9 @@ pipeline {
         }
 
         stage ('Sign rpm') {
+            when { expression { false } }
             steps {
                 script { build_stage = env.STAGE_NAME }
-
-                checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
 
                 sh label: 'Generate Key', script: '''
                     set +x
@@ -411,6 +394,7 @@ pipeline {
         }
 
         stage ('Cleanup') {
+            when { expression { false } }
             steps {
 
                 sh label: 'Cleanup', script:'''
@@ -426,7 +410,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 script {
                     try {
-                        def build_cortx_all_image = build job: '/Cortx-Kubernetes/cortx-all-docker-image', wait: true,
+                        def build_cortx_all_image = build job: 'cortx-all-docker-image', wait: true,
                                     parameters: [
                                         string(name: 'CORTX_RE_URL', value: "${CORTX_RE_URL}"),
                                         string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
