@@ -225,7 +225,12 @@ function openldap_requiremenrs(){
 }
 
 function execute_prereq(){
-    echo "Pulling latest CORTX-ALL image"
+    echo "Checking disk space on /var/log:"
+    if [ "$(df /var/log --output=pcent | tail -1 | tr -d '%')" -gt 97 ]; then
+        echo "Not enough disk space present on /var/log."
+        exit 1
+    fi
+    echo "Pulling latest CORTX-ALL image:"
     docker pull $CORTX_IMAGE || echo "Failed to pull $CORTX_IMAGE"
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         findmnt $SYSTEM_DRIVE && umount -l $SYSTEM_DRIVE
@@ -367,7 +372,6 @@ echo "---------------------------------------[ hctl status ]--------------------
 
 function io_exec(){
     pushd /var/tmp/
-        chmod +x *.sh
         # "Setting up S3 client..."
         ./s3-client-setup.sh
         # "Running IO test..."
