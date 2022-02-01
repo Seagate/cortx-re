@@ -62,7 +62,11 @@ fi
 
 
 OS_TYPE=$(echo $OS | awk -F[-] '{print $1}')
+if [ "$OS_TYPE" == "rockylinux" ]; then OS_TYPE="rockylinux/rockylinux"; fi
 OS_RELEASE=$( echo $OS | awk -F[-] '{print $2}')
+
+echo "OS_TYPE: $OS_TYPE"
+echo "OS_RELEASE: $OS_RELEASE"
 
 echo "Building $SERVICE image from $BUILD_URL"
 sleep 5
@@ -95,7 +99,7 @@ fi
 
 CREATED_DATE=$(date -u +'%Y-%m-%d %H:%M:%S%:z')
 
-docker-compose -f ./docker-compose.yml build --force-rm --compress --build-arg GIT_HASH="$CORTX_VERSION" --build-arg VERSION="$VERSION-$DOCKER_BUILD_BUILD" --build-arg CREATED_DATE="$CREATED_DATE" --build-arg BUILD_URL=$BUILD_URL --build-arg ENVIRONMENT=$ENVIRONMENT --build-arg OS_TYPE=$OS_TYPE --build-arg OS_RELEASE=$OS_RELEASE $SERVICE
+docker-compose -f ./docker-compose.yml build --force-rm --compress --build-arg GIT_HASH="$CORTX_VERSION" --build-arg VERSION="$VERSION-$DOCKER_BUILD_BUILD" --build-arg CREATED_DATE="$CREATED_DATE" --build-arg BUILD_URL=$BUILD_URL --build-arg ENVIRONMENT=$ENVIRONMENT --build-arg OS=$OS --build-arg OS_TYPE=$OS_TYPE --build-arg OS_RELEASE=$OS_RELEASE $SERVICE
 
 if [ "$DOCKER_PUSH" == "yes" ];then
         echo "Pushing Docker image to GitHub Container Registry"
