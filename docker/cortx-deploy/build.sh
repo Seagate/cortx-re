@@ -27,7 +27,6 @@ echo "Usage: $0 [ -b build ] [ -p push docker-image to GHCR yes/no. Default no] 
 VERSION=2.0.0
 DOCKER_PUSH=no
 TAG_LATEST=no
-#OS=centos-7.9.2009
 ENVIRONMENT=opensource-ci
 REGISTRY="cortx-docker.colo.seagate.com"
 PROJECT="seagate"
@@ -54,22 +53,22 @@ if [ -z "${BUILD}" ] ; then
 fi
 
 if echo $BUILD | grep -q http;then
-BUILD_URL="$BUILD"
+	BUILD_URL="$BUILD"
 else
-if echo $BUILD | grep -q custom; then BRANCH="integration-custom-ci"; else BRANCH="main"; fi
-BUILD_URL="$ARTFACT_URL/$BRANCH/$OS/$BUILD"
+	if echo $BUILD | grep -q custom; then BRANCH="integration-custom-ci"; else BRANCH="main"; fi
+	BUILD_URL="$ARTFACT_URL/$BRANCH/$OS/$BUILD"
 fi
-
 
 OS_TYPE=$(echo $OS | awk -F[-] '{print $1}')
 if [ "$OS_TYPE" == "rockylinux" ]; then OS_TYPE="rockylinux/rockylinux"; fi
 OS_RELEASE=$( echo $OS | awk -F[-] '{print $2}')
 
-echo "OS_TYPE: $OS_TYPE"
-echo "OS_RELEASE: $OS_RELEASE"
-
-echo "Building $SERVICE image from $BUILD_URL"
-sleep 5
+echo -e "########################################################"
+echo -e "# SERVICE    : $SERVICE                                 "
+echo -e "# BUILD_URL  : $BUILD_URL                               "
+echo -e "# Base OS    : $OS_TYPE                                 "
+echo -e "# Base image : $OS_TYPE:$OS_RELEASE                     "
+echo -e "########################################################"
 
 function get_git_hash {
 sed -i '/KERNEL/d' RELEASE.INFO
@@ -80,13 +79,12 @@ done
 echo cortx-csm_agent:"$(awk -F['_'] '/cortx-csm_agent-'$VERSION'/ { print $3 }' RELEASE.INFO | cut -d. -f1)",
 }
 
-
 curl -s $BUILD_URL/RELEASE.INFO -o RELEASE.INFO
 if grep -q "404 Not Found" RELEASE.INFO ; then echo "Provided Build does not have required structure..existing"; exit 1; fi
 
 for PARAM in BRANCH BUILD
 do
-export DOCKER_BUILD_$PARAM="$(grep $PARAM RELEASE.INFO | cut -d'"' -f2)"
+     export DOCKER_BUILD_$PARAM="$(grep $PARAM RELEASE.INFO | cut -d'"' -f2)"
 done
 CORTX_VERSION=$(get_git_hash | tr '\n' ' ')
 rm -rf RELEASE.INFO
