@@ -41,8 +41,8 @@ LABEL maintainer="cortx.opensource@seagate.com" \
 ENV GIT_HASH $GIT_HASH
 
 #Disable default repositories. 
-RUN yum install yum-utils -y 
-#&& yum-config-manager --disable base,extras,updates
+RUN yum install yum-utils -y \
+    && if [[ $OS_TYPE =~ "centos" ]]; then yum-config-manager --disable base,extras,updates; fi
 
 #Add Internal and CORTX uploads repository
 COPY ./${ENVIRONMENT}/$OS.repo /etc/yum.repos.d/
@@ -52,7 +52,8 @@ COPY ./${ENVIRONMENT}/$OS.repo /etc/yum.repos.d/
 RUN if [ "$ENVIRONMENT" = "opensource-ci" ] ; then yum install epel-release -y ; fi && yum clean all \
 && rm -rf /var/cache/yum
 
-RUN yum-config-manager --add-repo ${BUILD_URL}/cortx_iso/ \
+RUN yum install yum-utils -y \
+    && yum-config-manager --add-repo ${BUILD_URL}/cortx_iso/ \
     && yum-config-manager --add-repo ${BUILD_URL}/3rd_party \
     && curl ${BUILD_URL}/RELEASE.INFO -o RELEASE.INFO 
 
@@ -67,11 +68,11 @@ RUN yum install --nogpgcheck -y  $(sed 's/#.*//g' /opt/seagate/cortx/third-party
     && yum clean all && rm -rf /var/cache/yum
     
 RUN yum install --nogpgcheck -y  $(sed 's/#.*//g' /opt/seagate/cortx/cortx-componenet-rpms.txt) \
-    && yum install --nogpgcheck --downloadonly --downloaddir=/opt/seagate/cortx/debug-packages cortx-s3server-debuginfo cortx-hare-debuginfo cortx-motr-debuginfo \
+    && yum install -y --nogpgcheck --downloadonly --downloaddir=/opt/seagate/cortx/debug-packages cortx-hare-debuginfo cortx-motr-debuginfo \
     && yum clean all && rm -rf /var/cache/yum
     
 RUN rm -f /etc/machine-id && ln -s /etc/cortx/solution/node/id /etc/machine-id \
     && bash /opt/seagate/cortx/generate-release-info.sh
 
-RUN yum-config-manager --enable base,extras,updates && rm -rf /etc/yum.repos.d/$(echo $BUILD_URL | awk -F '/' '{print $3}')*.repo /etc/yum.repos.d/C${OS_RELEASE}.repo \
+RUN rm -rf /etc/yum.repos.d/$(echo $BUILD_URL | awk -F '/' '{print $3}')*.repo /etc/yum.repos.d/C${OS_RELEASE}.repo \
     && yum clean all && rm -rf /var/cache/yum
