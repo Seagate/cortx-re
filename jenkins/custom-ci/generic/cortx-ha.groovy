@@ -78,7 +78,7 @@ EOF
                     yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
 
                     yum clean all && rm -rf /var/cache/yum
-                    yum install cortx-py-utils -y
+                    yum install cortx-py-utils -y --nogpgcheck
                     pushd $component
                         yum erase python36-PyYAML -y
                         bash jenkins/cicd/cortx-ha-dep.sh
