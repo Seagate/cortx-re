@@ -20,29 +20,29 @@
 
 set -e -o pipefail
 
-usage() { 
+usage() {
 echo "Generate cortx-all docker image from provided CORTX release build"
-echo "Usage: $0 [ -b build ] [ -p push docker-image to GHCR yes/no. Default no] [ -t tag latest yes/no. Default no" ] [ -r registry location ] [ -e environment ] [ -s service ] [ -h print help message ] 1>&2; exit 1; }
+echo "Usage: $0 [ -b build ] [ -p push docker-image to GHCR yes/no. Default no] [ -t tag latest yes/no. Default no" ] [ -r registry location ] [ -e environment ] [ -o operating-system ][ -s service ] [ -h print help message ] 1>&2; exit 1; }
 
 VERSION=2.0.0
 DOCKER_PUSH=no
 TAG_LATEST=no
-OS=centos-7.9.2009
 ENVIRONMENT=opensource-ci
 REGISTRY="cortx-docker.colo.seagate.com"
 PROJECT="seagate"
 ARTFACT_URL="http://cortx-storage.colo.seagate.com/releases/cortx/github/"
-DOCKER_BUILD_BUILD=0
-#SERVICE=cortx-all
+SERVICE=cortx-all
+OS=centos-7.9.2009
 
-while getopts "b:p:t:r:e:s:h:" opt; do
+while getopts "b:p:t:r:e:o:s:h:" opt; do
     case $opt in
         b ) BUILD=$OPTARG;;
         p ) DOCKER_PUSH=$OPTARG;;
         t ) TAG_LATEST=$OPTARG;;
         e ) ENVIRONMENT=$OPTARG;;
-        s ) SERVICE=$OPTARG;;
         r ) REGISTRY=$OPTARG;;
+        s ) SERVICE=$OPTARG;;
+        o ) OS=$OPTARG;;
         h ) usage
         exit 0;;
         *) usage
@@ -55,14 +55,29 @@ if [ -z "${BUILD}" ] ; then
 fi
 
 if echo $BUILD | grep -q http;then
-BUILD_URL="$BUILD"
+        BUILD_URL="$BUILD"
 else
-if echo $BUILD | grep -q custom; then BRANCH="integration-custom-ci"; else BRANCH="main"; fi
-BUILD_URL="$ARTFACT_URL/$BRANCH/$OS/$BUILD"
+        if echo $BUILD | grep -q custom; then BRANCH="integration-custom-ci"; else BRANCH="main"; fi
+        BUILD_URL="$ARTFACT_URL/$BRANCH/$OS/$BUILD"
 fi
 
-echo "Building $SERVICE image from $BUILD_URL"
-sleep 5
+if [ "$SERVICE" == "cortx-rgw" ] && [ "$OS" == "centos-7.9.2009" ]; then
+echo -e "#####################################################################"
+echo -e "# SERVICE: $SERVICE Image Build is NOT supported on $OS              "
+echo -e "#####################################################################"
+exit 1
+fi
+
+OS_TYPE=$(echo $OS | awk -F[-] '{print $1}')
+if [ "$OS_TYPE" == "rockylinux" ]; then OS_TYPE="rockylinux/rockylinux"; fi
+OS_RELEASE=$( echo $OS | awk -F[-] '{print $2}')
+
+echo -e "########################################################"
+echo -e "# SERVICE    : $SERVICE                                 "
+echo -e "# BUILD_URL  : $BUILD_URL                               "
+echo -e "# Base OS    : $OS_TYPE                                 "
+echo -e "# Base image : $OS_TYPE:$OS_RELEASE                     "
+echo -e "########################################################"
 
 function get_git_hash {
 sed -i '/KERNEL/d' RELEASE.INFO
@@ -73,31 +88,30 @@ done
 echo cortx-csm_agent:"$(awk -F['_'] '/cortx-csm_agent-'$VERSION'/ { print $3 }' RELEASE.INFO | cut -d. -f1)",
 }
 
+curl -s $BUILD_URL/RELEASE.INFO -o RELEASE.INFO
+if grep -q "404 Not Found" RELEASE.INFO ; then echo -e "\nProvided Build does not have required structure..existing\n"; exit 1; fi
 
-#curl -s $BUILD_URL/RELEASE.INFO -o RELEASE.INFO
-#if grep -q "404 Not Found" RELEASE.INFO ; then echo "Provided Build does not have required structure..existing"; exit 1; fi
+for PARAM in BRANCH BUILD
+do
+     export DOCKER_BUILD_$PARAM="$(grep $PARAM RELEASE.INFO | cut -d'"' -f2)"
+done
+CORTX_VERSION=$(get_git_hash | tr '\n' ' ')
+rm -rf RELEASE.INFO
 
-#for PARAM in BRANCH BUILD
-#do
-#export DOCKER_BUILD_$PARAM="$(grep $PARAM RELEASE.INFO | cut -d'"' -f2)"
-#done
-#CORTX_VERSION=$(get_git_hash | tr '\n' ' ')
-#rm -rf RELEASE.INFO
-
-#if [ "$DOCKER_BUILD_BRANCH" != "main" ]; then
-#        export TAG=$VERSION-$DOCKER_BUILD_BUILD-$DOCKER_BUILD_BRANCH
-#else
+if [ "$DOCKER_BUILD_BRANCH" != "main" ]; then
+        export TAG=$VERSION-$DOCKER_BUILD_BUILD-$DOCKER_BUILD_BRANCH
+else
         export TAG=$VERSION-$DOCKER_BUILD_BUILD
-#fi
+fi
 
 CREATED_DATE=$(date -u +'%Y-%m-%d %H:%M:%S%:z')
 
-docker-compose -f ./docker-compose.yml build --force-rm --compress --build-arg GIT_HASH="$CORTX_VERSION" --build-arg VERSION="$VERSION-$DOCKER_BUILD_BUILD" --build-arg CREATED_DATE="$CREATED_DATE" --build-arg BUILD_URL=$BUILD_URL --build-arg ENVIRONMENT=$ENVIRONMENT $SERVICE
+docker-compose -f ./docker-compose.yml build --force-rm --compress --build-arg GIT_HASH="$CORTX_VERSION" --build-arg VERSION="$VERSION-$DOCKER_BUILD_BUILD" --build-arg CREATED_DATE="$CREATED_DATE" --build-arg BUILD_URL=$BUILD_URL --build-arg ENVIRONMENT=$ENVIRONMENT --build-arg OS=$OS --build-arg OS_TYPE=$OS_TYPE --build-arg OS_RELEASE=$OS_RELEASE $SERVICE
 
 if [ "$DOCKER_PUSH" == "yes" ];then
         echo "Pushing Docker image to GitHub Container Registry"
         docker tag $SERVICE:$TAG $REGISTRY/$PROJECT/$SERVICE:$TAG
-        docker push $REGISTRY/$PROJECT/$SERVICE:$TAG 
+        docker push $REGISTRY/$PROJECT/$SERVICE:$TAG
 else
         echo "Docker Image push skipped"
         exit 0
@@ -110,4 +124,3 @@ if [ "$TAG_LATEST" == "yes" ];then
 else
         echo "Latest tag creation skipped"
 fi
-
