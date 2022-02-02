@@ -29,6 +29,7 @@ services:
         OSNAME: rockylinux
         OS_VERSION: 8.4
         ENVIRONMENT: internal-ci
+        GPG_PASSPHRASE: seagate
         LUSTRE_VERSION: 2.12.7
     volumes:
       - /var/artifacts:/var/artifacts
