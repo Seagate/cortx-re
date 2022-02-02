@@ -1,5 +1,11 @@
 which #cortx-motr
-snappy 
-leveldb 
-gdisk 
 gperftools-libs
+libicu
+liboath
+librabbitmq
+librdmacm
+libunwind
+mailcap
+nvme-cli
+psmisc
+smartmontools
