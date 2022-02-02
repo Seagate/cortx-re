@@ -149,12 +149,9 @@ RUN sh /opt/set-githubrelease-repo.sh \
 # rpm signing
 COPY ./scripts/rpm-signing/* /opt/rpm-signing/
 
-RUN  cat /opt/rpm-signing/gpgoptions >>  ~/.rpmmacros && \
-     sed -i '/passphrase/d' /opt/rpm-signing/genkey-batch && \
-     sed -i -e 's/$argv 1/$argv 0/g' -e 's/${PASSPHRASE}/ /g' -e '/PASSPHRASE/d' /opt/rpm-signing/rpm-sign.sh && \
-     /usr/bin/gpg --pinentry-mode loopback --passphrase '' --batch --gen-key /opt/rpm-signing/genkey-batch && \
-     /usr/bin/gpg --export -a 'Seagate'  > /opt/rpm-signing/RPM-GPG-KEY-Seagate && \
-     rpm --import /opt/rpm-signing/RPM-GPG-KEY-Seagate
+RUN bash /opt/rpm-sign.sh ${OSNAME} \
+&& rm -f /opt/rpm-sign.sh && dnf clean all \
+&& rm -rf /var/cache/yum
 
 # release helper scripts
 COPY ./scripts/release_support/build_release_info.sh /opt/release_support/
