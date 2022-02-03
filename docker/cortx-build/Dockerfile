@@ -138,13 +138,13 @@ RUN sh /opt/systemctl-replacement.sh \
 && rm -f systemctl.py
 
 # For Provisioner
-RUN bash /opt/setup_fpm.sh ${OS_TYPE}\
+RUN bash /opt/setup_fpm.sh ${OS_TYPE} \
 && rm -f /opt/setup_fpm.sh && yum clean all \
 && rm -rf /var/cache/yum \
 && rm -rf rh-ruby23.sh
 
 # yum repo from GitHub Release 
-RUN sh /opt/set-githubrelease-repo.sh \
+RUN bash /opt/set-githubrelease-repo.sh \
 && yum clean all \
 && rm -rf /var/cache/yum \
 && rm -f /opt/set-githubrelease-repo.sh
