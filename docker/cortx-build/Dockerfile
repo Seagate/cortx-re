@@ -197,7 +197,7 @@ FROM base as io-build
 
 ARG LUSTRE_VERSION
 
-COPY if [ "${OS_TYPE}" = "centos" ]; then --from=lustre-rpm-builder /root/rpmbuild/RPMS/x86_64/lustre-client-devel-${LUSTRE_VERSION}*.rpm . ; fi
+COPY --from=lustre-rpm-builder /root/rpmbuild/RPMS/x86_64/lustre-client-devel-${LUSTRE_VERSION}*.rpm . 
 
 #Install luster packages
 RUN if [ "${OS_TYPE}" = "centos" ]; then yum install -y https://downloads.whamcloud.com/public/lustre/lustre-${LUSTRE_VERSION}/el7/client/RPMS/x86_64/kmod-lustre-client-${LUSTRE_VERSION}-1.el7.x86_64.rpm \
