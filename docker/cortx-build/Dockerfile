@@ -46,7 +46,7 @@ RUN if [ "$OS_TYPE" = "centos" ] ; then export LANG=en_US.UTF-8 ; export LC_ALL=
 RUN if [ "$OS_TYPE" = "centos" ] ; then rm -rf /etc/yum.repos.d/CentOS-* ;elif [ "$OS_TYPE" = "rockylinux" ]; then rm -rf /etc/yum.repos.d/${OS_TYPE}-* ; fi
 
 #Add Internal and CORTX uploads repository
-COPY ./docker/cortx-build/${ENVIRONMENT}/$OS_TYPE.repo /etc/yum.repos.d/
+COPY ./docker/cortx-build/${ENVIRONMENT}/$OS_TYPE-$OS_RELEASE.repo /etc/yum.repos.d/
 
 # Install EPEL repo for opensource-ci
 RUN if [ "$ENVIRONMENT" = "opensource-ci" ] ; then yum install epel-release -y ; fi && yum clean all \
