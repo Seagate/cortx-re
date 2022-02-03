@@ -77,11 +77,8 @@ EOF
                     yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/$os_version/$release_tag/cortx_iso/
                     yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
 
-                    #Install cortx-py-utils package with --nodeps    
-                    wget -r -np -nH --cut-dirs=7 -A "cortx-py-utils*.rpm" http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/$os_version/$release_tag/cortx_iso/
-                    rpm -ivh --nodeps cortx-py-utils*.rpm
-
                     yum clean all && rm -rf /var/cache/yum
+                    yum install cortx-py-utils -y --nogpgcheck
                     pushd $component
                         yum erase python36-PyYAML -y
                         bash jenkins/cicd/cortx-ha-dep.sh

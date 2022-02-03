@@ -97,7 +97,7 @@ pipeline {
                         elif [ $GITHUB_PUSH == yes ] && [ $TAG_LATEST == no ]; then
                                  sh ./build.sh -b $BUILD -p yes -t no -r $DOCKER_REGISTRY -e internal-ci -o $OS
                         else
-                                 sh ./build.sh -b $BUILD -p no -e internal-ci
+                                 sh ./build.sh -b $BUILD -p no -e internal-ci -o $OS
                         fi
                     popd
                     docker logout  
