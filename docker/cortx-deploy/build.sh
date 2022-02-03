@@ -82,7 +82,7 @@ function get_git_hash {
         done
         if [ "$SERVICE" == "cortx-control" ]; then
                 echo cortx-csm_agent:"$(awk -F['_'] '/cortx-csm_agent-'$VERSION'/ { print $3 }' RELEASE.INFO | cut -d. -f1)",
-        fi        
+        fi
 }
 
 

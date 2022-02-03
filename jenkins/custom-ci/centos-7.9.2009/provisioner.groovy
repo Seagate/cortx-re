@@ -1,16 +1,16 @@
 #!/usr/bin/env groovy
-pipeline { 
+pipeline {
     agent {
         node {
             label 'docker-centos-7.9.2009-node'
         }
     }
-    
-    parameters {  
+
+    parameters {
         string(name: 'PRVSNR_URL', defaultValue: 'https://github.com/Seagate/cortx-prvsnr', description: 'Repository URL for Provisioner.')
         string(name: 'PRVSNR_BRANCH', defaultValue: 'stable', description: 'Branch for Provisioner.')
         string(name: 'CUSTOM_CI_BUILD_ID', defaultValue: '0', description: 'Custom CI Build Number')
-    }    
+    }
 
     environment {
         component = "provisioner"
@@ -27,7 +27,7 @@ pipeline {
         ansiColor('xterm')
         buildDiscarder(logRotator(daysToKeepStr: '5', numToKeepStr: '10'))
     }
-    
+
     stages {
         stage('Checkout') {
             steps {
@@ -39,6 +39,7 @@ pipeline {
         stage('Build') {
             steps {
                 script { build_stage = env.STAGE_NAME }
+
                 sh encoding: 'utf-8', label: 'Provisioner RPMS', returnStdout: true, script: """
                     rm -rf /etc/yum.repos.d/CentOS-*
                     sh ./devops/rpms/buildrpm.sh -g \$(git rev-parse --short HEAD) -e 2.0.0 -b ${CUSTOM_CI_BUILD_ID}
@@ -54,25 +55,23 @@ pipeline {
                     echo "node_cli package creation is not implemented"
                 fi
                 """
-                
                 sh encoding: 'UTF-8', label: 'api', script: '''
                     bash ./devops/rpms/api/build_python_api.sh -vv --out-dir /root/rpmbuild/RPMS/x86_64/ --pkg-ver ${CUSTOM_CI_BUILD_ID}_git$(git rev-parse --short HEAD)
                 '''
-
                 sh encoding: 'UTF-8', label: 'cortx-setup', script: '''
                 if [ -f "./devops/rpms/lr-cli/build_python_cortx_setup.sh" ]; then
                     bash ./devops/rpms/lr-cli/build_python_cortx_setup.sh -vv --out-dir /root/rpmbuild/RPMS/x86_64/ --pkg-ver ${CUSTOM_CI_BUILD_ID}_git$(git rev-parse --short HEAD)
                 else
                     echo "cortx-setup package creation is not implemented"
-                fi        
+                fi   
                 '''
-
+                
                 sh encoding: 'UTF-8', label: 'cortx-provisioner', script: '''
                 if [ -f "./jenkins/build.sh" ]; then
                     bash ./jenkins/build.sh -v 2.0.0 -b ${CUSTOM_CI_BUILD_ID}
                 else
                     echo "cortx-provisioner package creation is not implemented"
-                fi        
+                fi
                 '''
             }
         }

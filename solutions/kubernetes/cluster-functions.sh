@@ -30,12 +30,12 @@ export ConfigException=101
 
 function usage(){
     cat << HEREDOC
-Usage : $0 [--prepare, --master]
+Usage : $0 [--prepare, --primary]
 where,
     --cleanup - Remove kubernetes and docker related packages on the nodes.
     --prepare - Install prerequisites on nodes for kubernetes setup.
     --status - Print cluster status.
-    --master - Initialize K8 master node. 
+    --primary - Initialize K8 primary node. 
     --join-worker-nodes Join worker nodes to kubernetes cluster.
 HEREDOC
 }
@@ -175,10 +175,7 @@ function install_prerequisites(){
         # stop and disable firewalld
         (systemctl stop firewalld && systemctl disable firewalld && sudo systemctl mask --now firewalld) || throw $Exception
         # install python packages
-        (yum install python3-pip -y && pip3 install jq yq) || throw $Exception
-
-        # install yum-utils and wget
-        yum install yum-utils wget -y || throw $Exception
+        (yum install python3-pip yum-utils wget jq -y && pip3 install jq yq) || throw $Exception
 
         # set yum repositories for k8 and docker-ce
         rm -rf /etc/yum.repos.d/download.docker.com_linux_centos_7_x86_64_stable_.repo /etc/yum.repos.d/packages.cloud.google.com_yum_repos_kubernetes-el7-x86_64.repo
@@ -217,7 +214,9 @@ function install_prerequisites(){
             fi
             CALICO_IMAGE_VERSION=$(grep 'docker.io/calico/cni' calico-$CALICO_PLUGIN_VERSION.yaml | uniq | awk -F':' '{ print $3}')	
             wget -c https://github.com/projectcalico/calico/releases/download/$CALICO_IMAGE_VERSION/release-$CALICO_IMAGE_VERSION.tgz -O - | tar -xz || throw $Exception
-            cd release-$CALICO_IMAGE_VERSION/images && for file in calico-node.tar calico-kube-controllers.tar  calico-cni.tar calico-pod2daemon-flexvol.tar; do docker load -i $file || throw $Exception; done
+            pushd release-$CALICO_IMAGE_VERSION/images 
+                ls *tar | xargs -I{} docker image load -i {} || throw $Exception
+            popd
         popd
     )
     catch || {
@@ -241,8 +240,8 @@ function install_prerequisites(){
 
 }
 
-function setup_master_node(){
-    local UNTAINT_MASTER=$1
+function setup_primary_node(){
+    local UNTAINT_PRIMARY=$1
     try
     (
         #cleanup
@@ -258,9 +257,9 @@ function setup_master_node(){
         mkdir -p $HOME/.kube
         cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
         chown $(id -u):$(id -g) $HOME/.kube/config
-        # untaint master node
-        if [ "$UNTAINT_MASTER" == "true" ]; then
-            echo "--------------------------[ Allow POD creation on master node ]--------------------------"
+        # untaint primary node
+        if [ "$UNTAINT_PRIMARY" == "true" ]; then
+            echo "--------------------------[ Allow POD creation on primary node ]--------------------------"
             kubectl taint nodes $(hostname) node-role.kubernetes.io/master- || throw $Exception
         fi    
 
@@ -274,9 +273,6 @@ function setup_master_node(){
         # Setup IP_AUTODETECTION_METHOD for determining calico network.
         # sed -i '/# Auto-detect the BGP IP address./i \            - name: IP_AUTODETECTION_METHOD\n              value: "interface=eth-0"' calico-$CALICO_PLUGIN_VERSION.yaml
         kubectl apply -f calico-$CALICO_PLUGIN_VERSION.yaml || throw $Exception
-        # Setup storage-class
-        kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml || throw $Exception
-        kubectl patch storageclass local-path -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}' || throw $ConfigException
 
         # Install helm
         curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 || throw $Exception
@@ -325,8 +321,8 @@ case $ACTION in
     --status) 
         print_cluster_status
     ;;
-    --master)
-        setup_master_node "$2"
+    --primary)
+        setup_primary_node "$2"
     ;;
     --join-worker-nodes)
         join_worker_nodes "$@"
@@ -337,4 +333,3 @@ case $ACTION in
         exit 1
     ;;    
 esac
-

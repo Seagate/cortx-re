@@ -52,6 +52,12 @@ pipeline {
         )
 
         choice(
+            name: 'MOTR_BUILD_MODE',
+            choices: ['user-mode', 'kernel'],
+            description: 'Build motr rpm using kernel or user-mode.'
+        )
+
+        choice(
             name: 'THIRD_PARTY_PYTHON_VERSION',
             choices: ['cortx-2.0', 'custom'],
             description: 'Third Party Python Version to use.'
@@ -62,6 +68,11 @@ pipeline {
             name: 'ISO_GENERATION',
             choices: ['no', 'yes'],
             description: 'Need ISO files'
+        )
+	choice(
+        	name: 'ENABLE_MOTR_DTM',
+                choices: ['no', 'yes'],
+                description: 'Build motr rpm using dtm mode.'
         )
 
     }
@@ -147,6 +158,8 @@ pipeline {
                                         parameters: [
                                                         string(name: 'MOTR_URL', value: "${MOTR_URL}"),
                                                         string(name: 'MOTR_BRANCH', value: "${MOTR_BRANCH}"),
+                                                        string(name: 'MOTR_BUILD_MODE', value: "${MOTR_BUILD_MODE}"),
+							string(name: 'ENABLE_MOTR_DTM', value: "${ENABLE_MOTR_DTM}"),
                                                         string(name: 'S3_URL', value: "${S3_URL}"),
                                                         string(name: 'S3_BRANCH', value: "${S3_BRANCH}"),
                                                         string(name: 'HARE_URL', value: "${HARE_URL}"),
@@ -196,9 +209,9 @@ pipeline {
                                                     string(name: 'CSM_AGENT_URL', value: "${CSM_AGENT_URL}"),
                                                     string(name: 'CSM_AGENT_BRANCH', value: "${CSM_AGENT_BRANCH}"),
                                                     string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}"),
-                                                    string(name: 'THIRD_PARTY_RPM_VERSION', value: "${THIRD_PARTY_RPM_VERSION}"),
-                                                    string(name: 'THIRD_PARTY_PYTHON_VERSION', value: "${THIRD_PARTY_PYTHON_VERSION}"),
-                                                    string(name: 'INTEGRATION_DIR_PATH', value: "${integration_dir}")
+                                                    string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}"),
+                                                    string(name: 'CORTX_UTILS_URL', value: "${CORTX_UTILS_URL}"),
+                                                    string(name: 'THIRD_PARTY_PYTHON_VERSION', value: "${THIRD_PARTY_PYTHON_VERSION}")
                                               ]
                             } catch (err) {
                                 build_stage = env.STAGE_NAME
@@ -396,18 +409,10 @@ pipeline {
             }
         }
 
-        stage ('Additional Files') {
+        stage ('Cleanup') {
             steps {
 
-                sh label: 'Additional Files', script:'''
-                #Add cortx-prep.sh
-                mkdir -p $integration_dir/$release_tag/iso
-                cortx_prvsnr_preq=$(ls "$integration_dir/$release_tag/cortx_iso" | grep "python36-cortx-prvsnr" | cut -d- -f5 | cut -d_ -f2 | cut -d. -f1 | sed s/"git"//)
-                wget -O $integration_dir/$release_tag/iso/install-$version-$BUILD_NUMBER.sh https://raw.githubusercontent.com/Seagate/cortx-prvsnr/$cortx_prvsnr_preq/srv/components/provisioner/scripts/install.sh
-
-                #Add custom-os ISO
-                ln -s $cortx_os_iso $integration_dir/$release_tag/iso/$(basename $cortx_os_iso)
-
+                sh label: 'Cleanup', script:'''
                 #Remove Build details from THIRD_PARTY_RELEASE.INFO
                 sed -i '/BUILD/d' $integration_dir/$release_tag/3rd_party/THIRD_PARTY_RELEASE.INFO
                 '''

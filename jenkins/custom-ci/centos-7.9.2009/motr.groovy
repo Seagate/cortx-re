@@ -25,6 +25,17 @@ pipeline {
 		string(name: 'CORTX_UTILS_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX Utils', trim: true)
 		string(name: 'CORTX_UTILS_URL', defaultValue: 'https://github.com/Seagate/cortx-utils', description: 'CORTX Utils Repository URL', trim: true)
 		string(name: 'THIRD_PARTY_PYTHON_VERSION', defaultValue: 'custom', description: 'Third Party Python Version to use', trim: true)
+
+		choice(
+            name: 'MOTR_BUILD_MODE',
+            choices: ['user-mode', 'kernel'],
+            description: 'Build motr rpm using kernel or user-mode.'
+        	)
+		choice(
+			name: 'ENABLE_MOTR_DTM',
+			choices: ['no', 'yes'],
+			description: 'Build motr rpm using dtm mode.'
+		)
 	}	
 
 	environment {
@@ -65,9 +76,21 @@ pipeline {
 				script { build_stage = env.STAGE_NAME }
 						sh label: '', script: '''
 						rm -rf /root/rpmbuild/RPMS/x86_64/*.rpm
-						KERNEL=/lib/modules/$(yum list installed kernel | tail -n1 | awk '{ print $2 }').x86_64/build
 						./autogen.sh
-						./configure --with-linux=$KERNEL
+						if [ "${MOTR_BUILD_MODE}" == "kernel" ]; then
+							KERNEL=/lib/modules/$(yum list installed kernel | tail -n1 | awk '{ print $2 }').x86_64/build
+							if [ "${ENABLE_MOTR_DTM}" == "yes" ]; then
+								./configure --with-linux=$KERNEL --enable-dtm0
+							else
+								./configure --with-linux=$KERNEL
+							fi
+						else
+							if [ "${ENABLE_MOTR_DTM}" == "yes" ]; then
+								./configure --with-user-mode-only --enable-dtm0
+							else
+								./configure --with-user-mode-only
+							fi
+						fi
 						export build_number=${CUSTOM_CI_BUILD_ID}
 						make rpms
 					'''
