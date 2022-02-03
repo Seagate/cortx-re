@@ -93,15 +93,13 @@ flex  \
 dbus-devel \
 expect \
 rpm-sign \
-genisoimage \
-&& if [ "$OS_TYPE" = "centos" ] ; then yum -y install python3{,-{devel,pip,setuptools}} \
+genisoimage ; if [ "$OS_TYPE" = "centos" ] ; then yum -y install python3{,-{devel,pip,setuptools}} \
 sclo-git212 \
 python-Levenshtein \
 python-pep8 \
 yum-priorities \
 redhat-ls && yum clean all \
-&& rm -rf /var/cache/yum \
-&& elif [ "$OS_TYPE" = "rockylinux" ] ; then dnf -y install python3{,-{devel,pip,setuptools}} \
+&& rm -rf /var/cache/yum ; elif [ "$OS_TYPE" = "rockylinux" ] ; then dnf -y install python3{,-{devel,pip,setuptools}} \
 yum-utils \
 python3-Levenshtein \
 python3-pycodestyle \
@@ -110,8 +108,7 @@ glibc-locale-source \
 pinentry \
 kernel-abi-whitelists \
 redhat-lsb && dnf clean all \
-&& rm -rf /var/cache/yum \
-&& fi
+&& rm -rf /var/cache/yum ; fi
 
 # enable Git from SLC repo (it's more up to date version)
 RUN if [ "$OS_TYPE" = "centos" ] ; then ln -nsf /opt/rh/sclo-git212/root/bin/* /usr/local/bin/ && \
