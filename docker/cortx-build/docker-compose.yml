@@ -24,7 +24,7 @@ services:
     image: ghcr.io/seagate/cortx-build:rockylinux-8.4
     build:
       context: ../../
-      dockerfile: ./docker/cortx-build/Dockerfile-rockylinux
+      dockerfile: ./docker/cortx-build/Dockerfile
       args:
         OS_TYPE: rockylinux
         OS_RELEASE: 8.4
