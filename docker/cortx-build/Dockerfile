@@ -154,8 +154,7 @@ COPY ./scripts/rpm-signing/* /opt/rpm-signing/
 
 RUN if [ "${OS_TYPE}" = "centos" ]; then cat /opt/rpm-signing/gpgoptions >>  ~/.rpmmacros \
 && sed -i '/passphrase/d' /opt/rpm-signing/genkey-batch \
-&& sed -i -e 's/$argv 1/$argv 0/g' -e 's/${PASSPHRASE}/ /g' -e '/PASSPHRASE/d' /opt/rpm-signing/rpm-sign.sh \
-; elif [ "$OS_TYPE" = "rockylinux" ] ; then sed 's/--passphrase-fd 3 //g' /opt/rpm-signing/gpgoptions >> ~/.rpmmacros \
+&& sed -i -e 's/$argv 1/$argv 0/g' -e 's/${PASSPHRASE}/ /g' -e '/PASSPHRASE/d' /opt/rpm-signing/rpm-sign.sh ; elif [ "$OS_TYPE" = "rockylinux" ] ; then sed 's/--passphrase-fd 3 //g' /opt/rpm-signing/gpgoptions >> ~/.rpmmacros \
 && sed -i -e 's/Passphrase:.*/Passphrase: ${GPG_PASSPHRASE}/g' /opt/rpm-signing/genkey-batch ; fi \
 && /usr/bin/gpg --batch --gen-key /opt/rpm-signing/genkey-batch \
 && /usr/bin/gpg --export -a 'Seagate'  > /opt/rpm-signing/RPM-GPG-KEY-Seagate \
