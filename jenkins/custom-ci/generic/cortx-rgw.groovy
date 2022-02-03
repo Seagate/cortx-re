@@ -7,7 +7,7 @@ pipeline {
     }
     
     environment { 
-        component = "csm-rgw"
+        component = "cortx-rgw"
         branch = "custom-ci"
         release_dir = "/mnt/bigstorage/releases/cortx"
         release_tag = "custom-build-$CUSTOM_CI_BUILD_ID"
@@ -24,6 +24,7 @@ pipeline {
     parameters {  
         string(name: 'CORTX_RGW_URL', defaultValue: 'https://github.com/Seagate/cortx-rgw', description: 'Repository URL for cortx-rgw build')
         string(name: 'CORTX_RGW_BRANCH', defaultValue: 'main', description: 'Branch for cortx-rgw build')
+        string(name: 'CUSTOM_CI_BUILD_ID', defaultValue: '0', description: 'Custom CI Build Number')
         // Add os_version parameter in jenkins configuration
     }    
 
@@ -71,6 +72,16 @@ pipeline {
                 rpmbuild --clean --rmsource --define "_unpackaged_files_terminate_build 0" --define "debug_package %{nil}" --without cmake_verbose_logging --without jaeger --without lttng --without seastar --without kafka_endpoint --without zbd --without cephfs_java --without cephfs_shell --without ocf --without selinux --without ceph_test_package --without make_check --define "_binary_payload w2T16.xzdio" --define "_topdir `pwd`" -ba /root/rpmbuild/SPECS/ceph.spec
                 '''
             }
-        }  
+        }
+
+        stage ('Upload') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'Copy RPMS', script: '''
+                    mkdir -p $build_upload_dir
+                    cp /root/rpmbuild/RPMS/*/*.rpm $build_upload_dir
+                '''
+            }
+        }
     }
 }
