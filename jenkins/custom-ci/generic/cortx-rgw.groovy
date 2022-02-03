@@ -58,7 +58,7 @@ pipeline {
                     yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/rockylinux-8.4/custom-build-36/cortx_iso/
                     yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
                     yum clean all;rm -rf /var/cache/yum
-                    yum install cortx-motr{,-devel} -y
+                    yum install cortx-motr{,-devel} -y 
                 '''    
             }
         }
