@@ -69,18 +69,12 @@ EOF
                     rm -rf /etc/pip.conf
                     
                 '''
-                sh label: 'Configure yum repositories', script: '''
+                sh label: 'Install Dependencies', script: '''
                     set +x
                     yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/$os_version/$release_tag/cortx_iso/
                     yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
                     yum clean all;rm -rf /var/cache/yum
-                '''    
-                sh label: 'Install packages', script: '''
-                    #Install cortx-py-utils package with --nodeps    
-                    wget -r -np -nH --cut-dirs=7 -A "cortx-py-utils*.rpm" http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/$os_version/$release_tag/cortx_iso/
-                    rpm -ivh --nodeps cortx-py-utils*.rpm
-
-                    yum install cortx-motr{,-devel} -y
+                    yum install cortx-py-utils cortx-motr{,-devel} -y --nogpgcheck
                 '''
             }
         }
@@ -111,4 +105,3 @@ EOF
 
     }
 }
-
