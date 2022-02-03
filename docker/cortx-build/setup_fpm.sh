@@ -23,6 +23,9 @@ set -ex
 
 #yum install -y ruby-devel gcc make rpm-build rubygems python36
 if [ "x$1" = "x" ]; then
+	echo "Please give proper os type"
+	exit 1
+elif [ "$1" = "centos" ]; then
 	yum --enablerepo=centos-sclo-rh install rh-ruby23 rh-ruby23-ruby-devel gcc make rpm-build rubygems -y
 cat <<EOF >>rh-ruby23.sh
 #!/bin/bash

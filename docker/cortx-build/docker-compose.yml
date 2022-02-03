@@ -26,8 +26,9 @@ services:
       context: ../../
       dockerfile: ./docker/cortx-build/Dockerfile-rockylinux
       args:
-        OSNAME: rockylinux
-        OS_VERSION: 8.4
+        OS_TYPE: rockylinux
+        OS_RELEASE: 8.4
+        OS_IMAGE: rockylinux/rockylinux
         ENVIRONMENT: internal-ci
         GPG_PASSPHRASE: seagate
         LUSTRE_VERSION: 2.12.7
@@ -41,9 +42,11 @@ services:
       context: ../../
       dockerfile: ./docker/cortx-build/Dockerfile
       args:
-       CENTOS_RELEASE: 7.8.2003
-       LUSTRE_VERSION: 2.12.5
-       ENVIRONMENT: opensource-ci
+        OS_RELEASE: 7.8.2003
+        OS_IMAGE: centos
+        OS_TYPE: centos
+        LUSTRE_VERSION: 2.12.5
+        ENVIRONMENT: opensource-ci
     volumes:
      - /var/artifacts:/var/artifacts
      - /root/cortx:/cortx-workspace
@@ -54,9 +57,11 @@ services:
       context: ../../
       dockerfile: ./docker/cortx-build/Dockerfile
       args:
-       CENTOS_RELEASE: 7.9.2009
-       LUSTRE_VERSION: 2.12.7
-       ENVIRONMENT: opensource-ci
+        OS_RELEASE: 7.9.2009
+        OS_IMAGE: centos
+        OS_TYPE: centos
+        LUSTRE_VERSION: 2.12.7
+        ENVIRONMENT: opensource-ci
     volumes:
      - /var/artifacts:/var/artifacts
      - /root/cortx:/cortx-workspace
@@ -67,9 +72,11 @@ services:
       context: ../../
       dockerfile: ./docker/cortx-build//Dockerfile
       args:
-       CENTOS_RELEASE: 7.8.2003
-       LUSTRE_VERSION: 2.12.5
-       ENVIRONMENT: internal-ci
+        OS_RELEASE: 7.8.2003
+        OS_IMAGE: centos
+        OS_TYPE: centos
+        LUSTRE_VERSION: 2.12.5
+        ENVIRONMENT: internal-ci
     volumes:
      - /var/artifacts:/var/artifacts
      - /root/cortx:/cortx-workspace
@@ -80,7 +87,9 @@ services:
       context: ../../
       dockerfile: ./docker/cortx-build//Dockerfile
       args:
-        CENTOS_RELEASE: 7.9.2009
+        OS_RELEASE: 7.9.2009
+        OS_IMAGE: centos
+        OS_TYPE: centos
         LUSTRE_VERSION: 2.12.7
         ENVIRONMENT: internal-ci
     volumes:
