@@ -38,7 +38,7 @@ pipeline {
         string(name: 'PRVSNR_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Provisioner', trim: true)
         string(name: 'PRVSNR_URL', defaultValue: 'https://github.com/Seagate/cortx-prvsnr.git', description: 'Provisioner Repository URL', trim: true)
         string(name: 'CORTX_RGW_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for S3Server', trim: true)
-        string(name: 'CORTX_RGW_URL', defaultValue: 'https://github.com/Seagate/cortx-s3server.git', description: 'S3Server Repository URL', trim: true)
+        string(name: 'CORTX_RGW_URL', defaultValue: 'https://github.com/Seagate/cortx-rgw', description: 'S3Server Repository URL', trim: true)
         string(name: 'CORTX_UTILS_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX Utils', trim: true)
         string(name: 'CORTX_UTILS_URL', defaultValue: 'https://github.com/Seagate/cortx-utils', description: 'CORTX Utils Repository URL', trim: true)
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX RE', trim: true)
