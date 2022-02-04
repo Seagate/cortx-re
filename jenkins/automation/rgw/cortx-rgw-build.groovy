@@ -10,6 +10,7 @@ pipeline {
 
     environment {
         branch = "custom-ci"
+        os_version = "rockylinux-8.4"
         version = "2.0.0"
         component = "rgw-build/"
         release_dir = "/mnt/bigstorage/releases/cortx/"
