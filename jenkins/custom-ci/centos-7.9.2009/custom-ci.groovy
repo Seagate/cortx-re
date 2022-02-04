@@ -204,7 +204,7 @@ pipeline {
                         script { build_stage = env.STAGE_NAME }
                         script {
                             try {
-                                def csm_agent_build = build job: '/GitHub-custom-ci-builds/centos-7.9/custom-csm-agent-build', wait: true,
+                                def csm_agent_build = build job: '/Release_Engineering/re-workspace/sg_workspace/custom-csm-agent-build', wait: true,
                                               parameters: [
                                                     string(name: 'CSM_AGENT_URL', value: "${CSM_AGENT_URL}"),
                                                     string(name: 'CSM_AGENT_BRANCH', value: "${CSM_AGENT_BRANCH}"),
