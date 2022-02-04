@@ -197,19 +197,19 @@ pipeline {
                 checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
 
                 sh label: 'Link Third-Party', script: '''
-                    pushd $integration_dir$BUILD_NUMBER
+                    pushd $integration_dir/$release_tag
                         ln -s $(readlink -f $third_party_rpm_dir) 3rd_party
                         ln -s $(readlink -f $python_deps) python_deps
                     popd
                 '''
                 sh label: 'Build MANIFEST', script: """
                     pushd scripts/release_support
-                        sh build_release_info.sh -b $branch -v $version -l $integration_dir$BUILD_NUMBER/cortx_iso -t $integration_dir$BUILD_NUMBER/3rd_party
+                        sh build_release_info.sh -b $branch -v $version -l $integration_dir/$release_tag/cortx_iso -t $integration_dir$BUILD_NU/MBER/3rd_party
                     popd
 
-                    cp $integration_dir$BUILD_NUMBER/cortx_iso/RELEASE.INFO .
-                    cp $integration_dir$BUILD_NUMBER/3rd_party/THIRD_PARTY_RELEASE.INFO $integration_dir$BUILD_NUMBER/
-                    cp $integration_dir$BUILD_NUMBER/cortx_iso/RELEASE.INFO $integration_dir$BUILD_NUMBER/
+                    cp $integration_dir/$release_tag/cortx_iso/RELEASE.INFO .
+                    cp $integration_dir/$release_tag/3rd_party/THIRD_PARTY_RELEASE.INFO $integration_dir/$release_tag/
+                    cp $integration_dir/$release_tag/cortx_iso/RELEASE.INFO $integration_dir/$release_tag/
                 """
             }
         }
