@@ -11,8 +11,12 @@ pipeline {
     environment {
         branch = "custom-ci"
         version = "2.0.0"
-        python_deps = "cortx-2.0"
-        third_party_rpm_dir = "cortx-2.0-k8"
+        component = "rgw-build/"
+        release_dir = "/mnt/bigstorage/releases/cortx/"
+        python_deps = "$release_dir/third-party-deps/python-deps/python-packages-2.0.0-latest"
+        third_party_rpm_dir = "$release_dir/third-party-deps/rockylinux/$os_version-2.0.0-latest"
+        integration_dir = "$release_dir/$component/release"
+        release_tag = "cortx-rgw-build-$BUILD_ID"
     }
 
     parameters {
@@ -72,8 +76,8 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Clean up', script: '''
                 rm -rf /root/rpmbuild/RPMS/x86_64/*.rpm
-                rm -rf /mnt/rgw-build/rpmbuild/SOURCES/ceph*.tar.bz2
-                rm -rf  /mnt/rgw-build/rpmbuild/BUILD/ceph*
+                rm -rf $release_dir/rpmbuild/SOURCES/ceph*.tar.bz2
+                rm -rf  $release_dir/rpmbuild/BUILD/ceph*
                 yum erase cortx-py-utils cortx-motr{,-devel} -y
                 '''
             }
@@ -97,7 +101,7 @@ pipeline {
                     ./jenkins/build.sh -v $version -b $BUILD_NUMBER
                 popd
                 pip3 install --no-cache-dir --trusted-host cortx-storage.colo.seagate.com -i http://cortx-storage.colo.seagate.com/releases/cortx/github/main/centos-7.9.2009/last_successful_prod/python_deps/ -r https://raw.githubusercontent.com/Seagate/cortx-utils/main/py-utils/python_requirements.txt -r https://raw.githubusercontent.com/Seagate/cortx-utils/main/py-utils/python_requirements.ext.txt
-                rpm -ivh --nodeps ./cortx-py-utils/py-utils/dist/cortx-py-utils-2.0.0*.noarch.rpm
+                yum localinstall -y ./cortx-py-utils/py-utils/dist/cortx-py-utils-2.0.0*.noarch.rpm
                 mv ./cortx-py-utils/py-utils/dist/cortx-py-utils-2.0.0*.noarch.rpm /root/rpmbuild/RPMS/x86_64/
                 '''
             }
@@ -109,9 +113,13 @@ pipeline {
                 sh label: 'Install Motr', script: '''
                 pushd motr
                         yum install perl-YAML-LibYAML perl-List-MoreUtils perl-XML-LibXML castxml perl-File-Find-Rule perl-IO-All asciidoc libedit-devel python2-devel -y
+                        kernel_src=$(ls -1rd /lib/modules/*/build | head -n1)
                         cp cortx-motr.spec.in cortx-motr.spec
-                        sed -i -e 's/@.*@/111/g' -e '/^111/d' cortx-motr.spec
-                        #yum-builddep -y cortx-motr.spec
+                        sed -i "/BuildRequires.*kernel*/d" cortx-motr.spec
+                        sed -i "/BuildRequires.*%{lustre_devel}/d" cortx-motr.spec
+                        sed -i 's/@BUILD_DEPEND_LIBFAB@//g' cortx-motr.spec
+                        sed -i 's/@.*@/111/g' cortx-motr.spec
+                        yum-builddep -y cortx-motr.spec
                         ./autogen.sh
                         ./configure --with-user-mode-only
                         export build_number=${BUILD_ID}
@@ -138,6 +146,7 @@ pipeline {
         }
     
         stage('Build Ceph Package') {
+            when { expression { false } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Build', script: '''
@@ -146,12 +155,12 @@ pipeline {
                     sed -i 's/centos|/rocky|centos|/' install-deps.sh
                     ./install-deps.sh
                     ./make-dist
-                    mkdir -p /mnt/rgw-build/rpmbuild/$BUILD_NUMBER/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
-                    mv ceph*.tar.bz2 /mnt/rgw-build/rpmbuild/$BUILD_NUMBER/SOURCES/
-                    tar --strip-components=1 -C /mnt/rgw-build/rpmbuild/$BUILD_NUMBER/SPECS/ --no-anchored -xvjf /mnt/rgw-build/rpmbuild/$BUILD_NUMBER/SOURCES/ceph*.tar.bz2 "ceph.spec"
+                    mkdir -p $release_dir/rpmbuild/$BUILD_NUMBER/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
+                    mv ceph*.tar.bz2 $release_dir/rpmbuild/$BUILD_NUMBER/SOURCES/
+                    tar --strip-components=1 -C $release_dir/rpmbuild/$BUILD_NUMBER/SPECS/ --no-anchored -xvjf $release_dir/rpmbuild/$BUILD_NUMBER/SOURCES/ceph*.tar.bz2 "ceph.spec"
                 popd
 
-                pushd /mnt/rgw-build/rpmbuild/$BUILD_NUMBER
+                pushd $release_dir/rpmbuild/$BUILD_NUMBER
                      rpmbuild --clean --rmsource --define "_unpackaged_files_terminate_build 0" --define "debug_package %{nil}" --without cmake_verbose_logging --without jaeger --without lttng --without seastar --without kafka_endpoint --without zbd --without cephfs_java --without cephfs_shell --without ocf --without selinux --without ceph_test_package --without make_check --define "_binary_payload w2T16.xzdio" --define "_topdir `pwd`" -ba ./SPECS/ceph.spec
                 popd
             '''    
@@ -162,15 +171,15 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Copy RPMS', script: '''
-                pushd /mnt/rgw-build/release/
-                    rm -rf $BUILD_NUMBER && mkdir -p $BUILD_NUMBER/cortx_iso
-                    mv /mnt/rgw-build/rpmbuild/$BUILD_NUMBER/RPMS/*/*.rpm /mnt/rgw-build/release/$BUILD_NUMBER/cortx_iso
-                    mv /root/rpmbuild/RPMS/x86_64/*.rpm /mnt/rgw-build/release/$BUILD_NUMBER/
-                    createrepo -v $BUILD_NUMBER/
-                    rm -f last_successful && ln -s $BUILD_NUMBER last_successful
+                pushd $integration_dir
+                    rm -rf $release_tag && mkdir -p $release_tag/cortx_iso
+                    mv $release_dir/rpmbuild/$BUILD_NUMBER/RPMS/*/*.rpm $integration_dir/$release_tag/cortx_iso
+                    mv /root/rpmbuild/RPMS/x86_64/*.rpm $integration_dir/$release_tag/cortx_iso
+                    createrepo -v $release_tag
+                    rm -f last_successful && ln -s $release_tag last_successful
                 popd    
-                    echo "Ceph and Motr Packages are available at "
-                    echo "http://cortx-storage.colo.seagate.com/releases/cortx/rgw-build/release/$BUILD_NUMBER/"
+                    echo "CORTX RGW build is available at "
+                    echo "http://cortx-storage.colo.seagate.com/releases/cortx/rgw-build/release/$release_tag/"
                 '''
             }
         }
@@ -181,19 +190,19 @@ pipeline {
                 checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
 
                 sh label: 'Link Third-Party', script: '''
-                    pushd /mnt/rgw-build/release/$BUILD_NUMBER
+                    pushd $integration_dir$BUILD_NUMBER
                         ln -s $(readlink -f $third_party_rpm_dir) 3rd_party
                         ln -s $(readlink -f $python_deps) python_deps
                     popd
                 '''
                 sh label: 'Build MANIFEST', script: """
                     pushd scripts/release_support
-                        sh build_release_info.sh -b $branch -v $version -l /mnt/rgw-build/release/$BUILD_NUMBER/cortx_iso -t /mnt/rgw-build/release/$BUILD_NUMBER/3rd_party
+                        sh build_release_info.sh -b $branch -v $version -l $integration_dir$BUILD_NUMBER/cortx_iso -t $integration_dir$BUILD_NUMBER/3rd_party
                     popd
 
-                    cp /mnt/rgw-build/release/$BUILD_NUMBER/cortx_iso/RELEASE.INFO .
-                    cp /mnt/rgw-build/release/$BUILD_NUMBER/3rd_party/THIRD_PARTY_RELEASE.INFO /mnt/rgw-build/release/$BUILD_NUMBER/
-                    cp /mnt/rgw-build/release/$BUILD_NUMBER/cortx_iso/RELEASE.INFO /mnt/rgw-build/release/$BUILD_NUMBER/
+                    cp $integration_dir$BUILD_NUMBER/cortx_iso/RELEASE.INFO .
+                    cp $integration_dir$BUILD_NUMBER/3rd_party/THIRD_PARTY_RELEASE.INFO $integration_dir$BUILD_NUMBER/
+                    cp $integration_dir$BUILD_NUMBER/cortx_iso/RELEASE.INFO $integration_dir$BUILD_NUMBER/
                 """
             }
         }
