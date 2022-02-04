@@ -102,6 +102,7 @@ pipeline {
                 popd
                 pip3 install --no-cache-dir --trusted-host cortx-storage.colo.seagate.com -i http://cortx-storage.colo.seagate.com/releases/cortx/github/main/centos-7.9.2009/last_successful_prod/python_deps/ -r https://raw.githubusercontent.com/Seagate/cortx-utils/main/py-utils/python_requirements.txt -r https://raw.githubusercontent.com/Seagate/cortx-utils/main/py-utils/python_requirements.ext.txt
                 yum localinstall -y ./cortx-py-utils/py-utils/dist/cortx-py-utils-2.0.0*.noarch.rpm
+                mv ./cortx-py-utils/py-utils/dist/cortx-py-utils-2.0.0*.noarch.rpm /root/rpmbuild/RPMS/x86_64/
                 
                 '''
             }
@@ -179,10 +180,7 @@ pipeline {
                 sh label: 'Copy RPMS', script: '''
                 pushd $integration_dir
                     rm -rf $release_tag && mkdir -p $release_tag/cortx_iso
-                    #Copy RPM packages
                     #mv $release_dir/$component/rpmbuild/$BUILD_NUMBER/RPMS/*/*.rpm $integration_dir/$release_tag/cortx_iso
-                    mv ./cortx-py-utils/py-utils/dist/cortx-py-utils-2.0.0*.noarch.rpm $integration_dir/$release_tag/cortx_iso
-                    mv /root/rpmbuild/RPMS/x86_64/*.rpm $integration_dir/$release_tag/cortx_iso
                     mv /root/rpmbuild/RPMS/x86_64/*.rpm $integration_dir/$release_tag/cortx_iso
                     createrepo -v $release_tag
                     rm -f last_successful && ln -s $release_tag last_successful
