@@ -114,7 +114,7 @@ pipeline {
                 stage ("build CORTX-RGW") {
                     steps {
                         script { build_stage = env.STAGE_NAME }
-                        build job: 'cortx-rgw-build', wait: true,
+                        build job: 'cortx-rgw-custom-build', wait: true,
                         parameters: [
                                     string(name: 'CORTX_RGW_BRANCH', value: "${CORTX_RGW_BRANCH}"),
                                     string(name: 'MOTR_BRANCH', value: "custom-ci"),
