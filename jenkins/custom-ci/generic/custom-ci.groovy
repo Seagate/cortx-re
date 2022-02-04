@@ -37,8 +37,8 @@ pipeline {
         string(name: 'MOTR_URL', defaultValue: 'https://github.com/Seagate/cortx-motr.git', description: 'Motr Repository URL', trim: true)
         string(name: 'PRVSNR_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Provisioner', trim: true)
         string(name: 'PRVSNR_URL', defaultValue: 'https://github.com/Seagate/cortx-prvsnr.git', description: 'Provisioner Repository URL', trim: true)
-        string(name: 'S3_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for S3Server', trim: true)
-        string(name: 'S3_URL', defaultValue: 'https://github.com/Seagate/cortx-s3server.git', description: 'S3Server Repository URL', trim: true)
+        string(name: 'CORTX_RGW_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for S3Server', trim: true)
+        string(name: 'CORTX_RGW_URL', defaultValue: 'https://github.com/Seagate/cortx-s3server.git', description: 'S3Server Repository URL', trim: true)
         string(name: 'CORTX_UTILS_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX Utils', trim: true)
         string(name: 'CORTX_UTILS_URL', defaultValue: 'https://github.com/Seagate/cortx-utils', description: 'CORTX Utils Repository URL', trim: true)
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX RE', trim: true)
@@ -140,9 +140,9 @@ pipeline {
                                                         string(name: 'MOTR_URL', value: "${MOTR_URL}"),
                                                         string(name: 'MOTR_BRANCH', value: "${MOTR_BRANCH}"),
                                                         string(name: 'MOTR_BUILD_MODE', value: "${MOTR_BUILD_MODE}"),
-                            string(name: 'ENABLE_MOTR_DTM', value: "${ENABLE_MOTR_DTM}"),
-                                                        string(name: 'S3_URL', value: "${S3_URL}"),
-                                                        string(name: 'S3_BRANCH', value: "${S3_BRANCH}"),
+                                                        string(name: 'ENABLE_MOTR_DTM', value: "${ENABLE_MOTR_DTM}"),
+                                                        string(name: 'CORTX_RGW_URL', value: "${CORTX_RGW_URL}"),
+                                                        string(name: 'CORTX_RGW_BRANCH', value: "${CORTX_RGW_BRANCH}"),
                                                         string(name: 'HARE_URL', value: "${HARE_URL}"),
                                                         string(name: 'HARE_BRANCH', value: "${HARE_BRANCH}"),
                                                         string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}"),

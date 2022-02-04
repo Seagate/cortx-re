@@ -111,15 +111,14 @@ pipeline {
     
         stage ("Trigger Downstream Jobs") {
             parallel {
-                stage ("build S3Server") {
-                    when { expression { false } }
+                stage ("build CORTX-RGW") {
                     steps {
                         script { build_stage = env.STAGE_NAME }
-                        build job: 's3-custom-build', wait: true,
+                        build job: 'cortx-rgw-build', wait: true,
                         parameters: [
-                                    string(name: 'S3_BRANCH', value: "${S3_BRANCH}"),
+                                    string(name: 'CORTX_RGW_BRANCH', value: "${CORTX_RGW_BRANCH}"),
                                     string(name: 'MOTR_BRANCH', value: "custom-ci"),
-                                    string(name: 'S3_URL', value: "${S3_URL}"),
+                                    string(name: 'CORTX_RGW_URL', value: "${CORTX_RGW_URL}"),
                                     string(name: 'CUSTOM_CI_BUILD_ID', value: "${CUSTOM_CI_BUILD_ID}")
                                 ]
                     }

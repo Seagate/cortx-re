@@ -52,17 +52,17 @@ pipeline {
                     ./make-dist
                     mkdir -p /mnt/rgw/$BUILD_NUMBER/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
                     tar --strip-components=1 -C /mnt/rgw/$BUILD_NUMBER/SPECS/ --no-anchored -xvjf ceph-*tar.bz2 "ceph.spec"
-                    mv ceph*tar.bz2 /mnt/rgw/$BUILD_NUMBER/SOURCES/ 
-                popd    
+                    mv ceph*tar.bz2 /mnt/rgw/$BUILD_NUMBER/SOURCES/
+                popd
                 '''
 
                 sh label: 'Configure yum repositories', script: """
                     set +x
-                    yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/rockylinux-8.4/custom-build-36/cortx_iso/
+                    yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/$os_version/$release_tag/cortx_iso/
                     yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
                     yum clean all;rm -rf /var/cache/yum
                     yum install cortx-motr{,-devel} -y
-                """    
+                """
             }
         }
 
