@@ -152,7 +152,6 @@ pipeline {
         }
     
         stage('Build Ceph Package') {
-            when { expression { false } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Build', script: '''
@@ -181,13 +180,11 @@ pipeline {
                 sh label: 'Copy RPMS', script: '''
                 pushd $integration_dir
                     rm -rf $release_tag && mkdir -p $release_tag/cortx_iso
-                    #mv $release_dir/$component/rpmbuild/$BUILD_NUMBER/RPMS/*/*.rpm $integration_dir/$release_tag/cortx_iso
+                    mv $release_dir/$component/rpmbuild/$BUILD_NUMBER/RPMS/*/*.rpm $integration_dir/$release_tag/cortx_iso
                     mv /root/rpmbuild/RPMS/x86_64/*.rpm $integration_dir/$release_tag/cortx_iso
                     createrepo -v $release_tag
                     rm -f last_successful && ln -s $release_tag last_successful
                 popd    
-                    echo "CORTX RGW build is available at "
-                    echo "http://cortx-storage.colo.seagate.com/releases/cortx/rgw-build/release/$release_tag/"
                 '''
             }
         }
@@ -211,6 +208,9 @@ pipeline {
                     cp $integration_dir/$release_tag/cortx_iso/RELEASE.INFO .
                     cp $integration_dir/$release_tag/3rd_party/THIRD_PARTY_RELEASE.INFO $integration_dir/$release_tag/
                     cp $integration_dir/$release_tag/cortx_iso/RELEASE.INFO $integration_dir/$release_tag/
+
+                    echo "CORTX RGW build is available at "
+                    echo "http://cortx-storage.colo.seagate.com/releases/cortx/rgw-build/release/$release_tag/"
                 """
             }
         }
