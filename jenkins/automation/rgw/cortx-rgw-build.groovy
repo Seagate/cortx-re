@@ -9,7 +9,10 @@ pipeline {
     triggers { cron('30 22 * * *') }
 
     environment {
+        branch = "custom-ci"
         version = "2.0.0"
+        python_deps = "cortx-2.0"
+        third_party_rpm_dir = "cortx-2.0-k8"
     }
 
     parameters {
@@ -160,8 +163,8 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Copy RPMS', script: '''
                 pushd /mnt/rgw-build/release/
-                    mkdir -p $BUILD_NUMBER
-                    mv /mnt/rgw-build/rpmbuild/$BUILD_NUMBER/RPMS/*/*.rpm /mnt/rgw-build/release/$BUILD_NUMBER/
+                    rm -rf $BUILD_NUMBER && mkdir -p $BUILD_NUMBER/cortx_iso
+                    mv /mnt/rgw-build/rpmbuild/$BUILD_NUMBER/RPMS/*/*.rpm /mnt/rgw-build/release/$BUILD_NUMBER/cortx_iso
                     mv /root/rpmbuild/RPMS/x86_64/*.rpm /mnt/rgw-build/release/$BUILD_NUMBER/
                     createrepo -v $BUILD_NUMBER/
                     rm -f last_successful && ln -s $BUILD_NUMBER last_successful
@@ -169,6 +172,29 @@ pipeline {
                     echo "Ceph and Motr Packages are available at "
                     echo "http://cortx-storage.colo.seagate.com/releases/cortx/rgw-build/release/$BUILD_NUMBER/"
                 '''
+            }
+        }
+
+        stage ('Release') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
+
+                sh label: 'Link Third-Party', script: '''
+                    pushd /mnt/rgw-build/release/$BUILD_NUMBER
+                        ln -s $(readlink -f $third_party_rpm_dir) 3rd_party
+                        ln -s $(readlink -f $python_deps) python_deps
+                    popd
+                '''
+                sh label: 'Build MANIFEST', script: """
+                    pushd scripts/release_support
+                        sh build_release_info.sh -b $branch -v $version -l /mnt/rgw-build/release/$BUILD_NUMBER/cortx_iso -t /mnt/rgw-build/release/$BUILD_NUMBER/3rd_party
+                    popd
+
+                    cp /mnt/rgw-build/release/$BUILD_NUMBER/cortx_iso/RELEASE.INFO .
+                    cp /mnt/rgw-build/release/$BUILD_NUMBER/3rd_party/THIRD_PARTY_RELEASE.INFO /mnt/rgw-build/release/$BUILD_NUMBER/
+                    cp /mnt/rgw-build/release/$BUILD_NUMBER/cortx_iso/RELEASE.INFO /mnt/rgw-build/release/$BUILD_NUMBER/
+                """
             }
         }
     }
