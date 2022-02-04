@@ -102,7 +102,7 @@ pipeline {
                 popd
                 pip3 install --no-cache-dir --trusted-host cortx-storage.colo.seagate.com -i http://cortx-storage.colo.seagate.com/releases/cortx/github/main/centos-7.9.2009/last_successful_prod/python_deps/ -r https://raw.githubusercontent.com/Seagate/cortx-utils/main/py-utils/python_requirements.txt -r https://raw.githubusercontent.com/Seagate/cortx-utils/main/py-utils/python_requirements.ext.txt
                 yum localinstall -y ./cortx-py-utils/py-utils/dist/cortx-py-utils-2.0.0*.noarch.rpm
-                mv ./cortx-py-utils/py-utils/dist/cortx-py-utils-2.0.0*.noarch.rpm $integration_dir/$release_tag/cortx_iso
+                
                 '''
             }
         }
@@ -125,7 +125,7 @@ pipeline {
                         make rpms
                         rm -rf /root/rpmbuild/RPMS/x86_64/*debug*.rpm
                         yum install /root/rpmbuild/RPMS/x86_64/cortx-motr{,-devel}*.rpm -y --nogpgcheck
-                        mv /root/rpmbuild/RPMS/x86_64/*.rpm $integration_dir/$release_tag/cortx_iso
+                       
                 popd
 
                 
@@ -144,7 +144,7 @@ pipeline {
                     make VERSION=$version rpm
                 popd
 
-                mv /root/rpmbuild/RPMS/x86_64/*.rpm $integration_dir/$release_tag/cortx_iso
+                
             '''
             }
         }
@@ -168,8 +168,7 @@ pipeline {
                      rpmbuild --clean --rmsource --define "_unpackaged_files_terminate_build 0" --define "debug_package %{nil}" --without cmake_verbose_logging --without jaeger --without lttng --without seastar --without kafka_endpoint --without zbd --without cephfs_java --without cephfs_shell --without ocf --without selinux --without ceph_test_package --without make_check --define "_binary_payload w2T16.xzdio" --define "_topdir `pwd`" -ba ./SPECS/ceph.spec
                 popd
 
-                #Copy RPM packages
-                mv $release_dir/$component/rpmbuild/$BUILD_NUMBER/RPMS/*/*.rpm $integration_dir/$release_tag/cortx_iso
+                
             '''    
             }
         }    
@@ -180,6 +179,11 @@ pipeline {
                 sh label: 'Copy RPMS', script: '''
                 pushd $integration_dir
                     rm -rf $release_tag && mkdir -p $release_tag/cortx_iso
+                    #Copy RPM packages
+                    #mv $release_dir/$component/rpmbuild/$BUILD_NUMBER/RPMS/*/*.rpm $integration_dir/$release_tag/cortx_iso
+                    mv ./cortx-py-utils/py-utils/dist/cortx-py-utils-2.0.0*.noarch.rpm $integration_dir/$release_tag/cortx_iso
+                    mv /root/rpmbuild/RPMS/x86_64/*.rpm $integration_dir/$release_tag/cortx_iso
+                    mv /root/rpmbuild/RPMS/x86_64/*.rpm $integration_dir/$release_tag/cortx_iso
                     createrepo -v $release_tag
                     rm -f last_successful && ln -s $release_tag last_successful
                 popd    
