@@ -204,7 +204,7 @@ pipeline {
                 '''
                 sh label: 'Build MANIFEST', script: """
                     pushd scripts/release_support
-                        sh build_release_info.sh -b $branch -v $version -l $integration_dir/$release_tag/cortx_iso -t $integration_dir$BUILD_NU/MBER/3rd_party
+                        sh build_release_info.sh -b $branch -v $version -l $integration_dir/$release_tag/cortx_iso -t $integration_dir/$release_tag/3rd_party
                     popd
 
                     cp $integration_dir/$release_tag/cortx_iso/RELEASE.INFO .
