@@ -179,7 +179,7 @@ def main():
     print ("Processing %s ....." %args)
     component_name = args.file
     files_generator = get_block_content(component_name)
-    print ("File", files_generator)
+    
     for file in files_generator:
         for file_name, words in file.items():
             if words == '':
@@ -199,7 +199,6 @@ def main():
         last_file_name = eof_file
     rows_cont += html_row_gen(last_file_name, eof, component_name)
 
-    print (">>>>>>", rows_cont)
     if rows_cont == "":
         rows_cont = '<tr><td><h2></h2><div class="file-diff"><table class="inner">'
         rows_cont += '<tr><th class="word_width">Word</th><th class="line_width">Line Number</th><th>Recommendation</th></tr>'
