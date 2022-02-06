@@ -43,6 +43,7 @@ pipeline {
                   virtualenv alex --python=python2.7
                   source ./alex/bin/activate
                   pip install GitPython==2.1.15
+                  NODE_OPTIONS="--max-old-space-size=1536"
                   
               '''
           }
@@ -87,11 +88,12 @@ pipeline {
 						  repo_list=`echo '''+ words +'''`
 						  scan_words=`echo '''+ scan_list +'''`
 						  
-						  repo_list=${repo_list//,/\\|}
-						  scan_words=${scan_words//,/\\|}
+						  repo_list=${repo_list//,/\\\\|}
+						  scan_words=${scan_words//,/\\\\|}
 						  grep -rnwo '.' -e \"$repo_list\" >> '''+ file_custom +'''
 						  grep -rnwo '.' -e \"$scan_words\" >> '''+ file_custom +'''
 						  alex . >> ''' + file +''' 2>&1
+						  cat ''' + file_custom + '''
 						  set -e
 						'''
 					}
@@ -283,6 +285,70 @@ pipeline {
                     env.ForEmailPlugin = env.WORKSPACE
                     emailext mimeType: 'text/html',
                     body: '${FILE, path="cortx-posix.html"}',
+                    subject: 'Alex Scan Report - [ Date :' +new Date().format("dd-MMM-yyyy") + ' ]',
+                    recipientProviders: [[$class: 'RequesterRecipientProvider']],
+                    to: useEmailList
+                }
+            }
+        }
+		stage('Send Email to RGW Integration') {
+            steps {
+                script {
+                    def useEmailList = ''
+                    if ( params.environment == 'prod') {
+                      useEmailList = 'rahul.tripathi@seagate.com, sachitanand.shelake@seagate.com,chetan.deshmukh@seagate.com, john.bent@seagate.com, venkatesh.k@seagate.com'
+                    }
+                    env.ForEmailPlugin = env.WORKSPACE
+                    emailext mimeType: 'text/html',
+                    body: '${FILE, path="cortx-rgw-integration.html"}',
+                    subject: 'Alex Scan Report - [ Date :' +new Date().format("dd-MMM-yyyy") + ' ]',
+                    recipientProviders: [[$class: 'RequesterRecipientProvider']],
+                    to: useEmailList
+                }
+            }
+        }
+		stage('Send Email to K8s') {
+            steps {
+                script {
+                    def useEmailList = ''
+                    if ( params.environment == 'prod') {
+                      useEmailList = 'john.a.fletcher@seagate.com, john.bent@seagate.com, venkatesh.k@seagate.com'
+                    }
+                    env.ForEmailPlugin = env.WORKSPACE
+                    emailext mimeType: 'text/html',
+                    body: '${FILE, path="cortx-k8s.html"}',
+                    subject: 'Alex Scan Report - [ Date :' +new Date().format("dd-MMM-yyyy") + ' ]',
+                    recipientProviders: [[$class: 'RequesterRecipientProvider']],
+                    to: useEmailList
+                }
+            }
+        }
+		stage('Send Email to Motr Apps') {
+            steps {
+                script {
+                    def useEmailList = ''
+                    if ( params.environment == 'prod') {
+                      useEmailList = 'andriy.tkachuk@seagate.com, john.bent@seagate.com, venkatesh.k@seagate.com'
+                    }
+                    env.ForEmailPlugin = env.WORKSPACE
+                    emailext mimeType: 'text/html',
+                    body: '${FILE, path="cortx-motr-apps.html"}',
+                    subject: 'Alex Scan Report - [ Date :' +new Date().format("dd-MMM-yyyy") + ' ]',
+                    recipientProviders: [[$class: 'RequesterRecipientProvider']],
+                    to: useEmailList
+                }
+            }
+        }
+		stage('Send Email to Multisite') {
+            steps {
+                script {
+                    def useEmailList = ''
+                    if ( params.environment == 'prod') {
+                      useEmailList = 'mehmet.balman@seagate.com, sachin.punadikar@seagate.com, john.bent@seagate.com, venkatesh.k@seagate.com'
+                    }
+                    env.ForEmailPlugin = env.WORKSPACE
+                    emailext mimeType: 'text/html',
+                    body: '${FILE, path="cortx-multisite.html"}',
                     subject: 'Alex Scan Report - [ Date :' +new Date().format("dd-MMM-yyyy") + ' ]',
                     recipientProviders: [[$class: 'RequesterRecipientProvider']],
                     to: useEmailList
