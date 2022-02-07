@@ -1,4 +1,5 @@
 which #cortx-motr
+libfabric #cortx-motr
 gperftools-libs
 libicu
 liboath
