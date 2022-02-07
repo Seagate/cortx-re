@@ -1,48 +1,64 @@
 {
-	"global_scope": "western digital,hamr",
+	"global_scope": "cortx-test",
 	"repository": [{
 			"name": "cortx-motr",
-			"local_scope": "lyve cloud"
+			"local_scope": "cortx-sample"
 		},
 		{
 			"name": "cortx-posix",
-			"local_scope": "lyve cloud"
+			"local_scope": "cortx-sample"
 		},
 		{
 			"name": "cortx-monitor",
-			"local_scope": "lyve cloud"
+			"local_scope": "cortx-sample"
 		},
 		{
 			"name": "cortx-re",
-			"local_scope": "lyve cloud"
+			"local_scope": "cortx-sample"
 		},
 		{
 			"name": "cortx-hare",
-			"local_scope": "lyve cloud"
+			"local_scope": "cortx-sample"
 		},
 		{
 			"name": "cortx-prvsnr",
-			"local_scope": "lyve cloud"
+			"local_scope": "cortx-sample"
 		},
 		{
 			"name": "cortx-ha",
-			"local_scope": "lyve cloud"
+			"local_scope": "cortx-sample"
 		},
 		{
 			"name": "cortx-management-portal",
-			"local_scope": "lyve cloud"
+			"local_scope": "cortx-sample"
 		},
 		{
 			"name": "cortx-manager",
-			"local_scope": "lyve cloud"
+			"local_scope": "cortx-sample"
 		},
 		{
 			"name": "cortx-s3server",
-			"local_scope": "lyve cloud"
+			"local_scope": "cortx-sample"
 		},
 		{
 			"name": "cortx-utils",
-			"local_scope": "lyve cloud"
+			"local_scope": "cortx-sample"
+		},
+		{
+			"name": "cortx-rgw-integration",
+			"local_scope": "cortx-sample"
+		},
+		{
+			"name": "cortx-k8s",
+			"local_scope": "cortx-sample"
+		},
+		{
+			"name": "cortx-motr-apps",
+			"local_scope": "cortx-sample"
+		},
+		{
+			"name": "cortx-multisite",
+			"local_scope": "cortx-sample"
 		}
 	]
 }
