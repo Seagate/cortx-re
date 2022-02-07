@@ -153,7 +153,7 @@ pipeline {
               script {
                   def useEmailList = ''
                   if ( params.environment == 'prod') {
-                    useEmailList = 'nilesh.govande@seagate.com, basavaraj.kirunge@seagate.com, ivan.tishchenko@seagate.com, john.bent@seagate.com, venkatesh.k@seagate.com'
+                    useEmailList = 'basavaraj.kirunge@seagate.com, ivan.tishchenko@seagate.com, john.bent@seagate.com, venkatesh.k@seagate.com'
                   }
                   env.ForEmailPlugin = env.WORKSPACE
                   emailext mimeType: 'text/html',
