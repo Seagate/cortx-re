@@ -1,7 +1,7 @@
 {
 	"global_scope": "cortx-test",
 	"repository": [{
-			"name": "cortx-motr",
+			"name": "cortx-global-words",
 			"local_scope": "cortx-sample"
 		},
 		{
@@ -10,55 +10,55 @@
 		},
 		{
 			"name": "cortx-monitor",
-			"local_scope": "cortx-sample"
+			"local_scope": "cortx-local-words"
 		},
 		{
 			"name": "cortx-re",
-			"local_scope": "cortx-sample"
+			"local_scope": "cortx-local-words"
 		},
 		{
 			"name": "cortx-hare",
-			"local_scope": "cortx-sample"
+			"local_scope": "cortx-local-words"
 		},
 		{
 			"name": "cortx-prvsnr",
-			"local_scope": "cortx-sample"
+			"local_scope": "cortx-local-words"
 		},
 		{
 			"name": "cortx-ha",
-			"local_scope": "cortx-sample"
+			"local_scope": "cortx-local-words"
 		},
 		{
 			"name": "cortx-management-portal",
-			"local_scope": "cortx-sample"
+			"local_scope": "cortx-local-words"
 		},
 		{
 			"name": "cortx-manager",
-			"local_scope": "cortx-sample"
+			"local_scope": "cortx-local-words"
 		},
 		{
 			"name": "cortx-s3server",
-			"local_scope": "cortx-sample"
+			"local_scope": "cortx-local-words"
 		},
 		{
 			"name": "cortx-utils",
-			"local_scope": "cortx-sample"
+			"local_scope": "cortx-local-words"
 		},
 		{
 			"name": "cortx-rgw-integration",
-			"local_scope": "cortx-sample"
+			"local_scope": "cortx-local-words"
 		},
 		{
 			"name": "cortx-k8s",
-			"local_scope": "cortx-sample"
+			"local_scope": "cortx-local-words"
 		},
 		{
 			"name": "cortx-motr-apps",
-			"local_scope": "cortx-sample"
+			"local_scope": "cortx-local-words"
 		},
 		{
 			"name": "cortx-multisite",
-			"local_scope": "cortx-sample"
+			"local_scope": "cortx-local-words"
 		}
 	]
 }
