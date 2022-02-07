@@ -55,7 +55,7 @@ pipeline {
                   sh """ rm -f """ + "${env.WORKSPACE}/cortx-*.html"
                   sh """ rm -f """ + "${env.WORKSPACE}/cortx-*.alex"
                   sh """ rm -f """ + "${env.WORKSPACE}/cortx-*.custom"
-                  def projects = readJSON file: "${env.WORKSPACE}/config.json"
+                  def projects = readJSON file: "/root/config.json"
                   projects.repository.each { entry ->
                     echo entry.name
                     def repourl = 'https://github.com/seagate/' + entry.name
@@ -73,7 +73,8 @@ pipeline {
       stage('Run Alex') {
           steps {
               script {
-                def projects = readJSON file: "${env.WORKSPACE}/config.json"
+                
+                def projects = readJSON file: "/root/config.json"
 				def scan_list = projects.global_scope
                 projects.repository.each { entry ->
                     dir(entry.name) {
