@@ -189,25 +189,23 @@ pipeline {
                 env.cortx_script_branch = "${CORTX_SCRIPTS_BRANCH}"
                 env.CORTX_DOCKER_IMAGE = "ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}-${GITHUB_TAG_SUFFIX}"
 
-                if ( params.EMAIL_RECIPIENTS == "ALL" && ( "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "SUCCESS" ) ) {
+                if ( params.EMAIL_RECIPIENTS == "ALL" && currentBuild.result == "SUCCESS" ) {
                     mailRecipients = "CORTX.All@seagate.com"
                     //mailRecipients = "cortx.sme@seagate.com, manoj.management.team@seagate.com, CORTX.SW.Architecture.Team@seagate.com, CORTX.DevOps.RE@seagate.com"
                 }
-                else if ( params.EMAIL_RECIPIENTS == "ALL" && ( "${env.cortxCluster_status}" == "UNSTABLE" || "${env.qaSanity_status}" == "UNSTABLE" ) ) {
+                else if ( params.EMAIL_RECIPIENTS == "ALL" && currentBuild.result == "UNSTABLE" ) {
                     mailRecipients = "Cortx.Perf@seagate.com, akhil.bhansali@seagate.com, amit.kapil@seagate.com, amol.j.kongre@seagate.com, deepak.choudhary@seagate.com, jaikumar.gidwani@seagate.com, mandar.joshi@seagate.com, neerav.choudhari@seagate.com, pranay.kumar@seagate.com, swarajya.pendharkar@seagate.com, taizun.a.kachwala@seagate.com, trupti.patil@seagate.com, ujjwal.lanjewar@seagate.com, shailesh.vaidya@seagate.com, abhijit.patil@seagate.com, sonal.kalbende@seagate.com, gaurav.chaudhari@seagate.com, mukul.malhotra@seagate.com, swanand.s.gadre@seagate.com, don.r.bloyer@seagate.com, kalpesh.chhajed@seagate.com "
-                    //mailRecipients = "cortx.sme@seagate.com, manoj.management.team@seagate.com, CORTX.SW.Architecture.Team@seagate.com, CORTX.DevOps.RE@seagate.com"
                 }
-                else if ( params.EMAIL_RECIPIENTS == "ALL" && ( "${env.cortxCluster_status}" == "FAILURE" || "${env.qaSanity_status}" == "FAILURE" ) ) {
+                else if ( params.EMAIL_RECIPIENTS == "ALL" && currentBuild.result == "FAILURE" ) {
                     mailRecipients = "akhil.bhansali@seagate.com, amit.kapil@seagate.com, amol.j.kongre@seagate.com, deepak.choudhary@seagate.com, jaikumar.gidwani@seagate.com, mandar.joshi@seagate.com, neerav.choudhari@seagate.com, pranay.kumar@seagate.com, swarajya.pendharkar@seagate.com, taizun.a.kachwala@seagate.com, trupti.patil@seagate.com, ujjwal.lanjewar@seagate.com, shailesh.vaidya@seagate.com, abhijit.patil@seagate.com, sonal.kalbende@seagate.com, gaurav.chaudhari@seagate.com, mukul.malhotra@seagate.com, swanand.s.gadre@seagate.com, don.r.bloyer@seagate.com, kalpesh.chhajed@seagate.com "
-                    //mailRecipients = "cortx.sme@seagate.com, manoj.management.team@seagate.com, CORTX.SW.Architecture.Team@seagate.com, CORTX.DevOps.RE@seagate.com"
                 }
-                else if ( params.EMAIL_RECIPIENTS == "DEVOPS" && ( "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "SUCCESS" ) ) {
+                else if ( params.EMAIL_RECIPIENTS == "DEVOPS" && currentBuild.result == "SUCCESS" ) {
                     mailRecipients = "CORTX.All@seagate.com, CORTX.DevOps.RE@seagate.com"
                 }
-                else if ( params.EMAIL_RECIPIENTS == "DEVOPS" && ( "${env.cortxCluster_status}" == "UNSTABLE" || "${env.qaSanity_status}" == "UNSTABLE" ) ) {
+                else if ( params.EMAIL_RECIPIENTS == "DEVOPS" && currentBuild.result == "UNSTABLE" ) {
                      mailRecipients = "Cortx.Perf@seagate.com, CORTX.DevOps.RE@seagate.com"
                 }
-                else if ( params.EMAIL_RECIPIENTS == "DEVOPS" && ( "${env.cortxCluster_status}" == "FAILURE" || "${env.qaSanity_status}" == "FAILURE" ) ) {
+                else if ( params.EMAIL_RECIPIENTS == "DEVOPS" && currentBuild.result == "FAILURE" ) {
                     mailRecipients = "CORTX.DevOps.RE@seagate.com"
                 }
                 else if ( params.EMAIL_RECIPIENTS == "DEBUG" ) {
@@ -220,7 +218,7 @@ pipeline {
                 catchError(stageResult: 'FAILURE') {
                     archiveArtifacts allowEmptyArchive: true, artifacts: 'log/*report.xml, log/*report.html, support_bundle/*.tar, crash_files/*.gz', followSymlinks: false
                     emailext (
-                        body: '''${SCRIPT, template="K8s-deployment-email_2.template"}${SCRIPT, template="REL_QA_SANITY_CUS_EMAIL_RETEAM_5.template"}''',
+                        body: '''${SCRIPT, template="test-K8s-deployment-email_2.template"}${SCRIPT, template="REL_QA_SANITY_CUS_EMAIL_RETEAM_5.template"}''',
                         mimeType: 'text/html',
                         subject: "${MESSAGE}",
                         to: "${mailRecipients}",
