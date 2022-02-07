@@ -64,7 +64,8 @@ RUN yum install --nogpgcheck -y python3-pip \
     && pip3 install  --no-cache-dir --trusted-host $(echo $BUILD_URL | awk -F '/' '{print $3}') -i $BUILD_URL/python_deps -r /opt/seagate/cortx/python_requirements.txt -r /opt/seagate/cortx/python_requirements.ext.txt \
    && yum clean all && rm -rf /var/cache/yum
 
-RUN yum install --nogpgcheck -y  $(sed 's/#.*//g' /opt/seagate/cortx/third-party-rpms.txt) \
+RUN yum --nogpgcheck -y --disablerepo="EOS_Rocky_8_OS_x86_64_Rocky_8" install libfabric-1.11.2 \
+    && yum install --nogpgcheck -y  $(sed 's/#.*//g' /opt/seagate/cortx/third-party-rpms.txt) \
     && yum clean all && rm -rf /var/cache/yum
     
 RUN yum install --nogpgcheck -y  $(sed 's/#.*//g' /opt/seagate/cortx/cortx-componenet-rpms.txt) \
