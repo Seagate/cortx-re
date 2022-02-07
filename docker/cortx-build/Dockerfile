@@ -153,7 +153,7 @@ RUN bash /opt/set-githubrelease-repo.sh \
 COPY ./scripts/rpm-signing/* /opt/rpm-signing/
 
 RUN if [[ $OS_TYPE == "centos" ]]; then cat /opt/rpm-signing/gpgoptions >>  ~/.rpmmacros \
-&& sed -i '/passphrase/d' /opt/rpm-signing/genkey-batch \
+&& sed -i "/passphrase/d" /opt/rpm-signing/genkey-batch \
 && sed -i -e 's/$argv 1/$argv 0/g' -e 's/${PASSPHRASE}/ /g' -e '/PASSPHRASE/d' /opt/rpm-signing/rpm-sign.sh ; elif [[ $OS_TYPE == "rockylinux" ]]; then sed 's/--passphrase-fd 3 //g' /opt/rpm-signing/gpgoptions >> ~/.rpmmacros \
 && sed -i -e 's/Passphrase:.*/Passphrase: ${GPG_PASSPHRASE}/g' /opt/rpm-signing/genkey-batch ; fi \
 && /usr/bin/gpg --batch --gen-key /opt/rpm-signing/genkey-batch \
@@ -189,7 +189,7 @@ RUN yum -y install kernel{,-devel}  \
 	
 RUN if [[ $OS_TYPE == "centos" ]]; then QA_RPATHS="255" rpmbuild -bb --without servers --without lustre-tests \
         --define 'configure_args --disable-gss-keyring' \
-        --define "kver `ls -1r /lib/modules | head -n1`" \
+        --define "kver $(ls -1r /lib/modules | head -n1)" \
         /root//rpmbuild/SPECS/lustre.spec ; fi
 
 FROM base as io-build 
