@@ -97,8 +97,8 @@ HTML_TD_STYLE="style='border: 1px solid #AAAAAA;padding: 3px 2px;font-size: 13px
 build_number=$(wget "${RPM_LOCATION}/last_successful/RELEASE.INFO" -q -O - | grep BUILD |  sed 's/"//g' | cut -d: -f2 | xargs )
 release_rpms_array=$(wget "${RPM_LOCATION}/kubernetes-post-merge-build-${build_number}/dev" -q -O - | grep -Po '(?<=href=")[^"]*' | grep -v debuginfo | grep ".rpm")
 
-echo "RPM Validation Initiated for Build = $build_number"
-BUILD_URL="${RPM_LOCATION}/${build_number}/dev"
+echo "RPM Validation Initiated for Build = kubernetes-post-merge-build-$build_number"
+BUILD_URL="${RPM_LOCATION}/kubernetes-post-merge-build-${build_number}/dev"
 
 components_rpm_array=()
 
