@@ -142,10 +142,11 @@ pipeline {
                 junit allowEmptyResults: true, testResults: '*report.xml'
                 echo "${env.cortxCluster_status}"
                 echo "${env.qaSanity_status}"
-                if ( "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "SUCCESS" ) {
+                if ( "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "SUCCESS" || params.EMAIL_RECIPIENTS == "ALL") {
                     MESSAGE = "K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=Passed, SanityTest=Passed, Regression=Passed"
                     ICON = "accept.gif"
                     STATUS = "SUCCESS"
+                    mailRecipients = "CORTX.All@seagate.com"
                     env.deployment_result = "SUCCESS"
                     env.sanity_result = "SUCCESS"
                     currentBuild.result = "SUCCESS"
@@ -187,7 +188,7 @@ pipeline {
                 env.deployment_status = "${MESSAGE}"
                 env.cluster_status = "${env.build_setupcortx_url}"
                 env.CORTX_DOCKER_IMAGE = "ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}-${GITHUB_TAG_SUFFIX}"
-                if ( params.EMAIL_RECIPIENTS == "ALL" ) {
+                if ( "${env.cortxCluster_status}" == "FAILURE" && params.EMAIL_RECIPIENTS == "ALL" || "${env.cortxCluster_status}" == "UNSTABLE" ) {
                     mailRecipients = "akhil.bhansali@seagate.com, amit.kapil@seagate.com, amol.j.kongre@seagate.com, deepak.choudhary@seagate.com, jaikumar.gidwani@seagate.com, mandar.joshi@seagate.com, neerav.choudhari@seagate.com, pranay.kumar@seagate.com, swarajya.pendharkar@seagate.com, taizun.a.kachwala@seagate.com, trupti.patil@seagate.com, ujjwal.lanjewar@seagate.com, shailesh.vaidya@seagate.com, abhijit.patil@seagate.com, sonal.kalbende@seagate.com, gaurav.chaudhari@seagate.com, mukul.malhotra@seagate.com, swanand.s.gadre@seagate.com, don.r.bloyer@seagate.com, kalpesh.chhajed@seagate.com"
                     //mailRecipients = "cortx.sme@seagate.com, manoj.management.team@seagate.com, CORTX.SW.Architecture.Team@seagate.com, CORTX.DevOps.RE@seagate.com"
                 } else if ( params.EMAIL_RECIPIENTS == "DEVOPS" ) {
