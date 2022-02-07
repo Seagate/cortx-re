@@ -251,7 +251,7 @@ pipeline {
                                         parameters: [
                                             string(name: 'CORTX_RE_URL', value: "${CORTX_RE_URL}"),
                                             string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
-                                            string(name: 'BUILD', value: "${release_tag}"),
+                                            string(name: 'BUILD', value: "http://cortx-storage.colo.seagate.com/releases/cortx/rgw-build/release/${release_tag}/"),
                                             string(name: 'GITHUB_PUSH', value: "yes"),
                                             string(name: 'TAG_LATEST', value: "yes"),
                                             string(name: 'DOCKER_REGISTRY', value: "cortx-docker.colo.seagate.com"),
