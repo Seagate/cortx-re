@@ -187,7 +187,7 @@ RUN yum -y install kernel{,-devel}  \
         && yum clean all \
         && rm -rf /var/cache/yum
 	
-RUN if [[ $OS_TYPE =~ "centos" ]]; then QA_RPATHS=255 rpmbuild -bb --without servers --without lustre-tests \
+RUN if [[ $OS_TYPE == 'centos' ]]; then QA_RPATHS=255 rpmbuild -bb --without servers --without lustre-tests \
         --define 'configure_args --disable-gss-keyring' \
         --define "kver `ls -1r /lib/modules | head -n1`" \
         /root//rpmbuild/SPECS/lustre.spec ; fi
@@ -199,7 +199,7 @@ ARG LUSTRE_VERSION
 #COPY --from=lustre-rpm-builder /root/rpmbuild/RPMS/x86_64/lustre-client-devel-${LUSTRE_VERSION}*.rpm . 
 
 #Install luster packages
-RUN if [[ $OS_TYPE =~ "centos" ]]; then yum install -y https://downloads.whamcloud.com/public/lustre/lustre-${LUSTRE_VERSION}/el7/client/RPMS/x86_64/kmod-lustre-client-${LUSTRE_VERSION}-1.el7.x86_64.rpm \
+RUN if [[ $OS_TYPE == 'centos' ]]; then yum install -y https://downloads.whamcloud.com/public/lustre/lustre-${LUSTRE_VERSION}/el7/client/RPMS/x86_64/kmod-lustre-client-${LUSTRE_VERSION}-1.el7.x86_64.rpm \
          https://downloads.whamcloud.com/public/lustre/lustre-${LUSTRE_VERSION}/el7/client/RPMS/x86_64/lustre-client-${LUSTRE_VERSION}-1.el7.x86_64.rpm \
 		 && yum install -y lustre-client-devel-${LUSTRE_VERSION}*.rpm \
 		 && yum clean all \
