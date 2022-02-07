@@ -27,8 +27,11 @@ pipeline {
         string(name: 'HARE_BRANCH', defaultValue: 'main', description: 'Branch for Hare build')
         string(name: 'UTILS_URL', defaultValue: 'https://github.com/Seagate/cortx-utils', description: 'Repository URL for Utils build')
         string(name: 'UTILS_BRANCH', defaultValue: 'main', description: 'Branch for Utils build')
+        string(name: 'PRVSNR_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Provisioner', trim: true)
+        string(name: 'PRVSNR_URL', defaultValue: 'https://github.com/Seagate/cortx-prvsnr.git', description: 'Provisioner Repository URL', trim: true)
         string(name: 'CEPH_URL', defaultValue: 'https://github.com/Seagate/cortx-rgw', description: 'Repository URL for ceph build')
         string(name: 'CEPH_BRANCH', defaultValue: 'main', description: 'Branch for ceph build')
+
     }
     
     options {
