@@ -15,9 +15,9 @@ pipeline {
     }
 
     parameters {  
-	    string(name: 'CSM_URL', defaultValue: 'https://github.com/Seagate/cortx-manager', description: 'Repo for CSM Agent')
+        string(name: 'CSM_URL', defaultValue: 'https://github.com/Seagate/cortx-manager', description: 'Repo for CSM Agent')
         string(name: 'CSM_BRANCH', defaultValue: 'main', description: 'Branch for CSM Agent')     
-	}
+    }
 
     environment {
 
@@ -63,24 +63,22 @@ pipeline {
         // Build csm fromm PR source code
         stage('Build') {
             steps {
-				script { build_stage = env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
                 script { manager.addHtmlBadge("&emsp;<b>Target Branch : ${BRANCH}</b>&emsp;<br />") } 
 
                 dir ('cortx-re') {
-					checkout changelog: false, poll: false, scm: [$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', noTags: true, reference: '', shallow: true]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]]
-				}
+                    checkout changelog: false, poll: false, scm: [$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', noTags: true, reference: '', shallow: true]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]]
+                }
 
-                sh label: '', script: '''
-                    # Install cortx-prereq package
-                    pip3 uninstall pip -y && yum reinstall python3-pip -y && ln -s /usr/bin/pip3 /usr/local/bin/pip3
-                    sh ./cortx-re/scripts/third-party-rpm/install-cortx-prereq.sh
-
+                sh label: 'Setup Repositories', script: '''
                     #Use main branch for cortx-py-utils
                     yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/$BRANCH/$OS_VERSION/$RELEASE_TAG/cortx_iso/
                     yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
                     yum clean all && rm -rf /var/cache/yum
 
-                    # Install pyinstaller	
+                    pip3 install --no-cache-dir --trusted-host cortx-storage.colo.seagate.com -i http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/python-packages-2.0.0-latest/ -r https://raw.githubusercontent.com/Seagate/cortx-utils/main/py-utils/python_requirements.txt -r https://raw.githubusercontent.com/Seagate/cortx-utils/main/py-utils/python_requirements.ext.txt
+
+                    # Install pyinstaller    
                     pip3.6 install  pyinstaller==3.5
                 '''
                  
@@ -107,7 +105,7 @@ pipeline {
                             echo "RPM not exists !!!"
                             exit 1
                         fi
-                    '''	
+                    '''    
                 }
             }
         }
@@ -115,7 +113,7 @@ pipeline {
         // Release cortx deployment stack
         stage('Release') {
             steps {
-				script { build_stage = env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
 
                 dir('cortx-re') {
                     checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 1, honorRefspec: true, noTags: true, reference: '', shallow: true], [$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
@@ -172,7 +170,7 @@ pipeline {
                         rpm -qi createrepo || yum install -y createrepo
                         createrepo .
                     popd
-                '''	
+                '''    
 
                 sh label: 'RPM Signing', script: '''
                     pushd cortx-re/scripts/release_support
@@ -185,9 +183,9 @@ pipeline {
                     cp "${CORTX_ISO_LOCATION}/RELEASE.INFO" "${DESTINATION_RELEASE_LOCATION}"
 
                     cp "${CORTX_ISO_LOCATION}/RELEASE.INFO" .
-                '''	
+                '''    
 
-                archiveArtifacts artifacts: "RELEASE.INFO", onlyIfSuccessful: false, allowEmptyArchive: true	
+                archiveArtifacts artifacts: "RELEASE.INFO", onlyIfSuccessful: false, allowEmptyArchive: true    
             }
 
         }
@@ -230,7 +228,7 @@ pipeline {
                 }
             }
         }
-	}
+    }
 
     post {
         always {
