@@ -186,6 +186,7 @@ pipeline {
                 env.build_location = "${DOCKER_IMAGE_LOCATION}"
                 env.deployment_status = "${MESSAGE}"
                 env.cluster_status = "${env.build_setupcortx_url}"
+                env.cortx_script_branch = "${CORTX_SCRIPTS_BRANCH}"
                 env.CORTX_DOCKER_IMAGE = "ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}-${GITHUB_TAG_SUFFIX}"
 
                 if ( params.EMAIL_RECIPIENTS == "ALL" && ( "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "SUCCESS" ) ) {
