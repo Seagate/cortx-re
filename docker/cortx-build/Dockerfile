@@ -152,7 +152,7 @@ RUN bash /opt/set-githubrelease-repo.sh \
 # rpm signing
 COPY ./scripts/rpm-signing/* /opt/rpm-signing/
 
-RUN if [[ $OS_TYPE == 'centos' ]]; then cat /opt/rpm-signing/gpgoptions >>  ~/.rpmmacros \
+RUN if [[ $OS_TYPE == "centos" ]]; then cat /opt/rpm-signing/gpgoptions >>  ~/.rpmmacros \
 && sed -i '/passphrase/d' /opt/rpm-signing/genkey-batch \
 && sed -i -e 's/$argv 1/$argv 0/g' -e 's/${PASSPHRASE}/ /g' -e '/PASSPHRASE/d' /opt/rpm-signing/rpm-sign.sh ; elif [[ $OS_TYPE == 'rockylinux' ]]; then sed 's/--passphrase-fd 3 //g' /opt/rpm-signing/gpgoptions >> ~/.rpmmacros \
 && sed -i -e 's/Passphrase:.*/Passphrase: ${GPG_PASSPHRASE}/g' /opt/rpm-signing/genkey-batch ; fi \
@@ -187,7 +187,7 @@ RUN yum -y install kernel{,-devel}  \
         && yum clean all \
         && rm -rf /var/cache/yum
 	
-RUN if [[ $OS_TYPE == 'centos' ]]; then QA_RPATHS=255 rpmbuild -bb --without servers --without lustre-tests \
+RUN if [[ $OS_TYPE == 'centos' ]]; then QA_RPATHS="255" rpmbuild -bb --without servers --without lustre-tests \
         --define 'configure_args --disable-gss-keyring' \
         --define "kver `ls -1r /lib/modules | head -n1`" \
         /root//rpmbuild/SPECS/lustre.spec ; fi
@@ -205,7 +205,7 @@ RUN if [[ $OS_TYPE == 'centos' ]]; then yum install -y https://downloads.whamclo
 		 && yum clean all \
 		 && rm -rf /var/cache/yum ; fi
 		 
-RUN if [[ $OS_TYPE =~ "centos" ]]; then curl -k https://raw.githubusercontent.com/Seagate/cortx-motr/stable/cortx-motr.spec.in -o cortx-motr.spec \
+RUN if [[ $OS_TYPE == 'centos' ]]; then curl -k https://raw.githubusercontent.com/Seagate/cortx-motr/stable/cortx-motr.spec.in -o cortx-motr.spec \
 	&& sed -i 's/@.*@/111/g' cortx-motr.spec \
 	&& kernel_src=$(ls -1rd /lib/modules/*/build | head -n1) \
         && yum-builddep -y cortx-motr.spec \
