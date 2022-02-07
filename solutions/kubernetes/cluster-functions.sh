@@ -175,7 +175,7 @@ function install_prerequisites(){
         # stop and disable firewalld
         (systemctl stop firewalld && systemctl disable firewalld && sudo systemctl mask --now firewalld) || throw $Exception
         # install python packages
-        (yum install python3-pip -y && pip3 install jq yq) || throw $Exception
+        (yum install python3-pip -y && pip3 install --upgrade pip && pip3 install jq yq) || throw $Exception
 
         # install yum-utils and wget
         yum install yum-utils wget -y || throw $Exception
