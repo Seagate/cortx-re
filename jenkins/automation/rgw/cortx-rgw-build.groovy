@@ -29,6 +29,8 @@ pipeline {
         string(name: 'UTILS_BRANCH', defaultValue: 'main', description: 'Branch for Utils build')
         string(name: 'PRVSNR_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Provisioner', trim: true)
         string(name: 'PRVSNR_URL', defaultValue: 'https://github.com/Seagate/cortx-prvsnr.git', description: 'Provisioner Repository URL', trim: true)
+        string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX RE', trim: true)
+        string(name: 'CORTX_RE_URL', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'CORTX RE Repository URL', trim: true)
         string(name: 'CEPH_URL', defaultValue: 'https://github.com/Seagate/cortx-rgw', description: 'Repository URL for ceph build')
         string(name: 'CEPH_BRANCH', defaultValue: 'main', description: 'Branch for ceph build')
 
@@ -207,7 +209,7 @@ pipeline {
                     rm -rf $release_tag && mkdir -p $release_tag/cortx_iso
                     mv $release_dir/rpmbuild/$BUILD_NUMBER/RPMS/*/*.rpm $integration_dir/$release_tag/cortx_iso
                     mv /root/rpmbuild/RPMS/x86_64/*.rpm $integration_dir/$release_tag/cortx_iso
-                    createrepo -v $release_tag
+                    createrepo -v $release_tag/cortx_iso
                     rm -f last_successful && ln -s $release_tag last_successful
                 popd    
                 '''
@@ -239,6 +241,32 @@ pipeline {
                 """
             }
         }
+
+        stage ("Build CORTX-ALL image") {
+                steps {
+                    script { build_stage = env.STAGE_NAME }
+                    script {
+                        try {
+                            def build_cortx_all_image = build job: '/GitHub-custom-ci-builds/generic/cortx-all-docker-image', wait: true,
+                                        parameters: [
+                                            string(name: 'CORTX_RE_URL', value: "${CORTX_RE_URL}"),
+                                            string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
+                                            string(name: 'BUILD', value: "http://cortx-storage.colo.seagate.com/releases/cortx/rgw-build/release/${release_tag}/"),
+                                            string(name: 'GITHUB_PUSH', value: "yes"),
+                                            string(name: 'TAG_LATEST', value: "yes"),
+                                            string(name: 'DOCKER_REGISTRY', value: "cortx-docker.colo.seagate.com"),
+                                            string(name: 'OS', value: "${os_version}"),
+                                            string(name: 'CORTX_IMAGE', value: "cortx-rgw"),
+                                            string(name: 'EMAIL_RECIPIENTS', value: "DEBUG")
+                                            ]
+                        env.cortx_all_image = build_cortx_all_image.buildVariables.image
+                        } catch (err) {
+                            build_stage = env.STAGE_NAME
+                            error "Failed to Build CORTX-ALL image"
+                        }
+                    }
+                }
+        } 
     }
 
     post {

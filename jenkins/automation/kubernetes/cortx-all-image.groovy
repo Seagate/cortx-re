@@ -30,6 +30,12 @@ pipeline {
         )
 
         choice (
+            choices: ['cortx-all' , 'cortx-rgw'],
+            description: 'Push newly built Docker image to GitHub ',
+            name: 'CORTX_IMAGE'
+        )
+
+        choice (
             choices: ['yes' , 'no'],
             description: 'Push newly built Docker image to GitHub ',
             name: 'GITHUB_PUSH'
@@ -93,11 +99,11 @@ pipeline {
                 sh encoding: 'utf-8', label: 'Build cortx-all docker image', script: """
                     pushd ./docker/cortx-deploy
                         if [ $GITHUB_PUSH == yes ] && [ $TAG_LATEST == yes ];then
-                                sh ./build.sh -b $BUILD -p yes -t yes -r $DOCKER_REGISTRY -e internal-ci -o $OS
+                                sh ./build.sh -b $BUILD -p yes -t yes -r $DOCKER_REGISTRY -e internal-ci -o $OS -s $CORTX_IMAGE
                         elif [ $GITHUB_PUSH == yes ] && [ $TAG_LATEST == no ]; then
-                                 sh ./build.sh -b $BUILD -p yes -t no -r $DOCKER_REGISTRY -e internal-ci -o $OS
+                                 sh ./build.sh -b $BUILD -p yes -t no -r $DOCKER_REGISTRY -e internal-ci -o $OS -s $CORTX_IMAGE
                         else
-                                 sh ./build.sh -b $BUILD -p no -e internal-ci -o $OS
+                                 sh ./build.sh -b $BUILD -p no -e internal-ci -o $OS -s $CORTX_IMAGE
                         fi
                     popd
                     docker logout  
