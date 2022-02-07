@@ -138,7 +138,7 @@ pipeline {
                         make rpms
                         #rm -rf /root/rpmbuild/RPMS/x86_64/*debug*.rpm
                         createrepo -v  /root/rpmbuild/RPMS/x86_64/ && yum-config-manager --add-repo /root/rpmbuild/RPMS/x86_64/
-                        yum install cortx-motr{,-devel} --nogpgcheck
+                        yum install cortx-motr{,-devel} --nogpgcheck -y
                         rm -rf /etc/yum.repos.d/cortx-storage.colo.seagate.com*
                 popd
                 '''
