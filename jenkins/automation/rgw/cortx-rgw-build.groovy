@@ -253,7 +253,7 @@ pipeline {
                                             string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
                                             string(name: 'BUILD', value: "${release_tag}"),
                                             string(name: 'GITHUB_PUSH', value: "yes"),
-                                            string(name: 'TAG_LATEST', value: "no"),
+                                            string(name: 'TAG_LATEST', value: "yes"),
                                             string(name: 'DOCKER_REGISTRY', value: "cortx-docker.colo.seagate.com"),
                                             string(name: 'OS', value: "${os_version}"),
                                             string(name: 'CORTX_IMAGE', value: "cortx-rgw"),
