@@ -209,7 +209,7 @@ pipeline {
                     rm -rf $release_tag && mkdir -p $release_tag/cortx_iso
                     mv $release_dir/rpmbuild/$BUILD_NUMBER/RPMS/*/*.rpm $integration_dir/$release_tag/cortx_iso
                     mv /root/rpmbuild/RPMS/x86_64/*.rpm $integration_dir/$release_tag/cortx_iso
-                    createrepo -v $release_tag
+                    createrepo -v $release_tag/cortx_iso
                     rm -f last_successful && ln -s $release_tag last_successful
                 popd    
                 '''

@@ -45,7 +45,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
 
                 sh label: 'Build', script: '''                    
-                sed -i -e \'s/Library/Production\\/Rocky_8_Content_View/g\' -e  \'/http.*EPEL/s/Rocky_8\\/EPEL/EPEL-8\\/EPEL-8/g\' /etc/yum.repos.d/R8.4.repo
+                #sed -i -e \'s/Library/Production\\/Rocky_8_Content_View/g\' -e  \'/http.*EPEL/s/Rocky_8\\/EPEL/EPEL-8\\/EPEL-8/g\' /etc/yum.repos.d/R8.4.repo
 
                 pushd cortx-rgw
                     ./install-deps.sh
