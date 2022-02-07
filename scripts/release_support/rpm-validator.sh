@@ -52,7 +52,7 @@ COMPONENT_RPM_PATTERN_ARRAY=(
                     "Hare:cortx-hare"
                     "HA:cortx-ha"
                     "CSM:cortx-csm_agent,csm_web"
-                    "Provisioner:cortx-prvsnr"
+                    "Provisioner:cortx-provisioner"
                     "SSPL:cortx-sspl"
                     "CORTX-utils:cortx-py-utils,stats_utils"
                 )
@@ -65,7 +65,7 @@ RPM_INSTALL_PATH_EXPECTED=(
                     "cortx-hare:bin,conf"                                                   # Hare
                     "cortx-ha:bin,conf"                                                     # HA
                     "cortx-csm_agent:bin,conf" "cortx-csm_web:bin,conf"                     # CSM
-                    "cortx-prvsnr:bin,conf"                                                 # Prvsnr
+                    "cortx-provisioner:bin,conf"                                            # Prvsnr
                     "cortx-sspl:bin,conf"                                                   # SSPL
                     "cortx-py-utils:bin,conf" "stats_utils:bin,conf"                        # CORTX Utils
                 )
