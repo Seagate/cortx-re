@@ -72,6 +72,15 @@ pipeline {
             }
         }
 
+        stage('Checkout Provisioenr') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                dir ('provisioner') {
+                    checkout([$class: 'GitSCM', branches: [[name: "${PRVSNR_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${PRVSNR_URL}"]]])
+                }    
+            }
+        }
+
         stage ('Clean up') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -125,32 +134,44 @@ pipeline {
                         ./configure --with-user-mode-only
                         export build_number=${BUILD_ID}
                         make rpms
-                        rm -rf /root/rpmbuild/RPMS/x86_64/*debug*.rpm
+                        #rm -rf /root/rpmbuild/RPMS/x86_64/*debug*.rpm
                         yum install /root/rpmbuild/RPMS/x86_64/cortx-motr{,-devel}*.rpm -y --nogpgcheck
-                       
                 popd
-
-                
                 '''
             }
         }
 
-
         stage ('Build Hare Packages') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Install Motr', script: '''
-
+                sh label: 'Build Hare', script: '''
                 pushd hare
                     export build_number=${BUILD_ID}
                     make VERSION=$version rpm
                 popd
-
-                
             '''
             }
         }
     
+        stage ('Build Provisioner Packages') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'Build Provisioner', script: '''
+                pushd provisioner
+                    if [ -f "./jenkins/build.sh" ]; then
+                        bash ./jenkins/build.sh -v $version -b ${BUILD_ID}
+                    else
+                        echo "cortx-provisioner package creation is not implemented"
+                    fi
+                    shopt -s extglob
+                    if ls ./dist/*.rpm; then
+                        cp ./dist/!(*.src.rpm|*.tar.gz) /root/rpmbuild/RPMS/x86_64/
+                    fi
+                popd
+            '''
+            }
+        }
+
         stage('Build Ceph Package') {
             steps {
                 script { build_stage = env.STAGE_NAME }
