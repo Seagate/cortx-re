@@ -55,7 +55,7 @@ pipeline {
                     emailext mimeType: 'text/html',
                     body: '${FILE, path="rpm_validation.html"}',
                     subject: 'RPM Validation Result - [ Date :' +new Date().format("dd-MMM-yyyy") + ' ]',
-                    to: "shailesh.vaidya@seagate.com",
+                    to: "${mailRecipients}",
                     recipientProviders: [[$class: 'RequesterRecipientProvider']]
                 }
             } 
