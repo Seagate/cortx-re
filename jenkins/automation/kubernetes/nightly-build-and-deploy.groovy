@@ -142,7 +142,7 @@ pipeline {
                 junit allowEmptyResults: true, testResults: '*report.xml'
                 echo "${env.cortxCluster_status}"
                 echo "${env.qaSanity_status}"
-                if ( "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "SUCCESS" || params.EMAIL_RECIPIENTS == "ALL" ) {
+                if ( "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "SUCCESS" ) {
                     MESSAGE = "K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=Passed, SanityTest=Passed, Regression=Passed"
                     ICON = "accept.gif"
                     STATUS = "SUCCESS"
