@@ -133,12 +133,13 @@ pipeline {
                         sed -i 's/@BUILD_DEPEND_LIBFAB@//g' cortx-motr.spec
                         sed -i 's/@.*@/111/g' cortx-motr.spec
                         yum-builddep -y cortx-motr.spec
-                        ./autogen.sh
-                        ./configure --with-user-mode-only
+                        ./autogen.sh && ./configure --with-user-mode-only
                         export build_number=${BUILD_ID}
                         make rpms
                         #rm -rf /root/rpmbuild/RPMS/x86_64/*debug*.rpm
-                        yum install /root/rpmbuild/RPMS/x86_64/cortx-motr{,-devel}*.rpm -y --nogpgcheck
+                        createrepo -v  /root/rpmbuild/RPMS/x86_64/ && yum-config-manager --add-repo /root/rpmbuild/RPMS/x86_64/
+                        yum install cortx-motr{,-devel} --nogpgcheck
+                        rm -rf /etc/yum.repos.d/cortx-storage.colo.seagate.com*
                 popd
                 '''
             }
