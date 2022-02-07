@@ -116,7 +116,7 @@ RUN if [[ $OS_TYPE =~ "centos" ]]; then ln -nsf /opt/rh/sclo-git212/root/bin/* /
     ln -nsf /opt/rh/sclo-git212/enable /etc/profile.d/sclo-git212.sh ; fi
 
 #Remove sclo repositories
-RUN if [[ $OS_TYPE =~ "centos" ]]; yum-config-manager --disable centos-sclo* ; fi
+RUN if [[ $OS_TYPE =~ "centos" ]]; then yum-config-manager --disable centos-sclo* ; fi
 
 # set locale
 RUN localedef -i en_US -f UTF-8 en_US.UTF-8
