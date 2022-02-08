@@ -29,8 +29,8 @@ pipeline {
         string(name: 'UTILS_BRANCH', defaultValue: 'main', description: 'Branch for Utils build')
         string(name: 'PRVSNR_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Provisioner', trim: true)
         string(name: 'PRVSNR_URL', defaultValue: 'https://github.com/Seagate/cortx-prvsnr.git', description: 'Provisioner Repository URL', trim: true)
-        string(name: 'CORTX-RGW-INTEGRATION_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX RGW integration', trim: true)
-        string(name: 'CORTX-RGW-INTEGRATION_URL', defaultValue: 'https://github.com/Seagate/cortx-rgw-integration', description: 'CORTX RGW integration Repository URL', trim: true)
+        string(name: 'CORTX_RGW_INTEGRATION_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX RGW integration', trim: true)
+        string(name: 'CORTX_RGW_INTEGRATION_URL', defaultValue: 'https://github.com/Seagate/cortx-rgw-integration', description: 'CORTX RGW integration Repository URL', trim: true)
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX RE', trim: true)
         string(name: 'CORTX_RE_URL', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'CORTX RE Repository URL', trim: true)
         string(name: 'CEPH_URL', defaultValue: 'https://github.com/Seagate/cortx-rgw', description: 'Repository URL for ceph build')
@@ -92,7 +92,7 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 dir ('cortx-rgw-integration') {
-                    checkout([$class: 'GitSCM', branches: [[name: "${CORTX-RGW-INTEGRATION_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${CORTX-RGW-INTEGRATION_URL}"]]])
+                    checkout([$class: 'GitSCM', branches: [[name: "${CORTX_RGW_INTEGRATION_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${CORTX_RGW_INTEGRATION_URL}"]]])
                 }    
             }
         }
