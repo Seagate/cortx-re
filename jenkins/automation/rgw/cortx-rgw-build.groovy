@@ -128,7 +128,8 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Install Motr', script: '''
                 pushd motr
-                        yum install libfabric perl-YAML-LibYAML perl-List-MoreUtils perl-XML-LibXML castxml perl-File-Find-Rule perl-IO-All asciidoc libedit-devel python2-devel -y
+                        yum --nogpgcheck -y --disablerepo="EOS_Rocky_8_OS_x86_64_Rocky_8" install libfabric-1.11.2 libfabric-devel-1.11.2
+                        yum install perl-YAML-LibYAML perl-List-MoreUtils perl-XML-LibXML castxml perl-File-Find-Rule perl-IO-All asciidoc libedit-devel python2-devel -y
                         cp cortx-motr.spec.in cortx-motr.spec
                         sed -i "/BuildRequires.*kernel*/d" cortx-motr.spec
                         sed -i "/BuildRequires.*%{lustre_devel}/d" cortx-motr.spec
