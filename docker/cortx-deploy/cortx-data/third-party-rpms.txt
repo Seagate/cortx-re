@@ -1,4 +1,4 @@
-crontabs  #cortx-utils
+#crontabs  #cortx-utils
 haproxy22 #cortx-s3srever
 java-1.8.0-openjdk-headless
 jq #cortx-prvsnr
