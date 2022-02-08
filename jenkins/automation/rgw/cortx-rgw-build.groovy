@@ -264,8 +264,6 @@ pipeline {
                     cp $integration_dir/$release_tag/3rd_party/THIRD_PARTY_RELEASE.INFO $integration_dir/$release_tag/
                     cp $integration_dir/$release_tag/cortx_iso/RELEASE.INFO $integration_dir/$release_tag/
 
-                    echo "CORTX RGW build is available at "
-                    echo "http://cortx-storage.colo.seagate.com/releases/cortx/rgw-build/release/$release_tag/"
                 """
             }
         }
@@ -294,6 +292,19 @@ pipeline {
                         }
                     }
                 }
+            }
+
+        stage ('Print Build Information') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+
+            sh label: 'Print Release Build and ISO location', script:'''
+                echo "CORTX RGW build is available at "
+                echo "http://cortx-storage.colo.seagate.com/releases/cortx/rgw-build/release/$release_tag/"
+                echo "CORTX-ALL image is available at,"
+                echo "${cortx_all_image}"
+                '''
+            }
         } 
     }
 
