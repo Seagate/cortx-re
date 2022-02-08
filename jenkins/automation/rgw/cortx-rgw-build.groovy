@@ -29,6 +29,8 @@ pipeline {
         string(name: 'UTILS_BRANCH', defaultValue: 'main', description: 'Branch for Utils build')
         string(name: 'PRVSNR_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Provisioner', trim: true)
         string(name: 'PRVSNR_URL', defaultValue: 'https://github.com/Seagate/cortx-prvsnr.git', description: 'Provisioner Repository URL', trim: true)
+        string(name: 'CORTX-RGW-INTEGRATION_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX RGW integration', trim: true)
+        string(name: 'CORTX-RGW-INTEGRATION_URL', defaultValue: 'https://github.com/Seagate/cortx-rgw-integration', description: 'CORTX RGW integration Repository URL', trim: true)
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX RE', trim: true)
         string(name: 'CORTX_RE_URL', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'CORTX RE Repository URL', trim: true)
         string(name: 'CEPH_URL', defaultValue: 'https://github.com/Seagate/cortx-rgw', description: 'Repository URL for ceph build')
@@ -86,6 +88,15 @@ pipeline {
             }
         }
 
+        stage('Checkout cortx-rgw-integration') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                dir ('cortx-rgw-integration') {
+                    checkout([$class: 'GitSCM', branches: [[name: "${CORTX-RGW-INTEGRATION_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${CORTX-RGW-INTEGRATION_URL}"]]])
+                }    
+            }
+        }
+
         stage ('Clean up') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -105,6 +116,22 @@ pipeline {
                 yum install createrepo systemd-devel libuuid libuuid-devel libaio-devel openssl openssl-devel perl-File-Slurp gcc cmake3 cmake rpm-build rpmdevtools autoconf automake libtool gcc-c++ -y 
                 rpmdev-setuptree
                 '''
+            }
+        }
+
+
+        stage ('Build CORTX RGW Integration Packages') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'Build CORTX RGW Integration', script: '''
+                pushd cortx-rgw-integration
+                    bash ./jenkins/build.sh -v $version -b ${BUILD_ID}
+                    shopt -s extglob
+                    if ls ./dist/*.rpm; then
+                        cp ./dist/!(*.src.rpm|*.tar.gz) /root/rpmbuild/RPMS/x86_64/
+                    fi
+                popd
+            '''
             }
         }
 
