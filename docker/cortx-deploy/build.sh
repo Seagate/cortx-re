@@ -66,16 +66,7 @@ sleep 5
 
 function get_git_hash {
         sed -i '/KERNEL/d' RELEASE.INFO
-        if [ "$SERVICE" == "cortx-data" ]; then 
-                COMPONENTS="cortx-hare cortx-motr cortx-py-utils cortx-provisioner"
-        elif [ "$SERVICE" == "cortx-control" ]; then
-                COMPONENTS="cortx-py-utils cortx-provisioner"
-        elif [ "$SERVICE" == "cortx-ha" ]; then
-                COMPONENTS="cortx-ha cortx-py-utils cortx-provisioner"    
-        else
-                COMPONENTS="cortx-ha cortx-hare cortx-motr cortx-py-utils cortx-provisioner" 
-        fi
-
+        COMPONENTS="$(tr '\n' ' ' < ./$SERVICE/cortx-componenet-rpms.txt)"
         for component in $COMPONENTS
         do
                 echo $component:"$(awk -F['_'] '/'$component'-'$VERSION'/ { print $2 }' RELEASE.INFO | cut -d. -f1 | sed 's/git//g')",
