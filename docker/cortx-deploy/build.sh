@@ -68,13 +68,6 @@ echo -e "#####################################################################"
 exit 1
 fi
 
-if [ "$SERVICE" == "cortx-rgw" ] && [ "$OS" == "centos-7.9.2009" ]; then 
-echo -e "#####################################################################"
-echo -e "# SERVICE: $SERVICE Image Build is NOT supported on $OS              "
-echo -e "#####################################################################"
-exit 1
-fi
-
 OS_TYPE=$(echo $OS | awk -F[-] '{print $1}')
 if [ "$OS_TYPE" == "rockylinux" ]; then OS_TYPE="rockylinux/rockylinux"; fi
 OS_RELEASE=$( echo $OS | awk -F[-] '{print $2}')
