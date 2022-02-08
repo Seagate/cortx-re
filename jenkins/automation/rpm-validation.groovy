@@ -28,7 +28,7 @@ pipeline {
         stage('Checkout Script') {
             steps {             
                 script {
-                    checkout([$class: 'GitSCM', branches: [[name: 'rpm-validation-fix']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/shailesh-vaidya/cortx-re']]])                
+                    checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])                
                 }
             }
         }
@@ -47,7 +47,7 @@ pipeline {
                 script {
 
                     if ( params.EMAIL_RECIPIENTS == "ALL" ) {
-                        mailRecipients = 'cortx.sme@seagate.com, shailesh.vaidya@seagate.com, priyank.p.dalal@seagate.com, amol.j.kongre@seagate.com, mukul.malhotra@seagate.com'
+                        mailRecipients = 'cortx.sme@seagate.com, CORTX.DevOps.RE@seagate.com, shailesh.vaidya@seagate.com, amol.j.kongre@seagate.com, mukul.malhotra@seagate.com'
                     } else if ( params.EMAIL_RECIPIENTS == "DEBUG" ) {
                         mailRecipients = "shailesh.vaidya@seagate.com"
                     }
