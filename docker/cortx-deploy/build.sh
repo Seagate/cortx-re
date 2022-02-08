@@ -20,37 +20,39 @@
 
 set -e -o pipefail
 
-usage() { 
-echo "Generate cortx-all docker image from provided CORTX release build"
-echo "Usage: $0 [ -b build ] [ -p push docker-image to GHCR yes/no. Default no] [ -t tag latest yes/no. Default no" ] [ -r registry location ] [ -e environment ] [ -h print help message ] 1>&2; exit 1; }
+usage() 
+{ 
+        echo "Generate CORTX components docker images from provided CORTX release build"
+        echo "Usage: $0 [ -b build ] [ -p push docker-image to GHCR yes/no. Default no] [ -t tag latest yes/no. Default no ] [ -r registry location ] [ -e environment ] [ -s service-name ] [ -h print help message ]"
+        exit 1 
+}
 
 VERSION=2.0.0
 DOCKER_PUSH=no
 TAG_LATEST=no
 OS=centos-7.9.2009
 ENVIRONMENT=opensource-ci
+BUILD=last_successful_prod
 REGISTRY="cortx-docker.colo.seagate.com"
 PROJECT="seagate"
 ARTFACT_URL="http://cortx-storage.colo.seagate.com/releases/cortx/github/"
 SERVICE=cortx-all
+COMPONENTS=""
 
-while getopts "b:p:t:r:e:h:" opt; do
+while getopts "b:p:t:r:e:s:h:" opt; do
     case $opt in
         b ) BUILD=$OPTARG;;
         p ) DOCKER_PUSH=$OPTARG;;
         t ) TAG_LATEST=$OPTARG;;
         e ) ENVIRONMENT=$OPTARG;;
         r ) REGISTRY=$OPTARG;;
+        s ) SERVICE=$OPTARG;;
         h ) usage
         exit 0;;
         *) usage
         exit 1;;
     esac
 done
-
-if [ -z "${BUILD}" ] ; then
-    BUILD=last_successful_prod
-fi
 
 if echo $BUILD | grep -q http;then
 BUILD_URL="$BUILD"
@@ -63,12 +65,15 @@ echo "Building $SERVICE image from $BUILD_URL"
 sleep 5
 
 function get_git_hash {
-sed -i '/KERNEL/d' RELEASE.INFO
-for component in cortx-py-utils cortx-s3server cortx-motr cortx-hare cortx-provisioner
-do
-    echo $component:"$(awk -F['_'] '/'$component'-'$VERSION'/ { print $2 }' RELEASE.INFO | cut -d. -f1 | sed 's/git//g')",
-done
-echo cortx-csm_agent:"$(awk -F['_'] '/cortx-csm_agent-'$VERSION'/ { print $3 }' RELEASE.INFO | cut -d. -f1)",
+        sed -i '/KERNEL/d' RELEASE.INFO
+        COMPONENTS="$(tr '\n' ' ' < ./$SERVICE/cortx-componenet-rpms.txt)"
+        for component in $COMPONENTS
+        do
+                echo $component:"$(awk -F['_'] '/'$component'-'$VERSION'/ { print $2 }' RELEASE.INFO | cut -d. -f1 | sed 's/git//g')",
+        done
+        if [ "$SERVICE" == "cortx-control" ]; then
+                echo cortx-csm_agent:"$(awk -F['_'] '/cortx-csm_agent-'$VERSION'/ { print $3 }' RELEASE.INFO | cut -d. -f1)",
+        fi
 }
 
 
@@ -93,7 +98,7 @@ CREATED_DATE=$(date -u +'%Y-%m-%d %H:%M:%S%:z')
 docker-compose -f ./docker-compose.yml build --force-rm --compress --build-arg GIT_HASH="$CORTX_VERSION" --build-arg VERSION="$VERSION-$DOCKER_BUILD_BUILD" --build-arg CREATED_DATE="$CREATED_DATE" --build-arg BUILD_URL=$BUILD_URL --build-arg ENVIRONMENT=$ENVIRONMENT $SERVICE
 
 if [ "$DOCKER_PUSH" == "yes" ];then
-        echo "Pushing Docker image to GitHub Container Registry"
+        echo "Pushing Docker image to $REGISTRY"
         docker tag $SERVICE:$TAG $REGISTRY/$PROJECT/$SERVICE:$TAG
         docker push $REGISTRY/$PROJECT/$SERVICE:$TAG 
 else
