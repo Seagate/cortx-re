@@ -51,7 +51,7 @@ RUN yum-config-manager --add-repo ${BUILD_URL}/cortx_iso/ \
     && yum-config-manager --add-repo ${BUILD_URL}/3rd_party \
     && curl ${BUILD_URL}/RELEASE.INFO -o RELEASE.INFO 
 
-COPY ./cortx-control/*.txt ./common-python-req.txt ./generate-release-info.sh /opt/seagate/cortx/
+COPY ./cortx-control/*.txt ./generate-release-info.sh /opt/seagate/cortx/
 
 RUN yum install --nogpgcheck -y python3-pip \
     && pip3 install yq \
