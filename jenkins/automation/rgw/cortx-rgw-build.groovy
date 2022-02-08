@@ -31,8 +31,8 @@ pipeline {
         string(name: 'PRVSNR_URL', defaultValue: 'https://github.com/Seagate/cortx-prvsnr.git', description: 'Provisioner Repository URL', trim: true)
         string(name: 'CORTX_RGW_INTEGRATION_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX RGW integration', trim: true)
         string(name: 'CORTX_RGW_INTEGRATION_URL', defaultValue: 'https://github.com/Seagate/cortx-rgw-integration', description: 'CORTX RGW integration Repository URL', trim: true)
-        string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX RE', trim: true)
-        string(name: 'CORTX_RE_URL', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'CORTX RE Repository URL', trim: true)
+        string(name: 'CORTX_RE_BRANCH', defaultValue: 'ceph-build', description: 'Branch or GitHash for CORTX RE', trim: true)
+        string(name: 'CORTX_RE_URL', defaultValue: 'https://github.com/shailesh-vaidya/cortx-re', description: 'CORTX RE Repository URL', trim: true)
         string(name: 'CEPH_URL', defaultValue: 'https://github.com/Seagate/cortx-rgw', description: 'Repository URL for ceph build')
         string(name: 'CEPH_BRANCH', defaultValue: 'main', description: 'Branch for ceph build')
 
