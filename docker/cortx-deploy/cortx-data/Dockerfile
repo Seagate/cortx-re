@@ -19,10 +19,12 @@
 #
 
 ARG OS_RELEASE
+ARG OS_IMAGE
 
-FROM centos:${OS_RELEASE}
+FROM ${OS_IMAGE}:${OS_RELEASE}
 
 ARG OS_RELEASE
+ARG OS_TYPE
 ARG ENVIRONMENT
 ARG GIT_HASH
 ARG BUILD_URL
@@ -41,7 +43,7 @@ ENV GIT_HASH $GIT_HASH
 RUN yum-config-manager --disable base,extras,updates
 
 #Add Internal and CORTX uploads repository
-COPY ./${ENVIRONMENT}/C${OS_RELEASE}.repo /etc/yum.repos.d/
+COPY ./${ENVIRONMENT}/${OS_TYPE}-${OS_RELEASE}.repo /etc/yum.repos.d/
 
 # Install EPEL repo for opensource-ci
 RUN if [ "$ENVIRONMENT" = "opensource-ci" ] ; then yum install epel-release -y ; fi && yum clean all \
@@ -55,7 +57,7 @@ COPY ./cortx-data/*.txt ./generate-release-info.sh /opt/seagate/cortx/
 
 RUN yum install --nogpgcheck -y python3-pip \
     && pip3 install yq \
-    && pip3 install  --no-cache-dir --trusted-host "$(echo $BUILD_URL | awk -F '/' '{print $3}')" -i $BUILD_URL/python_deps -r /opt/seagate/cortx/python_requirements.txt -r /opt/seagate/cortx/python_requirements.ext.txt \
+    && pip3 install  --no-cache-dir --trusted-host "$(echo $BUILD_URL | awk -F '/' '{print $3}')" -i $BUILD_URL/python_deps -r /opt/seagate/cortx/python_requirements.txt \
    && yum clean all && rm -rf /var/cache/yum
 
 RUN yum install --nogpgcheck -y  $(sed 's/#.*//g' /opt/seagate/cortx/third-party-rpms.txt) \
@@ -67,5 +69,5 @@ RUN yum install --nogpgcheck -y  $(sed 's/#.*//g' /opt/seagate/cortx/cortx-compo
 RUN rm -f /etc/machine-id && ln -s /etc/cortx/solution/node/id /etc/machine-id \
     && bash /opt/seagate/cortx/generate-release-info.sh
 
-RUN yum-config-manager --enable base,extras,updates && rm -rf /etc/yum.repos.d/"$(echo $BUILD_URL | awk -F '/' '{print $3}')"*.repo /etc/yum.repos.d/C${OS_RELEASE}.repo \
+RUN yum-config-manager --enable base,extras,updates && rm -rf /etc/yum.repos.d/"$(echo $BUILD_URL | awk -F '/' '{print $3}')"*.repo /etc/yum.repos.d/${OS_TYPE}-${OS_RELEASE}.repo \
     && yum clean all && rm -rf /var/cache/yum
