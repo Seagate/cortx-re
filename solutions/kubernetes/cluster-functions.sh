@@ -182,7 +182,7 @@ function install_prerequisites(){
         rm -rf /etc/yum.repos.d/download.docker.com_linux_centos_7_x86_64_stable_.repo /etc/yum.repos.d/packages.cloud.google.com_yum_repos_kubernetes-el7-x86_64.repo docker-ce.repo
         yum-config-manager --add https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64 || throw $ConfigException
         yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo || throw $ConfigException     
-        yum install kubeadm-$K8_VERSION kubectl-$K8_VERSION kubelet-$K8_VERSION kubernetes-cni docker-ce --nogpgcheck -y || throw $ConfigException 
+        yum install kubeadm-$K8_VERSION kubectl-$K8_VERSION kubelet-$K8_VERSION docker-ce --nogpgcheck -y || throw $ConfigException 
 
         # setup kernel parameters
         modprobe br_netfilter || throw $ConfigException
