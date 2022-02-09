@@ -10,3 +10,4 @@ mailcap
 nvme-cli
 psmisc
 smartmontools
+python3-ldap #cortx-utils
