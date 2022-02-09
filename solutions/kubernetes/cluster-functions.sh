@@ -23,7 +23,7 @@ source /var/tmp/functions.sh
 CALICO_PLUGIN_VERSION=latest
 K8_VERSION=1.19.0-0
 DOCKER_VERSION=latest
-OS_VERSION="CentOS 7.9.2009"
+OS_VERSION=( "CentOS 7.9.2009" "Rocky 8.4" )
 export Exception=100
 export ConfigException=101
 
@@ -71,10 +71,11 @@ function ignoreErrors()
 
 function verify_os() {
     CURRENT_OS=$(cut -d ' ' -f 1,4 < /etc/redhat-release)
-    if [ "$CURRENT_OS" != "$OS_VERSION" ]; then
-        echo "ERROR : Operating System is not correct. Current OS : $CURRENT_OS, Required OS : $OS_VERSION"
-        exit 1
-    fi 
+    if [[ "${OS_VERSION[@]}" =~ $CURRENT_OS ]]; then
+        echo "$CURRENT_OS is good"
+    else
+        echo "ERROR : Operating System is not correct. Current OS : $CURRENT_OS Required OS should be one of : ${OS_VERSION[*]}"
+    fi
 }
 
 function print_cluster_status(){
@@ -164,7 +165,7 @@ function install_prerequisites(){
     echo "---------------------------------------[ Preparing Node $HOSTNAME ]--------------------------------------"
     try
     (   # disable swap
-        #verify_os 
+        verify_os 
         sudo swapoff -a
         # keeps the swaf off during reboot
         sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
@@ -177,6 +178,13 @@ function install_prerequisites(){
         (systemctl stop firewalld && systemctl disable firewalld && sudo systemctl mask --now firewalld) || throw $Exception
         # install python packages
         (yum install python3-pip yum-utils wget jq -y && pip3 install --upgrade pip && pip3 install jq yq) || throw $Exception
+
+        CURRENT_OS=$(cut -d ' ' -f 1,4 < /etc/redhat-release)
+        if [ "$CURRENT_OS" == "Rocky 8.4" ]; then
+            yum install http://mirror.centos.org/centos/8-stream/AppStream/x86_64/os/Packages/jq-1.6-3.el8.x86_64.rpm -y 
+        else
+            yum install jq -y     
+        fi
 
         # set yum repositories for k8 and docker-ce
         rm -rf /etc/yum.repos.d/download.docker.com_linux_centos_7_x86_64_stable_.repo /etc/yum.repos.d/packages.cloud.google.com_yum_repos_kubernetes-el7-x86_64.repo docker-ce.repo
@@ -194,7 +202,7 @@ function install_prerequisites(){
 
         # enable local docker registry.
         mkdir -p /etc/docker/
-        #jq -n '{"insecure-registries": $ARGS.positional}' --args "cortx-docker.colo.seagate.com" > /etc/docker/daemon.json || throw $Exception
+        jq -n '{"insecure-registries": $ARGS.positional}' --args "cortx-docker.colo.seagate.com" > /etc/docker/daemon.json || throw $Exception
         echo "Configured /etc/docker/daemon.json for local docker registry"
 
         (systemctl restart docker && systemctl daemon-reload &&  systemctl enable docker) || throw $Exception
