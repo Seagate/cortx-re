@@ -104,6 +104,7 @@ function cleanup_node(){
         "kubernetes-cni"
         "kubeadm"
         "kubectl"
+        "python3-pyyaml"
     )
     files_to_remove=(
         "/etc/docker/daemon.json"
