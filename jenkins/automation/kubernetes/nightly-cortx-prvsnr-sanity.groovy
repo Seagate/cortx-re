@@ -18,12 +18,8 @@ pipeline {
         CORTX_RE_REPO = "https://github.com/Seagate/cortx-re/"
     }
 
-    parameters {
-        string(name: 'SNS_CONFIG', defaultValue: '1+0+0', description: 'sns configuration for deployment. Please select value based on disks available on nodes.', trim: true)
-        string(name: 'DIX_CONFIG', defaultValue: '1+0+0', description: 'dix configuration for deployment. Please select value based on disks available on nodes.', trim: true)
-        // Please configure CORTX_IMAGE, hosts, CORTX_SCRIPTS_BRANCH and CORTX_SCRIPTS_REPO parameter in Jenkins job configuration.
-        // Please configure M_NODE, HOST_PASS  and EMAIL_RECEPIENTS parameter in Jenkins job configuration for prvsnr sanity test.
-    }
+    // Please configure CORTX_IMAGE, hosts, SNS_CONFIG, DIX_CONFIG, CORTX_SCRIPTS_BRANCH and CORTX_SCRIPTS_REPO parameter in Jenkins job configuration.
+    // Please configure M_NODE, HOST_PASS  and EMAIL_RECEPIENTS parameter in Jenkins job configuration for prvsnr sanity test.
 
     stages {
         stage ("Deploy CORTX-Prvsnr") {
