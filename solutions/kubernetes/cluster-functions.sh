@@ -106,6 +106,7 @@ function cleanup_node(){
         "kubeadm"
         "kubectl"
         "python3-pyyaml"
+        "jq"
     )
     files_to_remove=(
         "/etc/docker/daemon.json"
@@ -200,13 +201,14 @@ function install_prerequisites(){
         # enable cgroupfs 
         sed -i '/config.yaml/s/config.yaml"/config.yaml --cgroup-driver=cgroupfs"/g' /usr/lib/systemd/system/kubelet.service.d/10-kubeadm.conf || throw $ConfigException
 
+        (systemctl start docker && systemctl daemon-reload && systemctl enable docker) || throw $Exception
+        echo "Docker Runtime Configured Successfully"
+
         # enable local docker registry.
         mkdir -p /etc/docker/
         jq -n '{"insecure-registries": $ARGS.positional}' --args "cortx-docker.colo.seagate.com" > /etc/docker/daemon.json || throw $Exception
         echo "Configured /etc/docker/daemon.json for local docker registry"
-
-        (systemctl start docker && systemctl daemon-reload &&  systemctl enable docker && systemctl restart docker) || throw $Exception
-        echo "Docker Runtime Configured Successfully"
+        systemctl restart docker
 
         (systemctl restart kubelet && systemctl daemon-reload && systemctl enable kubelet) || throw $Exception
         echo "kubelet Configured Successfully"
