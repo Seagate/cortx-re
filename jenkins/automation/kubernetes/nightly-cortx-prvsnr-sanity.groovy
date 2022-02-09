@@ -31,21 +31,19 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
-                    catchError(stageResult: 'FAILURE') {
-                        def cortxCluster = build job: '/Cortx-kubernetes/setup-cortx-cluster', wait: true,
-                        parameters: [
-                            string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
-                            string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
-                            string(name: 'CORTX_IMAGE', value: "${CORTX_IMAGE}"),
-                            text(name: 'hosts', value: "${hosts}"),
-                            string(name: 'SNS_CONFIG', value: "${SNS_CONFIG}"),
-                            string(name: 'DIX_CONFIG', value: "${DIX_CONFIG}"),
-                            string(name: 'CORTX_SCRIPTS_BRANCH', value: "${CORTX_SCRIPTS_BRANCH}"),
-                            string(name: 'CORTX_SCRIPTS_REPO', value: "${CORTX_SCRIPTS_REPO}")
-                        ]
-                        env.cortxcluster_build_url = cortxCluster.absoluteUrl
-                        env.cortxCluster_status = cortxCluster.currentResult
-                    }
+                    def cortxCluster = build job: '/Cortx-kubernetes/setup-cortx-cluster', wait: true,
+                    parameters: [
+                        string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
+                        string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
+                        string(name: 'CORTX_IMAGE', value: "${CORTX_IMAGE}"),
+                        text(name: 'hosts', value: "${hosts}"),
+                        string(name: 'SNS_CONFIG', value: "${SNS_CONFIG}"),
+                        string(name: 'DIX_CONFIG', value: "${DIX_CONFIG}"),
+                        string(name: 'CORTX_SCRIPTS_BRANCH', value: "${CORTX_SCRIPTS_BRANCH}"),
+                        string(name: 'CORTX_SCRIPTS_REPO', value: "${CORTX_SCRIPTS_REPO}")
+                    ]
+                    env.cortxcluster_build_url = cortxCluster.absoluteUrl
+                    env.cortxCluster_status = cortxCluster.currentResult
                 }
             }
         }
