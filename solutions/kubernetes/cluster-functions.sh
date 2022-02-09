@@ -205,7 +205,7 @@ function install_prerequisites(){
         jq -n '{"insecure-registries": $ARGS.positional}' --args "cortx-docker.colo.seagate.com" > /etc/docker/daemon.json || throw $Exception
         echo "Configured /etc/docker/daemon.json for local docker registry"
 
-        (systemctl start docker && systemctl daemon-reload &&  systemctl enable docker && systemctl start docker) || throw $Exception
+        (systemctl start docker && systemctl daemon-reload &&  systemctl enable docker && systemctl restart docker) || throw $Exception
         echo "Docker Runtime Configured Successfully"
 
         (systemctl restart kubelet && systemctl daemon-reload && systemctl enable kubelet) || throw $Exception
