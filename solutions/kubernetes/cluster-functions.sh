@@ -18,8 +18,6 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
-set -eo pipefail
-
 source /var/tmp/functions.sh
 
 CALICO_PLUGIN_VERSION=latest
