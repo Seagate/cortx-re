@@ -57,8 +57,6 @@ pipeline {
                         env.prvsnrSanity_build_url = prvsnrSanity.absoluteUrl
                         env.prvsnrSanity_status = prvsnrSanity.currentResult
                     }
-                    copyArtifacts filter: 'log/*result.xml', fingerprintArtifacts: true, flatten: true, optional: true, projectName: '/Provisioner/Prvsnr-Sanity-Test', selector: lastCompleted(), target: 'log/'
-                    copyArtifacts filter: 'log/*result.html', fingerprintArtifacts: true, flatten: true, optional: true, projectName: '/Provisioner/Prvsnr-Sanity-Test', selector: lastCompleted(), target: 'log/'
                 }
             }
         }
@@ -67,57 +65,8 @@ pipeline {
     post {
         always {
             script {
-                junit allowEmptyResults: true, testResults: '*result.xml'
-                echo "${env.cortxCluster_status}"
-                echo "${env.prvsnrSanity_status}"
-                if ( "${env.cortxCluster_status}" == "SUCCESS" && "${env.prvsnrSanity_status}" == "SUCCESS" ) {
-                    MESSAGE = "K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=Passed, SanityTest=Passed"
-                    ICON = "accept.gif"
-                    STATUS = "SUCCESS"
-                    env.deployment_result = "SUCCESS"
-                    env.sanity_result = "SUCCESS"
-                    currentBuild.result = "SUCCESS"
-                } else if ( "${env.cortxCluster_status}" == "FAILURE" || "${env.cortxCluster_status}" == "UNSTABLE" || "${env.cortxCluster_status}" == "null" ) {
-                    manager.buildFailure()
-                    MESSAGE = "K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=failed, SanityTest=skipped"
-                    ICON = "error.gif"
-                    STATUS = "FAILURE"
-                    env.sanity_result = "SKIPPED"
-                    env.deployment_result = "FAILURE"
-                    currentBuild.result = "FAILURE"
-                } else if ( "${env.cortxCluster_status}" == "SUCCESS" && "${env.prvsnrSanity_status}" == "FAILURE" || "${env.prvsnrSanity_status}" == "null" ) {
-                    manager.buildFailure()
-                    MESSAGE = "K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=Passed, SanityTest=failed"
-                    ICON = "error.gif"
-                    STATUS = "FAILURE"
-                    env.sanity_result = "FAILURE"
-                    env.deployment_result = "SUCCESS"
-                    currentBuild.result = "FAILURE"
-                } else if ( "${env.cortxCluster_status}" == "SUCCESS" && "${env.prvsnrSanity_status}" == "UNSTABLE" ) {
-                    MESSAGE = "K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=Passed, SanityTest=passed"
-                    ICON = "unstable.gif"
-                    STATUS = "UNSTABLE"
-                    env.deployment_result = "SUCCESS"
-                    env.sanity_result = "UNSTABLE"
-                    currentBuild.result = "UNSTABLE"
-                } else {
-                    MESSAGE = "K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=unstable, SanityTest=unstable"
-                    ICON = "unstable.gif"
-                    STATUS = "UNSTABLE"
-                    env.sanity_result = "UNSTABLE"
-                    env.deployment_result = "UNSTABLE"
-                    currentBuild.result = "UNSTABLE"
-                }
-                mailRecipients = "${EMAIL_RECEPIENTS}"
                 catchError(stageResult: 'FAILURE') {
                     archiveArtifacts allowEmptyArchive: true, artifacts: 'log/*result.xml, log/*result.html, support_bundle/*.tar, crash_files/*.gz', followSymlinks: false
-                    emailext (
-                        body: '''${SCRIPT, template="K8s-deployment-email_2.template"}${SCRIPT, template="REL_QA_SANITY_CUS_EMAIL_RETEAM_5.template"}''',
-                        mimeType: 'text/html',
-                        subject: "${MESSAGE}",
-                        to: "${mailRecipients}",
-                        recipientProviders: [[$class: 'RequesterRecipientProvider']]
-                    )
                 }
                 cleanWs()
             }
