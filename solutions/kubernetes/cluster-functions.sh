@@ -194,7 +194,7 @@ function install_prerequisites(){
 
         # enable local docker registry.
         mkdir -p /etc/docker/
-        jq -n '{"insecure-registries": $ARGS.positional}' --args "cortx-docker.colo.seagate.com" > /etc/docker/daemon.json || throw $Exception
+        #jq -n '{"insecure-registries": $ARGS.positional}' --args "cortx-docker.colo.seagate.com" > /etc/docker/daemon.json || throw $Exception
         echo "Configured /etc/docker/daemon.json for local docker registry"
 
         (systemctl restart docker && systemctl daemon-reload &&  systemctl enable docker) || throw $Exception
