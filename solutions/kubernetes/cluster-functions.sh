@@ -72,9 +72,9 @@ function ignoreErrors()
 function verify_os() {
     CURRENT_OS=$(cut -d ' ' -f 1,4 < /etc/redhat-release)
     if [[ "${OS_VERSION[@]}" =~ $CURRENT_OS ]]; then
-        echo "$CURRENT_OS is good"
+        echo "SUCCESS : $CURRENT_OS from allowed OS list"
     else
-        echo "ERROR : Operating System is not correct. Current OS : $CURRENT_OS Required OS should be one of : ${OS_VERSION[*]}"
+        echo "ERROR : Operating System is not correct. Current OS : $CURRENT_OS, Required OS should be one of : ${OS_VERSION[*]}"
     fi
 }
 
