@@ -203,7 +203,7 @@ pipeline {
                      rpmbuild --clean --rmsource --define "_unpackaged_files_terminate_build 0" --define "debug_package %{nil}" --without cmake_verbose_logging --without jaeger --without lttng --without seastar --without kafka_endpoint --without zbd --without cephfs_java --without cephfs_shell --without ocf --without selinux --without ceph_test_package --without make_check --define "_binary_payload w2T16.xzdio" --define "_topdir `pwd`" -ba ./SPECS/ceph.spec
                 popd
 
-                 rm -f $release_dir/$component/rpmbuild/$BUILD_NUMBER/last_successful && ln -s $release_dir/$component/rpmbuild/$BUILD_NUMBER $release_dir/$component/rpmbuild/last_successful 
+                 rm -f $release_dir/$component/rpmbuild/last_successful && ln -s $release_dir/$component/rpmbuild/$BUILD_NUMBER $release_dir/$component/rpmbuild/last_successful 
 
             '''
             }
