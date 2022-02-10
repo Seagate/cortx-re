@@ -202,7 +202,7 @@ function install_prerequisites(){
         sed -i '/config.yaml/s/config.yaml"/config.yaml --cgroup-driver=cgroupfs"/g' /usr/lib/systemd/system/kubelet.service.d/10-kubeadm.conf || throw $ConfigException
 
         # enable unix socket
-        sed -i 's/fd:\/\//unix:\/\//g' /usr/lib/systemd/system/docker.service
+        sed -i 's/fd:\/\//unix:\/\//g' /usr/lib/systemd/system/docker.service && systemctl daemon-reload
 
         # enable local docker registry.
         mkdir -p /etc/docker/
