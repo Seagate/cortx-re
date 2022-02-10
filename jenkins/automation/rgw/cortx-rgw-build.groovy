@@ -36,6 +36,12 @@ pipeline {
         string(name: 'CEPH_URL', defaultValue: 'https://github.com/Seagate/cortx-rgw', description: 'Repository URL for ceph build')
         string(name: 'CEPH_BRANCH', defaultValue: 'main', description: 'Branch for ceph build')
 
+        choice(
+            name: 'BUILD_LATEST_CORTX_RGW',
+            choices: ['yes', 'no'],
+            description: 'Build cortx-rgw from latest code or use last-successful build.'
+        )
+
     }
     
     options {
@@ -44,81 +50,53 @@ pipeline {
 
     stages {
     
-        stage('Checkout Ceph') {
+        stage('Checkout Component Codebase') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 dir ('ceph') {
-                checkout([$class: 'GitSCM', branches: [[name: "${CEPH_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${CEPH_URL}"]]])
+                    checkout([$class: 'GitSCM', branches: [[name: "${CEPH_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${CEPH_URL}"]]])
                 }
-            }
-        }
 
-        stage('Checkout Motr') {
-            steps {
                 dir ('motr') {
                     checkout([$class: 'GitSCM', branches: [[name: "$MOTR_BRANCH"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog'], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "$MOTR_URL"]]])
-                }    
-            }
-        }
+                }   
 
-        stage('Checkout py-utils') {
-            steps {
-                script { build_stage = env.STAGE_NAME }
                 dir ('cortx-py-utils') {
                     checkout([$class: 'GitSCM', branches: [[name: "${UTILS_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "$UTILS_URL"]]])
                 }
-            }
-        }
 
-        stage('Checkout Hare') {
-            steps {
-                script { build_stage = env.STAGE_NAME }
                 dir ('hare') {
                     checkout([$class: 'GitSCM', branches: [[name: "${HARE_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', noTags: true, reference: '', shallow: true], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', shallow: true, trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', refspec: '+refs/heads/main:refs/remotes/origin/main', url: "$HARE_URL"]]])
                 }
-            }
-        }
 
-        stage('Checkout Provisioenr') {
-            steps {
-                script { build_stage = env.STAGE_NAME }
                 dir ('provisioner') {
                     checkout([$class: 'GitSCM', branches: [[name: "${PRVSNR_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${PRVSNR_URL}"]]])
-                }    
-            }
-        }
+                }
 
-        stage('Checkout cortx-rgw-integration') {
-            steps {
-                script { build_stage = env.STAGE_NAME }
                 dir ('cortx-rgw-integration') {
                     checkout([$class: 'GitSCM', branches: [[name: "${CORTX_RGW_INTEGRATION_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${CORTX_RGW_INTEGRATION_URL}"]]])
-                }    
-            }
-        }
+                } 
 
-        stage ('Clean up') {
-            steps {
-                script { build_stage = env.STAGE_NAME }
-                sh label: 'Clean up', script: '''
-                rm -rf /root/rpmbuild/RPMS/x86_64/*.rpm
-                rm -rf $release_dir/rpmbuild/SOURCES/ceph*.tar.bz2
-                rm -rf  $release_dir/rpmbuild/BUILD/ceph*
-                yum erase cortx-py-utils cortx-motr{,-devel} -y
-                '''
             }
         }
         
         stage ('Prepare') {
             steps {
                 script { build_stage = env.STAGE_NAME }
+
+                sh label: 'Clean up', script: '''
+                rm -rf /root/rpmbuild/RPMS/x86_64/*.rpm
+                rm -rf $release_dir/$component/rpmbuild/SOURCES/ceph*.tar.bz2
+                rm -rf  $release_dir/$component/rpmbuild/BUILD/ceph*
+                yum erase cortx-py-utils cortx-motr{,-devel} -y
+                '''
+
                 sh label: 'prepare', script: '''
                 yum install createrepo systemd-devel libuuid libuuid-devel libaio-devel openssl openssl-devel perl-File-Slurp gcc cmake3 cmake rpm-build rpmdevtools autoconf automake libtool gcc-c++ -y 
                 rpmdev-setuptree
                 '''
             }
         }
-
 
         stage ('Build CORTX RGW Integration Packages') {
             steps {
@@ -207,6 +185,7 @@ pipeline {
         }
 
         stage('Build Ceph Package') {
+            when { expression { params.BUILD_LATEST_CORTX_RGW == 'yes' } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Build', script: '''
@@ -215,17 +194,18 @@ pipeline {
                     sed -i 's/centos|/rocky|centos|/' install-deps.sh
                     ./install-deps.sh
                     ./make-dist
-                    mkdir -p $release_dir/rpmbuild/$BUILD_NUMBER/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
-                    mv ceph*.tar.bz2 $release_dir/rpmbuild/$BUILD_NUMBER/SOURCES/
-                    tar --strip-components=1 -C $release_dir/rpmbuild/$BUILD_NUMBER/SPECS/ --no-anchored -xvjf $release_dir/rpmbuild/$BUILD_NUMBER/SOURCES/ceph*.tar.bz2 "ceph.spec"
+                    mkdir -p $release_dir/$component/rpmbuild/$BUILD_NUMBER/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
+                    mv ceph*.tar.bz2 $release_dir/$component/rpmbuild/$BUILD_NUMBER/SOURCES/
+                    tar --strip-components=1 -C $release_dir/$component/rpmbuild/$BUILD_NUMBER/SPECS/ --no-anchored -xvjf $release_dir/$component/rpmbuild/$BUILD_NUMBER/SOURCES/ceph*.tar.bz2 "ceph.spec"
                 popd
 
-                pushd $release_dir/rpmbuild/$BUILD_NUMBER
+                pushd $release_dir/$component/rpmbuild/$BUILD_NUMBER
                      rpmbuild --clean --rmsource --define "_unpackaged_files_terminate_build 0" --define "debug_package %{nil}" --without cmake_verbose_logging --without jaeger --without lttng --without seastar --without kafka_endpoint --without zbd --without cephfs_java --without cephfs_shell --without ocf --without selinux --without ceph_test_package --without make_check --define "_binary_payload w2T16.xzdio" --define "_topdir `pwd`" -ba ./SPECS/ceph.spec
                 popd
 
-                
-            '''    
+                 rm -f $release_dir/$component/rpmbuild/$BUILD_NUMBER/last_successful && ln -s $release_dir/$component/rpmbuild/$BUILD_NUMBER $release_dir/$component/rpmbuild/last_successful 
+
+            '''
             }
         }    
 
@@ -235,7 +215,7 @@ pipeline {
                 sh label: 'Copy RPMS', script: '''
                 pushd $integration_dir
                     rm -rf $release_tag && mkdir -p $release_tag/cortx_iso
-                    mv $release_dir/rpmbuild/$BUILD_NUMBER/RPMS/*/*.rpm $integration_dir/$release_tag/cortx_iso
+                    cp $release_dir/$component/rpmbuild/last_successful/RPMS/*/*.rpm $integration_dir/$release_tag/cortx_iso
                     mv /root/rpmbuild/RPMS/x86_64/*.rpm $integration_dir/$release_tag/cortx_iso
                     createrepo -v $release_tag/cortx_iso
                     rm -f last_successful && ln -s $release_tag last_successful
