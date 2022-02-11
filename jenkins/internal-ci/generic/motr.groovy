@@ -172,8 +172,8 @@ pipeline {
                     ln -s $build_upload_dir_hare/$HARE_BUILD_NUMBER $build_upload_dir_hare/last_successful
 
                     # S3Server Build
-                    test -L $build_upload_dir_s3_dev/last_successful && rm -f $build_upload_dir_s3_dev/last_successful
-                    ln -s $build_upload_dir_s3_dev/$S3_BUILD_NUMBER $build_upload_dir_s3_dev/last_successful
+                    #test -L $build_upload_dir_s3_dev/last_successful && rm -f $build_upload_dir_s3_dev/last_successful
+                    #ln -s $build_upload_dir_s3_dev/$S3_BUILD_NUMBER $build_upload_dir_s3_dev/last_successful
                 '''
             }
         }
