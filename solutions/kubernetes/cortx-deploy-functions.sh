@@ -256,6 +256,8 @@ fi
 
 function setup_primary_node(){
 echo "---------------------------------------[ Setting up Primary Node $HOSTNAME ]--------------------------------------"
+    #Clean up untagged docker images and stopped docker containers.
+    cleanup
     #Third-party images are downloaded from GitHub container registry. 
     download_deploy_script
     install_yq
@@ -276,6 +278,8 @@ echo "---------------------------------------[ Setting up Primary Node $HOSTNAME
 
 function setup_worker_node(){
 echo "---------------------------------------[ Setting up Worker Node on $HOSTNAME ]--------------------------------------"
+    #Clean up untagged docker images and stopped docker containers.
+    cleanup
     #Third-party images are downloaded from GitHub container registry.
     download_deploy_script
     execute_prereq
@@ -362,13 +366,18 @@ echo "---------------------------------------[ hctl status ]--------------------
 }
 
 function io_exec(){
-    pushd /var/tmp/
-        chmod +x *.sh
-        # "Setting up S3 client..."
-        ./s3-client-setup.sh
-        # "Running IO test..."
-        ./io-testing.sh
-    popd
+    CURRENT_OS=$(cut -d ' ' -f 1,4 < /etc/redhat-release)
+    if [[ "$CURRENT_OS" == "Rocky 8.4" ]]; then
+        echo "S3 IO Testing not enabled for Rocky Linux yet. Skipping"
+    else
+        pushd /var/tmp/
+            chmod +x *.sh
+            # "Setting up S3 client..."
+            ./s3-client-setup.sh
+            # "Running IO test..."
+            ./io-testing.sh
+        popd
+    fi
 }
 
 function logs_generation(){
@@ -376,6 +385,11 @@ function logs_generation(){
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         ./logs-cortx-cloud.sh
     popd
+}
+
+function cleanup(){
+    echo -e "\n-----------[ Clean up untagged/unused images and stopped containers... ]--------------------"
+    docker system prune -a -f
 }
 
 case $ACTION in

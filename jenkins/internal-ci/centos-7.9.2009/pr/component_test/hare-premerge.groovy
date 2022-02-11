@@ -33,16 +33,13 @@ pipeline {
      parameters {
         string(name: 'HARE_REPO', defaultValue: 'https://github.com/Seagate/cortx-hare', description: 'Repo to be used for Hare build.')
         string(name: 'HARE_BRANCH', defaultValue: 'main', description: 'Branch to be used for Hare build.')
-        string(name: 'VM_FQDN', defaultValue: 'ssc-vm-3370.colo.seagate.com', description: 'VM to be used for premerge test.')
         string(name: 'VM_CRED_USR', defaultValue: 'root', description: 'VM user.')
         password(name: 'VM_CRED_PSW', defaultValue: 'seagate', description: 'password.')
+        // VM_FQDN is Manual paramater created in jenkins 
          
     }
     environment {
-        REPO_NAME = 'cortx-hare'
-        // Updates :
-        //   - Need new VM with clean state snapshot for HARE CI : https://jts.seagate.com/browse/EOS-18463
-        // VM_FQDN = 'ssc-vm-3370.colo.seagate.com' // SSC VM used for Hare CI 
+        REPO_NAME = 'cortx-hare' 
         // VM_CRED = credentials('node-user') // To connect SSC VM over SSH
         // OS_VERSION is manually created parameters in jenkins job.
         GITHUB_TOKEN = credentials('cortx-admin-github') // To clone cortx-hare repo
@@ -115,7 +112,10 @@ pipeline {
                             steps {
                                 script {
                                     def remote = getTestMachine(VM_FQDN)
-                                    def commandResult = sshCommand remote: remote, command: """                                    
+                                    def commandResult = sshCommand remote: remote, command: """
+                                    yum erase python36-PyYAML -y
+                                    pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/main/py-utils/python_requirements.txt
+                                    pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/main/py-utils/python_requirements.ext.txt                                    
                                     yum install python3 python3-devel gcc rpm-build -y
                                     yum install cortx-py-utils -y
                                     yum install consul-1.9.1 -y
