@@ -7,7 +7,7 @@ pipeline {
     }
 
     options {
-        timeout(time: 120, unit: 'MINUTES')
+        timeout(time: 300, unit: 'MINUTES')
         timestamps()
         buildDiscarder(logRotator(daysToKeepStr: '5', numToKeepStr: '10'))
         parallelsAlwaysFailFast()
@@ -16,8 +16,8 @@ pipeline {
     parameters {  
         string(name: 'MOTR_URL', defaultValue: 'https://github.com/Seagate/cortx-motr', description: 'Branch for Motr.')
         string(name: 'MOTR_BRANCH', defaultValue: 'main', description: 'Branch for Motr.')
-        string(name: 'S3_URL', defaultValue: 'https://github.com/Seagate/cortx-s3server', description: 'Branch for S3Server')
-        string(name: 'S3_BRANCH', defaultValue: 'main', description: 'Branch for S3Server')
+        string(name: 'CORTX_RGW_URL', defaultValue: 'https://github.com/Seagate/cortx-rgw', description: 'Branch for CORTX-RGW')
+        string(name: 'CORTX_RGW_BRANCH', defaultValue: 'main', description: 'Branch for CORTX-RGW')
         string(name: 'HARE_URL', defaultValue: 'https://github.com/Seagate/cortx-hare', description: 'Branch to be used for Hare build.')
         string(name: 'HARE_BRANCH', defaultValue: 'main', description: 'Branch to be used for Hare build.')
         string(name: 'CUSTOM_CI_BUILD_ID', defaultValue: '0', description: 'Custom CI Build Number')
@@ -111,15 +111,14 @@ pipeline {
     
         stage ("Trigger Downstream Jobs") {
             parallel {
-                stage ("build S3Server") {
-                    when { expression { false } }
+                stage ("build CORTX-RGW") {
                     steps {
                         script { build_stage = env.STAGE_NAME }
-                        build job: 's3-custom-build', wait: true,
+                        build job: 'cortx-rgw-custom-build', wait: true,
                         parameters: [
-                                    string(name: 'S3_BRANCH', value: "${S3_BRANCH}"),
+                                    string(name: 'CORTX_RGW_BRANCH', value: "${CORTX_RGW_BRANCH}"),
                                     string(name: 'MOTR_BRANCH', value: "custom-ci"),
-                                    string(name: 'S3_URL', value: "${S3_URL}"),
+                                    string(name: 'CORTX_RGW_URL', value: "${CORTX_RGW_URL}"),
                                     string(name: 'CUSTOM_CI_BUILD_ID', value: "${CUSTOM_CI_BUILD_ID}")
                                 ]
                     }
