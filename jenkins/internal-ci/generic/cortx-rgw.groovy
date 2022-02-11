@@ -33,7 +33,6 @@ pipeline {
         }
         
         stage('Install Dependencies') {
-            when { expression { false } }
             steps {
                 script { build_stage = env.STAGE_NAME }
 
