@@ -6,10 +6,6 @@ pipeline {
         }
     }
     
-    triggers {
-        pollSCM '*/5 * * * *'
-    }
-    
     environment {
         version = "2.0.0"
         env = "dev"
@@ -30,8 +26,8 @@ pipeline {
         stage('Checkout') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-				dir ('hare') {
-					checkout([$class: 'GitSCM', branches: [[name: "*/${branch}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', noTags: true, reference: '', shallow: true], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', shallow: true, trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', refspec: '+refs/heads/main:refs/remotes/origin/main', url: 'https://github.com/Seagate/cortx-hare']]])
+                dir ('hare') {
+                    checkout([$class: 'GitSCM', branches: [[name: "*/${branch}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', noTags: true, reference: '', shallow: true], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', shallow: true, trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', refspec: '+refs/heads/main:refs/remotes/origin/main', url: 'https://github.com/Seagate/cortx-hare']]])
                 }
             }
         }

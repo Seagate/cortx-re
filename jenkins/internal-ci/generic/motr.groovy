@@ -6,11 +6,6 @@ pipeline {
         }
     }
     
-    triggers {
-        pollSCM '*/5 * * * *'
-    }
-
-    
     parameters {
         choice(
             choices: ['libfabric' , 'lustre'],
