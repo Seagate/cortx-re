@@ -11,6 +11,7 @@ pipeline {
         env = "dev"
         component = "cortx-rgw"
         release_dir = "/mnt/bigstorage/releases/cortx"
+        release_tag = "last_successful_prod"
         build_upload_dir = "$release_dir/components/github/$branch/$os_version/$env/$component"
     }
 
