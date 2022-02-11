@@ -21,7 +21,7 @@
 source /var/tmp/functions.sh
 
 CALICO_PLUGIN_VERSION=latest
-K8_VERSION=1.22.4
+K8_VERSION=1.22.6
 DOCKER_VERSION=latest
 OS_VERSION="CentOS 7.9.2009"
 export Exception=100
