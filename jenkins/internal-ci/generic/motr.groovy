@@ -26,7 +26,7 @@ pipeline {
     }
     
     options {
-        timeout(time: 120, unit: 'MINUTES')
+        timeout(time: 300, unit: 'MINUTES')
         timestamps()
         ansiColor('xterm')
         disableConcurrentBuilds()  
@@ -75,7 +75,7 @@ pipeline {
                         sed -i 's/@BUILD_DEPEND_LIBFAB@//g' cortx-motr.spec
                         sed -i 's/@.*@/111/g' cortx-motr.spec
                         yum-builddep -y --nogpgcheck cortx-motr.spec
-                    '''    
+                    '''                 --nogpgcheck
                 }
             }
         }
