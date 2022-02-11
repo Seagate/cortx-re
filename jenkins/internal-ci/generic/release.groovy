@@ -38,7 +38,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Installed Dependecies', script: '''
                     yum install -y expect rpm-sign rng-tools genisoimage python3-pip
-                    systemctl start rngd
+                    #systemctl start rngd
                 '''    
             }
         }
