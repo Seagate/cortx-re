@@ -115,6 +115,7 @@ pipeline {
         }
         
         stage ('Sign rpm') {
+            when { expression { false } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                                 
@@ -235,6 +236,7 @@ pipeline {
         }
 
         stage ("Build CORTX-ALL image") {
+            when { expression { false } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
@@ -259,6 +261,7 @@ pipeline {
        } 
 
         stage ("Deploy") {
+            when { expression { false } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
