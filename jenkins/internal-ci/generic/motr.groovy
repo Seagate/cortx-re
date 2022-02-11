@@ -118,9 +118,9 @@ pipeline {
         }
         
         stage ("Trigger Downstream Jobs") {
-            when { expression { false } }
             parallel {
                 stage ("build S3Server") {
+                    when { expression { false } }
                     steps {
                         script { build_stage = env.STAGE_NAME }
                         script {
@@ -191,7 +191,7 @@ pipeline {
             }
         }
     stage('Update Jira') {
-        when { expression { return env.release_build != null } }
+        when { expression { false } }
         steps {
              script { build_stage=env.STAGE_NAME }
                  script {
