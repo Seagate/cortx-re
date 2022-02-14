@@ -43,9 +43,9 @@ pipeline {
                 pushd cortx-rgw
                     ./install-deps.sh
                     ./make-dist
-                    mkdir -p /mnt/rgw/$BUILD_NUMBER/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
-                    tar --strip-components=1 -C /mnt/rgw/$BUILD_NUMBER/SPECS/ --no-anchored -xvjf ceph-*tar.bz2 "ceph.spec"
-                    mv ceph*tar.bz2 /mnt/rgw/$BUILD_NUMBER/SOURCES/
+                    mkdir -p $release_dir/$component/$branch/rpmbuild/$BUILD_NUMBER/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
+                    mv ceph*.tar.bz2 $release_dir/$component/$branch/rpmbuild/$BUILD_NUMBER/SOURCES/
+                    tar --strip-components=1 -C $release_dir/$component/$branch/rpmbuild/$BUILD_NUMBER/SPECS/ --no-anchored -xvjf $release_dir/$component/$branch/rpmbuild/$BUILD_NUMBER/SOURCES/ceph*.tar.bz2 "ceph.spec"
                 popd
                 '''
 
@@ -63,8 +63,9 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
 
                 sh label: 'Build', script: '''
-                cd /mnt/rgw/$BUILD_NUMBER
-                rpmbuild --clean --rmsource --define "_unpackaged_files_terminate_build 0" --define "debug_package %{nil}" --without cmake_verbose_logging --without jaeger --without lttng --without seastar --without kafka_endpoint --without zbd --without cephfs_java --without cephfs_shell --without ocf --without selinux --without ceph_test_package --without make_check --define "_binary_payload w2T16.xzdio" --define "_topdir `pwd`" -ba /mnt/rgw/$BUILD_NUMBER/SPECS/ceph.spec
+                pushd $release_dir/$component/$branch/rpmbuild/$BUILD_NUMBER
+                    rpmbuild --clean --rmsource --define "_unpackaged_files_terminate_build 0" --define "debug_package %{nil}" --without cmake_verbose_logging --without jaeger --without lttng --without seastar --without kafka_endpoint --without zbd --without cephfs_java --without cephfs_shell --without ocf --without selinux --without ceph_test_package --without make_check --define "_binary_payload w2T16.xzdio" --define "_topdir `pwd`" -ba ./SPECS/ceph.spec
+                popd    
                 '''
             }
         }
@@ -75,8 +76,7 @@ pipeline {
                 sh label: 'Copy RPMS', script: '''
                     rm -rf $build_upload_dir/$BUILD_NUMBER     
                     mkdir -p $build_upload_dir/$BUILD_NUMBER
-                    cp /root/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir/$BUILD_NUMBER
-                    cp /root/rpmbuild/RPMS/noarch/*.rpm $build_upload_dir/$BUILD_NUMBER
+                    cp $release_dir/$component/$branch/rpmbuild/last_successful/RPMS/*/*.rpm $build_upload_dir/$BUILD_NUMBER
                 '''
                 sh label: 'Repo Creation', script: '''pushd $build_upload_dir/$BUILD_NUMBER
                     rpm -qi createrepo || yum install -y createrepo
