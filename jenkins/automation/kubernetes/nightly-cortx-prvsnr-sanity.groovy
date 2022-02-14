@@ -15,7 +15,7 @@ pipeline {
 
     parameters {
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'prvsnr_sanity', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
-        string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/nitsdev/cortx-re/', description: 'Repository for Cluster Setup scripts', trim: true)
+        string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/nitisdev/cortx-re/', description: 'Repository for Cluster Setup scripts', trim: true)
         // Please configure CORTX_IMAGE, hosts, SNS_CONFIG, DIX_CONFIG, CORTX_SCRIPTS_BRANCH and CORTX_SCRIPTS_REPO parameter in Jenkins job configuration.
         // Please configure M_NODE, HOST_PASS  and EMAIL_RECEPIENTS parameter in Jenkins job configuration for prvsnr sanity test.
 
@@ -63,9 +63,16 @@ pipeline {
     post {
         always {
             script {
-                catchError(stageResult: 'FAILURE') {
-                    archiveArtifacts allowEmptyArchive: true, artifacts: 'log/*result.xml, log/*result.html, support_bundle/*.tar, crash_files/*.gz', followSymlinks: false
-                }
+                def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
+                mailRecipients = "shailesh.vaidya@seagate.com"
+                emailext ( 
+                    body: '''${SCRIPT, template="cluster-setup-email.template"}''',
+                    mimeType: 'text/html',
+                    subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
+                    attachLog: true,
+                    to: "${mailRecipients}",
+                    recipientProviders: recipientProvidersClass
+                )
                 cleanWs()
             }
         }
