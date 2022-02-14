@@ -236,7 +236,6 @@ pipeline {
         }
 
         stage ("Build CORTX-ALL image") {
-            when { expression { false } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
@@ -244,12 +243,14 @@ pipeline {
                         def build_cortx_all_image = build job: '/Cortx-Kubernetes/cortx-all-docker-image', wait: true,
                                     parameters: [
                                         string(name: 'CORTX_RE_URL', value: "https://github.com/Seagate/cortx-re/"),
-                                        string(name: 'CORTX_RE_BRANCH', value: "${branch}"),
-                                        string(name: 'BUILD', value: "${release_tag}/prod"),
+                                        string(name: 'CORTX_RE_BRANCH', value: "rocky-linux-8.4"),
+                                        string(name: 'BUILD', value: "http://cortx-storage.colo.seagate.com/releases/github/${branch}/${os_version}/${release_tag}/prod"),
                                         string(name: 'GITHUB_PUSH', value: "yes"),
                                         string(name: 'TAG_LATEST', value: "yes"),
                                         string(name: 'DOCKER_REGISTRY', value: "cortx-docker.colo.seagate.com"),
-                                        string(name: 'EMAIL_RECIPIENTS', value: "DEBUG")
+                                        string(name: 'EMAIL_RECIPIENTS', value: "DEBUG"),
+                                        string(name: 'OS', value: "${os_version}"),
+                                        string(name: 'CORTX_IMAGE', value: "cortx-rgw")
                                         ]
                     env.cortx_all_image = build_cortx_all_image.buildVariables.image
                     } catch (err) {
