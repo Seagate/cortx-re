@@ -244,7 +244,7 @@ pipeline {
                                     parameters: [
                                         string(name: 'CORTX_RE_URL', value: "https://github.com/Seagate/cortx-re/"),
                                         string(name: 'CORTX_RE_BRANCH', value: "rocky-linux-8.4"),
-                                        string(name: 'BUILD', value: "http://cortx-storage.colo.seagate.com/releases/cortx/github/${branch}/${os_version}/${release_tag}/prod"),
+                                        string(name: 'BUILD', value: "${ARTIFACT_LOCATION}/${release_tag}/prod"),
                                         string(name: 'GITHUB_PUSH', value: "yes"),
                                         string(name: 'TAG_LATEST', value: "yes"),
                                         string(name: 'DOCKER_REGISTRY', value: "cortx-docker.colo.seagate.com"),
@@ -255,7 +255,7 @@ pipeline {
                     env.cortx_all_image = build_cortx_all_image.buildVariables.image
                     } catch (err) {
                         build_stage = env.STAGE_NAME
-                        error "Failed to Build CORTX-ALL image"
+                        error "Failed to Build CORTX images"
                     }
                 }
             }
