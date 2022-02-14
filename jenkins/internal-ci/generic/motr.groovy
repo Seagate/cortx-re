@@ -62,12 +62,12 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 dir ('motr') {
-                    sh label: '', script: '''
+                    sh label: ''', script: '''
                     yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rockylinux/rockylinux-8.4-2.0.0-latest/
                     yum --nogpgcheck -y --disablerepo="EOS_Rocky_8_OS_x86_64_Rocky_8" install libfabric-1.11.2 libfabric-devel-1.11.2
                     '''
 
-                    sh label: '', script: '''
+                    sh label: ''', script: '''
                         export build_number=${BUILD_ID}
                         cp cortx-motr.spec.in cortx-motr.spec
                         sed -i "/BuildRequires.*kernel*/d" cortx-motr.spec
