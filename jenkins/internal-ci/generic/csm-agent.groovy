@@ -5,7 +5,11 @@ pipeline {
             label "docker-${os_version}-node"
         }
     }
-    
+
+    triggers {
+        pollSCM '*/5 * * * *'
+    }
+
     environment { 
         version = "2.0.0"     
         env = "dev"
@@ -111,7 +115,7 @@ pipeline {
         }
     
         stage('Update Jira') {
-                when { expression { return env.release_build != null } }
+                when { expression { false } }
                     steps {
                 script { build_stage=env.STAGE_NAME }    
                     script {
