@@ -68,7 +68,7 @@ pipeline {
                    systemctl status docker
                    /usr/local/bin/docker-compose --version
                    echo 'y' | docker image prune
-                   if docker images | grep cortx -q; then docker rmi --force \$(docker images --filter=reference='*/*/cortx*:[0-9]*' --filter=reference='*cortx*:[0-9]*' -q); fi
+                   if docker images --format "{{.Repository}}:{{.Tag}}"| grep -E '*cortx-.*:2.0.0*' -q; then docker rmi --force \$(docker images --filter=reference='*/*/cortx*:[0-9]*' --filter=reference='*cortx*:[0-9]*' -q); fi
                 """
             }
         }
