@@ -89,6 +89,7 @@ pipeline {
                 rm -rf $release_dir/$component/$branch/rpmbuild/SOURCES/ceph*.tar.bz2
                 rm -rf  $release_dir/$component/$branch/rpmbuild/BUILD/ceph*
                 yum erase cortx-py-utils cortx-motr{,-devel} -y
+                rm -f /etc/yum.repos.d/cortx-storage.colo.seagate.com* /etc/yum.repos.d/root_rpmbuild_RPMS_x86_64.repo
                 '''
 
                 sh label: 'prepare', script: '''
