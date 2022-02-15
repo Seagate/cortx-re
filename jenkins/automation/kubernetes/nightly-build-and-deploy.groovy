@@ -109,7 +109,6 @@ pipeline {
         }
 
         stage ("K8s QA Sanity") {
-            when { expression { false } }
             steps {
                 script {
                     catchError(stageResult: 'FAILURE') {
