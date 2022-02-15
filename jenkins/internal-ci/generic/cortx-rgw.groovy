@@ -5,6 +5,10 @@ pipeline {
             label "ceph-build-node"
         }
     }
+
+    triggers {
+        pollSCM '*/10 * * * *'
+    }
     
     environment {
         version = "2.0.0"
@@ -76,7 +80,7 @@ pipeline {
                 sh label: 'Copy RPMS', script: '''
                     rm -rf $build_upload_dir/$BUILD_NUMBER     
                     mkdir -p $build_upload_dir/$BUILD_NUMBER
-                    cp $release_dir/$component/$branch/rpmbuild/last_successful/RPMS/*/*.rpm $build_upload_dir/$BUILD_NUMBER
+                    cp $release_dir/$component/$branch/rpmbuild/$BUILD_NUMBER/RPMS/*/*.rpm $build_upload_dir/$BUILD_NUMBER
                 '''
                 sh label: 'Repo Creation', script: '''pushd $build_upload_dir/$BUILD_NUMBER
                     rpm -qi createrepo || yum install -y createrepo

@@ -6,6 +6,10 @@ pipeline {
         }
     }
 
+    triggers {
+        pollSCM '*/5 * * * *'
+    }
+
     environment {
         version = "2.0.0"
         env = "dev"
@@ -80,7 +84,8 @@ pipeline {
         }
 
         stage('Update Jira') {
-            when { expression { return env.release_build != null } }
+            when { expression { false } }
+            //when { expression { return env.release_build != null } }
             steps {
                 script { build_stage=env.STAGE_NAME }
                 script {
@@ -134,7 +139,7 @@ pipeline {
                     subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
                     attachLog: true,
                     to: toEmail,
-                    recipientProviders: recipientProvidersClass
+                    //recipientProviders: recipientProvidersClass
                 )
             }
         }
