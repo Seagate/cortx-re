@@ -246,7 +246,7 @@ pipeline {
                                         string(name: 'CORTX_RE_BRANCH', value: "rocky-linux-custom-ci"),
                                         string(name: 'BUILD', value: "${ARTIFACT_LOCATION}/${release_tag}/prod"),
                                         string(name: 'GITHUB_PUSH', value: "yes"),
-                                        string(name: 'TAG_LATEST', value: "yes"),
+                                        string(name: 'TAG_LATEST', value: "no"),
                                         string(name: 'DOCKER_REGISTRY', value: "cortx-docker.colo.seagate.com"),
                                         string(name: 'EMAIL_RECIPIENTS', value: "DEBUG"),
                                         string(name: 'OS', value: "${os_version}"),
