@@ -31,12 +31,15 @@ ENVIRONMENT=opensource-ci
 REGISTRY="cortx-docker.colo.seagate.com"
 PROJECT="seagate"
 ARTFACT_URL="http://cortx-storage.colo.seagate.com/releases/cortx/github/"
-SERVICE=cortx-all
+SERVICE=all
 OS=centos-7.9.2009
+IMAGE_LIST=( "cortx-all" "cortx-rgw" )
+
 
 while getopts "b:p:t:r:e:o:s:h:" opt; do
     case $opt in
         b ) BUILD=$OPTARG;;
+
         p ) DOCKER_PUSH=$OPTARG;;
         t ) TAG_LATEST=$OPTARG;;
         e ) ENVIRONMENT=$OPTARG;;
@@ -59,6 +62,10 @@ if echo $BUILD | grep -q http;then
 else
         if echo $BUILD | grep -q custom; then BRANCH="integration-custom-ci"; else BRANCH="main"; fi
         BUILD_URL="$ARTFACT_URL/$BRANCH/$OS/$BUILD"
+fi
+
+if [ $SERVICE == all ];then
+SERVICE=${IMAGE_LIST[@]}
 fi
 
 if [ "$SERVICE" == "cortx-rgw" ] && [ "$OS" == "centos-7.9.2009" ]; then
@@ -106,12 +113,14 @@ fi
 
 CREATED_DATE=$(date -u +'%Y-%m-%d %H:%M:%S%:z')
 
-docker-compose -f ./docker-compose.yml build --force-rm --compress --build-arg GIT_HASH="$CORTX_VERSION" --build-arg VERSION="$VERSION-$DOCKER_BUILD_BUILD" --build-arg CREATED_DATE="$CREATED_DATE" --build-arg BUILD_URL=$BUILD_URL --build-arg ENVIRONMENT=$ENVIRONMENT --build-arg OS=$OS --build-arg OS_TYPE=$OS_TYPE --build-arg OS_RELEASE=$OS_RELEASE $SERVICE
+docker-compose -f ./docker-compose.yml build --parallel --force-rm --compress --build-arg GIT_HASH="$CORTX_VERSION" --build-arg VERSION="$VERSION-$DOCKER_BUILD_BUILD" --build-arg CREATED_DATE="$CREATED_DATE" --build-arg BUILD_URL=$BUILD_URL --build-arg ENVIRONMENT=$ENVIRONMENT --build-arg OS=$OS --build-arg OS_TYPE=$OS_TYPE --build-arg OS_RELEASE=$OS_RELEASE $SERVICE
 
+for SERVICE_NAME in $SERVICE
+do
 if [ "$DOCKER_PUSH" == "yes" ];then
         echo "Pushing Docker image to GitHub Container Registry"
-        docker tag $SERVICE:$TAG $REGISTRY/$PROJECT/$SERVICE:$TAG
-        docker push $REGISTRY/$PROJECT/$SERVICE:$TAG
+        docker tag $SERVICE_NAME:$TAG $REGISTRY/$PROJECT/$SERVICE_NAME:$TAG
+        docker push $REGISTRY/$PROJECT/$SERVICE_NAME:$TAG
 else
         echo "Docker Image push skipped"
         exit 0
@@ -119,8 +128,9 @@ fi
 
 if [ "$TAG_LATEST" == "yes" ];then
         echo "Tagging generated image as latest"
-        docker tag "$(docker images $REGISTRY/$PROJECT/$SERVICE --format='{{.Repository}}:{{.Tag}}' | head -1)" $REGISTRY/$PROJECT/$SERVICE:"${TAG//$DOCKER_BUILD_BUILD/latest}"
-        docker push $REGISTRY/$PROJECT/$SERVICE:"${TAG//$DOCKER_BUILD_BUILD/latest}"
+	docker tag "$(docker images $REGISTRY/$PROJECT/$SERVICE --format='{{.Repository}}:{{.Tag}}' | head -1)" $REGISTRY/$PROJECT/$SERVICE:"${TAG//$DOCKER_BUILD_BUILD/latest}"        
+	docker push $REGISTRY/$PROJECT/$SERVICE_NAME:"${TAG//$DOCKER_BUILD_BUILD/latest}"
 else
         echo "Latest tag creation skipped"
 fi
+done
