@@ -242,15 +242,15 @@ pipeline {
                     try {
                         def build_cortx_all_image = build job: 'cortx-docker-images', wait: true,
                                     parameters: [
-                                        string(name: 'CORTX_RE_URL', value: "https://github.com/Seagate/cortx-re/"),
-                                        string(name: 'CORTX_RE_BRANCH', value: "rocky-linux-8.4"),
+                                        string(name: 'CORTX_RE_URL', value: "https://github.com/shailesh-vaidya/cortx-re"),
+                                        string(name: 'CORTX_RE_BRANCH', value: "rocky-linux-custom-ci"),
                                         string(name: 'BUILD', value: "${ARTIFACT_LOCATION}/${release_tag}/prod"),
                                         string(name: 'GITHUB_PUSH', value: "yes"),
                                         string(name: 'TAG_LATEST', value: "yes"),
                                         string(name: 'DOCKER_REGISTRY', value: "cortx-docker.colo.seagate.com"),
                                         string(name: 'EMAIL_RECIPIENTS', value: "DEBUG"),
                                         string(name: 'OS', value: "${os_version}"),
-                                        string(name: 'CORTX_IMAGE', value: "cortx-rgw")
+                                        string(name: 'CORTX_IMAGE', value: "all")
                                         ]
                     env.cortx_all_image = build_cortx_all_image.buildVariables.image
                     } catch (err) {
