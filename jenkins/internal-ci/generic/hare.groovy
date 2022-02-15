@@ -5,6 +5,10 @@ pipeline {
             label "docker-${os_version}-node"
         }
     }
+
+    triggers {
+        pollSCM '*/5 * * * *'
+    }
     
     environment {
         version = "2.0.0"
@@ -203,7 +207,7 @@ EOF
                     subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
                     attachLog: true,
                     to: toEmail,
-                    recipientProviders: recipientProvidersClass
+                    //recipientProviders: recipientProvidersClass
                 )
             }
         }    
