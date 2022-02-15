@@ -19,7 +19,6 @@ pipeline {
         ARTIFACT_LOCATION = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version"
         third_party_dir = "$release_dir/third-party-deps/rockylinux/$os_version-$third_party_version/"
         python_deps = "$release_dir/third-party-deps/python-deps/python-packages-2.0.0-latest"
-        cortx_os_iso = "/mnt/bigstorage/releases/cortx_builds/custom-os-iso/cortx-2.0.0/cortx-os-2.0.0-7.iso"
         // WARNING : 'rm' command where used in this dir path, be conscious while changing the value  
         cortx_build_dir = "$release_dir/github/$branch/$os_version/cortx_builds" 
     }
