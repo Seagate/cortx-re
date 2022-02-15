@@ -22,7 +22,6 @@ pipeline {
         disableConcurrentBuilds()
     }
 
-
     stages {
 
         stage('Checkout') {
