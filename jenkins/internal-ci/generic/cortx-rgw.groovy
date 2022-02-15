@@ -153,6 +153,11 @@ pipeline {
 
     post {
         always {
+
+            sh label: 'Clean-up yum repositories', script: '''
+                rm -f /etc/yum.repos.d/cortx-storage.colo.seagate.com* /etc/yum.repos.d/root_rpmbuild_RPMS_x86_64.repo
+                '''
+
             script {        
                 echo 'Cleanup Workspace.'
                 deleteDir() /* clean up our workspace */
