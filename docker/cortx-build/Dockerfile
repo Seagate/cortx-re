@@ -18,11 +18,15 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
-ARG CENTOS_RELEASE
+ARG OS_RELEASE
+ARG OS_IMAGE
 
-FROM centos:${CENTOS_RELEASE} AS base
+FROM ${OS_IMAGE}:${OS_RELEASE} AS base
 
-ARG CENTOS_RELEASE
+ARG OS_TYPE
+ARG OS_RELEASE
+ARG GPG_PASSPHRASE
+
 ARG ENVIRONMENT
 ARG GIT_HASH
 
@@ -37,33 +41,26 @@ LABEL maintainer="cortx.opensource@seagate.com" \
 ENV BASH_ENV "/etc/profile"
 ENV GIT_HASH $GIT_HASH
 ENV PATH="/root/.nvm/versions/node/v12.13.0/bin:${PATH}"
-ENV LANG=en_US.UTF-8 \
-    LC_ALL=en_US.UTF-8
+RUN if [[ $OS_TYPE == "centos" ]]; then export LANG=en_US.UTF-8 ; export LC_ALL=en_US.UTF-8 ; fi
 
 #Disable default repositories. 
-RUN rm -rf /etc/yum.repos.d/CentOS-*
+RUN if [[ $OS_TYPE == "centos" ]]; then rm -rf /etc/yum.repos.d/CentOS-* ;elif [[ $OS_TYPE == "rockylinux" ]]; then rm -rf /etc/yum.repos.d/${OS_TYPE}-* ; fi
 
 #Add Internal and CORTX uploads repository
-COPY ./docker/cortx-build/${ENVIRONMENT}/C${CENTOS_RELEASE}.repo /etc/yum.repos.d/
+COPY ./docker/cortx-build/${ENVIRONMENT}/$OS_TYPE-$OS_RELEASE.repo /etc/yum.repos.d/
 
 # Install EPEL repo for opensource-ci
 RUN if [ "$ENVIRONMENT" = "opensource-ci" ] ; then yum install epel-release -y ; fi && yum clean all \
 && rm -rf /var/cache/yum
 
 # Enable SCL repos
-RUN yum install centos-release-scl -y && yum clean all \
-&& rm -rf /var/cache/yum
+RUN if [[ $OS_TYPE == "centos" ]]; then yum install centos-release-scl -y && yum clean all && rm -rf /var/cache/yum ; fi
 
 # install common tools
-RUN yum -y install python3{,-{devel,pip,setuptools}} \
-createrepo \
+RUN yum -y install createrepo \
 file \
 git \
 jq \
-rpm-build \
-rpmdevtools \
-scl-utils \
-sclo-git212 \
 wget \
 which \
 openssh-server \
@@ -73,44 +70,53 @@ gcc \
 cmake \
 gcc-c++ \
 sudo \
-python-Levenshtein \
-libtool doxygen \
-python-pep8 \
+rpm-build \
+rpmdevtools \
+scl-utils \
+libtool \
+doxygen \
+openssl \
 openssl-devel \
-graphviz check-devel \
+graphviz \
+check-devel \
 userspace-rcu-devel \
 libcmocka.x86_64 \
-userspace-rcu-devel \
 libcmocka-devel.x86_64 \
 jemalloc \
 json-c-devel \
 json-c \
-openssl \
-openssl-devel \
 cmake3 \
 jemalloc-devel \
-libntirpc \
 libini_config-devel \
 autoconf \
-libtool \
 bison \
-flex \
-openssl-devel \
-doxygen \
+flex  \
 dbus-devel \
-yum-priorities \
 expect \
 rpm-sign \
-genisoimage \
+genisoimage ; if [[ $OS_TYPE == "centos" ]]; then yum -y install python3{,-{devel,pip,setuptools}} \
+sclo-git212 \
+python-Levenshtein \
+python-pep8 \
+yum-priorities \
 redhat-ls && yum clean all \
-&& rm -rf /var/cache/yum
+&& rm -rf /var/cache/yum ; elif [[ $OS_TYPE == "rockylinux" ]]; then dnf -y install python3{,-{devel,pip,setuptools}} \
+yum-utils \
+python3-Levenshtein \
+python3-pycodestyle \
+glibc-langpack-en \
+glibc-locale-source \
+pinentry \
+kernel-abi-whitelists \
+redhat-lsb && dnf clean all \
+&& rm -rf /var/cache/yum ; fi
 
 # enable Git from SLC repo (it's more up to date version)
-RUN ln -nsf /opt/rh/sclo-git212/root/bin/* /usr/local/bin/ \
-    && ln -nsf /opt/rh/sclo-git212/enable /etc/profile.d/sclo-git212.sh
+RUN if [[ $OS_TYPE == "centos" ]]; then ln -nsf /opt/rh/sclo-git212/root/bin/* /usr/local/bin/ && \
+    ln -nsf /opt/rh/sclo-git212/enable /etc/profile.d/sclo-git212.sh ; fi
 
 #Remove sclo repositories
-RUN yum-config-manager --disable centos-sclo*
+RUN if [[ $OS_TYPE == "centos" ]]; then yum-config-manager --disable centos-sclo* ; fi
 
 # set locale
 RUN localedef -i en_US -f UTF-8 en_US.UTF-8
@@ -132,13 +138,13 @@ RUN sh /opt/systemctl-replacement.sh \
 && rm -f systemctl.py
 
 # For Provisioner
-RUN bash /opt/setup_fpm.sh \
+RUN bash /opt/setup_fpm.sh ${OS_TYPE} \
 && rm -f /opt/setup_fpm.sh && yum clean all \
 && rm -rf /var/cache/yum \
 && rm -rf rh-ruby23.sh
 
 # yum repo from GitHub Release 
-RUN sh /opt/set-githubrelease-repo.sh \
+RUN bash /opt/set-githubrelease-repo.sh \
 && yum clean all \
 && rm -rf /var/cache/yum \
 && rm -f /opt/set-githubrelease-repo.sh
@@ -146,12 +152,13 @@ RUN sh /opt/set-githubrelease-repo.sh \
 # rpm signing
 COPY ./scripts/rpm-signing/* /opt/rpm-signing/
 
-RUN  cat /opt/rpm-signing/gpgoptions >>  ~/.rpmmacros && \
-     sed -i '/passphrase/d' /opt/rpm-signing/genkey-batch && \
-     sed -i -e 's/$argv 1/$argv 0/g' -e 's/${PASSPHRASE}/ /g' -e '/PASSPHRASE/d' /opt/rpm-signing/rpm-sign.sh && \
-     /usr/bin/gpg --batch --gen-key /opt/rpm-signing/genkey-batch && \
-     /usr/bin/gpg --export -a 'Seagate'  > /opt/rpm-signing/RPM-GPG-KEY-Seagate && \
-     rpm --import /opt/rpm-signing/RPM-GPG-KEY-Seagate
+RUN if [[ $OS_TYPE == "centos" ]]; then cat /opt/rpm-signing/gpgoptions >>  ~/.rpmmacros \
+&& sed -i "/passphrase/d" /opt/rpm-signing/genkey-batch \
+&& sed -i -e 's/$argv 1/$argv 0/g' -e 's/${PASSPHRASE}/ /g' -e '/PASSPHRASE/d' /opt/rpm-signing/rpm-sign.sh ; elif [[ $OS_TYPE == "rockylinux" ]]; then sed 's/--passphrase-fd 3 //g' /opt/rpm-signing/gpgoptions >> ~/.rpmmacros \
+&& sed -i -e 's/Passphrase:.*/Passphrase: ${GPG_PASSPHRASE}/g' /opt/rpm-signing/genkey-batch ; fi \
+&& /usr/bin/gpg --batch --gen-key /opt/rpm-signing/genkey-batch \
+&& /usr/bin/gpg --export -a 'Seagate'  > /opt/rpm-signing/RPM-GPG-KEY-Seagate \
+&& rpm --import /opt/rpm-signing/RPM-GPG-KEY-Seagate
 
 # release helper scripts
 COPY ./scripts/release_support/build_release_info.sh /opt/release_support/
@@ -180,28 +187,27 @@ RUN yum -y install kernel{,-devel}  \
         && yum clean all \
         && rm -rf /var/cache/yum
 	
-RUN QA_RPATHS=255 rpmbuild -bb --without servers --without lustre-tests \
+RUN if [[ $OS_TYPE == "centos" ]]; then QA_RPATHS="255" rpmbuild -bb --without servers --without lustre-tests \
         --define 'configure_args --disable-gss-keyring' \
-        --define "kver `ls -1r /lib/modules | head -n1`" \
-        /root//rpmbuild/SPECS/lustre.spec
+        --define "kver $(ls -1r /lib/modules | head -n1)" \
+        /root//rpmbuild/SPECS/lustre.spec ; fi
 
 FROM base as io-build 
 
 ARG LUSTRE_VERSION
 
-COPY --from=lustre-rpm-builder /root/rpmbuild/RPMS/x86_64/lustre-client-devel-${LUSTRE_VERSION}*.rpm .
+#COPY --from=lustre-rpm-builder /root/rpmbuild/RPMS/x86_64/lustre-client-devel-${LUSTRE_VERSION}*.rpm . 
 
 #Install luster packages
-RUN yum install -y https://downloads.whamcloud.com/public/lustre/lustre-${LUSTRE_VERSION}/el7/client/RPMS/x86_64/kmod-lustre-client-${LUSTRE_VERSION}-1.el7.x86_64.rpm \
+RUN if [[ $OS_TYPE == "centos" ]]; then yum install -y https://downloads.whamcloud.com/public/lustre/lustre-${LUSTRE_VERSION}/el7/client/RPMS/x86_64/kmod-lustre-client-${LUSTRE_VERSION}-1.el7.x86_64.rpm \
          https://downloads.whamcloud.com/public/lustre/lustre-${LUSTRE_VERSION}/el7/client/RPMS/x86_64/lustre-client-${LUSTRE_VERSION}-1.el7.x86_64.rpm \
 		 && yum install -y lustre-client-devel-${LUSTRE_VERSION}*.rpm \
 		 && yum clean all \
-		 && rm -rf /var/cache/yum
+		 && rm -rf /var/cache/yum ; fi
 		 
-		 
-RUN curl -k https://raw.githubusercontent.com/Seagate/cortx-motr/stable/cortx-motr.spec.in -o cortx-motr.spec \
+RUN if [[ $OS_TYPE == "centos" ]]; then curl -k https://raw.githubusercontent.com/Seagate/cortx-motr/stable/cortx-motr.spec.in -o cortx-motr.spec \
 	&& sed -i 's/@.*@/111/g' cortx-motr.spec \
 	&& kernel_src=$(ls -1rd /lib/modules/*/build | head -n1) \
         && yum-builddep -y cortx-motr.spec \
 	&& yum clean all \
-        && rm -rf /var/cache/yum
+        && rm -rf /var/cache/yum ; fi

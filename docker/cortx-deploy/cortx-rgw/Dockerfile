@@ -46,6 +46,7 @@ RUN yum install yum-utils -y \
 
 #Add Internal and CORTX uploads repository
 COPY ./${ENVIRONMENT}/$OS.repo /etc/yum.repos.d/
+#RUN if [[ $OS_TYPE =~ "rocky" ]]; then cp /var/tmp/${ENVIRONMENT}/$(echo $OS_TYPE | cut -d'/' -f1)-${OS_RELEASE}.repo /etc/yum.repos.d/;else cp /var/tmp/${ENVIRONMENT}/${OS_TYPE}-${OS_RELEASE}.repo /etc/yum.repos.d/; fi
 
 # Install EPEL repo for opensource-ci
 RUN if [ "$ENVIRONMENT" = "opensource-ci" ] ; then yum install epel-release -y ; fi && yum clean all \
@@ -56,23 +57,24 @@ RUN yum install yum-utils -y \
     && yum-config-manager --add-repo ${BUILD_URL}/3rd_party \
     && curl ${BUILD_URL}/RELEASE.INFO -o RELEASE.INFO 
 
-COPY ./*.txt ./$OS/ ./generate-release-info.sh /opt/seagate/cortx/
+COPY ./cortx-rgw/*.txt ./generate-release-info.sh /opt/seagate/cortx/
 
 RUN yum install --nogpgcheck -y python3-pip \
     && pip3 install yq \
     && pip3 install  --no-cache-dir --trusted-host $(echo $BUILD_URL | awk -F '/' '{print $3}') -i $BUILD_URL/python_deps -r /opt/seagate/cortx/python_requirements.txt -r /opt/seagate/cortx/python_requirements.ext.txt \
    && yum clean all && rm -rf /var/cache/yum
 
-RUN yum install --nogpgcheck -y  $(sed 's/#.*//g' /opt/seagate/cortx/third-party-rpms.txt) \
+RUN yum --nogpgcheck -y --disablerepo="EOS_Rocky_8_OS_x86_64_Rocky_8" install libfabric-1.11.2 \
+    && yum install --nogpgcheck -y  $(sed 's/#.*//g' /opt/seagate/cortx/third-party-rpms.txt) \
     && yum clean all && rm -rf /var/cache/yum
     
 RUN yum install --nogpgcheck -y  $(sed 's/#.*//g' /opt/seagate/cortx/cortx-componenet-rpms.txt) \
+    && yum install --nogpgcheck -y  $(sed 's/#.*//g' /opt/seagate/cortx/ceph-componenet-rpms.txt) \
     && yum install -y --nogpgcheck --downloadonly --downloaddir=/opt/seagate/cortx/debug-packages cortx-hare-debuginfo cortx-motr-debuginfo \
     && yum clean all && rm -rf /var/cache/yum
     
 RUN rm -f /etc/machine-id && ln -s /etc/cortx/solution/node/id /etc/machine-id \
     && bash /opt/seagate/cortx/generate-release-info.sh
 
-RUN rm -rf /etc/yum.repos.d/$(echo $BUILD_URL | awk -F '/' '{print $3}')*.repo /etc/yum.repos.d/$OS.repo \
+RUN rm -rf /etc/yum.repos.d/$(echo $BUILD_URL | awk -F '/' '{print $3}')*.repo /etc/yum.repos.d/C${OS_RELEASE}.repo \
     && yum clean all && rm -rf /var/cache/yum
-

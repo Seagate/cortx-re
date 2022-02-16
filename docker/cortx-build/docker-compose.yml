@@ -20,15 +20,33 @@
 version: "3"
 
 services:
+  cortx-build-rockylinux-8.4:
+    image: cortx-docker.colo.seagate.com/seagate/cortx-build-internal:rockylinux-8.4
+    build:
+      context: ../../
+      dockerfile: ./docker/cortx-build/Dockerfile
+      args:
+        OS_TYPE: rockylinux
+        OS_RELEASE: 8.4
+        OS_IMAGE: rockylinux/rockylinux
+        ENVIRONMENT: internal-ci
+        GPG_PASSPHRASE: seagate
+        LUSTRE_VERSION: 2.12.7
+    volumes:
+      - /var/artifacts:/var/artifacts
+      - /root/cortx:/cortx-workspace
+
   cortx-build-centos-7.8.2003:
     image: ghcr.io/seagate/cortx-build:centos-7.8.2003
     build:
       context: ../../
       dockerfile: ./docker/cortx-build/Dockerfile
       args:
-       CENTOS_RELEASE: 7.8.2003
-       LUSTRE_VERSION: 2.12.5
-       ENVIRONMENT: opensource-ci
+        OS_RELEASE: 7.8.2003
+        OS_IMAGE: centos
+        OS_TYPE: centos
+        LUSTRE_VERSION: 2.12.5
+        ENVIRONMENT: opensource-ci
     volumes:
      - /var/artifacts:/var/artifacts
      - /root/cortx:/cortx-workspace
@@ -39,9 +57,11 @@ services:
       context: ../../
       dockerfile: ./docker/cortx-build/Dockerfile
       args:
-       CENTOS_RELEASE: 7.9.2009
-       LUSTRE_VERSION: 2.12.7
-       ENVIRONMENT: opensource-ci
+        OS_RELEASE: 7.9.2009
+        OS_IMAGE: centos
+        OS_TYPE: centos
+        LUSTRE_VERSION: 2.12.7
+        ENVIRONMENT: opensource-ci
     volumes:
      - /var/artifacts:/var/artifacts
      - /root/cortx:/cortx-workspace
@@ -52,9 +72,11 @@ services:
       context: ../../
       dockerfile: ./docker/cortx-build//Dockerfile
       args:
-       CENTOS_RELEASE: 7.8.2003
-       LUSTRE_VERSION: 2.12.5
-       ENVIRONMENT: internal-ci
+        OS_RELEASE: 7.8.2003
+        OS_IMAGE: centos
+        OS_TYPE: centos
+        LUSTRE_VERSION: 2.12.5
+        ENVIRONMENT: internal-ci
     volumes:
      - /var/artifacts:/var/artifacts
      - /root/cortx:/cortx-workspace
@@ -65,7 +87,9 @@ services:
       context: ../../
       dockerfile: ./docker/cortx-build//Dockerfile
       args:
-        CENTOS_RELEASE: 7.9.2009
+        OS_RELEASE: 7.9.2009
+        OS_IMAGE: centos
+        OS_TYPE: centos
         LUSTRE_VERSION: 2.12.7
         ENVIRONMENT: internal-ci
     volumes:

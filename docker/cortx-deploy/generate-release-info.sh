@@ -30,7 +30,8 @@ VERSION: "$VERSION"
 OS: $(cat /etc/redhat-release | sed -e 's/ $//g' -e 's/^/\"/g' -e 's/$/\"/g')
 DATETIME: $(date +"%d-%b-%Y %H:%M %Z" | sed -e 's/^/\"/g' -e 's/$/\"/g')
 COMPONENTS:
-$(for component in $(sed 's/#.*//g' /opt/seagate/cortx/cortx-componenet-rpms.txt); do echo "    - \"$(rpm -q $component).rpm\"" ; done)
+$(for component in $(sed 's/#.*//g' /opt/seagate/cortx/cortx-componenet-rpms.txt /opt/seagate/cortx/ceph-componenet-rpms.txt); do echo "    - \"$(rpm -q $component).rpm\"" ; done)
+$(for component in cortx-csm_agent-2.0.0-317_7bbece40.x86_64.rpm cortx-ha-2.0.0-311_52a022e.x86_64.rpm; do echo "    - \"$component\"" ; done)
 THIRD_PARTY_RPM_PACKAGES:
 $(for component in $(sed 's/#.*//g' /opt/seagate/cortx/third-party-rpms.txt); do echo "    - \"$(rpm -q $component).rpm\"" ; done)
 THIRD_PARTY_PYTHON_PACKAGES:
