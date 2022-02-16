@@ -85,6 +85,9 @@ function update_solution_config(){
         yq e -i '.solution.common.s3.max_start_timeout = 240' solution.yaml
         yq e -i '.solution.common.motr.num_client_inst = 0' solution.yaml
         yq e -i '.solution.common.motr.start_port_num = 29000' solution.yaml
+        yq e -i '.solution.common.hax.protocol = "https"' solution.yaml
+        yq e -i '.solution.common.hax.service_name = "cortx-hax-svc"' solution.yaml
+        yq e -i '.solution.common.hax.port_num = "22003"' solution.yaml
         yq e -i '.solution.common.storage_sets.name = "storage-set-1"' solution.yaml
 
         sns=$SNS_CONFIG yq e -i '.solution.common.storage_sets.durability.sns = env(sns)' solution.yaml
