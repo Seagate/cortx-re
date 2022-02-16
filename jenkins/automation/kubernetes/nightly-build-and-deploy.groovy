@@ -1,3 +1,8 @@
+def getBuild() {
+    buildID = sh(script: "curl -XGET 'http://eos-jenkins.colo.seagate.com/job/Release_Engineering/job/re-workspace/job/nikhildev/job/Nightly-K8s-Build-and-Deploy-test/api/json' | jq -r '.lastSuccessfulBuild.number'", returnStdout: true).trim()
+    return "$buildID"   
+}
+
 pipeline {
     agent {
         node {
@@ -18,7 +23,8 @@ pipeline {
         LOCAL_REG_CRED = credentials('local-registry-access')
         GITHUB_CRED = credentials('shailesh-github')
         VERSION = "2.0.0"
-        GITHUB_TAG_SUFFIX = "custom-ci" 
+        last_build_number = get_last_build_number()
+        last_success_build_number = getBuild()
     }
     parameters {
         string(name: 'CORTX_IMAGE', defaultValue: 'cortx-docker.colo.seagate.com/seagate/cortx-all:2.0.0-latest', description: 'CORTX-ALL image', trim: true)
@@ -53,6 +59,19 @@ pipeline {
                 }
             }
         }
+
+        // stage ("last successfull build ") {
+        //     steps {
+        //         script { build_stage = env.STAGE_NAME }
+        //         script {
+        //             sh '''
+        //                 last_success_build=$(curl -XGET "http://eos-jenkins.colo.seagate.com/job/Release_Engineering/job/re-workspace/job/nikhildev/job/Nightly-K8s-Build-and-Deploy-test/api/json" | jq -r '.lastSuccessfulBuild.number')
+        //                 echo ${last_success_build}
+        //             '''
+        //             env.last_success_build = ${last_success_build}
+        //         }
+        //     }
+        // }
 
         stage ("Deploy CORTX Cluster") {
             steps {
@@ -93,18 +112,18 @@ pipeline {
 
                    #Update VERSION details in RELEASE.INFO file
 
-                   docker commit $(docker run -d ${CORTX_IMAGE} sed -i /VERSION/s/\\"2.0.0.*\\"/\\"${VERSION}-${BUILD_NUMBER}\\"/ /opt/seagate/cortx/RELEASE.INFO) ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}-${GITHUB_TAG_SUFFIX}
+                   docker commit $(docker run -d ${CORTX_IMAGE} sed -i /VERSION/s/\\"2.0.0.*\\"/\\"${VERSION}-${BUILD_NUMBER}\\"/ /opt/seagate/cortx/RELEASE.INFO) ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}
 
 
-                   docker tag ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}-${GITHUB_TAG_SUFFIX} ghcr.io/seagate/cortx-all:${VERSION}-latest-${GITHUB_TAG_SUFFIX}
+                   docker tag ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER} ghcr.io/seagate/cortx-all:${VERSION}-latest
 
                    docker login ghcr.io -u ${GITHUB_CRED_USR} -p ${GITHUB_CRED_PSW}
                    
-                   docker push ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}-${GITHUB_TAG_SUFFIX}
-                   docker push ghcr.io/seagate/cortx-all:${VERSION}-latest-${GITHUB_TAG_SUFFIX}
+                   docker push ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}
+                   docker push ghcr.io/seagate/cortx-all:${VERSION}-latest
                    
-                   docker rmi ghcr.io/seagate/cortx-all:${VERSION}-latest-${GITHUB_TAG_SUFFIX}
-                   docker rmi ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}-${GITHUB_TAG_SUFFIX}
+                   docker rmi ghcr.io/seagate/cortx-all:${VERSION}-latest
+                   docker rmi ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}
                 '''
            }
         }
@@ -117,7 +136,7 @@ pipeline {
                         parameters: [
                             string(name: 'M_NODE', value: "${env.master_node}"),
                             password(name: 'HOST_PASS', value: "${env.hostpasswd}"),
-                            string(name: 'CORTX_IMAGE', value: "ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}-${GITHUB_TAG_SUFFIX}"),
+                            string(name: 'CORTX_IMAGE', value: "ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}"),
                             string(name: 'NUM_NODES', value: "${env.numberofnodes}")
                         ]
                         env.Sanity_Failed = qaSanity.buildVariables.Sanity_Failed
@@ -131,6 +150,24 @@ pipeline {
                     copyArtifacts filter: 'log/*report.html', fingerprintArtifacts: true, flatten: true, optional: true, projectName: 'QA-Sanity-Multinode-K8s', selector: lastCompleted(), target: 'log/'
                     copyArtifacts filter: 'log/*report.xml', fingerprintArtifacts: true, flatten: true, optional: true, projectName: 'QA-Sanity-Multinode-K8s', selector: lastCompleted(), target: ''
                     copyArtifacts filter: 'log/*report.html', fingerprintArtifacts: true, flatten: true, optional: true, projectName: 'QA-Sanity-Multinode-K8s', selector: lastCompleted(), target: ''
+                }
+            }
+        }
+
+        stage ("Changesetlog generation") {
+            when {
+                expression { "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "SUCCESS"  }
+            }
+            steps {
+                script {
+                    def changelog = build job: '/Release_Engineering/re-workspace/ap_space/changelog-generation', wait: true, propagate: false,
+                    parameters: [
+                        string(name: 'BUILD_FROM', value: "ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}"),
+                        string(name: 'BUILD_TO', value: "ghcr.io/seagate/cortx-all:${VERSION}-${last_success_build_number}"),
+                        //   string(name: 'BUILD_LOCATION', value: "ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}"),
+                    ]
+                    env.changeset_log_url = changelog.absoluteUrl
+                    // copyArtifacts filter: 'CHANGESET.txt', fingerprintArtifacts: true, flatten: true, optional: true, projectName: '/Release_Engineering/re-workspace/ap_space/changelog-generation', selector: lastCompleted(), target: 'log/'
                 }
             }
         }
@@ -181,13 +218,14 @@ pipeline {
                     currentBuild.result = "UNSTABLE"
                 }
                 env.build_setupcortx_url = sh( script: "echo ${env.cortxcluster_build_url}/artifact/artifacts/cortx-cluster-status.txt", returnStdout: true)
+                env.changeset_log_url = sh( script: "echo ${env.changeset_log_url}/artifact/CHANGESET.txt", returnStdout: true)
                 env.host = "${env.allhost}"
-                env.build_id = "ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}-${GITHUB_TAG_SUFFIX}"
+                env.build_id = "ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}"
                 env.build_location = "${DOCKER_IMAGE_LOCATION}"
                 env.deployment_status = "${MESSAGE}"
                 env.cluster_status = "${env.build_setupcortx_url}"
                 env.cortx_script_branch = "${CORTX_SCRIPTS_BRANCH}"
-                env.CORTX_DOCKER_IMAGE = "ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}-${GITHUB_TAG_SUFFIX}"
+                env.CORTX_DOCKER_IMAGE = "ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}"
 
                 if ( params.EMAIL_RECIPIENTS == "ALL" && currentBuild.result == "SUCCESS" ) {
                     mailRecipients = "CORTX.All@seagate.com"
@@ -213,7 +251,7 @@ pipeline {
                 }               
 
                 catchError(stageResult: 'FAILURE') {
-                    archiveArtifacts allowEmptyArchive: true, artifacts: 'log/*report.xml, log/*report.html, support_bundle/*.tar, crash_files/*.gz', followSymlinks: false
+                    archiveArtifacts allowEmptyArchive: true, artifacts: 'log/*report.xml, log/*report.html, log/CHANGESET.txt, support_bundle/*.tar, crash_files/*.gz', followSymlinks: false
                     emailext (
                         body: '''${SCRIPT, template="K8s-deployment-email_2.template"}${SCRIPT, template="REL_QA_SANITY_CUS_EMAIL_RETEAM_5.template"}''',
                         mimeType: 'text/html',
