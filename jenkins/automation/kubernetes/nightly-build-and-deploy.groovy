@@ -1,3 +1,8 @@
+def getBuild() {
+    buildID = sh(script: "curl -XGET 'http://eos-jenkins.colo.seagate.com/job/Release_Engineering/job/re-workspace/job/nikhildev/job/Nightly-K8s-Build-and-Deploy-test/api/json' | jq -r '.lastSuccessfulBuild.number'", returnStdout: true).trim()
+    return "$buildID"   
+}
+
 pipeline {
     agent {
         node {
@@ -18,6 +23,7 @@ pipeline {
         LOCAL_REG_CRED = credentials('local-registry-access')
         GITHUB_CRED = credentials('shailesh-github')
         VERSION = "2.0.0"
+        last_success_build_number = getBuild()
     }
     parameters {
         string(name: 'CORTX_IMAGE', defaultValue: 'cortx-docker.colo.seagate.com/seagate/cortx-all:2.0.0-latest', description: 'CORTX-ALL image', trim: true)
@@ -133,6 +139,24 @@ pipeline {
                 }
             }
         }
+
+        stage ("Changesetlog generation") {
+            when {
+                expression { "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "SUCCESS"  }
+            }
+            steps {
+                script {
+                    def changelog = build job: '/Release_Engineering/re-workspace/ap_space/changelog-generation', wait: true, propagate: false,
+                    parameters: [
+                        string(name: 'BUILD_FROM', value: "ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}-${GITHUB_TAG_SUFFIX}"),
+                        string(name: 'BUILD_TO', value: "ghcr.io/seagate/cortx-all:${VERSION}-${last_success_build_number}-${GITHUB_TAG_SUFFIX}"),
+                        //   string(name: 'BUILD_LOCATION', value: "ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}-${GITHUB_TAG_SUFFIX}"),
+                    ]
+                    env.changeset_log_url = changelog.absoluteUrl
+                    // copyArtifacts filter: 'CHANGESET.txt', fingerprintArtifacts: true, flatten: true, optional: true, projectName: '/Release_Engineering/re-workspace/ap_space/changelog-generation', selector: lastCompleted(), target: 'log/'
+                }
+            }
+        }
     }
 
     post {
@@ -180,6 +204,7 @@ pipeline {
                     currentBuild.result = "UNSTABLE"
                 }
                 env.build_setupcortx_url = sh( script: "echo ${env.cortxcluster_build_url}/artifact/artifacts/cortx-cluster-status.txt", returnStdout: true)
+                env.changeset_log_url = sh( script: "echo ${env.changeset_log_url}/artifact/CHANGESET.txt", returnStdout: true)
                 env.host = "${env.allhost}"
                 env.build_id = "ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}"
                 env.build_location = "${DOCKER_IMAGE_LOCATION}"
