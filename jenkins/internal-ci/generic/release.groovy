@@ -60,7 +60,7 @@ pipeline {
                         #Temporary change for RGW feature branch
                         pushd /mnt/bigstorage/releases/cortx/components/github/rgw/rockylinux-8.4/dev
                         RGW_BRANCH_COMPONENTS="provisioner hare cortx-utils"
-                        MAIN_BRANCH_COMPONENTS="motr cortx-rgw cortx-rgw-integration csm-agent"
+                        MAIN_BRANCH_COMPONENTS="motr cortx-rgw cortx-rgw-integration csm-agent cortx-ha"
                         for component in $RGW_BRANCH_COMPONENTS
                         do
                             echo -e "Copying RPM's for $component"
