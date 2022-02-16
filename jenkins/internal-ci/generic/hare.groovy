@@ -82,7 +82,7 @@ EOF
                 '''
 
                 sh label: '', script: '''
-                    yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/$release_tag/cortx_iso/
+                    yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/main/$os_version/$release_tag/cortx_iso/
                     yum clean all;rm -rf /var/cache/yum
                     yum install cortx-py-utils cortx-motr{,-devel} -y --nogpgcheck
                 '''
