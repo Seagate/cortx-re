@@ -179,8 +179,11 @@ pipeline {
                 '''
                 sh label: 'Tag last_successful for dep component', script: '''
                     # Hare Build 
-                    test -L $build_upload_dir_hare/last_successful && rm -f $build_upload_dir_hare/last_successful
-                    ln -s $build_upload_dir_hare/$HARE_BUILD_NUMBER $build_upload_dir_hare/last_successful
+                    #test -L $build_upload_dir_hare/last_successful && rm -f $build_upload_dir_hare/last_successful
+                    #ln -s $build_upload_dir_hare/$HARE_BUILD_NUMBER $build_upload_dir_hare/last_successful
+
+                    test -L /mnt/bigstorage/releases/cortx/components/github/rgw/rockylinux-8.4/dev/hare/last_successful && rm -rf /mnt/bigstorage/releases/cortx/components/github/rgw/rockylinux-8.4/dev/hare/last_successful
+                    ln -s /mnt/bigstorage/releases/cortx/components/github/rgw/rockylinux-8.4/dev/hare/$HARE_BUILD_NUMBER /mnt/bigstorage/releases/cortx/components/github/main/rockylinux-8.4/dev/rgw/last_successful
 
                     # S3Server Build
                     #test -L $build_upload_dir_s3_dev/last_successful && rm -f $build_upload_dir_s3_dev/last_successful
