@@ -371,12 +371,18 @@ echo "---------------------------------------[ hctl status ]--------------------
 }
 
 function io_exec(){
-    pushd /var/tmp/
-        # "Setting up S3 client..."
-        ./s3-client-setup.sh
-        # "Running IO test..."
-        ./io-testing.sh
-    popd
+    CURRENT_OS=$(cut -d ' ' -f 1,4 < /etc/redhat-release)
+    if [[ "$CURRENT_OS" == "Rocky 8.4" ]]; then
+        echo "S3 IO Testing not enabled for Rocky Linux yet. Skipping"
+    else
+        pushd /var/tmp/
+            chmod +x *.sh
+            # "Setting up S3 client..."
+            ./s3-client-setup.sh
+            # "Running IO test..."
+            ./io-testing.sh
+        popd
+    fi
 }
 
 function logs_generation(){
