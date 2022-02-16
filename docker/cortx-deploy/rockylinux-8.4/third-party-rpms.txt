@@ -10,3 +10,4 @@ sshpass
 sudo
 which #cortx-motr
 python3-ldap #cortx-utils
+libfabric-1.11.2 #cortx-motr
