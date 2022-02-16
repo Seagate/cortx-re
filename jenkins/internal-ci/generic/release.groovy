@@ -56,8 +56,20 @@ pipeline {
                     for env in "dev";
                     do
                         mkdir -p $integration_dir/$release_tag/$env
+                        #Temporary change for RGW feature branch
+                        pushd /mnt/bigstorage/releases/cortx/components/github/rgw/rockylinux-8.4/dev
+                        RGW_BRANCH_COMPONENTS="provisioner hare cortx-utils"
+                        MAIN_BRANCH_COMPONENTS="motr cortx-rgw cortx-rgw-integration csm-agent"
+                        for component in $RGW_BRANCH_COMPONENTS
+                        do
+                            echo -e "Copying RPM's for $component"
+                            if ls $component/last_successful/*.rpm 1> /dev/null 2>&1; then
+                            cp $component/last_successful/*.rpm $integration_dir/$release_tag/$env
+                            fi
+                        done
+
                         pushd $components_dir/$env
-                        for component in  `ls -1 | grep -Evx 'cortx-extension'`
+                        for component in  $MAIN_BRANCH_COMPONENTS
                         do
                             echo -e "Copying RPM's for $component"
                             if ls $component/last_successful/*.rpm 1> /dev/null 2>&1; then
@@ -72,8 +84,6 @@ pipeline {
 
                     pushd $integration_dir/$release_tag/prod
                         rm -rf cortx-[lp]*-debuginfo-*.rpm
-                        rm -f cortx-s3iamcli*.rpm
-                        rm -f cortx-s3-test*.rpm
                     popd
                 '''
             }
