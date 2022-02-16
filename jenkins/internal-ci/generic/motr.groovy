@@ -52,11 +52,11 @@ pipeline {
                 dir ('motr') {
                     sh label: '', script: '''
                         if [[ "$TRANSPORT" == "libfabric" ]]; then
-                                echo "We are using default 'libfabric' module/package"
+                            echo "We are using default 'libfabric' module/package"
                         else
-                                sed -i '/libfabric/d' cortx-motr.spec.in
-                echo "Removed libfabric from spec file as we are going to use $TRANSPORT"
-            fi
+                            sed -i '/libfabric/d' cortx-motr.spec.in
+                            echo "Removed libfabric from spec file as we are going to use $TRANSPORT"
+                         fi
                     '''
                 }
             }

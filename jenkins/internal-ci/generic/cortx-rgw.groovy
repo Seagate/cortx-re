@@ -181,12 +181,12 @@ pipeline {
                     emailext (
                         body: '''${SCRIPT, template="component-email-dev.template"}''',
                         mimeType: 'text/html',
-                        subject: "[Jenkins] S3Main PostMerge : ${currentBuild.currentResult}, ${JOB_BASE_NAME}#${BUILD_NUMBER}",
+                        subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
                         attachLog: true,
                         to: toEmail,
                         recipientProviders: recipientProvidersClass
                     )
-                }else {
+                } else {
                    echo 'Skipping Notification....' 
                 }
             }
