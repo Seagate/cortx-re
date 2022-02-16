@@ -347,7 +347,8 @@ echo "---------------------------------------[ hctl status ]--------------------
                 sleep 60
             fi
         else
-            echo "Disabled htcl status check for now"
+            echo "Disabled htcl status check for now. Checking RGW service"
+            kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-rgw -- ps -elf | grep rgw
             #if kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-hax -- hctl status > /dev/null ; then
             #        if ! kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-hax -- hctl status| grep -q -E 'unknown|offline|failed'; then
             #            kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-hax -- hctl status
