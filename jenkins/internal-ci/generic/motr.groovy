@@ -183,7 +183,7 @@ pipeline {
                     #ln -s $build_upload_dir_hare/$HARE_BUILD_NUMBER $build_upload_dir_hare/last_successful
 
                     test -L /mnt/bigstorage/releases/cortx/components/github/rgw/rockylinux-8.4/dev/hare/last_successful && rm -rf /mnt/bigstorage/releases/cortx/components/github/rgw/rockylinux-8.4/dev/hare/last_successful
-                    ln -s /mnt/bigstorage/releases/cortx/components/github/rgw/rockylinux-8.4/dev/hare/$HARE_BUILD_NUMBER /mnt/bigstorage/releases/cortx/components/github/rgw/rockylinux-8.4/dev/hare/
+                    ln -s /mnt/bigstorage/releases/cortx/components/github/rgw/rockylinux-8.4/dev/hare/$HARE_BUILD_NUMBER /mnt/bigstorage/releases/cortx/components/github/rgw/rockylinux-8.4/dev/hare/last_successful
 
                     # S3Server Build
                     #test -L $build_upload_dir_s3_dev/last_successful && rm -f $build_upload_dir_s3_dev/last_successful
