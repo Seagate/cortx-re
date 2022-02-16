@@ -144,13 +144,13 @@ function update_solution_config(){
 function add_image_info(){
 echo "Updating cortx-all image info in solution.yaml"   
 pushd $SCRIPT_LOCATION/k8_cortx_cloud
-    image=$CORTX_IMAGE yq e -i '.solution.images.cortxcontrolprov = env(image)' solution.yaml	
-    image=$CORTX_IMAGE yq e -i '.solution.images.cortxcontrol = env(image)' solution.yaml	
-    image=$CORTX_IMAGE yq e -i '.solution.images.cortxdataprov = env(image)' solution.yaml
-    image=$CORTX_IMAGE yq e -i '.solution.images.cortxdata = env(image)' solution.yaml
-    image=$CORTX_IMAGE yq e -i '.solution.images.cortxserver = env(image)' solution.yaml
-    image=$CORTX_IMAGE yq e -i '.solution.images.cortxha = env(image)' solution.yaml
-    image=$CORTX_IMAGE yq e -i '.solution.images.cortxclient = env(image)' solution.yaml
+    image=$CORTX_ALL_IMAGE yq e -i '.solution.images.cortxcontrolprov = env(image)' solution.yaml	
+    image=$CORTX_ALL_IMAGE yq e -i '.solution.images.cortxcontrol = env(image)' solution.yaml	
+    image=$CORTX_ALL_IMAGE yq e -i '.solution.images.cortxdataprov = env(image)' solution.yaml
+    image=$CORTX_ALL_IMAGE yq e -i '.solution.images.cortxdata = env(image)' solution.yaml
+    image=$CORTX_SERVER_IMAGE yq e -i '.solution.images.cortxserver = env(image)' solution.yaml
+    image=$CORTX_ALL_IMAGE yq e -i '.solution.images.cortxha = env(image)' solution.yaml
+    image=$CORTX_ALL_IMAGE yq e -i '.solution.images.cortxclient = env(image)' solution.yaml
 popd 
 }
 
@@ -226,7 +226,8 @@ function openldap_requiremenrs(){
 
 function execute_prereq(){
     echo "Pulling latest CORTX-ALL image"
-    docker pull $CORTX_IMAGE || echo "Failed to pull $CORTX_IMAGE"
+    docker pull $CORTX_ALL_IMAGE || echo "Failed to pull $CORTX_IMAGE"
+    docker pull $CORTX_SERVER_IMAGE || echo "Failed to pull $CORTX_SERVER_IMAGE"
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         findmnt $SYSTEM_DRIVE && umount -l $SYSTEM_DRIVE
         ./prereq-deploy-cortx-cloud.sh $SYSTEM_DRIVE

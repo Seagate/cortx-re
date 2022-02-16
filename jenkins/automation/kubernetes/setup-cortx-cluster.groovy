@@ -21,7 +21,8 @@ pipeline {
 
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for Cluster Setup scripts', trim: true)
-        string(name: 'CORTX_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-all:2.0.0-latest-custom-ci', description: 'CORTX-ALL image', trim: true)
+        string(name: 'CORTX_ALL_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-all:2.0.0-latest-custom-ci', description: 'CORTX-ALL image', trim: true)
+        string(name: 'CORTX_SERVER_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-all:2.0.0-latest-custom-ci', description: 'CORTX-ALL image', trim: true)
         string(name: 'SNS_CONFIG', defaultValue: '1+0+0', description: 'sns configuration for deployment. Please select value based on disks available on nodes.', trim: true)
         string(name: 'DIX_CONFIG', defaultValue: '1+0+0', description: 'dix configuration for deployment. Please select value based on disks available on nodes.', trim: true)
         text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used for CORTX cluster setup. First node will be used as Master', name: 'hosts')
@@ -61,7 +62,8 @@ pipeline {
                     pushd solutions/kubernetes/
                         export CORTX_SCRIPTS_BRANCH=${CORTX_SCRIPTS_BRANCH}
                         export CORTX_SCRIPTS_REPO=${CORTX_SCRIPTS_REPO}
-                        export CORTX_IMAGE=${CORTX_IMAGE}
+                        export CORTX_ALL_IMAGE=${CORTX_ALL_IMAGE}
+                        export CORTX_SERVER_IMAGE=${CORTX_SERVER_IMAGE}
                         export SOLUTION_CONFIG_TYPE=automated
                         export SNS_CONFIG=${SNS_CONFIG}
                         export DIX_CONFIG=${DIX_CONFIG}
