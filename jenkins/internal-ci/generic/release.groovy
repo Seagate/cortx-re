@@ -1,4 +1,5 @@
 #!/usr/bin/env groovy
+// Please configure branch and os_version as string parameters in Jenkins configuration manually.
 pipeline {
           
     agent {
