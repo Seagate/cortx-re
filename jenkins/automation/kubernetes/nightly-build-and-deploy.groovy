@@ -1,5 +1,5 @@
-def getBuild() {
-    buildID = sh(script: "curl -XGET 'http://eos-jenkins.colo.seagate.com/job/Release_Engineering/job/re-workspace/job/nikhildev/job/Nightly-K8s-Build-and-Deploy-test/api/json' | jq -r '.lastSuccessfulBuild.number'", returnStdout: true).trim()
+def getBuild(job_url) {
+    buildID = sh(script: "curl -XGET '${job_url}/api/json' | jq -r '.lastSuccessfulBuild.number'", returnStdout: true).trim()
     return "$buildID"   
 }
 
@@ -23,7 +23,7 @@ pipeline {
         LOCAL_REG_CRED = credentials('local-registry-access')
         GITHUB_CRED = credentials('shailesh-github')
         VERSION = "2.0.0"
-        last_success_build_number = getBuild()
+        last_success_build_number = getBuild(JOB_URL)
     }
     parameters {
         string(name: 'CORTX_IMAGE', defaultValue: 'cortx-docker.colo.seagate.com/seagate/cortx-all:2.0.0-latest', description: 'CORTX-ALL image', trim: true)
@@ -152,8 +152,8 @@ pipeline {
                         string(name: 'BUILD_TO', value: "ghcr.io/seagate/cortx-all:${VERSION}-${last_success_build_number}-${GITHUB_TAG_SUFFIX}"),
                         //   string(name: 'BUILD_LOCATION', value: "ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}-${GITHUB_TAG_SUFFIX}"),
                     ]
-                    env.changeset_log_url = changelog.absoluteUrl
-                    // copyArtifacts filter: 'CHANGESET.txt', fingerprintArtifacts: true, flatten: true, optional: true, projectName: '/Release_Engineering/re-workspace/ap_space/changelog-generation', selector: lastCompleted(), target: 'log/'
+                    // env.changeset_log_url = changelog.absoluteUrl
+                    copyArtifacts filter: 'CHANGESET.txt', fingerprintArtifacts: true, flatten: true, optional: true, projectName: '/Release_Engineering/re-workspace/ap_space/changelog-generation', selector: lastCompleted(), target: ''
                 }
             }
         }
@@ -172,6 +172,7 @@ pipeline {
                     env.deployment_result = "SUCCESS"
                     env.sanity_result = "SUCCESS"
                     currentBuild.result = "SUCCESS"
+                    env.changeset_log_url = sh( script: "echo ${JOB_URL}lastSuccessfulBuild/artifact/CHANGESET.txt", returnStdout: true)
                 } else if ( "${env.cortxCluster_status}" == "FAILURE" || "${env.cortxCluster_status}" == "UNSTABLE" || "${env.cortxCluster_status}" == "null" ) {
                     manager.buildFailure()
                     MESSAGE = "K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=failed, SanityTest=skipped, Regression=skipped"
@@ -204,7 +205,7 @@ pipeline {
                     currentBuild.result = "UNSTABLE"
                 }
                 env.build_setupcortx_url = sh( script: "echo ${env.cortxcluster_build_url}/artifact/artifacts/cortx-cluster-status.txt", returnStdout: true)
-                env.changeset_log_url = sh( script: "echo ${env.changeset_log_url}artifact/CHANGESET.txt", returnStdout: true)
+                // env.changeset_log_url = sh( script: "echo ${env.changeset_log_url}artifact/CHANGESET.txt", returnStdout: true)
                 env.host = "${env.allhost}"
                 env.build_id = "ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}"
                 env.build_location = "${DOCKER_IMAGE_LOCATION}"
@@ -237,7 +238,7 @@ pipeline {
                 }               
 
                 catchError(stageResult: 'FAILURE') {
-                    archiveArtifacts allowEmptyArchive: true, artifacts: 'log/*report.xml, log/*report.html, support_bundle/*.tar, crash_files/*.gz', followSymlinks: false
+                    archiveArtifacts allowEmptyArchive: true, artifacts: 'log/*report.xml, log/*report.html, support_bundle/*.tar, crash_files/*.gz, CHANGESET.txt', followSymlinks: false
                     emailext (
                         body: '''${SCRIPT, template="K8s-deployment-email_2.template"}${SCRIPT, template="REL_QA_SANITY_CUS_EMAIL_RETEAM_5.template"}''',
                         mimeType: 'text/html',
