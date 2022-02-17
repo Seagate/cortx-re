@@ -325,8 +325,8 @@ echo "---------------------------------------[ POD Status ]---------------------
 echo "-----------[ All POD's are not in running state. Marking deployment as failed. Please check problematic pod events using kubectl describe pod <pod name> ]--------------------"
       exit 1
     fi
-#echo "-----------[ Sleeping for 1min before checking hctl status.... ]--------------------"
-#    sleep 60  
+echo "-----------[ Sleeping for 1min before checking hctl status.... ]--------------------"
+    sleep 60  
 echo "---------------------------------------[ rgw status ]-----------------------------------------"
     echo "Disabled htcl status check for now. Checking RGW service"
     kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-rgw -- ps -elf | grep rgw
