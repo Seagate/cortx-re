@@ -392,7 +392,7 @@ function logs_generation(){
 
 function cleanup(){
     echo -e "\n-----------[ Clean up untagged/unused images and stopped containers... ]--------------------"
-    docker system prune -a -f
+    docker system prune -a -f --filter "label!=vendor=Project Calico"
 }
 
 case $ACTION in
