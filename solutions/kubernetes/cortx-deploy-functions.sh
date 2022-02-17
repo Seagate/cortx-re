@@ -144,13 +144,13 @@ function update_solution_config(){
 function add_image_info(){
 echo "Updating cortx-all image info in solution.yaml"   
 pushd $SCRIPT_LOCATION/k8_cortx_cloud
-    image=$CORTX_IMAGE yq e -i '.solution.images.cortxcontrolprov = env(image)' solution.yaml	
-    image=$CORTX_IMAGE yq e -i '.solution.images.cortxcontrol = env(image)' solution.yaml	
-    image=$CORTX_IMAGE yq e -i '.solution.images.cortxdataprov = env(image)' solution.yaml
-    image=$CORTX_IMAGE yq e -i '.solution.images.cortxdata = env(image)' solution.yaml
-    image=$CORTX_IMAGE yq e -i '.solution.images.cortxserver = env(image)' solution.yaml
-    image=$CORTX_IMAGE yq e -i '.solution.images.cortxha = env(image)' solution.yaml
-    image=$CORTX_IMAGE yq e -i '.solution.images.cortxclient = env(image)' solution.yaml
+    image=$CORTX_ALL_IMAGE yq e -i '.solution.images.cortxcontrolprov = env(image)' solution.yaml	
+    image=$CORTX_ALL_IMAGE yq e -i '.solution.images.cortxcontrol = env(image)' solution.yaml	
+    image=$CORTX_ALL_IMAGE yq e -i '.solution.images.cortxdataprov = env(image)' solution.yaml
+    image=$CORTX_ALL_IMAGE yq e -i '.solution.images.cortxdata = env(image)' solution.yaml
+    image=$CORTX_SERVER_IMAGE yq e -i '.solution.images.cortxserver = env(image)' solution.yaml
+    image=$CORTX_ALL_IMAGE yq e -i '.solution.images.cortxha = env(image)' solution.yaml
+    image=$CORTX_ALL_IMAGE yq e -i '.solution.images.cortxclient = env(image)' solution.yaml
 popd 
 }
 
@@ -226,7 +226,8 @@ function openldap_requiremenrs(){
 
 function execute_prereq(){
     echo "Pulling latest CORTX-ALL image"
-    docker pull $CORTX_IMAGE || echo "Failed to pull $CORTX_IMAGE"
+    docker pull $CORTX_ALL_IMAGE || echo "Failed to pull $CORTX_IMAGE"
+    docker pull $CORTX_SERVER_IMAGE || echo "Failed to pull $CORTX_SERVER_IMAGE"
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         findmnt $SYSTEM_DRIVE && umount -l $SYSTEM_DRIVE
         ./prereq-deploy-cortx-cloud.sh $SYSTEM_DRIVE
@@ -326,43 +327,45 @@ echo "-----------[ All POD's are not in running state. Marking deployment as fai
     fi
 echo "-----------[ Sleeping for 1min before checking hctl status.... ]--------------------"
     sleep 60  
-echo "---------------------------------------[ hctl status ]-----------------------------------------"
-    SECONDS=0
-    date
-    while [[ SECONDS -lt 1200 ]] ; do
-        if [ "$DEPLOYMENT_TYPE" == "provisioner" ]; then
-            echo "Deployment type is: $DEPLOYMENT_TYPE"
-            if kubectl exec -it $(kubectl get pods | awk '/server-node/{print $1; exit}') -c cortx-motr-hax -- hctl status > /dev/null ; then
-                    if ! kubectl exec -it $(kubectl get pods | awk '/server-node/{print $1; exit}') -c cortx-motr-hax -- hctl status| grep -q -E 'unknown|offline|failed'; then
-                        kubectl exec -it $(kubectl get pods | awk '/server-node/{print $1; exit}') -c cortx-motr-hax -- hctl status
-                        echo "-----------[ Time taken for service to start $((SECONDS/60)) mins ]--------------------"
-                        exit 0
-                    else
-                        echo "-----------[ Waiting for services to become online. Sleeping for 1min.... ]--------------------"
-                        sleep 60
-                    fi
-            else
-                echo "----------------------[ hctl status not working yet. Sleeping for 1min.... ]-------------------------"
-                sleep 60
-            fi
-        else
-            if kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-hax -- hctl status > /dev/null ; then
-                    if ! kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-hax -- hctl status| grep -q -E 'unknown|offline|failed'; then
-                        kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-hax -- hctl status
-                        echo "-----------[ Time taken for service to start $((SECONDS/60)) mins ]--------------------"
-                        exit 0
-                    else
-                        echo "-----------[ Waiting for services to become online. Sleeping for 1min.... ]--------------------"
-                        sleep 60
-                    fi
-            else
-                echo "----------------------[ hctl status not working yet. Sleeping for 1min.... ]-------------------------"
-                sleep 60
-            fi
-        fi
-    done
-        echo "-----------[ Failed to to start services within 20mins. Exiting....]--------------------"
-        exit 1
+echo "---------------------------------------[ rgw status ]-----------------------------------------"
+    echo "Disabled htcl status check for now. Checking RGW service"
+    kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-rgw -- ps -elf | grep rgw
+#    SECONDS=0
+#    date
+#    while [[ SECONDS -lt 1200 ]] ; do
+#        if [ "$DEPLOYMENT_TYPE" == "provisioner" ]; then
+#            echo "Deployment type is: $DEPLOYMENT_TYPE"
+#            if kubectl exec -it $(kubectl get pods | awk '/server-node/{print $1; exit}') -c cortx-motr-hax -- hctl status > /dev/null ; then
+#                    if ! kubectl exec -it $(kubectl get pods | awk '/server-node/{print $1; exit}') -c cortx-motr-hax -- hctl status| grep -q -E 'unknown|offline|failed'; then
+#                        kubectl exec -it $(kubectl get pods | awk '/server-node/{print $1; exit}') -c cortx-motr-hax -- hctl status
+#                        echo "-----------[ Time taken for service to start $((SECONDS/60)) mins ]--------------------"
+#                        exit 0
+#                    else
+#                        echo "-----------[ Waiting for services to become online. Sleeping for 1min.... ]--------------------"
+#                        sleep 60
+#                    fi
+#            else
+#                echo "----------------------[ hctl status not working yet. Sleeping for 1min.... ]-------------------------"
+#                sleep 60
+#            fi
+#        else
+            #if kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-hax -- hctl status > /dev/null ; then
+            #        if ! kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-hax -- hctl status| grep -q -E 'unknown|offline|failed'; then
+            #            kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-hax -- hctl status
+            #            echo "-----------[ Time taken for service to start $((SECONDS/60)) mins ]--------------------"
+            #            exit 0
+            #        else
+            #            echo "-----------[ Waiting for services to become online. Sleeping for 1min.... ]--------------------"
+            #            sleep 60
+            #        fi
+            #else
+            #    echo "----------------------[ hctl status not working yet. Sleeping for 1min.... ]-------------------------"
+            #    sleep 60
+            #fi
+#        fi
+#    done
+#        echo "-----------[ Failed to to start services within 20mins. Exiting....]--------------------"
+#        exit 1
 }
 
 function io_exec(){
