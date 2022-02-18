@@ -58,7 +58,7 @@ pipeline {
                 }
             }
         }
-        stage('Static Code Analysis') {
+/*        stage('Static Code Analysis') {
             when { expression { true } }
             steps {
                 script {
@@ -76,7 +76,7 @@ pipeline {
                         echo $sca_result > cppcheck_Result
                     '''
                 }
-            }
+            }*/
             post {
                 always {
                     archiveArtifacts artifacts: 'html/*.*', fingerprint: true
