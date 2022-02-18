@@ -42,7 +42,6 @@ pipeline {
 
                 sh encoding: 'UTF-8', label: 'cortx-provisioner', script: '''
                 bash ./jenkins/build.sh -v 2.0.0 -b ${CUSTOM_CI_BUILD_ID}
-                else
                 '''
             }
         }
