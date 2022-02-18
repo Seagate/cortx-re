@@ -240,7 +240,10 @@ pipeline {
                     test -L last_successful_prod && rm -f last_successful_prod
                     ln -s $integration_dir/$release_tag/dev last_successful
                     ln -s $integration_dir/$release_tag/prod last_successful_prod
-                    #symlink for RGW branch builds
+                    
+                    #symlinks for RGW branch builds
+                    test -L last_successful && rm -f /mnt/bigstorage/releases/cortx/github/rgw/rockylinux-8.4/last_successful
+                    test -L last_successful_prod && rm -f /mnt/bigstorage/releases/cortx/github/rgw/rockylinux-8.4/last_successful_prod
                     ln -s $integration_dir/$release_tag/dev /mnt/bigstorage/releases/cortx/github/rgw/rockylinux-8.4/last_successful
                     ln -s $integration_dir/$release_tag/prod /mnt/bigstorage/releases/cortx/github/rgw/rockylinux-8.4/last_successful_prod
                     popd
