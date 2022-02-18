@@ -38,6 +38,7 @@ pipeline {
     stages {
 
         stage('Checkout cortx-rgw') {
+            when { expression { params.BUILD_LATEST_CORTX_RGW == 'yes' } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 dir ('cortx-rgw') {
