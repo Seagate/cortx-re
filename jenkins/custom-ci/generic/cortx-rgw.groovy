@@ -26,6 +26,12 @@ pipeline {
         string(name: 'CORTX_RGW_BRANCH', defaultValue: 'main', description: 'Branch for cortx-rgw build')
         string(name: 'CUSTOM_CI_BUILD_ID', defaultValue: '0', description: 'Custom CI Build Number')
         // Add os_version parameter in jenkins configuration
+
+        choice(
+            name: 'BUILD_LATEST_CORTX_RGW',
+            choices: ['yes', 'no'],
+            description: 'Build cortx-rgw from latest code or use last-successful build.'
+        )
     }    
 
 
@@ -41,6 +47,7 @@ pipeline {
         }
         
         stage('Install Dependencies') {
+            when { expression { params.BUILD_LATEST_CORTX_RGW == 'yes' } }
             steps {
                 script { build_stage = env.STAGE_NAME }
 
@@ -67,6 +74,7 @@ pipeline {
         }
 
         stage('Build cortx-rgw packages') {
+            when { expression { params.BUILD_LATEST_CORTX_RGW == 'yes' } }
             steps {
                 script { build_stage = env.STAGE_NAME }
 

@@ -78,6 +78,12 @@ pipeline {
                 description: 'Build motr rpm using dtm mode.'
         )
 
+        choice(
+            name: 'BUILD_LATEST_CORTX_RGW',
+            choices: ['yes', 'no'],
+            description: 'Build cortx-rgw from latest code or use last-successful build.'
+        )
+
     }
 
     stages {
@@ -150,7 +156,8 @@ pipeline {
                                                         string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}"),
                                                         string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}"),
                                                         string(name: 'CORTX_UTILS_URL', value: "${CORTX_UTILS_URL}"),
-                                                        string(name: 'THIRD_PARTY_PYTHON_VERSION', value: "${THIRD_PARTY_PYTHON_VERSION}")
+                                                        string(name: 'THIRD_PARTY_PYTHON_VERSION', value: "${THIRD_PARTY_PYTHON_VERSION}"),
+                                                        string(name: 'BUILD_LATEST_CORTX_RGW', value: "${BUILD_LATEST_CORTX_RGW}")
                                                     ]
                             } catch (err) {
                                 build_stage = env.STAGE_NAME

@@ -36,6 +36,11 @@ pipeline {
             choices: ['no', 'yes'],
             description: 'Build motr rpm using dtm mode.'
         )
+        choice(
+            name: 'BUILD_LATEST_CORTX_RGW',
+            choices: ['yes', 'no'],
+            description: 'Build cortx-rgw from latest code or use last-successful build.'
+        )
     }    
 
     environment {
@@ -119,7 +124,8 @@ pipeline {
                                     string(name: 'CORTX_RGW_BRANCH', value: "${CORTX_RGW_BRANCH}"),
                                     string(name: 'MOTR_BRANCH', value: "custom-ci"),
                                     string(name: 'CORTX_RGW_URL', value: "${CORTX_RGW_URL}"),
-                                    string(name: 'CUSTOM_CI_BUILD_ID', value: "${CUSTOM_CI_BUILD_ID}")
+                                    string(name: 'CUSTOM_CI_BUILD_ID', value: "${CUSTOM_CI_BUILD_ID}"),
+                                    string(name: 'BUILD_LATEST_CORTX_RGW', value: "${BUILD_LATEST_CORTX_RGW}")
                                 ]
                     }
                 }
