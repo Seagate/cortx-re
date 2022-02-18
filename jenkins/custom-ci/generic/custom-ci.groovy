@@ -39,6 +39,8 @@ pipeline {
         string(name: 'PRVSNR_URL', defaultValue: 'https://github.com/Seagate/cortx-prvsnr.git', description: 'Provisioner Repository URL', trim: true)
         string(name: 'CORTX_RGW_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX-RGW', trim: true)
         string(name: 'CORTX_RGW_URL', defaultValue: 'https://github.com/Seagate/cortx-rgw', description: 'CORTX-RGW Repository URL', trim: true)
+        string(name: 'CORTX_RGW_INTEGRATION_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX-RGW-INTEGRATION', trim: true)
+        string(name: 'CORTX_RGW_INTEGRATION_URL', defaultValue: 'https://github.com/Seagate/cortx-rgw', description: 'CORTX-RGW-INTEGRATION Repository URL', trim: true)
         string(name: 'CORTX_UTILS_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX Utils', trim: true)
         string(name: 'CORTX_UTILS_URL', defaultValue: 'https://github.com/Seagate/cortx-utils', description: 'CORTX Utils Repository URL', trim: true)
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX RE', trim: true)
@@ -153,6 +155,25 @@ pipeline {
                             } catch (err) {
                                 build_stage = env.STAGE_NAME
                                 error "Failed to Build Motr, Hare and S3Server"
+                            }
+                        }
+                    }
+                }
+
+                stage ("Build CORTX RGW Integration") {
+                    steps {
+                        script { build_stage = env.STAGE_NAME }
+                        script {
+                            try {
+                                def habuild = build job: '/GitHub-custom-ci-builds/generic/cortx-rgw-integration-build', wait: true,
+                                          parameters: [
+                                              string(name: 'CORTX_RGW_INTEGRATION_URL', value: "${CORTX_RGW_INTEGRATION_URL}"),
+                                              string(name: 'CORTX_RGW_INTEGRATION_BRANCH', value: "${CORTX_RGW_INTEGRATION_BRANCH}"),
+                                              string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}")
+                                                ]
+                            } catch (err) {
+                                build_stage = env.STAGE_NAME
+                                error "Failed to Build HA"
                             }
                         }
                     }
