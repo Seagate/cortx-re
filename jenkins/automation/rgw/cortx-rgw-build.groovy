@@ -143,7 +143,7 @@ pipeline {
                         sed -i "/BuildRequires.*%{lustre_devel}/d" cortx-motr.spec
                         sed -i 's/@BUILD_DEPEND_LIBFAB@//g' cortx-motr.spec
                         sed -i 's/@.*@/111/g' cortx-motr.spec
-                        yum-builddep -y cortx-motr.spec
+                        yum-builddep -y --nogpgcheck cortx-motr.spec
                         ./autogen.sh && ./configure --with-user-mode-only
                         export build_number=${BUILD_ID}
                         make rpms
