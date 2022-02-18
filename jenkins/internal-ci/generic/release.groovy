@@ -59,8 +59,8 @@ pipeline {
                         mkdir -p $integration_dir/$release_tag/$env
                         #Temporary change for RGW feature branch
                         pushd /mnt/bigstorage/releases/cortx/components/github/rgw/rockylinux-8.4/dev
-                        RGW_BRANCH_COMPONENTS="provisioner hare cortx-utils"
-                        MAIN_BRANCH_COMPONENTS="motr cortx-rgw cortx-rgw-integration csm-agent cortx-ha"
+                        RGW_BRANCH_COMPONENTS="provisioner hare cortx-utils csm-agent"
+                        MAIN_BRANCH_COMPONENTS="motr cortx-rgw cortx-rgw-integration cortx-ha"
                         for component in $RGW_BRANCH_COMPONENTS
                         do
                             echo -e "Copying RPM's for $component"
@@ -240,6 +240,9 @@ pipeline {
                     test -L last_successful_prod && rm -f last_successful_prod
                     ln -s $integration_dir/$release_tag/dev last_successful
                     ln -s $integration_dir/$release_tag/prod last_successful_prod
+                    #symlink for RGW branch builds
+                    ln -s $integration_dir/$release_tag/dev /mnt/bigstorage/releases/cortx/github/rgw/rockylinux-8.4/last_successful
+                    ln -s $integration_dir/$release_tag/prod /mnt/bigstorage/releases/cortx/github/rgw/rockylinux-8.4/last_successful_prod
                     popd
                 '''
             }
