@@ -119,6 +119,8 @@ pipeline {
             script {
 
                 env.image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' --filter=reference='*/*/cortx*:[0-9]*' | head -3 | tr '\n' ' '", returnStdout: true).trim()
+                println ${env.image}    
+                
                 env.build_stage = "${build_stage}"
                 
                 if ( params.DOCKER_REGISTRY == "ghcr.io" ) {
