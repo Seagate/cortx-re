@@ -97,7 +97,8 @@ pipeline {
                         cp /mnt/rgw/$BUILD_NUMBER/RPMS/*/*.rpm $build_upload_dir
                     else
                         echo "Copy packages form last_successful"
-                        cp /mnt/bigstorage/releases/cortx/github/main/rockylinux-8.4/last_successful/*.rpm $build_upload_dir
+                        cp /mnt/bigstorage/releases/cortx/components/github/main/rockylinux-8.4/dev/cortx-rgw/last_successful/*.rpm
+ $build_upload_dir
                     fi
                 '''
             }
