@@ -184,7 +184,7 @@ pipeline {
                         script { build_stage = env.STAGE_NAME }
                         script {
                             try {
-                                def habuild = build job: '/GitHub-custom-ci-builds/generic/cortx-ha', wait: true,
+                                def habuild = build job: '/GitHub-custom-ci-builds/generic/cortx-ha-custom-build', wait: true,
                                           parameters: [
                                               string(name: 'HA_URL', value: "${HA_URL}"),
                                               string(name: 'HA_BRANCH', value: "${HA_BRANCH}"),
