@@ -11,7 +11,7 @@ pipeline {
         branch = "custom-ci"
         release_dir = "/mnt/bigstorage/releases/cortx"
         release_tag = "custom-build-$CUSTOM_CI_BUILD_ID"
-        build_upload_dir = "$release_dir/github/integration-custom-ci/$os_version/$release_tag/cortx_iso"
+        build_upload_dir = "$release_dir/github/integration-custom-ci/rockylinux-8.4/$release_tag/cortx_iso"
         python_deps = "${THIRD_PARTY_PYTHON_VERSION == 'cortx-2.0' ? "python-packages-2.0.0-latest" : THIRD_PARTY_PYTHON_VERSION == 'custom' ?  "python-packages-2.0.0-custom" : "python-packages-2.0.0-stable"}"
     }
     
@@ -74,7 +74,7 @@ EOF
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: '', script: '''
-                    yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/$os_version/$release_tag/cortx_iso/
+                    yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/rockylinux-8.4/$release_tag/cortx_iso/
                     yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
 
                     yum clean all && rm -rf /var/cache/yum
