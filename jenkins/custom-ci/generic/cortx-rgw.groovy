@@ -55,6 +55,7 @@ pipeline {
                 sh label: 'Build', script: '''                    
                 #sed -i -e \'s/Library/Production\\/Rocky_8_Content_View/g\' -e  \'/http.*EPEL/s/Rocky_8\\/EPEL/EPEL-8\\/EPEL-8/g\' /etc/yum.repos.d/R8.4.repo
                 rm -f /etc/yum.repos.d/cortx-storage.colo.seagate.com* /etc/yum.repos.d/root_rpmbuild_RPMS_x86_64.repo
+                yum install bzip2 -y
 
                 pushd cortx-rgw
                     ./install-deps.sh
