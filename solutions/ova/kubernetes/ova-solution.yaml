@@ -17,10 +17,10 @@ solution:
     zookeeper: ghcr.io/seagate/zookeeper:3.7.0-debian-10-r182
     rancher: ghcr.io/seagate/local-path-provisioner:v0.0.20
     busybox: ghcr.io/seagate/busybox:latest
-    cortxcontrolprov: ghcr.io/seagate/cortx-all:2.0.0-latest-custom-ci
-    cortxcontrol: ghcr.io/seagate/cortx-all:2.0.0-latest-custom-ci
-    cortxdataprov: ghcr.io/seagate/cortx-all:2.0.0-latest-custom-ci
-    cortxdata: ghcr.io/seagate/cortx-all:2.0.0-latest-custom-ci
+    cortxcontrolprov: ghcr.io/seagate/cortx-all:2.0.0-latest
+    cortxcontrol: ghcr.io/seagate/cortx-all:2.0.0-latest
+    cortxdataprov: ghcr.io/seagate/cortx-all:2.0.0-latest
+    cortxdata: ghcr.io/seagate/cortx-all:2.0.0-latest
   common:
     storage_provisioner_path: /mnt/fs-local-volume
     container_path:
