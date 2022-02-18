@@ -91,7 +91,12 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Copy RPMS', script: '''
                     mkdir -p $build_upload_dir
-                    cp /mnt/rgw/$BUILD_NUMBER/RPMS/*/*.rpm $build_upload_dir
+                    if [ "$BUILD_LATEST_CORTX_RGW" == "yes" ]; then
+                        cp /mnt/rgw/$BUILD_NUMBER/RPMS/*/*.rpm $build_upload_dir
+                    else
+                        echo "Copy packages form last_successful"
+                        cp releases/cortx/github/main/rockylinux-8.4/last_successful/ $build_upload_dir
+                    fi
                 '''
             }
         }
