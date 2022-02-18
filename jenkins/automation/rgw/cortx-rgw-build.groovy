@@ -96,6 +96,7 @@ pipeline {
                 yum install createrepo systemd-devel libuuid libuuid-devel libaio-devel openssl openssl-devel perl-File-Slurp gcc cmake3 cmake rpm-build rpmdevtools autoconf automake libtool gcc-c++ -y 
                 rpmdev-setuptree
                 mkdir -p /root/rpmbuild/RPMS/x86_64/
+                yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rockylinux/rockylinux-8.4-2.0.0-latest/
                 '''
             }
         }
