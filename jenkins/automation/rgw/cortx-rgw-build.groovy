@@ -95,6 +95,7 @@ pipeline {
                 sh label: 'prepare', script: '''
                 yum install createrepo systemd-devel libuuid libuuid-devel libaio-devel openssl openssl-devel perl-File-Slurp gcc cmake3 cmake rpm-build rpmdevtools autoconf automake libtool gcc-c++ -y 
                 rpmdev-setuptree
+                mkdir -p /root/rpmbuild/RPMS/x86_64/
                 '''
             }
         }
