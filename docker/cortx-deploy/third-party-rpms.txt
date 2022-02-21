@@ -1,0 +1,13 @@
+crontabs  #cortx-py-utils
+python3 #cortx-py-utils
+python36-dbus #cortx-py-utils
+python36-m2crypto #cortx-py-utils
+python36-psutil #cortx-py-utils
+sshpass #cortx-py-utils
+sudo #cortx-py-utils
+isa #cortx-motr
+libfabric #cortx-motr
+libfabric-devel #cortx-motr
+file #cortx-motr
+less #cortx-motr
+puppet-agent #cortx-hare

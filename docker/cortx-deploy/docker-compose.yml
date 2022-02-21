@@ -24,11 +24,12 @@ services:
     image: cortx-all:$TAG
     build:
       context: ./
-      dockerfile: ./cortx-all/Dockerfile
+      dockerfile: ./Dockerfile
       args:
         OS_RELEASE: 7.9.2009
         OS_IMAGE: centos
         OS_TYPE: centos
+        CORTX_IMAGE: cortx-all
         ENVIRONMENT: internal-ci
         CREATED_DATE: $CREATED_DATE
         BUILD_URL: http://cortx-storage.colo.seagate.com/releases/cortx/github/main/centos-7.9.2009/last_successful_prod/
@@ -36,11 +37,12 @@ services:
     image: cortx-control:$TAG
     build:
       context: ./
-      dockerfile: ./cortx-control/Dockerfile
+      dockerfile: ./Dockerfile
       args:
        OS_RELEASE: 7.9.2009
        OS_IMAGE: centos
        OS_TYPE: centos
+       CORTX_IMAGE: cortx-control
        ENVIRONMENT: internal-ci
        CREATED_DATE: $CREATED_DATE
        BUILD_URL: http://cortx-storage.colo.seagate.com/releases/cortx/github/main/centos-7.9.2009/last_successful_prod/
@@ -48,11 +50,12 @@ services:
     image: cortx-data:$TAG
     build:
       context: ./
-      dockerfile: ./cortx-data/Dockerfile
+      dockerfile: ./Dockerfile
       args:
         OS_RELEASE: 7.9.2009
         OS_IMAGE: centos
         OS_TYPE: centos
+        CORTX_IMAGE: cortx-data
         ENVIRONMENT: internal-ci
         CREATED_DATE: $CREATED_DATE
         BUILD_URL: http://cortx-storage.colo.seagate.com/releases/cortx/github/main/centos-7.9.2009/last_successful_prod/
@@ -60,11 +63,12 @@ services:
     image: cortx-ha:$TAG
     build:
       context: ./
-      dockerfile: ./cortx-ha/Dockerfile
+      dockerfile: ./Dockerfile
       args:
         OS_RELEASE: 7.9.2009
         OS_IMAGE: centos
         OS_TYPE: centos
+        CORTX_IMAGE: cortx-ha
         ENVIRONMENT: internal-ci
         CREATED_DATE: $CREATED_DATE
         BUILD_URL: http://cortx-storage.colo.seagate.com/releases/cortx/github/main/centos-7.9.2009/last_successful_prod/

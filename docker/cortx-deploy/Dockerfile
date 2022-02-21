@@ -25,6 +25,7 @@ FROM ${OS_IMAGE}:${OS_RELEASE}
 
 ARG OS_RELEASE
 ARG OS_TYPE
+ARG CORTX_IMAGE
 ARG ENVIRONMENT
 ARG GIT_HASH
 ARG BUILD_URL
@@ -32,7 +33,7 @@ ARG CREATED_DATE
 ARG VERSION
 
 LABEL maintainer="cortx.opensource@seagate.com" \
-      org.opencontainers.image.title="CORTX HA" \
+      org.opencontainers.image.title="CORTX ALL" \
       org.opencontainers.image.description="CORTX is 100% Open Source, Distributed object storage system designed for great efficiency, Massive capacity, and High HDD-utilization" \
       org.opencontainers.image.revision=$GIT_HASH \
       org.opencontainers.image.created=$CREATED_DATE
@@ -49,18 +50,18 @@ COPY ./${ENVIRONMENT}/${OS_TYPE}-${OS_RELEASE}.repo /etc/yum.repos.d/
 RUN if [ "$ENVIRONMENT" = "opensource-ci" ] ; then yum install epel-release -y ; fi && yum clean all \
 && rm -rf /var/cache/yum
 
-RUN yum-config-manager --add-repo ${BUILD_URL}/cortx_iso/ \
-    && yum-config-manager --add-repo ${BUILD_URL}/3rd_party \
-    && curl ${BUILD_URL}/RELEASE.INFO -o RELEASE.INFO 
+RUN yum-config-manager --add-repo "${BUILD_URL}/cortx_iso/" \
+    && yum-config-manager --add-repo "${BUILD_URL}/3rd_party" \
+    && curl "${BUILD_URL}/RELEASE.INFO" -o RELEASE.INFO 
 
-COPY ./cortx-ha/*.txt ./generate-release-info.sh /opt/seagate/cortx/
+COPY ./*.txt ./${CORTX_IMAGE}/*.txt ./generate-release-info.sh /opt/seagate/cortx/
 
 RUN yum install --nogpgcheck -y python3-pip \
     && pip3 install yq \
     && pip3 install  --no-cache-dir --trusted-host "$(echo $BUILD_URL | awk -F '/' '{print $3}')" -i $BUILD_URL/python_deps -r /opt/seagate/cortx/python_requirements.txt \
    && yum clean all && rm -rf /var/cache/yum
 
-RUN yum install --nogpgcheck -y  $(sed 's/#.*//g' /opt/seagate/cortx/third-party-rpms.txt) \
+RUN yum install --nogpgcheck -y  $(while read component; do grep "$component" < third-party-rpms.txt; done <cortx-componenet-rpms.txt | sed 's/#.*//g') \
     && yum clean all && rm -rf /var/cache/yum
     
 RUN yum install --nogpgcheck -y  $(sed 's/#.*//g' /opt/seagate/cortx/cortx-componenet-rpms.txt) \
