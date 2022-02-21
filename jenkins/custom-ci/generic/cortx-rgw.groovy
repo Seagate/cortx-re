@@ -59,9 +59,9 @@ pipeline {
                 pushd cortx-rgw
                     ./install-deps.sh
                     ./make-dist
-                    mkdir -p /mnt/rgw/$BUILD_NUMBER/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
-                    tar --strip-components=1 -C /mnt/rgw/$BUILD_NUMBER/SPECS/ --no-anchored -xvjf ceph-*tar.bz2 "ceph.spec"
-                    mv ceph*tar.bz2 /mnt/rgw/$BUILD_NUMBER/SOURCES/
+                    mkdir -p $release_dir/$component/$branch/rpmbuild/$BUILD_NUMBER/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
+                    tar --strip-components=1 -C $release_dir/$component/$branch/rpmbuild/$BUILD_NUMBER/SPECS/ --no-anchored -xvjf ceph-*tar.bz2 "ceph.spec"
+                    mv ceph*tar.bz2 $release_dir/$component/$branch/rpmbuild/$BUILD_NUMBER/SOURCES/
                 popd
                 '''
 
@@ -82,8 +82,8 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
 
                 sh label: 'Build', script: '''
-                cd /mnt/rgw/$BUILD_NUMBER
-                rpmbuild --clean --rmsource --define "_unpackaged_files_terminate_build 0" --define "debug_package %{nil}" --without cmake_verbose_logging --without jaeger --without lttng --without seastar --without kafka_endpoint --without zbd --without cephfs_java --without cephfs_shell --without ocf --without selinux --without ceph_test_package --without make_check --define "_binary_payload w2T16.xzdio" --define "_topdir `pwd`" -ba /mnt/rgw/$BUILD_NUMBER/SPECS/ceph.spec
+                cd $release_dir/$component/$branch/rpmbuild/$BUILD_NUMBER
+                rpmbuild --clean --rmsource --define "_unpackaged_files_terminate_build 0" --define "debug_package %{nil}" --without cmake_verbose_logging --without jaeger --without lttng --without seastar --without kafka_endpoint --without zbd --without cephfs_java --without cephfs_shell --without ocf --without selinux --without ceph_test_package --without make_check --define "_binary_payload w2T16.xzdio" --define "_topdir `pwd`" -ba ./SPECS/ceph.spec
                 '''
             }
         }
@@ -94,7 +94,7 @@ pipeline {
                 sh label: 'Copy RPMS', script: '''
                     mkdir -p $build_upload_dir
                     if [ "$BUILD_LATEST_CORTX_RGW" == "yes" ]; then
-                        cp /mnt/rgw/$BUILD_NUMBER/RPMS/*/*.rpm $build_upload_dir
+                        cp $release_dir/$component/$branch/rpmbuild/$BUILD_NUMBER/RPMS/*/*.rpm $build_upload_dir
                     else
                         echo "Copy packages form last_successful"
                         cp /mnt/bigstorage/releases/cortx/components/github/main/rockylinux-8.4/dev/cortx-rgw/last_successful/*.rpm $build_upload_dir
