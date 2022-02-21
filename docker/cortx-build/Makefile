@@ -83,54 +83,24 @@ _cortx-motr_prereq:
 
 	pushd cortx-workspace/cortx-motr && \
 		export build_number=${BUILD_ID} && \
-		kernel_src=$$(ls -1rd /lib/modules/*/build | head -n1) && \
 		cp cortx-motr.spec.in cortx-motr.spec && \
+		sed -i "/BuildRequires.*kernel*/d" cortx-motr.spec && \
+		sed -i "/BuildRequires.*%{lustre_devel}/d" cortx-motr.spec && \
+		sed -i 's/@BUILD_DEPEND_LIBFAB@//g' cortx-motr.spec && \
 		sed -i 's/@.*@/111/g' cortx-motr.spec && \
-		yum-builddep -y cortx-motr.spec && \
+        yum-builddep -y --nogpgcheck cortx-motr.spec && \
 	popd || (echo "ERROR: cortx-motr source code is not available in cortx-workspace. Exiting..."; exit 1)
 
 _cortx-motr_build:
 	
 	pushd cortx-workspace/cortx-motr && \
-		echo "***************  Building cortx-motr RPMS from $$(git rev-parse --short HEAD) *********************" && \
-		./autogen.sh || \
+		rm -rf /root/rpmbuild/RPMS/x86_64/*.rpm && \
 		./autogen.sh && \
 		./configure --with-user-mode-only && \
 		export build_number=${BUILD_ID} && \
 		make rpms && \
 		rm -rf ${RPM_DIR}/cortx-motr*.rpm && \
 		mv /root/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
-		createrepo -v ${RPM_DIR} && \
-	popd
-	
-
-#***********************************************************************************
-#   Component:  S3
-#	Steps:
-#		_s3_prereq - Install Prerequisites to Generate S3 RPM	
-#		_s3_build  - Script to Generate S3 RPM
-#
-#***********************************************************************************
-_s3_prereq:
-	@echo "***************  Installing S3 Prereqsites *********************"
-
-	pushd cortx-workspace/cortx-s3server && \
-	  yum localinstall -y ${RPM_DIR}/cortx-motr-[0-9]*.rpm ${RPM_DIR}/cortx-motr-devel-[0-9]*.rpm && \
-		yum clean all;rm -rf /var/cache/yum && \
-	popd || (echo "ERROR: cortx-s3server source code is not available in cortx-workspace. Exiting..."; exit 1)
-
-_s3_build:
-	@echo "***************  Building S3 RPMS *********************"
-	
-	pushd cortx-workspace/cortx-s3server && \
-		yum clean all;rm -rf /var/cache/yum && \
-		export build_number=${BUILD_ID} && \
-		./rpms/s3/buildrpm.sh -S ${RELEASE_VERSION} -G $$(git rev-parse --short HEAD) && \
-		./rpms/s3iamcli/buildrpm.sh -S ${RELEASE_VERSION} -G $$(git rev-parse --short HEAD) && \
-		./rpms/s3test/buildrpm.sh -S ${RELEASE_VERSION} -G $$(git rev-parse --short HEAD) && \
-		rm -rf {RPM_DIR}/cortx-s3*.rpm && \
-		mv /root/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
-       	mv /root/rpmbuild/RPMS/noarch/*.rpm ${RPM_DIR} && \
 		createrepo -v ${RPM_DIR} && \
 	popd
 
