@@ -152,7 +152,7 @@ pipeline {
                         string(name: 'BUILD_TO', value: "ghcr.io/seagate/cortx-all:${VERSION}-${last_success_build_number}-${GITHUB_TAG_SUFFIX}"),
                     ]
                     // env.changeset_log_url = changelog.absoluteUrl
-                    copyArtifacts filter: 'CHANGESET.txt', fingerprintArtifacts: true, flatten: true, optional: true, projectName: '/Release_Engineering/re-workspace/ap_space/changelog-generation', selector: lastCompleted(), target: ''
+                    copyArtifacts filter: 'CHANGESET.txt', fingerprintArtifacts: true, flatten: true, optional: true, projectName: '/Release_Engineering/Cortx-Automation/changelog-generation', selector: lastCompleted(), target: ''
                 }
             }
         }
