@@ -58,8 +58,9 @@ COPY ./*.txt ./${CORTX_IMAGE}/*.txt ./generate-release-info.sh /opt/seagate/cort
 
 RUN yum install --nogpgcheck -y python3-pip \
     && pip3 install yq \
-    && pip3 install  --no-cache-dir --trusted-host $(echo $BUILD_URL | awk -F '/' '{print $3}') -i $BUILD_URL/python_deps -r /opt/seagate/cortx/python_requirements.txt \
-   && yum clean all && rm -rf /var/cache/yum
+    && while read component; do grep "$component" < /opt/seagate/cortx/python_requirements.txt; done </opt/seagate/cortx/cortx-component-rpms.txt | sed 's/#.*//g' > /opt/seagate/cortx/requirements.txt
+    && pip3 install  --no-cache-dir --trusted-host $(echo $BUILD_URL | awk -F '/' '{print $3}') -i $BUILD_URL/python_deps -r /opt/seagate/cortx/requirements.txt \
+    && yum clean all && rm -rf /var/cache/yum
 
 RUN yum install --nogpgcheck -y  $(while read -r component; do grep "$component" < /opt/seagate/cortx/third-party-rpms.txt; done </opt/seagate/cortx/cortx-component-rpms.txt | sed 's/#.*//g') \
     && yum clean all && rm -rf /var/cache/yum
