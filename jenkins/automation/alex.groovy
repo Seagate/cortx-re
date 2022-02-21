@@ -1,15 +1,14 @@
 pipeline {
     agent {
           node {
-             label "docker-${os_version}-node"
-             // label "cortx-test-ssc-vm-4103"
+             label "${j_agent}"
           }
       }
       parameters {
           string(
               defaultValue: 'centos-7.9.2009',
-              name: 'os_version',
-              description: 'OS version of the build',
+              name: 'j_agent',
+              description: 'Jenkins Agent',
               trim: true
           )
       string(
@@ -33,10 +32,14 @@ pipeline {
       stage('Install Dependencies') {
           steps {
               sh label: 'Installed Dependencies', script: '''
-                  yum install epel-release
-                  yum install nodejs
-                  npm install alex --global
+                  yum install epel-release -y
+                  curl -sL https://rpm.nodesource.com/setup_12.x | sudo bash -
+                  yum install nodejs -y
+                  npm install alex --global -y
+                  virtualenv alex --python=python2.7
+                  source ./alex/bin/activate
                   pip install GitPython==2.1.15
+                  node --version
               '''
           }
       }
@@ -96,6 +99,7 @@ pipeline {
                 sh "ls *.alex > listAlexFiles"
                 def files = readFile( "listAlexFiles" ).split( "\\r?\\n" );
                 files.each { item ->
+                   sh ''' cat ''' + item
                    sh ''' python alex.py -f ''' + item 
                 }
               }
