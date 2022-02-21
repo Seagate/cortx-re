@@ -41,7 +41,7 @@ declare -A COMPONENT_LIST=(
 [cortx-motr]="https://github.com/Seagate/cortx-motr.git"
 [cortx-hare]="https://github.com/Seagate/cortx-hare.git"
 [cortx-ha]="https://github.com/Seagate/cortx-ha.git"
-[cortx-prvsnr]="https://github.com/Seagate/cortx-prvsnr.git"
+[cortx-provisioner]="https://github.com/Seagate/cortx-prvsnr.git"
 [cortx-sspl]="https://github.com/Seagate/cortx-sspl.git"
 [cortx-csm_agent]="https://github.com/Seagate/cortx-manager.git"
 [cortx-csm_web]="https://github.com/Seagate/cortx-management-portal.git"
@@ -58,8 +58,34 @@ export TZ=$time_zone;ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ 
 
 pushd $clone_dir/clone
 
-wget -q $BUILD_LOCATION/$START_BUILD/dev/RELEASE.INFO -O start_build_manifest.txt
-wget -q $BUILD_LOCATION/$TARGET_BUILD/dev/RELEASE.INFO -O target_build_manifest.txt
+if [ -z $BUILD_LOCATION ]; then
+	CHECK_INPUT_VARIABLE_STATUS=$(echo "$START_BUILD"|grep RELEASE.INFO|wc -l)
+	if [ $CHECK_INPUT_VARIABLE_STATUS == "0" ]; then
+		docker pull "$START_BUILD"
+		docker run --rm "$START_BUILD" cat /RELEASE.INFO > start_build_manifest.txt
+		docker pull "$TARGET_BUILD"
+		docker run --rm "$TARGET_BUILD" cat /RELEASE.INFO > target_build_manifest.txt
+		START_BUILD=$(grep "BUILD:" start_build_manifest.txt| awk '{print $2}'|tr -d '"')
+		TARGET_BUILD=$(grep "BUILD:" target_build_manifest.txt| awk '{print $2}'|tr -d '"')
+	else
+
+		wget -q $START_BUILD -O start_build_manifest.txt
+		if [ $? -ne 0 ]; then
+		    echo "ERROR: Downloading RELEASE.INFO file got failed for $START_BUILD"
+		    exit 1
+		fi
+		START_BUILD=$(echo "$START_BUILD"|awk -F "/" '{print $9}')
+		wget -q $TARGET_BUILD -O target_build_manifest.txt
+		if [ $? -ne 0 ]; then
+		    echo "ERROR: Downloading RELEASE.INFO file got failed for $TARGET_BUILD"
+		    exit 1
+		fi
+		TARGET_BUILD=$(echo "$TARGET_BUILD"|awk -F "/" '{print $9}')
+	fi
+else
+	wget -q $BUILD_LOCATION/$START_BUILD/dev/RELEASE.INFO -O start_build_manifest.txt
+	wget -q $BUILD_LOCATION/$TARGET_BUILD/dev/RELEASE.INFO -O target_build_manifest.txt
+fi
 
 for component in "${!COMPONENT_LIST[@]}"
 do
@@ -79,12 +105,12 @@ do
                 elif [ "$component" == "cortx-csm_agent" ] || [ "$component" == "cortx-csm_web" ]; then
                         start_hash=$(grep "$component-" start_build_manifest.txt | head -1 | awk -F['_'] '{print $3}' |  cut -d. -f1); echo "$start_hash"
                         target_hash=$(grep "$component-" target_build_manifest.txt | head -1 | awk -F['_'] '{print $3}' |  cut -d. -f1); echo "$target_hash"
-                elif [ "$component" == "cortx-prvsnr" ]; then
+                elif [ "$component" == "cortx-provisioner" ]; then
                         start_hash=$(grep "$component-" start_build_manifest.txt | tail -1 | awk -F['_'] '{print $2}' | sed 's/git//g' | cut -d. -f1); echo "$start_hash"
                         target_hash=$(grep "$component-" target_build_manifest.txt | tail -1 | awk -F['_'] '{print $2}' | sed 's/git//g' | cut -d. -f1); echo "$target_hash"
                 else
-                        start_hash=$(grep "$component-" start_build_manifest.txt | head -1 | awk -F['_'] '{print $2}' | sed 's/git//g'); echo "$start_hash"
-                        target_hash=$(grep "$component-" target_build_manifest.txt | head -1 | awk -F['_'] '{print $2}' | sed 's/git//g'); echo "$target_hash"
+                        start_hash=$(grep "$component-" start_build_manifest.txt | head -1 | awk -F['_'] '{print $2}' | sed 's/git//g'|cut -d. -f1); echo "$start_hash"
+                        target_hash=$(grep "$component-" target_build_manifest.txt | head -1 | awk -F['_'] '{print $2}' | sed 's/git//g'|cut -d. -f1); echo "$target_hash"
                 fi
 
                  pushd $dir
