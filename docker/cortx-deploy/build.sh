@@ -66,7 +66,7 @@ sleep 5
 
 function get_git_hash {
         sed -i '/KERNEL/d' RELEASE.INFO
-        COMPONENTS="$(tr '\n' ' ' < ./$SERVICE/cortx-componenet-rpms.txt)"
+        COMPONENTS="$(tr '\n' ' ' < ./$SERVICE/cortx-component-rpms.txt)"
         for component in $COMPONENTS
         do
                 echo $component:"$(awk -F['_'] '/'$component'-'$VERSION'/ { print $2 }' RELEASE.INFO | cut -d. -f1 | sed 's/git//g')",
