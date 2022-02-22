@@ -35,6 +35,9 @@ build: io-path control-path cortx-prereq release_build
 ## cortx-all-image: generate packages required for cortx-all image including third-party-deps at "/var/artifacts/0"
 cortx-all-image: cortx-motr cortx-s3server cortx-hare cortx-prvsnr cortx-manager release_build
 
+## cortx-all-image: generate packages required for cortx-all image including third-party-deps at "/var/artifacts/0"
+cortx-all-rockylinux-image: cortx-motr cortx-rgw cortx-hare cortx-prvsnr cortx-manager release_build
+
 ## control-path: generate control-path packages. cortx-provisioner, cortx-monitor, cortx-manager, cortx-management-portal and cortx-ha.
 control-path: cortx-prvsnr cortx-monitor cortx-manager cortx-management-portal cortx-ha
 
@@ -49,6 +52,9 @@ cortx-s3server: cortx-motr _s3_prereq _s3_build
 
 ## cortx-hare: generate cortx-hare packages.
 cortx-hare: cortx-motr _cortx-py-utils_build _cortx-py-utils_install _cortx-hare_prereq _cortx-hare_build
+
+## cortx-rgw: generate cortx-rgw packages.
+cortx-rgw: cortx-motr _cortx-rgw_prereq _cortx-rgw_build
 
 ## cortx-ha: generate cortx-ha packages.
 cortx-ha: _cortx-py-utils_build _cortx-py-utils_install _ha_prereq _ha_build
@@ -130,6 +136,35 @@ _cortx-hare_build:
 		createrepo -v ${RPM_DIR} && \
 	popd
 
+#***********************************************************************************
+#   Component:  cortx-rgw
+#	Steps:
+#		_cortx-rgw_prereq - Install Prerequisites to Generate cortx-rgw RPM	
+#		_cortx-rgw_build  - Script to Generate cortx-rgw RPM
+#
+#***********************************************************************************
+_cortx-rgw_prereq:
+	@echo "***************  Installing cortx-rgw Prereqsites *********************"
+
+	pushd cortx-workspace/cortx-rgw && \
+		./install-deps.sh && \
+		./make-dist && \
+		mkdir -p /root/rpmbuild/RPMS/x86_64/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS} && \
+		mv ceph*.tar.bz2 /root/rpmbuild/RPMS/x86_64/SOURCES/ && \
+		tar --strip-components=1 -C /root/rpmbuild/RPMS/x86_64/SPECS/ --no-anchored -xvjf /root/rpmbuild/RPMS/x86_64/SOURCES/ceph*.tar.bz2 "ceph.spec" && \
+		yum localinstall -y ${RPM_DIR}/cortx-motr-[0-9]*.rpm ${RPM_DIR}/cortx-motr-devel-[0-9]*.rpm && \
+	popd || (echo "ERROR: cortx-rgw source code is not available in cortx-workspace. Exiting..."; exit 1)
+
+_cortx-rgw_build:
+	@echo "***************  Building cortx-rgw RPMS *********************"
+	
+	pushd /root/rpmbuild/RPMS/x86_64 && \
+		echo "Executing build script" && \
+		export build_number=${BUILD_ID} && \
+		rpmbuild --clean --rmsource --define "_unpackaged_files_terminate_build 0" --define "debug_package %{nil}" --without cmake_verbose_logging --without jaeger --without lttng --without seastar --without kafka_endpoint --without zbd --without cephfs_java --without cephfs_shell --without ocf --without selinux --without ceph_test_package --without make_check --define "_binary_payload w2T16.xzdio" --define "_topdir `pwd`" -ba ./SPECS/ceph.spec && \
+		mv /root/rpmbuild/RPMS/x86_64/RPMS/*/*.rpm ${RPM_DIR} && \
+		createrepo -v ${RPM_DIR} && \
+	popd
 
 #***********************************************************************************
 #   Component:  cortx-posix
@@ -254,7 +289,7 @@ _prvsnr_prereq:
 	@echo "***************  Installing cortx-prvsnr Prereqsites *********************"
 
 	pushd cortx-workspace/cortx-prvsnr/ && \
-		yum install -y python && \
+		if [[ "$(grep -r Rocky /etc/redhat-release|wc -l)" == "1" ]]; then yum install -y python3 ;else yum install -y python ; fi && \
 	popd || (echo "ERROR: cortx-prvsnr codebase is not available in cortx-workspace.Exiting..."; exit 1)
 
 _prvsnr_build:
