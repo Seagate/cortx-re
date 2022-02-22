@@ -1,8 +1,3 @@
-def getBuild(job_url) {
-    buildID = sh(script: "curl -XGET '${job_url}/api/json' | jq -r '.lastSuccessfulBuild.number'", returnStdout: true).trim()
-    return "$buildID"   
-}
-
 pipeline {
     agent {
         node {
@@ -249,4 +244,9 @@ pipeline {
             }
         }
     }
+}
+
+def getBuild(job_url) {
+    buildID = sh(script: "curl -XGET '${job_url}/api/json' | jq -r '.lastSuccessfulBuild.number'", returnStdout: true).trim()
+    return "$buildID"   
 }
