@@ -85,6 +85,9 @@ function update_solution_config(){
         yq e -i '.solution.common.s3.max_start_timeout = 240' solution.yaml
         yq e -i '.solution.common.motr.num_client_inst = 0' solution.yaml
         yq e -i '.solution.common.motr.start_port_num = 29000' solution.yaml
+        yq e -i '.solution.common.hax.protocol = "https"' solution.yaml
+        yq e -i '.solution.common.hax.service_name = "cortx-hax-svc"' solution.yaml
+        yq e -i '.solution.common.hax.port_num = 22003' solution.yaml
         yq e -i '.solution.common.storage_sets.name = "storage-set-1"' solution.yaml
 
         sns=$SNS_CONFIG yq e -i '.solution.common.storage_sets.durability.sns = env(sns)' solution.yaml
@@ -366,13 +369,18 @@ echo "---------------------------------------[ hctl status ]--------------------
 }
 
 function io_exec(){
-    pushd /var/tmp/
-        chmod +x *.sh
-        # "Setting up S3 client..."
-        ./s3-client-setup.sh
-        # "Running IO test..."
-        ./io-testing.sh
-    popd
+    CURRENT_OS=$(cut -d ' ' -f 1,4 < /etc/redhat-release)
+    if [[ "$CURRENT_OS" == "Rocky 8.4" ]]; then
+        echo "S3 IO Testing not enabled for Rocky Linux yet. Skipping"
+    else
+        pushd /var/tmp/
+            chmod +x *.sh
+            # "Setting up S3 client..."
+            ./s3-client-setup.sh
+            # "Running IO test..."
+            ./io-testing.sh
+        popd
+    fi
 }
 
 function logs_generation(){
@@ -384,7 +392,7 @@ function logs_generation(){
 
 function cleanup(){
     echo -e "\n-----------[ Clean up untagged/unused images and stopped containers... ]--------------------"
-    docker system prune -a -f
+    docker system prune -a -f --filter "label!=vendor=Project Calico"
 }
 
 case $ACTION in
