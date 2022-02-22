@@ -167,6 +167,23 @@ _cortx-rgw_build:
 	popd
 
 #***********************************************************************************
+#   Component:  cortx-rgw-integration
+#       Steps:
+#               _cortx-rgw-integration_prereq - Install Prerequisites to Generate cortx-rgw-integration RPM
+#               _cortx-rgw-integration_build  - Script to Generate cortx-rgw-integration RPM
+#
+#***********************************************************************************
+
+_cortx-rgw-integration_build:
+	@echo "***************  Building cortx-rgw-integration RPMS *********************"
+		pushd cortx-workspace/cortx-rgw-integration/ && \
+			rm -rf dist/cortx-rgw-integration*.rpm && \
+			if [ -f ./jenkins/build.sh ]; then bash ./jenkins/build.sh -v ${RELEASE_VERSION} -b ${BUILD_ID} && mv ./dist/cortx-rgw-integration*.rpm ${RPM_DIR}; fi && \
+			mv dist/*.rpm ${RPM_DIR} && \
+			createrepo -v ${RPM_DIR} && \
+		popd
+
+#***********************************************************************************
 #   Component:  cortx-posix
 #	Steps:
 #		_cortx-posix_prereq - Install Prerequisites to Generate cortx-posix RPM	
@@ -297,7 +314,7 @@ _prvsnr_build:
 	
 	pushd cortx-workspace/cortx-prvsnr/ && \
 	    rm -rf dist/*.rpm ${RPM_DIR}/cortx-pr*.rpm ${RPM_DIR}/python36-cortx-prvsnr*.rpm ${RPM_DIR}/python36-cortx-setup*.rpm && \
-        if [ -f ./jenkins/build.sh ]; then bash ./jenkins/build.sh -v ${RELEASE_VERSION} -b ${BUILD_ID} && mv ./dist/cortx-provisioner-*noarch.rpm ${RPM_DIR}; fi && \
+        if [ -f ./jenkins/build.sh ]; then bash ./jenkins/build.sh -v ${RELEASE_VERSION} -b ${BUILD_ID} && mv ./dist/cortx-provisioner*.rpm ${RPM_DIR}; fi && \
 		mv /root/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
 		createrepo -v ${RPM_DIR} && \
 	popd
