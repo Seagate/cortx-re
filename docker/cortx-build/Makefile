@@ -344,8 +344,7 @@ _prvsnr_build:
 	pushd cortx-workspace/cortx-prvsnr/ && \
 		rm -rf dist/*.rpm ${RPM_DIR}/cortx-pr*.rpm ${RPM_DIR}/python36-cortx-prvsnr*.rpm ${RPM_DIR}/python36-cortx-setup*.rpm && \
 		if [[ "$$(grep -r Rocky /etc/redhat-release|wc -l)" ==  "1" ]]; then \
-			if [ -f ./jenkins/build.sh ]; then 
-				bash ./jenkins/build.sh -v ${RELEASE_VERSION} -b ${BUILD_ID} && mv ./dist/cortx-provisioner*.rpm ${RPM_DIR} ; fi ; else sh ./devops/rpms/buildrpm.sh -g "$$(git rev-parse --short HEAD)" -e ${RELEASE_VERSION} -b "${BUILD_ID}" && \
+			if [ -f ./jenkins/build.sh ]; then bash ./jenkins/build.sh -v ${RELEASE_VERSION} -b ${BUILD_ID} && mv ./dist/cortx-provisioner*.rpm ${RPM_DIR} ; fi ; else sh ./devops/rpms/buildrpm.sh -g "$$(git rev-parse --short HEAD)" -e ${RELEASE_VERSION} -b "${BUILD_ID}" && \
 			sh ./cli/buildrpm.sh -g "$$(git rev-parse --short HEAD)" -e ${RELEASE_VERSION} -b "${BUILD_ID}" && \
 			bash ./devops/rpms/api/build_python_api.sh -vv --out-dir /root/rpmbuild/RPMS/x86_64/ --pkg-ver ${BUILD_ID}_git$$(git rev-parse --short HEAD) && \
 			if [ -f ./devops/rpms/lr-cli/build_python_cortx_setup.sh ]; then bash ./devops/rpms/lr-cli/build_python_cortx_setup.sh -vv --out-dir /root/rpmbuild/RPMS/x86_64/ --pkg-ver ${BUILD_ID}_git$$(git rev-parse --short HEAD); fi && \
