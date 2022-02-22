@@ -21,6 +21,5 @@ hiredis-0.12.1 #cortx-s3srever
 sshpass
 sudo
 file #cortx-motr
-less #cortx-motr
 symas-openldap-clients #cortx-s3server
 which #cortx-motr
