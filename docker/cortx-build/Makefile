@@ -53,9 +53,6 @@ cortx-s3server: cortx-motr _s3_prereq _s3_build
 ## cortx-hare: generate cortx-hare packages.
 cortx-hare: cortx-motr _cortx-py-utils_build _cortx-py-utils_install _cortx-hare_prereq _cortx-hare_build
 
-## cortx-rgw: generate cortx-rgw packages.
-cortx-rgw: cortx-motr _cortx-rgw_prereq _cortx-rgw_build
-
 ## cortx-ha: generate cortx-ha packages.
 cortx-ha: _cortx-py-utils_build _cortx-py-utils_install _ha_prereq _ha_build
 
@@ -93,20 +90,52 @@ _cortx-motr_prereq:
 		sed -i "/BuildRequires.*kernel*/d" cortx-motr.spec && \
 		sed -i "/BuildRequires.*%{lustre_devel}/d" cortx-motr.spec && \
 		sed -i 's/@BUILD_DEPEND_LIBFAB@//g' cortx-motr.spec && \
-		sed -i 's/@.*@/111/g' cortx-motr.spec && \
-        yum-builddep -y --nogpgcheck cortx-motr.spec && \
+		sed -i 's/@.*@/111/g' cortx-motr.spec && \		
+		yum-builddep -y --nogpgcheck cortx-motr.spec && \
 	popd || (echo "ERROR: cortx-motr source code is not available in cortx-workspace. Exiting..."; exit 1)
 
 _cortx-motr_build:
 	
 	pushd cortx-workspace/cortx-motr && \
-		rm -rf /root/rpmbuild/RPMS/x86_64/*.rpm && \
+		echo "***************  Building cortx-motr RPMS from $$(git rev-parse --short HEAD) *********************" && \
+		./autogen.sh || \
 		./autogen.sh && \
 		./configure --with-user-mode-only && \
 		export build_number=${BUILD_ID} && \
 		make rpms && \
 		rm -rf ${RPM_DIR}/cortx-motr*.rpm && \
 		mv /root/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
+		createrepo -v ${RPM_DIR} && \
+	popd
+	
+
+#***********************************************************************************
+#   Component:  S3
+#	Steps:
+#		_s3_prereq - Install Prerequisites to Generate S3 RPM	
+#		_s3_build  - Script to Generate S3 RPM
+#
+#***********************************************************************************
+_s3_prereq:
+	@echo "***************  Installing S3 Prereqsites *********************"
+
+	pushd cortx-workspace/cortx-s3server && \
+	  yum localinstall -y ${RPM_DIR}/cortx-motr-[0-9]*.rpm ${RPM_DIR}/cortx-motr-devel-[0-9]*.rpm && \
+		yum clean all;rm -rf /var/cache/yum && \
+	popd || (echo "ERROR: cortx-s3server source code is not available in cortx-workspace. Exiting..."; exit 1)
+
+_s3_build:
+	@echo "***************  Building S3 RPMS *********************"
+	
+	pushd cortx-workspace/cortx-s3server && \
+		yum clean all;rm -rf /var/cache/yum && \
+		export build_number=${BUILD_ID} && \
+		./rpms/s3/buildrpm.sh -S ${RELEASE_VERSION} -G $$(git rev-parse --short HEAD) && \
+		./rpms/s3iamcli/buildrpm.sh -S ${RELEASE_VERSION} -G $$(git rev-parse --short HEAD) && \
+		./rpms/s3test/buildrpm.sh -S ${RELEASE_VERSION} -G $$(git rev-parse --short HEAD) && \
+		rm -rf {RPM_DIR}/cortx-s3*.rpm && \
+		mv /root/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
+       	mv /root/rpmbuild/RPMS/noarch/*.rpm ${RPM_DIR} && \
 		createrepo -v ${RPM_DIR} && \
 	popd
 
@@ -135,6 +164,7 @@ _cortx-hare_build:
 		mv /root/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
 		createrepo -v ${RPM_DIR} && \
 	popd
+
 
 #***********************************************************************************
 #   Component:  cortx-rgw
@@ -179,7 +209,6 @@ _cortx-rgw-integration_build:
 		pushd cortx-workspace/cortx-rgw-integration/ && \
 			rm -rf dist/cortx-rgw-integration*.rpm && \
 			if [ -f ./jenkins/build.sh ]; then bash ./jenkins/build.sh -v ${RELEASE_VERSION} -b ${BUILD_ID} && mv ./dist/cortx-rgw-integration*.rpm ${RPM_DIR}; fi && \
-			mv dist/*.rpm ${RPM_DIR} && \
 			createrepo -v ${RPM_DIR} && \
 		popd
 
@@ -235,7 +264,7 @@ _cortx-py-utils_install:
 	@echo "***************  Installing cortx-py-utils package *********************"
 	pushd cortx-workspace/cortx-utils/py-utils && \
 		yum install python3-pip gcc python3-devel -y && \
-		yum erase python3-PyYAML -y && \
+		if [[ "$$(grep -r Rocky /etc/redhat-release|wc -l)" ==  "1" ]]; then yum erase python3-PyYAML -y ;else yum erase python36-PyYAML -y ; fi && \
 		pip3 install -r python_requirements.txt && \
 		pip3 install -r python_requirements.ext.txt && \
 		yum localinstall -y ${RPM_DIR}/cortx-py-utils*noarch.rpm && \
@@ -251,7 +280,7 @@ _cortx-py-utils_install:
 _cortx-management-portal_prereq:
 	@echo "***************  Installing cortx-management-portal Prereqsites *********************"
 	pushd cortx-workspace/cortx-management-portal && \
-		yum localinstall -y ${RPM_DIR}/cortx-provisioner*.noarch.rpm && \
+		if [[ "$$(grep -r Rocky /etc/redhat-release|wc -l)" ==  "1" ]]; then yum localinstall -y ${RPM_DIR}/cortx-provisioner*.noarch.rpm ;else yum localinstall ${RPM_DIR}/cortx-prvsnr*.rpm ${RPM_DIR}/python36-cortx-prvsnr*.rpm ; fi && \
         pip3.6 install pyinstaller==3.5 && \
 	popd || (echo "ERROR: cortx-management-portal source code is not available in cortx-workspace. Exiting..."; exit 1)
 
@@ -279,7 +308,7 @@ _cortx-manager_prereq:
 	@echo "***************  Installing cortx-manager Prereqsites *********************"
 
 	pushd cortx-workspace/cortx-manager && \
-		yum localinstall -y ${RPM_DIR}/cortx-provisioner*.noarch.rpm && \
+		if [[ "$$(grep -r Rocky /etc/redhat-release|wc -l)" ==  "1" ]]; then yum localinstall -y ${RPM_DIR}/cortx-provisioner*.noarch.rpm ;else yum localinstall -y ${RPM_DIR}/cortx-prvsnr*.rpm ${RPM_DIR}/python36-cortx-prvsnr*.rpm ; fi && \
         pip3.6 install pyinstaller==3.5 && \
 	popd || (echo "ERROR: cortx-manager source code is not available in cortx-workspace. Exiting..."; exit 1)
 
@@ -306,15 +335,23 @@ _prvsnr_prereq:
 	@echo "***************  Installing cortx-prvsnr Prereqsites *********************"
 
 	pushd cortx-workspace/cortx-prvsnr/ && \
-		yum install -y python3 && \
+		if [[ "$$(grep -r Rocky /etc/redhat-release|wc -l)" ==  "1" ]]; then yum install -y python3 ;else yum install -y python ; fi && \
 	popd || (echo "ERROR: cortx-prvsnr codebase is not available in cortx-workspace.Exiting..."; exit 1)
 
 _prvsnr_build:
 	@echo "***************  Building cortx-prvsnr RPMS *********************"
 	
 	pushd cortx-workspace/cortx-prvsnr/ && \
-	    rm -rf dist/*.rpm ${RPM_DIR}/cortx-pr*.rpm ${RPM_DIR}/python36-cortx-prvsnr*.rpm ${RPM_DIR}/python36-cortx-setup*.rpm && \
-        if [ -f ./jenkins/build.sh ]; then bash ./jenkins/build.sh -v ${RELEASE_VERSION} -b ${BUILD_ID} && mv ./dist/cortx-provisioner*.rpm ${RPM_DIR}; fi && \
+		rm -rf dist/*.rpm ${RPM_DIR}/cortx-pr*.rpm ${RPM_DIR}/python36-cortx-prvsnr*.rpm ${RPM_DIR}/python36-cortx-setup*.rpm && \
+		if [[ "$$(grep -r Rocky /etc/redhat-release|wc -l)" ==  "1" ]]; then \
+			if [ -f ./jenkins/build.sh ]; then 
+				bash ./jenkins/build.sh -v ${RELEASE_VERSION} -b ${BUILD_ID} && mv ./dist/cortx-provisioner*.rpm ${RPM_DIR} ; fi ; else sh ./devops/rpms/buildrpm.sh -g "$$(git rev-parse --short HEAD)" -e ${RELEASE_VERSION} -b "${BUILD_ID}" && \
+			sh ./cli/buildrpm.sh -g "$$(git rev-parse --short HEAD)" -e ${RELEASE_VERSION} -b "${BUILD_ID}" && \
+			bash ./devops/rpms/api/build_python_api.sh -vv --out-dir /root/rpmbuild/RPMS/x86_64/ --pkg-ver ${BUILD_ID}_git$$(git rev-parse --short HEAD) && \
+			if [ -f ./devops/rpms/lr-cli/build_python_cortx_setup.sh ]; then bash ./devops/rpms/lr-cli/build_python_cortx_setup.sh -vv --out-dir /root/rpmbuild/RPMS/x86_64/ --pkg-ver ${BUILD_ID}_git$$(git rev-parse --short HEAD); fi && \
+			sh ./devops/rpms/node_cli/node_cli_buildrpm.sh -g "$$(git rev-parse --short HEAD)" -e ${RELEASE_VERSION} -b ${BUILD_ID} && \
+			if [ -f ./jenkins/build.sh ]; then bash ./jenkins/build.sh -v ${RELEASE_VERSION} -b ${BUILD_ID} && mv ./dist/cortx-provisioner-*noarch.rpm ${RPM_DIR}; fi && \
+			mv /root/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} ; fi && \
 		createrepo -v ${RPM_DIR} && \
 	popd
 
