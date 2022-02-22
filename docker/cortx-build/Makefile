@@ -90,7 +90,7 @@ _cortx-motr_prereq:
 		sed -i "/BuildRequires.*kernel*/d" cortx-motr.spec && \
 		sed -i "/BuildRequires.*%{lustre_devel}/d" cortx-motr.spec && \
 		sed -i 's/@BUILD_DEPEND_LIBFAB@//g' cortx-motr.spec && \
-		sed -i 's/@.*@/111/g' cortx-motr.spec && \		
+		sed -i 's/@.*@/111/g' cortx-motr.spec && \
 		yum-builddep -y --nogpgcheck cortx-motr.spec && \
 	popd || (echo "ERROR: cortx-motr source code is not available in cortx-workspace. Exiting..."; exit 1)
 
