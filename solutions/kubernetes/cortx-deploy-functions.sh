@@ -94,7 +94,7 @@ function update_solution_config(){
 
         sns=$SNS_CONFIG yq e -i '.solution.common.storage_sets.durability.sns = env(sns)' solution.yaml
         dix=$DIX_CONFIG yq e -i '.solution.common.storage_sets.durability.dix = env(dix)' solution.yaml
-        yq e -i '.solution.common.external_services.type = "LoadBalancer"' solution.yaml
+        yq e -i '.solution.common.external_services.type = "NodePort"' solution.yaml
 
         yq e -i '.solution.common.resource_allocation.consul.server.storage = "10Gi"' solution.yaml
         yq e -i '.solution.common.resource_allocation.consul.server.resources.requests.memory = "100Mi"' solution.yaml
