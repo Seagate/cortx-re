@@ -90,6 +90,10 @@ fi
 
 CREATED_DATE=$(date -u +'%Y-%m-%d %H:%M:%S%:z')
 
+
+if [ "$ENVIRONMENT" == "opensource-ci" ]; then
+        sed -i "/^[[:space:]].*TAG/a\    extra_hosts:\n      - $HOSTNAME: $(hostname -I | cut -d' ' -f1)" docker-compose.yml
+fi
 docker-compose -f ./docker-compose.yml build --force-rm --compress --build-arg GIT_HASH="$CORTX_VERSION" --build-arg VERSION="$VERSION-$DOCKER_BUILD_BUILD" --build-arg CREATED_DATE="$CREATED_DATE" --build-arg BUILD_URL=$BUILD_URL --build-arg ENVIRONMENT=$ENVIRONMENT $SERVICE
 
 if [ "$DOCKER_PUSH" == "yes" ];then
