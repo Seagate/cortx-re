@@ -36,7 +36,7 @@ build: io-path control-path cortx-prereq release_build
 cortx-all-image: cortx-motr cortx-s3server cortx-hare cortx-prvsnr cortx-manager release_build
 
 ## cortx-all-image: generate packages required for cortx-all image including third-party-deps at "/var/artifacts/0"
-cortx-all-rockylinux-image: cortx-motr cortx-rgw cortx-hare cortx-prvsnr cortx-manager release_build
+cortx-all-rockylinux-image: cortx-motr cortx-hare cortx-prvsnr cortx-manager cortx-rgw release_build
 
 ## control-path: generate control-path packages. cortx-provisioner, cortx-monitor, cortx-manager, cortx-management-portal and cortx-ha.
 control-path: cortx-prvsnr cortx-monitor cortx-manager cortx-management-portal cortx-ha
@@ -218,7 +218,7 @@ _cortx-py-utils_install:
 	@echo "***************  Installing cortx-py-utils package *********************"
 	pushd cortx-workspace/cortx-utils/py-utils && \
 		yum install python3-pip gcc python3-devel -y && \
-		if [[ "$(grep -r Rocky /etc/redhat-release|wc -l)" == "1" ]]; then yum erase python3-PyYAML -y ;else yum erase python36-PyYAML -y ; fi && \
+		yum erase python3-PyYAML -y
 		pip3 install -r python_requirements.txt && \
 		pip3 install -r python_requirements.ext.txt && \
 		yum localinstall -y ${RPM_DIR}/cortx-py-utils*noarch.rpm && \
@@ -234,7 +234,7 @@ _cortx-py-utils_install:
 _cortx-management-portal_prereq:
 	@echo "***************  Installing cortx-management-portal Prereqsites *********************"
 	pushd cortx-workspace/cortx-management-portal && \
-		yum localinstall ${RPM_DIR}/cortx-prvsnr*.rpm ${RPM_DIR}/python36-cortx-prvsnr*.rpm  && \
+		yum localinstall -y ${RPM_DIR}/cortx-provisioner*.noarch.rpm && \
         pip3.6 install pyinstaller==3.5 && \
 	popd || (echo "ERROR: cortx-management-portal source code is not available in cortx-workspace. Exiting..."; exit 1)
 
@@ -262,7 +262,7 @@ _cortx-manager_prereq:
 	@echo "***************  Installing cortx-manager Prereqsites *********************"
 
 	pushd cortx-workspace/cortx-manager && \
-		yum localinstall -y ${RPM_DIR}/cortx-prvsnr*.rpm ${RPM_DIR}/python36-cortx-prvsnr*.rpm && \
+		yum localinstall -y ${RPM_DIR}/cortx-provisioner*.noarch.rpm && \
         pip3.6 install pyinstaller==3.5 && \
 	popd || (echo "ERROR: cortx-manager source code is not available in cortx-workspace. Exiting..."; exit 1)
 
@@ -289,20 +289,15 @@ _prvsnr_prereq:
 	@echo "***************  Installing cortx-prvsnr Prereqsites *********************"
 
 	pushd cortx-workspace/cortx-prvsnr/ && \
-		if [[ "$(grep -r Rocky /etc/redhat-release|wc -l)" == "1" ]]; then yum install -y python3 ;else yum install -y python ; fi && \
+		yum install -y python3
 	popd || (echo "ERROR: cortx-prvsnr codebase is not available in cortx-workspace.Exiting..."; exit 1)
 
 _prvsnr_build:
 	@echo "***************  Building cortx-prvsnr RPMS *********************"
 	
 	pushd cortx-workspace/cortx-prvsnr/ && \
-	    rm -rf ${RPM_DIR}/cortx-pr*.rpm ${RPM_DIR}/python36-cortx-prvsnr*.rpm ${RPM_DIR}/python36-cortx-setup*.rpm && \
-        sh ./devops/rpms/buildrpm.sh -g "$$(git rev-parse --short HEAD)" -e ${RELEASE_VERSION} -b "${BUILD_ID}" && \
-		sh ./cli/buildrpm.sh -g "$$(git rev-parse --short HEAD)" -e ${RELEASE_VERSION} -b "${BUILD_ID}" && \
-		bash ./devops/rpms/api/build_python_api.sh -vv --out-dir /root/rpmbuild/RPMS/x86_64/ --pkg-ver ${BUILD_ID}_git$$(git rev-parse --short HEAD) && \
-        if [ -f ./devops/rpms/lr-cli/build_python_cortx_setup.sh ]; then bash ./devops/rpms/lr-cli/build_python_cortx_setup.sh -vv --out-dir /root/rpmbuild/RPMS/x86_64/ --pkg-ver ${BUILD_ID}_git$$(git rev-parse --short HEAD); fi && \
-		sh ./devops/rpms/node_cli/node_cli_buildrpm.sh -g "$$(git rev-parse --short HEAD)" -e ${RELEASE_VERSION} -b ${BUILD_ID} && \
-		if [ -f ./jenkins/build.sh ]; then bash ./jenkins/build.sh -v ${RELEASE_VERSION} -b ${BUILD_ID} && mv ./dist/cortx-provisioner-*noarch.rpm ${RPM_DIR}; fi && \
+	    rm -rf dist/*.rpm ${RPM_DIR}/cortx-pr*.rpm ${RPM_DIR}/python36-cortx-prvsnr*.rpm ${RPM_DIR}/python36-cortx-setup*.rpm && \
+        if [ -f ./jenkins/build.sh ]; then bash ./jenkins/build.sh -v ${RELEASE_VERSION} -b ${BUILD_ID} && mv ./dist/cortx-provisioner-*noarch.rpm ${RPM_DIR}; fi && \
 		mv /root/rpmbuild/RPMS/x86_64/*.rpm ${RPM_DIR} && \
 		createrepo -v ${RPM_DIR} && \
 	popd
