@@ -235,7 +235,7 @@ _cortx-py-utils_install:
 	@echo "***************  Installing cortx-py-utils package *********************"
 	pushd cortx-workspace/cortx-utils/py-utils && \
 		yum install python3-pip gcc python3-devel -y && \
-		yum erase python3-PyYAML -y
+		yum erase python3-PyYAML -y && \
 		pip3 install -r python_requirements.txt && \
 		pip3 install -r python_requirements.ext.txt && \
 		yum localinstall -y ${RPM_DIR}/cortx-py-utils*noarch.rpm && \
