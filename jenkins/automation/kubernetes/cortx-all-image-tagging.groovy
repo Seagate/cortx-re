@@ -19,7 +19,7 @@ pipeline {
     }
 
     parameters {  
-        string(name: 'BASE_IMAGE_NAME', defaultValue: 'ghcr.io/seagate/cortx-all:2.0.0-latest-custom-ci', description: 'Docker Image to be tagged.')
+        string(name: 'BASE_IMAGE_NAME', defaultValue: 'ghcr.io/seagate/cortx-all:2.0.0-latest', description: 'Docker Image to be tagged.')
         string(name: 'TAGGED_IMAGE_NAME', defaultValue: 'ghcr.io/seagate/cortx-all:TAG', description: 'Tag to be used.')
     
         choice (
