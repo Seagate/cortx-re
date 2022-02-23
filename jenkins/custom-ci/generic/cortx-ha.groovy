@@ -118,7 +118,7 @@ EOF
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Copy RPMS', script: '''
                     mkdir -p $build_upload_dir
-                    cp $WORKSPACE/cortx-ha/dist/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir
+                    cp $WORKSPACE/cortx-ha/dist/rpmbuild/RPMS/noarch/*.rpm $build_upload_dir
                 '''
             }
         } 
