@@ -3,8 +3,6 @@ sshpass #cortx-py-utils
 sudo #cortx-py-utils
 python36 #cortx-py-utils
 python36-setuptools #cortx-py-utils
-python36-pip #cortx-py-utils
-python36-setuptools #cortx-py-utils
 python36-dbus #cortx-py-utils
 isa #cortx-motr
 libfabric #cortx-motr
