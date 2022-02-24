@@ -44,6 +44,7 @@ function check_params {
     if [ -z "$SOLUTION_CONFIG_TYPE" ]; then echo "SOLUTION_CONFIG_TYPE not provided.Exiting..."; exit 1; fi
     if [ -z "$SNS_CONFIG" ]; then SNS_CONFIG="1+0+0"; fi
     if [ -z "$DIX_CONFIG" ]; then DIX_CONFIG="1+0+0"; fi
+    if [ -z "$EXTERNAL_EXPOSURE_SERVICE" ]; then EXTERNAL_EXPOSURE_SERVICE="LoadBalancer"; fi
 }
 
 function pdsh_worker_exec {
@@ -81,7 +82,7 @@ function setup_cluster {
     if [ "$(wc -l < $HOST_FILE)" == "1" ]; then
        echo "---------------------------------------[ Single node deployment ]----------------------------------"
        echo "NODE:" $PRIMARY_NODE
-       ssh -o 'StrictHostKeyChecking=no' "$PRIMARY_NODE" "export SOLUTION_CONFIG_TYPE=$SOLUTION_CONFIG_TYPE && export CORTX_SERVER_IMAGE=$CORTX_SERVER_IMAGE && export CORTX_ALL_IMAGE=$CORTX_ALL_IMAGE && export CORTX_SCRIPTS_REPO=$CORTX_SCRIPTS_REPO && export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH && export SNS_CONFIG=$SNS_CONFIG && export DIX_CONFIG=$DIX_CONFIG && /var/tmp/cortx-deploy-functions.sh --setup-primary"
+       ssh -o 'StrictHostKeyChecking=no' "$PRIMARY_NODE" "export SOLUTION_CONFIG_TYPE=$SOLUTION_CONFIG_TYPE && export CORTX_SERVER_IMAGE=$CORTX_SERVER_IMAGE && export CORTX_ALL_IMAGE=$CORTX_ALL_IMAGE && export CORTX_SCRIPTS_REPO=$CORTX_SCRIPTS_REPO && export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH && export SNS_CONFIG=$SNS_CONFIG && export DIX_CONFIG=$DIX_CONFIG export EXTERNAL_EXPOSURE_SERVICE=$EXTERNAL_EXPOSURE_SERVICE && /var/tmp/cortx-deploy-functions.sh --setup-primary"
     else
        WORKER_NODES=$(cat "$HOST_FILE" | grep -v "$PRIMARY_NODE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
     fi
@@ -103,7 +104,7 @@ EOF
 
        for primary_node in $PRIMARY_NODE
            do
-               ssh -o 'StrictHostKeyChecking=no' "$primary_node" "export SOLUTION_CONFIG_TYPE=$SOLUTION_CONFIG_TYPE && export CORTX_SERVER_IMAGE=$CORTX_SERVER_IMAGE && export CORTX_ALL_IMAGE=$CORTX_ALL_IMAGE && export CORTX_SCRIPTS_REPO=$CORTX_SCRIPTS_REPO && export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH && export SNS_CONFIG=$SNS_CONFIG && export DIX_CONFIG=$DIX_CONFIG && /var/tmp/cortx-deploy-functions.sh --setup-primary"
+               ssh -o 'StrictHostKeyChecking=no' "$primary_node" "export SOLUTION_CONFIG_TYPE=$SOLUTION_CONFIG_TYPE && export CORTX_SERVER_IMAGE=$CORTX_SERVER_IMAGE && export CORTX_ALL_IMAGE=$CORTX_ALL_IMAGE && export CORTX_SCRIPTS_REPO=$CORTX_SCRIPTS_REPO && export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH && export SNS_CONFIG=$SNS_CONFIG && export DIX_CONFIG=$DIX_CONFIG && EXTERNAL_EXPOSURE_SERVICE=$EXTERNAL_EXPOSURE_SERVICE  && /var/tmp/cortx-deploy-functions.sh --setup-primary"
            done
     fi
 

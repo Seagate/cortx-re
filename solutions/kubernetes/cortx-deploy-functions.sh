@@ -55,6 +55,7 @@ function install_yq(){
 #modify solution.yaml
 
 function update_solution_config(){
+echo EXTERNAL_EXPOSURE_SERVICE:$EXTERNAL_EXPOSURE_SERVICE
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         echo > solution.yaml
         yq e -i '.solution.namespace = "default"' solution.yaml
@@ -94,7 +95,7 @@ function update_solution_config(){
 
         sns=$SNS_CONFIG yq e -i '.solution.common.storage_sets.durability.sns = env(sns)' solution.yaml
         dix=$DIX_CONFIG yq e -i '.solution.common.storage_sets.durability.dix = env(dix)' solution.yaml
-        yq e -i '.solution.common.external_services.type = "NodePort"' solution.yaml
+        external_exposure_service=$EXTERNAL_EXPOSURE_SERVICE yq e -i '.solution.common.external_services.type = env(external_exposure_service)' solution.yaml
 
         yq e -i '.solution.common.resource_allocation.consul.server.storage = "10Gi"' solution.yaml
         yq e -i '.solution.common.resource_allocation.consul.server.resources.requests.memory = "100Mi"' solution.yaml
