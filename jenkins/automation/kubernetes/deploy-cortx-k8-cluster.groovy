@@ -72,7 +72,7 @@ pipeline {
             }
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Deploy third-party components', script: '''
+                sh label: 'Deploy CORTX Components', script: '''
                     pushd solutions/kubernetes/
                         export CORTX_SCRIPTS_BRANCH=${CORTX_SCRIPTS_BRANCH}
                         export CORTX_SCRIPTS_REPO=${CORTX_SCRIPTS_REPO}
