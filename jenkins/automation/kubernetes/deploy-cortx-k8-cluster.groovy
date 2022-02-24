@@ -144,7 +144,7 @@ pipeline {
 
         cleanup {
             sh label: 'Collect Artifacts', script: '''
-            mkdir artifacts
+            mkdir -p artifacts
             pushd solutions/kubernetes/
                 HOST_FILE=$PWD/hosts
                 MASTER_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
