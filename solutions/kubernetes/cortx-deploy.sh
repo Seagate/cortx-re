@@ -104,7 +104,7 @@ EOF
 
        for primary_node in $PRIMARY_NODE
            do
-               ssh -o 'StrictHostKeyChecking=no' "$primary_node" "export SOLUTION_CONFIG_TYPE=$SOLUTION_CONFIG_TYPE && export CORTX_SERVER_IMAGE=$CORTX_SERVER_IMAGE && export CORTX_ALL_IMAGE=$CORTX_ALL_IMAGE && export CORTX_SCRIPTS_REPO=$CORTX_SCRIPTS_REPO && export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH && export SNS_CONFIG=$SNS_CONFIG && export DIX_CONFIG=$DIX_CONFIG && EXTERNAL_EXPOSURE_SERVICE=$EXTERNAL_EXPOSURE_SERVICE  && /var/tmp/cortx-deploy-functions.sh --setup-primary"
+               ssh -o 'StrictHostKeyChecking=no' "$primary_node" "export SOLUTION_CONFIG_TYPE=$SOLUTION_CONFIG_TYPE && export CORTX_SERVER_IMAGE=$CORTX_SERVER_IMAGE && export CORTX_ALL_IMAGE=$CORTX_ALL_IMAGE && export CORTX_SCRIPTS_REPO=$CORTX_SCRIPTS_REPO && export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH && export SNS_CONFIG=$SNS_CONFIG && export DIX_CONFIG=$DIX_CONFIG && export EXTERNAL_EXPOSURE_SERVICE=$EXTERNAL_EXPOSURE_SERVICE  && /var/tmp/cortx-deploy-functions.sh --setup-primary"
            done
     fi
 

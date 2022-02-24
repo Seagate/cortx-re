@@ -55,7 +55,6 @@ function install_yq(){
 #modify solution.yaml
 
 function update_solution_config(){
-echo EXTERNAL_EXPOSURE_SERVICE:$EXTERNAL_EXPOSURE_SERVICE
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         echo > solution.yaml
         yq e -i '.solution.namespace = "default"' solution.yaml
