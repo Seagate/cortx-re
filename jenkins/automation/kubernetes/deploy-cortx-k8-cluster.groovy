@@ -72,7 +72,7 @@ pipeline {
             }
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Deploy third-party components', script: '''
+                sh label: 'Deploy CORTX Components', script: '''
                     pushd solutions/kubernetes/
                         export CORTX_SCRIPTS_BRANCH=${CORTX_SCRIPTS_BRANCH}
                         export CORTX_SCRIPTS_REPO=${CORTX_SCRIPTS_REPO}
@@ -144,12 +144,14 @@ pipeline {
 
         cleanup {
             sh label: 'Collect Artifacts', script: '''
-            mkdir artifacts
+            mkdir -p artifacts
             pushd solutions/kubernetes/
                 HOST_FILE=$PWD/hosts
                 MASTER_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
                 scp -q "$MASTER_NODE":/root/deploy-scripts/k8_cortx_cloud/solution.yaml $WORKSPACE/artifacts/
-                cp /var/tmp/cortx-cluster-status.txt $WORKSPACE/artifacts/
+                if [ -f /var/tmp/cortx-cluster-status.txt ]; then
+                    cp /var/tmp/cortx-cluster-status.txt $WORKSPACE/artifacts/
+                fi
             popd    
             '''
             script {
