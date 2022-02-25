@@ -432,7 +432,6 @@ release_build:
 
 	pushd ${RPM_DIR} && \
 		cp /opt/rpm-signing/RPM-GPG-KEY-Seagate . && \
-		for rpm in `ls -1 *.rpm`; do expect /opt/rpm-signing/rpm-sign.sh $$rpm; done && \
 		createrepo -v . && \
 	popd && \
 	pushd ${RELEASE_BUILD} && \
