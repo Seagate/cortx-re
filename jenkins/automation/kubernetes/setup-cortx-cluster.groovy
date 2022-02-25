@@ -135,7 +135,9 @@ pipeline {
                 HOST_FILE=$PWD/hosts
                 MASTER_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
                 scp -q "$MASTER_NODE":/root/deploy-scripts/k8_cortx_cloud/solution.yaml $WORKSPACE/artifacts/
-                cp /var/tmp/cortx-cluster-status.txt $WORKSPACE/artifacts/
+                if [ -f /var/tmp/cortx-cluster-status.txt ]; then
+                    cp /var/tmp/cortx-cluster-status.txt $WORKSPACE/artifacts/
+                fi
             popd    
             '''
             script {
