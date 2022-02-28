@@ -62,3 +62,16 @@ RUN yum install --nogpgcheck -y python3-pip \
     && while read component; do grep "$component" < /opt/seagate/cortx/python_requirements.ext.txt; done </opt/seagate/cortx/cortx-component-rpms.txt | sed 's/#.*//g' > /opt/seagate/cortx/requirements.ext.txt \
     && pip3 install  --no-cache-dir --trusted-host $(echo $BUILD_URL | awk -F '/' '{print $3}') -i $BUILD_URL/python_deps -r /opt/seagate/cortx/requirements.txt -r /opt/seagate/cortx/requirements.ext.txt \
     && yum clean all && rm -rf /var/cache/yum
+
+RUN yum install --nogpgcheck -y  $(while read -r component; do grep "$component" < /opt/seagate/cortx/third-party-rpms.txt; done </opt/seagate/cortx/cortx-component-rpms.txt | sed 's/#.*//g') \
+    && yum clean all && rm -rf /var/cache/yum
+    
+RUN yum install --nogpgcheck -y  $(sed 's/#.*//g' /opt/seagate/cortx/cortx-component-rpms.txt) \
+    && if [[ "$CORTX_IMAGE" =~ "cortx-all" || "$CORTX_IMAGE" =~ "cortx-data" ]]; then yum install -y --nogpgcheck --downloadonly --downloaddir=/opt/seagate/cortx/debug-packages cortx-hare-debuginfo cortx-motr-debuginfo; fi \
+    && yum clean all && rm -rf /var/cache/yum
+    
+RUN rm -f /etc/machine-id && ln -s /etc/cortx/solution/node/id /etc/machine-id \
+    && bash /opt/seagate/cortx/generate-release-info.sh
+
+RUN yum-config-manager --enable base,extras,updates && rm -rf /etc/yum.repos.d/"$(echo $BUILD_URL | awk -F '/' '{print $3}')"*.repo /etc/yum.repos.d/${OS_TYPE}-${OS_RELEASE}.repo \
+    && yum clean all && rm -rf /var/cache/yum
