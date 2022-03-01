@@ -103,7 +103,7 @@ pipeline {
                 }
                 env.build_setupcortx_url = sh( script: "echo ${env.cortxcluster_build_url}/artifact/artifacts/cortx-cluster-status.txt", returnStdout: true)
                 env.host = "${env.allhost}"
-                env.build_id = "${CORTX_IMAGE}"
+                env.build_id = "${CORTX_ALL_IMAGE}"
                 env.build_location = "${DOCKER_IMAGE_LOCATION}"
                 env.deployment_status = "${MESSAGE}"
                 env.cluster_status = "${env.build_setupcortx_url}"
