@@ -268,8 +268,8 @@ pipeline {
                                         string(name: 'OS', value: "${os_version}"),
                                         string(name: 'CORTX_IMAGE', value: "all")
                                         ]
-                    env.cortx_all_image = build_cortx_images.buildVariables.cortx-all-image
-                    env.cortx_rgw_image = build_cortx_images.buildVariables.cortx-rgw-image
+                    env.cortx_all_image = build_cortx_images.buildVariables.cortx_all_image
+                    env.cortx_rgw_image = build_cortx_images.buildVariables.cortx_rgw_image
                     } catch (err) {
                         build_stage = env.STAGE_NAME
                         error "Failed to Build CORTX images"
