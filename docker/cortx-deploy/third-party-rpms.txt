@@ -1,4 +1,4 @@
-isa #cortx-motr
+isa-l #cortx-motr
 libfabric #cortx-motr
 file #cortx-motr
 less #cortx-motr
