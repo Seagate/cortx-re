@@ -6,6 +6,10 @@ pipeline {
         }
     }
     
+    triggers {
+        pollSCM '*/5 * * * *'
+    }
+
     environment {
         version = "2.0.0"
         env = "dev"
