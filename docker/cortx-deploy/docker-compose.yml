@@ -56,4 +56,16 @@ services:
         OS: rockylinux-8.4
         ENVIRONMENT: internal-ci
         CREATED_DATE: $CREATED_DATE
-        BUILD_URL: http://cortx-storage.colo.seagate.com/releases/cortx/github/main/rockylinux-8.4/last_successful_prod/     
+        BUILD_URL: http://cortx-storage.colo.seagate.com/releases/cortx/github/main/rockylinux-8.4/last_successful_prod/
+  cortx-control:
+    image: cortx-control:$TAG
+    build:
+      context: ./
+      dockerfile: ./cortx-control/Dockerfile
+      args:
+        OS_TYPE: rockylinux
+        OS_RELEASE: 8.4
+        OS: rockylinux-8.4
+        ENVIRONMENT: internal-ci
+        CREATED_DATE: $CREATED_DATE
+        BUILD_URL: http://cortx-storage.colo.seagate.com/releases/cortx/github/main/rockylinux-8.4/last_successful_prod/           
