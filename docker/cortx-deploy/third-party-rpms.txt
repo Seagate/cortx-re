@@ -1,9 +1,7 @@
 isa #cortx-motr
 libfabric #cortx-motr
-libfabric #cortx-motr
 file #cortx-motr
 less #cortx-motr
-puppet-agent #cortx-hare
 consul #cortx-hare
 gperftools-libs #cortx-rgw-integration
 libicu #cortx-rgw-integration
