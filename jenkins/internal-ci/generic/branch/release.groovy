@@ -287,7 +287,7 @@ pipeline {
                         string(name: 'CORTX_RE_BRANCH', value: "rocky-linux-custom-ci"),
                         string(name: 'CORTX_RE_REPO', value: "https://github.com/shailesh-vaidya/cortx-re"),
                         string(name: 'CORTX_ALL_IMAGE', value: "${env.cortx_all_image}"),
-                        string(name: 'CORTX_SERVER_IMAGE', value: "${env.cortx_all_image}")
+                        string(name: 'CORTX_SERVER_IMAGE', value: "${env.cortx_rgw_image}")
 
                     ]
                     build job: "K8s-3N-deployment", propagate: false, wait: false,
