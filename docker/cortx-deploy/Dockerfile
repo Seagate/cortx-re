@@ -69,8 +69,8 @@ RUN if [[ "$CORTX_IMAGE" = "cortx-rgw" ]] || [[ "$CORTX_IMAGE" = "cortx-all" ]] 
     && yum install --nogpgcheck -y  $(while read -r component; do grep "$component" < /opt/seagate/cortx/third-party-rpms.txt; done </opt/seagate/cortx/cortx-component-rpms.txt | sed 's/#.*//g') \
     && yum clean all && rm -rf /var/cache/yum
     
-RUN yum install --nogpgcheck -y  $(sed 's/#.*//g' /opt/seagate/cortx/cortx-componenet-rpms.txt) \
-    && if [[ "$CORTX_IMAGE" = "cortx-rgw" ]] || [[ "$CORTX_IMAGE" = "cortx-all" ]]; then yum install --nogpgcheck -y  $(sed 's/#.*//g' /opt/seagate/cortx/ceph-componenet-rpms.txt); fi \
+RUN yum install --nogpgcheck -y  $(sed 's/#.*//g' /opt/seagate/cortx/cortx-component-rpms.txt) \
+    && if [[ "$CORTX_IMAGE" = "cortx-rgw" ]] || [[ "$CORTX_IMAGE" = "cortx-all" ]]; then yum install --nogpgcheck -y  $(sed 's/#.*//g' /opt/seagate/cortx/ceph-component-rpms.txt); fi \
     && if [[ "$CORTX_IMAGE" = "cortx-rgw" ]] || [[ "$CORTX_IMAGE" = "cortx-all" ]] || [[ "$CORTX_IMAGE" = "cortx-data" ]]; then yum install -y --nogpgcheck --downloadonly --downloaddir=/opt/seagate/cortx/debug-packages cortx-hare-debuginfo cortx-motr-debuginfo; fi \
     && yum clean all && rm -rf /var/cache/yum
     
