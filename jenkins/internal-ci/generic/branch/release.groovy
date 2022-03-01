@@ -251,12 +251,12 @@ pipeline {
             }
         }
 
-        stage ("Build CORTX-ALL image") {
+        stage ("Build CORTX images") {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
                     try {
-                        def build_cortx_all_image = build job: 'cortx-docker-images', wait: true,
+                        def build_cortx_images = build job: 'cortx-docker-images', wait: true,
                                     parameters: [
                                         string(name: 'CORTX_RE_URL', value: "https://github.com/shailesh-vaidya/cortx-re"),
                                         string(name: 'CORTX_RE_BRANCH', value: "rocky-linux-custom-ci"),
@@ -268,7 +268,8 @@ pipeline {
                                         string(name: 'OS', value: "${os_version}"),
                                         string(name: 'CORTX_IMAGE', value: "all")
                                         ]
-                    env.cortx_all_image = build_cortx_all_image.buildVariables.image
+                    env.cortx_all_image = build_cortx_images.buildVariables.cortx-all-image
+                    env.cortx_rgw_image = build_cortx_images.buildVariables.cortx-rgw-image
                     } catch (err) {
                         build_stage = env.STAGE_NAME
                         error "Failed to Build CORTX images"
@@ -278,21 +279,23 @@ pipeline {
        } 
 
         stage ("Deploy") {
-            when { expression { false } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
                     build job: "K8s-1N-deployment", propagate: false, wait: false,
                     parameters: [
-                        string(name: 'CORTX_RE_BRANCH', value: "${branch}"),
-                        string(name: 'CORTX_RE_REPO', value: "https://github.com/Seagate/cortx-re/"),
-                        string(name: 'CORTX_IMAGE', value: "${env.cortx_all_image}")
+                        string(name: 'CORTX_RE_BRANCH', value: "rocky-linux-custom-ci"),
+                        string(name: 'CORTX_RE_REPO', value: "https://github.com/shailesh-vaidya/cortx-re"),
+                        string(name: 'CORTX_ALL_IMAGE', value: "${env.cortx_all_image}"),
+                        string(name: 'CORTX_SERVER_IMAGE', value: "${env.cortx_all_image}")
+
                     ]
                     build job: "K8s-3N-deployment", propagate: false, wait: false,
                     parameters: [
                         string(name: 'CORTX_RE_BRANCH', value: "${branch}"),
                         string(name: 'CORTX_RE_REPO', value: "https://github.com/Seagate/cortx-re/"),
-                        string(name: 'CORTX_IMAGE', value: "${env.cortx_all_image}")
+                        string(name: 'CORTX_ALL_IMAGE', value: "${env.cortx_all_image}"),
+                        string(name: 'CORTX_SERVER_IMAGE', value: "${env.cortx_rgw_image}")
                     ]
                 }
             }

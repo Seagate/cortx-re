@@ -120,6 +120,10 @@ pipeline {
 
                 env.image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' --filter=reference='*/*/cortx*:[0-9]*' | head -3", returnStdout: true).trim()
                 println "${env.image}"
+
+                env.cortx-all-image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' --filter=reference='*/*/cortx-all:[0-9]*'", returnStdout: true).trim()
+                env.cortx-rgw-image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' --filter=reference='*/*/cortx-rgw:[0-9]*'", returnStdout: true).trim()
+
                 
                 env.build_stage = "${build_stage}"
                 
