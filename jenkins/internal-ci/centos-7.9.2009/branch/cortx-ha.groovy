@@ -88,7 +88,7 @@ EOF
                 sh label: 'Test', script: '''
                     set -xe
                     pushd $component
-                    yum localinstall $WORKSPACE/$component/dist/rpmbuild/RPMS/x86_64/cortx-ha-*.rpm -y
+                    yum localinstall $WORKSPACE/$component/dist/rpmbuild/RPMS/*/cortx-ha-*.rpm -y
                     bash jenkins/cicd/cortx-ha-cicd.sh
                     popd
                 '''    
@@ -100,7 +100,7 @@ EOF
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Copy RPMS', script: '''
                     mkdir -p $build_upload_dir/$BUILD_NUMBER
-                    cp $WORKSPACE/cortx-ha/dist/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir/$BUILD_NUMBER
+                    cp $WORKSPACE/cortx-ha/dist/rpmbuild/RPMS/*/*.rpm $build_upload_dir/$BUILD_NUMBER
                 '''
                 sh label: 'Repo Creation', script: '''pushd $build_upload_dir/$BUILD_NUMBER
                     rpm -qi createrepo || yum install -y createrepo
