@@ -33,7 +33,7 @@ ARG CREATED_DATE
 ARG VERSION
 
 LABEL maintainer="cortx.opensource@seagate.com" \
-      org.opencontainers.image.title="CORTX ALL" \
+      org.opencontainers.image.title="CORTX CONTROL" \
       org.opencontainers.image.description="CORTX is 100% Open Source, Distributed object storage system designed for great efficiency, Massive capacity, and High HDD-utilization" \
       org.opencontainers.image.revision=$GIT_HASH \
       org.opencontainers.image.created=$CREATED_DATE
@@ -45,7 +45,8 @@ RUN yum install yum-utils -y \
     && if [[ $OS_TYPE =~ "centos" ]]; then yum-config-manager --disable base,extras,updates; fi
 
 #Add Internal and CORTX uploads repository
-COPY ./${ENVIRONMENT}/$OS.repo /etc/yum.repos.d/
+COPY ./${ENVIRONMENT}/${OS}.repo /etc/yum.repos.d/
+#RUN if [[ $OS_TYPE =~ "rocky" ]]; then cp /var/tmp/${ENVIRONMENT}/$(echo $OS_TYPE | cut -d'/' -f1)-${OS_RELEASE}.repo /etc/yum.repos.d/;else cp /var/tmp/${ENVIRONMENT}/${OS_TYPE}-${OS_RELEASE}.repo /etc/yum.repos.d/; fi
 
 # Install EPEL repo for opensource-ci
 RUN if [ "$ENVIRONMENT" = "opensource-ci" ] ; then yum install epel-release -y ; fi && yum clean all \
@@ -56,7 +57,7 @@ RUN yum install yum-utils -y \
     && yum-config-manager --add-repo ${BUILD_URL}/3rd_party \
     && curl ${BUILD_URL}/RELEASE.INFO -o RELEASE.INFO 
 
-COPY ./*.txt ./$OS/ ./generate-release-info.sh /opt/seagate/cortx/
+COPY ./cortx-control/*.txt ./generate-release-info.sh /opt/seagate/cortx/
 
 RUN yum install --nogpgcheck -y python3-pip \
     && pip3 install yq \
@@ -67,12 +68,10 @@ RUN yum install --nogpgcheck -y  $(sed 's/#.*//g' /opt/seagate/cortx/third-party
     && yum clean all && rm -rf /var/cache/yum
     
 RUN yum install --nogpgcheck -y  $(sed 's/#.*//g' /opt/seagate/cortx/cortx-componenet-rpms.txt) \
-    && yum install -y --nogpgcheck --downloadonly --downloaddir=/opt/seagate/cortx/debug-packages cortx-hare-debuginfo cortx-motr-debuginfo \
     && yum clean all && rm -rf /var/cache/yum
     
 RUN rm -f /etc/machine-id && ln -s /etc/cortx/solution/node/id /etc/machine-id \
     && bash /opt/seagate/cortx/generate-release-info.sh
 
-RUN rm -rf /etc/yum.repos.d/$(echo $BUILD_URL | awk -F '/' '{print $3}')*.repo /etc/yum.repos.d/$OS.repo \
+RUN rm -rf /etc/yum.repos.d/$(echo $BUILD_URL | awk -F '/' '{print $3}')*.repo /etc/yum.repos.d/${OS}.repo \
     && yum clean all && rm -rf /var/cache/yum
-

@@ -1,0 +1,11 @@
+crontabs  #cortx-utils
+java-1.8.0-openjdk-headless
+jq #cortx-prvsnr
+logrotate #cortx-utils
+python3
+python3-dbus
+python3-m2crypto
+python3-psutil
+sshpass
+sudo
+which #cortx-motr

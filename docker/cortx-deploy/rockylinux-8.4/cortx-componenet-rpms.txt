@@ -1,0 +1,5 @@
+cortx-py-utils
+cortx-hare
+cortx-motr
+cortx-csm_agent
+cortx-provisioner

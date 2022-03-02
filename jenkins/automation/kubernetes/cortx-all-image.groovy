@@ -22,6 +22,18 @@ pipeline {
         string(name: 'CORTX_RE_URL', defaultValue: 'https://github.com/Seagate/cortx-re.git', description: 'Repository URL for cortx-all image build.')
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'kubernetes', description: 'Branch for cortx-all image build.')
         string(name: 'BUILD', defaultValue: 'last_successful_prod', description: 'Build for cortx-all docker image')
+        
+        choice (
+            choices: ['centos-7.9.2009' , 'rockylinux-8.4'],
+            description: 'Base Operating System ',
+            name: 'OS'
+        )
+
+        choice (
+            choices: ['cortx-all' , 'cortx-rgw', 'cortx-data'],
+            description: 'Push newly built Docker image to GitHub ',
+            name: 'CORTX_IMAGE'
+        )
 
         choice (
             choices: ['yes' , 'no'],
@@ -87,11 +99,11 @@ pipeline {
                 sh encoding: 'utf-8', label: 'Build cortx-all docker image', script: """
                     pushd ./docker/cortx-deploy
                         if [ $GITHUB_PUSH == yes ] && [ $TAG_LATEST == yes ];then
-                                sh ./build.sh -b $BUILD -p yes -t yes -r $DOCKER_REGISTRY -e internal-ci
+                                sh ./build.sh -b $BUILD -p yes -t yes -r $DOCKER_REGISTRY -e internal-ci -o $OS -s $CORTX_IMAGE
                         elif [ $GITHUB_PUSH == yes ] && [ $TAG_LATEST == no ]; then
-                                 sh ./build.sh -b $BUILD -p yes -t no -r $DOCKER_REGISTRY -e internal-ci
+                                 sh ./build.sh -b $BUILD -p yes -t no -r $DOCKER_REGISTRY -e internal-ci -o $OS -s $CORTX_IMAGE
                         else
-                                 sh ./build.sh -b $BUILD -p no -e internal-ci
+                                 sh ./build.sh -b $BUILD -p no -e internal-ci -o $OS -s $CORTX_IMAGE
                         fi
                     popd
                     docker logout  
