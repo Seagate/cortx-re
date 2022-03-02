@@ -27,7 +27,7 @@ YQ_VERSION=v4.13.3
 YQ_BINARY=yq_linux_386
 SOLUTION_CONFIG="/var/tmp/solution.yaml"
 
-#On master
+#On primary
 #download CORTX k8 deployment scripts
 
 function download_deploy_script(){
@@ -76,6 +76,7 @@ function update_solution_config(){
         yq e -i '.solution.images.busybox = "ghcr.io/seagate/busybox:latest"' solution.yaml
 
         drive=$SYSTEM_DRIVE_MOUNT yq e -i '.solution.common.storage_provisioner_path = env(drive)' solution.yaml
+        yq e -i '.solution.common.setup_size = "small"' solution.yaml
         yq e -i '.solution.common.container_path.local = "/etc/cortx"' solution.yaml
         yq e -i '.solution.common.container_path.shared = "/share"' solution.yaml
         yq e -i '.solution.common.container_path.log = "/etc/cortx/log"' solution.yaml
@@ -84,6 +85,9 @@ function update_solution_config(){
         yq e -i '.solution.common.s3.max_start_timeout = 240' solution.yaml
         yq e -i '.solution.common.motr.num_client_inst = 0' solution.yaml
         yq e -i '.solution.common.motr.start_port_num = 29000' solution.yaml
+        yq e -i '.solution.common.hax.protocol = "https"' solution.yaml
+        yq e -i '.solution.common.hax.service_name = "cortx-hax-svc"' solution.yaml
+        yq e -i '.solution.common.hax.port_num = 22003' solution.yaml
         yq e -i '.solution.common.storage_sets.name = "storage-set-1"' solution.yaml
 
         sns=$SNS_CONFIG yq e -i '.solution.common.storage_sets.durability.sns = env(sns)' solution.yaml
@@ -136,13 +140,6 @@ function update_solution_config(){
         yq e -i '.solution.storage.cvg2.devices.data.d1.size = "5Gi"' solution.yaml
         yq e -i '.solution.storage.cvg2.devices.data.d2.device = "/dev/sdh"' solution.yaml
         yq e -i '.solution.storage.cvg2.devices.data.d2.size = "5Gi"' solution.yaml
-    popd
-
-    echo "---------------------------------------[ ADDING QUICKFIX FOR UDX-7070 ]--------------------------------------"
-    echo "Replacing setup_size in $SCRIPT_LOCATION/k8_cortx_cloud/cortx-cloud-helm-pkg/cortx-configmap/templates/config-template.yaml from large to small."
-    echo "This fix is only for Release v0.0.18 and is to be removed on next release."
-    pushd $SCRIPT_LOCATION/k8_cortx_cloud/cortx-cloud-helm-pkg/cortx-configmap/templates
-        sed -i 's/large/small/g' config-template.yaml
     popd
 }        
 
@@ -241,10 +238,10 @@ function execute_prereq(){
 
 function usage(){
     cat << HEREDOC
-Usage : $0 [--setup-worker, --setup-master, --third-party, --cortx-cluster, --destroy, --status]
+Usage : $0 [--setup-worker, --setup-primary, --third-party, --cortx-cluster, --destroy, --status]
 where,
     --setup-worker - Setup k8 worker node for CORTX deployment
-    --setup-master - Setup k8 master node for CORTX deployment
+    --setup-primary - Setup k8 primary node for CORTX deployment
     --third-party - Deploy third-party components
     --cortx-cluster - Deploy Third-Party and CORTX components
     --destroy - Destroy CORTX Cluster
@@ -260,10 +257,12 @@ if [ -z "$ACTION" ]; then
     exit 1
 fi
 
-function setup_master_node(){
-echo "---------------------------------------[ Setting up Master Node $HOSTNAME ]--------------------------------------"
+function setup_primary_node(){
+echo "---------------------------------------[ Setting up Primary Node $HOSTNAME ]--------------------------------------"
+    #Clean up untagged docker images and stopped docker containers.
+    cleanup
+    #Third-party images are downloaded from GitHub container registry. 
     download_deploy_script
-    #Third-party images are downloaed from GitHub container regsitry. 
     install_yq
     
     if [ "$(kubectl get  nodes $HOSTNAME  -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints}" | grep -o NoSchedule)" == "" ]; then
@@ -282,7 +281,9 @@ echo "---------------------------------------[ Setting up Master Node $HOSTNAME 
 
 function setup_worker_node(){
 echo "---------------------------------------[ Setting up Worker Node on $HOSTNAME ]--------------------------------------"
-    #Third-party images are downloaed from GitHub container regsitry.
+    #Clean up untagged docker images and stopped docker containers.
+    cleanup
+    #Third-party images are downloaded from GitHub container registry.
     download_deploy_script
     execute_prereq
 }
@@ -332,18 +333,35 @@ echo "---------------------------------------[ hctl status ]--------------------
     SECONDS=0
     date
     while [[ SECONDS -lt 1200 ]] ; do
-        if kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-hax -- hctl status > /dev/null ; then
-                if ! kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-hax -- hctl status| grep -q -E 'unknown|offline|failed'; then
-                    kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-hax -- hctl status
-                    echo "-----------[ Time taken for service to start $((SECONDS/60)) mins ]--------------------"
-                    exit 0
-                else
-                    echo "-----------[ Waiting for services to become online. Sleeping for 1min.... ]--------------------"
-                    sleep 60
-                fi
+        if [ "$DEPLOYMENT_TYPE" == "provisioner" ]; then
+            echo "Deployment type is: $DEPLOYMENT_TYPE"
+            if kubectl exec -it $(kubectl get pods | awk '/server-node/{print $1; exit}') -c cortx-motr-hax -- hctl status > /dev/null ; then
+                    if ! kubectl exec -it $(kubectl get pods | awk '/server-node/{print $1; exit}') -c cortx-motr-hax -- hctl status| grep -q -E 'unknown|offline|failed'; then
+                        kubectl exec -it $(kubectl get pods | awk '/server-node/{print $1; exit}') -c cortx-motr-hax -- hctl status
+                        echo "-----------[ Time taken for service to start $((SECONDS/60)) mins ]--------------------"
+                        exit 0
+                    else
+                        echo "-----------[ Waiting for services to become online. Sleeping for 1min.... ]--------------------"
+                        sleep 60
+                    fi
+            else
+                echo "----------------------[ hctl status not working yet. Sleeping for 1min.... ]-------------------------"
+                sleep 60
+            fi
         else
-           echo "----------------------[ hctl status not working yet. Sleeping for 1min.... ]-------------------------"
-           sleep 60
+            if kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-hax -- hctl status > /dev/null ; then
+                    if ! kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-hax -- hctl status| grep -q -E 'unknown|offline|failed'; then
+                        kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-hax -- hctl status
+                        echo "-----------[ Time taken for service to start $((SECONDS/60)) mins ]--------------------"
+                        exit 0
+                    else
+                        echo "-----------[ Waiting for services to become online. Sleeping for 1min.... ]--------------------"
+                        sleep 60
+                    fi
+            else
+                echo "----------------------[ hctl status not working yet. Sleeping for 1min.... ]-------------------------"
+                sleep 60
+            fi
         fi
     done
         echo "-----------[ Failed to to start services within 20mins. Exiting....]--------------------"
@@ -351,13 +369,18 @@ echo "---------------------------------------[ hctl status ]--------------------
 }
 
 function io_exec(){
-    pushd /var/tmp/
-        chmod +x *.sh
-        # "Setting up S3 client..."
-        ./s3-client-setup.sh
-        # "Running IO test..."
-        ./io-testing.sh
-    popd
+    CURRENT_OS=$(cut -d ' ' -f 1,4 < /etc/redhat-release)
+    if [[ "$CURRENT_OS" == "Rocky 8.4" ]]; then
+        echo "S3 IO Testing not enabled for Rocky Linux yet. Skipping"
+    else
+        pushd /var/tmp/
+            chmod +x *.sh
+            # "Setting up S3 client..."
+            ./s3-client-setup.sh
+            # "Running IO test..."
+            ./io-testing.sh
+        popd
+    fi
 }
 
 function logs_generation(){
@@ -365,6 +388,11 @@ function logs_generation(){
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         ./logs-cortx-cloud.sh
     popd
+}
+
+function cleanup(){
+    echo -e "\n-----------[ Clean up untagged/unused images and stopped containers... ]--------------------"
+    docker system prune -a -f --filter "label!=vendor=Project Calico"
 }
 
 case $ACTION in
@@ -389,8 +417,8 @@ case $ACTION in
     --generate-logs)
         logs_generation
     ;;
-    --setup-master)
-        setup_master_node 
+    --setup-primary)
+        setup_primary_node 
     ;;
     *)
         echo "ERROR : Please provide valid option"
