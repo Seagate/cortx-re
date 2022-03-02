@@ -80,16 +80,21 @@ function update_solution_config(){
         yq e -i '.solution.common.container_path.local = "/etc/cortx"' solution.yaml
         yq e -i '.solution.common.container_path.shared = "/share"' solution.yaml
         yq e -i '.solution.common.container_path.log = "/etc/cortx/log"' solution.yaml
+        yq e -i '.solution.common.s3.default_iam_users.auth_admin = "sgiamadmin"' solution.yaml
+        yq e -i '.solution.common.s3.default_iam_users.auth_user = "user_name"' solution.yaml
         yq e -i '.solution.common.s3.num_inst = 2' solution.yaml
         yq e -i '.solution.common.s3.start_port_num = 28051' solution.yaml
         yq e -i '.solution.common.s3.max_start_timeout = 240' solution.yaml
         yq e -i '.solution.common.motr.num_client_inst = 0' solution.yaml
         yq e -i '.solution.common.motr.start_port_num = 29000' solution.yaml
+        yq e -i '.solution.common.hax.protocol = "https"' solution.yaml
+        yq e -i '.solution.common.hax.service_name = "cortx-hax-svc"' solution.yaml
+        yq e -i '.solution.common.hax.port_num = 22003' solution.yaml
         yq e -i '.solution.common.storage_sets.name = "storage-set-1"' solution.yaml
 
         sns=$SNS_CONFIG yq e -i '.solution.common.storage_sets.durability.sns = env(sns)' solution.yaml
         dix=$DIX_CONFIG yq e -i '.solution.common.storage_sets.durability.dix = env(dix)' solution.yaml
-        yq e -i '.solution.common.external_services.type = "LoadBalancer"' solution.yaml
+        external_exposure_service=$EXTERNAL_EXPOSURE_SERVICE yq e -i '.solution.common.external_services.type = env(external_exposure_service)' solution.yaml
 
         yq e -i '.solution.common.resource_allocation.consul.server.storage = "10Gi"' solution.yaml
         yq e -i '.solution.common.resource_allocation.consul.server.resources.requests.memory = "100Mi"' solution.yaml
@@ -144,13 +149,11 @@ function update_solution_config(){
 function add_image_info(){
 echo "Updating cortx-all image info in solution.yaml"   
 pushd $SCRIPT_LOCATION/k8_cortx_cloud
-    image=$CORTX_IMAGE yq e -i '.solution.images.cortxcontrolprov = env(image)' solution.yaml	
-    image=$CORTX_IMAGE yq e -i '.solution.images.cortxcontrol = env(image)' solution.yaml	
-    image=$CORTX_IMAGE yq e -i '.solution.images.cortxdataprov = env(image)' solution.yaml
-    image=$CORTX_IMAGE yq e -i '.solution.images.cortxdata = env(image)' solution.yaml
-    image=$CORTX_IMAGE yq e -i '.solution.images.cortxserver = env(image)' solution.yaml
-    image=$CORTX_IMAGE yq e -i '.solution.images.cortxha = env(image)' solution.yaml
-    image=$CORTX_IMAGE yq e -i '.solution.images.cortxclient = env(image)' solution.yaml
+    image=$CORTX_ALL_IMAGE yq e -i '.solution.images.cortxcontrol = env(image)' solution.yaml	
+    image=$CORTX_ALL_IMAGE yq e -i '.solution.images.cortxdata = env(image)' solution.yaml
+    image=$CORTX_SERVER_IMAGE yq e -i '.solution.images.cortxserver = env(image)' solution.yaml
+    image=$CORTX_ALL_IMAGE yq e -i '.solution.images.cortxha = env(image)' solution.yaml
+    image=$CORTX_ALL_IMAGE yq e -i '.solution.images.cortxclient = env(image)' solution.yaml
 popd 
 }
 
@@ -226,7 +229,8 @@ function openldap_requiremenrs(){
 
 function execute_prereq(){
     echo "Pulling latest CORTX-ALL image"
-    docker pull $CORTX_IMAGE || echo "Failed to pull $CORTX_IMAGE"
+    docker pull $CORTX_ALL_IMAGE || echo "Failed to pull $CORTX_IMAGE"
+    docker pull $CORTX_SERVER_IMAGE || echo "Failed to pull $CORTX_SERVER_IMAGE"
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         findmnt $SYSTEM_DRIVE && umount -l $SYSTEM_DRIVE
         ./prereq-deploy-cortx-cloud.sh $SYSTEM_DRIVE
@@ -256,6 +260,8 @@ fi
 
 function setup_primary_node(){
 echo "---------------------------------------[ Setting up Primary Node $HOSTNAME ]--------------------------------------"
+    #Clean up untagged docker images and stopped docker containers.
+    cleanup
     #Third-party images are downloaded from GitHub container registry. 
     download_deploy_script
     install_yq
@@ -276,6 +282,8 @@ echo "---------------------------------------[ Setting up Primary Node $HOSTNAME
 
 function setup_worker_node(){
 echo "---------------------------------------[ Setting up Worker Node on $HOSTNAME ]--------------------------------------"
+    #Clean up untagged docker images and stopped docker containers.
+    cleanup
     #Third-party images are downloaded from GitHub container registry.
     download_deploy_script
     execute_prereq
@@ -323,6 +331,8 @@ echo "-----------[ All POD's are not in running state. Marking deployment as fai
 echo "-----------[ Sleeping for 1min before checking hctl status.... ]--------------------"
     sleep 60  
 echo "---------------------------------------[ hctl status ]-----------------------------------------"
+#    echo "Disabled htcl status check for now. Checking RGW service"
+#    kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-rgw -- ps -elf | grep rgw
     SECONDS=0
     date
     while [[ SECONDS -lt 1200 ]] ; do
@@ -362,13 +372,18 @@ echo "---------------------------------------[ hctl status ]--------------------
 }
 
 function io_exec(){
-    pushd /var/tmp/
-        chmod +x *.sh
-        # "Setting up S3 client..."
-        ./s3-client-setup.sh
-        # "Running IO test..."
-        ./io-testing.sh
-    popd
+    CURRENT_OS=$(cut -d ' ' -f 1,4 < /etc/redhat-release)
+    if [[ "$CURRENT_OS" == "Rocky 8.4" ]]; then
+        echo "S3 IO Testing not enabled for Rocky Linux yet. Skipping"
+    else
+        pushd /var/tmp/
+            chmod +x *.sh
+            # "Setting up S3 client..."
+            ./s3-client-setup.sh
+            # "Running IO test..."
+            ./io-testing.sh
+        popd
+    fi
 }
 
 function logs_generation(){
@@ -376,6 +391,11 @@ function logs_generation(){
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         ./logs-cortx-cloud.sh
     popd
+}
+
+function cleanup(){
+    echo -e "\n-----------[ Clean up untagged/unused images and stopped containers... ]--------------------"
+    docker system prune -a -f --filter "label!=vendor=Project Calico"
 }
 
 case $ACTION in

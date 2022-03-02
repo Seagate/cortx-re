@@ -18,11 +18,14 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
-ARG CENTOS_RELEASE
+ARG OS_TYPE
+ARG OS_RELEASE
 
-FROM centos:${CENTOS_RELEASE}
+FROM ${OS_TYPE}:${OS_RELEASE}
 
-ARG CENTOS_RELEASE
+ARG OS
+ARG OS_TYPE
+ARG OS_RELEASE
 ARG ENVIRONMENT
 ARG GIT_HASH
 ARG BUILD_URL
@@ -38,35 +41,39 @@ LABEL maintainer="cortx.opensource@seagate.com" \
 ENV GIT_HASH $GIT_HASH
 
 #Disable default repositories. 
-RUN yum-config-manager --disable base,extras,updates
+RUN yum install yum-utils -y \
+    && if [[ $OS_TYPE =~ "centos" ]]; then yum-config-manager --disable base,extras,updates; fi
 
 #Add Internal and CORTX uploads repository
-COPY ./${ENVIRONMENT}/C${CENTOS_RELEASE}.repo /etc/yum.repos.d/
+COPY ./${ENVIRONMENT}/$OS.repo /etc/yum.repos.d/
 
 # Install EPEL repo for opensource-ci
 RUN if [ "$ENVIRONMENT" = "opensource-ci" ] ; then yum install epel-release -y ; fi && yum clean all \
 && rm -rf /var/cache/yum
 
-RUN yum-config-manager --add-repo ${BUILD_URL}/cortx_iso/ \
+RUN yum install yum-utils -y \
+    && yum-config-manager --add-repo ${BUILD_URL}/cortx_iso/ \
     && yum-config-manager --add-repo ${BUILD_URL}/3rd_party \
     && curl ${BUILD_URL}/RELEASE.INFO -o RELEASE.INFO 
 
-COPY ./*.txt ./generate-release-info.sh /opt/seagate/cortx/
+COPY ./*.txt ./$OS/ ./generate-release-info.sh /opt/seagate/cortx/
 
 RUN yum install --nogpgcheck -y python3-pip \
     && pip3 install yq \
     && pip3 install  --no-cache-dir --trusted-host $(echo $BUILD_URL | awk -F '/' '{print $3}') -i $BUILD_URL/python_deps -r /opt/seagate/cortx/python_requirements.txt -r /opt/seagate/cortx/python_requirements.ext.txt \
    && yum clean all && rm -rf /var/cache/yum
 
-RUN yum install --nogpgcheck -y  $(sed 's/#.*//g' /opt/seagate/cortx/third-party-rpms.txt) \
+RUN yum --nogpgcheck -y --disablerepo="EOS_Rocky_8_OS_x86_64_Rocky_8" install libfabric-1.11.2 \
+    && yum install --nogpgcheck -y  $(sed 's/#.*//g' /opt/seagate/cortx/third-party-rpms.txt) \
     && yum clean all && rm -rf /var/cache/yum
     
 RUN yum install --nogpgcheck -y  $(sed 's/#.*//g' /opt/seagate/cortx/cortx-componenet-rpms.txt) \
-    && yum install --nogpgcheck --downloadonly --downloaddir=/opt/seagate/cortx/debug-packages cortx-s3server-debuginfo cortx-hare-debuginfo cortx-motr-debuginfo \
+    && yum install -y --nogpgcheck --downloadonly --downloaddir=/opt/seagate/cortx/debug-packages cortx-hare-debuginfo cortx-motr-debuginfo \
     && yum clean all && rm -rf /var/cache/yum
     
 RUN rm -f /etc/machine-id && ln -s /etc/cortx/solution/node/id /etc/machine-id \
     && bash /opt/seagate/cortx/generate-release-info.sh
 
-RUN yum-config-manager --enable base,extras,updates && rm -rf /etc/yum.repos.d/$(echo $BUILD_URL | awk -F '/' '{print $3}')*.repo /etc/yum.repos.d/C${CENTOS_RELEASE}.repo \
+RUN rm -rf /etc/yum.repos.d/$(echo $BUILD_URL | awk -F '/' '{print $3}')*.repo /etc/yum.repos.d/$OS.repo \
     && yum clean all && rm -rf /var/cache/yum
+
