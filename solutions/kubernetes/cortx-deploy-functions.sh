@@ -104,9 +104,8 @@ function update_solution_config(){
 
         external_exposure_service=$EXTERNAL_EXPOSURE_SERVICE yq e -i '.solution.common.external_services.control.type = env
         (external_exposure_service)' solution.yaml
-        yq e -i '.solution.common.external_services.control.ports.https = "8081"' solution.yaml
+        yq e -i '.solution.common.external_services.control.ports.https = "8081"' solution.yaml    
         yq e -i '.solution.common.external_services.control.nodePorts.https = ""' solution.yaml
-
 
         yq e -i '.solution.common.resource_allocation.consul.server.storage = "10Gi"' solution.yaml
         yq e -i '.solution.common.resource_allocation.consul.server.resources.requests.memory = "100Mi"' solution.yaml
