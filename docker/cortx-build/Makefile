@@ -432,6 +432,7 @@ release_build:
 	pushd ${RPM_DIR} && \
 		yum install -y expect rpm-sign rng-tools genisoimage python3-pip && \
 		createrepo -v . && \
+		for expiredKey in $$(gpg2 --list-keys | grep -B1 "Seagate"|head -1|tr -d " "); do echo "$$expiredKey" ; gpg --batch --yes --quiet --delete-secret-key $$expiredKey >/dev/null 2>&1 ; if [ $$? -eq 0 ]; then echo "Remove old gpg secret success" ; else echo "Remove old gpg secret failed" ; fi ; gpg2 --batch --quiet --yes --delete-keys $$expiredKey >/dev/null 2>&1 ; if [ $$? -eq 0 ]; then echo "Remove old gpg key success" ; else echo "Remove old gpg key failed" ; fi ; done && \
 	popd && \
 	pushd ${RELEASE_BUILD} && \
 		wget -q https://github.com/Seagate/cortx/releases/download/third-party-deps-${THIRD_PARTY_VERSION}/third-party-centos-7.9.2009-${THIRD_PARTY_VERSION}.tar.gz -O third-party-${THIRD_PARTY_VERSION}.tar.gz && \
