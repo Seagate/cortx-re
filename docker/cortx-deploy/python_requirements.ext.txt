@@ -8,4 +8,4 @@ numpy==1.19.5
 pycparser==2.20
 # dependency of aiohttp
 aiosignal==1.2.0
-async_timeout==4.0.2
+async-timeout==4.0.2
