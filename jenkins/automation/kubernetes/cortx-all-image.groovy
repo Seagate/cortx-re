@@ -30,7 +30,7 @@ pipeline {
         )
 
         choice (
-            choices: ['cortx-all' , 'cortx-rgw', 'cortx-data'],
+            choices: ['cortx-all' , 'cortx-rgw', 'cortx-data', 'cortx-control'],
             description: 'Push newly built Docker image to GitHub ',
             name: 'CORTX_IMAGE'
         )
