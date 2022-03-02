@@ -21,9 +21,9 @@
 source /var/tmp/functions.sh
 
 CALICO_PLUGIN_VERSION=latest
-K8_VERSION=1.19.0-0
+K8_VERSION=1.22.6
 DOCKER_VERSION=latest
-OS_VERSION="CentOS 7.9.2009"
+OS_VERSION=( "CentOS 7.9.2009" "Rocky 8.4" )
 export Exception=100
 export ConfigException=101
 
@@ -71,10 +71,11 @@ function ignoreErrors()
 
 function verify_os() {
     CURRENT_OS=$(cut -d ' ' -f 1,4 < /etc/redhat-release)
-    if [ "$CURRENT_OS" != "$OS_VERSION" ]; then
-        echo "ERROR : Operating System is not correct. Current OS : $CURRENT_OS, Required OS : $OS_VERSION"
-        exit 1
-    fi 
+    if [[ "${OS_VERSION[@]}" =~ $CURRENT_OS ]]; then
+        echo "SUCCESS : $CURRENT_OS from allowed OS list"
+    else
+        echo "ERROR : Operating System is not correct. Current OS : $CURRENT_OS, Required OS should be one of : ${OS_VERSION[*]}"
+    fi
 }
 
 function print_cluster_status(){
@@ -104,6 +105,8 @@ function cleanup_node(){
         "kubernetes-cni"
         "kubeadm"
         "kubectl"
+        "python3-pyyaml"
+        "jq"
     )
     files_to_remove=(
         "/etc/docker/daemon.json"
@@ -175,13 +178,20 @@ function install_prerequisites(){
         # stop and disable firewalld
         (systemctl stop firewalld && systemctl disable firewalld && sudo systemctl mask --now firewalld) || throw $Exception
         # install python packages
-        (yum install python3-pip yum-utils wget jq -y && pip3 install jq yq) || throw $Exception
+        (yum install python3-pip yum-utils wget jq -y && pip3 install --upgrade pip && pip3 install jq yq) || throw $Exception
+
+        CURRENT_OS=$(cut -d ' ' -f 1,4 < /etc/redhat-release)
+        if [ "$CURRENT_OS" == "Rocky 8.4" ]; then
+            yum install http://mirror.centos.org/centos/8-stream/AppStream/x86_64/os/Packages/jq-1.6-3.el8.x86_64.rpm -y 
+        else
+            yum install jq -y     
+        fi
 
         # set yum repositories for k8 and docker-ce
-        rm -rf /etc/yum.repos.d/download.docker.com_linux_centos_7_x86_64_stable_.repo /etc/yum.repos.d/packages.cloud.google.com_yum_repos_kubernetes-el7-x86_64.repo
+        rm -rf /etc/yum.repos.d/download.docker.com_linux_centos_7_x86_64_stable_.repo /etc/yum.repos.d/packages.cloud.google.com_yum_repos_kubernetes-el7-x86_64.repo docker-ce.repo
         yum-config-manager --add https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64 || throw $ConfigException
-        yum-config-manager --add https://download.docker.com/linux/centos/7/x86_64/stable/ || throw $ConfigException     
-        yum install kubeadm-$K8_VERSION kubectl-$K8_VERSION kubelet-$K8_VERSION kubernetes-cni docker-ce --nogpgcheck -y || throw $ConfigException 
+        yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo || throw $ConfigException     
+        yum install kubeadm-$K8_VERSION kubectl-$K8_VERSION kubelet-$K8_VERSION docker-ce --nogpgcheck -y || throw $ConfigException 
 
         # setup kernel parameters
         modprobe br_netfilter || throw $ConfigException
@@ -191,12 +201,15 @@ function install_prerequisites(){
         # enable cgroupfs 
         sed -i '/config.yaml/s/config.yaml"/config.yaml --cgroup-driver=cgroupfs"/g' /usr/lib/systemd/system/kubelet.service.d/10-kubeadm.conf || throw $ConfigException
 
+        # enable unix socket
+        sed -i 's/fd:\/\//unix:\/\//g' /usr/lib/systemd/system/docker.service && systemctl daemon-reload
+
         # enable local docker registry.
         mkdir -p /etc/docker/
         jq -n '{"insecure-registries": $ARGS.positional}' --args "cortx-docker.colo.seagate.com" > /etc/docker/daemon.json || throw $Exception
-        echo "Configured /etc/docker/daemon.json for local docker registry"
+        echo "Configured /etc/docker/daemon.json for local Harbor docker registry"
 
-        (systemctl restart docker && systemctl daemon-reload &&  systemctl enable docker) || throw $Exception
+        (systemctl start docker && systemctl daemon-reload && systemctl enable docker) || throw $Exception
         echo "Docker Runtime Configured Successfully"
 
         (systemctl restart kubelet && systemctl daemon-reload && systemctl enable kubelet) || throw $Exception

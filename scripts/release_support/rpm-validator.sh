@@ -52,7 +52,7 @@ COMPONENT_RPM_PATTERN_ARRAY=(
                     "Hare:cortx-hare"
                     "HA:cortx-ha"
                     "CSM:cortx-csm_agent,csm_web"
-                    "Provisioner:cortx-prvsnr"
+                    "Provisioner:cortx-provisioner"
                     "SSPL:cortx-sspl"
                     "CORTX-utils:cortx-py-utils,stats_utils"
                 )
@@ -65,7 +65,7 @@ RPM_INSTALL_PATH_EXPECTED=(
                     "cortx-hare:bin,conf"                                                   # Hare
                     "cortx-ha:bin,conf"                                                     # HA
                     "cortx-csm_agent:bin,conf" "cortx-csm_web:bin,conf"                     # CSM
-                    "cortx-prvsnr:bin,conf"                                                 # Prvsnr
+                    "cortx-provisioner:bin,conf"                                            # Prvsnr
                     "cortx-sspl:bin,conf"                                                   # SSPL
                     "cortx-py-utils:bin,conf" "stats_utils:bin,conf"                        # CORTX Utils
                 )
@@ -95,10 +95,10 @@ HTML_TD_STYLE="style='border: 1px solid #AAAAAA;padding: 3px 2px;font-size: 13px
 
 # Validation Logic
 build_number=$(wget "${RPM_LOCATION}/last_successful/RELEASE.INFO" -q -O - | grep BUILD |  sed 's/"//g' | cut -d: -f2 | xargs )
-release_rpms_array=$(wget "${RPM_LOCATION}/${build_number}/dev" -q -O - | grep -Po '(?<=href=")[^"]*' | grep -v debuginfo | grep ".rpm")
+release_rpms_array=$(wget "${RPM_LOCATION}/kubernetes-post-merge-build-${build_number}/dev" -q -O - | grep -Po '(?<=href=")[^"]*' | grep -v debuginfo | grep ".rpm")
 
-echo "RPM Validation Initiated for Build = $build_number"
-BUILD_URL="${RPM_LOCATION}/${build_number}/dev"
+echo "RPM Validation Initiated for Build = kubernetes-post-merge-build-$build_number"
+BUILD_URL="${RPM_LOCATION}/kubernetes-post-merge-build-${build_number}/dev"
 
 components_rpm_array=()
 

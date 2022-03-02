@@ -21,7 +21,7 @@ pipeline {
 
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for Cluster Setup scripts', trim: true)
-        string(name: 'CORTX_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-all:2.0.0-latest-custom-ci', description: 'CORTX-ALL image', trim: true)
+        string(name: 'CORTX_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-all:2.0.0-latest', description: 'CORTX-ALL image', trim: true)
         string(name: 'SNS_CONFIG', defaultValue: '1+0+0', description: 'sns configuration for deployment. Please select value based on disks available on nodes.', trim: true)
         string(name: 'DIX_CONFIG', defaultValue: '1+0+0', description: 'dix configuration for deployment. Please select value based on disks available on nodes.', trim: true)
         text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used for CORTX cluster setup. First node will be used as Master', name: 'hosts')
@@ -135,7 +135,9 @@ pipeline {
                 HOST_FILE=$PWD/hosts
                 MASTER_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
                 scp -q "$MASTER_NODE":/root/deploy-scripts/k8_cortx_cloud/solution.yaml $WORKSPACE/artifacts/
-                cp /var/tmp/cortx-cluster-status.txt $WORKSPACE/artifacts/
+                if [ -f /var/tmp/cortx-cluster-status.txt ]; then
+                    cp /var/tmp/cortx-cluster-status.txt $WORKSPACE/artifacts/
+                fi
             popd    
             '''
             script {
