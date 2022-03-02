@@ -48,6 +48,9 @@ RUN yum install yum-utils -y \
 COPY ./${ENVIRONMENT}/${OS}.repo /etc/yum.repos.d/
 #RUN if [[ $OS_TYPE =~ "rocky" ]]; then cp /var/tmp/${ENVIRONMENT}/$(echo $OS_TYPE | cut -d'/' -f1)-${OS_RELEASE}.repo /etc/yum.repos.d/;else cp /var/tmp/${ENVIRONMENT}/${OS_TYPE}-${OS_RELEASE}.repo /etc/yum.repos.d/; fi
 
+# Install rockylinux opensource-ci dependency
+RUN if [[ "$ENVIRONMENT" = "opensource-ci" ]] && [[ $OS_TYPE == "rockylinux/rockylinux" ]]; then dnf install dnf-plugin-config-manager -y ;dnf config-manager --set-enabled powertools ; rm -rf /etc/yum.repos.d/$OS.repo ;fi
+
 # Install EPEL repo for opensource-ci
 RUN if [ "$ENVIRONMENT" = "opensource-ci" ] ; then yum install epel-release -y ; fi && yum clean all \
 && rm -rf /var/cache/yum
@@ -60,8 +63,8 @@ RUN yum install yum-utils -y \
 COPY ./cortx-data/*.txt ./generate-release-info.sh /opt/seagate/cortx/
 
 RUN yum install --nogpgcheck -y python3-pip \
-    && pip3 install yq \
-    && pip3 install  --no-cache-dir --trusted-host $(echo $BUILD_URL | awk -F '/' '{print $3}') -i $BUILD_URL/python_deps -r /opt/seagate/cortx/python_requirements.txt -r /opt/seagate/cortx/python_requirements.ext.txt \
+    && pip3 install yq numpy==1.19.5 cffi==1.14.5 pycparser==2.20 \
+    && pip3 install  --no-cache-dir --trusted-host $(echo $BUILD_URL | awk -F '/' '{print $3}') -i $BUILD_URL/python_deps -r /opt/seagate/cortx/python_requirements.txt \
    && yum clean all && rm -rf /var/cache/yum
 
 RUN yum --nogpgcheck -y --disablerepo="EOS_Rocky_8_OS_x86_64_Rocky_8" install libfabric-1.11.2 \
