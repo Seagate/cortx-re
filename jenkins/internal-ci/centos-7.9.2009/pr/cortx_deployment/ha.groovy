@@ -16,9 +16,9 @@ pipeline {
     }
 
     parameters {  
-	    string(name: 'HA_URL', defaultValue: 'https://github.com/Seagate/cortx-ha', description: 'Repo for HA')
+        string(name: 'HA_URL', defaultValue: 'https://github.com/Seagate/cortx-ha', description: 'Repo for HA')
         string(name: 'HA_BRANCH', defaultValue: 'main', description: 'Branch for HA')
-	}
+    }
 
     environment {
 
@@ -66,7 +66,7 @@ pipeline {
         // Build HA fromm PR source code
         stage('Build') {
             steps {
-				script { build_stage = env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
                 script { manager.addHtmlBadge("&emsp;<b>Target Branch : ${BRANCH}</b>&emsp;<br />") }
 
                 sh """
@@ -90,9 +90,9 @@ timeout: 60
 index-url: http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/python-packages-2.0.0-latest/
 trusted-host: cortx-storage.colo.seagate.com
 EOF
-					pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/$BRANCH/py-utils/python_requirements.txt
+                    pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/$BRANCH/py-utils/python_requirements.txt
                     pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/$BRANCH/py-utils/python_requirements.ext.txt
-					rm -rf /etc/pip.conf
+                    rm -rf /etc/pip.conf
                     """    
                     sh label: 'Configure yum repositories', script: """
                         yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/$BRANCH/$OS_VERSION/$RELEASE_TAG/cortx_iso/
@@ -106,22 +106,22 @@ EOF
 
                     sh label: 'Build', returnStatus: true, script: '''
                         echo "Executing build script"
-   				        ./jenkins/build.sh -v $VERSION -b $BUILD_NUMBER
-                    '''	
+                           ./jenkins/build.sh -v $VERSION -b $BUILD_NUMBER
+                    '''    
 
                     sh label: 'Collect Release Artifacts', script: '''
                     
                         rm -rf "${DESTINATION_RELEASE_LOCATION}"
                         mkdir -p "${DESTINATION_RELEASE_LOCATION}"
             
-                        if [[ ( ! -z `ls ./dist/rpmbuild/RPMS/x86_64/*.rpm `)]]; then
+                        if [[ ( ! -z `ls ./dist/rpmbuild/RPMS/*/*.rpm `)]]; then
                             mkdir -p "${CORTX_ISO_LOCATION}"
-                            cp ./dist/rpmbuild/RPMS/x86_64/*.rpm "${CORTX_ISO_LOCATION}"
+                            cp ./dist/rpmbuild/RPMS/*/*.rpm "${CORTX_ISO_LOCATION}"
                         else
                             echo "RPM not exists !!!"
                             exit 1
                         fi
-                    '''	
+                    '''    
                 }
             }
         }
@@ -129,7 +129,7 @@ EOF
         // Release cortx deployment stack
         stage('Release') {
             steps {
-				script { build_stage = env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
 
                 dir('cortx-re') {
                     checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 1, honorRefspec: true, noTags: true, reference: '', shallow: true], [$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
@@ -186,7 +186,7 @@ EOF
                         rpm -qi createrepo || yum install -y createrepo
                         createrepo .
                     popd
-                '''	
+                '''    
 
                 sh label: 'RPM Signing', script: '''
                     pushd cortx-re/scripts/release_support
@@ -199,9 +199,9 @@ EOF
                     cp "${CORTX_ISO_LOCATION}/RELEASE.INFO" "${DESTINATION_RELEASE_LOCATION}"
 
                     cp "${CORTX_ISO_LOCATION}/RELEASE.INFO" .
-                '''	
+                '''    
 
-                archiveArtifacts artifacts: "RELEASE.INFO", onlyIfSuccessful: false, allowEmptyArchive: true		
+                archiveArtifacts artifacts: "RELEASE.INFO", onlyIfSuccessful: false, allowEmptyArchive: true        
             }
 
         }
