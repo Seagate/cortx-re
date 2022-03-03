@@ -435,7 +435,6 @@ release_build:
 	popd && \
 	pushd ${RELEASE_BUILD} && \
 		if [[ "$$(grep -r Rocky /etc/redhat-release|wc -l)" ==  "1" ]]; then wget -q https://github.com/Seagate/cortx/releases/download/third-party-deps-${THIRD_PARTY_VERSION}/third-party-rockylinux-8.4-${RELEASE_VERSION}-${BUILD_ID}.tar.gz -O third-party-${THIRD_PARTY_VERSION}.tar.gz ; else wget -q https://github.com/Seagate/cortx/releases/download/third-party-deps-${THIRD_PARTY_VERSION}/third-party-$$(rpm -qa centos-release | sed 's/-/./g' | awk -F[.] '{ print $$1"-"$$3"."$$4"."$$5}')-${THIRD_PARTY_VERSION}.tar.gz -O third-party-${THIRD_PARTY_VERSION}.tar.gz ; fi && \
-		wget -q https://github.com/Seagate/cortx/releases/download/third-party-deps-${THIRD_PARTY_VERSION}/third-party-centos-7.9.2009-${THIRD_PARTY_VERSION}.tar.gz -O third-party-${THIRD_PARTY_VERSION}.tar.gz && \
 		wget -q https://github.com/Seagate/cortx/releases/download/third-party-deps-${THIRD_PARTY_VERSION}/python-deps-${THIRD_PARTY_VERSION}.tar.gz && \
 		mkdir -p 3rd_party && tar -xvzf third-party-${THIRD_PARTY_VERSION}.tar.gz -C 3rd_party --strip-components=1 && \
 		mkdir -p python_deps && tar -xvzf python-deps-${THIRD_PARTY_VERSION}.tar.gz -C python_deps --strip-components=1 && \
