@@ -3,6 +3,7 @@ libfabric #cortx-motr
 file #cortx-motr
 less #cortx-motr
 consul #cortx-hare
+jq #cortx-hare
 gperftools-libs #cortx-rgw-integration
 libicu #cortx-rgw-integration
 liboath #cortx-rgw-integration
