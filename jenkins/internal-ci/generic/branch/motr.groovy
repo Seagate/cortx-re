@@ -156,7 +156,7 @@ pipeline {
                             try {
                                 def hareBuild = build job: 'hare', wait: true,
                                 parameters: [
-                                    string(name: 'branch', value: "rgw")
+                                    string(name: 'branch', value: "${branch}")
                                 ]
                                 env.HARE_BUILD_NUMBER = hareBuild.number
                             }catch (err){
