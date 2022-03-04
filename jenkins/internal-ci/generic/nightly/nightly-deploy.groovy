@@ -113,11 +113,10 @@ pipeline {
         }
 
         stage ("K8s QA Sanity") {
-            when { expression { false } }
             steps {
                 script {
                     catchError(stageResult: 'FAILURE') {
-                        def qaSanity = build job: '/QA-Sanity-Multinode-K8s', wait: true, propagate: false,
+                        def qaSanity = build job: '/QA-Pytest-Pipeline-Debug-Mode', wait: true, propagate: false,
                         parameters: [
                             string(name: 'M_NODE', value: "${env.master_node}"),
                             password(name: 'HOST_PASS', value: "${env.hostpasswd}"),
@@ -131,10 +130,10 @@ pipeline {
                         env.qaSanity_status = qaSanity.currentResult
                         env.qaSanityK8sJob_URL = qaSanity.absoluteUrl
                     }
-                    copyArtifacts filter: 'log/*report.xml', fingerprintArtifacts: true, flatten: true, optional: true, projectName: 'QA-Sanity-Multinode-K8s', selector: lastCompleted(), target: 'log/'
-                    copyArtifacts filter: 'log/*report.html', fingerprintArtifacts: true, flatten: true, optional: true, projectName: 'QA-Sanity-Multinode-K8s', selector: lastCompleted(), target: 'log/'
-                    copyArtifacts filter: 'log/*report.xml', fingerprintArtifacts: true, flatten: true, optional: true, projectName: 'QA-Sanity-Multinode-K8s', selector: lastCompleted(), target: ''
-                    copyArtifacts filter: 'log/*report.html', fingerprintArtifacts: true, flatten: true, optional: true, projectName: 'QA-Sanity-Multinode-K8s', selector: lastCompleted(), target: ''
+                    copyArtifacts filter: 'log/*report.xml', fingerprintArtifacts: true, flatten: true, optional: true, projectName: 'QA-Pytest-Pipeline-Debug-Mode', selector: lastCompleted(), target: 'log/'
+                    copyArtifacts filter: 'log/*report.html', fingerprintArtifacts: true, flatten: true, optional: true, projectName: 'QA-Pytest-Pipeline-Debug-Mode', selector: lastCompleted(), target: 'log/'
+                    copyArtifacts filter: 'log/*report.xml', fingerprintArtifacts: true, flatten: true, optional: true, projectName: 'QA-Pytest-Pipeline-Debug-Mode', selector: lastCompleted(), target: ''
+                    copyArtifacts filter: 'log/*report.html', fingerprintArtifacts: true, flatten: true, optional: true, projectName: 'QA-Pytest-Pipeline-Debug-Mode', selector: lastCompleted(), target: ''
                 }
             }
         }
