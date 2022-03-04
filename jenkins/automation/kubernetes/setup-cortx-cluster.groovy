@@ -26,8 +26,8 @@ pipeline {
         string(name: 'SNS_CONFIG', defaultValue: '1+0+0', description: 'sns configuration for deployment. Please select value based on disks available on nodes.', trim: true)
         string(name: 'DIX_CONFIG', defaultValue: '1+0+0', description: 'dix configuration for deployment. Please select value based on disks available on nodes.', trim: true)
         string(name: 'CONTROL_EXTERNAL_NODEPORT', defaultValue: '31169', description: 'Port to be used for control service.', trim: true)
-        string(name: 'S3_EXTERNAL_HTTP_NODEPORT', defaultValue: '38080', description: 'HTTP Port to be used for IO service.', trim: true)
-        string(name: 'S3_EXTERNAL_HTTPS_NODEPORT', defaultValue: '38443', description: 'HTTPS to be used for IO service.', trim: true)
+       // string(name: 'S3_EXTERNAL_HTTP_NODEPORT', defaultValue: '38080', description: 'HTTP Port to be used for IO service.', trim: true)
+       // string(name: 'S3_EXTERNAL_HTTPS_NODEPORT', defaultValue: '38443', description: 'HTTPS to be used for IO service.', trim: true)
 
 
         text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used for CORTX cluster setup. First node will be used as Master', name: 'hosts')
@@ -82,8 +82,8 @@ pipeline {
                         export DIX_CONFIG=${DIX_CONFIG}
                         export EXTERNAL_EXPOSURE_SERVICE=${EXTERNAL_EXPOSURE_SERVICE}
                         export CONTROL_EXTERNAL_NODEPORT=${CONTROL_EXTERNAL_NODEPORT}
-                        export S3_EXTERNAL_HTTP_NODEPORT=${S3_EXTERNAL_HTTP_NODEPORT}
-                        export S3_EXTERNAL_HTTPS_NODEPORT=${S3_EXTERNAL_HTTPS_NODEPORT}
+                        #export S3_EXTERNAL_HTTP_NODEPORT=${S3_EXTERNAL_HTTP_NODEPORT}
+                        #export S3_EXTERNAL_HTTPS_NODEPORT=${S3_EXTERNAL_HTTPS_NODEPORT}
                         ./cortx-deploy.sh --cortx-cluster
                     popd
                 '''
