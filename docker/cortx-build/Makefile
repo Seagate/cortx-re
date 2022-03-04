@@ -36,7 +36,7 @@ build: io-path control-path cortx-prereq release_build
 cortx-all-image: cortx-motr cortx-s3server cortx-hare cortx-prvsnr cortx-manager release_build
 
 ## cortx-all-image: generate packages required for cortx-all image including third-party-deps at "/var/artifacts/0"
-cortx-all-rockylinux-image: cortx-motr cortx-hare cortx-prvsnr cortx-manager _cortx-rgw-integration_build cortx-rgw release_build
+cortx-all-rockylinux-image: cortx-motr cortx-hare cortx-prvsnr cortx-manager cortx-rgw release_build
 
 ## control-path: generate control-path packages. cortx-provisioner, cortx-monitor, cortx-manager, cortx-management-portal and cortx-ha.
 control-path: cortx-prvsnr cortx-monitor cortx-manager cortx-management-portal cortx-ha
@@ -54,7 +54,7 @@ cortx-s3server: cortx-motr _s3_prereq _s3_build
 cortx-hare: cortx-motr _cortx-py-utils_build _cortx-py-utils_install _cortx-hare_prereq _cortx-hare_build
 
 ## cortx-rgw: generate cortx-rgw packages.
-cortx-rgw: cortx-motr _cortx-rgw_prereq _cortx-rgw_build
+cortx-rgw: _cortx-rgw-integration_build cortx-motr _cortx-rgw_prereq _cortx-rgw_build 
 
 ## cortx-ha: generate cortx-ha packages.
 cortx-ha: _cortx-py-utils_build _cortx-py-utils_install _ha_prereq _ha_build
@@ -267,7 +267,7 @@ _cortx-py-utils_install:
 	@echo "***************  Installing cortx-py-utils package *********************"
 	pushd cortx-workspace/cortx-utils/py-utils && \
 		yum install python3-pip gcc python3-devel -y && \
-		if [[ "$$(grep -r Rocky /etc/redhat-release|wc -l)" ==  "1" ]]; then yum erase python3-PyYAML -y ;else yum erase python36-PyYAML -y ; fi && \
+		if [[ $$(cat /etc/redhat-release) =~ "Rocky" ]]; then yum erase python3-PyYAML -y ;else yum erase python36-PyYAML -y ; fi && \
 		pip3 install -r python_requirements.txt && \
 		pip3 install -r python_requirements.ext.txt && \
 		yum localinstall -y ${RPM_DIR}/cortx-py-utils*noarch.rpm && \
@@ -283,7 +283,7 @@ _cortx-py-utils_install:
 _cortx-management-portal_prereq:
 	@echo "***************  Installing cortx-management-portal Prereqsites *********************"
 	pushd cortx-workspace/cortx-management-portal && \
-		if [[ "$$(grep -r Rocky /etc/redhat-release|wc -l)" ==  "1" ]]; then yum localinstall -y ${RPM_DIR}/cortx-provisioner*.noarch.rpm ;else yum localinstall ${RPM_DIR}/cortx-prvsnr*.rpm ${RPM_DIR}/python36-cortx-prvsnr*.rpm ; fi && \
+		if [[ $$(cat /etc/redhat-release) =~ "Rocky" ]]; then yum localinstall -y ${RPM_DIR}/cortx-provisioner*.noarch.rpm ;else yum localinstall ${RPM_DIR}/cortx-prvsnr*.rpm ${RPM_DIR}/python36-cortx-prvsnr*.rpm ; fi && \
         pip3.6 install pyinstaller==3.5 && \
 	popd || (echo "ERROR: cortx-management-portal source code is not available in cortx-workspace. Exiting..."; exit 1)
 
@@ -311,7 +311,7 @@ _cortx-manager_prereq:
 	@echo "***************  Installing cortx-manager Prereqsites *********************"
 
 	pushd cortx-workspace/cortx-manager && \
-		if [[ "$$(grep -r Rocky /etc/redhat-release|wc -l)" ==  "1" ]]; then yum localinstall -y ${RPM_DIR}/cortx-provisioner*.noarch.rpm ;else yum localinstall -y ${RPM_DIR}/cortx-prvsnr*.rpm ${RPM_DIR}/python36-cortx-prvsnr*.rpm ; fi && \
+		if [[ $$(cat /etc/redhat-release) =~ "Rocky" ]]; then yum localinstall -y ${RPM_DIR}/cortx-provisioner*.noarch.rpm ;else yum localinstall -y ${RPM_DIR}/cortx-prvsnr*.rpm ${RPM_DIR}/python36-cortx-prvsnr*.rpm ; fi && \
         pip3.6 install pyinstaller==3.5 && \
 	popd || (echo "ERROR: cortx-manager source code is not available in cortx-workspace. Exiting..."; exit 1)
 
@@ -338,7 +338,7 @@ _prvsnr_prereq:
 	@echo "***************  Installing cortx-prvsnr Prereqsites *********************"
 
 	pushd cortx-workspace/cortx-prvsnr/ && \
-		if [[ "$$(grep -r Rocky /etc/redhat-release|wc -l)" ==  "1" ]]; then yum install -y python3 ;else yum install -y python ; fi && \
+		if [[ $$(cat /etc/redhat-release) =~ "Rocky" ]]; then yum install -y python3 ;else yum install -y python ; fi && \
 	popd || (echo "ERROR: cortx-prvsnr codebase is not available in cortx-workspace.Exiting..."; exit 1)
 
 _prvsnr_build:
@@ -346,7 +346,7 @@ _prvsnr_build:
 	
 	pushd cortx-workspace/cortx-prvsnr/ && \
 		rm -rf dist/*.rpm ${RPM_DIR}/cortx-pr*.rpm ${RPM_DIR}/python36-cortx-prvsnr*.rpm ${RPM_DIR}/python36-cortx-setup*.rpm && \
-		if [[ "$$(grep -r Rocky /etc/redhat-release|wc -l)" ==  "1" ]]; then \
+		if [[ $$(cat /etc/redhat-release) =~ "Rocky" ]]; then \
 			if [ -f ./jenkins/build.sh ]; then bash ./jenkins/build.sh -v ${RELEASE_VERSION} -b ${BUILD_ID} && mv ./dist/cortx-provisioner*.rpm ${RPM_DIR} ; fi ; else sh ./devops/rpms/buildrpm.sh -g "$$(git rev-parse --short HEAD)" -e ${RELEASE_VERSION} -b "${BUILD_ID}" && \
 			sh ./cli/buildrpm.sh -g "$$(git rev-parse --short HEAD)" -e ${RELEASE_VERSION} -b "${BUILD_ID}" && \
 			bash ./devops/rpms/api/build_python_api.sh -vv --out-dir /root/rpmbuild/RPMS/x86_64/ --pkg-ver ${BUILD_ID}_git$$(git rev-parse --short HEAD) && \
@@ -408,7 +408,7 @@ _ha_build:
 	pushd "cortx-workspace/cortx-ha" && \
 		./jenkins/build.sh -v ${RELEASE_VERSION} -b ${BUILD_ID} && \
 		rm -rf ${RPM_DIR}/cortx-ha-*.rpm && \
-		mv dist/rpmbuild/RPMS/noarch/*.rpm ${RPM_DIR} && \
+		mv dist/rpmbuild/RPMS/*/*.rpm ${RPM_DIR} && \
 		createrepo -v ${RPM_DIR} && \
 	popd
 
@@ -430,15 +430,14 @@ cortx-prereq:
 release_build:
 	@echo "***************  Generating Release Build *********************"
 	pushd ${RPM_DIR} && \
-		yum install -y expect rpm-sign rng-tools genisoimage python3-pip && \
 		createrepo -v . && \
 	popd && \
 	pushd ${RELEASE_BUILD} && \
-		if [[ "$$(grep -r Rocky /etc/redhat-release|wc -l)" ==  "1" ]]; then wget -q https://github.com/Seagate/cortx/releases/download/third-party-deps-${THIRD_PARTY_VERSION}/third-party-rockylinux-8.4-${RELEASE_VERSION}-${BUILD_ID}.tar.gz -O third-party-${THIRD_PARTY_VERSION}.tar.gz ; else wget -q https://github.com/Seagate/cortx/releases/download/third-party-deps-${THIRD_PARTY_VERSION}/third-party-$$(rpm -qa centos-release | sed 's/-/./g' | awk -F[.] '{ print $$1"-"$$3"."$$4"."$$5}')-${THIRD_PARTY_VERSION}.tar.gz -O third-party-${THIRD_PARTY_VERSION}.tar.gz ; fi && \
+		if [[ $$(cat /etc/redhat-release) =~ "Rocky" ]]; then wget -q https://github.com/Seagate/cortx/releases/download/third-party-deps-${THIRD_PARTY_VERSION}/third-party-rockylinux-8.4-${RELEASE_VERSION}-${BUILD_ID}.tar.gz -O third-party-${THIRD_PARTY_VERSION}.tar.gz ; else wget -q https://github.com/Seagate/cortx/releases/download/third-party-deps-${THIRD_PARTY_VERSION}/third-party-$$(rpm -qa centos-release | sed 's/-/./g' | awk -F[.] '{ print $$1"-"$$3"."$$4"."$$5}')-${THIRD_PARTY_VERSION}.tar.gz -O third-party-${THIRD_PARTY_VERSION}.tar.gz ; fi && \
 		wget -q https://github.com/Seagate/cortx/releases/download/third-party-deps-${THIRD_PARTY_VERSION}/python-deps-${THIRD_PARTY_VERSION}.tar.gz && \
 		mkdir -p 3rd_party && tar -xvzf third-party-${THIRD_PARTY_VERSION}.tar.gz -C 3rd_party --strip-components=1 && \
 		mkdir -p python_deps && tar -xvzf python-deps-${THIRD_PARTY_VERSION}.tar.gz -C python_deps --strip-components=1 && \
-		wget -O install-${RELEASE_VERSION}-${BUILD_ID}.sh https://raw.githubusercontent.com/Seagate/cortx-prvsnr/$$(find /var/artifacts/*/cortx_iso/ -name cortx-provisioner*noarch.rpm| rev|awk -F'.' '{print $$3}'|awk -F'_' '{print $$1}'|rev)/srv/components/provisioner/scripts/install.sh && \
+		if [[ $$(cat /etc/redhat-release) =~ "CentOS" ]]; then wget -O install-${RELEASE_VERSION}-${BUILD_ID}.sh https://raw.githubusercontent.com/Seagate/cortx-prvsnr/$$(find /var/artifacts/*/cortx_iso/ -name cortx-provisioner*noarch.rpm| rev|awk -F'.' '{print $$3}'|awk -F'_' '{print $$1}'|rev)/srv/components/provisioner/scripts/install.sh ; fi && \
  		sh /opt/release_support/build_release_info.sh -b ${BRANCH} -v ${RELEASE_VERSION} -l ${RPM_DIR} -t ${RELEASE_BUILD}/3rd_party && \
 		cp ${RPM_DIR}/RELEASE.INFO ${RELEASE_BUILD}/ && \
 	popd
