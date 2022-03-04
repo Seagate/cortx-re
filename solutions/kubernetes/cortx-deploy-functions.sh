@@ -96,6 +96,7 @@ function update_solution_config(){
         dix=$DIX_CONFIG yq e -i '.solution.common.storage_sets.durability.dix = env(dix)' solution.yaml
         
         external_exposure_service=$EXTERNAL_EXPOSURE_SERVICE yq e -i '.solution.common.external_services.s3.type = env(external_exposure_service)' solution.yaml
+        yq e -i '.solution.common.external_services.s3.count = 1' solution.yaml
         yq e -i '.solution.common.external_services.s3.ports.http = "8000"' solution.yaml
         yq e -i '.solution.common.external_services.s3.ports.https = "8443"' solution.yaml
         yq e -i '.solution.common.external_services.s3.nodePorts.https = ""' solution.yaml
