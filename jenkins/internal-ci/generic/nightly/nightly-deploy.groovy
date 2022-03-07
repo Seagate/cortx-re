@@ -78,7 +78,6 @@ pipeline {
         }
 
         stage('Push Image to GitHub') {
-            when { expression { false } }
             agent {
                 node {
                 label 'docker-image-builder-centos-7.9.2009'
