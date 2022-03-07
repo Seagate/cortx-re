@@ -46,7 +46,7 @@ pipeline {
         stage('Checkout Release scripts') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                checkout([$class: 'GitSCM', branches: [[name: "main"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'github.com/Seagate/cortx-re']]])
+                checkout([$class: 'GitSCM', branches: [[name: "main"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
             }
         }
             
@@ -258,7 +258,7 @@ pipeline {
                     try {
                         def build_cortx_images = build job: 'cortx-docker-images', wait: true,
                                     parameters: [
-                                        string(name: 'CORTX_RE_URL', value: "github.com/Seagate/cortx-re"),
+                                        string(name: 'CORTX_RE_URL', value: "https://github.com/Seagate/cortx-re"),
                                         string(name: 'CORTX_RE_BRANCH', value: "main"),
                                         string(name: 'BUILD', value: "${ARTIFACT_LOCATION}/${release_tag}/prod"),
                                         string(name: 'GITHUB_PUSH', value: "yes"),
@@ -285,7 +285,7 @@ pipeline {
                     build job: "K8s-1N-deployment", propagate: false, wait: false,
                     parameters: [
                         string(name: 'CORTX_RE_BRANCH', value: "main"),
-                        string(name: 'CORTX_RE_REPO', value: "github.com/Seagate/cortx-re"),
+                        string(name: 'CORTX_RE_REPO', value: "https://github.com/Seagate/cortx-re"),
                         string(name: 'CORTX_ALL_IMAGE', value: "${env.cortx_all_image}"),
                         string(name: 'CORTX_SERVER_IMAGE', value: "${env.cortx_rgw_image}")
 
@@ -293,7 +293,7 @@ pipeline {
                     build job: "K8s-3N-deployment", propagate: false, wait: false,
                     parameters: [
                         string(name: 'CORTX_RE_BRANCH', value: "main"),
-                        string(name: 'CORTX_RE_REPO', value: "github.com/Seagate/cortx-re"),
+                        string(name: 'CORTX_RE_REPO', value: "https://github.com/Seagate/cortx-re"),
                         string(name: 'CORTX_ALL_IMAGE', value: "${env.cortx_all_image}"),
                         string(name: 'CORTX_SERVER_IMAGE', value: "${env.cortx_rgw_image}")
                     ]
