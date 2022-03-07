@@ -80,6 +80,8 @@ function update_solution_config(){
         yq e -i '.solution.common.container_path.local = "/etc/cortx"' solution.yaml
         yq e -i '.solution.common.container_path.shared = "/share"' solution.yaml
         yq e -i '.solution.common.container_path.log = "/etc/cortx/log"' solution.yaml
+        yq e -i '.solution.common.s3.default_iam_users.auth_admin = "sgiamadmin"' solution.yaml
+        yq e -i '.solution.common.s3.default_iam_users.auth_user = "user_name"' solution.yaml
         yq e -i '.solution.common.s3.num_inst = 2' solution.yaml
         yq e -i '.solution.common.s3.start_port_num = 28051' solution.yaml
         yq e -i '.solution.common.s3.max_start_timeout = 240' solution.yaml
@@ -92,7 +94,17 @@ function update_solution_config(){
 
         sns=$SNS_CONFIG yq e -i '.solution.common.storage_sets.durability.sns = env(sns)' solution.yaml
         dix=$DIX_CONFIG yq e -i '.solution.common.storage_sets.durability.dix = env(dix)' solution.yaml
-        yq e -i '.solution.common.external_services.type = "LoadBalancer"' solution.yaml
+
+        yq e -i '.solution.common.external_services.s3.type = "NodePort"' solution.yaml
+        yq e -i '.solution.common.external_services.s3.count = 1' solution.yaml
+        yq e -i '.solution.common.external_services.s3.ports.http = 8000' solution.yaml
+        yq e -i '.solution.common.external_services.s3.ports.https = 8443' solution.yaml
+        yq e -i '.solution.common.external_services.s3.nodePorts.http = ""' solution.yaml
+        yq e -i '.solution.common.external_services.s3.nodePorts.https = ""' solution.yaml
+
+        yq e -i '.solution.common.external_services.control.type = "NodePort"' solution.yaml
+        yq e -i '.solution.common.external_services.control.ports.https = 8081' solution.yaml
+        yq e -i '.solution.common.external_services.control.nodePorts.https = ""' solution.yaml
 
         yq e -i '.solution.common.resource_allocation.consul.server.storage = "10Gi"' solution.yaml
         yq e -i '.solution.common.resource_allocation.consul.server.resources.requests.memory = "100Mi"' solution.yaml
@@ -147,9 +159,7 @@ function update_solution_config(){
 function add_image_info(){
 echo "Updating cortx-all image info in solution.yaml"   
 pushd $SCRIPT_LOCATION/k8_cortx_cloud
-    image=$CORTX_IMAGE yq e -i '.solution.images.cortxcontrolprov = env(image)' solution.yaml	
     image=$CORTX_IMAGE yq e -i '.solution.images.cortxcontrol = env(image)' solution.yaml	
-    image=$CORTX_IMAGE yq e -i '.solution.images.cortxdataprov = env(image)' solution.yaml
     image=$CORTX_IMAGE yq e -i '.solution.images.cortxdata = env(image)' solution.yaml
     image=$CORTX_IMAGE yq e -i '.solution.images.cortxserver = env(image)' solution.yaml
     image=$CORTX_IMAGE yq e -i '.solution.images.cortxha = env(image)' solution.yaml
