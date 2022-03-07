@@ -89,25 +89,30 @@ pipeline {
                    systemctl status docker
                    /usr/local/bin/docker-compose --version
                    echo \'y\' | docker image prune
-                   docker pull $CORTX_IMAGE
+                   docker pull $CORTX_ALL_IMAGE
+                   docker pull $CORTX_SERVER_IMAGE
 
                    echo "\n RPM Build URL used for Nightly Image"
-                   docker inspect $CORTX_IMAGE | jq -r '.[] | (.ContainerConfig.Cmd)' | grep 'BUILD_URL='
+                   docker inspect $CORTX_ALL_IMAGE | jq -r '.[] | (.ContainerConfig.Cmd)' | grep 'BUILD_URL='
+                   docker inspect $CORTX_SERVER_IMAGE | jq -r '.[] | (.ContainerConfig.Cmd)' | grep 'BUILD_URL='
 
                    #Update VERSION details in RELEASE.INFO file
 
-                   docker commit $(docker run -d ${CORTX_IMAGE} sed -i /VERSION/s/\\"2.0.0.*\\"/\\"${VERSION}-${BUILD_NUMBER}\\"/ /opt/seagate/cortx/RELEASE.INFO) ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}
-
+                   docker commit $(docker run -d ${CORTX_ALL_IMAGE} sed -i /VERSION/s/\\"2.0.0.*\\"/\\"${VERSION}-${BUILD_NUMBER}\\"/ /opt/seagate/cortx/RELEASE.INFO) ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}
+                   docker commit $(docker run -d ${CORTX_SERVER_IMAGE} sed -i /VERSION/s/\\"2.0.0.*\\"/\\"${VERSION}-${BUILD_NUMBER}\\"/ /opt/seagate/cortx/RELEASE.INFO) ghcr.io/seagate/cortx-rgw:${VERSION}-${BUILD_NUMBER} 
 
                    docker tag ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER} ghcr.io/seagate/cortx-all:${VERSION}-latest
+                   docker tag ghcr.io/seagate/cortx-rgw:${VERSION}-${BUILD_NUMBER} ghcr.io/seagate/cortx-rgw:${VERSION}-latest
 
                    docker login ghcr.io -u ${GITHUB_CRED_USR} -p ${GITHUB_CRED_PSW}
                    
-                   docker push ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}
-                   docker push ghcr.io/seagate/cortx-all:${VERSION}-latest
+                   docker push ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER} && docker push ghcr.io/seagate/cortx-all:${VERSION}-latest
+                   docker push ghcr.io/seagate/cortx-rgw:${VERSION}-${BUILD_NUMBER} && docker push ghcr.io/seagate/cortx-rgw:${VERSION}-latest
                    
                    docker rmi ghcr.io/seagate/cortx-all:${VERSION}-latest
+                   docker rmi ghcr.io/seagate/cortx-rgw:${VERSION}-latest
                    docker rmi ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}
+                   docker rmi ghcr.io/seagate/cortx-rgw:${VERSION}-${BUILD_NUMBER}
                 '''
            }
         }
@@ -120,7 +125,7 @@ pipeline {
                         parameters: [
                             string(name: 'M_NODE', value: "${env.master_node}"),
                             password(name: 'HOST_PASS', value: "${env.hostpasswd}"),
-                            string(name: 'CORTX_IMAGE', value: "ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}"),
+                            string(name: 'CORTX_ALL_IMAGE', value: "ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}"),
                             string(name: 'NUM_NODES', value: "${env.numberofnodes}")
                         ]
                         env.Sanity_Failed = qaSanity.buildVariables.Sanity_Failed
