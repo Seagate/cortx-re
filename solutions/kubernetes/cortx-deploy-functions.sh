@@ -80,6 +80,8 @@ function update_solution_config(){
         yq e -i '.solution.common.container_path.local = "/etc/cortx"' solution.yaml
         yq e -i '.solution.common.container_path.shared = "/share"' solution.yaml
         yq e -i '.solution.common.container_path.log = "/etc/cortx/log"' solution.yaml
+        yq e -i '.solution.common.s3.default_iam_users.auth_admin = "sgiamadmin"' solution.yaml
+        yq e -i '.solution.common.s3.default_iam_users.auth_user = "user_name"' solution.yaml
         yq e -i '.solution.common.s3.num_inst = 2' solution.yaml
         yq e -i '.solution.common.s3.start_port_num = 28051' solution.yaml
         yq e -i '.solution.common.s3.max_start_timeout = 240' solution.yaml
@@ -92,7 +94,17 @@ function update_solution_config(){
 
         sns=$SNS_CONFIG yq e -i '.solution.common.storage_sets.durability.sns = env(sns)' solution.yaml
         dix=$DIX_CONFIG yq e -i '.solution.common.storage_sets.durability.dix = env(dix)' solution.yaml
-        yq e -i '.solution.common.external_services.type = "LoadBalancer"' solution.yaml
+        
+        external_exposure_service=$EXTERNAL_EXPOSURE_SERVICE yq e -i '.solution.common.external_services.s3.type = env(external_exposure_service)' solution.yaml
+        yq e -i '.solution.common.external_services.s3.count = 1' solution.yaml
+        yq e -i '.solution.common.external_services.s3.ports.http = "8000"' solution.yaml
+        yq e -i '.solution.common.external_services.s3.ports.https = "8443"' solution.yaml
+        s3_external_http_nodeport=$S3_EXTERNAL_HTTP_NODEPORT yq e -i '.solution.common.external_services.s3.nodePorts.http = env(s3_external_http_nodeport)' solution.yaml
+        s3_external_https_nodeport=$S3_EXTERNAL_HTTPS_NODEPORT yq e -i '.solution.common.external_services.s3.nodePorts.https = env(s3_external_https_nodeport)' solution.yaml
+        
+        external_exposure_service=$EXTERNAL_EXPOSURE_SERVICE yq e -i '.solution.common.external_services.control.type = env(external_exposure_service)' solution.yaml    
+        yq e -i '.solution.common.external_services.control.ports.https = "8081"' solution.yaml    
+        control_external_nodeport=$CONTROL_EXTERNAL_NODEPORT yq e -i '.solution.common.external_services.control.nodePorts.https = env(control_external_nodeport)' solution.yaml
 
         yq e -i '.solution.common.resource_allocation.consul.server.storage = "10Gi"' solution.yaml
         yq e -i '.solution.common.resource_allocation.consul.server.resources.requests.memory = "100Mi"' solution.yaml
@@ -147,13 +159,11 @@ function update_solution_config(){
 function add_image_info(){
 echo "Updating cortx-all image info in solution.yaml"   
 pushd $SCRIPT_LOCATION/k8_cortx_cloud
-    image=$CORTX_IMAGE yq e -i '.solution.images.cortxcontrolprov = env(image)' solution.yaml	
-    image=$CORTX_IMAGE yq e -i '.solution.images.cortxcontrol = env(image)' solution.yaml	
-    image=$CORTX_IMAGE yq e -i '.solution.images.cortxdataprov = env(image)' solution.yaml
-    image=$CORTX_IMAGE yq e -i '.solution.images.cortxdata = env(image)' solution.yaml
-    image=$CORTX_IMAGE yq e -i '.solution.images.cortxserver = env(image)' solution.yaml
-    image=$CORTX_IMAGE yq e -i '.solution.images.cortxha = env(image)' solution.yaml
-    image=$CORTX_IMAGE yq e -i '.solution.images.cortxclient = env(image)' solution.yaml
+    image=$CORTX_ALL_IMAGE yq e -i '.solution.images.cortxcontrol = env(image)' solution.yaml	
+    image=$CORTX_ALL_IMAGE yq e -i '.solution.images.cortxdata = env(image)' solution.yaml
+    image=$CORTX_SERVER_IMAGE yq e -i '.solution.images.cortxserver = env(image)' solution.yaml
+    image=$CORTX_ALL_IMAGE yq e -i '.solution.images.cortxha = env(image)' solution.yaml
+    image=$CORTX_ALL_IMAGE yq e -i '.solution.images.cortxclient = env(image)' solution.yaml
 popd 
 }
 
@@ -229,7 +239,8 @@ function openldap_requiremenrs(){
 
 function execute_prereq(){
     echo "Pulling latest CORTX-ALL image"
-    docker pull $CORTX_IMAGE || { echo "Failed to pull $CORTX_IMAGE"; exit 1; }
+    docker pull $CORTX_ALL_IMAGE || echo "Failed to pull $CORTX_IMAGE"
+    docker pull $CORTX_SERVER_IMAGE || echo "Failed to pull $CORTX_SERVER_IMAGE"
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         findmnt $SYSTEM_DRIVE && umount -l $SYSTEM_DRIVE
         ./prereq-deploy-cortx-cloud.sh $SYSTEM_DRIVE
@@ -330,6 +341,8 @@ echo "-----------[ All POD's are not in running state. Marking deployment as fai
 echo "-----------[ Sleeping for 1min before checking hctl status.... ]--------------------"
     sleep 60  
 echo "---------------------------------------[ hctl status ]-----------------------------------------"
+#    echo "Disabled htcl status check for now. Checking RGW service"
+#    kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-rgw -- ps -elf | grep rgw
     SECONDS=0
     date
     while [[ SECONDS -lt 1200 ]] ; do
