@@ -1,5 +1,6 @@
 isa-l #cortx-motr
 libfabric #cortx-motr
+libfabric-devel #cortx-motr
 file #cortx-motr
 less #cortx-motr
 consul #cortx-hare
