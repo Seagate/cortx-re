@@ -9,4 +9,3 @@ githubrelease asset Seagate/cortx download build-dependencies && /bin/createrepo
 yum-config-manager --add-repo file:///cortx-build-dependencies
 echo "gpgcheck=0" >> /etc/yum.repos.d/cortx-build-dependencies.repo
 yum clean all && rm -rf /var/cache/yum
-

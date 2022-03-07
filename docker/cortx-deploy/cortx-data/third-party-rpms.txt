@@ -1,0 +1,11 @@
+crontabs  #cortx-utils
+java-1.8.0-openjdk-headless
+jq #cortx-prvsnr
+which #cortx-motr
+libfabric-1.11.2 #cortx-motr
+python3-ldap #cortx-utils
+sshpass
+sudo
+python3-dbus 
+python3-m2crypto 
+python3-psutil
