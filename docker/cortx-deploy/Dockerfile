@@ -26,6 +26,7 @@ FROM ${OS_TYPE}:${OS_RELEASE}
 ARG OS
 ARG OS_TYPE
 ARG OS_RELEASE
+ARG CORTX_IMAGE
 ARG ENVIRONMENT
 ARG GIT_HASH
 ARG BUILD_URL
@@ -41,14 +42,10 @@ LABEL maintainer="cortx.opensource@seagate.com" \
 ENV GIT_HASH $GIT_HASH
 
 #Disable default repositories. 
-RUN yum install yum-utils -y \
-    && if [[ $OS_TYPE =~ "centos" ]]; then yum-config-manager --disable base,extras,updates; fi
+RUN if [[ $OS_TYPE =~ "centos" ]]; then yum-config-manager --disable base,extras,updates; fi
 
 #Add Internal and CORTX uploads repository
 COPY ./${ENVIRONMENT}/$OS.repo /etc/yum.repos.d/
-
-# Install rockylinux opensource-ci dependency
-RUN if [[ "$ENVIRONMENT" = "opensource-ci" ]] && [[ $OS_TYPE == "rockylinux/rockylinux" ]]; then dnf install dnf-plugin-config-manager -y ;dnf config-manager --set-enabled powertools ; rm -rf /etc/yum.repos.d/$OS.repo ;fi
 
 # Install EPEL repo for opensource-ci
 RUN if [ "$ENVIRONMENT" = "opensource-ci" ] ; then yum install epel-release -y ; fi && yum clean all \
@@ -59,19 +56,22 @@ RUN yum install yum-utils -y \
     && yum-config-manager --add-repo ${BUILD_URL}/3rd_party \
     && curl ${BUILD_URL}/RELEASE.INFO -o RELEASE.INFO 
 
-COPY ./*.txt ./$OS/ ./generate-release-info.sh /opt/seagate/cortx/
+COPY ./*.txt ./${CORTX_IMAGE}/*.txt ./generate-release-info.sh /opt/seagate/cortx/
 
 RUN yum install --nogpgcheck -y python3-pip \
     && pip3 install yq \
-    && pip3 install  --no-cache-dir --trusted-host $(echo $BUILD_URL | awk -F '/' '{print $3}') -i $BUILD_URL/python_deps -r /opt/seagate/cortx/python_requirements.txt -r /opt/seagate/cortx/python_requirements.ext.txt \
-   && yum clean all && rm -rf /var/cache/yum
+    && while read component; do grep "$component" < /opt/seagate/cortx/python_requirements.txt; done </opt/seagate/cortx/cortx-component-rpms.txt | sed 's/#.*//g' > /opt/seagate/cortx/requirements.txt \
+    && while read component; do grep "$component" < /opt/seagate/cortx/python_requirements.ext.txt; done </opt/seagate/cortx/cortx-component-rpms.txt | sed 's/#.*//g' > /opt/seagate/cortx/requirements.ext.txt \
+    && pip3 install  --no-cache-dir --trusted-host $(echo $BUILD_URL | awk -F '/' '{print $3}') -i $BUILD_URL/python_deps -r /opt/seagate/cortx/requirements.txt -r /opt/seagate/cortx/requirements.ext.txt \
+    && yum clean all && rm -rf /var/cache/yum
 
-RUN yum --nogpgcheck -y --disablerepo="EOS_Rocky_8_OS_x86_64_Rocky_8" install libfabric-1.11.2 \
-    && yum install --nogpgcheck -y  $(sed 's/#.*//g' /opt/seagate/cortx/third-party-rpms.txt) \
+RUN if [[ "$CORTX_IMAGE" = "cortx-rgw" ]] || [[ "$CORTX_IMAGE" = "cortx-all" ]] || [[ "$CORTX_IMAGE" = "cortx-data" ]]; then yum --nogpgcheck -y --disablerepo="EOS_Rocky_8_OS_x86_64_Rocky_8" install libfabric-1.11.2; fi \
+    && yum install --nogpgcheck -y  $(while read -r component; do grep "$component" < /opt/seagate/cortx/third-party-rpms.txt; done </opt/seagate/cortx/cortx-component-rpms.txt | sed 's/#.*//g') \
     && yum clean all && rm -rf /var/cache/yum
     
-RUN yum install --nogpgcheck -y  $(sed 's/#.*//g' /opt/seagate/cortx/cortx-componenet-rpms.txt) \
-    && yum install -y --nogpgcheck --downloadonly --downloaddir=/opt/seagate/cortx/debug-packages cortx-hare-debuginfo cortx-motr-debuginfo \
+RUN yum install --nogpgcheck -y  $(sed 's/#.*//g' /opt/seagate/cortx/cortx-component-rpms.txt) \
+    && if [[ "$CORTX_IMAGE" = "cortx-rgw" ]] || [[ "$CORTX_IMAGE" = "cortx-all" ]]; then yum install --nogpgcheck -y  $(sed 's/#.*//g' /opt/seagate/cortx/ceph-component-rpms.txt); fi \
+    && if [[ "$CORTX_IMAGE" = "cortx-rgw" ]] || [[ "$CORTX_IMAGE" = "cortx-all" ]] || [[ "$CORTX_IMAGE" = "cortx-data" ]]; then yum install -y --nogpgcheck --downloadonly --downloaddir=/opt/seagate/cortx/debug-packages cortx-hare-debuginfo cortx-motr-debuginfo; fi \
     && yum clean all && rm -rf /var/cache/yum
     
 RUN rm -f /etc/machine-id && ln -s /etc/cortx/solution/node/id /etc/machine-id \
@@ -79,4 +79,3 @@ RUN rm -f /etc/machine-id && ln -s /etc/cortx/solution/node/id /etc/machine-id \
 
 RUN rm -rf /etc/yum.repos.d/$(echo $BUILD_URL | awk -F '/' '{print $3}')*.repo /etc/yum.repos.d/$OS.repo \
     && yum clean all && rm -rf /var/cache/yum
-

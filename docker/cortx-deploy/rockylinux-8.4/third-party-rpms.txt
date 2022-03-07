@@ -2,12 +2,10 @@ crontabs  #cortx-utils
 java-1.8.0-openjdk-headless
 jq #cortx-prvsnr
 logrotate #cortx-utils
-python36
+python3
 python3-dbus
 python3-m2crypto
 python3-psutil
 sshpass
 sudo
 which #cortx-motr
-python3-ldap #cortx-utils
-libfabric-1.11.2 #cortx-motr
