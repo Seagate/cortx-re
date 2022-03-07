@@ -1,23 +1,21 @@
-#!/usr/bin/env groovy
 pipeline {
     agent {
         node {
             label "docker-${os_version}-node"
         }
     }
-    
+
     triggers {
         pollSCM '*/5 * * * *'
     }
     
-    environment { 
-        version = "2.0.0"     
+
+    environment {
+        version = "2.0.0"      
         env = "dev"
-        component = "csm-agent"
+        component = "cortx-utils"
         release_dir = "/mnt/bigstorage/releases/cortx"
-        release_tag = "last_successful_prod"
         build_upload_dir = "$release_dir/components/github/$branch/$os_version/$env/$component"
-        // Please configure branch and os_version in Jenkins configuration.
     }
 
     options {
@@ -27,65 +25,46 @@ pipeline {
         disableConcurrentBuilds()
     }
 
-
     stages {
-
-        stage('Checkout') {
+        stage('Checkout py-utils') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-
-                dir ('cortx-csm-agent') {
-                    checkout([$class: 'GitSCM', branches: [[name: "${branch}"]], doGenerateSubmoduleConfigurations: false,  extensions: [[$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-manager']]])
-                }
-                dir('seagate-ldr') {
-                    checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/seagate-ldr.git']]])
-                }
-                dir ('cortx-re') {
-                    checkout changelog: false, poll: false, scm: [$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', noTags: true, reference: '', shallow: true]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]]
-                }
+                checkout([$class: 'GitSCM', branches: [[name: "${branch}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-utils']]])
             }
         }
-        
-        stage('Install Dependencies') {
-            steps {
-                script { build_stage = env.STAGE_NAME }
-
-                sh label: 'Configure yum repository for cortx-py-utils', script: """
-                    yum-config-manager --nogpgcheck --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/last_successful_prod/cortx_iso/
-
-                    pip3 install --no-cache-dir --trusted-host cortx-storage.colo.seagate.com -i http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/python-packages-2.0.0-latest/ -r https://raw.githubusercontent.com/Seagate/cortx-utils/$branch/py-utils/python_requirements.txt -r https://raw.githubusercontent.com/Seagate/cortx-utils/$branch/py-utils/python_requirements.ext.txt
-                """
-
-                sh label: 'Install pyinstaller', script: """
-                        pip3.6 install  pyinstaller==3.5
-                """
-            }
-        }           
         
         stage('Build') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Build', script: '''
-                pushd cortx-csm-agent
-                    BUILD=$(git rev-parse --short HEAD)
-                    echo "Executing build script"
-                    echo "Python:$(python --version)"
-                    ./cicd/build.sh -v $version -b $BUILD_NUMBER -t -n ldr -l $WORKSPACE/seagate-ldr
-                popd
-                '''
+                #Build cortx-py-utils package.
+                ./jenkins/build.sh -v $version -b $BUILD_NUMBER
+                #Build statsd-utils package.
+                ./statsd-utils/jenkins/build.sh -v $version -b $BUILD_NUMBER
+            '''    
             }
-        }
+        }    
+        
         
         stage ('Upload') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Copy RPMS', script: '''
                     mkdir -p $build_upload_dir/$BUILD_NUMBER
-                    cp ./cortx-csm-agent/dist/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir/$BUILD_NUMBER
+                    shopt -s extglob
+                    cp ./py-utils/dist/!(*.src.rpm|*.tar.gz) $build_upload_dir/$BUILD_NUMBER
+                    cp ./statsd-utils/dist/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir/$BUILD_NUMBER
                 '''
-                sh label: 'Repo Creation', script: '''pushd $build_upload_dir/$BUILD_NUMBER
-                    rpm -qi createrepo || yum install -y createrepo
+                sh label: 'Repo Creation', script: '''
+                    pushd $build_upload_dir/$BUILD_NUMBER
+                    yum install -y createrepo
                     createrepo .
+                    popd
+                '''
+                 sh label: 'Tag last_successful', script: '''
+                    pushd $build_upload_dir/
+                    test -L $build_upload_dir/last_successful && rm -f last_successful
+                    ln -s $build_upload_dir/$BUILD_NUMBER last_successful
                     popd
                 '''
             }
@@ -95,13 +74,13 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Tag last_successful', script: '''pushd $build_upload_dir/
-                    test -d $build_upload_dir/last_successful && rm -f last_successful
+                    test -L $build_upload_dir/last_successful && rm -f last_successful
                     ln -s $build_upload_dir/$BUILD_NUMBER last_successful
                     popd
                 '''
             }
         }
-        
+
         stage ("Release") {
             when { triggeredBy 'SCMTrigger' }
             steps {
@@ -114,17 +93,17 @@ pipeline {
                 }
             }
         }
-    
+
         stage('Update Jira') {
-                when { expression { return env.release_build != null } }
-                    steps {
-                script { build_stage=env.STAGE_NAME }    
+            when { expression { false } }
+                steps {
+                script { build_stage=env.STAGE_NAME }
                     script {
                         def jiraIssues = jiraIssueSelector(issueSelector: [$class: 'DefaultIssueSelector'])
                         jiraIssues.each { issue ->
-                             def author =  getAuthor(issue)
-                             jiraAddComment(    
-                                 idOrKey: issue,
+                            def author =  getAuthor(issue)
+                            jiraAddComment(
+                                idOrKey: issue,
                                 site: "SEAGATE_JIRA",
                                 comment: "{panel:bgColor=#c1c7d0}"+
                                     "h2. ${component} - ${branch} branch build pipeline SUCCESS\n"+
@@ -138,17 +117,12 @@ pipeline {
                                 failOnError: false,
                                 auditLog: false
                             )
-                            //def jiraFileds = jiraGetIssue idOrKey: issue, site: "SEAGATE_JIRA", failOnError: false
-                            //if(jiraFileds.data != null){
-                            //def labels_data =  jiraFileds.data.fields.labels + "cortx_stable_b${release_build}"
-                        //jiraEditIssue idOrKey: issue, issue: [fields: [ labels: labels_data ]], site: "SEAGATE_JIRA", failOnError: false    
-                        //} 
                         }
                     }
             }
+        }
     }
-    }
-    
+
     post {
         always {
             script {
@@ -162,12 +136,11 @@ pipeline {
                 env.build_stage = "${build_stage}"
 
                 def toEmail = ""
-                def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
-                if( manager.build.result.toString() == "FAILURE" ) {
+                def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
+                if ( manager.build.result.toString() == "FAILURE") {
                     toEmail = "shailesh.vaidya@seagate.com"
-                    recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'],[$class: 'RequesterRecipientProvider']]
+                    recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
                 }
-
                 emailext (
                     body: '''${SCRIPT, template="component-email.template"}''',
                     mimeType: 'text/html',
@@ -179,7 +152,8 @@ pipeline {
             }
         }
     }
-}    
+
+}
 
 @NonCPS
 def getAuthor(issue) {
