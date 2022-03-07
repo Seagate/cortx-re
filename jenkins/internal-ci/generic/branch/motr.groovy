@@ -223,7 +223,9 @@ pipeline {
                                             "* Release Build    :  ${release_build}  \n\n  "+
                                     "h3. Artifact Location  :  \n"+
                                         "*  "+"${release_build_location} "+"\n"+
-                                        "{panel}",
+                                    "h3. Image Location  :  \n"+
+                                        "*  "+"${cortx_all_image} "+"\n"+    
+                                    "{panel}",
                                 failOnError: false,
                                 auditLog: false
                             )
