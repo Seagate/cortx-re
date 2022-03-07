@@ -19,7 +19,7 @@ pipeline {
 
     parameters {
 
-        string(name: 'CORTX_RE_BRANCH', defaultValue: 'cortx-s3-support', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
+        string(name: 'CORTX_RE_BRANCH', defaultValue: 's3-support-fix', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/shailesh-vaidya/cortx-re/', description: 'Repository for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-all:2.0.0-662-06303', description: 'CORTX-ALL image', trim: true)
         string(name: 'SNS_CONFIG', defaultValue: '1+0+0', description: 'sns configuration for deployment. Please select value based on disks available on nodes.', trim: true)
