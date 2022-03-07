@@ -21,6 +21,22 @@ version: "3"
 
 services:
   cortx-build-rockylinux-8.4:
+    image: ghcr.io/seagate/cortx-build:rockylinux-8.4
+    build:
+      context: ../../
+      dockerfile: ./docker/cortx-build/Dockerfile
+      args:
+        OS_TYPE: rockylinux
+        OS_RELEASE: 8.4
+        OS_IMAGE: rockylinux/rockylinux
+        ENVIRONMENT: opensource-ci
+        GPG_PASSPHRASE: seagate
+        LUSTRE_VERSION: 2.12.7
+    volumes:
+      - /var/artifacts:/var/artifacts
+      - /root/cortx:/cortx-workspace
+
+  cortx-build-rockylinux-8.4:
     image: cortx-docker.colo.seagate.com/seagate/cortx-build-internal:rockylinux-8.4
     build:
       context: ../../
