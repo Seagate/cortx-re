@@ -12,28 +12,25 @@ pipeline {
         disableConcurrentBuilds()
     }
     environment {
-        CORTX_RE_BRANCH = "main"
-        CORTX_RE_REPO = "https://github.com/Seagate/cortx-re/"
         DOCKER_IMAGE_LOCATION = "https://github.com/Seagate/cortx-re/pkgs/container/cortx-all"
         // Need to make this variable dynamic based on repository selected
     }
     parameters {
-        string(name: 'CORTX_RE_BRANCH', defaultValue: 'kubernetes', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
-        string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for Cluster Setup scripts', trim: true)
-        string(name: 'CORTX_IMAGE', defaultValue: 'cortx-docker.colo.seagate.com/seagate/cortx-all:2.0.0-latest-kubernetes', description: 'CORTX-ALL image', trim: true)
-        string(name: 'SNS_CONFIG', defaultValue: '1+0+0', description: 'sns configuration for deployment. Please select value based on disks available on nodes.', trim: true)
-        string(name: 'DIX_CONFIG', defaultValue: '1+0+0', description: 'dix configuration for deployment. Please select value based on disks available on nodes.', trim: true)
+        string(name: 'CORTX_RE_BRANCH', defaultValue: 'rocky-linux-custom-ci', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
+        string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/shailesh-vaidya/cortx-re', description: 'Repository for Cluster Setup scripts', trim: true)
+        string(name: 'CORTX_ALL_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-all:2.0.0-latest-custom-ci', description: 'CORTX-ALL image', trim: true)
+        string(name: 'CORTX_SERVER_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-all:2.0.0-latest-custom-ci', description: 'CORTX-ALL image', trim: true)
 
         choice (
             choices: ['DEVOPS', 'ALL', 'DEBUG'],
             description: 'Email Notification Recipients ',
             name: 'EMAIL_RECIPIENTS'
         )
-        // Please configure hosts, CORTX_SCRIPTS_BRANCH and CORTX_SCRIPTS_REPO parameter in Jenkins job configuration.
+        // Please configure hosts, CORTX_SCRIPTS_BRANCH, CORTX_SCRIPTS_REPO, SNS and DIX parameter in Jenkins job configuration.
 
     }
     stages {
-        stage ("Define Variable") {
+        stage ("Define Build Variables") {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
@@ -50,23 +47,9 @@ pipeline {
                     ''', returnStdout: true).trim()
 
                     env.numberofnodes = sh( script: '''
-                    echo $hosts | tr ' ' '\n' | tail -n +2 | wc -l
+                    echo $hosts | tr ' ' '\n' | tail -n +1 | wc -l
                     ''', returnStdout: true).trim()
 
-                }
-            }
-        }
-
-        stage ("Cluster Cleanup") {
-            steps {
-                script { build_stage = env.STAGE_NAME }
-                script {
-                    build job: '/Cortx-kubernetes/destroy-cortx-cluster', wait: true,
-                    parameters: [
-                        string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
-                        string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
-                        text(name: 'hosts', value: "${hosts}")
-                    ]
                 }
             }
         }
@@ -75,14 +58,18 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
-                    def cortxCluster = build job: '/Cortx-kubernetes/setup-cortx-cluster', wait: true,
+                    def cortxCluster = build job: '/Cortx-Automation/RGW/setup-cortx-rgw-cluster', wait: true,
                     parameters: [
                         string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
                         string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
-                        string(name: 'CORTX_IMAGE', value: "${CORTX_IMAGE}"),
+                        string(name: 'CORTX_ALL_IMAGE', value: "${CORTX_ALL_IMAGE}"),
+                        string(name: 'CORTX_SERVER_IMAGE', value: "${CORTX_SERVER_IMAGE}"),
                         text(name: 'hosts', value: "${hosts}"),
                         string(name: 'CORTX_SCRIPTS_BRANCH', value: "${CORTX_SCRIPTS_BRANCH}"),
-                        string(name: 'CORTX_SCRIPTS_REPO', value: "${CORTX_SCRIPTS_REPO}")
+                        string(name: 'CORTX_SCRIPTS_REPO', value: "${CORTX_SCRIPTS_REPO}"),
+                        string(name: 'EXTERNAL_EXPOSURE_SERVICE', value: "NodePort"),
+                        string(name: 'SNS_CONFIG', value: "${SNS_CONFIG}"),
+                        string(name: 'DIX_CONFIG', value: "${DIX_CONFIG}")
                     ]
                     env.cortxcluster_build_url = cortxCluster.absoluteUrl
                     env.cortxCluster_status = cortxCluster.currentResult
@@ -95,20 +82,20 @@ pipeline {
             script {
                 echo "${env.cortxCluster_status}"
                 if ( "${env.cortxCluster_status}" == "SUCCESS") {
-                    MESSAGE = "K8s Build#${build_id} 3node Deployment Deployment=Passed"
+                    MESSAGE = "K8s Post Merge Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=Passed"
                     ICON = "accept.gif"
                     STATUS = "SUCCESS"
                     env.deployment_result = "SUCCESS"
                     currentBuild.result = "SUCCESS"
                 } else if ( "${env.cortxCluster_status}" == "FAILURE") {
                     manager.buildFailure()
-                    MESSAGE = "K8s Build#${build_id} 3node Deployment Deployment=failed"
+                    MESSAGE = "K8s Post Merge Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=failed"
                     ICON = "error.gif"
                     STATUS = "FAILURE"
                     env.deployment_result = "FAILURE"
                     currentBuild.result = "FAILURE"
                 } else {
-                    MESSAGE = "K8s Build#${build_id} 3node Deployment Deployment=unstable"
+                    MESSAGE = "K8s Post Merge Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=unstable"
                     ICON = "unstable.gif"
                     STATUS = "UNSTABLE"
                     env.deployment_result = "UNSTABLE"
@@ -116,7 +103,7 @@ pipeline {
                 }
                 env.build_setupcortx_url = sh( script: "echo ${env.cortxcluster_build_url}/artifact/artifacts/cortx-cluster-status.txt", returnStdout: true)
                 env.host = "${env.allhost}"
-                env.build_id = "${env.dockerimage_id}"
+                env.build_id = "${CORTX_ALL_IMAGE}"
                 env.build_location = "${DOCKER_IMAGE_LOCATION}"
                 env.deployment_status = "${MESSAGE}"
                 env.cluster_status = "${env.build_setupcortx_url}"

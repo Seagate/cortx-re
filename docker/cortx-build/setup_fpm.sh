@@ -22,7 +22,11 @@
 set -ex
 
 #yum install -y ruby-devel gcc make rpm-build rubygems python36
-yum --enablerepo=centos-sclo-rh install rh-ruby23 rh-ruby23-ruby-devel gcc make rpm-build rubygems -y
+if [ "x$1" = "x" ]; then
+	echo "Please give proper os type"
+	exit 1
+elif [ "$1" = "centos" ]; then
+	yum --enablerepo=centos-sclo-rh install rh-ruby23 rh-ruby23-ruby-devel gcc make rpm-build rubygems -y
 cat <<EOF >>rh-ruby23.sh
 #!/bin/bash
 source /opt/rh/rh-ruby23/enable
@@ -30,7 +34,11 @@ export X_SCLS="$(scl enable rh-ruby23 "echo $X_SCLS")"
 EOF
 
 source rh-ruby23.sh
-cp rh-ruby23.sh /etc/profile.d/
+	cp rh-ruby23.sh /etc/profile.d/
+elif [ "$1" = "rockylinux" ]; then
+	dnf install -y ruby-devel gcc make rpm-build rubygems python36
+	dnf install ruby -y
+fi
 
 
 # issues with pip>=10:
