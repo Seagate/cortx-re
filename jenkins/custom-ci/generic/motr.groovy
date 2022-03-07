@@ -36,6 +36,11 @@ pipeline {
             choices: ['no', 'yes'],
             description: 'Build motr rpm using dtm mode.'
         )
+        choice(
+            name: 'BUILD_LATEST_CORTX_RGW',
+            choices: ['yes', 'no'],
+            description: 'Build cortx-rgw from latest code or use last-successful build.'
+        )
     }    
 
     environment {
@@ -60,6 +65,11 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: '', script: '''
+                    yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rockylinux/rockylinux-8.4-2.0.0-latest/
+                    yum --nogpgcheck -y --disablerepo="EOS_Rocky_8_OS_x86_64_Rocky_8" install libfabric-1.11.2 libfabric-devel-1.11.2
+                    '''
+
+                sh label: '', script: '''
                         export build_number=${BUILD_ID}
                         kernel_src=$(ls -1rd /lib/modules/*/build | head -n1)
                         cp cortx-motr.spec.in cortx-motr.spec
@@ -67,7 +77,7 @@ pipeline {
                         sed -i "/BuildRequires.*%{lustre_devel}/d" cortx-motr.spec
                         sed -i 's/@BUILD_DEPEND_LIBFAB@//g' cortx-motr.spec
                         sed -i 's/@.*@/111/g' cortx-motr.spec
-                        yum-builddep -y cortx-motr.spec
+                        yum-builddep -y --nogpgcheck cortx-motr.spec
                     '''    
             }
         }
@@ -119,7 +129,8 @@ pipeline {
                                     string(name: 'CORTX_RGW_BRANCH', value: "${CORTX_RGW_BRANCH}"),
                                     string(name: 'MOTR_BRANCH', value: "custom-ci"),
                                     string(name: 'CORTX_RGW_URL', value: "${CORTX_RGW_URL}"),
-                                    string(name: 'CUSTOM_CI_BUILD_ID', value: "${CUSTOM_CI_BUILD_ID}")
+                                    string(name: 'CUSTOM_CI_BUILD_ID', value: "${CUSTOM_CI_BUILD_ID}"),
+                                    string(name: 'BUILD_LATEST_CORTX_RGW', value: "${BUILD_LATEST_CORTX_RGW}")
                                 ]
                     }
                 }

@@ -74,7 +74,7 @@ EOF
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: '', script: '''
-                    yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/$os_version/$release_tag/cortx_iso/
+                    yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/rockylinux-8.4/$release_tag/cortx_iso/
                     yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
 
                     yum clean all && rm -rf /var/cache/yum
@@ -106,7 +106,7 @@ EOF
                 sh label: 'Test', script: '''
                     set -xe
                     pushd $component
-                        yum localinstall $WORKSPACE/$component/dist/rpmbuild/RPMS/x86_64/cortx-ha-*.rpm -y
+                        yum localinstall $WORKSPACE/$component/dist/rpmbuild/RPMS/*/cortx-ha-*.rpm -y
                         bash jenkins/cicd/cortx-ha-cicd.sh
                     popd
                 '''    
@@ -118,7 +118,7 @@ EOF
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Copy RPMS', script: '''
                     mkdir -p $build_upload_dir
-                    cp $WORKSPACE/cortx-ha/dist/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir
+                    cp $WORKSPACE/cortx-ha/dist/rpmbuild/RPMS/*/*.rpm $build_upload_dir
                 '''
             }
         } 

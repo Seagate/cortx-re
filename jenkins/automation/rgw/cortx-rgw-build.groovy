@@ -86,14 +86,17 @@ pipeline {
 
                 sh label: 'Clean up', script: '''
                 rm -rf /root/rpmbuild/RPMS/x86_64/*.rpm
-                rm -rf $release_dir/$component/rpmbuild/SOURCES/ceph*.tar.bz2
-                rm -rf  $release_dir/$component/rpmbuild/BUILD/ceph*
+                rm -rf $release_dir/$component/$branch/rpmbuild/SOURCES/ceph*.tar.bz2
+                rm -rf  $release_dir/$component/$branch/rpmbuild/BUILD/ceph*
                 yum erase cortx-py-utils cortx-motr{,-devel} -y
+                rm -f /etc/yum.repos.d/cortx-storage.colo.seagate.com* /etc/yum.repos.d/root_rpmbuild_RPMS_x86_64.repo
                 '''
 
                 sh label: 'prepare', script: '''
                 yum install createrepo systemd-devel libuuid libuuid-devel libaio-devel openssl openssl-devel perl-File-Slurp gcc cmake3 cmake rpm-build rpmdevtools autoconf automake libtool gcc-c++ -y 
                 rpmdev-setuptree
+                mkdir -p /root/rpmbuild/RPMS/x86_64/
+                yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rockylinux/rockylinux-8.4-2.0.0-latest/
                 '''
             }
         }
@@ -140,7 +143,7 @@ pipeline {
                         sed -i "/BuildRequires.*%{lustre_devel}/d" cortx-motr.spec
                         sed -i 's/@BUILD_DEPEND_LIBFAB@//g' cortx-motr.spec
                         sed -i 's/@.*@/111/g' cortx-motr.spec
-                        yum-builddep -y cortx-motr.spec
+                        yum-builddep -y --nogpgcheck cortx-motr.spec
                         ./autogen.sh && ./configure --with-user-mode-only
                         export build_number=${BUILD_ID}
                         make rpms
@@ -194,16 +197,16 @@ pipeline {
                     sed -i 's/centos|/rocky|centos|/' install-deps.sh
                     ./install-deps.sh
                     ./make-dist
-                    mkdir -p $release_dir/$component/rpmbuild/$BUILD_NUMBER/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
-                    mv ceph*.tar.bz2 $release_dir/$component/rpmbuild/$BUILD_NUMBER/SOURCES/
-                    tar --strip-components=1 -C $release_dir/$component/rpmbuild/$BUILD_NUMBER/SPECS/ --no-anchored -xvjf $release_dir/$component/rpmbuild/$BUILD_NUMBER/SOURCES/ceph*.tar.bz2 "ceph.spec"
+                    mkdir -p $release_dir/$component/$branch/rpmbuild/$BUILD_NUMBER/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
+                    mv ceph*.tar.bz2 $release_dir/$component/$branch/rpmbuild/$BUILD_NUMBER/SOURCES/
+                    tar --strip-components=1 -C $release_dir/$component/$branch/rpmbuild/$BUILD_NUMBER/SPECS/ --no-anchored -xvjf $release_dir/$component/$branch/rpmbuild/$BUILD_NUMBER/SOURCES/ceph*.tar.bz2 "ceph.spec"
                 popd
 
-                pushd $release_dir/$component/rpmbuild/$BUILD_NUMBER
+                pushd $release_dir/$component/$branch/rpmbuild/$BUILD_NUMBER
                      rpmbuild --clean --rmsource --define "_unpackaged_files_terminate_build 0" --define "debug_package %{nil}" --without cmake_verbose_logging --without jaeger --without lttng --without seastar --without kafka_endpoint --without zbd --without cephfs_java --without cephfs_shell --without ocf --without selinux --without ceph_test_package --without make_check --define "_binary_payload w2T16.xzdio" --define "_topdir `pwd`" -ba ./SPECS/ceph.spec
                 popd
 
-                 rm -f $release_dir/$component/rpmbuild/last_successful && ln -s $release_dir/$component/rpmbuild/$BUILD_NUMBER $release_dir/$component/rpmbuild/last_successful 
+                rm -f $release_dir/$component/$branch/rpmbuild/last_successful && ln -s $release_dir/$component/$branch/rpmbuild/$BUILD_NUMBER $release_dir/$component/$branch/rpmbuild/last_successful
 
             '''
             }
@@ -215,7 +218,7 @@ pipeline {
                 sh label: 'Copy RPMS', script: '''
                 pushd $integration_dir
                     rm -rf $release_tag && mkdir -p $release_tag/cortx_iso
-                    cp $release_dir/$component/rpmbuild/last_successful/RPMS/*/*.rpm $integration_dir/$release_tag/cortx_iso
+                    cp $release_dir/$component/$branch/rpmbuild/last_successful/RPMS/*/*.rpm $integration_dir/$release_tag/cortx_iso
                     mv /root/rpmbuild/RPMS/x86_64/*.rpm $integration_dir/$release_tag/cortx_iso
                     createrepo -v $release_tag/cortx_iso
                     rm -f last_successful && ln -s $release_tag last_successful

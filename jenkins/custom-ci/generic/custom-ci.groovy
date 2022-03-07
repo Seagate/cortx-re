@@ -1,4 +1,6 @@
 #!/usr/bin/env groovy
+properties([[$class: 'ThrottleJobProperty', categories: [], limitOneJobWithMatchingParams: true, maxConcurrentPerNode: 5, maxConcurrentTotal: 5, paramsToUseForLimit: '', throttleEnabled: true, throttleOption: 'project']])
+
 pipeline {
     agent {
         node {
@@ -39,6 +41,8 @@ pipeline {
         string(name: 'PRVSNR_URL', defaultValue: 'https://github.com/Seagate/cortx-prvsnr.git', description: 'Provisioner Repository URL', trim: true)
         string(name: 'CORTX_RGW_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX-RGW', trim: true)
         string(name: 'CORTX_RGW_URL', defaultValue: 'https://github.com/Seagate/cortx-rgw', description: 'CORTX-RGW Repository URL', trim: true)
+        string(name: 'CORTX_RGW_INTEGRATION_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX-RGW-INTEGRATION', trim: true)
+        string(name: 'CORTX_RGW_INTEGRATION_URL', defaultValue: 'https://github.com/Seagate/cortx-rgw-integration', description: 'CORTX-RGW-INTEGRATION Repository URL', trim: true)
         string(name: 'CORTX_UTILS_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX Utils', trim: true)
         string(name: 'CORTX_UTILS_URL', defaultValue: 'https://github.com/Seagate/cortx-utils', description: 'CORTX Utils Repository URL', trim: true)
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX RE', trim: true)
@@ -74,6 +78,12 @@ pipeline {
             name: 'ENABLE_MOTR_DTM',
                 choices: ['no', 'yes'],
                 description: 'Build motr rpm using dtm mode.'
+        )
+
+        choice(
+            name: 'BUILD_LATEST_CORTX_RGW',
+            choices: ['yes', 'no'],
+            description: 'Build cortx-rgw from latest code or use last-successful build.'
         )
 
     }
@@ -148,7 +158,8 @@ pipeline {
                                                         string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}"),
                                                         string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}"),
                                                         string(name: 'CORTX_UTILS_URL', value: "${CORTX_UTILS_URL}"),
-                                                        string(name: 'THIRD_PARTY_PYTHON_VERSION', value: "${THIRD_PARTY_PYTHON_VERSION}")
+                                                        string(name: 'THIRD_PARTY_PYTHON_VERSION', value: "${THIRD_PARTY_PYTHON_VERSION}"),
+                                                        string(name: 'BUILD_LATEST_CORTX_RGW', value: "${BUILD_LATEST_CORTX_RGW}")
                                                     ]
                             } catch (err) {
                                 build_stage = env.STAGE_NAME
@@ -158,13 +169,31 @@ pipeline {
                     }
                 }
 
-                stage ("Build HA") {
-                    when { expression { false } }
+                stage ("Build CORTX RGW Integration") {
                     steps {
                         script { build_stage = env.STAGE_NAME }
                         script {
                             try {
-                                def habuild = build job: '/GitHub-custom-ci-builds/generic/cortx-ha', wait: true,
+                                def rgwintegrationbuild = build job: '/GitHub-custom-ci-builds/generic/cortx-rgw-integration-build', wait: true,
+                                          parameters: [
+                                              string(name: 'CORTX_RGW_INTEGRATION_URL', value: "${CORTX_RGW_INTEGRATION_URL}"),
+                                              string(name: 'CORTX_RGW_INTEGRATION_BRANCH', value: "${CORTX_RGW_INTEGRATION_BRANCH}"),
+                                              string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}")
+                                                ]
+                            } catch (err) {
+                                build_stage = env.STAGE_NAME
+                                error "Failed to Build RGW Integration"
+                            }
+                        }
+                    }
+                }
+
+                stage ("Build HA") {
+                    steps {
+                        script { build_stage = env.STAGE_NAME }
+                        script {
+                            try {
+                                def habuild = build job: '/GitHub-custom-ci-builds/generic/cortx-ha-custom-build', wait: true,
                                           parameters: [
                                               string(name: 'HA_URL', value: "${HA_URL}"),
                                               string(name: 'HA_BRANCH', value: "${HA_BRANCH}"),
@@ -215,7 +244,7 @@ pipeline {
                 sh label: 'Copy RPMS', script:'''
                     RPM_COPY_PATH="/mnt/bigstorage/releases/cortx/components/github/main/$os_version/dev/"
 
-                    CUSTOM_COMPONENT_NAME="motr|s3server|hare|cortx-ha|provisioner|csm-agent|csm-web|sspl"
+                    CUSTOM_COMPONENT_NAME="motr|s3server|hare|cortx-ha|provisioner|csm-agent|csm-web|sspl|cortx-utils|cortx-rgw|cortx-rgw-integration"
 
                     pushd $RPM_COPY_PATH
                     for component in `ls -1 | grep -E -v "$CUSTOM_COMPONENT_NAME" | grep -E -v 'luster|halon|mero|motr|csm|cortx-extension|nfs|cortx-utils|cortx-prereq'`
@@ -437,7 +466,7 @@ pipeline {
             sh label: 'Print Release Build and ISO location', script:'''
                 echo "Custom Release Build is available at,"
                 echo "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/$os_version/$release_tag/"
-                echo "CORTX-ALL image is available at,"
+                echo "CORTX images are available at,"
                 echo "${cortx_all_image}"
                 '''
             }
