@@ -102,14 +102,14 @@ pipeline {
         }
         
         stage ("Release") {
-            when { triggeredBy 'SCMTrigger' }
+            //when { triggeredBy 'SCMTrigger' }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
-                    def releaseBuild = build job: 'Release', propagate: true
-                     env.release_build = releaseBuild.number
+                    //def releaseBuild = build job: 'Release', propagate: true
+                    env.release_build = "1"
                     env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/${env.release_build}"
-                    env.cortx_images = releaseBuild.buildVariables.cortx_all_image+" "+releaseBuild.buildVariables.cortx_rgw_image
+                    env.cortx_images = "cortx_all_image"+" "+"cortx_rgw_image"
                 }
             }
         }
