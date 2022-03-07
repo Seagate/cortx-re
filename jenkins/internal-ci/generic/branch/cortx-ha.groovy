@@ -130,7 +130,7 @@ EOF
                     def releaseBuild = build job: 'Release', propagate: true
                     env.release_build = releaseBuild.number
                     env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/"+releaseBuild.number
-                    env.cortx_all_image = releaseBuild.buildVariables.cortx_all_image
+                    env.cortx_images = releaseBuild.buildVariables.cortx_all_image+" "+releaseBuild.buildVariables.cortx_rgw_image
                 }
             }
         }
@@ -155,7 +155,7 @@ EOF
                                 "h3. Artifact Location  :  \n"+
                                     "*  "+"${release_build_location} "+"\n"+
                                 "h3. Image Location  :  \n"+
-                                    "*  "+"${cortx_all_image} "+"\n"+
+                                    "*  "+"${cortx_images} "+"\n"+
                                 "{panel}",
                             failOnError: false,
                             auditLog: false
