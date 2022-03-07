@@ -47,6 +47,9 @@ RUN yum install yum-utils -y \
 #Add Internal and CORTX uploads repository
 COPY ./${ENVIRONMENT}/$OS.repo /etc/yum.repos.d/
 
+# Install rockylinux opensource-ci dependency
+RUN if [[ "$ENVIRONMENT" = "opensource-ci" ]] && [[ $OS_TYPE == "rockylinux/rockylinux" ]]; then dnf install dnf-plugin-config-manager -y ;dnf config-manager --set-enabled powertools ; rm -rf /etc/yum.repos.d/$OS.repo ;fi
+
 # Install EPEL repo for opensource-ci
 RUN if [ "$ENVIRONMENT" = "opensource-ci" ] ; then yum install epel-release -y ; fi && yum clean all \
 && rm -rf /var/cache/yum
