@@ -116,7 +116,7 @@ pipeline {
             steps {
                 script {
                     catchError(stageResult: 'FAILURE') {
-                        def qaSanity = build job: '/QA-Pytest-Pipeline-Debug-Mode', wait: true, propagate: false,
+                        def qaSanity = build job: '/QA-Sanity-Multinode-RGW', wait: true, propagate: false,
                         parameters: [
                             string(name: 'M_NODE', value: "${env.master_node}"),
                             password(name: 'HOST_PASS', value: "${env.hostpasswd}"),
