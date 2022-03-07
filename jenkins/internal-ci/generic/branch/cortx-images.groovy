@@ -20,7 +20,7 @@ pipeline {
 
     parameters {  
         string(name: 'CORTX_RE_URL', defaultValue: 'https://github.com/Seagate/cortx-re.git', description: 'Repository URL for cortx-all image build.')
-        string(name: 'CORTX_RE_BRANCH', defaultValue: 'kubernetes', description: 'Branch for cortx-all image build.')
+        string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch for cortx-all image build.')
         string(name: 'BUILD', defaultValue: 'last_successful_prod', description: 'Build for cortx-all docker image')
         
         choice (
@@ -30,8 +30,8 @@ pipeline {
         )
 
         choice (
-            choices: ['cortx-all' , 'cortx-rgw', 'cortx-data'],
-            description: 'Push newly built Docker image to GitHub ',
+            choices: ['all', 'cortx-all' , 'cortx-rgw'],
+            description: 'CORTX Image to be built. Defaults to all images ',
             name: 'CORTX_IMAGE'
         )
 
@@ -68,7 +68,7 @@ pipeline {
                    systemctl status docker
                    /usr/local/bin/docker-compose --version
                    echo 'y' | docker image prune
-                   if docker images | grep cortx-all -q; then docker rmi --force \$(docker images --filter=reference='*/*/cortx-all:*' --filter=reference='*cortx-all:*' -q); fi
+                   if docker images --format "{{.Repository}}:{{.Tag}}"| grep -E '*cortx-.*:2.0.0*' -q; then docker rmi --force \$(docker images --filter=reference='*/*/cortx*:[0-9]*' --filter=reference='*cortx*:[0-9]*' -q); fi
                 """
             }
         }
@@ -118,13 +118,19 @@ pipeline {
             cleanWs()
             script {
 
-                env.image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' | grep $DOCKER_REGISTRY | head -1", returnStdout: true).trim()
+                env.image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' --filter=reference='*/*/cortx*:[0-9]*' | head -3", returnStdout: true).trim()
+                println "${env.image}"
+
+                env.cortx_all_image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' --filter=reference='*/*/cortx-all:[0-9]*'", returnStdout: true).trim()
+                env.cortx_rgw_image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' --filter=reference='*/*/cortx-rgw:[0-9]*'", returnStdout: true).trim()
+
+                
                 env.build_stage = "${build_stage}"
                 
                 if ( params.DOCKER_REGISTRY == "ghcr.io" ) {
-                    env.docker_image_location = "https://github.com/Seagate/cortx/pkgs/container/cortx-all"
+                    env.docker_image_location = "https://github.com/orgs/Seagate/packages?repo_name=cortx"
                 } else if ( params.DOCKER_REGISTRY == "cortx-docker.colo.seagate.com" ) {
-                    env.docker_image_location = "http://cortx-docker.colo.seagate.com/harbor/projects/3/repositories/cortx-all"
+                    env.docker_image_location = "http://cortx-docker.colo.seagate.com/harbor/projects/2/repositories"
                 }    
 
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
