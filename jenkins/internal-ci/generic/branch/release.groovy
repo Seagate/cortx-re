@@ -258,8 +258,8 @@ pipeline {
                     try {
                         def build_cortx_images = build job: 'cortx-docker-images', wait: true,
                                     parameters: [
-                                        string(name: 'CORTX_RE_URL', value: "https://github.com/Seagate/cortx-re"),
-                                        string(name: 'CORTX_RE_BRANCH', value: "main"),
+                                        string(name: 'CORTX_RE_URL', value: "https://github.com/shailesh-vaidya/cortx-re"),
+                                        string(name: 'CORTX_RE_BRANCH', value: "nightly-rgw-build"),
                                         string(name: 'BUILD', value: "${ARTIFACT_LOCATION}/${release_tag}/prod"),
                                         string(name: 'GITHUB_PUSH', value: "yes"),
                                         string(name: 'TAG_LATEST', value: "yes"),
