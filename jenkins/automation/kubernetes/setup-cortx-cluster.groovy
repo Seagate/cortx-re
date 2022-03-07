@@ -18,7 +18,6 @@ pipeline {
 
 
     parameters {
-
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'rocky-linux-custom-ci', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/shailesh-vaidya/cortx-re/', description: 'Repository for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_ALL_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-all:2.0.0-664', description: 'CORTX-ALL image', trim: true)
@@ -151,6 +150,9 @@ pipeline {
                 MASTER_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
                 [ -f /var/tmp/cortx-cluster-status.txt ] && cp /var/tmp/cortx-cluster-status.txt $WORKSPACE/artifacts/
                 scp -q "$MASTER_NODE":/root/deploy-scripts/k8_cortx_cloud/solution.yaml $WORKSPACE/artifacts/
+                if [ -f /var/tmp/cortx-cluster-status.txt ]; then
+                    cp /var/tmp/cortx-cluster-status.txt $WORKSPACE/artifacts/
+                fi
             popd    
             '''
             script {
