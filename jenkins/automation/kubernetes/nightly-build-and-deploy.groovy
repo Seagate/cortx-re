@@ -18,7 +18,6 @@ pipeline {
         LOCAL_REG_CRED = credentials('local-registry-access')
         GITHUB_CRED = credentials('shailesh-github')
         VERSION = "2.0.0"
-        GITHUB_TAG_SUFFIX = "custom-ci" 
     }
     parameters {
         string(name: 'CORTX_IMAGE', defaultValue: 'cortx-docker.colo.seagate.com/seagate/cortx-all:2.0.0-latest', description: 'CORTX-ALL image', trim: true)
@@ -93,18 +92,18 @@ pipeline {
 
                    #Update VERSION details in RELEASE.INFO file
 
-                   docker commit $(docker run -d ${CORTX_IMAGE} sed -i /VERSION/s/\\"2.0.0.*\\"/\\"${VERSION}-${BUILD_NUMBER}\\"/ /opt/seagate/cortx/RELEASE.INFO) ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}-${GITHUB_TAG_SUFFIX}
+                   docker commit $(docker run -d ${CORTX_IMAGE} sed -i /VERSION/s/\\"2.0.0.*\\"/\\"${VERSION}-${BUILD_NUMBER}\\"/ /opt/seagate/cortx/RELEASE.INFO) ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}
 
 
-                   docker tag ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}-${GITHUB_TAG_SUFFIX} ghcr.io/seagate/cortx-all:${VERSION}-latest-${GITHUB_TAG_SUFFIX}
+                   docker tag ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER} ghcr.io/seagate/cortx-all:${VERSION}-latest
 
                    docker login ghcr.io -u ${GITHUB_CRED_USR} -p ${GITHUB_CRED_PSW}
                    
-                   docker push ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}-${GITHUB_TAG_SUFFIX}
-                   docker push ghcr.io/seagate/cortx-all:${VERSION}-latest-${GITHUB_TAG_SUFFIX}
+                   docker push ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}
+                   docker push ghcr.io/seagate/cortx-all:${VERSION}-latest
                    
-                   docker rmi ghcr.io/seagate/cortx-all:${VERSION}-latest-${GITHUB_TAG_SUFFIX}
-                   docker rmi ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}-${GITHUB_TAG_SUFFIX}
+                   docker rmi ghcr.io/seagate/cortx-all:${VERSION}-latest
+                   docker rmi ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}
                 '''
            }
         }
@@ -117,7 +116,7 @@ pipeline {
                         parameters: [
                             string(name: 'M_NODE', value: "${env.master_node}"),
                             password(name: 'HOST_PASS', value: "${env.hostpasswd}"),
-                            string(name: 'CORTX_IMAGE', value: "ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}-${GITHUB_TAG_SUFFIX}"),
+                            string(name: 'CORTX_IMAGE', value: "ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}"),
                             string(name: 'NUM_NODES', value: "${env.numberofnodes}")
                         ]
                         env.Sanity_Failed = qaSanity.buildVariables.Sanity_Failed
@@ -182,19 +181,36 @@ pipeline {
                 }
                 env.build_setupcortx_url = sh( script: "echo ${env.cortxcluster_build_url}/artifact/artifacts/cortx-cluster-status.txt", returnStdout: true)
                 env.host = "${env.allhost}"
-                env.build_id = "ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}-${GITHUB_TAG_SUFFIX}"
+                env.build_id = "ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}"
                 env.build_location = "${DOCKER_IMAGE_LOCATION}"
                 env.deployment_status = "${MESSAGE}"
                 env.cluster_status = "${env.build_setupcortx_url}"
-                env.CORTX_DOCKER_IMAGE = "ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}-${GITHUB_TAG_SUFFIX}"
-                if ( params.EMAIL_RECIPIENTS == "ALL" ) {
-                    mailRecipients = "akhil.bhansali@seagate.com, amit.kapil@seagate.com, amol.j.kongre@seagate.com, deepak.choudhary@seagate.com, jaikumar.gidwani@seagate.com, mandar.joshi@seagate.com, neerav.choudhari@seagate.com, pranay.kumar@seagate.com, swarajya.pendharkar@seagate.com, taizun.a.kachwala@seagate.com, trupti.patil@seagate.com, ujjwal.lanjewar@seagate.com, shailesh.vaidya@seagate.com, abhijit.patil@seagate.com, sonal.kalbende@seagate.com, gaurav.chaudhari@seagate.com, nilesh.govande@seagate.com, swanand.s.gadre@seagate.com, don.r.bloyer@seagate.com, kalpesh.chhajed@seagate.com"
+                env.cortx_script_branch = "${CORTX_SCRIPTS_BRANCH}"
+                env.CORTX_DOCKER_IMAGE = "ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}"
+
+                if ( params.EMAIL_RECIPIENTS == "ALL" && currentBuild.result == "SUCCESS" ) {
+                    mailRecipients = "CORTX.All@seagate.com"
                     //mailRecipients = "cortx.sme@seagate.com, manoj.management.team@seagate.com, CORTX.SW.Architecture.Team@seagate.com, CORTX.DevOps.RE@seagate.com"
-                } else if ( params.EMAIL_RECIPIENTS == "DEVOPS" ) {
-                    mailRecipients = "CORTX.DevOps.RE@seagate.com"
-                } else if ( params.EMAIL_RECIPIENTS == "DEBUG" ) {
-                    mailRecipients = "shailesh.vaidya@seagate.com"
                 }
+                else if ( params.EMAIL_RECIPIENTS == "ALL" && currentBuild.result == "UNSTABLE" ) {
+                    mailRecipients = "Cortx.Perf@seagate.com, akhil.bhansali@seagate.com, amit.kapil@seagate.com, amol.j.kongre@seagate.com, deepak.choudhary@seagate.com, jaikumar.gidwani@seagate.com, mandar.joshi@seagate.com, neerav.choudhari@seagate.com, pranay.kumar@seagate.com, swarajya.pendharkar@seagate.com, taizun.a.kachwala@seagate.com, trupti.patil@seagate.com, ujjwal.lanjewar@seagate.com, shailesh.vaidya@seagate.com, abhijit.patil@seagate.com, sonal.kalbende@seagate.com, gaurav.chaudhari@seagate.com, mukul.malhotra@seagate.com, swanand.s.gadre@seagate.com, don.r.bloyer@seagate.com, kalpesh.chhajed@seagate.com "
+                }
+                else if ( params.EMAIL_RECIPIENTS == "ALL" && currentBuild.result == "FAILURE" ) {
+                    mailRecipients = "akhil.bhansali@seagate.com, amit.kapil@seagate.com, amol.j.kongre@seagate.com, deepak.choudhary@seagate.com, jaikumar.gidwani@seagate.com, mandar.joshi@seagate.com, neerav.choudhari@seagate.com, pranay.kumar@seagate.com, swarajya.pendharkar@seagate.com, taizun.a.kachwala@seagate.com, trupti.patil@seagate.com, ujjwal.lanjewar@seagate.com, shailesh.vaidya@seagate.com, abhijit.patil@seagate.com, sonal.kalbende@seagate.com, gaurav.chaudhari@seagate.com, mukul.malhotra@seagate.com, swanand.s.gadre@seagate.com, don.r.bloyer@seagate.com, kalpesh.chhajed@seagate.com "
+                }
+                else if ( params.EMAIL_RECIPIENTS == "DEVOPS" && currentBuild.result == "SUCCESS" ) {
+                    mailRecipients = "CORTX.All@seagate.com, CORTX.DevOps.RE@seagate.com"
+                }
+                else if ( params.EMAIL_RECIPIENTS == "DEVOPS" && currentBuild.result == "UNSTABLE" ) {
+                     mailRecipients = "Cortx.Perf@seagate.com, CORTX.DevOps.RE@seagate.com"
+                }
+                else if ( params.EMAIL_RECIPIENTS == "DEVOPS" && currentBuild.result == "FAILURE" ) {
+                    mailRecipients = "CORTX.DevOps.RE@seagate.com"
+                }
+                else if ( params.EMAIL_RECIPIENTS == "DEBUG" ) {
+                    mailRecipients = "shailesh.vaidya@seagate.com"
+                }               
+
                 catchError(stageResult: 'FAILURE') {
                     archiveArtifacts allowEmptyArchive: true, artifacts: 'log/*report.xml, log/*report.html, support_bundle/*.tar, crash_files/*.gz', followSymlinks: false
                     emailext (
