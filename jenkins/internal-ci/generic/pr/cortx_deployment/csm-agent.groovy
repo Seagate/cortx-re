@@ -17,9 +17,9 @@ pipeline {
     parameters {  
         string(name: 'CSM_URL', defaultValue: 'https://github.com/Seagate/cortx-manager', description: 'Repo for CSM Agent')
         string(name: 'CSM_BRANCH', defaultValue: 'main', description: 'Branch for CSM Agent') 
-        string(name: 'CORTX_RE_URL', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repo for Motr')
+        string(name: 'CORTX_RE_URL', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repo for cortx-re')
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch for cortx-re')
-        
+
         choice (
             choices: ['all', 'cortx-all' , 'cortx-rgw'],
             description: 'CORTX Image to be built. Defaults to all images ',
