@@ -18,6 +18,7 @@ pipeline {
         string(name: 'PROVISIONER_BRANCH', defaultValue: 'main', description: 'Branch for PROVISIONER Agent')
         string(name: 'CORTX_RE_URL', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repo for cortx-re')
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch for cortx-re')
+        string(name: 'CORTX_SCRIPTS_BRANCH', defaultValue: 'v0.1.0', description: 'cortx script branch')
 
         choice (
             choices: ['all', 'cortx-all' , 'cortx-rgw'],
@@ -89,7 +90,7 @@ pipeline {
 
                 sh label: 'Repo Creation', script: '''mkdir -p $DESTINATION_RELEASE_LOCATION
                     pushd $DESTINATION_RELEASE_LOCATION
-                    rpm -qi createrepo || yum install -y createrepo
+                    yum install -y createrepo
                     createrepo .
                     popd
                 '''
@@ -105,11 +106,11 @@ pipeline {
                     checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 1, honorRefspec: true, noTags: true, reference: '', shallow: true], [$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
                 }
 
-                // Install tools required for release process
+                Install tools required for release process
                 sh label: 'Installed Dependecies', script: '''
                     yum install -y expect rpm-sign rng-tools python3-pip
-                    ln -fs $(which python3.6) /usr/bin/python2
-                    systemctl start rngd
+                  #  ln -fs $(which python3.6) /usr/bin/python2
+                  #  systemctl start rngd
                 '''
 
                 // Integrate components rpms
@@ -183,7 +184,7 @@ pipeline {
         }
 
         // Deploy Cortx-Stack
-        stage ("Build CORTX-ALL image") {
+        stage ("Build CORTX images") {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
@@ -221,7 +222,7 @@ pipeline {
                         string(name: 'CORTX_ALL_IMAGE', value: "${env.cortx_all_image}"),
                         string(name: 'CORTX_SERVER_IMAGE', value: "${env.cortx_rgw_image}"),
                         string(name: 'CORTX_SCRIPTS_REPO', value: "Seagate/cortx-k8s"),
-                        string(name: 'CORTX_SCRIPTS_BRANCH', value: "integration"),
+                        string(name: 'CORTX_SCRIPTS_BRANCH', value: "${CORTX_SCRIPTS_BRANCH}"),
                         string(name: 'hosts', value: "${host}"),
                         string(name: 'EMAIL_RECIPIENTS', value: "DEBUG")
                     ]
