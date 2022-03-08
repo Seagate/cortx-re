@@ -6,7 +6,6 @@ less #cortx-motr
 which #cortx-motr
 consul #cortx-hare
 jq #cortx-hare
-puppet-agent #cortx-hare
 gperftools-libs #cortx-rgw-integration
 libicu #cortx-rgw-integration
 liboath #cortx-rgw-integration
@@ -23,3 +22,8 @@ sudo #cortx-py-utils
 python36 #cortx-py-utils
 python3-dbus #cortx-py-utils
 python3-ldap #cortx-py-utils
+python3-m2crypto #cortx-py-utils
+python3-psutil #cortx-py-utils
+logrotate #cortx-py-utils
+crontabs  #cortx-py-utils
+java-1.8.0-openjdk-headless #cortx-py-utils
