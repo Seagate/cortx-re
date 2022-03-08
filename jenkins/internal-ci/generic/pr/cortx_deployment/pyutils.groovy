@@ -110,7 +110,12 @@ pipeline {
                 // Install tools required for release process
                 sh label: 'Installed Dependecies', script: '''
                     yum install -y expect rpm-sign rng-tools python3-pip
-                    ln -fs $(which python3.6) /usr/bin/python2
+                    if [ "${OS_FAMILY}" == "rockylinux" ]
+                    then
+                        ln -fs $(which python3.6) /usr/bin/python2
+                    else
+                        echo "Using CentOS"
+                    fi
                     systemctl start rngd
                 '''
 
@@ -161,7 +166,7 @@ pipeline {
                 
                 sh label: 'Create Repo', script: '''
                     pushd ${CORTX_ISO_LOCATION}
-                        rpm -qi createrepo || yum install -y createrepo
+                        yum install -y createrepo
                         createrepo .
                     popd
                 '''	
