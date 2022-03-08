@@ -222,7 +222,7 @@ pipeline {
                                             "* Component Build  :  ${BUILD_NUMBER} \n"+
                                             "* Release Build    :  ${release_build}  \n\n  "+
                                     "h3. Artifact Location  :  \n"+
-                                        "*  "+"${release_build_location} "+"\n"+
+                                        "*  "+"${release_build_location} "+"\n\n"+
                                     "h3. Image Location  :  \n"+
                                         "*  "+"${cortx_images} "+"\n"+    
                                     "{panel}",

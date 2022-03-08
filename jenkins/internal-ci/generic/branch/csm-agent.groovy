@@ -107,44 +107,45 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 script {
                     //def releaseBuild = build job: 'Release', propagate: true
-                    env.release_build = "1"
+                    env.release_build = releaseBuild.number
                     env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/${env.release_build}"
-                    env.cortx_images = "cortx_all_image"+" "+"cortx_rgw_image"
+                    env.cortx_images = releaseBuild.buildVariables.cortx_all_image+" "+releaseBuild.buildVariables.cortx_rgw_image
                 }
             }
         }
     
         stage('Update Jira') {
-            //when { expression { false } }
+            when { expression { false } }
             steps {
                 script { build_stage=env.STAGE_NAME }    
-                    script {
-                        // def jiraIssues = jiraIssueSelector(issueSelector: [$class: 'DefaultIssueSelector'])
-                        // jiraIssues.each { issue ->
-                            //def author =  getAuthor(issue)
-                            jiraAddComment(    
-                                idOrKey: 'CORTX-28838',
-                                site: "SEAGATE_JIRA",
-                                comment: "{panel:bgColor=#c1c7d0}"+
-                                    "h2. ${component} - ${branch} branch build pipeline SUCCESS\n"+
-                                    "h3. Build Info:  \n"+
-                                            "* Component Build  :  ${BUILD_NUMBER} \n"+
-                                            "* Release Build    :  ${release_build}  \n\n  "+
-                                    "h3. Artifact Location  :  \n"+
-                                        "*  "+"${release_build_location} "+"\n\n"+
-                                    "h3. Image Location  :  \n"+
-                                        "*  "+"${cortx_images} "+"\n"+    
-                                        "{panel}",
-                                failOnError: false,
-                                auditLog: false
-                            )
-                            //def jiraFileds = jiraGetIssue idOrKey: issue, site: "SEAGATE_JIRA", failOnError: false
-                            //if(jiraFileds.data != null){
-                            //def labels_data =  jiraFileds.data.fields.labels + "cortx_stable_b${release_build}"
-                        //jiraEditIssue idOrKey: issue, issue: [fields: [ labels: labels_data ]], site: "SEAGATE_JIRA", failOnError: false    
-                        //} 
-                        //}
+                script {
+                    def jiraIssues = jiraIssueSelector(issueSelector: [$class: 'DefaultIssueSelector'])
+                    jiraIssues.each { issue ->
+                        def author =  getAuthor(issue)
+                        jiraAddComment(    
+                            idOrKey: issue,
+                            site: "SEAGATE_JIRA",
+                            comment: "{panel:bgColor=#c1c7d0}"+
+                                "h2. ${component} - ${branch} branch build pipeline SUCCESS\n"+
+                                "h3. Build Info:  \n"+
+                                        author+
+                                        "* Component Build  :  ${BUILD_NUMBER} \n"+
+                                        "* Release Build    :  ${release_build}  \n\n  "+
+                                "h3. Artifact Location  :  \n"+
+                                    "*  "+"${release_build_location} "+"\n\n"+
+                                "h3. Image Location  :  \n"+
+                                    "*  "+"${cortx_images} "+"\n"+    
+                                "{panel}",
+                            failOnError: false,
+                            auditLog: false
+                        )
+                        //def jiraFileds = jiraGetIssue idOrKey: issue, site: "SEAGATE_JIRA", failOnError: false
+                        //if(jiraFileds.data != null){
+                        //def labels_data =  jiraFileds.data.fields.labels + "cortx_stable_b${release_build}"
+                    //jiraEditIssue idOrKey: issue, issue: [fields: [ labels: labels_data ]], site: "SEAGATE_JIRA", failOnError: false    
+                    //} 
                     }
+                }
             }
         }
     }
