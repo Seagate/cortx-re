@@ -119,25 +119,22 @@ pipeline {
             steps {
                 script { build_stage=env.STAGE_NAME }    
                     script {
-                        def jiraIssues = jiraIssueSelector(issueSelector: [$class: 'DefaultIssueSelector'])
-                        jiraIssues.each { issue ->
-                             def author =  getAuthor(issue)
-                             def comment = [ body: 'test comment' ]
-                             jiraAddComment(    
+                        // def jiraIssues = jiraIssueSelector(issueSelector: [$class: 'DefaultIssueSelector'])
+                        // jiraIssues.each { issue ->
+                            //def author =  getAuthor(issue)
+                            jiraAddComment(    
                                 idOrKey: 'CORTX-28838',
                                 site: "SEAGATE_JIRA",
-                                input: comment,
-                                // comment: "{panel:bgColor=#c1c7d0}"+
-                                //     "h2. ${component} - ${branch} branch build pipeline SUCCESS\n"+
-                                //     "h3. Build Info:  \n"+
-                                //         author+
-                                //             "* Component Build  :  ${BUILD_NUMBER} \n"+
-                                //             "* Release Build    :  ${release_build}  \n\n  "+
-                                //     "h3. Artifact Location  :  \n"+
-                                //         "*  "+"${release_build_location} "+"\n"+
-                                //     "h3. Image Location  :  \n"+
-                                //         "*  "+"${cortx_images} "+"\n"+    
-                                //     "{panel}",
+                                comment: "{panel:bgColor=#c1c7d0}"+
+                                    "h2. ${component} - ${branch} branch build pipeline SUCCESS\n"+
+                                    "h3. Build Info:  \n"+
+                                            "* Component Build  :  ${BUILD_NUMBER} \n"+
+                                            "* Release Build    :  ${release_build}  \n\n  "+
+                                    "h3. Artifact Location  :  \n"+
+                                        "*  "+"${release_build_location} "+"\n"+
+                                    "h3. Image Location  :  \n"+
+                                        "*  "+"${cortx_images} "+"\n"+    
+                                    "{panel}",
                                 failOnError: false,
                                 auditLog: false
                             )
@@ -146,10 +143,10 @@ pipeline {
                             //def labels_data =  jiraFileds.data.fields.labels + "cortx_stable_b${release_build}"
                         //jiraEditIssue idOrKey: issue, issue: [fields: [ labels: labels_data ]], site: "SEAGATE_JIRA", failOnError: false    
                         //} 
-                        }
+                        //}
                     }
             }
-    }
+        }
     }
     
     post {
