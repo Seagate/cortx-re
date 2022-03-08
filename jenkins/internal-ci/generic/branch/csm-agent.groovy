@@ -123,7 +123,7 @@ pipeline {
                         jiraIssues.each { issue ->
                              def author =  getAuthor(issue)
                              jiraAddComment(    
-                                 idOrKey: issue,
+                                idOrKey: "CORTX-28838",
                                 site: "SEAGATE_JIRA",
                                 comment: "{panel:bgColor=#c1c7d0}"+
                                     "h2. ${component} - ${branch} branch build pipeline SUCCESS\n"+
