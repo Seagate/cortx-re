@@ -125,15 +125,26 @@ pipeline {
         }
         
         stage ('Sign rpm') {
-            when { expression { false } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                                 
                 sh label: 'Generate Key', script: '''
                     set +x
                     pushd scripts/rpm-signing
-                    cat gpgoptions >>  ~/.rpmmacros
-                    sed -i 's/passphrase/'${passphrase}'/g' genkey-batch
+                    expiredKey=$(gpg --list-keys | grep -B1 "Seagate"|head -1|tr -d " ")
+                    echo "$expiredKey"
+                    gpg --batch --yes --quiet --delete-secret-key $expiredKey >/dev/null 2>&1
+                    if [ $? != 0 ]; then
+                        echo "Remove old gpg secret failed"
+                        exit 1
+                    fi
+                    gpg --batch --quiet --yes --delete-keys $expiredKey >/dev/null 2>&1
+                    if [ $? != 0 ]; then
+                        echo "Remove old gpg key failed"
+                        exit 1
+                    fi
+                    sed 's/--passphrase-fd 3 //g' gpgoptions >> ~/.rpmmacros
+                    sed -i -e "s/Passphrase:.*/Passphrase: ${passphrase}/g" genkey-batch
                     gpg --batch --gen-key genkey-batch
                     gpg --export -a 'Seagate'  > RPM-GPG-KEY-Seagate
                     rpm --import RPM-GPG-KEY-Seagate
@@ -142,6 +153,7 @@ pipeline {
 
                 sh label: 'Sign RPM', script: '''
                     set +x
+                    count="0"
                     for env in "dev" "prod";
                     do
                         pushd scripts/rpm-signing
@@ -149,14 +161,18 @@ pipeline {
                             cp RPM-GPG-KEY-Seagate $integration_dir/$release_tag/$env/
                             for rpm in `ls -1 $integration_dir/$release_tag/$env/*.rpm`
                             do
-                            ./rpm-sign.sh ${passphrase} $rpm
+                                if [ $count == "0" ]; then
+                                    ./rpm-sign.sh ${passphrase} $rpm
+                                    count="1"
+                                else
+                                    rpm --addsign $rpm
+                                fi
                             done
                         popd
                     done    
                 '''
             }
-        }
-                
+        }                
         stage ('Repo Creation') {
             steps {
                 script { build_stage = env.STAGE_NAME }
