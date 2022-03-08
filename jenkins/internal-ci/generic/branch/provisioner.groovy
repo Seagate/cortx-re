@@ -88,7 +88,7 @@ pipeline {
         }
 
         stage('Update Jira') {
-            when { expression { false } }
+            //when { expression { false } }
             steps {
                 script { build_stage=env.STAGE_NAME }
                 script {
