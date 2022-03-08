@@ -134,7 +134,7 @@ pipeline {
                                         "*  "+"${release_build_location} "+"\n"+
                                     "h3. Image Location  :  \n"+
                                         "*  "+"${cortx_images} "+"\n"+    
-                                    "{panel}",
+                                        "{panel}",
                                 failOnError: false,
                                 auditLog: false
                             )
