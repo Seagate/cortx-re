@@ -183,14 +183,14 @@ pipeline {
 
                 // '''
                 
-                sh label: 'RPM Signing', script: '''
+                sh label: 'Create REPO', script: '''
                     pushd ${CORTX_ISO_LOCATION}
                         yum install -y createrepo
                         createrepo .
                     popd
                 '''    
 
-                sh label: 'RPM Signing', script: '''
+                sh label: 'Generate RELEASE.INFO', script: '''
                     pushd cortx-re/scripts/release_support
                         sh build_readme.sh "${DESTINATION_RELEASE_LOCATION}"
                         sh build_release_info.sh -v ${VERSION} -l ${CORTX_ISO_LOCATION} -t ${THIRD_PARTY_LOCATION}
@@ -208,7 +208,7 @@ pipeline {
 
         }
 
-        stage ("Build CORTX-ALL image") {
+        stage ("Build CORTX Images") {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {

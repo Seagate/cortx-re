@@ -20,6 +20,7 @@ pipeline {
         string(name: 'HARE_BRANCH', defaultValue: 'main', description: 'Branch for Hare')     
         string(name: 'CORTX_RE_URL', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repo for cortx-re')
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch for cortx-re')
+        string(name: 'CORTX_SCRIPTS_BRANCH', defaultValue: 'v0.1.0', description: 'cortx script branch')
 
         choice (
             choices: ['all', 'cortx-all' , 'cortx-rgw'],
@@ -134,8 +135,8 @@ EOF
                 // Install tools required for release process
                 sh label: 'Installed Dependecies', script: '''
                     yum install -y expect rpm-sign rng-tools python3-pip
-                    ln -fs $(which python3.6) /usr/bin/python2
-                    systemctl start rngd
+                   # ln -fs $(which python3.6) /usr/bin/python2
+                   # systemctl start rngd
                 '''
 
                 // Integrate components rpms
@@ -210,7 +211,7 @@ EOF
 
         }
 
-        stage ("Build CORTX-ALL image") {
+        stage ("Build CORTX Images") {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
@@ -248,7 +249,7 @@ EOF
                         string(name: 'CORTX_ALL_IMAGE', value: "${env.cortx_all_image}"),
                         string(name: 'CORTX_SERVER_IMAGE', value: "${env.cortx_rgw_image}"),
                         string(name: 'CORTX_SCRIPTS_REPO', value: "Seagate/cortx-k8s"),
-                        string(name: 'CORTX_SCRIPTS_BRANCH', value: "integration"),
+                        string(name: 'CORTX_SCRIPTS_BRANCH', value: "${CORTX_SCRIPTS_BRANCH}"),
                         string(name: 'hosts', value: "${host}"),
                         string(name: 'EMAIL_RECIPIENTS', value: "DEBUG")
                     ]
