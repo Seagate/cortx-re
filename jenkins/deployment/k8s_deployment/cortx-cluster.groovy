@@ -26,7 +26,7 @@ pipeline {
             description: 'Email Notification Recipients ',
             name: 'EMAIL_RECIPIENTS'
         )
-        // Please configure hosts, CORTX_SCRIPTS_BRANCH, CORTX_SCRIPTS_REPO, SNS and DIX parameter in Jenkins job configuration.
+        // Please configure hosts, SNS and DIX parameter in Jenkins job configuration.
 
     }
     stages {
@@ -65,8 +65,6 @@ pipeline {
                         string(name: 'CORTX_ALL_IMAGE', value: "${CORTX_ALL_IMAGE}"),
                         string(name: 'CORTX_SERVER_IMAGE', value: "${CORTX_SERVER_IMAGE}"),
                         text(name: 'hosts', value: "${hosts}"),
-                        string(name: 'CORTX_SCRIPTS_BRANCH', value: "${CORTX_SCRIPTS_BRANCH}"),
-                        string(name: 'CORTX_SCRIPTS_REPO', value: "${CORTX_SCRIPTS_REPO}"),
                         string(name: 'EXTERNAL_EXPOSURE_SERVICE', value: "NodePort"),
                         string(name: 'SNS_CONFIG', value: "${SNS_CONFIG}"),
                         string(name: 'DIX_CONFIG', value: "${DIX_CONFIG}")
