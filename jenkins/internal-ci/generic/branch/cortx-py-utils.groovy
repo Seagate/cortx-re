@@ -89,13 +89,13 @@ pipeline {
                     def releaseBuild = build job: 'Release', propagate: true
                      env.release_build = releaseBuild.number
                     env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/${env.release_build}"
-                    env.cortx_all_image = releaseBuild.buildVariables.cortx_all_image
+                    env.cortx_images = releaseBuild.buildVariables.cortx_all_image+" "+releaseBuild.buildVariables.cortx_rgw_image
                 }
             }
         }
 
         stage('Update Jira') {
-            when { expression { false } }
+            //when { expression { false } }
                 steps {
                 script { build_stage=env.STAGE_NAME }
                     script {
@@ -112,8 +112,10 @@ pipeline {
                                             "* Component Build  :  ${BUILD_NUMBER} \n"+
                                             "* Release Build    :  ${release_build}  \n\n  "+
                                     "h3. Artifact Location  :  \n"+
-                                        "*  "+"${release_build_location} "+"\n"+
-                                        "{panel}",
+                                        "*  "+"${release_build_location} "+"\n\n"+
+                                    "h3. Image Location  :  \n"+
+                                        "*  "+"${cortx_images} "+"\n"+    
+                                    "{panel}",
                                 failOnError: false,
                                 auditLog: false
                             )
