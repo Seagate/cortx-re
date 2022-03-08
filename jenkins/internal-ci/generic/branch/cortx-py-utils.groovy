@@ -89,38 +89,36 @@ pipeline {
                     def releaseBuild = build job: 'Release', propagate: true
                      env.release_build = releaseBuild.number
                     env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/${env.release_build}"
-                    env.cortx_images = releaseBuild.buildVariables.cortx_all_image+" "+releaseBuild.buildVariables.cortx_rgw_image
+                    env.cortx_all_image = releaseBuild.buildVariables.cortx_all_image
                 }
             }
         }
 
         stage('Update Jira') {
             when { expression { false } }
-            steps {
+                steps {
                 script { build_stage=env.STAGE_NAME }
-                script {
-                    def jiraIssues = jiraIssueSelector(issueSelector: [$class: 'DefaultIssueSelector'])
-                    jiraIssues.each { issue ->
-                        def author =  getAuthor(issue)
-                        jiraAddComment(
-                            idOrKey: issue,
-                            site: "SEAGATE_JIRA",
-                            comment: "{panel:bgColor=#c1c7d0}"+
-                                "h2. ${component} - ${branch} branch build pipeline SUCCESS\n"+
-                                "h3. Build Info:  \n"+
-                                    author+
-                                        "* Component Build  :  ${BUILD_NUMBER} \n"+
-                                        "* Release Build    :  ${release_build}  \n\n  "+
-                                "h3. Artifact Location  :  \n"+
-                                    "*  "+"${release_build_location} "+"\n\n"+
-                                "h3. Image Location  :  \n"+
-                                    "*  "+"${cortx_images} "+"\n"+    
-                                "{panel}",
-                            failOnError: false,
-                            auditLog: false
-                        )
+                    script {
+                        def jiraIssues = jiraIssueSelector(issueSelector: [$class: 'DefaultIssueSelector'])
+                        jiraIssues.each { issue ->
+                            def author =  getAuthor(issue)
+                            jiraAddComment(
+                                idOrKey: issue,
+                                site: "SEAGATE_JIRA",
+                                comment: "{panel:bgColor=#c1c7d0}"+
+                                    "h2. ${component} - ${branch} branch build pipeline SUCCESS\n"+
+                                    "h3. Build Info:  \n"+
+                                        author+
+                                            "* Component Build  :  ${BUILD_NUMBER} \n"+
+                                            "* Release Build    :  ${release_build}  \n\n  "+
+                                    "h3. Artifact Location  :  \n"+
+                                        "*  "+"${release_build_location} "+"\n"+
+                                        "{panel}",
+                                failOnError: false,
+                                auditLog: false
+                            )
+                        }
                     }
-                }
             }
         }
     }
