@@ -44,62 +44,62 @@ pipeline {
             }
         }
         
-        stage('Install Dependencies') {
-            steps {
-                script { build_stage = env.STAGE_NAME }
+        // stage('Install Dependencies') {
+        //     steps {
+        //         script { build_stage = env.STAGE_NAME }
 
-                sh label: 'Configure yum repository for cortx-py-utils', script: """
-            yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/$release_tag/cortx_iso/
+        //         sh label: 'Configure yum repository for cortx-py-utils', script: """
+        //     yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/$release_tag/cortx_iso/
 
-                    pip3 install --no-cache-dir --trusted-host cortx-storage.colo.seagate.com -i http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/python-packages-2.0.0-latest/ -r https://raw.githubusercontent.com/Seagate/cortx-utils/$branch/py-utils/python_requirements.txt -r https://raw.githubusercontent.com/Seagate/cortx-utils/$branch/py-utils/python_requirements.ext.txt
-            yum install cortx-py-utils -y --nogpgcheck
-                """
+        //             pip3 install --no-cache-dir --trusted-host cortx-storage.colo.seagate.com -i http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/python-packages-2.0.0-latest/ -r https://raw.githubusercontent.com/Seagate/cortx-utils/$branch/py-utils/python_requirements.txt -r https://raw.githubusercontent.com/Seagate/cortx-utils/$branch/py-utils/python_requirements.ext.txt
+        //     yum install cortx-py-utils -y --nogpgcheck
+        //         """
 
-                sh label: 'Install pyinstaller', script: """
-                        pip3.6 install  pyinstaller==3.5
-                """
-            }
-        }           
+        //         sh label: 'Install pyinstaller', script: """
+        //                 pip3.6 install  pyinstaller==3.5
+        //         """
+        //     }
+        // }           
         
-        stage('Build') {
-            steps {
-                script { build_stage = env.STAGE_NAME }
-                sh label: 'Build', script: '''
-                pushd cortx-csm-agent
-                    BUILD=$(git rev-parse --short HEAD)
-                    echo "Executing build script"
-                    echo "Python:$(python --version)"
-                    ./cicd/build.sh -v $version -b $BUILD_NUMBER -t -n ldr -l $WORKSPACE/seagate-ldr
-                popd
-                '''
-            }
-        }
+        // stage('Build') {
+        //     steps {
+        //         script { build_stage = env.STAGE_NAME }
+        //         sh label: 'Build', script: '''
+        //         pushd cortx-csm-agent
+        //             BUILD=$(git rev-parse --short HEAD)
+        //             echo "Executing build script"
+        //             echo "Python:$(python --version)"
+        //             ./cicd/build.sh -v $version -b $BUILD_NUMBER -t -n ldr -l $WORKSPACE/seagate-ldr
+        //         popd
+        //         '''
+        //     }
+        // }
         
-        stage ('Upload') {
-            steps {
-                script { build_stage = env.STAGE_NAME }
-                sh label: 'Copy RPMS', script: '''
-                    mkdir -p $build_upload_dir/$BUILD_NUMBER
-                    cp ./cortx-csm-agent/dist/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir/$BUILD_NUMBER
-                '''
-                sh label: 'Repo Creation', script: '''pushd $build_upload_dir/$BUILD_NUMBER
-                    rpm -qi createrepo || yum install -y createrepo
-                    createrepo .
-                    popd
-                '''
-            }
-        }
+        // stage ('Upload') {
+        //     steps {
+        //         script { build_stage = env.STAGE_NAME }
+        //         sh label: 'Copy RPMS', script: '''
+        //             mkdir -p $build_upload_dir/$BUILD_NUMBER
+        //             cp ./cortx-csm-agent/dist/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir/$BUILD_NUMBER
+        //         '''
+        //         sh label: 'Repo Creation', script: '''pushd $build_upload_dir/$BUILD_NUMBER
+        //             rpm -qi createrepo || yum install -y createrepo
+        //             createrepo .
+        //             popd
+        //         '''
+        //     }
+        // }
 
-        stage ('Tag last_successful') {
-            steps {
-                script { build_stage = env.STAGE_NAME }
-                sh label: 'Tag last_successful', script: '''pushd $build_upload_dir/
-                    test -d $build_upload_dir/last_successful && rm -f last_successful
-                    ln -s $build_upload_dir/$BUILD_NUMBER last_successful
-                    popd
-                '''
-            }
-        }
+        // stage ('Tag last_successful') {
+        //     steps {
+        //         script { build_stage = env.STAGE_NAME }
+        //         sh label: 'Tag last_successful', script: '''pushd $build_upload_dir/
+        //             test -d $build_upload_dir/last_successful && rm -f last_successful
+        //             ln -s $build_upload_dir/$BUILD_NUMBER last_successful
+        //             popd
+        //         '''
+        //     }
+        // }
         
         stage ("Release") {
             //when { triggeredBy 'SCMTrigger' }
@@ -122,20 +122,22 @@ pipeline {
                         def jiraIssues = jiraIssueSelector(issueSelector: [$class: 'DefaultIssueSelector'])
                         jiraIssues.each { issue ->
                              def author =  getAuthor(issue)
+                             def comment = [ body: 'test comment' ]
                              jiraAddComment(    
-                                idOrKey: "CORTX-28838",
+                                idOrKey: 'CORTX-28838',
                                 site: "SEAGATE_JIRA",
-                                comment: "{panel:bgColor=#c1c7d0}"+
-                                    "h2. ${component} - ${branch} branch build pipeline SUCCESS\n"+
-                                    "h3. Build Info:  \n"+
-                                        author+
-                                            "* Component Build  :  ${BUILD_NUMBER} \n"+
-                                            "* Release Build    :  ${release_build}  \n\n  "+
-                                    "h3. Artifact Location  :  \n"+
-                                        "*  "+"${release_build_location} "+"\n"+
-                                    "h3. Image Location  :  \n"+
-                                        "*  "+"${cortx_images} "+"\n"+    
-                                    "{panel}",
+                                input: comment,
+                                // comment: "{panel:bgColor=#c1c7d0}"+
+                                //     "h2. ${component} - ${branch} branch build pipeline SUCCESS\n"+
+                                //     "h3. Build Info:  \n"+
+                                //         author+
+                                //             "* Component Build  :  ${BUILD_NUMBER} \n"+
+                                //             "* Release Build    :  ${release_build}  \n\n  "+
+                                //     "h3. Artifact Location  :  \n"+
+                                //         "*  "+"${release_build_location} "+"\n"+
+                                //     "h3. Image Location  :  \n"+
+                                //         "*  "+"${cortx_images} "+"\n"+    
+                                //     "{panel}",
                                 failOnError: false,
                                 auditLog: false
                             )
