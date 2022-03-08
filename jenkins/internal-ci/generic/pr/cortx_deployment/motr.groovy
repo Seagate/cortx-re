@@ -22,7 +22,6 @@ pipeline {
 </pre>''')
         string(name: 'CORTX_RE_URL', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repo for cortx-re')
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch for cortx-re')
-        string(name: 'CORTX_SCRIPTS_BRANCH', defaultValue: 'v0.1.0', description: 'cortx script branch')
 
         choice (
             choices: ['all', 'cortx-all' , 'cortx-rgw'],
@@ -44,7 +43,7 @@ pipeline {
         MOTR_PR_REFSEPEC = "${ghprbPullId != null ? MOTR_GPR_REFSEPEC : MOTR_BRANCH_REFSEPEC}"
 
         //////////////////////////////// BUILD VARS //////////////////////////////////////////////////
-        // OS_VERSION, singlenode_host, threenode_hosts and COMPONENTS_BRANCH are manually created parameters in jenkins job.
+        // OS_VERSION, singlenode_host, threenode_hosts, COMPONENTS_BRANCH and CORTX_SCRIPTS_BRANCH are manually created parameters in jenkins job.
 
         COMPONENT_NAME = "motr".trim()
         BRANCH = "${ghprbTargetBranch != null ? ghprbTargetBranch : COMPONENTS_BRANCH}"

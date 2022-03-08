@@ -20,7 +20,6 @@ pipeline {
         string(name: 'HARE_BRANCH', defaultValue: 'main', description: 'Branch for Hare')     
         string(name: 'CORTX_RE_URL', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repo for cortx-re')
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch for cortx-re')
-        string(name: 'CORTX_SCRIPTS_BRANCH', defaultValue: 'v0.1.0', description: 'cortx script branch')
 
         choice (
             choices: ['all', 'cortx-all' , 'cortx-rgw'],
@@ -42,7 +41,7 @@ pipeline {
         HARE_PR_REFSPEC = "${ghprbPullId != null ? HARE_GPR_REFSPEC : HARE_BRANCH_REFSEPEC}"
 
         //////////////////////////////// BUILD VARS //////////////////////////////////////////////////
-        // OS_VERSION , host and COMPONENTS_BRANCH are manually created parameters in jenkins job.
+        // OS_VERSION , host , COMPONENTS_BRANCH and CORTX_SCRIPTS_BRANCH are manually created parameters in jenkins job.
 
         COMPONENT_NAME = "hare".trim()
         BRANCH = "${ghprbTargetBranch != null ? ghprbTargetBranch : COMPONENTS_BRANCH}"

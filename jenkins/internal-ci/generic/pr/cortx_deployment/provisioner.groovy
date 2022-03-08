@@ -18,7 +18,6 @@ pipeline {
         string(name: 'PROVISIONER_BRANCH', defaultValue: 'main', description: 'Branch for PROVISIONER Agent')
         string(name: 'CORTX_RE_URL', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repo for cortx-re')
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch for cortx-re')
-        string(name: 'CORTX_SCRIPTS_BRANCH', defaultValue: 'v0.1.0', description: 'cortx script branch')
 
         choice (
             choices: ['all', 'cortx-all' , 'cortx-rgw'],
@@ -37,7 +36,7 @@ pipeline {
         PROVISIONER_PR_REFSPEC = "${ghprbPullId != null ? PROVISIONER_GPR_REFSPEC : PROVISIONER_BRANCH_REFSEPEC}"
         
         //////////////////////////////// BUILD VARS //////////////////////////////////////////////////
-        // OS_VERSION, host and COMPONENTS_BRANCH are manually created parameters in jenkins job.
+        // OS_VERSION, host, COMPONENTS_BRANCH and CORTX_SCRIPTS_BRANCH are manually created parameters in jenkins job.
 
         VERSION = "2.0.0"
         COMPONENT_NAME = "provisioner".trim()
@@ -184,7 +183,7 @@ pipeline {
         }
 
         // Deploy Cortx-Stack
-        stage ("Build CORTX images") {
+        stage ("Build CORTX Images") {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
