@@ -1,6 +1,6 @@
 isa-l #cortx-motr
-libfabric #cortx-motr
-libfabric-devel #cortx-motr
+libfabric-1.11.2 #cortx-motr
+libfabric-devel-1.11.2 #cortx-motr
 file #cortx-motr
 less #cortx-motr
 which #cortx-motr
