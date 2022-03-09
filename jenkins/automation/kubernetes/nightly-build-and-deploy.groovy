@@ -65,8 +65,6 @@ pipeline {
                         text(name: 'hosts', value: "${hosts}"),
                         string(name: 'SNS_CONFIG', value: "${SNS_CONFIG}"),
                         string(name: 'DIX_CONFIG', value: "${DIX_CONFIG}"),
-                        string(name: 'CORTX_SCRIPTS_BRANCH', value: "${CORTX_SCRIPTS_BRANCH}"),
-                        string(name: 'CORTX_SCRIPTS_REPO', value: "${CORTX_SCRIPTS_REPO}")
                     ]
                     env.cortxcluster_build_url = cortxCluster.absoluteUrl
                     env.cortxCluster_status = cortxCluster.currentResult

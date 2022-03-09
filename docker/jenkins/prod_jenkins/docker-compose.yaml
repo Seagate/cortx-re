@@ -26,9 +26,11 @@ services:
     ports:
       - "80:8080"
       - "50000:50000"
+      - "443:8443"
     volumes:
-      - /mnt/bigstorage/jenkins-dev/jenkins/jenkins-home:/var/jenkins_home
+      - /mnt/data1/releases/jenkins/jenkins-prod:/var/jenkins_home
+      - /mnt/data1/releases/jenkins/jenkins-prod/certs/jenkins_keystore.jks:/var/lib/jenkins/jenkins.jks
       - /mnt/bigstorage/:/mnt/bigstorage
     environment:
       - JAVA_OPTS=-Xmx4096m
-
+      - JENKINS_OPTS= --httpPort=-1 --httpsPort=8443 --httpsKeyStore=/var/lib/jenkins/jenkins.jks --httpsKeyStorePassword=opensource!

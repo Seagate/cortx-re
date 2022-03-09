@@ -1,0 +1,14 @@
+ceph-base
+ceph-common
+ceph-radosgw
+python3-ceph-argparse
+python3-ceph-common
+python3-cephfs
+python3-rados
+python3-rbd
+python3-rgw
+librados2
+libradosstriper1
+libcephfs2
+librbd1
+librgw2
