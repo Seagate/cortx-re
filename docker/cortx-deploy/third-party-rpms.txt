@@ -15,5 +15,8 @@ mailcap #cortx-rgw-integration
 nvme-cli #cortx-rgw-integration
 psmisc #cortx-rgw-integration
 smartmontools #cortx-rgw-integration
+crontabs #cortx-py-utils
+sshpass #cortx-py-utils
+sudo #cortx-py-utils
 python36 #cortx-py-utils
 python3-dbus #cortx-py-utils
