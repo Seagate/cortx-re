@@ -3,6 +3,7 @@ libfabric-1.11.2 #cortx-motr
 libfabric-devel-1.11.2 #cortx-motr
 file #cortx-motr
 less #cortx-motr
+which #cortx-motr
 consul #cortx-hare
 jq #cortx-hare
 gperftools-libs #cortx-rgw-integration
@@ -21,3 +22,4 @@ sudo #cortx-py-utils
 python36 #cortx-py-utils
 python3-dbus #cortx-py-utils
 python3-ldap #cortx-py-utils
+logrotate #cortx-py-utils
