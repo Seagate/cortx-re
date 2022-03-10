@@ -33,31 +33,18 @@ if ! which aws; then
   exit 1
 fi
 
-echo -e "\nCreate K8s NodePort service for exposing rgw to external clients."
-cat > /root/s3-rgw-service.yaml <<EOF
-apiVersion: v1
-kind: Service
-metadata:
-  name: s3-rgw-service
-  labels:
-    name: cortx-server
-spec:
-  type: NodePort
-  ports:
-  - port: 8000
-    nodePort: 31000
-  selector:
-    name: cortx-server
-EOF
-kubectl apply -f s3-rgw-service.yaml
-
 access_key=$(kubectl get pods | grep cortx-server- | cut -d " " -f1 | head -1 | xargs -I{} kubectl exec -t {} -c cortx-rgw -- cat /etc/cortx/cluster.conf | grep auth_admin | head -2 | tail -1 | cut -d ":" -f2 | sed -e 's/^[[:space:]]*//')
 secret_key=$(cat /root/deploy-scripts/k8_cortx_cloud/solution.yaml | grep s3_auth_admin_secret: | cut -d ":" -f2)
-endpoint_url="http://"$(ifconfig eth1 | sed -nre '/^[^ ]+/{N;s/^([^ ]+).*inet *([^ ]+).*/\2/p}')":31000" 
+endpoint_url="http://""$(kubectl get svc | grep cortx-io | awk '{ print $3 }')"":8000"
 mkdir -p /root/.aws/
 
-echo -e "\nSetup aws s3 endpoints:-\n"
+echo -e "\nSetup aws s3 plugin endpoints:-\n"
 aws configure set plugins.endpoint awscli_plugin_endpoint
+check_status "Failed to set awscli s3 plugin endpoint."
+echo -e "\nSetup aws s3 endpoint url:-\n"
+aws configure set s3.endpoint_url $endpoint_url
+check_status "Failed to set awscli s3 plugin endpoint."
+aws configure set s3api.endpoint_url $endpoint_url
 check_status "Failed to set awscli s3 plugin endpoint."
 echo -e "\nSetup aws access key:-\n"
 aws configure set aws_access_key_id $access_key
@@ -65,12 +52,6 @@ check_status "Failed to set awscli access key."
 echo -e "\nSetup aws secret key:-\n"
 aws configure set aws_secret_access_key $secret_key
 check_status "Failed to set awscli secret key."
-
-echo -e "\nSetup aws s3 endpoints:-\n"
-aws configure set s3.endpoint_url $endpoint_url
-check_status "Failed to set awscli s3 plugin endpoint."
-aws configure set s3api.endpoint_url $endpoint_url
-check_status "Failed to set awscli s3 plugin endpoint."
 
 cat /root/.aws/config
 
