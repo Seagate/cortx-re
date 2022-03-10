@@ -95,8 +95,7 @@ pipeline {
         }
 
         stage ('IO Sanity Test') {
-            when { expression { false } }
-            steps {
+\            steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Perform IO Sanity Test', script: '''
                     pushd solutions/kubernetes/
