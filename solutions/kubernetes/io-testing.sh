@@ -22,6 +22,42 @@ set -euo pipefail # exit on failures
 
 source /var/tmp/functions.sh
 
+add_separator Setup awscli.
+
+echo -e "\nInstall awscli:-\n"
+pip3 install awscli
+pip3 install awscli-plugin-endpoint
+
+if ! which aws; then
+  add_separator "AWS CLI installation failed"
+  exit 1
+fi
+
+access_key=$(kubectl get pods | grep cortx-server- | cut -d " " -f1 | head -1 | xargs -I{} kubectl exec -t {} -c cortx-rgw -- cat /etc/cortx/cluster.conf | grep auth_admin | head -2 | tail -1 | cut -d ":" -f2 | sed -e 's/^[[:space:]]*//')
+secret_key=$(cat /root/deploy-scripts/k8_cortx_cloud/solution.yaml | grep s3_auth_admin_secret: | cut -d ":" -f2)
+endpoint_url="http://"$(ifconfig eth1 | sed -nre '/^[^ ]+/{N;s/^([^ ]+).*inet *([^ ]+).*/\2/p}')":31000" 
+mkdir -p /root/.aws/
+
+echo -e "\nSetup aws s3 endpoints:-\n"
+aws configure set plugins.endpoint awscli_plugin_endpoint
+check_status "Failed to set awscli s3 plugin endpoint."
+echo -e "\nSetup aws access key:-\n"
+aws configure set aws_access_key_id $access_key
+check_status "Failed to set awscli access key."
+echo -e "\nSetup aws secret key:-\n"
+aws configure set aws_secret_access_key $secret_key
+check_status "Failed to set awscli secret key."
+
+echo -e "\nSetup aws s3 endpoints:-\n"
+aws configure set s3.endpoint_url $endpoint_url
+check_status "Failed to set awscli s3 plugin endpoint."
+aws configure set s3api.endpoint_url $endpoint_url
+check_status "Failed to set awscli s3 plugin endpoint."
+
+cat /root/.aws/config
+
+add_separator Successfully configured awscli.
+
 add_separator Starting IO testing.
 
 BUCKET="test-bucket"
@@ -62,7 +98,6 @@ else
    echo -e "\nDIFF Status: The files $FILE1 and file10mbDn are similar."
 fi
 
-
 echo -e "\nRemove all files in '$BUCKET' bucket:-\n"
 aws s3 rm s3://$BUCKET --recursive
 check_status "Failed to delete all files from '$BUCKET'."
@@ -71,35 +106,8 @@ echo -e "\nRemove '$BUCKET' bucket:-\n"
 aws s3 rb s3://$BUCKET
 check_status "Failed to delete '$BUCKET'."
 
-echo -e "\nDelete S3 account and clear aws config/credentials:-\n"
-echo "List accounts:"
-s3iamcli ListAccounts --ldapuser sgiamadmin --ldappasswd ldapadmin --no-ssl
-check_status "Failed to list account."
-
-set_VAL_for_key() {
-  key="$1"
-  VAL="$(cat s3-account.txt | sed 's/ *, */\n/g' | grep "$key" | sed "s,^$key *= *,,")"
-}
-
-set_VAL_for_key AccessKeyId
-access_key="$VAL"
-set_VAL_for_key SecretKey
-secret_key="$VAL"
-
-echo -e "\nDeleting account:"
-s3iamcli DeleteAccount -n admin --access_key $access_key --secret_key $secret_key --no-ssl
-check_status "Failed to delete account."
-
-echo -e "\nList accounts:"
-s3iamcli ListAccounts --ldapuser sgiamadmin --ldappasswd ldapadmin --no-ssl
-check_status "Failed to list account."
-
-echo -e "\nDelete awscli files."
+echo -e "\nCleanup awscli files."
 rm -rf ~/.aws/credentials
 rm -rf ~/.aws/config
-
-echo -e "\nClean up /etc/hosts entries."
-sed -i '/s3.seagate.com/d' /etc/hosts
-check_status "Failed clean /etc/hosts entries."
 
 add_separator Successfully passed IO testing.
