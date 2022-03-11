@@ -38,7 +38,7 @@ secret_key=$(cat /root/deploy-scripts/k8_cortx_cloud/solution.yaml | grep s3_aut
 endpoint_url="http://""$(kubectl get svc | grep cortx-io | awk '{ print $3 }')"":8000"
 mkdir -p /root/.aws/
 
-echo -e "\nSetup aws s3 plugin endpoints:-\n"
+echo -e "\nSetup aws s3 pluginendpoints:-\n"
 aws configure set plugins.endpoint awscli_plugin_endpoint
 check_status "Failed to set awscli s3 plugin endpoint."
 echo -e "\nSetup aws s3 endpoint url:-\n"
