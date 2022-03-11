@@ -28,6 +28,11 @@ pipeline {
         string(name: 'S3_EXTERNAL_HTTP_NODEPORT', defaultValue: '30080', description: 'HTTP Port to be used for IO service.', trim: true)
         string(name: 'S3_EXTERNAL_HTTPS_NODEPORT', defaultValue: '30443', description: 'HTTPS to be used for IO service.', trim: true)
         text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used. First node will be used as Primary node', name: 'hosts')
+        choice(
+            name: 'EXTERNAL_EXPOSURE_SERVICE',
+            choices: ['LoadBalancer', 'NodePort'],
+            description: 'K8s Service to be used to expose RGW Service to outside cluster.'
+        )
         // Please configure CORTX_SCRIPTS_BRANCH and CORTX_SCRIPTS_REPO parameter in Jenkins job configuration.
     }    
 
