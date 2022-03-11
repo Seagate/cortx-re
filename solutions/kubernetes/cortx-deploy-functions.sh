@@ -239,7 +239,7 @@ function openldap_requiremenrs(){
 
 function execute_prereq(){
     echo "Pulling latest CORTX-ALL image"
-    docker pull $CORTX_ALL_IMAGE || { echo "Failed to pull $CORTX_IMAGE"; exit 1; }
+    docker pull $CORTX_ALL_IMAGE || { echo "Failed to pull $CORTX_ALL_IMAGE"; exit 1; }
     docker pull $CORTX_SERVER_IMAGE || { echo "Failed to pull $CORTX_SERVER_IMAGE"; exit 1; }
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         findmnt $SYSTEM_DRIVE && umount -l $SYSTEM_DRIVE
