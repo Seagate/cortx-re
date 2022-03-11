@@ -20,10 +20,20 @@ pipeline {
     parameters {
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX Cluster scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for CORTX Cluster scripts', trim: true)
-        string(name: 'CORTX_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-all:2.0.0-latest', description: 'CORTX-ALL image', trim: true)
+        string(name: 'CORTX_ALL_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-all:2.0.0-latest', description: 'CORTX-ALL image', trim: true)
+        string(name: 'CORTX_SERVER_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-rgw:2.0.0-latest', description: 'CORTX-SERVER image', trim: true)
         string(name: 'SNS_CONFIG', defaultValue: '1+0+0', description: 'sns configuration for deployment. Please select value based on disks available on nodes.', trim: true)
         string(name: 'DIX_CONFIG', defaultValue: '1+0+0', description: 'dix configuration for deployment. Please select value based on disks available on nodes.', trim: true)
+        string(name: 'CONTROL_EXTERNAL_NODEPORT', defaultValue: '31169', description: 'Port to be used for control service.', trim: true)
+        string(name: 'S3_EXTERNAL_HTTP_NODEPORT', defaultValue: '30080', description: 'HTTP Port to be used for IO service.', trim: true)
+        string(name: 'S3_EXTERNAL_HTTPS_NODEPORT', defaultValue: '30443', description: 'HTTPS to be used for IO service.', trim: true)
         text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used. First node will be used as Primary node', name: 'hosts')
+        choice(
+            name: 'EXTERNAL_EXPOSURE_SERVICE',
+            choices: ['LoadBalancer', 'NodePort'],
+            description: 'K8s Service to be used to expose RGW Service to outside cluster.'
+        )
+        // Please configure CORTX_SCRIPTS_BRANCH and CORTX_SCRIPTS_REPO parameter in Jenkins job configuration.
     }    
 
     stages {
@@ -37,10 +47,10 @@ pipeline {
             }
         }
 
-        stage ('Setup K8 Cluster') {
+        stage ('Setup K8s Cluster') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Tag last_successful', script: '''
+                sh label: 'Setup K8s Cluster', script: '''
                     pushd solutions/kubernetes/
                         echo $hosts | tr ' ' '\n' > hosts
                         cat hosts
@@ -56,20 +66,25 @@ pipeline {
             }
         }
 
-        stage ("Deploy CORTX") {
+        stage ('Deploy CORTX') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                    catchError(stageResult: 'FAILURE') {
-                        build job: '/Cortx-kubernetes/setup-cortx-cluster', wait: true,
-                        parameters: [
-                            string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
-                            string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
-                            string(name: 'CORTX_IMAGE', value: "${CORTX_IMAGE}"),
-                            string(name: 'SNS_CONFIG', value: "${SNS_CONFIG}"),
-                            string(name: 'DIX_CONFIG', value: "${DIX_CONFIG}"),
-                            text(name: 'hosts', value: "${hosts}")
-                        ]
-                    }
+                sh label: 'Deploy CORTX Components', script: '''
+                    pushd solutions/kubernetes/
+                        export SOLUTION_CONFIG_TYPE=automated
+                        export CORTX_SCRIPTS_BRANCH=${CORTX_SCRIPTS_BRANCH}
+                        export CORTX_SCRIPTS_REPO=${CORTX_SCRIPTS_REPO}
+                        export CORTX_ALL_IMAGE=${CORTX_ALL_IMAGE}
+                        export CORTX_SERVER_IMAGE=${CORTX_SERVER_IMAGE}
+                        export SNS_CONFIG=${SNS_CONFIG}
+                        export DIX_CONFIG=${DIX_CONFIG}
+                        export EXTERNAL_EXPOSURE_SERVICE=${EXTERNAL_EXPOSURE_SERVICE}
+                        export CONTROL_EXTERNAL_NODEPORT=${CONTROL_EXTERNAL_NODEPORT}
+                        export S3_EXTERNAL_HTTP_NODEPORT=${S3_EXTERNAL_HTTP_NODEPORT}
+                        export S3_EXTERNAL_HTTPS_NODEPORT=${S3_EXTERNAL_HTTPS_NODEPORT}
+                        ./cortx-deploy.sh --cortx-cluster
+                    popd
+                '''
             }
         }
     }
