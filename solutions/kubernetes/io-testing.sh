@@ -22,6 +22,8 @@ set -euo pipefail # exit on failures
 
 source /var/tmp/functions.sh
 
+SOLUTION_FILE="/root/deploy-scripts/k8_cortx_cloud/solution.yaml"
+
 add_separator Setup awscli.
 
 echo -e "\nInstall awscli:-\n"
@@ -33,8 +35,8 @@ if ! which aws; then
   exit 1
 fi
 
-access_key=$(kubectl get pods | grep cortx-server- | cut -d " " -f1 | head -1 | xargs -I{} kubectl exec -t {} -c cortx-rgw -- cat /etc/cortx/cluster.conf | grep auth_admin | head -2 | tail -1 | cut -d ":" -f2 | sed -e 's/^[[:space:]]*//')
-secret_key=$(cat /root/deploy-scripts/k8_cortx_cloud/solution.yaml | grep s3_auth_admin_secret: | cut -d ":" -f2)
+access_key=$(yq e '.solution.common.s3.default_iam_users.auth_admin' $SOLUTION_FILE)
+secret_key=$(yq e '.solution.secrets.content.s3_auth_admin_secret' $SOLUTION_FILE)
 endpoint_url="http://""$(kubectl get svc | grep cortx-io | awk '{ print $3 }')"":8000"
 mkdir -p /root/.aws/
 
