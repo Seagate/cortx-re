@@ -45,9 +45,9 @@ aws configure set plugins.endpoint awscli_plugin_endpoint
 check_status "Failed to set awscli s3 plugin endpoint."
 echo -e "\nSetup aws s3 endpoint url:-\n"
 aws configure set s3.endpoint_url $endpoint_url
-check_status "Failed to set awscli s3 plugin endpoint."
+check_status "Failed to set awscli s3 endpoint url."
 aws configure set s3api.endpoint_url $endpoint_url
-check_status "Failed to set awscli s3 plugin endpoint."
+check_status "Failed to set awscli s3 api endpoint url."
 echo -e "\nSetup aws access key:-\n"
 aws configure set aws_access_key_id $access_key
 check_status "Failed to set awscli access key."
