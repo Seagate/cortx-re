@@ -46,6 +46,9 @@ check_status "Failed to set awscli s3 plugin endpoint."
 echo -e "\nSetup aws s3 endpoint url:-\n"
 aws configure set s3.endpoint_url $endpoint_url
 check_status "Failed to set awscli s3 endpoint url."
+echo -e "\nSetup default aws region:-\n"
+aws configure set default.region us-east-1
+check_status "Failed to set default aws region."
 aws configure set s3api.endpoint_url $endpoint_url
 check_status "Failed to set awscli s3 api endpoint url."
 echo -e "\nSetup aws access key:-\n"
@@ -54,9 +57,7 @@ check_status "Failed to set awscli access key."
 echo -e "\nSetup aws secret key:-\n"
 aws configure set aws_secret_access_key $secret_key
 check_status "Failed to set awscli secret key."
-
 cat /root/.aws/config
-
 add_separator Successfully configured awscli.
 
 add_separator Starting IO testing.

@@ -12,8 +12,8 @@ pipeline {
         disableConcurrentBuilds()
     }
     environment {
-        CORTX_RE_BRANCH = "rocky-linux-custom-ci"
-        CORTX_RE_REPO = "https://github.com/shailesh-vaidya/cortx-re"
+        CORTX_RE_BRANCH = "main"
+        CORTX_RE_REPO = "https://github.com/Seagate/cortx-re"
         DOCKER_IMAGE_LOCATION = "https://github.com/Seagate/cortx-re/pkgs/container/cortx-all"
         LOCAL_REG_CRED = credentials('local-registry-access')
         GITHUB_CRED = credentials('shailesh-github')
