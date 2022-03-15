@@ -84,22 +84,16 @@ pipeline {
                    /usr/local/bin/docker-compose --version
                    echo \'y\' | docker image prune
                    docker pull $CORTX_IMAGE
-
                    echo "\n RPM Build URL used for Nightly Image"
                    docker inspect $CORTX_IMAGE | jq -r '.[] | (.ContainerConfig.Cmd)' | grep 'BUILD_URL='
-
                    #Update VERSION details in RELEASE.INFO file
-
                    docker commit $(docker run -d ${CORTX_IMAGE} sed -i /VERSION/s/\\"2.0.0.*\\"/\\"${VERSION}-${BUILD_NUMBER}\\"/ /opt/seagate/cortx/RELEASE.INFO) ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}
-
-
                    docker tag ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER} ghcr.io/seagate/cortx-all:${VERSION}-latest
-
                    docker login ghcr.io -u ${GITHUB_CRED_USR} -p ${GITHUB_CRED_PSW}
-
+                   
                    docker push ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}
                    docker push ghcr.io/seagate/cortx-all:${VERSION}-latest
-
+                   
                    docker rmi ghcr.io/seagate/cortx-all:${VERSION}-latest
                    docker rmi ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}
                 '''
