@@ -18,7 +18,6 @@ pipeline {
         LOCAL_REG_CRED = credentials('local-registry-access')
         GITHUB_CRED = credentials('shailesh-github')
         VERSION = "2.0.0"
-        last_success_build_number = getBuild(JOB_URL)
     }
     parameters {
         string(name: 'CORTX_IMAGE', defaultValue: 'cortx-docker.colo.seagate.com/seagate/cortx-all:2.0.0-latest', description: 'CORTX-ALL image', trim: true)
@@ -28,7 +27,7 @@ pipeline {
             name: 'EMAIL_RECIPIENTS'
         )
     }
-    // Please configure hosts,SNS, CORTX_SCRIPTS_BRANCH, CORTX_SCRIPTS_BRANCH and DIX parameter in Jenkins job configuration.
+    // Please configure hosts,SNS and DIX parameter in Jenkins job configuration.
     stages {
         stage ("Define Variable") {
             steps {
@@ -66,8 +65,6 @@ pipeline {
                         text(name: 'hosts', value: "${hosts}"),
                         string(name: 'SNS_CONFIG', value: "${SNS_CONFIG}"),
                         string(name: 'DIX_CONFIG', value: "${DIX_CONFIG}"),
-                        string(name: 'CORTX_SCRIPTS_BRANCH', value: "${CORTX_SCRIPTS_BRANCH}"),
-                        string(name: 'CORTX_SCRIPTS_REPO', value: "${CORTX_SCRIPTS_REPO}")
                     ]
                     env.cortxcluster_build_url = cortxCluster.absoluteUrl
                     env.cortxCluster_status = cortxCluster.currentResult
@@ -87,17 +84,11 @@ pipeline {
                    /usr/local/bin/docker-compose --version
                    echo \'y\' | docker image prune
                    docker pull $CORTX_IMAGE
-
                    echo "\n RPM Build URL used for Nightly Image"
                    docker inspect $CORTX_IMAGE | jq -r '.[] | (.ContainerConfig.Cmd)' | grep 'BUILD_URL='
-
                    #Update VERSION details in RELEASE.INFO file
-
                    docker commit $(docker run -d ${CORTX_IMAGE} sed -i /VERSION/s/\\"2.0.0.*\\"/\\"${VERSION}-${BUILD_NUMBER}\\"/ /opt/seagate/cortx/RELEASE.INFO) ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}
-
-
                    docker tag ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER} ghcr.io/seagate/cortx-all:${VERSION}-latest
-
                    docker login ghcr.io -u ${GITHUB_CRED_USR} -p ${GITHUB_CRED_PSW}
                    
                    docker push ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}
@@ -134,23 +125,6 @@ pipeline {
                 }
             }
         }
-
-        stage ("Changesetlog generation") {
-            when {
-                expression { "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "SUCCESS"  }
-            }
-            steps {
-                script {
-                    def changelog = build job: '/Release_Engineering/Cortx-Automation/changelog-generation', wait: true, propagate: false,
-                    parameters: [
-                        string(name: 'BUILD_FROM', value: "ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}-${GITHUB_TAG_SUFFIX}"),
-                        string(name: 'BUILD_TO', value: "ghcr.io/seagate/cortx-all:${VERSION}-${last_success_build_number}-${GITHUB_TAG_SUFFIX}"),
-                    ]
-                    env.changeset_log_url = changelog.absoluteUrl
-                    copyArtifacts filter: 'CHANGESET.txt', fingerprintArtifacts: true, flatten: true, optional: true, projectName: '/Release_Engineering/Cortx-Automation/changelog-generation', selector: lastCompleted(), target: ''
-                }
-            }
-        }
     }
 
     post {
@@ -166,7 +140,6 @@ pipeline {
                     env.deployment_result = "SUCCESS"
                     env.sanity_result = "SUCCESS"
                     currentBuild.result = "SUCCESS"
-                    env.changeset_log_url = sh( script: "echo ${JOB_URL}lastSuccessfulBuild/artifact/CHANGESET.txt", returnStdout: true)
                 } else if ( "${env.cortxCluster_status}" == "FAILURE" || "${env.cortxCluster_status}" == "UNSTABLE" || "${env.cortxCluster_status}" == "null" ) {
                     manager.buildFailure()
                     MESSAGE = "K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=failed, SanityTest=skipped, Regression=skipped"
@@ -231,7 +204,7 @@ pipeline {
                 }               
 
                 catchError(stageResult: 'FAILURE') {
-                    archiveArtifacts allowEmptyArchive: true, artifacts: 'log/*report.xml, log/*report.html, support_bundle/*.tar, crash_files/*.gz, CHANGESET.txt', followSymlinks: false
+                    archiveArtifacts allowEmptyArchive: true, artifacts: 'log/*report.xml, log/*report.html, support_bundle/*.tar, crash_files/*.gz', followSymlinks: false
                     emailext (
                         body: '''${SCRIPT, template="K8s-deployment-email_2.template"}${SCRIPT, template="REL_QA_SANITY_CUS_EMAIL_RETEAM_5.template"}''',
                         mimeType: 'text/html',
@@ -244,9 +217,4 @@ pipeline {
             }
         }
     }
-}
-
-def getBuild(job_url) {
-    buildID = sh(script: "curl -XGET '${job_url}/api/json' | jq -r '.lastSuccessfulBuild.number'", returnStdout: true).trim()
-    return "$buildID"   
 }
