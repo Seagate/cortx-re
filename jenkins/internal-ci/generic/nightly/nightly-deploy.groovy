@@ -143,9 +143,6 @@ pipeline {
         }
 
         stage ("Changesetlog generation") {
-            when {
-                expression { "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "SUCCESS"  }
-            }
             steps {
                 script {
                     def changelog = build job: '/Release_Engineering/Cortx-Automation/changelog-generation', wait: true, propagate: false,
