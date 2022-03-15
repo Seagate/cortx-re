@@ -13,11 +13,12 @@ pipeline {
     }
     environment {
         CORTX_RE_BRANCH = "rocky-linux-custom-ci"
-        CORTX_RE_REPO = "https://github.com/Shailesh-vaidya/cortx-re"
+        CORTX_RE_REPO = "https://github.com/shailesh-vaidya/cortx-re"
         DOCKER_IMAGE_LOCATION = "https://github.com/Seagate/cortx-re/pkgs/container/cortx-all"
         LOCAL_REG_CRED = credentials('local-registry-access')
         GITHUB_CRED = credentials('shailesh-github')
         VERSION = "2.0.0"
+        last_success_build_number = getBuild(JOB_URL)
     }
     parameters {
         string(name: 'CORTX_ALL_IMAGE', defaultValue: 'cortx-docker.colo.seagate.com/seagate/cortx-all:2.0.0-latest', description: 'CORTX-ALL image', trim: true)
@@ -90,14 +91,19 @@ pipeline {
                    echo \'y\' | docker image prune
                    docker pull $CORTX_ALL_IMAGE
                    docker pull $CORTX_SERVER_IMAGE
+
                    echo "\n RPM Build URL used for Nightly Image"
                    docker inspect $CORTX_ALL_IMAGE | jq -r '.[] | (.ContainerConfig.Cmd)' | grep 'BUILD_URL='
                    docker inspect $CORTX_SERVER_IMAGE | jq -r '.[] | (.ContainerConfig.Cmd)' | grep 'BUILD_URL='
+                   
                    #Update VERSION details in RELEASE.INFO file
+                   
                    docker commit $(docker run -d ${CORTX_ALL_IMAGE} sed -i /VERSION/s/\\"2.0.0.*\\"/\\"${VERSION}-${BUILD_NUMBER}\\"/ /opt/seagate/cortx/RELEASE.INFO) ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}
                    docker commit $(docker run -d ${CORTX_SERVER_IMAGE} sed -i /VERSION/s/\\"2.0.0.*\\"/\\"${VERSION}-${BUILD_NUMBER}\\"/ /opt/seagate/cortx/RELEASE.INFO) ghcr.io/seagate/cortx-rgw:${VERSION}-${BUILD_NUMBER} 
+                   
                    docker tag ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER} ghcr.io/seagate/cortx-all:${VERSION}-latest
                    docker tag ghcr.io/seagate/cortx-rgw:${VERSION}-${BUILD_NUMBER} ghcr.io/seagate/cortx-rgw:${VERSION}-latest
+                   
                    docker login ghcr.io -u ${GITHUB_CRED_USR} -p ${GITHUB_CRED_PSW}
                    
                    docker push ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER} && docker push ghcr.io/seagate/cortx-all:${VERSION}-latest
