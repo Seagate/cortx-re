@@ -46,7 +46,7 @@ pipeline {
         stage('Checkout Release scripts') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                checkout([$class: 'GitSCM', branches: [[name: "rocky-linux-custom-ci"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/shailesh-vaidya/cortx-re']]])
+                checkout([$class: 'GitSCM', branches: [[name: "main"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
             }
         }
             
@@ -125,15 +125,26 @@ pipeline {
         }
         
         stage ('Sign rpm') {
-            when { expression { false } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                                 
                 sh label: 'Generate Key', script: '''
                     set +x
                     pushd scripts/rpm-signing
-                    cat gpgoptions >>  ~/.rpmmacros
-                    sed -i 's/passphrase/'${passphrase}'/g' genkey-batch
+                    expiredKey=$(gpg --list-keys | grep -B1 "Seagate"|head -1|tr -d " ")
+                    echo "$expiredKey"
+                    gpg --batch --yes --quiet --delete-secret-key $expiredKey >/dev/null 2>&1
+                    if [ $? != 0 ]; then
+                        echo "Remove old gpg secret failed"
+                        exit 1
+                    fi
+                    gpg --batch --quiet --yes --delete-keys $expiredKey >/dev/null 2>&1
+                    if [ $? != 0 ]; then
+                        echo "Remove old gpg key failed"
+                        exit 1
+                    fi
+                    sed 's/--passphrase-fd 3 //g' gpgoptions >> ~/.rpmmacros
+                    sed -i -e "s/Passphrase:.*/Passphrase: ${passphrase}/g" genkey-batch
                     gpg --batch --gen-key genkey-batch
                     gpg --export -a 'Seagate'  > RPM-GPG-KEY-Seagate
                     rpm --import RPM-GPG-KEY-Seagate
@@ -142,6 +153,7 @@ pipeline {
 
                 sh label: 'Sign RPM', script: '''
                     set +x
+                    count="0"
                     for env in "dev" "prod";
                     do
                         pushd scripts/rpm-signing
@@ -149,14 +161,18 @@ pipeline {
                             cp RPM-GPG-KEY-Seagate $integration_dir/$release_tag/$env/
                             for rpm in `ls -1 $integration_dir/$release_tag/$env/*.rpm`
                             do
-                            ./rpm-sign.sh ${passphrase} $rpm
+                                if [ $count == "0" ]; then
+                                    ./rpm-sign.sh ${passphrase} $rpm
+                                    count="1"
+                                else
+                                    rpm --addsign $rpm
+                                fi
                             done
                         popd
                     done    
                 '''
             }
-        }
-                
+        }                
         stage ('Repo Creation') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -258,11 +274,11 @@ pipeline {
                     try {
                         def build_cortx_images = build job: 'cortx-docker-images', wait: true,
                                     parameters: [
-                                        string(name: 'CORTX_RE_URL', value: "https://github.com/shailesh-vaidya/cortx-re"),
-                                        string(name: 'CORTX_RE_BRANCH', value: "rocky-linux-custom-ci"),
+                                        string(name: 'CORTX_RE_URL', value: "https://github.com/Seagate/cortx-re"),
+                                        string(name: 'CORTX_RE_BRANCH', value: "main"),
                                         string(name: 'BUILD', value: "${ARTIFACT_LOCATION}/${release_tag}/prod"),
                                         string(name: 'GITHUB_PUSH', value: "yes"),
-                                        string(name: 'TAG_LATEST', value: "no"),
+                                        string(name: 'TAG_LATEST', value: "yes"),
                                         string(name: 'DOCKER_REGISTRY', value: "cortx-docker.colo.seagate.com"),
                                         string(name: 'EMAIL_RECIPIENTS', value: "DEBUG"),
                                         string(name: 'OS', value: "${os_version}"),
@@ -284,16 +300,16 @@ pipeline {
                 script {
                     build job: "K8s-1N-deployment", propagate: false, wait: false,
                     parameters: [
-                        string(name: 'CORTX_RE_BRANCH', value: "rocky-linux-custom-ci"),
-                        string(name: 'CORTX_RE_REPO', value: "https://github.com/shailesh-vaidya/cortx-re"),
+                        string(name: 'CORTX_RE_BRANCH', value: "main"),
+                        string(name: 'CORTX_RE_REPO', value: "https://github.com/Seagate/cortx-re"),
                         string(name: 'CORTX_ALL_IMAGE', value: "${env.cortx_all_image}"),
                         string(name: 'CORTX_SERVER_IMAGE', value: "${env.cortx_rgw_image}")
 
                     ]
                     build job: "K8s-3N-deployment", propagate: false, wait: false,
                     parameters: [
-                        string(name: 'CORTX_RE_BRANCH', value: "rocky-linux-custom-ci"),
-                        string(name: 'CORTX_RE_REPO', value: "https://github.com/shailesh-vaidya/cortx-re"),
+                        string(name: 'CORTX_RE_BRANCH', value: "main"),
+                        string(name: 'CORTX_RE_REPO', value: "https://github.com/Seagate/cortx-re"),
                         string(name: 'CORTX_ALL_IMAGE', value: "${env.cortx_all_image}"),
                         string(name: 'CORTX_SERVER_IMAGE', value: "${env.cortx_rgw_image}")
                     ]

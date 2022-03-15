@@ -13,27 +13,27 @@ pipeline {
     }
 
     environment {
-        UNTAINT = "true"
+        PODS_ON_PRIMARY = "true"
     }
 
 
     parameters {
-
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX Cluster scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for CORTX Cluster scripts', trim: true)
-        string(name: 'CORTX_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-all:2.0.0-latest', description: 'CORTX-ALL image', trim: true)
+        string(name: 'CORTX_ALL_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-all:2.0.0-latest', description: 'CORTX-ALL image', trim: true)
+        string(name: 'CORTX_SERVER_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-rgw:2.0.0-latest', description: 'CORTX-SERVER image', trim: true)
         string(name: 'SNS_CONFIG', defaultValue: '1+0+0', description: 'sns configuration for deployment. Please select value based on disks available on nodes.', trim: true)
         string(name: 'DIX_CONFIG', defaultValue: '1+0+0', description: 'dix configuration for deployment. Please select value based on disks available on nodes.', trim: true)
-        text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used. First node will be used as Master', name: 'hosts')
-        //booleanParam(name: 'UNTAINT', defaultValue: true, description: 'Allow to schedule pods on master node')
-        // Please configure CORTX_SCRIPTS_BRANCH and CORTX_SCRIPTS_REPO parameter in Jenkins job configuration.
-
+        string(name: 'CONTROL_EXTERNAL_NODEPORT', defaultValue: '31169', description: 'Port to be used for control service.', trim: true)
+        string(name: 'S3_EXTERNAL_HTTP_NODEPORT', defaultValue: '30080', description: 'HTTP Port to be used for IO service.', trim: true)
+        string(name: 'S3_EXTERNAL_HTTPS_NODEPORT', defaultValue: '30443', description: 'HTTPS to be used for IO service.', trim: true)
+        text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used. First node will be used as Primary node', name: 'hosts')
         choice(
-            name: 'DEPLOY_TARGET',
-            choices: ['CORTX-CLUSTER', 'THIRD-PARTY-ONLY'],
-            description: 'Deployment Target CORTX-CLUSTER - This will install Third party and CORTX components both.'
+            name: 'EXTERNAL_EXPOSURE_SERVICE',
+            choices: ['LoadBalancer', 'NodePort'],
+            description: 'K8s Service to be used to expose RGW Service to outside cluster.'
         )
-       
+        // Please configure CORTX_SCRIPTS_BRANCH and CORTX_SCRIPTS_REPO parameter in Jenkins job configuration.
     }    
 
     stages {
@@ -47,51 +47,42 @@ pipeline {
             }
         }
 
-        stage ('Setup K8 Cluster') {
+        stage ('Setup K8s Cluster') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Tag last_successful', script: '''
+                sh label: 'Setup K8s Cluster', script: '''
                     pushd solutions/kubernetes/
                         echo $hosts | tr ' ' '\n' > hosts
                         cat hosts
                         if [ "$(cat hosts | wc -l)" -eq 2 ]
                         then
-                           echo "Current configuration does not support 2 node Cortx cluster deployment. Please try with 1 or more than two nodes."
+                           echo "Current configuration does not support 2 node CORTX cluster deployment. Please try with 1 or more than two nodes."
                            echo "Exiting Jenkins job."
                            exit 1
                         fi
-                        ./cluster-setup.sh ${UNTAINT}
+                        ./cluster-setup.sh ${PODS_ON_PRIMARY}
                     popd
                 '''
             }
         }
 
-        stage ("Deploy CORTX components") {
-            when {
-                expression { params.DEPLOY_TARGET == 'CORTX-CLUSTER' }
-            }
+        stage ('Deploy CORTX') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Deploy CORTX Components', script: '''
                     pushd solutions/kubernetes/
+                        export SOLUTION_CONFIG_TYPE=automated
                         export CORTX_SCRIPTS_BRANCH=${CORTX_SCRIPTS_BRANCH}
                         export CORTX_SCRIPTS_REPO=${CORTX_SCRIPTS_REPO}
-                        export CORTX_IMAGE=${CORTX_IMAGE}
-                        export SOLUTION_CONFIG_TYPE=automated
+                        export CORTX_ALL_IMAGE=${CORTX_ALL_IMAGE}
+                        export CORTX_SERVER_IMAGE=${CORTX_SERVER_IMAGE}
                         export SNS_CONFIG=${SNS_CONFIG}
                         export DIX_CONFIG=${DIX_CONFIG}
+                        export EXTERNAL_EXPOSURE_SERVICE=${EXTERNAL_EXPOSURE_SERVICE}
+                        export CONTROL_EXTERNAL_NODEPORT=${CONTROL_EXTERNAL_NODEPORT}
+                        export S3_EXTERNAL_HTTP_NODEPORT=${S3_EXTERNAL_HTTP_NODEPORT}
+                        export S3_EXTERNAL_HTTPS_NODEPORT=${S3_EXTERNAL_HTTPS_NODEPORT}
                         ./cortx-deploy.sh --cortx-cluster
-                    popd
-                '''
-            }
-        }
-
-        stage ('IO Sanity Test') {
-            steps {
-                script { build_stage = env.STAGE_NAME }
-                sh label: 'Perform IO Sanity Test', script: '''
-                    pushd solutions/kubernetes/
-                        ./cortx-deploy.sh --io-test
                     popd
                 '''
             }
@@ -147,8 +138,8 @@ pipeline {
             mkdir -p artifacts
             pushd solutions/kubernetes/
                 HOST_FILE=$PWD/hosts
-                MASTER_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
-                scp -q "$MASTER_NODE":/root/deploy-scripts/k8_cortx_cloud/solution.yaml $WORKSPACE/artifacts/
+                PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+                scp -q "$PRIMARY_NODE":/root/deploy-scripts/k8_cortx_cloud/solution.yaml $WORKSPACE/artifacts/
                 if [ -f /var/tmp/cortx-cluster-status.txt ]; then
                     cp /var/tmp/cortx-cluster-status.txt $WORKSPACE/artifacts/
                 fi
@@ -166,9 +157,9 @@ pipeline {
             pushd solutions/kubernetes/
                 ./cortx-deploy.sh --support-bundle
                 HOST_FILE=$PWD/hosts
-                MASTER_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
-                LOG_FILE=$(ssh -o 'StrictHostKeyChecking=no' $MASTER_NODE 'ls -t /root/deploy-scripts/k8_cortx_cloud | grep logs-cortx-cloud | grep .tar | head -1')
-                scp -q "$MASTER_NODE":/root/deploy-scripts/k8_cortx_cloud/$LOG_FILE $WORKSPACE/artifacts/
+                PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+                LOG_FILE=$(ssh -o 'StrictHostKeyChecking=no' $PRIMARY_NODE 'ls -t /root/deploy-scripts/k8_cortx_cloud | grep logs-cortx-cloud | grep .tar | head -1')
+                scp -q "$PRIMARY_NODE":/root/deploy-scripts/k8_cortx_cloud/$LOG_FILE $WORKSPACE/artifacts/
             popd
             '''
         }  
