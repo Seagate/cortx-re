@@ -48,6 +48,9 @@ RUN yum install yum-utils -y \
 COPY ./${ENVIRONMENT}/${OS}.repo /etc/yum.repos.d/
 #RUN if [[ $OS_TYPE =~ "rocky" ]]; then cp /var/tmp/${ENVIRONMENT}/$(echo $OS_TYPE | cut -d'/' -f1)-${OS_RELEASE}.repo /etc/yum.repos.d/;else cp /var/tmp/${ENVIRONMENT}/${OS_TYPE}-${OS_RELEASE}.repo /etc/yum.repos.d/; fi
 
+# Install rockylinux opensource-ci dependency
+RUN if [[ "$ENVIRONMENT" = "opensource-ci" ]] && [[ $OS_TYPE == "rockylinux/rockylinux" ]]; then dnf install dnf-plugin-config-manager -y ;dnf config-manager --set-enabled powertools ; rm -rf /etc/yum.repos.d/$OS.repo ;fi
+
 # Install EPEL repo for opensource-ci
 RUN if [ "$ENVIRONMENT" = "opensource-ci" ] ; then yum install epel-release -y ; fi && yum clean all \
 && rm -rf /var/cache/yum

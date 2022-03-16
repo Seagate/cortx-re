@@ -33,7 +33,7 @@ PROJECT="seagate"
 ARTFACT_URL="http://cortx-storage.colo.seagate.com/releases/cortx/github/"
 SERVICE=all
 OS=centos-7.9.2009
-IMAGE_LIST=( "cortx-all" "cortx-rgw" "cortx-data" )
+IMAGE_LIST=( "cortx-all" "cortx-rgw" "cortx-data" "cortx-control" )
 
 
 while getopts "b:p:t:r:e:o:s:h:" opt; do

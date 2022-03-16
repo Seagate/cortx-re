@@ -30,7 +30,7 @@ pipeline {
         )
 
         choice (
-            choices: ['all', 'cortx-all' , 'cortx-rgw'],
+            choices: ['all', 'cortx-all' , 'cortx-rgw', 'cortx-control'],
             description: 'CORTX Image to be built. Defaults to all images ',
             name: 'CORTX_IMAGE'
         )
