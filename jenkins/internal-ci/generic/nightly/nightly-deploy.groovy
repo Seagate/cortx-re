@@ -55,25 +55,41 @@ pipeline {
             }
         }
 
+        stage ("Changesetlog generation") {
+            steps {
+                script {
+                    def changelog = build job: '/Release_Engineering/Cortx-Automation/changelog-generation', wait: true, propagate: false,
+                    parameters: [
+                        string(name: 'BUILD_FROM', value: "ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}"),
+                        string(name: 'BUILD_TO', value: "ghcr.io/seagate/cortx-all:${VERSION}-${last_success_build_number}"),
+                    ]
+                    env.changeset_log_url = changelog.absoluteUrl
+                    copyArtifacts filter: 'CHANGESET.txt', fingerprintArtifacts: true, flatten: true, optional: true, projectName: '/Release_Engineering/Cortx-Automation/changelog-generation', selector: lastCompleted(), target: ''
+                }
+            }
+        }
+        
         stage ("Deploy CORTX Cluster") {
             steps {
-                script { build_stage = env.STAGE_NAME }
-                script {
-                    def cortxCluster = build job: '/Cortx-Automation/RGW/setup-cortx-rgw-cluster', wait: true,
-                    parameters: [
-                        string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
-                        string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
-                        string(name: 'CORTX_ALL_IMAGE', value: "${CORTX_ALL_IMAGE}"),
-                        string(name: 'CORTX_SERVER_IMAGE', value: "${CORTX_SERVER_IMAGE}"),
-                        text(name: 'hosts', value: "${hosts}"),
-                        string(name: 'CORTX_SCRIPTS_BRANCH', value: "${CORTX_SCRIPTS_BRANCH}"),
-                        string(name: 'CORTX_SCRIPTS_REPO', value: "${CORTX_SCRIPTS_REPO}"),
-                        string(name: 'EXTERNAL_EXPOSURE_SERVICE', value: "NodePort"),
-                        string(name: 'SNS_CONFIG', value: "${SNS_CONFIG}"),
-                        string(name: 'DIX_CONFIG', value: "${DIX_CONFIG}")
-                    ]
-                    env.cortxcluster_build_url = cortxCluster.absoluteUrl
-                    env.cortxCluster_status = cortxCluster.currentResult
+                catchError(stageResult: 'FAILURE') {
+                    script { build_stage = env.STAGE_NAME }
+                    script {
+                        def cortxCluster = build job: '/Cortx-Automation/RGW/setup-cortx-rgw-cluster', wait: true,
+                        parameters: [
+                            string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
+                            string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
+                            string(name: 'CORTX_ALL_IMAGE', value: "${CORTX_ALL_IMAGE}"),
+                            string(name: 'CORTX_SERVER_IMAGE', value: "${CORTX_SERVER_IMAGE}"),
+                            text(name: 'hosts', value: "${hosts}"),
+                            string(name: 'CORTX_SCRIPTS_BRANCH', value: "${CORTX_SCRIPTS_BRANCH}"),
+                            string(name: 'CORTX_SCRIPTS_REPO', value: "${CORTX_SCRIPTS_REPO}"),
+                            string(name: 'EXTERNAL_EXPOSURE_SERVICE', value: "NodePort"),
+                            string(name: 'SNS_CONFIG', value: "${SNS_CONFIG}"),
+                            string(name: 'DIX_CONFIG', value: "${DIX_CONFIG}")
+                        ]
+                        env.cortxcluster_build_url = cortxCluster.absoluteUrl
+                        env.cortxCluster_status = cortxCluster.currentResult
+                    }
                 }
             }
         }
@@ -138,20 +154,6 @@ pipeline {
                     copyArtifacts filter: 'log/*report.html', fingerprintArtifacts: true, flatten: true, optional: true, projectName: 'QA-Sanity-Multinode-RGW', selector: lastCompleted(), target: 'log/'
                     copyArtifacts filter: 'log/*report.xml', fingerprintArtifacts: true, flatten: true, optional: true, projectName: 'QA-Sanity-Multinode-RGW', selector: lastCompleted(), target: ''
                     copyArtifacts filter: 'log/*report.html', fingerprintArtifacts: true, flatten: true, optional: true, projectName: 'QA-Sanity-Multinode-RGW', selector: lastCompleted(), target: ''
-                }
-            }
-        }
-
-        stage ("Changesetlog generation") {
-            steps {
-                script {
-                    def changelog = build job: '/Release_Engineering/Cortx-Automation/changelog-generation', wait: true, propagate: false,
-                    parameters: [
-                        string(name: 'BUILD_FROM', value: "ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}"),
-                        string(name: 'BUILD_TO', value: "ghcr.io/seagate/cortx-all:${VERSION}-${last_success_build_number}"),
-                    ]
-                    env.changeset_log_url = changelog.absoluteUrl
-                    copyArtifacts filter: 'CHANGESET.txt', fingerprintArtifacts: true, flatten: true, optional: true, projectName: '/Release_Engineering/Cortx-Automation/changelog-generation', selector: lastCompleted(), target: ''
                 }
             }
         }
