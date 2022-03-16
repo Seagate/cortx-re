@@ -284,8 +284,8 @@ function setup_primary_node(){
             curl https://docs.projectcalico.org/archive/$CALICO_PLUGIN_MAJOR_VERSION/manifests/calico.yaml -o calico-$CALICO_PLUGIN_VERSION.yaml || throw $Exception    
         fi
 
-        IS_HW=$(systemd-detect-virt -v)
-        if [ "$IS_HW" == "none" ]; then
+        IS_VM=$(systemd-detect-virt -v)
+        if [ "$IS_VM" == "none" ]; then
             # Setup IP_AUTODETECTION_METHOD for determining calico network.
             sed -i '/# Auto-detect the BGP IP address./i \            - name: IP_AUTODETECTION_METHOD\n              value: "interface=eno1"' calico-$CALICO_PLUGIN_VERSION.yaml
         fi
