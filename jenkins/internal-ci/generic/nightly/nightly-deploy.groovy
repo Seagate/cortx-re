@@ -128,6 +128,11 @@ pipeline {
                         env.Health = qaSanity.buildVariables.Health
                         env.qaSanity_status = qaSanity.currentResult
                         env.qaSanityK8sJob_URL = qaSanity.absoluteUrl
+                        env.totalcount = qaSanity.buildVariables.totalcount
+                        env.passcount = qaSanity.buildVariables.passcount
+                        env.failcount = qaSanity.buildVariables.failcount
+                        env.skipcount = qaSanity.buildVariables.skipcount
+                        env.todocount = qaSanity.buildVariables.todocount
                     }
                     copyArtifacts filter: 'log/*report.xml', fingerprintArtifacts: true, flatten: true, optional: true, projectName: 'QA-Sanity-Multinode-RGW', selector: lastCompleted(), target: 'log/'
                     copyArtifacts filter: 'log/*report.html', fingerprintArtifacts: true, flatten: true, optional: true, projectName: 'QA-Sanity-Multinode-RGW', selector: lastCompleted(), target: 'log/'
