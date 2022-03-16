@@ -4,7 +4,6 @@ pipeline {
             label 'docker-centos-7.9.2009-node'
         }
     }
-    triggers { cron('30 19 * * *') }
     options {
         timeout(time: 600, unit: 'MINUTES')
         timestamps()
@@ -218,7 +217,7 @@ pipeline {
                 catchError(stageResult: 'FAILURE') {
                     archiveArtifacts allowEmptyArchive: true, artifacts: 'log/*report.xml, log/*report.html, support_bundle/*.tar, crash_files/*.gz', followSymlinks: false
                     emailext (
-                        body: '''${SCRIPT, template="K8s-deployment-email_2.template"}${SCRIPT, template="REL_QA_SANITY_CUS_EMAIL_5.template"}''',
+                        body: '''${SCRIPT, template="K8s-deployment-email_2.template"}${SCRIPT, template="REL_QA_SANITY_CUS_EMAIL_6.template"}''',
                         mimeType: 'text/html',
                         subject: "${MESSAGE}",
                         to: "${mailRecipients}",
