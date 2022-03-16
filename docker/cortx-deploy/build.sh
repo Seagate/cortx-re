@@ -33,7 +33,7 @@ PROJECT="seagate"
 ARTFACT_URL="http://cortx-storage.colo.seagate.com/releases/cortx/github/"
 SERVICE=all
 OS=centos-7.9.2009
-IMAGE_LIST=( "cortx-all" "cortx-rgw" "cortx-data" )
+IMAGE_LIST=( "cortx-all" "cortx-rgw" "cortx-data" "cortx-control" )
 
 
 while getopts "b:p:t:r:e:o:s:h:" opt; do
@@ -125,10 +125,13 @@ else
         echo "Docker Image push skipped"
         exit 0
 fi
+done
 
+for SERVICE_NAME in $SERVICE
+do
 if [ "$TAG_LATEST" == "yes" ];then
         echo "Tagging generated image as latest"
-	docker tag "$(docker images $REGISTRY/$PROJECT/$SERVICE --format='{{.Repository}}:{{.Tag}}' | head -1)" $REGISTRY/$PROJECT/$SERVICE:"${TAG//$DOCKER_BUILD_BUILD/latest}"        
+	docker tag "$(docker images $REGISTRY/$PROJECT/$SERVICE_NAME --format='{{.Repository}}:{{.Tag}}' | head -1)" $REGISTRY/$PROJECT/$SERVICE_NAME:"${TAG//$DOCKER_BUILD_BUILD/latest}"        
 	docker push $REGISTRY/$PROJECT/$SERVICE_NAME:"${TAG//$DOCKER_BUILD_BUILD/latest}"
 else
         echo "Latest tag creation skipped"
