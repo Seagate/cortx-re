@@ -253,6 +253,6 @@ pipeline {
 }
 
 def getBuild(job_url) {
-    buildID = sh(script: "curl -XGET '${job_url}/api/json' | jq -r '.lastSuccessfulBuild.number'", returnStdout: true).trim()
+    buildID = sh(script: "curl -XGET -k '${job_url}/api/json' | jq -r '.lastSuccessfulBuild.number'", returnStdout: true).trim()
     return "$buildID"   
 }
