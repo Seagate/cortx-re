@@ -286,6 +286,8 @@ pipeline {
                                         ]
                     env.cortx_all_image = build_cortx_images.buildVariables.cortx_all_image
                     env.cortx_rgw_image = build_cortx_images.buildVariables.cortx_rgw_image
+                    env.cortx_data_image = build_cortx_images.buildVariables.cortx_data_image
+                    env.cortx_control_image = build_cortx_images.buildVariables.cortx_control_image
                     } catch (err) {
                         build_stage = env.STAGE_NAME
                         error "Failed to Build CORTX images"
