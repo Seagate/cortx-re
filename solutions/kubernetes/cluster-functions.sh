@@ -285,9 +285,7 @@ function setup_primary_node(){
         fi
 
         IS_HW=$(systemd-detect-virt -v)
-        echo "IS_HW : $IS_HW"
         if [ "$IS_HW" == "none" ]; then
-            echo "IS_HW : $IS_HW"
             # Setup IP_AUTODETECTION_METHOD for determining calico network.
             sed -i '/# Auto-detect the BGP IP address./i \            - name: IP_AUTODETECTION_METHOD\n              value: "interface=eno1"' calico-$CALICO_PLUGIN_VERSION.yaml
         fi
