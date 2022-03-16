@@ -28,7 +28,7 @@ pipeline {
             steps {
                 withCredentials([string(credentialsId: 'shailesh-github-token', variable: 'ACCESS_TOKEN')]) {
                     sh label: 'Build MANIFEST', script: """
-                        sh -x scripts/release_support/changelog.sh ${BUILD_FROM} ${BUILD_TO} ${BUILD_LOCATION}
+                        sh -x scripts/release_support/changelog.sh ${BUILD_FROM} ${BUILD_TO}
                         cp /root/git_build_checkin_stats/clone/git-build-checkin-report.txt CHANGESET.txt 
                     """
                 }   
