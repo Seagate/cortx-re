@@ -89,3 +89,18 @@ function nodes_setup {
         passwordless_ssh "$NODE" "$USER" "$PASS"
     done
 }
+
+function deployment_type {
+    if [ "$(wc -l < $HOST_FILE)" == "1" ]; then
+        SINGLE_NODE_DEPLOYMENT="True"
+        add_secondary_separator Single Node Deployment
+    else
+        SINGLE_NODE_DEPLOYMENT="False"
+        local NODES=$(wc -l < $HOST_FILE)
+        local TAINTED_NODES=$(ssh -o 'StrictHostKeyChecking=no' "$PRIMARY_NODE" bash << EOF
+kubectl get nodes -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints[?(@.effect=='NoSchedule')].effect}{\"\n\"}{end}" | grep  NoSchedule | wc -l
+EOF
+)
+        local NODES="$((NODES-TAINTED_NODES))"
+        add_secondary_separator $NODES Node Deployment
+}
