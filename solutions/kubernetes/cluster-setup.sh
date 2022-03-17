@@ -58,7 +58,7 @@ function setup_cluster {
     JOIN_COMMAND=$(ssh -o 'StrictHostKeyChecking=no' "$PRIMARY_NODE" 'kubeadm token create --print-join-command --description "Token to join worker nodes"')
     check_status "Failed fetch cluster join command"
 
-    if [ "$SINGLE_NODE_DEPLOYMENT" == "False" ] then;
+    if [ "$SINGLE_NODE_DEPLOYMENT" == "False" ]; then
         add_secondary_separator Setup Worker Nodes
         echo $WORKER_NODES | tee /var/tmp/pdsh-hosts
         # Join worker nodes.
@@ -67,10 +67,10 @@ function setup_cluster {
 
         # Label worker nodes.
         for worker_node in $WORKER_NODES
-        do
-            ssh -o 'StrictHostKeyChecking=no' "$PRIMARY_NODE" "kubectl label node $worker_node" node-role.kubernetes.io/worker=worker
-            check_status "Failed to lable $worker_node"
-        done
+            do
+                ssh -o 'StrictHostKeyChecking=no' "$PRIMARY_NODE" "kubectl label node $worker_node" node-role.kubernetes.io/worker=worker
+                check_status "Failed to lable $worker_node"
+            done
     fi
 }
 
