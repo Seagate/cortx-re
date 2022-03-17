@@ -4,6 +4,7 @@ pipeline {
             label 'docker-centos-7.9.2009-node'
         }
     }
+    triggers { cron('30 19 * * *') }
     options {
         timeout(time: 600, unit: 'MINUTES')
         timestamps()
@@ -220,7 +221,7 @@ pipeline {
                     mailRecipients = "CORTX.DevOps.RE@seagate.com"
                 }
                 else if ( params.EMAIL_RECIPIENTS == "DEBUG" ) {
-                    mailRecipients = "abhijit.patil@seagate.com"
+                    mailRecipients = "shailesh.vaidya@seagate.com"
                 }               
 
                 catchError(stageResult: 'FAILURE') {
