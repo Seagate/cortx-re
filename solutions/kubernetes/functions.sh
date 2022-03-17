@@ -103,4 +103,5 @@ EOF
 )
         local NODES="$((NODES-TAINTED_NODES))"
         add_secondary_separator $NODES Node Deployment
+    fi
 }
