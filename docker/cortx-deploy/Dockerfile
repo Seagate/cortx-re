@@ -41,9 +41,6 @@ LABEL maintainer="cortx.opensource@seagate.com" \
 
 ENV GIT_HASH $GIT_HASH
 
-#Disable default repositories. 
-RUN if [[ $OS_TYPE =~ "centos" ]]; then yum-config-manager --disable base,extras,updates; fi
-
 #Add Internal and CORTX uploads repository
 COPY ./${ENVIRONMENT}/$OS.repo /etc/yum.repos.d/
 
