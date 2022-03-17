@@ -18,9 +18,41 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
-function add_separator {
+HOST_FILE=$PWD/hosts
+SSH_KEY_FILE=/root/.ssh/id_rsa
+
+function add_primary_separator {
     set +xe
-    echo -e '\n\n\n========================= '"$*"' =========================\n'
+    printf "################################################################################\n"
+    printf "$*\n"
+    printf "################################################################################\n"
+}
+
+function add_secondary_separator {
+    set +xe
+    echo -e '\n==================== '"$*"' ====================\n'
+}
+
+function add_common_separator {
+    set +xe
+    echo -e '\n--------------- '"$*"' ---------------\n'
+}
+
+function add_star_separator {
+    set +xe
+    printf "***************************\n"
+    printf "$*\n"
+    printf "***************************\n"
+}
+
+function check_status {
+    return_code=$?
+    error_message=$1
+    if [ $return_code -ne 0 ]; then
+            add_common_separator ERROR: $error_message
+            exit 1
+    fi
+    add_common_separator SUCCESS
 }
 
 function validation {
@@ -45,16 +77,6 @@ function generate_rsa_key {
     fi
 }
 
-function check_status {
-    return_code=$?
-    error_message=$1
-    if [ $return_code -ne 0 ]; then
-            echo "----------------------[ ERROR: $error_message ]--------------------------------------"
-            exit 1
-    fi
-    echo "----------------------[ SUCCESS ]--------------------------------------"
-}
-
 function passwordless_ssh {
     local NODE=$1
     local USER=$2
@@ -73,7 +95,44 @@ function nodes_setup {
         local USER=$(echo "$ssh_node" | awk -F[,] '{print $2}' | cut -d'=' -f2)
         local PASS=$(echo "$ssh_node" | awk -F[,] '{print $3}' | cut -d'=' -f2)
 
-        echo "----------------------[ Setting up passwordless ssh for $NODE ]--------------------------------------"
+        add_secondary_separator Setting up passwordless ssh for $NODE
         passwordless_ssh "$NODE" "$USER" "$PASS"
     done
+}
+
+function deployment_type {
+    ALL_NODES=$(cat "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+    PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+    WORKER_NODES=$(cat "$HOST_FILE" | grep -v "$PRIMARY_NODE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+
+    if [ "$(wc -l < $HOST_FILE)" == "1" ]; then
+        SINGLE_NODE_DEPLOYMENT="True"
+        add_star_separator Single Node Deployment
+    else
+        SINGLE_NODE_DEPLOYMENT="False"
+        local NODES=$(wc -l < $HOST_FILE)
+        if [ "$UNTAINT_PRIMARY" == "true" ]; then
+            local TAINTED_NODES=$(head -1 $HOST_FILE | wc -l)
+        fi
+        local DEPLOYMENT_NODES="$((NODES-TAINTED_NODES))"
+        add_star_separator $NODES Node Deployment
+    fi
+}
+
+function scp_all_nodes {
+    for node in $ALL_NODES
+        do 
+            scp -q $* "$node":/var/tmp/
+        done
+}
+
+function scp_primary_node {
+    for primary_nodes in $PRIMARY_NODE
+        do
+            scp -q $* "$primary_nodes":/var/tmp/
+        done
+}
+
+function ssh_primary_node {
+    ssh -o 'StrictHostKeyChecking=no' "$PRIMARY_NODE" $*
 }

@@ -249,14 +249,15 @@ function execute_prereq(){
 
 function usage(){
     cat << HEREDOC
-Usage : $0 [--setup-worker, --setup-primary, --third-party, --cortx-cluster, --destroy, --status]
+Usage : $0 [--cortx-cluster, --setup-primary, --setup-worker, --status, --io-test, --destroy, --generate-logs]
 where,
-    --setup-worker - Setup k8 worker node for CORTX deployment
-    --setup-primary - Setup k8 primary node for CORTX deployment
-    --third-party - Deploy third-party components
-    --cortx-cluster - Deploy Third-Party and CORTX components
-    --destroy - Destroy CORTX Cluster
-    --status - Print CLUSTER status
+    --cortx-cluster - Deploy Third-Party and CORTX components.
+    --setup-primary - Setup k8 primary node for CORTX deployment.
+    --setup-worker - Setup k8 worker node for CORTX deployment.
+    --status - Print CORTX cluster status.
+    --io-test - Perform IO sanity test.
+    --destroy - Destroy CORTX Cluster.
+    --generate-logs - Generate support bundle logs. 
 HEREDOC
 }
 
@@ -400,14 +401,11 @@ function cleanup(){
 }
 
 case $ACTION in
-    --third-party)
-        execute_deploy_script deploy-cortx-cloud-3rd-party.sh
-    ;;
     --cortx-cluster)
         execute_deploy_script deploy-cortx-cloud.sh
     ;;
-    --destroy)
-        destroy
+    --setup-primary)
+        setup_primary_node 
     ;;
     --setup-worker) 
         setup_worker_node
@@ -418,11 +416,11 @@ case $ACTION in
     --io-test)
         io_exec
     ;;
+    --destroy)
+        destroy
+    ;;
     --generate-logs)
         logs_generation
-    ;;
-    --setup-primary)
-        setup_primary_node 
     ;;
     *)
         echo "ERROR : Please provide valid option"

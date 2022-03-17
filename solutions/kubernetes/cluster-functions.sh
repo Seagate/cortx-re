@@ -89,11 +89,11 @@ function print_cluster_status(){
 
 function cleanup_node(){
 
-    echo "---------------------------------------[ Cleanup Node $HOSTNAME ]--------------------------------------"
+    add_secondary_separator Cleanup Node $HOSTNAME
     # Cleanup kubeadm stuff
     if [ -f /usr/bin/kubeadm ]; then
         echo "Cleaning up existing kubeadm configuration"
-        # unmount /var/lib/kubelet is having problem while running `kubeadm reset` in k8s v1.19. It is fixed in 1.20
+        # unmount /var/lib/kubelet is having problem while running `kubeadm reset` in k8s v1.19. It is fixed in 1.  0
         # Ref link - https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm/#kubeadm-reset-unmounts-var-lib-kubelet
         kubeadm reset -f
     fi
@@ -163,7 +163,7 @@ function cleanup_node(){
 }
 
 function install_prerequisites(){
-    echo "---------------------------------------[ Preparing Node $HOSTNAME ]--------------------------------------"
+    add_secondary_separator Preparing Node $HOSTNAME
     try
     (   # disable swap
         verify_os 
@@ -272,7 +272,7 @@ function setup_primary_node(){
         chown $(id -u):$(id -g) $HOME/.kube/config
         # untaint primary node
         if [ "$UNTAINT_PRIMARY" == "true" ]; then
-            echo "--------------------------[ Allow POD creation on primary node ]--------------------------"
+            add_secondary_separator Allow POD creation on primary node
             kubectl taint nodes $(hostname) node-role.kubernetes.io/master- || throw $Exception
         fi    
 
@@ -312,7 +312,7 @@ function setup_primary_node(){
 }
 
 function join_worker_nodes() {
-    echo "---------------------------------------[ Joining Worker Node $HOSTNAME ]--------------------------------------"
+    add_secondary_separator Joining Worker Node $HOSTNAME
     echo 'y' | kubeadm reset && "${@:2}"
     check_status "Failed to join $HOSTNAME node to cluster"
 }

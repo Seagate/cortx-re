@@ -27,12 +27,12 @@ SSH_KEY_FILE=/root/.ssh/id_rsa
 
 function usage(){
     cat << HEREDOC
-Usage : $0 [--third-party, --cortx-cluster, --destroy-cluster, --io-test]
+Usage : $0 [--cortx-cluster, --destroy-cluster, --io-test, --support-bundle]
 where,
-    --third-party - Deploy third-party components
-    --cortx-cluster - Deploy Third-Party and CORTX components
-    --destroy-cluster  - Destroy CORTX cluster
-    --io-test - Perform IO sanity test
+    --cortx-cluster - Deploy Third-Party and CORTX components.
+    --destroy-cluster  - Destroy CORTX cluster.
+    --io-test - Perform IO sanity test.
+    --support-bundle - Collect support bundle logs.
 HEREDOC
 }
 
@@ -77,10 +77,7 @@ function setup_cluster {
     ALL_NODES=$(cat "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
     PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
 
-    for node in $ALL_NODES
-        do
-            scp -q cortx-deploy-functions.sh functions.sh $SOLUTION_CONFIG "$node":/var/tmp/
-        done
+    scp_all_nodes cortx-deploy-functions.sh functions.sh $SOLUTION_CONFIG
      
     if [ "$(wc -l < $HOST_FILE)" == "1" ]; then
        echo "---------------------------------------[ Single node deployment ]----------------------------------"
@@ -159,7 +156,7 @@ function destroy-cluster(){
     nodes_setup
 	PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
 	echo "---------------------------------------[ Destroying cluster from $PRIMARY_NODE ]----------------------------------------------"
-        scp -q cortx-deploy-functions.sh functions.sh "$PRIMARY_NODE":/var/tmp/
+        scp_primary_node cortx-deploy-functions.sh functions.sh
         ssh -o 'StrictHostKeyChecking=no' "$PRIMARY_NODE" "/var/tmp/cortx-deploy-functions.sh --destroy"
         echo "--------------------------------[ Print Kubernetes Cluster Status after Cleanup]----------------------------------------------"
         ssh -o 'StrictHostKeyChecking=no' "$PRIMARY_NODE" 'kubectl get pods -o wide' | tee /var/tmp/cortx-cluster-status.txt	
@@ -180,7 +177,7 @@ function io-test(){
         do
         # IO test
         add_separator Setting up IO testing
-        scp -q io-testing.sh "$primary_node":/var/tmp/
+        scp_primary_node io-testing.sh
         ssh -o 'StrictHostKeyChecking=no' "$primary_node" "export DEPLOYMENT_TYPE=$DEPLOYMENT_TYPE && /var/tmp/cortx-deploy-functions.sh --io-test"
         done
 }
@@ -195,22 +192,18 @@ fi
 
 
 case $ACTION in
-    --third-party)
-        check_params
-        setup_cluster third-party        
-    ;;
     --cortx-cluster)
         check_params
         setup_cluster cortx-cluster
-    ;;
-    --support-bundle)
-        support_bundle
     ;;
     --destroy-cluster)
         destroy-cluster
     ;;
     --io-test)
         io-test
+    ;;
+    --support-bundle)
+        support_bundle
     ;;
     *)
         echo "ERROR : Please provide valid option"
