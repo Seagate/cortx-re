@@ -24,16 +24,17 @@ function add_separator {
 }
 
 function validation {
-    if [ "$SOLUTION_CONFIG_TYPE" == "manual" ]; then
-	if [ ! -f "$SOLUTION_CONFIG" ]; then
-        echo "$SOLUTION_CONFIG is not present"
-        exit 1
-	fi	
-    fi
     if [ ! -f "$HOST_FILE" ]; then
         echo "$HOST_FILE is not present"
         exit 1
     fi	
+
+    if [ "$SOLUTION_CONFIG_TYPE" == "manual" ]; then
+        if [ ! -f "$SOLUTION_CONFIG" ]; then
+            echo "$SOLUTION_CONFIG is not present"
+            exit 1
+        fi	
+    fi
 }
 
 function generate_rsa_key {

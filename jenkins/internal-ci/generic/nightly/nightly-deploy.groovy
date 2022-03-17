@@ -12,8 +12,8 @@ pipeline {
         disableConcurrentBuilds()
     }
     environment {
-        CORTX_RE_BRANCH = "rocky-linux-custom-ci"
-        CORTX_RE_REPO = "https://github.com/shailesh-vaidya/cortx-re"
+        CORTX_RE_BRANCH = "main"
+        CORTX_RE_REPO = "https://github.com/Seagate/cortx-re"
         DOCKER_IMAGE_LOCATION = "https://github.com/Seagate/cortx-re/pkgs/container/cortx-all"
         LOCAL_REG_CRED = credentials('local-registry-access')
         GITHUB_CRED = credentials('shailesh-github')
@@ -149,6 +149,11 @@ pipeline {
                         env.Health = qaSanity.buildVariables.Health
                         env.qaSanity_status = qaSanity.currentResult
                         env.qaSanityK8sJob_URL = qaSanity.absoluteUrl
+                        env.totalcount = qaSanity.buildVariables.totalcount
+                        env.passcount = qaSanity.buildVariables.passcount
+                        env.failcount = qaSanity.buildVariables.failcount
+                        env.skipcount = qaSanity.buildVariables.skipcount
+                        env.todocount = qaSanity.buildVariables.todocount
                     }
                     copyArtifacts filter: 'log/*report.xml', fingerprintArtifacts: true, flatten: true, optional: true, projectName: 'QA-Sanity-Multinode-RGW', selector: lastCompleted(), target: 'log/'
                     copyArtifacts filter: 'log/*report.html', fingerprintArtifacts: true, flatten: true, optional: true, projectName: 'QA-Sanity-Multinode-RGW', selector: lastCompleted(), target: 'log/'
@@ -239,7 +244,7 @@ pipeline {
                 catchError(stageResult: 'FAILURE') {
                     archiveArtifacts allowEmptyArchive: true, artifacts: 'log/*report.xml, log/*report.html, support_bundle/*.tar, crash_files/*.gz, CHANGESET.txt', followSymlinks: false
                     emailext (
-                        body: '''${SCRIPT, template="K8s-deployment-email_2.template"}${SCRIPT, template="REL_QA_SANITY_CUS_EMAIL_RETEAM_5.template"}''',
+                        body: '''${SCRIPT, template="K8s-deployment-email_2.template"}${SCRIPT, template="REL_QA_SANITY_CUS_EMAIL_6.template"}''',
                         mimeType: 'text/html',
                         subject: "${MESSAGE}",
                         to: "${mailRecipients}",
