@@ -38,7 +38,6 @@ function setup_cluster {
     echo PRIMARY NODE="$PRIMARY_NODE"
     echo WORKER NODES="$WORKER_NODES"
     add_common_separator
-    echo "------------------------------------------------------------------------------------------------------"
 
     for node in $ALL_NODES
 	do 
@@ -52,14 +51,14 @@ function setup_cluster {
     # Prepare nodes:
     pdsh -w ^/var/tmp/pdsh-hosts '/var/tmp/cluster-functions.sh --prepare'
 
-    add_secondary_separator Preparing Primary Node $PRIMARY_NODE
+    add_secondary_separator Setup Primary Node $PRIMARY_NODE
     ssh -o 'StrictHostKeyChecking=no' "$PRIMARY_NODE" "/var/tmp/cluster-functions.sh --primary ${UNTAINT}"
     check_status
     sleep 10 #To be replaced with status check
     JOIN_COMMAND=$(ssh -o 'StrictHostKeyChecking=no' "$PRIMARY_NODE" 'kubeadm token create --print-join-command --description "Token to join worker nodes"')
     check_status "Failed fetch cluster join command"
 
-    add_secondary_separator Preparing Worker Nodes
+    add_secondary_separator Setup Worker Nodes
     echo $WORKER_NODES | tee /var/tmp/pdsh-hosts
     # Join worker nodes.
     JOIN_WORKER="/var/tmp/cluster-functions.sh --join-worker-nodes $JOIN_COMMAND"
