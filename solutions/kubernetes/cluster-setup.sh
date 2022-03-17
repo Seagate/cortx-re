@@ -46,6 +46,7 @@ function setup_cluster {
 
     echo $ALL_NODES > /var/tmp/pdsh-hosts
 
+    deployment_type
     # Cleanup nodes:
     pdsh -w ^/var/tmp/pdsh-hosts '/var/tmp/cluster-functions.sh --cleanup'
     # Prepare nodes:
@@ -58,7 +59,6 @@ function setup_cluster {
     JOIN_COMMAND=$(ssh -o 'StrictHostKeyChecking=no' "$PRIMARY_NODE" 'kubeadm token create --print-join-command --description "Token to join worker nodes"')
     check_status "Failed fetch cluster join command"
 
-    deployment_type
     if [ "$SINGLE_NODE_DEPLOYMENT" == "False" ]; then
         add_secondary_separator Setup Worker Nodes
         echo $WORKER_NODES | tee /var/tmp/pdsh-hosts
