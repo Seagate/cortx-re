@@ -18,9 +18,31 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
-function add_separator {
+function add_primary_separator {
     set +xe
-    echo -e '\n\n\n========================= '"$*"' =========================\n'
+    printf "########################################################\n"
+    printf "$*\n"
+    printf "########################################################\n"
+}
+
+function add_secondary_separator {
+    set +xe
+    echo -e '\n==================== '"$*"' ====================\n'
+}
+
+function add_common_separator {
+    set +xe
+    echo -e '\n--------------- '"$*"' ---------------\n'
+}
+
+function check_status {
+    return_code=$?
+    error_message=$1
+    if [ $return_code -ne 0 ]; then
+            add_common_separator ERROR: $error_message
+            exit 1
+    fi
+    add_common_separator SUCCESS
 }
 
 function validation {
@@ -45,16 +67,6 @@ function generate_rsa_key {
     fi
 }
 
-function check_status {
-    return_code=$?
-    error_message=$1
-    if [ $return_code -ne 0 ]; then
-            echo "----------------------[ ERROR: $error_message ]--------------------------------------"
-            exit 1
-    fi
-    echo "----------------------[ SUCCESS ]--------------------------------------"
-}
-
 function passwordless_ssh {
     local NODE=$1
     local USER=$2
@@ -73,7 +85,7 @@ function nodes_setup {
         local USER=$(echo "$ssh_node" | awk -F[,] '{print $2}' | cut -d'=' -f2)
         local PASS=$(echo "$ssh_node" | awk -F[,] '{print $3}' | cut -d'=' -f2)
 
-        echo "----------------------[ Setting up passwordless ssh for $NODE ]--------------------------------------"
+        add_secondary_separator Setting up passwordless ssh for $NODE
         passwordless_ssh "$NODE" "$USER" "$PASS"
     done
 }

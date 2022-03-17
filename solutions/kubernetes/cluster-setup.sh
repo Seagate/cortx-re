@@ -34,9 +34,10 @@ function setup_cluster {
     PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
     WORKER_NODES=$(cat "$HOST_FILE" | grep -v "$PRIMARY_NODE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
 
-    echo "---------------[ Setting up kubernetes cluster for following nodes ]--------------------------------------"
+    add_primary_separator Setting up kubernetes cluster for following nodes
     echo PRIMARY NODE="$PRIMARY_NODE"
     echo WORKER NODES="$WORKER_NODES"
+    add_common_separator
     echo "------------------------------------------------------------------------------------------------------"
 
     for node in $ALL_NODES
@@ -51,14 +52,15 @@ function setup_cluster {
     # Prepare nodes:
     pdsh -w ^/var/tmp/pdsh-hosts '/var/tmp/cluster-functions.sh --prepare'
 
-    echo "---------------------------------------[ Preparing Primary Node $PRIMARY_NODE ]--------------------------------------"
+    add_secondary_separator Preparing Primary Node $PRIMARY_NODE
     ssh -o 'StrictHostKeyChecking=no' "$PRIMARY_NODE" "/var/tmp/cluster-functions.sh --primary ${UNTAINT}"
     check_status
     sleep 10 #To be replaced with status check
     JOIN_COMMAND=$(ssh -o 'StrictHostKeyChecking=no' "$PRIMARY_NODE" 'kubeadm token create --print-join-command --description "Token to join worker nodes"')
     check_status "Failed fetch cluster join command"
 
-    echo $WORKER_NODES > /var/tmp/pdsh-hosts
+    add_secondary_separator Preparing Worker Nodes
+    echo $WORKER_NODES | tee /var/tmp/pdsh-hosts
     # Join worker nodes.
     JOIN_WORKER="/var/tmp/cluster-functions.sh --join-worker-nodes $JOIN_COMMAND"
     pdsh -w ^/var/tmp/pdsh-hosts "$JOIN_WORKER"
@@ -73,7 +75,7 @@ function setup_cluster {
 
 function print_status {
 
-    echo "---------------------------------------[ Print Node status ]----------------------------------------------"
+    add_primary_separator Print Node status
     rm -rf /var/tmp/cluster-status.txt
     ssh -o 'StrictHostKeyChecking=no' "$PRIMARY_NODE" '/var/tmp/cluster-functions.sh --status' | tee /var/tmp/cluster-status.txt
 
