@@ -24,14 +24,14 @@ source /var/tmp/functions.sh
 
 SOLUTION_FILE="/root/deploy-scripts/k8_cortx_cloud/solution.yaml"
 
-add_separator Setup awscli.
+add_secondary_separator Setup awscli.
 
 echo -e "\nInstall awscli:-\n"
 pip3 install awscli
 pip3 install awscli-plugin-endpoint
 
 if ! which aws; then
-  add_separator "AWS CLI installation failed"
+  add_common_separator "AWS CLI installation failed"
   exit 1
 fi
 
@@ -58,9 +58,9 @@ echo -e "\nSetup aws secret key:-\n"
 aws configure set aws_secret_access_key $secret_key
 check_status "Failed to set awscli secret key."
 cat /root/.aws/config
-add_separator Successfully configured awscli.
+add_secondary_separator Successfully configured awscli.
 
-add_separator Starting IO testing.
+add_primary_separator Starting IO testing.
 
 BUCKET="test-bucket"
 FILE1="file10mb"
@@ -112,4 +112,4 @@ echo -e "\nCleanup awscli files."
 rm -rf ~/.aws/credentials
 rm -rf ~/.aws/config
 
-add_separator Successfully passed IO testing.
+add_primary_separator Successfully passed IO testing.

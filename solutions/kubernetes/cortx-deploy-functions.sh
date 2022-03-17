@@ -20,6 +20,8 @@
 
 set -eo pipefail
 
+source /var/tmp/functions.sh
+
 SYSTEM_DRIVE="/dev/sdb"
 SYSTEM_DRIVE_MOUNT="/mnt/fs-local-volume"
 SCRIPT_LOCATION="/root/deploy-scripts"
@@ -270,7 +272,7 @@ if [ -z "$ACTION" ]; then
 fi
 
 function setup_primary_node(){
-echo "---------------------------------------[ Setting up Primary Node $HOSTNAME ]--------------------------------------"
+    add_secondary_separator Setting up Primary Node $HOSTNAME
     #Clean up untagged docker images and stopped docker containers.
     cleanup
     #Third-party images are downloaded from GitHub container registry. 
@@ -292,7 +294,7 @@ echo "---------------------------------------[ Setting up Primary Node $HOSTNAME
 }
 
 function setup_worker_node(){
-echo "---------------------------------------[ Setting up Worker Node on $HOSTNAME ]--------------------------------------"
+    add_secondary_separator Setting up Worker Node on $HOSTNAME
     #Clean up untagged docker images and stopped docker containers.
     cleanup
     #Third-party images are downloaded from GitHub container registry.
@@ -330,56 +332,39 @@ function destroy(){
 }
 
 function print_pod_status(){
-echo "------------------------------------[ Image Details ]--------------------------------------"
-      kubectl get pods -o jsonpath="{.items[*].spec.containers[*].image}" | tr ' ' '\n' | uniq 
-echo "---------------------------------------[ POD Status ]--------------------------------------"
-    if ! kubectl get pods | grep -v STATUS | awk '{ print $3}' |  grep -v -q -i running; then
-      kubectl get pods -o wide
-    else
-echo "-----------[ All POD's are not in running state. Marking deployment as failed. Please check problematic pod events using kubectl describe pod <pod name> ]--------------------"
-      exit 1
-    fi
-echo "-----------[ Sleeping for 1min before checking hctl status.... ]--------------------"
-    sleep 60  
-echo "---------------------------------------[ hctl status ]-----------------------------------------"
-#    echo "Disabled htcl status check for now. Checking RGW service"
-#    kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-rgw -- ps -elf | grep rgw
-    SECONDS=0
-    date
-    while [[ SECONDS -lt 1200 ]] ; do
-        if [ "$DEPLOYMENT_TYPE" == "provisioner" ]; then
-            echo "Deployment type is: $DEPLOYMENT_TYPE"
-            if kubectl exec -it $(kubectl get pods | awk '/server-node/{print $1; exit}') -c cortx-motr-hax -- hctl status > /dev/null ; then
-                    if ! kubectl exec -it $(kubectl get pods | awk '/server-node/{print $1; exit}') -c cortx-motr-hax -- hctl status| grep -q -E 'unknown|offline|failed'; then
-                        kubectl exec -it $(kubectl get pods | awk '/server-node/{print $1; exit}') -c cortx-motr-hax -- hctl status
-                        echo "-----------[ Time taken for service to start $((SECONDS/60)) mins ]--------------------"
-                        exit 0
-                    else
-                        echo "-----------[ Waiting for services to become online. Sleeping for 1min.... ]--------------------"
-                        sleep 60
-                    fi
-            else
-                echo "----------------------[ hctl status not working yet. Sleeping for 1min.... ]-------------------------"
-                sleep 60
-            fi
+    add_secondary_separator Image Details
+        kubectl get pods -o jsonpath="{.items[*].spec.containers[*].image}" | tr ' ' '\n' | uniq 
+    add_secondary_separator POD Status
+        if ! kubectl get pods | grep -v STATUS | awk '{ print $3}' |  grep -v -q -i running; then
+        kubectl get pods -o wide
         else
+    add_common_separator "All PODs are not in running state. Marking deployment as failed. Please check problematic pod events using kubectl describe pod <pod name>"
+        exit 1
+        fi
+    add_common_separator Sleeping for 1min before checking hctl status....
+        sleep 60  
+    add_common_separator hctl status
+    #    echo "Disabled htcl status check for now. Checking RGW service"
+    #    kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-rgw -- ps -elf | grep rgw
+        SECONDS=0
+        date
+        while [[ SECONDS -lt 1200 ]] ; do
             if kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-hax -- hctl status > /dev/null ; then
                     if ! kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-hax -- hctl status| grep -q -E 'unknown|offline|failed'; then
                         kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-hax -- hctl status
-                        echo "-----------[ Time taken for service to start $((SECONDS/60)) mins ]--------------------"
+                        add_secondary_separator Time taken for service to start $((SECONDS/60)) mins
                         exit 0
                     else
-                        echo "-----------[ Waiting for services to become online. Sleeping for 1min.... ]--------------------"
+                        add_common_separator Waiting for services to become online. Sleeping for 1min....
                         sleep 60
                     fi
             else
-                echo "----------------------[ hctl status not working yet. Sleeping for 1min.... ]-------------------------"
+                add_common_separator hctl status not working yet. Sleeping for 1min....
                 sleep 60
             fi
-        fi
-    done
-        echo "-----------[ Failed to to start services within 20mins. Exiting....]--------------------"
-        exit 1
+        done
+            add_secondary_separator Failed to to start services within 20mins. Exiting....
+            exit 1
 }
 
 function io_exec(){
@@ -389,14 +374,14 @@ function io_exec(){
 }
 
 function logs_generation(){
-    echo -e "\n-----------[ Generating CORTX Support Bundle Logs... ]--------------------"
+    add_secondary_separator Generating CORTX Support Bundle Logs...
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         ./logs-cortx-cloud.sh
     popd
 }
 
 function cleanup(){
-    echo -e "\n-----------[ Clean up untagged/unused images and stopped containers... ]--------------------"
+    add_secondary_separator Clean up untagged/unused images and stopped containers...
     docker system prune -a -f --filter "label!=vendor=Project Calico"
 }
 
@@ -423,7 +408,7 @@ case $ACTION in
         logs_generation
     ;;
     *)
-        echo "ERROR : Please provide valid option"
+        echo "ERROR : Please provide a valid option"
         usage
         exit 1
     ;;    

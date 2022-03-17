@@ -18,9 +18,6 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
-HOST_FILE=$PWD/hosts
-SSH_KEY_FILE=/root/.ssh/id_rsa
-
 function add_primary_separator {
     set +xe
     printf "################################################################################\n"
@@ -36,13 +33,6 @@ function add_secondary_separator {
 function add_common_separator {
     set +xe
     echo -e '\n--------------- '"$*"' ---------------\n'
-}
-
-function add_star_separator {
-    set +xe
-    printf "***************************\n"
-    printf "$*\n"
-    printf "***************************\n"
 }
 
 function check_status {
@@ -101,21 +91,12 @@ function nodes_setup {
 }
 
 function deployment_type {
-    ALL_NODES=$(cat "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
-    PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
-    WORKER_NODES=$(cat "$HOST_FILE" | grep -v "$PRIMARY_NODE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
-
     if [ "$(wc -l < $HOST_FILE)" == "1" ]; then
         SINGLE_NODE_DEPLOYMENT="True"
-        add_star_separator Single Node Deployment
+        add_secondary_separator Single Node Deployment
     else
         SINGLE_NODE_DEPLOYMENT="False"
-        local NODES=$(wc -l < $HOST_FILE)
-        if [ "$UNTAINT_PRIMARY" == "true" ]; then
-            local TAINTED_NODES=$(head -1 $HOST_FILE | wc -l)
-        fi
-        local DEPLOYMENT_NODES="$((NODES-TAINTED_NODES))"
-        add_star_separator $NODES Node Deployment
+        add_secondary_separator Multi Node Deployment
     fi
 }
 

@@ -24,6 +24,9 @@ source functions.sh
 
 HOST_FILE=$PWD/hosts
 SSH_KEY_FILE=/root/.ssh/id_rsa
+ALL_NODES=$(cat "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+WORKER_NODES=$(cat "$HOST_FILE" | grep -v "$PRIMARY_NODE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
 
 function usage(){
     cat << HEREDOC
@@ -61,8 +64,8 @@ function pdsh_worker_exec {
 }
 
 function setup_cluster {
-	
-   echo  "Using $SOLUTION_CONFIG_TYPE type for generating solution.yaml"
+    add_primary_separator Setting up CORTX cluster
+    echo  "Using $SOLUTION_CONFIG_TYPE type for generating solution.yaml"
 
     if [ "$SOLUTION_CONFIG_TYPE" == manual ]; then
         SOLUTION_CONFIG="$PWD/solution.yaml"
@@ -72,77 +75,43 @@ function setup_cluster {
     validation
     generate_rsa_key
     nodes_setup
+    deployment_type
 
     TARGET=$1
-    ALL_NODES=$(cat "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
-    PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
 
     scp_all_nodes cortx-deploy-functions.sh functions.sh $SOLUTION_CONFIG
-     
-    if [ "$(wc -l < $HOST_FILE)" == "1" ]; then
-       echo "---------------------------------------[ Single node deployment ]----------------------------------"
-       echo "NODE:" $PRIMARY_NODE
-       ssh -o 'StrictHostKeyChecking=no' "$PRIMARY_NODE" "
-       export SOLUTION_CONFIG_TYPE=$SOLUTION_CONFIG_TYPE && 
-       export CORTX_SERVER_IMAGE=$CORTX_SERVER_IMAGE && 
-       export CORTX_ALL_IMAGE=$CORTX_ALL_IMAGE && 
-       export CORTX_SCRIPTS_REPO=$CORTX_SCRIPTS_REPO && 
-       export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH && 
-       export SNS_CONFIG=$SNS_CONFIG && 
-       export DIX_CONFIG=$DIX_CONFIG &&
-       export CONTROL_EXTERNAL_NODEPORT=$CONTROL_EXTERNAL_NODEPORT &&
-       export S3_EXTERNAL_HTTP_NODEPORT=$S3_EXTERNAL_HTTP_NODEPORT &&
-       export S3_EXTERNAL_HTTPS_NODEPORT=$S3_EXTERNAL_HTTPS_NODEPORT &&
-       export EXTERNAL_EXPOSURE_SERVICE=$EXTERNAL_EXPOSURE_SERVICE && /var/tmp/cortx-deploy-functions.sh --setup-primary"
-    else
-       WORKER_NODES=$(cat "$HOST_FILE" | grep -v "$PRIMARY_NODE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+
+    add_secondary_separator Setup primary node $PRIMARY_NODE
+    ssh_primary_node "
+    export SOLUTION_CONFIG_TYPE=$SOLUTION_CONFIG_TYPE && 
+    export CORTX_SERVER_IMAGE=$CORTX_SERVER_IMAGE && 
+    export CORTX_ALL_IMAGE=$CORTX_ALL_IMAGE && 
+    export CORTX_SCRIPTS_REPO=$CORTX_SCRIPTS_REPO && 
+    export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH && 
+    export SNS_CONFIG=$SNS_CONFIG && 
+    export DIX_CONFIG=$DIX_CONFIG &&
+    export CONTROL_EXTERNAL_NODEPORT=$CONTROL_EXTERNAL_NODEPORT &&
+    export S3_EXTERNAL_HTTP_NODEPORT=$S3_EXTERNAL_HTTP_NODEPORT &&
+    export S3_EXTERNAL_HTTPS_NODEPORT=$S3_EXTERNAL_HTTPS_NODEPORT &&
+    export EXTERNAL_EXPOSURE_SERVICE=$EXTERNAL_EXPOSURE_SERVICE && /var/tmp/cortx-deploy-functions.sh --setup-primary"
+
+    if [ "$SINGLE_NODE_DEPLOYMENT" == "False" ]; then
+        # pdsh hosts to run parallel implementations on worker nodes.
+        echo $WORKER_NODES > /var/tmp/pdsh-hosts
+        add_secondary_separator Setup worker nodes parallely
+        pdsh_worker_exec /var/tmp/pdsh-hosts
     fi
 
-    # Setup primary node and all worker nodes in parallel in case of multinode cluster.
-    if [ "$(wc -l < $HOST_FILE)" -ne "1" ]; then
-       NODES=$(wc -l < $HOST_FILE)
-       TAINTED_NODES=$(ssh -o 'StrictHostKeyChecking=no' "$PRIMARY_NODE" bash << EOF
-kubectl get nodes -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints[?(@.effect=='NoSchedule')].effect}{\"\n\"}{end}" | grep  NoSchedule | wc -l
-EOF
-)
-       NODES="$((NODES-TAINTED_NODES))"
-       echo "---------------------------------------[ $NODES node deployment ]----------------------------------"
-       echo "PRIMARY NODE:" $PRIMARY_NODE
-       echo "WORKER NODE:" $WORKER_NODES
-       # pdsh hosts to run parallel implementations.
-       echo $WORKER_NODES > /var/tmp/pdsh-hosts
-       pdsh_worker_exec /var/tmp/pdsh-hosts
-
-       for primary_node in $PRIMARY_NODE
-           do
-               ssh -o 'StrictHostKeyChecking=no' "$primary_node" "
-               export SOLUTION_CONFIG_TYPE=$SOLUTION_CONFIG_TYPE && 
-               export CORTX_SERVER_IMAGE=$CORTX_SERVER_IMAGE && 
-               export CORTX_ALL_IMAGE=$CORTX_ALL_IMAGE && 
-               export CORTX_SCRIPTS_REPO=$CORTX_SCRIPTS_REPO && 
-               export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH && 
-               export SNS_CONFIG=$SNS_CONFIG && 
-               export DIX_CONFIG=$DIX_CONFIG &&
-               export CONTROL_EXTERNAL_NODEPORT=$CONTROL_EXTERNAL_NODEPORT &&
-               export S3_EXTERNAL_HTTP_NODEPORT=$S3_EXTERNAL_HTTP_NODEPORT &&
-               export S3_EXTERNAL_HTTPS_NODEPORT=$S3_EXTERNAL_HTTPS_NODEPORT &&
-               export EXTERNAL_EXPOSURE_SERVICE=$EXTERNAL_EXPOSURE_SERVICE && /var/tmp/cortx-deploy-functions.sh --setup-primary"
-           done
-    fi
-
-    for primary_node in $PRIMARY_NODE
-        do
-        ssh -o 'StrictHostKeyChecking=no' "$primary_node" "/var/tmp/cortx-deploy-functions.sh --$TARGET"
-        echo "---------------------------------------[ Print Cluster Status ]----------------------------------------------"
-        rm -rf /var/tmp/cortx-cluster-status.txt
-        ssh -o 'StrictHostKeyChecking=no' "$primary_node" '/var/tmp/cortx-deploy-functions.sh --status' | tee /var/tmp/cortx-cluster-status.txt
-        done
+    # Deploy CORTX CLuster (deploy-cortx-cloud.sh) :
+    ssh_primary_node "/var/tmp/cortx-deploy-functions.sh --$TARGET"
+    add_primary_separator Print Cluster Status
+    rm -rf /var/tmp/cortx-cluster-status.txt
+    ssh_primary_node '/var/tmp/cortx-deploy-functions.sh --status' | tee /var/tmp/cortx-cluster-status.txt
 }
 
 function support_bundle(){
-    PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
-    echo -e "\n---------------------------------------[ Collect CORTX Support Bundle Logs ]----------------------------------------------"
-    ssh -o 'StrictHostKeyChecking=no' "$PRIMARY_NODE" '/var/tmp/cortx-deploy-functions.sh --generate-logs'
+    add_primary_separator Collect CORTX Support Bundle Logs
+    ssh_primary_node '/var/tmp/cortx-deploy-functions.sh --generate-logs'
 }
 
 function destroy-cluster(){
@@ -154,32 +123,23 @@ function destroy-cluster(){
     validation
     generate_rsa_key
     nodes_setup
-	PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
-	echo "---------------------------------------[ Destroying cluster from $PRIMARY_NODE ]----------------------------------------------"
+
+	add_primary_separator Destroying cluster from $PRIMARY_NODE
         scp_primary_node cortx-deploy-functions.sh functions.sh
-        ssh -o 'StrictHostKeyChecking=no' "$PRIMARY_NODE" "/var/tmp/cortx-deploy-functions.sh --destroy"
-        echo "--------------------------------[ Print Kubernetes Cluster Status after Cleanup]----------------------------------------------"
-        ssh -o 'StrictHostKeyChecking=no' "$PRIMARY_NODE" 'kubectl get pods -o wide' | tee /var/tmp/cortx-cluster-status.txt	
+        ssh_primary_node "/var/tmp/cortx-deploy-functions.sh --destroy"
+        add_primary_separator Print Kubernetes Cluster Status after Cleanup
+        ssh_primary_node 'kubectl get pods -o wide' | tee /var/tmp/cortx-cluster-status.txt	
 }
 
 function io-test(){
-
     if [ "$SOLUTION_CONFIG_TYPE" == manual ]; then
         SOLUTION_CONFIG="$PWD/solution.yaml"
         if [ -f '$SOLUTION_CONFIG' ]; then echo "file $SOLUTION_CONFIG not available..."; exit 1; fi
     fi
 
-    validation
-    generate_rsa_key
-    nodes_setup
-    PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
-    for primary_node in $PRIMARY_NODE
-        do
-        # IO test
-        add_separator Setting up IO testing
-        scp_primary_node io-testing.sh
-        ssh -o 'StrictHostKeyChecking=no' "$primary_node" "export DEPLOYMENT_TYPE=$DEPLOYMENT_TYPE && /var/tmp/cortx-deploy-functions.sh --io-test"
-        done
+    add_primary_separator Setting up IO testing
+    scp_primary_node io-testing.sh
+    ssh_primary_node "/var/tmp/cortx-deploy-functions.sh --io-test"
 }
 
 
@@ -206,7 +166,7 @@ case $ACTION in
         support_bundle
     ;;
     *)
-        echo "ERROR : Please provide valid option"
+        echo "ERROR : Please provide a valid option"
         usage
         exit 1
     ;;

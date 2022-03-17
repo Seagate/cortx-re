@@ -20,6 +20,11 @@
 
 source functions.sh
 
+HOST_FILE=$PWD/hosts
+SSH_KEY_FILE=/root/.ssh/id_rsa
+ALL_NODES=$(cat "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+WORKER_NODES=$(cat "$HOST_FILE" | grep -v "$PRIMARY_NODE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
 UNTAINT="$1"
 
 function setup_cluster {
@@ -27,7 +32,7 @@ function setup_cluster {
     validation
     generate_rsa_key
     nodes_setup
-    deployment_type $UNTAINT
+    deployment_type
 
     add_primary_separator Setting up kubernetes cluster for following nodes
     echo PRIMARY NODE="$PRIMARY_NODE"
