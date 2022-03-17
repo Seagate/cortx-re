@@ -18,24 +18,21 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
-function add_primary_separator {
-    set +xe
-    printf "################################################################################\n"
+function add_primary_separator() {
+    printf "\n################################################################################\n"
     printf "$*\n"
-    printf "################################################################################\n"
+    printf "\n################################################################################\n"
 }
 
-function add_secondary_separator {
-    set +xe
+function add_secondary_separator() {
     echo -e '\n==================== '"$*"' ====================\n'
 }
 
-function add_common_separator {
-    set +xe
+function add_common_separator() {
     echo -e '\n--------------- '"$*"' ---------------\n'
 }
 
-function check_status {
+function check_status() {
     return_code=$?
     error_message=$1
     if [ $return_code -ne 0 ]; then
@@ -45,7 +42,7 @@ function check_status {
     add_common_separator SUCCESS
 }
 
-function validation {
+function validation() {
     if [ ! -f "$HOST_FILE" ]; then
         echo "$HOST_FILE is not present"
         exit 1
@@ -59,7 +56,7 @@ function validation {
     fi
 }
 
-function generate_rsa_key {
+function generate_rsa_key() {
     if [ ! -f "$SSH_KEY_FILE" ]; then
         ssh-keygen -b 2048 -t rsa -f $SSH_KEY_FILE -q -N ""
      else
@@ -67,7 +64,7 @@ function generate_rsa_key {
     fi
 }
 
-function passwordless_ssh {
+function passwordless_ssh() {
     local NODE=$1
     local USER=$2
     local PASS=$3
@@ -78,7 +75,7 @@ function passwordless_ssh {
     check_status "Passwordless ssh setup failed for $NODE. Please validate provided credentails"
 }
 
-function nodes_setup {
+function nodes_setup() {
     for ssh_node in $(cat "$HOST_FILE")
     do
         local NODE=$(echo "$ssh_node" | awk -F[,] '{print $1}' | cut -d'=' -f2)
@@ -90,7 +87,7 @@ function nodes_setup {
     done
 }
 
-function deployment_type {
+function deployment_type() {
     if [ "$(wc -l < $HOST_FILE)" == "1" ]; then
         SINGLE_NODE_DEPLOYMENT="True"
         add_secondary_separator Single Node Deployment
@@ -100,20 +97,20 @@ function deployment_type {
     fi
 }
 
-function scp_all_nodes {
+function scp_all_nodes() {
     for node in $ALL_NODES
         do 
             scp -q $* "$node":/var/tmp/
         done
 }
 
-function scp_primary_node {
+function scp_primary_node() {
     for primary_nodes in $PRIMARY_NODE
         do
             scp -q $* "$primary_nodes":/var/tmp/
         done
 }
 
-function ssh_primary_node {
+function ssh_primary_node() {
     ssh -o 'StrictHostKeyChecking=no' "$PRIMARY_NODE" $*
 }

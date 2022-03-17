@@ -28,18 +28,26 @@ ALL_NODES=$(cat "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
 PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
 WORKER_NODES=$(cat "$HOST_FILE" | grep -v "$PRIMARY_NODE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
 
-function usage(){
+function usage() {
     cat << HEREDOC
-Usage : $0 [--cortx-cluster, --destroy-cluster, --io-test, --support-bundle]
+Usage : $0 [--cortx-cluster, --destroy-cluster, --io-sanity, --support-bundle]
 where,
     --cortx-cluster - Deploy Third-Party and CORTX components.
     --destroy-cluster  - Destroy CORTX cluster.
-    --io-test - Perform IO sanity test.
+    --io-sanity - Perform IO sanity test.
     --support-bundle - Collect support bundle logs.
 HEREDOC
 }
 
-function check_params {
+
+ACTION="$1"
+if [ -z "$ACTION" ]; then
+    echo "ERROR : No option provided"
+    usage
+    exit 1
+fi
+
+function check_params() {
     if [ -z "$CORTX_SCRIPTS_REPO" ]; then echo "CORTX_SCRIPTS_REPO not provided.Exiting..."; exit 1; fi
     if [ -z "$CORTX_SCRIPTS_BRANCH" ]; then echo "CORTX_SCRIPTS_BRANCH not provided.Exiting..."; exit 1; fi
     if [ -z "$CORTX_ALL_IMAGE" ]; then echo "CORTX_ALL_IMAGE not provided.Exiting..."; exit 1; fi
@@ -53,7 +61,7 @@ function check_params {
     if [ -z "$S3_EXTERNAL_HTTPS_NODEPORT" ]; then S3_EXTERNAL_HTTPS_NODEPORT="30443"; fi
 }
 
-function pdsh_worker_exec {
+function pdsh_worker_exec() {
     # commands to run in parallel on pdsh hosts (workers nodes).
     commands=(
        "export CORTX_SERVER_IMAGE=$CORTX_SERVER_IMAGE && export CORTX_ALL_IMAGE=$CORTX_ALL_IMAGE && export CORTX_SCRIPTS_REPO=$CORTX_SCRIPTS_REPO && export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH && /var/tmp/cortx-deploy-functions.sh --setup-worker"
@@ -63,8 +71,8 @@ function pdsh_worker_exec {
     done
 }
 
-function setup_cluster {
-    add_primary_separator Setting up CORTX cluster
+function setup_cluster() {
+    add_primary_separator "Setting up CORTX Cluster"
     echo  "Using $SOLUTION_CONFIG_TYPE type for generating solution.yaml"
 
     if [ "$SOLUTION_CONFIG_TYPE" == manual ]; then
@@ -81,7 +89,7 @@ function setup_cluster {
 
     scp_all_nodes cortx-deploy-functions.sh functions.sh $SOLUTION_CONFIG
 
-    add_secondary_separator Setup primary node $PRIMARY_NODE
+    add_secondary_separator "Setup primary node $PRIMARY_NODE"
     ssh_primary_node "
     export SOLUTION_CONFIG_TYPE=$SOLUTION_CONFIG_TYPE && 
     export CORTX_SERVER_IMAGE=$CORTX_SERVER_IMAGE && 
@@ -98,23 +106,23 @@ function setup_cluster {
     if [ "$SINGLE_NODE_DEPLOYMENT" == "False" ]; then
         # pdsh hosts to run parallel implementations on worker nodes.
         echo $WORKER_NODES > /var/tmp/pdsh-hosts
-        add_secondary_separator Setup worker nodes parallely
+        add_secondary_separator "Setup worker nodes parallely"
         pdsh_worker_exec /var/tmp/pdsh-hosts
     fi
 
     # Deploy CORTX CLuster (deploy-cortx-cloud.sh) :
     ssh_primary_node "/var/tmp/cortx-deploy-functions.sh --$TARGET"
-    add_primary_separator Print Cluster Status
+    add_primary_separator "Print Cluster Status"
     rm -rf /var/tmp/cortx-cluster-status.txt
     ssh_primary_node '/var/tmp/cortx-deploy-functions.sh --status' | tee /var/tmp/cortx-cluster-status.txt
 }
 
-function support_bundle(){
-    add_primary_separator Collect CORTX Support Bundle Logs
+function support_bundle() {
+    add_primary_separator "Collect CORTX Support Bundle Logs"
     ssh_primary_node '/var/tmp/cortx-deploy-functions.sh --generate-logs'
 }
 
-function destroy-cluster(){
+function destroy-cluster() {
     if [ "$SOLUTION_CONFIG_TYPE" == manual ]; then
         SOLUTION_CONFIG="$PWD/solution.yaml"
         if [ -f '$SOLUTION_CONFIG' ]; then echo "file $SOLUTION_CONFIG not available..."; exit 1; fi
@@ -124,32 +132,23 @@ function destroy-cluster(){
     generate_rsa_key
     nodes_setup
 
-	add_primary_separator Destroying cluster from $PRIMARY_NODE
-        scp_primary_node cortx-deploy-functions.sh functions.sh
-        ssh_primary_node "/var/tmp/cortx-deploy-functions.sh --destroy"
-        add_primary_separator Print Kubernetes Cluster Status after Cleanup
-        ssh_primary_node 'kubectl get pods -o wide' | tee /var/tmp/cortx-cluster-status.txt	
+	add_primary_separator "Destroying Cluster from $PRIMARY_NODE"
+    scp_primary_node cortx-deploy-functions.sh functions.sh
+    ssh_primary_node "/var/tmp/cortx-deploy-functions.sh --destroy"
+    add_primary_separator "Print Kubernetes Cluster Status after Cleanup"
+    ssh_primary_node 'kubectl get pods -o wide' | tee /var/tmp/cortx-cluster-status.txt	
 }
 
-function io-test(){
+function io-sanity() {
     if [ "$SOLUTION_CONFIG_TYPE" == manual ]; then
         SOLUTION_CONFIG="$PWD/solution.yaml"
         if [ -f '$SOLUTION_CONFIG' ]; then echo "file $SOLUTION_CONFIG not available..."; exit 1; fi
     fi
 
-    add_primary_separator Setting up IO testing
-    scp_primary_node io-testing.sh
-    ssh_primary_node "/var/tmp/cortx-deploy-functions.sh --io-test"
+    add_primary_separator "Setting up IO Sanity Testing"
+    scp_primary_node io-sanity.sh
+    ssh_primary_node "/var/tmp/cortx-deploy-functions.sh --io-sanity"
 }
-
-
-ACTION="$1"
-if [ -z "$ACTION" ]; then
-    echo "ERROR : No option provided"
-    usage
-    exit 1
-fi
-
 
 case $ACTION in
     --cortx-cluster)
@@ -159,8 +158,8 @@ case $ACTION in
     --destroy-cluster)
         destroy-cluster
     ;;
-    --io-test)
-        io-test
+    --io-sanity)
+        io-sanity
     ;;
     --support-bundle)
         support_bundle

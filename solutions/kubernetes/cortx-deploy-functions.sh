@@ -29,10 +29,31 @@ YQ_VERSION=v4.13.3
 YQ_BINARY=yq_linux_386
 SOLUTION_CONFIG="/var/tmp/solution.yaml"
 
+function usage() {
+    cat << HEREDOC
+Usage : $0 [--cortx-cluster, --setup-primary, --setup-worker, --status, --io-sanity, --destroy, --generate-logs]
+where,
+    --cortx-cluster - Deploy Third-Party and CORTX components.
+    --setup-primary - Setup k8 primary node for CORTX deployment.
+    --setup-worker - Setup k8 worker node for CORTX deployment.
+    --status - Print CORTX cluster status.
+    --io-sanity - Perform IO sanity test.
+    --destroy - Destroy CORTX Cluster.
+    --generate-logs - Generate support bundle logs. 
+HEREDOC
+}
+
+ACTION="$1"
+if [ -z "$ACTION" ]; then
+    echo "ERROR : No option provided"
+    usage
+    exit 1
+fi
+
 #On primary
 #download CORTX k8 deployment scripts
 
-function download_deploy_script(){
+function download_deploy_script() {
     if [ -z "$SCRIPT_LOCATION" ]; then echo "SCRIPT_LOCATION not provided.Exiting..."; exit 1; fi
     if [ -z "$CORTX_SCRIPTS_REPO" ]; then echo "CORTX_SCRIPTS_REPO not provided.Exiting..."; exit 1; fi
     if [ -z "$CORTX_SCRIPTS_BRANCH" ]; then echo "CORTX_SCRIPTS_BRANCH not provided.Exiting..."; exit 1; fi
@@ -47,7 +68,7 @@ function download_deploy_script(){
 
 #Install yq 4.13.3
 
-function install_yq(){
+function install_yq() {
     pip3 show yq && pip3 uninstall yq -y
     wget https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${YQ_BINARY}.tar.gz -O - | tar xz && mv ${YQ_BINARY} /usr/bin/yq
     if [ -f /usr/local/bin/yq ]; then rm -rf /usr/local/bin/yq; fi    
@@ -56,7 +77,7 @@ function install_yq(){
 
 #modify solution.yaml
 
-function update_solution_config(){
+function update_solution_config() {
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         echo > solution.yaml
         yq e -i '.solution.namespace = "default"' solution.yaml
@@ -157,8 +178,7 @@ function update_solution_config(){
     popd
 }        
 
-
-function add_image_info(){
+function add_image_info() {
 echo "Updating cortx-all image info in solution.yaml"   
 pushd $SCRIPT_LOCATION/k8_cortx_cloud
     image=$CORTX_ALL_IMAGE yq e -i '.solution.images.cortxcontrol = env(image)' solution.yaml	
@@ -169,7 +189,7 @@ pushd $SCRIPT_LOCATION/k8_cortx_cloud
 popd 
 }
 
-function add_node_info_solution_config(){
+function add_node_info_solution_config() {
 echo "Updating node info in solution.yaml"    
 
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
@@ -183,7 +203,7 @@ echo "Updating node info in solution.yaml"
     popd
 }
 
-copy_solution_config(){
+copy_solution_config() {
 	if [ -z "$SOLUTION_CONFIG" ]; then echo "SOLUTION_CONFIG not provided.Exiting..."; exit 1; fi
 	echo "Copying $SOLUTION_CONFIG file" 
 	pushd $SCRIPT_LOCATION/k8_cortx_cloud
@@ -195,7 +215,7 @@ copy_solution_config(){
 
 #execute script
 
-function execute_deploy_script(){
+function execute_deploy_script() {
     local SCRIPT_NAME=$1
         pushd $SCRIPT_LOCATION/k8_cortx_cloud
         chmod +x *.sh
@@ -210,36 +230,7 @@ function execute_deploy_script(){
     popd
 }
 
-#On worker
-#format and mount system drive
-
-function mount_system_device(){
-    findmnt $SYSTEM_DRIVE && umount -l $SYSTEM_DRIVE
-    mkfs.ext4 -F $SYSTEM_DRIVE
-    mkdir -p /mnt/fs-local-volume
-    mount -t ext4 $SYSTEM_DRIVE $SYSTEM_DRIVE_MOUNT
-    mkdir -p /mnt/fs-local-volume/local-path-provisioner
-    sysctl -w vm.max_map_count=30000000
-}
-
-#glusterfes requirements
-
-function glusterfs_requirements(){
-    mkdir -p /mnt/fs-local-volume/etc/gluster
-    mkdir -p /mnt/fs-local-volume/var/log/glusterfs
-    mkdir -p /mnt/fs-local-volume/var/lib/glusterd
-    yum install glusterfs-fuse -y
-}
-
-#openldap requirements
-
-function openldap_requiremenrs(){
-    mkdir -p /etc/3rd-party/openldap
-    mkdir -p /var/data/3rd-party
-    mkdir -p /var/log/3rd-party
-}
-
-function execute_prereq(){
+function execute_prereq() {
     echo "Pulling latest CORTX-ALL image"
     docker pull $CORTX_ALL_IMAGE || { echo "Failed to pull $CORTX_ALL_IMAGE"; exit 1; }
     docker pull $CORTX_SERVER_IMAGE || { echo "Failed to pull $CORTX_SERVER_IMAGE"; exit 1; }
@@ -249,30 +240,8 @@ function execute_prereq(){
     popd    
 }
 
-function usage(){
-    cat << HEREDOC
-Usage : $0 [--cortx-cluster, --setup-primary, --setup-worker, --status, --io-test, --destroy, --generate-logs]
-where,
-    --cortx-cluster - Deploy Third-Party and CORTX components.
-    --setup-primary - Setup k8 primary node for CORTX deployment.
-    --setup-worker - Setup k8 worker node for CORTX deployment.
-    --status - Print CORTX cluster status.
-    --io-test - Perform IO sanity test.
-    --destroy - Destroy CORTX Cluster.
-    --generate-logs - Generate support bundle logs. 
-HEREDOC
-}
-
-
-ACTION="$1"
-if [ -z "$ACTION" ]; then
-    echo "ERROR : No option provided"
-    usage
-    exit 1
-fi
-
-function setup_primary_node(){
-    add_secondary_separator Setting up Primary Node $HOSTNAME
+function setup_primary_node() {
+    add_secondary_separator "Setting up Primary Node $HOSTNAME"
     #Clean up untagged docker images and stopped docker containers.
     cleanup
     #Third-party images are downloaded from GitHub container registry. 
@@ -293,8 +262,8 @@ function setup_primary_node(){
     add_node_info_solution_config
 }
 
-function setup_worker_node(){
-    add_secondary_separator Setting up Worker Node on $HOSTNAME
+function setup_worker_node() {
+    add_secondary_separator "Setting up Worker Node on $HOSTNAME"
     #Clean up untagged docker images and stopped docker containers.
     cleanup
     #Third-party images are downloaded from GitHub container registry.
@@ -302,7 +271,7 @@ function setup_worker_node(){
     execute_prereq
 }
 
-function destroy(){
+function destroy() {
    if [ "$(/usr/bin/kubectl get pods --no-headers | wc -l)" -gt 0 ]; then 
         pushd "$SCRIPT_LOCATION"/k8_cortx_cloud || echo "CORTX Deploy Scripts are not available on system"
             chmod +x *.sh
@@ -331,19 +300,19 @@ function destroy(){
     fi
 }
 
-function print_pod_status(){
-    add_secondary_separator Image Details
+function print_pod_status() {
+    add_secondary_separator "Image Details"
         kubectl get pods -o jsonpath="{.items[*].spec.containers[*].image}" | tr ' ' '\n' | uniq 
-    add_secondary_separator POD Status
+    add_secondary_separator "POD Status"
         if ! kubectl get pods | grep -v STATUS | awk '{ print $3}' |  grep -v -q -i running; then
         kubectl get pods -o wide
         else
     add_common_separator "All PODs are not in running state. Marking deployment as failed. Please check problematic pod events using kubectl describe pod <pod name>"
         exit 1
         fi
-    add_common_separator Sleeping for 1min before checking hctl status....
+    add_common_separator "Sleeping for 1min before checking hctl status...."
         sleep 60  
-    add_common_separator hctl status
+    add_common_separator "hctl status"
     #    echo "Disabled htcl status check for now. Checking RGW service"
     #    kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-rgw -- ps -elf | grep rgw
         SECONDS=0
@@ -352,36 +321,36 @@ function print_pod_status(){
             if kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-hax -- hctl status > /dev/null ; then
                     if ! kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-hax -- hctl status| grep -q -E 'unknown|offline|failed'; then
                         kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-hax -- hctl status
-                        add_secondary_separator Time taken for service to start $((SECONDS/60)) mins
+                        add_secondary_separator "Time taken for service to start $((SECONDS/60)) mins"
                         exit 0
                     else
-                        add_common_separator Waiting for services to become online. Sleeping for 1min....
+                        add_common_separator "Waiting for services to become online. Sleeping for 1min...."
                         sleep 60
                     fi
             else
-                add_common_separator hctl status not working yet. Sleeping for 1min....
+                add_common_separator "hctl status not working yet. Sleeping for 1min...."
                 sleep 60
             fi
         done
-            add_secondary_separator Failed to to start services within 20mins. Exiting....
+            add_secondary_separator "Failed to to start services within 20mins. Exiting...."
             exit 1
 }
 
-function io_exec(){
+function io_exec() {
     pushd /var/tmp/
-        ./io-testing.sh
+        ./io-sanity.sh
     popd
 }
 
-function logs_generation(){
-    add_secondary_separator Generating CORTX Support Bundle Logs...
+function logs_generation() {
+    add_secondary_separator "Generating CORTX Support Bundle Logs..."
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         ./logs-cortx-cloud.sh
     popd
 }
 
-function cleanup(){
-    add_secondary_separator Clean up untagged/unused images and stopped containers...
+function cleanup() {
+    add_secondary_separator "Clean up untagged/unused images and stopped containers..."
     docker system prune -a -f --filter "label!=vendor=Project Calico"
 }
 
@@ -398,7 +367,7 @@ case $ACTION in
     --status) 
         print_pod_status
     ;;
-    --io-test)
+    --io-sanity)
         io_exec
     ;;
     --destroy)

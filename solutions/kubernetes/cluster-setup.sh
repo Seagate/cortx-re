@@ -27,14 +27,13 @@ PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
 WORKER_NODES=$(cat "$HOST_FILE" | grep -v "$PRIMARY_NODE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
 UNTAINT="$1"
 
-function setup_cluster {
-
+function setup_cluster() {
     validation
     generate_rsa_key
     nodes_setup
     deployment_type
 
-    add_primary_separator Setting up kubernetes cluster for following nodes
+    add_primary_separator "Setting up kubernetes cluster for following nodes"
     echo PRIMARY NODE="$PRIMARY_NODE"
     echo WORKER NODES="$WORKER_NODES"
     add_common_separator
@@ -49,7 +48,7 @@ function setup_cluster {
     # Prepare nodes:
     pdsh -w ^/var/tmp/pdsh-hosts '/var/tmp/cluster-functions.sh --prepare'
 
-    add_secondary_separator Setup Primary Node $PRIMARY_NODE
+    add_secondary_separator "Setup Primary Node $PRIMARY_NODE"
     ssh_primary_node "/var/tmp/cluster-functions.sh --primary ${UNTAINT}"
     check_status
     sleep 10 #To be replaced with status check
@@ -57,7 +56,7 @@ function setup_cluster {
     check_status "Failed fetch cluster join command"
 
     if [ "$SINGLE_NODE_DEPLOYMENT" == "False" ]; then
-        add_secondary_separator Setup Worker Nodes
+        add_secondary_separator "Setup Worker Nodes"
         echo $WORKER_NODES | tee /var/tmp/pdsh-hosts
         # Join worker nodes.
         JOIN_WORKER="/var/tmp/cluster-functions.sh --join-worker-nodes $JOIN_COMMAND"
@@ -72,9 +71,8 @@ function setup_cluster {
     fi
 }
 
-function print_status {
-
-    add_primary_separator Print Node status
+function print_status() {
+    add_primary_separator "Print Node Status"
     rm -rf /var/tmp/cluster-status.txt
     ssh_primary_node '/var/tmp/cluster-functions.sh --status' | tee /var/tmp/cluster-status.txt
 
