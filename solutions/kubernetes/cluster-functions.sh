@@ -287,7 +287,8 @@ function setup_primary_node(){
         IS_VM=$(systemd-detect-virt -v)
         if [ "$IS_VM" == "none" ]; then
             # Setup IP_AUTODETECTION_METHOD for determining calico network.
-            sed -i '/# Auto-detect the BGP IP address./i \            - name: IP_AUTODETECTION_METHOD\n              value: "interface=${route -n | awk '$1 == "0.0.0.0" {print $8}'}"' calico-$CALICO_PLUGIN_VERSION.yaml
+            ITF="${route -n | awk '$1 == "0.0.0.0" {print $8}'}"
+            sed -i '/# Auto-detect the BGP IP address./i \            - name: IP_AUTODETECTION_METHOD\n              value: "interface=$ITF"' calico-$CALICO_PLUGIN_VERSION.yaml
         fi
         kubectl apply -f calico-$CALICO_PLUGIN_VERSION.yaml || throw $Exception
 
