@@ -133,6 +133,11 @@ pipeline {
                         env.Health = qaSanity.buildVariables.Health
                         env.qaSanity_status = qaSanity.currentResult
                         env.qaSanityK8sJob_URL = qaSanity.absoluteUrl
+                        env.totalcount = qaSanity.buildVariables.totalcount
+                        env.passcount = qaSanity.buildVariables.passcount
+                        env.failcount = qaSanity.buildVariables.failcount
+                        env.skipcount = qaSanity.buildVariables.skipcount
+                        env.todocount = qaSanity.buildVariables.todocount
                     }
                     copyArtifacts filter: 'log/*report.xml', fingerprintArtifacts: true, flatten: true, optional: true, projectName: 'QA-Sanity-Multinode-RGW', selector: lastCompleted(), target: 'log/'
                     copyArtifacts filter: 'log/*report.html', fingerprintArtifacts: true, flatten: true, optional: true, projectName: 'QA-Sanity-Multinode-RGW', selector: lastCompleted(), target: 'log/'
@@ -222,7 +227,7 @@ pipeline {
                 catchError(stageResult: 'FAILURE') {
                     archiveArtifacts allowEmptyArchive: true, artifacts: 'log/*report.xml, log/*report.html, support_bundle/*.tar, crash_files/*.gz', followSymlinks: false
                     emailext (
-                        body: '''${SCRIPT, template="K8s-deployment-email_2.template"}${SCRIPT, template="REL_QA_SANITY_CUS_EMAIL_RETEAM_5.template"}''',
+                        body: '''${SCRIPT, template="K8s-deployment-email_2.template"}${SCRIPT, template="REL_QA_SANITY_CUS_EMAIL_6.template"}''',
                         mimeType: 'text/html',
                         subject: "${MESSAGE}",
                         to: "${mailRecipients}",
