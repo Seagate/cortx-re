@@ -1,6 +1,6 @@
 crontabs  #cortx-utils
 java-1.8.0-openjdk-headless
-jq-1.6-3 #cortx-prvsnr #cortx-hare
+jq #cortx-prvsnr #cortx-hare
 which #cortx-motr
 libfabric-1.11.2 #cortx-motr
 gperftools-libs
