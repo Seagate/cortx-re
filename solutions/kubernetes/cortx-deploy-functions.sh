@@ -241,7 +241,6 @@ function execute_prereq() {
 }
 
 function setup_primary_node() {
-    add_secondary_separator "Setting up Primary Node $HOSTNAME"
     #Clean up untagged docker images and stopped docker containers.
     cleanup
     #Third-party images are downloaded from GitHub container registry. 
