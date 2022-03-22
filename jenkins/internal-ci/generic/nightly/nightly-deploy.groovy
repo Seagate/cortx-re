@@ -123,8 +123,8 @@ pipeline {
                 script {
                     def changelog = build job: '/Release_Engineering/Cortx-Automation/changelog-generation', wait: true, propagate: false,
                     parameters: [
-                        string(name: 'BUILD_FROM', value: "ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}"),
-                        string(name: 'BUILD_TO', value: "ghcr.io/seagate/cortx-all:${VERSION}-${last_success_build_number}"),
+                        string(name: 'BUILD_FROM', value: "ghcr.io/seagate/cortx-all:${VERSION}-${last_success_build_number}"),
+                        string(name: 'BUILD_TO', value: "ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}"),
                     ]
                     env.changeset_log_url = changelog.absoluteUrl
                     copyArtifacts filter: 'CHANGESET.txt', fingerprintArtifacts: true, flatten: true, optional: true, projectName: '/Release_Engineering/Cortx-Automation/changelog-generation', selector: lastCompleted(), target: ''
