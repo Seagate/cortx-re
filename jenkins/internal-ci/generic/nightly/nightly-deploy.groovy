@@ -29,7 +29,7 @@ pipeline {
             name: 'EMAIL_RECIPIENTS'
         )
     }
-    // Please configure hosts,SNS, CORTX_SCRIPTS_BRANCH, CORTX_SCRIPTS_BRANCH and DIX parameter in Jenkins job configuration.
+    // Please configure hosts,SNS, CORTX_SCRIPTS_REPO, CORTX_SCRIPTS_BRANCH and DIX parameter in Jenkins job configuration.
     stages {
         stage ("Define Variable") {
             steps {
