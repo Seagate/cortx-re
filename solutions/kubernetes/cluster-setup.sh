@@ -31,7 +31,7 @@ function setup_cluster() {
     validation
     generate_rsa_key
     nodes_setup
-    deployment_type
+    k8s_deployment_type "$UNTAINT"
 
     add_primary_separator "Setting up kubernetes cluster for following nodes"
     echo PRIMARY NODE="$PRIMARY_NODE"

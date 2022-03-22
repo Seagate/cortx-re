@@ -83,7 +83,7 @@ function setup_cluster() {
     validation
     generate_rsa_key
     nodes_setup
-    deployment_type
+    cortx_deployment_type
 
     TARGET=$1
 

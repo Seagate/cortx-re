@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 #
 # Copyright (c) 2021 Seagate Technology LLC and/or its Affiliates
 #
@@ -21,7 +21,7 @@
 function add_primary_separator() {
     printf "\n################################################################################\n"
     printf "$*\n"
-    printf "\n################################################################################\n"
+    printf "################################################################################\n"
 }
 
 function add_secondary_separator() {
@@ -87,13 +87,42 @@ function nodes_setup() {
     done
 }
 
-function deployment_type() {
+function k8s_deployment_type() {
     if [ "$(wc -l < $HOST_FILE)" == "1" ]; then
         SINGLE_NODE_DEPLOYMENT="True"
         add_secondary_separator Single Node Deployment
-    else
+    fi
+
+    if [ "$(wc -l < $HOST_FILE)" -ne "1" ]; then
         SINGLE_NODE_DEPLOYMENT="False"
-        add_secondary_separator Multi Node Deployment
+        local UNTAINT_PRIMARY=$1
+        if [ "$UNTAINT_PRIMARY" == "false" ]; then
+            local NODES="$(wc -l < $HOST_FILE)"
+            local PRIMARY_NODE=1
+            local NODES="$((NODES-PRIMARY_NODE))"
+            add_secondary_separator $NODES node deployment
+        else
+            local NODES="$(wc -l < $HOST_FILE)"
+            add_secondary_separator $NODES node deployment
+        fi
+    fi
+}
+
+function cortx_deployment_type() {
+    if [ "$(wc -l < $HOST_FILE)" == "1" ]; then
+        SINGLE_NODE_DEPLOYMENT="True"
+        add_secondary_separator Single Node Deployment
+    fi
+
+    if [ "$(wc -l < $HOST_FILE)" -ne "1" ]; then
+        SINGLE_NODE_DEPLOYMENT="False"
+        local NODES=$(wc -l < $HOST_FILE)
+        local TAINTED_NODES=$(ssh_primary_node bash << EOF
+kubectl get nodes -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints[?(@.effect=='NoSchedule')].effect}{\"\n\"}{end}" | grep  NoSchedule | wc -l
+EOF
+)
+        local NODES="$((NODES-TAINTED_NODES))"
+        add_secondary_separator $NODES node deployment
     fi
 }
 
