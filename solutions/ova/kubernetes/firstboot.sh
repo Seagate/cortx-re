@@ -30,7 +30,7 @@ function check_hctl_status {
         while [[ SECONDS -lt 1200 ]] ; do
             if /usr/bin/kubectl exec -it $(/usr/bin/kubectl get pods | awk '/cortx-data-pod/{print $1; exit}') -c cortx-motr-hax -- hctl status &>> /var/tmp/firstboot-execute.log ; then
                 if ! kubectl exec -it $(kubectl get pods | awk '/cortx-data-pod/{print $1; exit}') -c cortx-motr-hax -- hctl status| grep -q -E 'unknown|offline|failed'; then
-                        echo "HCTL pod is up" &>> /var/tmp/firstboot-execute.log
+                        echo "All CORTX pods are up" &>> /var/tmp/firstboot-execute.log
                         kubectl exec -it $(/usr/bin/kubectl get pods | awk '/cortx-data-pod/{print $1; exit}') -c cortx-motr-hax -- hctl status >> /var/tmp/firstboot-execute.log
                         mv /var/tmp/firstboot.sh /var/tmp/first-boot-executed.sh
                         set_s3_instance
