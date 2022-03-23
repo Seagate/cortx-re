@@ -140,7 +140,7 @@ pipeline {
                         parameters: [
                             string(name: 'M_NODE', value: "${env.master_node}"),
                             password(name: 'HOST_PASS', value: "${env.hostpasswd}"),
-                            string(name: 'CORTX_ALL_IMAGE', value: "ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}"),
+                            string(name: 'CORTX_IMAGE', value: "ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}"),
                             string(name: 'NUM_NODES', value: "${env.numberofnodes}")
                         ]
                         env.Sanity_Failed = qaSanity.buildVariables.Sanity_Failed
