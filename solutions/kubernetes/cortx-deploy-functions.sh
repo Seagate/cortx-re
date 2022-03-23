@@ -58,9 +58,9 @@ function update_solution_config(){
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         echo > solution.yaml
         yq e -i '.solution.namespace = "default"' solution.yaml
+        yq e -i '.solution.deployment_type = "standard"' solution.yaml
         
         yq e -i '.solution.secrets.name = "cortx-secret"' solution.yaml
-        yq e -i '.solution.secrets.content.openldap_admin_secret = "seagate1"' solution.yaml
         yq e -i '.solution.secrets.content.kafka_admin_secret = "Seagate@123"' solution.yaml
         yq e -i '.solution.secrets.content.consul_admin_secret = "Seagate@123"' solution.yaml
         yq e -i '.solution.secrets.content.common_admin_secret = "Seagate@123"' solution.yaml
@@ -68,7 +68,6 @@ function update_solution_config(){
         yq e -i '.solution.secrets.content.csm_auth_admin_secret = "seagate2"' solution.yaml
         yq e -i '.solution.secrets.content.csm_mgmt_admin_secret = "Cortxadmin@123"' solution.yaml
 
-        yq e -i '.solution.images.openldap = "ghcr.io/seagate/symas-openldap:2.4.58"' solution.yaml
         yq e -i '.solution.images.consul = "ghcr.io/seagate/consul:1.10.0"' solution.yaml
         yq e -i '.solution.images.kafka = "ghcr.io/seagate/kafka:3.0.0-debian-10-r7"' solution.yaml
         yq e -i '.solution.images.zookeeper = "ghcr.io/seagate/zookeeper:3.7.0-debian-10-r182"' solution.yaml
@@ -82,11 +81,12 @@ function update_solution_config(){
         yq e -i '.solution.common.container_path.log = "/etc/cortx/log"' solution.yaml
         yq e -i '.solution.common.s3.default_iam_users.auth_admin = "sgiamadmin"' solution.yaml
         yq e -i '.solution.common.s3.default_iam_users.auth_user = "user_name"' solution.yaml
-        yq e -i '.solution.common.s3.num_inst = 2' solution.yaml
         yq e -i '.solution.common.s3.start_port_num = 28051' solution.yaml
         yq e -i '.solution.common.s3.max_start_timeout = 240' solution.yaml
+        yq e -i '.solution.common.s3.extra_configuration = ""' solution.yaml
         yq e -i '.solution.common.motr.num_client_inst = 0' solution.yaml
         yq e -i '.solution.common.motr.start_port_num = 29000' solution.yaml
+        yq e -i '.solution.common.motr.extra_configuration = ""' solution.yaml
         yq e -i '.solution.common.hax.protocol = "https"' solution.yaml
         yq e -i '.solution.common.hax.service_name = "cortx-hax-svc"' solution.yaml
         yq e -i '.solution.common.hax.port_num = 22003' solution.yaml
@@ -97,8 +97,8 @@ function update_solution_config(){
         
         external_exposure_service=$EXTERNAL_EXPOSURE_SERVICE yq e -i '.solution.common.external_services.s3.type = env(external_exposure_service)' solution.yaml
         yq e -i '.solution.common.external_services.s3.count = 1' solution.yaml
-        yq e -i '.solution.common.external_services.s3.ports.http = "8000"' solution.yaml
-        yq e -i '.solution.common.external_services.s3.ports.https = "8443"' solution.yaml
+        yq e -i '.solution.common.external_services.s3.ports.http = "80"' solution.yaml
+        yq e -i '.solution.common.external_services.s3.ports.https = "443"' solution.yaml
         s3_external_http_nodeport=$S3_EXTERNAL_HTTP_NODEPORT yq e -i '.solution.common.external_services.s3.nodePorts.http = env(s3_external_http_nodeport)' solution.yaml
         s3_external_https_nodeport=$S3_EXTERNAL_HTTPS_NODEPORT yq e -i '.solution.common.external_services.s3.nodePorts.https = env(s3_external_https_nodeport)' solution.yaml
         
@@ -115,11 +115,6 @@ function update_solution_config(){
         yq e -i '.solution.common.resource_allocation.consul.client.resources.requests.cpu = "100m"' solution.yaml
         yq e -i '.solution.common.resource_allocation.consul.client.resources.limits.memory = "300Mi"' solution.yaml
         yq e -i '.solution.common.resource_allocation.consul.client.resources.limits.cpu = "100m"' solution.yaml
-
-        yq e -i '.solution.common.resource_allocation.openldap.resources.requests.memory = "1Gi"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.openldap.resources.requests.cpu = 2' solution.yaml
-        yq e -i '.solution.common.resource_allocation.openldap.resources.limits.memory = "1Gi"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.openldap.resources.limits.cpu = 2' solution.yaml
 
         yq e -i '.solution.common.resource_allocation.zookeeper.storage_request_size = "8Gi"' solution.yaml
         yq e -i '.solution.common.resource_allocation.zookeeper.data_log_dir_request_size = "8Gi"' solution.yaml
