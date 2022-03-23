@@ -27,8 +27,7 @@ OS_VERSION=( "CentOS 7.9.2009" "Rocky 8.4" )
 export Exception=100
 export ConfigException=101
 
-
-function usage(){
+function usage() {
     cat << HEREDOC
 Usage : $0 [--prepare, --primary]
 where,
@@ -41,33 +40,20 @@ HEREDOC
 }
 
 # try-catch functions
-function try()
-{
+function try() {
     [[ $- = *e* ]]; SAVED_OPT_E=$?
     set +e
 }
 
-function throw()
-{
+function throw() {
     exit $1
 }
 
-function catch()
-{
+function catch() {
     export ex_code=$?
     (( $SAVED_OPT_E )) && set +e
     return $ex_code
 } 
-
-function throwErrors()
-{
-    set -e
-}
-
-function ignoreErrors()
-{
-    set +e
-}
 
 function verify_os() {
     CURRENT_OS=$(cut -d ' ' -f 1,4 < /etc/redhat-release)
@@ -78,8 +64,7 @@ function verify_os() {
     fi
 }
 
-function print_cluster_status(){
-
+function print_cluster_status() {
     while kubectl get nodes | grep -v STATUS | awk '{print $2}' | tr '\n' ' ' | grep -q NotReady
     do
 		sleep 5
@@ -87,13 +72,12 @@ function print_cluster_status(){
     kubectl get nodes -o wide
 }
 
-function cleanup_node(){
-
-    echo "---------------------------------------[ Cleanup Node $HOSTNAME ]--------------------------------------"
+function cleanup_node() {
+    add_secondary_separator "Cleanup Node $HOSTNAME"
     # Cleanup kubeadm stuff
     if [ -f /usr/bin/kubeadm ]; then
         echo "Cleaning up existing kubeadm configuration"
-        # unmount /var/lib/kubelet is having problem while running `kubeadm reset` in k8s v1.19. It is fixed in 1.20
+        # unmount /var/lib/kubelet is having problem while running `kubeadm reset` in k8s v1.19. It is fixed in 1.  0
         # Ref link - https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm/#kubeadm-reset-unmounts-var-lib-kubelet
         kubeadm reset -f
     fi
@@ -138,7 +122,6 @@ function cleanup_node(){
         fi
     done
 
-
     # Remove packages
     echo "Uninstalling packages"
     yum clean all && rm -rf /var/cache/yum
@@ -162,10 +145,11 @@ function cleanup_node(){
     check_status "Node cleanup failed on $HOSTNAME"
 }
 
-function install_prerequisites(){
-    echo "---------------------------------------[ Preparing Node $HOSTNAME ]--------------------------------------"
+function install_prerequisites() {
+    add_secondary_separator "Preparing Node $HOSTNAME"
     try
-    (   # disable swap
+    (
+        # disable swap
         verify_os 
         sudo swapoff -a
         # keeps the swaf off during reboot
@@ -232,6 +216,7 @@ function install_prerequisites(){
             popd
         popd
     )
+
     catch || {
     # handle excption
     case $ex_code in
@@ -250,10 +235,9 @@ function install_prerequisites(){
     esac
     }
     check_status "Node preparation failed on $HOSTNAME"
-
 }
 
-function setup_primary_node(){
+function setup_primary_node() {
     local UNTAINT_PRIMARY=$1
     try
     (
@@ -272,7 +256,7 @@ function setup_primary_node(){
         chown $(id -u):$(id -g) $HOME/.kube/config
         # untaint primary node
         if [ "$UNTAINT_PRIMARY" == "true" ]; then
-            echo "--------------------------[ Allow POD creation on primary node ]--------------------------"
+            add_secondary_separator "Allow POD creation on primary node"
             kubectl taint nodes $(hostname) node-role.kubernetes.io/master- || throw $Exception
         fi    
 
@@ -296,6 +280,7 @@ function setup_primary_node(){
         curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 || throw $Exception
         (chmod 700 get_helm.sh && ./get_helm.sh) || throw $Exception
     )
+
     catch || {
     # Handle excption
     case $ex_code in
@@ -317,7 +302,7 @@ function setup_primary_node(){
 }
 
 function join_worker_nodes() {
-    echo "---------------------------------------[ Joining Worker Node $HOSTNAME ]--------------------------------------"
+    add_secondary_separator "Joining Worker Node $HOSTNAME"
     echo 'y' | kubeadm reset && "${@:2}"
     check_status "Failed to join $HOSTNAME node to cluster"
 }
