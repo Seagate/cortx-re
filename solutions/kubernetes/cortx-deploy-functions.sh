@@ -61,7 +61,6 @@ function update_solution_config(){
         yq e -i '.solution.deployment_type = "standard"' solution.yaml
         
         yq e -i '.solution.secrets.name = "cortx-secret"' solution.yaml
-        yq e -i '.solution.secrets.content.openldap_admin_secret = "seagate1"' solution.yaml
         yq e -i '.solution.secrets.content.kafka_admin_secret = "Seagate@123"' solution.yaml
         yq e -i '.solution.secrets.content.consul_admin_secret = "Seagate@123"' solution.yaml
         yq e -i '.solution.secrets.content.common_admin_secret = "Seagate@123"' solution.yaml
