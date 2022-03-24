@@ -58,7 +58,7 @@ function update_solution_config(){
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         echo > solution.yaml
         yq e -i '.solution.namespace = "default"' solution.yaml
-        yq e -i '.solution.deployment_type = "standard"' solution.yaml
+        deployment_method=$DEPLOYMENT_METHOD yq e -i '.solution.deployment_type = env(deployment_method)' solution.yaml
         
         yq e -i '.solution.secrets.name = "cortx-secret"' solution.yaml
         yq e -i '.solution.secrets.content.kafka_admin_secret = "Seagate@123"' solution.yaml
