@@ -357,6 +357,20 @@ echo "---------------------------------------[ hctl status ]--------------------
                 echo "----------------------[ hctl status not working yet. Sleeping for 1min.... ]-------------------------"
                 sleep 60
             fi
+        elif [ "$DEPLOYMENT_METHOD" == "data-only" ]; then
+            if kubectl exec -it $(kubectl get pods | awk '/cortx-data/{print $1; exit}') -c cortx-hax -- hctl status > /dev/null ; then
+                    if ! kubectl exec -it $(kubectl get pods | awk '/cortx-data/{print $1; exit}') -c cortx-hax -- hctl status| grep -q -E 'unknown|offline|failed'; then
+                        kubectl exec -it $(kubectl get pods | awk '/cortx-data/{print $1; exit}') -c cortx-hax -- hctl status
+                        echo "-----------[ Time taken for service to start $((SECONDS/60)) mins ]--------------------"
+                        exit 0
+                    else
+                        echo "-----------[ Waiting for services to become online. Sleeping for 1min.... ]--------------------"
+                        sleep 60
+                    fi
+            else
+                echo "----------------------[ hctl status not working yet. Sleeping for 1min.... ]-------------------------"
+                sleep 60
+            fi
         else
             if kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-hax -- hctl status > /dev/null ; then
                     if ! kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-hax -- hctl status| grep -q -E 'unknown|offline|failed'; then
