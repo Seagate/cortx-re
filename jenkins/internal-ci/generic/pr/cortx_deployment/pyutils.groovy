@@ -246,7 +246,10 @@ pipeline {
                         NODE_USER=$( cat server_info.txt | awk -F ' ' '{ print $2 }')
                         NODE_PASS=$( cat server_info.txt | awk -F ' ' '{ print $3 }')
                         yum install sshpass -y
-                        sshpass -p ${NODE_PASS} ssh -o StrictHostKeyChecking=no ${NODE_USER}@${NODE_HOST} kubectl exec '$(kubectl get pods | grep "cortx-data" | awk '{print$1}')' --container cortx-hax -- /opt/seagate/cortx/utils/bin/utils_setup test --config yaml:///etc/cortx/cluster.conf --plan sanity
+                        sshpass -p ${NODE_PASS} ssh -o StrictHostKeyChecking=no ${NODE_USER}@${NODE_HOST} <<EOF
+DATA_POD='$(kubectl get pods | grep "cortx-data" | awk '{print$1}')' 
+kubectl exec $DATA_POD --container cortx-hax -- bash -c "yum install --nogpgcheck -y cortx-py-utils-test*.noarch.rpm && /opt/seagate/cortx/utils/bin/utils_setup test --config yaml:///etc/cortx/cluster.conf --plan sanity"
+EOF
                     '''
                 }
             }
