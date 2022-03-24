@@ -20,9 +20,30 @@
 
 set -euo pipefail # exit on failures
 
+# Default values
+SOLUTION_FILE="/root/deploy-scripts/k8_cortx_cloud/solution.yaml"
+AWS_AUTH_REMOVAL="true"
+
 source /var/tmp/functions.sh
 
-SOLUTION_FILE="/root/deploy-scripts/k8_cortx_cloud/solution.yaml"
+usage() {
+echo "Perform IO sanity on CORTX Cluster"
+echo "Usage: $0 [ -f "solution.yaml used for cluster deployment" ] [ -c cleanup "aws auth configuration  yes/no. Default no" ] "
+}
+
+while getopts "f:c:" opt; do
+    case $opt in
+        f ) SOLUTION_FILE=$OPTARG;;
+        c ) AWS_AUTH_REMOVAL=$OPTARG;;
+        h ) usage
+        exit 0;;
+        *) usage
+        exit 1;;
+    esac
+done
+
+echo AWS_AUTH_REMOVAL:$AWS_AUTH_REMOVAL
+echo SOLUTION_FILE:$SOLUTION_FILE
 
 add_separator Setup awscli.
 
@@ -108,8 +129,11 @@ echo -e "\nRemove '$BUCKET' bucket:-\n"
 aws s3 rb s3://$BUCKET
 check_status "Failed to delete '$BUCKET'."
 
+if [ "$AWS_AUTH_REMOVAL" != "true" ]; then
 echo -e "\nCleanup awscli files."
 rm -rf ~/.aws/credentials
 rm -rf ~/.aws/config
+fi
 
+rm -rf $FILE2 $FILE1 file10mbDn
 add_separator Successfully passed IO testing.

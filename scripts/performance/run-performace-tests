@@ -21,7 +21,7 @@
 set -eo pipefail
 
 #Configured s3 client
-
+../../solutions/kubernetes/io-testing.sh
 
 #Clone https://github.com/Seagate/seagate-tools repository
 
