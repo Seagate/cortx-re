@@ -23,6 +23,7 @@ pipeline {
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_ALL_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-all:2.0.0-latest', description: 'CORTX-ALL image', trim: true)
         string(name: 'CORTX_SERVER_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-rgw:2.0.0-latest', description: 'CORTX-SERVER image', trim: true)
+        string(name: 'CORTX_DATA_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-data:2.0.0-latest', description: 'CORTX-DATA image', trim: true)
         choice(
             name: 'DEPLOYMENT_METHOD',
             choices: ['standard', 'data-only'],
@@ -85,6 +86,7 @@ pipeline {
                         export CORTX_SCRIPTS_REPO=${CORTX_SCRIPTS_REPO}
                         export CORTX_ALL_IMAGE=${CORTX_ALL_IMAGE}
                         export CORTX_SERVER_IMAGE=${CORTX_SERVER_IMAGE}
+                        export CORTX_DATA_IMAGE=${CORTX_DATA_IMAGE}
                         export DEPLOYMENT_METHOD=${DEPLOYMENT_METHOD}
                         export SNS_CONFIG=${SNS_CONFIG}
                         export DIX_CONFIG=${DIX_CONFIG}
