@@ -41,7 +41,7 @@ function setup_awscli() {
    # Get credentials and create dir. 
    access_key=$(yq e '.solution.common.s3.default_iam_users.auth_admin' $SOLUTION_FILE)
    secret_key=$(yq e '.solution.secrets.content.s3_auth_admin_secret' $SOLUTION_FILE)
-   endpoint_url="http://""$(kubectl get svc | grep cortx-io | awk '{ print $3 }')"":8000"
+   endpoint_url="http://""$(kubectl get svc | grep cortx-io | awk '{ print $3 }')"":80"
    mkdir -p /root/.aws/
 
    # Configure plugin, api and endpoints.
