@@ -144,7 +144,7 @@ EOF
         ssh -o 'StrictHostKeyChecking=no' "$primary_node" "/var/tmp/cortx-deploy-functions.sh --$TARGET"
         echo "---------------------------------------[ Print Cluster Status ]----------------------------------------------"
         rm -rf /var/tmp/cortx-cluster-status.txt
-        ssh -o 'StrictHostKeyChecking=no' "$primary_node" '/var/tmp/cortx-deploy-functions.sh --status' | tee /var/tmp/cortx-cluster-status.txt
+        ssh -o 'StrictHostKeyChecking=no' "$primary_node" "export DEPLOYMENT_METHOD=$DEPLOYMENT_METHOD && /var/tmp/cortx-deploy-functions.sh --status" | tee /var/tmp/cortx-cluster-status.txt
         done
 }
 
