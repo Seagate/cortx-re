@@ -93,6 +93,7 @@ pipeline {
                         yum install python36-devel -y
                         ./jenkins/build.sh -v $VERSION -b $BUILD_NUMBER
                         ./statsd-utils/jenkins/build.sh -v $VERSION -b $BUILD_NUMBER
+                        ./jenkins/build_test_rpm.sh -v $VERSION -b $BUILD_NUMBER    
                     '''
                 }
             }
@@ -129,6 +130,7 @@ pipeline {
                     shopt -s extglob
                     ls
                     cp ./cortx_utils/py-utils/dist/!(*.src.rpm|*.tar.gz) "${CORTX_ISO_LOCATION}"
+                    cp ./cortx_utils/py-utils/test/dist/!(*.src.rpm|*.tar.gz) "${CORTX_ISO_LOCATION}"
                     cp ./cortx_utils/statsd-utils/dist/rpmbuild/RPMS/x86_64/*.rpm "${CORTX_ISO_LOCATION}"
                     pushd ${COMPONENTS_RPM}
                         for component in `ls -1 | grep -E -v "${COMPONENT_NAME}"`
@@ -231,6 +233,21 @@ pipeline {
                         string(name: 'hosts', value: "${host}"),
                         string(name: 'EMAIL_RECIPIENTS', value: "DEBUG")
                     ]
+                }
+            }
+        }
+
+        stage ("Test RPM") {
+            steps {
+                script {
+                    sh label: 'Run unit-tests', script: '''
+                        echo "${host}" | sed 's/,/ /g' | sed 's/=/ /g' |  awk -F ' ' '{ print $2" "$4" "$6 }' > server_info.txt
+                        NODE_HOST=$( cat server_info.txt | awk -F ' ' '{ print $1 }')
+                        NODE_USER=$( cat server_info.txt | awk -F ' ' '{ print $2 }')
+                        NODE_PASS=$( cat server_info.txt | awk -F ' ' '{ print $3 }')
+                        yum install sshpass -y
+                        sshpass -p ${NODE_PASS} ssh -o StrictHostKeyChecking=no ${NODE_USER}@${NODE_HOST} kubectl exec '$(kubectl get pods | grep "cortx-data" | awk '{print$1}')' --container cortx-hax -- /opt/seagate/cortx/utils/bin/utils_setup test --config yaml:///etc/cortx/cluster.conf --plan sanity
+                    '''
                 }
             }
         }
