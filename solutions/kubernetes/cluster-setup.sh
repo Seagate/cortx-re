@@ -51,7 +51,7 @@ function setup_cluster() {
     add_secondary_separator "Setup Primary Node $PRIMARY_NODE"
     ssh_primary_node "/var/tmp/cluster-functions.sh --primary ${UNTAINT}"
     check_status
-    sleep 10 #To be replaced with status check
+    sleep 10 # To be replaced with status check
     JOIN_COMMAND=$(ssh_primary_node 'kubeadm token create --print-join-command --description "Token to join worker nodes"')
     check_status "Failed fetch cluster join command"
 
@@ -76,13 +76,13 @@ function print_status() {
     rm -rf /var/tmp/cluster-status.txt
     ssh_primary_node '/var/tmp/cluster-functions.sh --status' | tee /var/tmp/cluster-status.txt
 
-    #Clean up known_hosts file entries.
+    # Clean up known_hosts file entries.
     for node in $ALL_NODES
     do
         sed -i '/'$node'/d' /root/.ssh/known_hosts
     done
 }
 
-#Execution
+# Execution
 setup_cluster
 print_status

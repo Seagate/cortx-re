@@ -125,7 +125,7 @@ function run_io_sanity() {
    add_primary_separator "Successfully Passed IO Sanity Testing"
 }
 
-#Execution
+# Execution
 install_awscli
 setup_awscli
 run_io_sanity
