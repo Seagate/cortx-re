@@ -1,6 +1,6 @@
 crontabs  #cortx-utils
 java-1.8.0-openjdk-headless
-jq #cortx-prvsnr
+jq #cortx-prvsnr #cortx-hare
 logrotate #cortx-utils
 python36
 python3-dbus
@@ -11,3 +11,4 @@ sudo
 which #cortx-motr
 python3-ldap #cortx-utils
 libfabric-1.11.2 #cortx-motr
+consul-1.11.4 #cortx-hare
