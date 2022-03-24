@@ -217,9 +217,9 @@ function execute_deploy_script() {
         ./$SCRIPT_NAME
         if [ $? -eq 0 ] 
         then 
-           echo "Successfully executed $SCRIPT_NAME." 
+           echo -e "\nSuccessfully executed $SCRIPT_NAME." 
         else 
-           echo "Error in executing $SCRIPT_NAME. Please check cluster logs."
+           echo -e "\nError in executing $SCRIPT_NAME. Please check cluster logs."
            exit 1
         fi
     popd

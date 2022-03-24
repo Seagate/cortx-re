@@ -26,12 +26,19 @@ SOLUTION_FILE="/root/deploy-scripts/k8_cortx_cloud/solution.yaml"
 
 function install_awscli() {
    add_primary_separator "Install and setup awscli"
+
+   add_secondary_separator "Check and install pip3 if not present:"
+   if ! which pip3; then
+      yum install python3-pip
+   fi
+
+   add_secondary_separator "Installing awscli"
    pip3 install awscli
    pip3 install awscli-plugin-endpoint
 
    if ! which aws; then
-   add_common_separator "AWS CLI installation failed"
-   exit 1
+      add_common_separator "AWS CLI installation failed"
+      exit 1
    fi
 }
 
@@ -118,7 +125,7 @@ function run_io_sanity() {
    aws s3 rb s3://$BUCKET
    check_status "Failed to delete '$BUCKET'"
 
-   add_common_separator "Cleanup awscli files."
+   add_common_separator "Cleanup awscli files"
    rm -rf ~/.aws/credentials
    rm -rf ~/.aws/config
 
