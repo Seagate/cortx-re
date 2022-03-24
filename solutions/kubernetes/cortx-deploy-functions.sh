@@ -29,6 +29,13 @@ YQ_VERSION=v4.13.3
 YQ_BINARY=yq_linux_386
 SOLUTION_CONFIG="/var/tmp/solution.yaml"
 
+ACTION="$1"
+if [ -z "$ACTION" ]; then
+    echo "ERROR : No option provided"
+    usage
+    exit 1
+fi
+
 function usage() {
     cat << HEREDOC
 Usage : $0 [--cortx-cluster, --setup-primary, --setup-worker, --status, --io-sanity, --destroy, --generate-logs]
@@ -42,13 +49,6 @@ where,
     --generate-logs - Generate support bundle logs. 
 HEREDOC
 }
-
-ACTION="$1"
-if [ -z "$ACTION" ]; then
-    echo "ERROR : No option provided"
-    usage
-    exit 1
-fi
 
 #On primary
 #download CORTX k8 deployment scripts

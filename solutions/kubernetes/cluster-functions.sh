@@ -27,6 +27,13 @@ OS_VERSION=( "CentOS 7.9.2009" "Rocky 8.4" )
 export Exception=100
 export ConfigException=101
 
+ACTION="$1"
+if [ -z "$ACTION" ]; then
+    echo "ERROR : No option provided"
+    usage
+    exit 1
+fi
+
 function usage() {
     cat << HEREDOC
 Usage : $0 [--prepare, --primary]
@@ -306,13 +313,6 @@ function join_worker_nodes() {
     echo 'y' | kubeadm reset && "${@:2}"
     check_status "Failed to join $HOSTNAME node to cluster"
 }
-
-ACTION="$1"
-if [ -z "$ACTION" ]; then
-    echo "ERROR : No option provided"
-    usage
-    exit 1
-fi
 
 case $ACTION in
     --cleanup)
