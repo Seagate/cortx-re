@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 #
 # Copyright (c) 2021 Seagate Technology LLC and/or its Affiliates
 #
@@ -18,12 +18,31 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
-function add_separator {
-    set +xe
-    echo -e '\n\n\n========================= '"$*"' =========================\n'
+function add_primary_separator() {
+    printf "\n################################################################################\n"
+    printf "\t\t$*\n"
+    printf "################################################################################\n"
 }
 
-function validation {
+function add_secondary_separator() {
+    echo -e '\n==================== '"$*"' ====================\n'
+}
+
+function add_common_separator() {
+    echo -e '\n--------------- '"$*"' ---------------\n'
+}
+
+function check_status() {
+    return_code=$?
+    error_message=$1
+    if [ $return_code -ne 0 ]; then
+            add_common_separator ERROR: $error_message
+            exit 1
+    fi
+    add_common_separator SUCCESS
+}
+
+function validation() {
     if [ ! -f "$HOST_FILE" ]; then
         echo "$HOST_FILE is not present"
         exit 1
@@ -37,7 +56,7 @@ function validation {
     fi
 }
 
-function generate_rsa_key {
+function generate_rsa_key() {
     if [ ! -f "$SSH_KEY_FILE" ]; then
         ssh-keygen -b 2048 -t rsa -f $SSH_KEY_FILE -q -N ""
      else
@@ -45,17 +64,7 @@ function generate_rsa_key {
     fi
 }
 
-function check_status {
-    return_code=$?
-    error_message=$1
-    if [ $return_code -ne 0 ]; then
-            echo "----------------------[ ERROR: $error_message ]--------------------------------------"
-            exit 1
-    fi
-    echo "----------------------[ SUCCESS ]--------------------------------------"
-}
-
-function passwordless_ssh {
+function passwordless_ssh() {
     local NODE=$1
     local USER=$2
     local PASS=$3
@@ -66,14 +75,71 @@ function passwordless_ssh {
     check_status "Passwordless ssh setup failed for $NODE. Please validate provided credentails"
 }
 
-function nodes_setup {
+function nodes_setup() {
     for ssh_node in $(cat "$HOST_FILE")
     do
         local NODE=$(echo "$ssh_node" | awk -F[,] '{print $1}' | cut -d'=' -f2)
         local USER=$(echo "$ssh_node" | awk -F[,] '{print $2}' | cut -d'=' -f2)
         local PASS=$(echo "$ssh_node" | awk -F[,] '{print $3}' | cut -d'=' -f2)
 
-        echo "----------------------[ Setting up passwordless ssh for $NODE ]--------------------------------------"
+        add_secondary_separator Setting up passwordless ssh for $NODE
         passwordless_ssh "$NODE" "$USER" "$PASS"
     done
+}
+
+function k8s_deployment_type() {
+    if [ "$(wc -l < $HOST_FILE)" == "1" ]; then
+        SINGLE_NODE_DEPLOYMENT="True"
+        add_secondary_separator Single Node Deployment
+    fi
+
+    if [ "$(wc -l < $HOST_FILE)" -ne "1" ]; then
+        SINGLE_NODE_DEPLOYMENT="False"
+        local UNTAINT_PRIMARY=$1
+        if [ "$UNTAINT_PRIMARY" == "false" ]; then
+            local NODES="$(wc -l < $HOST_FILE)"
+            local PRIMARY_NODE=1
+            local NODES="$((NODES-PRIMARY_NODE))"
+            add_secondary_separator $NODES node deployment
+        else
+            local NODES="$(wc -l < $HOST_FILE)"
+            add_secondary_separator $NODES node deployment
+        fi
+    fi
+}
+
+function cortx_deployment_type() {
+    if [ "$(wc -l < $HOST_FILE)" == "1" ]; then
+        SINGLE_NODE_DEPLOYMENT="True"
+        add_secondary_separator Single Node Deployment
+    fi
+
+    if [ "$(wc -l < $HOST_FILE)" -ne "1" ]; then
+        SINGLE_NODE_DEPLOYMENT="False"
+        local NODES=$(wc -l < $HOST_FILE)
+        local TAINTED_NODES=$(ssh_primary_node bash << EOF
+kubectl get nodes -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints[?(@.effect=='NoSchedule')].effect}{\"\n\"}{end}" | grep  NoSchedule | wc -l
+EOF
+)
+        local NODES="$((NODES-TAINTED_NODES))"
+        add_secondary_separator $NODES node deployment
+    fi
+}
+
+function scp_all_nodes() {
+    for node in $ALL_NODES
+        do 
+            scp -q $* "$node":/var/tmp/
+        done
+}
+
+function scp_primary_node() {
+    for primary_nodes in $PRIMARY_NODE
+        do
+            scp -q $* "$primary_nodes":/var/tmp/
+        done
+}
+
+function ssh_primary_node() {
+    ssh -o 'StrictHostKeyChecking=no' "$PRIMARY_NODE" $*
 }
