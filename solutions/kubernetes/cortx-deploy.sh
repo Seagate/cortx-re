@@ -131,7 +131,7 @@ function destroy-cluster() {
     generate_rsa_key
     nodes_setup
 
-	add_primary_separator "Destroying Cluster from $PRIMARY_NODE"
+    add_primary_separator "Destroying Cluster from $PRIMARY_NODE"
     scp_primary_node cortx-deploy-functions.sh functions.sh
     ssh_primary_node "/var/tmp/cortx-deploy-functions.sh --destroy"
     add_primary_separator "Print Kubernetes Cluster Status after Cleanup"

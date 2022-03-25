@@ -39,7 +39,7 @@ function setup_cluster() {
     add_common_separator
 
     # Copy scripts to all nodes:
-	scp_all_nodes cluster-functions.sh functions.sh
+    scp_all_nodes cluster-functions.sh functions.sh
 
     echo $ALL_NODES > /var/tmp/pdsh-hosts
 
