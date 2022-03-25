@@ -251,7 +251,7 @@ pipeline {
                         ''', returnStdout: true).trim()
                         def remote = getRemoteMachine(NODE_HOST, NODE_USER, NODE_PASS)
                         def commandResult = sshCommand remote: remote, command: """
-                            DATA_POD=\$(( kubectl get pods | grep "cortx-data" | awk '{print$1}' ) 2>&1)
+                            DATA_POD=\$(( kubectl get pods | grep "cortx-data" | awk '{print $1}' ) 2>&1)
                             echo $DATA_POD
                             kubectl exec $DATA_POD --container cortx-hax -- bash -c "yum install --nogpgcheck -y cortx-py-utils-test*.noarch.rpm && /opt/seagate/cortx/utils/bin/utils_setup test --config yaml:///etc/cortx/cluster.conf --plan sanity
                         """
