@@ -41,7 +41,7 @@ declare -A COMPONENT_LIST=(
                         echo "ERROR:git clone failed for "$component""
                 exit 1
                 fi
-                if [ $component == "cortx-hare" ] || [ $component == "cortx-sspl" ] || [ $component == "cortx-ha" ] || [ $component == "cortx-py-utils" ] || [ "$component" == "cortx-prereq" ] || [ "$component" == "cortx-rgw-integration" ]; then
+                if [ $component == "cortx-hare" ] || [ $component == "cortx-ha" ] || [ $component == "cortx-py-utils" ] || [ "$component" == "cortx-rgw-integration" ]; then
                         COMMIT_HASH=$(grep "$component-" RELEASE.INFO | head -1 | awk -F['_'] '{print $2}' | cut -d. -f1 |  sed 's/git//g'); echo $COMMIT_HASH
                 elif [ "$component" == "cortx-csm_agent" ]; then
                         COMMIT_HASH=$(grep "$component-" RELEASE.INFO | tail -1 | awk -F['_'] '{print $3}' |  cut -d. -f1); echo "$COMMIT_HASH"
