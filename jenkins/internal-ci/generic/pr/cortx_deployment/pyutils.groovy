@@ -71,171 +71,171 @@ pipeline {
     stages {
 
         // Build py_utils fromm PR source code
-        // stage('Build') {
-        //     steps {
-		// 		script { build_stage = env.STAGE_NAME }
-        //         script { manager.addHtmlBadge("&emsp;<b>Target Branch : ${BRANCH}</b>&emsp;<br />") }
+        stage('Build') {
+            steps {
+				script { build_stage = env.STAGE_NAME }
+                script { manager.addHtmlBadge("&emsp;<b>Target Branch : ${BRANCH}</b>&emsp;<br />") }
 
-        //         sh """
-        //             set +x
-        //             echo "--------------BUILD PARAMETERS -------------------"
-        //             echo "PY_UTILS_URL              = ${PY_UTILS_URL}"
-        //             echo "PY_UTILS_BRANCH           = ${PY_UTILS_BRANCH}"
-        //             echo "PY_UTILS_PR_REFSPEC       = ${PY_UTILS_PR_REFSPEC}"
-        //             echo "-----------------------------------------------------------"
-        //         """
+                sh """
+                    set +x
+                    echo "--------------BUILD PARAMETERS -------------------"
+                    echo "PY_UTILS_URL              = ${PY_UTILS_URL}"
+                    echo "PY_UTILS_BRANCH           = ${PY_UTILS_BRANCH}"
+                    echo "PY_UTILS_PR_REFSPEC       = ${PY_UTILS_PR_REFSPEC}"
+                    echo "-----------------------------------------------------------"
+                """
                  
-        //         dir("cortx_utils") {
+                dir("cortx_utils") {
 
-        //             checkout([$class: 'GitSCM', branches: [[name: "${PY_UTILS_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${PY_UTILS_URL}",  name: 'origin', refspec: "${PY_UTILS_PR_REFSPEC}"]]])
+                    checkout([$class: 'GitSCM', branches: [[name: "${PY_UTILS_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${PY_UTILS_URL}",  name: 'origin', refspec: "${PY_UTILS_PR_REFSPEC}"]]])
 
-        //             sh label: 'Build', script: '''
-        //                 yum install python36-devel -y
-        //                 ./jenkins/build.sh -v $VERSION -b $BUILD_NUMBER
-        //                 ./statsd-utils/jenkins/build.sh -v $VERSION -b $BUILD_NUMBER
-        //                 ./jenkins/build_test_rpm.sh -v $VERSION -b $BUILD_NUMBER    
-        //             '''
-        //         }
-        //     }
-        // }
+                    sh label: 'Build', script: '''
+                        yum install python36-devel -y
+                        ./jenkins/build.sh -v $VERSION -b $BUILD_NUMBER
+                        ./statsd-utils/jenkins/build.sh -v $VERSION -b $BUILD_NUMBER
+                        ./jenkins/build_test_rpm.sh -v $VERSION -b $BUILD_NUMBER    
+                    '''
+                }
+            }
+        }
 
-        // // Release cortx deployment stack
-        // stage('Release') {
-        //     steps {
-		// 		script { build_stage = env.STAGE_NAME }
-        //         echo "Creating Provisioner Release"
-        //         dir('cortx-re') {
-        //             checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 1, honorRefspec: true, noTags: true, reference: '', shallow: true], [$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
-        //         }
+        // Release cortx deployment stack
+        stage('Release') {
+            steps {
+				script { build_stage = env.STAGE_NAME }
+                echo "Creating Provisioner Release"
+                dir('cortx-re') {
+                    checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 1, honorRefspec: true, noTags: true, reference: '', shallow: true], [$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
+                }
 
-        //        // Install tools required for release process
-        //         sh label: 'Installed Dependecies', script: '''
-        //             yum install -y expect rpm-sign rng-tools python3-pip
-        //             #if [ "${OS_FAMILY}" == "rockylinux" ]
-        //             #then
-        //             #    ln -fs $(which python3.6) /usr/bin/python2
-        //             #else
-        //             #    echo "Using CentOS"
-        //             #fi
-        //             #systemctl start rngd
-        //         '''
+               // Install tools required for release process
+                sh label: 'Installed Dependecies', script: '''
+                    yum install -y expect rpm-sign rng-tools python3-pip
+                    #if [ "${OS_FAMILY}" == "rockylinux" ]
+                    #then
+                    #    ln -fs $(which python3.6) /usr/bin/python2
+                    #else
+                    #    echo "Using CentOS"
+                    #fi
+                    #systemctl start rngd
+                '''
 
-        //         // Integrate components rpms
-        //         sh label: 'Collect Release Artifacts', script: '''
-        //             set -x 
-        //             echo -e "Gathering all component RPM's and create release"
-        //             rm -rf "${DESTINATION_RELEASE_LOCATION}"
-        //             mkdir -p "${DESTINATION_RELEASE_LOCATION}"
-        //             mkdir -p "${CORTX_ISO_LOCATION}"
-        //             shopt -s extglob
-        //             ls
-        //             cp ./cortx_utils/py-utils/dist/!(*.src.rpm|*.tar.gz) "${CORTX_ISO_LOCATION}"
-        //             cp ./cortx_utils/py-utils/test/dist/!(*.src.rpm|*.tar.gz) "${CORTX_ISO_LOCATION}"
-        //             cp ./cortx_utils/statsd-utils/dist/rpmbuild/RPMS/x86_64/*.rpm "${CORTX_ISO_LOCATION}"
-        //             pushd ${COMPONENTS_RPM}
-        //                 for component in `ls -1 | grep -E -v "${COMPONENT_NAME}"`
-        //                 do
-        //                     echo -e "Copying RPM's for $component"
-        //                     if ls $component/last_successful/*.rpm 1> /dev/null 2>&1; then
-        //                         cp $component/last_successful/*.rpm "${CORTX_ISO_LOCATION}"
-        //                     fi
-        //                 done
-        //             popd
-        //             # Symlink 3rdparty repo artifacts
-        //             ln -s "${THIRD_PARTY_DEPS}" "${THIRD_PARTY_LOCATION}"
+                // Integrate components rpms
+                sh label: 'Collect Release Artifacts', script: '''
+                    set -x 
+                    echo -e "Gathering all component RPM's and create release"
+                    rm -rf "${DESTINATION_RELEASE_LOCATION}"
+                    mkdir -p "${DESTINATION_RELEASE_LOCATION}"
+                    mkdir -p "${CORTX_ISO_LOCATION}"
+                    shopt -s extglob
+                    ls
+                    cp ./cortx_utils/py-utils/dist/!(*.src.rpm|*.tar.gz) "${CORTX_ISO_LOCATION}"
+                    cp ./cortx_utils/py-utils/test/dist/!(*.src.rpm|*.tar.gz) "${CORTX_ISO_LOCATION}"
+                    cp ./cortx_utils/statsd-utils/dist/rpmbuild/RPMS/x86_64/*.rpm "${CORTX_ISO_LOCATION}"
+                    pushd ${COMPONENTS_RPM}
+                        for component in `ls -1 | grep -E -v "${COMPONENT_NAME}"`
+                        do
+                            echo -e "Copying RPM's for $component"
+                            if ls $component/last_successful/*.rpm 1> /dev/null 2>&1; then
+                                cp $component/last_successful/*.rpm "${CORTX_ISO_LOCATION}"
+                            fi
+                        done
+                    popd
+                    # Symlink 3rdparty repo artifacts
+                    ln -s "${THIRD_PARTY_DEPS}" "${THIRD_PARTY_LOCATION}"
                         
-        //             # Symlink python dependencies
-        //             ln -s "${PYTHON_DEPS}" "${PYTHON_LIB_LOCATION}"
-        //         '''
+                    # Symlink python dependencies
+                    ln -s "${PYTHON_DEPS}" "${PYTHON_LIB_LOCATION}"
+                '''
 
-        //         // sh label: 'RPM Signing', script: '''
-        //         //     pushd cortx-re/scripts/rpm-signing
-        //         //         cat gpgoptions >>  ~/.rpmmacros
-        //         //         sed -i 's/passphrase/'${PASSPHARASE}'/g' genkey-batch
-        //         //         gpg --batch --gen-key genkey-batch
-        //         //         gpg --export -a 'Seagate'  > RPM-GPG-KEY-Seagate
-        //         //         rpm --import RPM-GPG-KEY-Seagate
-        //         //     popd
-        //         //     pushd cortx-re/scripts/rpm-signing
-        //         //         chmod +x rpm-sign.sh
-        //         //         cp RPM-GPG-KEY-Seagate ${CORTX_ISO_LOCATION}
-        //         //         for rpm in `ls -1 ${CORTX_ISO_LOCATION}/*.rpm`
-        //         //         do
-        //         //             ./rpm-sign.sh ${PASSPHARASE} ${rpm}
-        //         //         done
-        //         //     popd
-        //         // '''
+                // sh label: 'RPM Signing', script: '''
+                //     pushd cortx-re/scripts/rpm-signing
+                //         cat gpgoptions >>  ~/.rpmmacros
+                //         sed -i 's/passphrase/'${PASSPHARASE}'/g' genkey-batch
+                //         gpg --batch --gen-key genkey-batch
+                //         gpg --export -a 'Seagate'  > RPM-GPG-KEY-Seagate
+                //         rpm --import RPM-GPG-KEY-Seagate
+                //     popd
+                //     pushd cortx-re/scripts/rpm-signing
+                //         chmod +x rpm-sign.sh
+                //         cp RPM-GPG-KEY-Seagate ${CORTX_ISO_LOCATION}
+                //         for rpm in `ls -1 ${CORTX_ISO_LOCATION}/*.rpm`
+                //         do
+                //             ./rpm-sign.sh ${PASSPHARASE} ${rpm}
+                //         done
+                //     popd
+                // '''
                 
-        //         sh label: 'Create Repo', script: '''
-        //             pushd ${CORTX_ISO_LOCATION}
-        //                 yum install -y createrepo
-        //                 createrepo .
-        //             popd
-        //         '''	
+                sh label: 'Create Repo', script: '''
+                    pushd ${CORTX_ISO_LOCATION}
+                        yum install -y createrepo
+                        createrepo .
+                    popd
+                '''	
 
-        //         sh label: 'Generate RELEASE.INFO', script: '''
-        //             echo -e "Creating release information files"
-        //             pushd cortx-re/scripts/release_support
-        //                 sh build_release_info.sh -v ${VERSION} -l ${CORTX_ISO_LOCATION} -t ${THIRD_PARTY_LOCATION}
-        //                 sed -i -e 's/BRANCH:.*/BRANCH: "py-utils-pr"/g' ${CORTX_ISO_LOCATION}/RELEASE.INFO
-        //                 sh build_readme.sh "${DESTINATION_RELEASE_LOCATION}"
-        //             popd
-        //             cp "${THIRD_PARTY_LOCATION}/THIRD_PARTY_RELEASE.INFO" "${DESTINATION_RELEASE_LOCATION}"
-        //             cp "${CORTX_ISO_LOCATION}/RELEASE.INFO" "${DESTINATION_RELEASE_LOCATION}"
-        //             cp "${CORTX_ISO_LOCATION}/RELEASE.INFO" .
-        //         '''	
+                sh label: 'Generate RELEASE.INFO', script: '''
+                    echo -e "Creating release information files"
+                    pushd cortx-re/scripts/release_support
+                        sh build_release_info.sh -v ${VERSION} -l ${CORTX_ISO_LOCATION} -t ${THIRD_PARTY_LOCATION}
+                        sed -i -e 's/BRANCH:.*/BRANCH: "py-utils-pr"/g' ${CORTX_ISO_LOCATION}/RELEASE.INFO
+                        sh build_readme.sh "${DESTINATION_RELEASE_LOCATION}"
+                    popd
+                    cp "${THIRD_PARTY_LOCATION}/THIRD_PARTY_RELEASE.INFO" "${DESTINATION_RELEASE_LOCATION}"
+                    cp "${CORTX_ISO_LOCATION}/RELEASE.INFO" "${DESTINATION_RELEASE_LOCATION}"
+                    cp "${CORTX_ISO_LOCATION}/RELEASE.INFO" .
+                '''	
 
-        //         archiveArtifacts artifacts: "RELEASE.INFO", onlyIfSuccessful: false, allowEmptyArchive: true	
-        //     }
+                archiveArtifacts artifacts: "RELEASE.INFO", onlyIfSuccessful: false, allowEmptyArchive: true	
+            }
 
-        // }
+        }
 
-        // // Deploy Cortx-Stack
-        // stage ("Build CORTX Images") {
-        //     steps {
-        //         script { build_stage = env.STAGE_NAME }
-        //         script {
-        //             try {
-        //                 def buildCortxAllImage = build job: 'cortx-docker-images-for-PR', wait: true,
-        //                     parameters: [
-        //                         string(name: 'CORTX_RE_URL', value: "${CORTX_RE_URL}"),
-        //                         string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
-        //                         string(name: 'BUILD', value: "${CORTX_BUILD}"),
-        //                         string(name: 'OS', value: "${OS_VERSION}"),
-        //                         string(name: 'CORTX_IMAGE', value: "${CORTX_IMAGE}"),
-        //                         string(name: 'GITHUB_PUSH', value: "yes"),
-        //                         string(name: 'TAG_LATEST', value: "no"),
-        //                         string(name: 'DOCKER_REGISTRY', value: "cortx-docker.colo.seagate.com"),
-        //                         string(name: 'EMAIL_RECIPIENTS', value: "DEBUG")
-        //                     ]
-        //                 env.cortx_all_image = buildCortxAllImage.buildVariables.cortx_all_image
-        //                 env.cortx_rgw_image = buildCortxAllImage.buildVariables.cortx_rgw_image
-        //             } catch (err) {
-        //                 build_stage = env.STAGE_NAME
-        //                 error "Failed to Build CORTX-ALL image"
-        //             }
-        //         }
-        //     }
-        // }
+        // Deploy Cortx-Stack
+        stage ("Build CORTX Images") {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                script {
+                    try {
+                        def buildCortxAllImage = build job: 'cortx-image', wait: true,
+                            parameters: [
+                                string(name: 'CORTX_RE_URL', value: "${CORTX_RE_URL}"),
+                                string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
+                                string(name: 'BUILD', value: "${CORTX_BUILD}"),
+                                string(name: 'OS', value: "${OS_VERSION}"),
+                                string(name: 'CORTX_IMAGE', value: "${CORTX_IMAGE}"),
+                                string(name: 'GITHUB_PUSH', value: "yes"),
+                                string(name: 'TAG_LATEST', value: "no"),
+                                string(name: 'DOCKER_REGISTRY', value: "cortx-docker.colo.seagate.com"),
+                                string(name: 'EMAIL_RECIPIENTS', value: "DEBUG")
+                            ]
+                        env.cortx_all_image = buildCortxAllImage.buildVariables.cortx_all_image
+                        env.cortx_rgw_image = buildCortxAllImage.buildVariables.cortx_rgw_image
+                    } catch (err) {
+                        build_stage = env.STAGE_NAME
+                        error "Failed to Build CORTX-ALL image"
+                    }
+                }
+            }
+        }
 
-        // stage ("Deploy Cortx Cluster") {
-        //     steps {
-        //         script { build_stage = env.STAGE_NAME }
-        //         script {
-        //             build job: "K8s-1N-deployment", wait: true,
-        //             parameters: [
-        //                 string(name: 'CORTX_RE_URL', value: "${CORTX_RE_URL}"),
-        //                 string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
-        //                 string(name: 'CORTX_ALL_IMAGE', value: "${env.cortx_all_image}"),
-        //                 string(name: 'CORTX_SERVER_IMAGE', value: "${env.cortx_rgw_image}"),
-        //                 string(name: 'CORTX_SCRIPTS_REPO', value: "Seagate/cortx-k8s"),
-        //                 string(name: 'CORTX_SCRIPTS_BRANCH', value: "${CORTX_SCRIPTS_BRANCH}"),
-        //                 string(name: 'hosts', value: "${host}"),
-        //                 string(name: 'EMAIL_RECIPIENTS', value: "DEBUG")
-        //             ]
-        //         }
-        //     }
-        // }
+        stage ("Deploy Cortx Cluster") {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                script {
+                    build job: "K8s-1N-deployment", wait: true,
+                    parameters: [
+                        string(name: 'CORTX_RE_URL', value: "${CORTX_RE_URL}"),
+                        string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
+                        string(name: 'CORTX_ALL_IMAGE', value: "${env.cortx_all_image}"),
+                        string(name: 'CORTX_SERVER_IMAGE', value: "${env.cortx_rgw_image}"),
+                        string(name: 'CORTX_SCRIPTS_REPO', value: "Seagate/cortx-k8s"),
+                        string(name: 'CORTX_SCRIPTS_BRANCH', value: "${CORTX_SCRIPTS_BRANCH}"),
+                        string(name: 'hosts', value: "${host}"),
+                        string(name: 'EMAIL_RECIPIENTS', value: "DEBUG")
+                    ]
+                }
+            }
+        }
 
         stage ("Test RPM") {
             steps {
@@ -253,6 +253,7 @@ pipeline {
                         def commandResult = sshCommand remote: remote, command: '''
                             DATA_POD="$(( kubectl get pods | grep "cortx-data" | awk '{print $1}' ) 2>&1)"
                             echo $DATA_POD
+                            wget ${CORTX_ISO_LOCATION}/cortx-py-utils-test*.noarch.rpm
                             kubectl exec $DATA_POD --container cortx-hax -- bash -c "yum install --nogpgcheck -y cortx-py-utils-test*.noarch.rpm && /opt/seagate/cortx/utils/bin/utils_setup test --config yaml:///etc/cortx/cluster.conf --plan sanity"
                         '''
                         echo "Result: " + commandResult

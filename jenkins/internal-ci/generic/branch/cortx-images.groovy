@@ -93,69 +93,64 @@ pipeline {
             }
         }
 
-        stage('Upstream Info') {
-            def upstream = currentBuild.rawBuild.getCause(hudson.model.Cause$UpstreamCause)
-            echo upstream?.shortDescription
+        stage('Build & push Image') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh encoding: 'utf-8', label: 'Build cortx-all docker image', script: """
+                    pushd ./docker/cortx-deploy
+                        if [ $GITHUB_PUSH == yes ] && [ $TAG_LATEST == yes ];then
+                                sh ./build.sh -b $BUILD -p yes -t yes -r $DOCKER_REGISTRY -e internal-ci -o $OS -s $CORTX_IMAGE
+                        elif [ $GITHUB_PUSH == yes ] && [ $TAG_LATEST == no ]; then
+                                 sh ./build.sh -b $BUILD -p yes -t no -r $DOCKER_REGISTRY -e internal-ci -o $OS -s $CORTX_IMAGE
+                        else
+                                 sh ./build.sh -b $BUILD -p no -e internal-ci -o $OS -s $CORTX_IMAGE
+                        fi
+                    popd
+                    docker logout  
+                """
+            }
         }
-
-        // stage('Build & push Image') {
-        //     steps {
-        //         script { build_stage = env.STAGE_NAME }
-        //         sh encoding: 'utf-8', label: 'Build cortx-all docker image', script: """
-        //             pushd ./docker/cortx-deploy
-        //                 if [ $GITHUB_PUSH == yes ] && [ $TAG_LATEST == yes ];then
-        //                         sh ./build.sh -b $BUILD -p yes -t yes -r $DOCKER_REGISTRY -e internal-ci -o $OS -s $CORTX_IMAGE
-        //                 elif [ $GITHUB_PUSH == yes ] && [ $TAG_LATEST == no ]; then
-        //                          sh ./build.sh -b $BUILD -p yes -t no -r $DOCKER_REGISTRY -e internal-ci -o $OS -s $CORTX_IMAGE
-        //                 else
-        //                          sh ./build.sh -b $BUILD -p no -e internal-ci -o $OS -s $CORTX_IMAGE
-        //                 fi
-        //             popd
-        //             docker logout  
-        //         """
-        //     }
-        // }
     }
 
-    // post {
+    post {
 
-    //     always {
-    //         cleanWs()
-    //         script {
+        always {
+            cleanWs()
+            script {
 
-    //             env.image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' --filter=reference='*/*/cortx*:[0-9]*' | head -3", returnStdout: true).trim()
-    //             println "${env.image}"
+                env.image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' --filter=reference='*/*/cortx*:[0-9]*' | head -3", returnStdout: true).trim()
+                println "${env.image}"
 
-    //             env.cortx_all_image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' --filter=reference='*/*/cortx-all:[0-9]*'", returnStdout: true).trim()
-    //             env.cortx_rgw_image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' --filter=reference='*/*/cortx-rgw:[0-9]*'", returnStdout: true).trim()
+                env.cortx_all_image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' --filter=reference='*/*/cortx-all:[0-9]*'", returnStdout: true).trim()
+                env.cortx_rgw_image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' --filter=reference='*/*/cortx-rgw:[0-9]*'", returnStdout: true).trim()
 
                 
-    //             env.build_stage = "${build_stage}"
+                env.build_stage = "${build_stage}"
                 
-    //             if ( params.DOCKER_REGISTRY == "ghcr.io" ) {
-    //                 env.docker_image_location = "https://github.com/orgs/Seagate/packages?repo_name=cortx"
-    //             } else if ( params.DOCKER_REGISTRY == "cortx-docker.colo.seagate.com" ) {
-    //                 env.docker_image_location = "http://cortx-docker.colo.seagate.com/harbor/projects/2/repositories"
-    //             }    
+                if ( params.DOCKER_REGISTRY == "ghcr.io" ) {
+                    env.docker_image_location = "https://github.com/orgs/Seagate/packages?repo_name=cortx"
+                } else if ( params.DOCKER_REGISTRY == "cortx-docker.colo.seagate.com" ) {
+                    env.docker_image_location = "http://cortx-docker.colo.seagate.com/harbor/projects/2/repositories"
+                }    
 
-    //             def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
-    //             if ( params.EMAIL_RECIPIENTS == "ALL" ) {
-    //                 mailRecipients = "cortx.sme@seagate.com, manoj.management.team@seagate.com, CORTX.SW.Architecture.Team@seagate.com, CORTX.DevOps.RE@seagate.com"
-    //             } else if ( params.EMAIL_RECIPIENTS == "DEVOPS" ) {
-    //                 mailRecipients = "CORTX.DevOps.RE@seagate.com"
-    //             } else if ( params.EMAIL_RECIPIENTS == "DEBUG" ) {
-    //                 mailRecipients = "shailesh.vaidya@seagate.com"
-    //             }
+                def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
+                if ( params.EMAIL_RECIPIENTS == "ALL" ) {
+                    mailRecipients = "cortx.sme@seagate.com, manoj.management.team@seagate.com, CORTX.SW.Architecture.Team@seagate.com, CORTX.DevOps.RE@seagate.com"
+                } else if ( params.EMAIL_RECIPIENTS == "DEVOPS" ) {
+                    mailRecipients = "CORTX.DevOps.RE@seagate.com"
+                } else if ( params.EMAIL_RECIPIENTS == "DEBUG" ) {
+                    mailRecipients = "shailesh.vaidya@seagate.com"
+                }
 
-    //             emailext ( 
-    //                 body: '''${SCRIPT, template="docker-image-email.template"}''',
-    //                 mimeType: 'text/html',
-    //                 subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
-    //                 attachLog: true,
-    //                 to: "${mailRecipients}",
-    //                 recipientProviders: recipientProvidersClass
-    //             )
-    //         }
-    //     }
-    // }
+                emailext ( 
+                    body: '''${SCRIPT, template="docker-image-email.template"}''',
+                    mimeType: 'text/html',
+                    subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
+                    attachLog: true,
+                    to: "${mailRecipients}",
+                    recipientProviders: recipientProvidersClass
+                )
+            }
+        }
+    }
 }
