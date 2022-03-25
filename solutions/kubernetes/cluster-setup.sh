@@ -72,7 +72,7 @@ function setup_cluster() {
 }
 
 function print_status() {
-    add_primary_separator "Print Node Status"
+    add_primary_separator "\t\tPrint Node Status"
     rm -rf /var/tmp/cluster-status.txt
     ssh_primary_node '/var/tmp/cluster-functions.sh --status' | tee /var/tmp/cluster-status.txt
 

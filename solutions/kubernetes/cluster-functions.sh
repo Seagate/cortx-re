@@ -72,7 +72,7 @@ function verify_os() {
 }
 
 function print_cluster_status() {
-    while kubectl get nodes | grep -v STATUS | awk '{print $2}' | tr '\n' ' ' | grep -q NotReady
+    while kubectl get nodes --no-headers | awk '{print $2}' | tr '\n' ' ' | grep -q NotReady
     do
 		sleep 5
     done

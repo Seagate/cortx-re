@@ -25,7 +25,7 @@ source /var/tmp/functions.sh
 SOLUTION_FILE="/root/deploy-scripts/k8_cortx_cloud/solution.yaml"
 
 function install_awscli() {
-   add_primary_separator "Install and setup awscli"
+   add_primary_separator "\tInstall and setup awscli"
 
    add_secondary_separator "Check and install pip3 if not present:"
    if ! which pip3; then
@@ -77,7 +77,7 @@ function setup_awscli() {
 }
 
 function run_io_sanity() {
-   add_primary_separator "Starting IO Sanity Testing"
+   add_primary_separator "\tStarting IO Sanity Testing"
 
    BUCKET="test-bucket"
    FILE1="file10mb"
@@ -129,7 +129,7 @@ function run_io_sanity() {
    rm -rf ~/.aws/credentials
    rm -rf ~/.aws/config
 
-   add_primary_separator "Successfully Passed IO Sanity Testing"
+   add_primary_separator "\tSuccessfully Passed IO Sanity Testing"
 }
 
 # Execution

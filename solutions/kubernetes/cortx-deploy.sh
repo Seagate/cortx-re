@@ -71,7 +71,7 @@ function pdsh_worker_exec() {
 }
 
 function setup_cluster() {
-    add_primary_separator "Setting up CORTX Cluster"
+    add_primary_separator "\tSetting up CORTX Cluster"
     echo  "Using $SOLUTION_CONFIG_TYPE type for generating solution.yaml"
 
     if [ "$SOLUTION_CONFIG_TYPE" == manual ]; then
@@ -111,7 +111,7 @@ function setup_cluster() {
 
     # Deploy CORTX CLuster (deploy-cortx-cloud.sh) :
     ssh_primary_node "/var/tmp/cortx-deploy-functions.sh --$TARGET"
-    add_primary_separator "Print Cluster Status"
+    add_primary_separator "\tPrint Cluster Status"
     rm -rf /var/tmp/cortx-cluster-status.txt
     ssh_primary_node '/var/tmp/cortx-deploy-functions.sh --status' | tee /var/tmp/cortx-cluster-status.txt
 }
@@ -144,7 +144,7 @@ function io-sanity() {
         if [ -f '$SOLUTION_CONFIG' ]; then echo "file $SOLUTION_CONFIG not available..."; exit 1; fi
     fi
 
-    add_primary_separator "Setting up IO Sanity Testing"
+    add_primary_separator "\tSetting up IO Sanity Testing"
     scp_primary_node io-sanity.sh
     ssh_primary_node "/var/tmp/cortx-deploy-functions.sh --io-sanity"
 }
