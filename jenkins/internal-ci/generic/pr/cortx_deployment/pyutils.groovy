@@ -240,17 +240,22 @@ pipeline {
         stage ("Test RPM") {
             steps {
                 script {
-                    sh label: 'Run unit-tests', script: '''
-                        echo "${host}" | sed 's/,/ /g' | sed 's/=/ /g' |  awk -F ' ' '{ print $2" "$4" "$6 }' > server_info.txt
-                        NODE_HOST=$( cat server_info.txt | awk -F ' ' '{ print $1 }')
-                        NODE_USER=$( cat server_info.txt | awk -F ' ' '{ print $2 }')
-                        NODE_PASS=$( cat server_info.txt | awk -F ' ' '{ print $3 }')
-                        yum install sshpass -y
-                        sshpass -p ${NODE_PASS} ssh -o StrictHostKeyChecking=no ${NODE_USER}@${NODE_HOST} <<EOF
-DATA_POD='$(kubectl get pods | grep "cortx-data" | awk '{print$1}')' 
-kubectl exec $DATA_POD --container cortx-hax -- bash -c "yum install --nogpgcheck -y cortx-py-utils-test*.noarch.rpm && /opt/seagate/cortx/utils/bin/utils_setup test --config yaml:///etc/cortx/cluster.conf --plan sanity"
-EOF
-                    '''
+                        NODE_HOST = sh( script: '''
+                            echo $host | tr ' ' '\n' | head -1 | awk -F["="] '{print $2}' | cut -d',' -f1    
+                        ''', returnStdout: true).trim()
+                        NODE_USER = sh( script: '''
+                            echo $host | tr ' ' '\n' | head -1 | awk -F["="] '{print $3}' | cut -d',' -f1    
+                        ''', returnStdout: true).trim()
+                        NODE_PASS = sh( script: '''
+                            echo $host | tr ' ' '\n' | head -1 | awk -F["="] '{print $4}' | cut -d',' -f1    
+                        ''', returnStdout: true).trim()
+                        def remote = getRemoteMachine(NODE_HOST, NODE_USER, NODE_PASS)
+                        def commandResult = sshCommand remote: remote, command: """
+                            DATA_POD=\$(( kubectl get pods | grep "cortx-data" | awk '{print$1}' ) 2>&1)
+                            echo $DATA_POD
+                            kubectl exec $DATA_POD --container cortx-hax -- bash -c "yum install --nogpgcheck -y cortx-py-utils-test*.noarch.rpm && /opt/seagate/cortx/utils/bin/utils_setup test --config yaml:///etc/cortx/cluster.conf --plan sanity
+                        """
+                        echo "Result: " + commandResult
                 }
             }
         }
@@ -268,4 +273,15 @@ EOF
             }  
         }
     }
+}
+
+def getRemoteMachine(String host, String VM_USR, String VM_PWD) {
+    def remote = [:]
+    remote.name = 'cortx-vm'
+    remote.host = host
+    remote.user =  VM_USR
+    remote.password = VM_PWD
+    remote.allowAnyHosts = true
+    remote.fileTransfer = 'scp'
+    return remote
 }
