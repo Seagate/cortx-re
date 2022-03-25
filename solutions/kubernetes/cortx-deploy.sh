@@ -149,6 +149,11 @@ function support_bundle(){
 }
 
 function destroy-cluster(){
+    if [ "$SOLUTION_CONFIG_TYPE" == manual ]; then
+        SOLUTION_CONFIG="$PWD/solution.yaml"
+        if [ -f '$SOLUTION_CONFIG' ]; then echo "file $SOLUTION_CONFIG not available..."; exit 1; fi
+    fi
+
     validation
     generate_rsa_key
     nodes_setup
@@ -175,7 +180,7 @@ function io-test(){
         do
         # IO test
         add_separator Setting up IO testing
-        scp -q io-testing.sh s3-client-setup.sh "$primary_node":/var/tmp/
+        scp -q io-testing.sh "$primary_node":/var/tmp/
         ssh -o 'StrictHostKeyChecking=no' "$primary_node" "export DEPLOYMENT_TYPE=$DEPLOYMENT_TYPE && /var/tmp/cortx-deploy-functions.sh --io-test"
         done
 }

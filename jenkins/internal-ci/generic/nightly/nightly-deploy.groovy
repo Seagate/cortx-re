@@ -12,12 +12,13 @@ pipeline {
         disableConcurrentBuilds()
     }
     environment {
-        CORTX_RE_BRANCH = "rocky-linux-custom-ci"
-        CORTX_RE_REPO = "https://github.com/shailesh-vaidya/cortx-re"
+        CORTX_RE_BRANCH = "main"
+        CORTX_RE_REPO = "https://github.com/Seagate/cortx-re"
         DOCKER_IMAGE_LOCATION = "https://github.com/Seagate/cortx-re/pkgs/container/cortx-all"
         LOCAL_REG_CRED = credentials('local-registry-access')
         GITHUB_CRED = credentials('shailesh-github')
         VERSION = "2.0.0"
+        last_success_build_number = getBuild(JOB_URL)
     }
     parameters {
         string(name: 'CORTX_ALL_IMAGE', defaultValue: 'cortx-docker.colo.seagate.com/seagate/cortx-all:2.0.0-latest', description: 'CORTX-ALL image', trim: true)
@@ -28,7 +29,7 @@ pipeline {
             name: 'EMAIL_RECIPIENTS'
         )
     }
-    // Please configure hosts,SNS and DIX parameter in Jenkins job configuration.
+    // Please configure hosts,SNS, CORTX_SCRIPTS_REPO, CORTX_SCRIPTS_BRANCH and DIX parameter in Jenkins job configuration.
     stages {
         stage ("Define Variable") {
             steps {
@@ -53,32 +54,33 @@ pipeline {
                 }
             }
         }
-
+        
         stage ("Deploy CORTX Cluster") {
             steps {
-                script { build_stage = env.STAGE_NAME }
-                script {
-                    def cortxCluster = build job: '/Cortx-Automation/RGW/setup-cortx-rgw-cluster', wait: true,
-                    parameters: [
-                        string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
-                        string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
-                        string(name: 'CORTX_ALL_IMAGE', value: "${CORTX_ALL_IMAGE}"),
-                        string(name: 'CORTX_SERVER_IMAGE', value: "${CORTX_SERVER_IMAGE}"),
-                        text(name: 'hosts', value: "${hosts}"),
-                        string(name: 'CORTX_SCRIPTS_BRANCH', value: "${CORTX_SCRIPTS_BRANCH}"),
-                        string(name: 'CORTX_SCRIPTS_REPO', value: "${CORTX_SCRIPTS_REPO}"),
-                        string(name: 'EXTERNAL_EXPOSURE_SERVICE', value: "NodePort"),
-                        string(name: 'SNS_CONFIG', value: "${SNS_CONFIG}"),
-                        string(name: 'DIX_CONFIG', value: "${DIX_CONFIG}")
-                    ]
-                    env.cortxcluster_build_url = cortxCluster.absoluteUrl
-                    env.cortxCluster_status = cortxCluster.currentResult
+                catchError(stageResult: 'FAILURE') {
+                    script { build_stage = env.STAGE_NAME }
+                    script {
+                        def cortxCluster = build job: '/Cortx-Automation/RGW/setup-cortx-rgw-cluster', wait: true,
+                        parameters: [
+                            string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
+                            string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
+                            string(name: 'CORTX_ALL_IMAGE', value: "${CORTX_ALL_IMAGE}"),
+                            string(name: 'CORTX_SERVER_IMAGE', value: "${CORTX_SERVER_IMAGE}"),
+                            text(name: 'hosts', value: "${hosts}"),
+                            string(name: 'CORTX_SCRIPTS_BRANCH', value: "${CORTX_SCRIPTS_BRANCH}"),
+                            string(name: 'CORTX_SCRIPTS_REPO', value: "${CORTX_SCRIPTS_REPO}"),
+                            string(name: 'EXTERNAL_EXPOSURE_SERVICE', value: "NodePort"),
+                            string(name: 'SNS_CONFIG', value: "${SNS_CONFIG}"),
+                            string(name: 'DIX_CONFIG', value: "${DIX_CONFIG}")
+                        ]
+                        env.cortxcluster_build_url = cortxCluster.absoluteUrl
+                        env.cortxCluster_status = cortxCluster.currentResult
+                    }
                 }
             }
         }
 
         stage('Push Image to GitHub') {
-            when { expression { false } }
             agent {
                 node {
                 label 'docker-image-builder-centos-7.9.2009'
@@ -89,27 +91,45 @@ pipeline {
                    systemctl status docker
                    /usr/local/bin/docker-compose --version
                    echo \'y\' | docker image prune
-                   docker pull $CORTX_IMAGE
+                   docker pull $CORTX_ALL_IMAGE
+                   docker pull $CORTX_SERVER_IMAGE
 
                    echo "\n RPM Build URL used for Nightly Image"
-                   docker inspect $CORTX_IMAGE | jq -r '.[] | (.ContainerConfig.Cmd)' | grep 'BUILD_URL='
-
+                   docker inspect $CORTX_ALL_IMAGE | jq -r '.[] | (.ContainerConfig.Cmd)' | grep 'BUILD_URL='
+                   docker inspect $CORTX_SERVER_IMAGE | jq -r '.[] | (.ContainerConfig.Cmd)' | grep 'BUILD_URL='
                    #Update VERSION details in RELEASE.INFO file
 
-                   docker commit $(docker run -d ${CORTX_IMAGE} sed -i /VERSION/s/\\"2.0.0.*\\"/\\"${VERSION}-${BUILD_NUMBER}\\"/ /opt/seagate/cortx/RELEASE.INFO) ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}
-
+                   docker commit $(docker run -d ${CORTX_ALL_IMAGE} sed -i /VERSION/s/\\"2.0.0.*\\"/\\"${VERSION}-${BUILD_NUMBER}\\"/ /opt/seagate/cortx/RELEASE.INFO) ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}
+                   docker commit $(docker run -d ${CORTX_SERVER_IMAGE} sed -i /VERSION/s/\\"2.0.0.*\\"/\\"${VERSION}-${BUILD_NUMBER}\\"/ /opt/seagate/cortx/RELEASE.INFO) ghcr.io/seagate/cortx-rgw:${VERSION}-${BUILD_NUMBER} 
 
                    docker tag ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER} ghcr.io/seagate/cortx-all:${VERSION}-latest
+                   docker tag ghcr.io/seagate/cortx-rgw:${VERSION}-${BUILD_NUMBER} ghcr.io/seagate/cortx-rgw:${VERSION}-latest
 
                    docker login ghcr.io -u ${GITHUB_CRED_USR} -p ${GITHUB_CRED_PSW}
-                   
-                   docker push ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}
-                   docker push ghcr.io/seagate/cortx-all:${VERSION}-latest
-                   
+
+                   docker push ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER} && docker push ghcr.io/seagate/cortx-all:${VERSION}-latest
+                   docker push ghcr.io/seagate/cortx-rgw:${VERSION}-${BUILD_NUMBER} && docker push ghcr.io/seagate/cortx-rgw:${VERSION}-latest
+
                    docker rmi ghcr.io/seagate/cortx-all:${VERSION}-latest
+                   docker rmi ghcr.io/seagate/cortx-rgw:${VERSION}-latest
                    docker rmi ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}
+                   docker rmi ghcr.io/seagate/cortx-rgw:${VERSION}-${BUILD_NUMBER}
                 '''
            }
+        }
+
+        stage ("Changesetlog generation") {
+            steps {
+                script {
+                    def changelog = build job: '/Release_Engineering/Cortx-Automation/changelog-generation', wait: true, propagate: false,
+                    parameters: [
+                        string(name: 'BUILD_FROM', value: "ghcr.io/seagate/cortx-all:${VERSION}-${last_success_build_number}"),
+                        string(name: 'BUILD_TO', value: "ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}"),
+                    ]
+                    env.changeset_log_url = changelog.absoluteUrl
+                    copyArtifacts filter: 'CHANGESET.txt', fingerprintArtifacts: true, flatten: true, optional: true, projectName: '/Release_Engineering/Cortx-Automation/changelog-generation', selector: lastCompleted(), target: ''
+                }
+            }
         }
 
         stage ("K8s QA Sanity") {
@@ -120,7 +140,7 @@ pipeline {
                         parameters: [
                             string(name: 'M_NODE', value: "${env.master_node}"),
                             password(name: 'HOST_PASS', value: "${env.hostpasswd}"),
-                            string(name: 'CORTX_IMAGE', value: "ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}}"),
+                            string(name: 'CORTX_IMAGE', value: "ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}"),
                             string(name: 'NUM_NODES', value: "${env.numberofnodes}")
                         ]
                         env.Sanity_Failed = qaSanity.buildVariables.Sanity_Failed
@@ -129,6 +149,11 @@ pipeline {
                         env.Health = qaSanity.buildVariables.Health
                         env.qaSanity_status = qaSanity.currentResult
                         env.qaSanityK8sJob_URL = qaSanity.absoluteUrl
+                        env.totalcount = qaSanity.buildVariables.totalcount
+                        env.passcount = qaSanity.buildVariables.passcount
+                        env.failcount = qaSanity.buildVariables.failcount
+                        env.skipcount = qaSanity.buildVariables.skipcount
+                        env.todocount = qaSanity.buildVariables.todocount
                     }
                     copyArtifacts filter: 'log/*report.xml', fingerprintArtifacts: true, flatten: true, optional: true, projectName: 'QA-Sanity-Multinode-RGW', selector: lastCompleted(), target: 'log/'
                     copyArtifacts filter: 'log/*report.html', fingerprintArtifacts: true, flatten: true, optional: true, projectName: 'QA-Sanity-Multinode-RGW', selector: lastCompleted(), target: 'log/'
@@ -145,6 +170,7 @@ pipeline {
                 junit allowEmptyResults: true, testResults: '*report.xml'
                 echo "${env.cortxCluster_status}"
                 echo "${env.qaSanity_status}"
+                env.changeset_log_url = sh( script: "echo ${env.changeset_log_url}artifact/CHANGESET.txt", returnStdout: true)
                 if ( "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "SUCCESS" ) {
                     MESSAGE = "K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=Passed, SanityTest=Passed, Regression=Passed"
                     ICON = "accept.gif"
@@ -185,22 +211,22 @@ pipeline {
                 }
                 env.build_setupcortx_url = sh( script: "echo ${env.cortxcluster_build_url}/artifact/artifacts/cortx-cluster-status.txt", returnStdout: true)
                 env.host = "${env.allhost}"
-                env.build_id = "ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}}"
+                env.build_id = "ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}"
                 env.build_location = "${DOCKER_IMAGE_LOCATION}"
                 env.deployment_status = "${MESSAGE}"
                 env.cluster_status = "${env.build_setupcortx_url}"
                 env.cortx_script_branch = "${CORTX_SCRIPTS_BRANCH}"
-                env.CORTX_DOCKER_IMAGE = "ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}}"
+                env.CORTX_DOCKER_IMAGE = "ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}"
 
                 if ( params.EMAIL_RECIPIENTS == "ALL" && currentBuild.result == "SUCCESS" ) {
                     mailRecipients = "CORTX.All@seagate.com"
                     //mailRecipients = "cortx.sme@seagate.com, manoj.management.team@seagate.com, CORTX.SW.Architecture.Team@seagate.com, CORTX.DevOps.RE@seagate.com"
                 }
                 else if ( params.EMAIL_RECIPIENTS == "ALL" && currentBuild.result == "UNSTABLE" ) {
-                    mailRecipients = "Cortx.Perf@seagate.com, akhil.bhansali@seagate.com, amit.kapil@seagate.com, amol.j.kongre@seagate.com, deepak.choudhary@seagate.com, jaikumar.gidwani@seagate.com, mandar.joshi@seagate.com, neerav.choudhari@seagate.com, pranay.kumar@seagate.com, swarajya.pendharkar@seagate.com, taizun.a.kachwala@seagate.com, trupti.patil@seagate.com, ujjwal.lanjewar@seagate.com, shailesh.vaidya@seagate.com, abhijit.patil@seagate.com, sonal.kalbende@seagate.com, gaurav.chaudhari@seagate.com, mukul.malhotra@seagate.com, swanand.s.gadre@seagate.com, don.r.bloyer@seagate.com, kalpesh.chhajed@seagate.com "
+                    mailRecipients = "Cortx.Perf@seagate.com, akhil.bhansali@seagate.com, amit.kapil@seagate.com, amol.j.kongre@seagate.com, deepak.choudhary@seagate.com, jaikumar.gidwani@seagate.com, mandar.joshi@seagate.com, neerav.choudhari@seagate.com, pranay.kumar@seagate.com, swarajya.pendharkar@seagate.com, taizun.a.kachwala@seagate.com, trupti.patil@seagate.com, ujjwal.lanjewar@seagate.com, shailesh.vaidya@seagate.com, abhijit.patil@seagate.com, sonal.kalbende@seagate.com, gaurav.chaudhari@seagate.com, mukul.malhotra@seagate.com, swanand.s.gadre@seagate.com, don.r.bloyer@seagate.com, chandradhar.raval@seagate.com, pankaj.g.borole@seagate.com "
                 }
                 else if ( params.EMAIL_RECIPIENTS == "ALL" && currentBuild.result == "FAILURE" ) {
-                    mailRecipients = "akhil.bhansali@seagate.com, amit.kapil@seagate.com, amol.j.kongre@seagate.com, deepak.choudhary@seagate.com, jaikumar.gidwani@seagate.com, mandar.joshi@seagate.com, neerav.choudhari@seagate.com, pranay.kumar@seagate.com, swarajya.pendharkar@seagate.com, taizun.a.kachwala@seagate.com, trupti.patil@seagate.com, ujjwal.lanjewar@seagate.com, shailesh.vaidya@seagate.com, abhijit.patil@seagate.com, sonal.kalbende@seagate.com, gaurav.chaudhari@seagate.com, mukul.malhotra@seagate.com, swanand.s.gadre@seagate.com, don.r.bloyer@seagate.com, kalpesh.chhajed@seagate.com "
+                    mailRecipients = "akhil.bhansali@seagate.com, amit.kapil@seagate.com, amol.j.kongre@seagate.com, deepak.choudhary@seagate.com, jaikumar.gidwani@seagate.com, mandar.joshi@seagate.com, neerav.choudhari@seagate.com, pranay.kumar@seagate.com, swarajya.pendharkar@seagate.com, taizun.a.kachwala@seagate.com, trupti.patil@seagate.com, ujjwal.lanjewar@seagate.com, shailesh.vaidya@seagate.com, abhijit.patil@seagate.com, sonal.kalbende@seagate.com, gaurav.chaudhari@seagate.com, mukul.malhotra@seagate.com, swanand.s.gadre@seagate.com, don.r.bloyer@seagate.com, chandradhar.raval@seagate.com, pankaj.g.borole@seagate.com "
                 }
                 else if ( params.EMAIL_RECIPIENTS == "DEVOPS" && currentBuild.result == "SUCCESS" ) {
                     mailRecipients = "CORTX.All@seagate.com, CORTX.DevOps.RE@seagate.com"
@@ -216,9 +242,9 @@ pipeline {
                 }               
 
                 catchError(stageResult: 'FAILURE') {
-                    archiveArtifacts allowEmptyArchive: true, artifacts: 'log/*report.xml, log/*report.html, support_bundle/*.tar, crash_files/*.gz', followSymlinks: false
+                    archiveArtifacts allowEmptyArchive: true, artifacts: 'log/*report.xml, log/*report.html, support_bundle/*.tar, crash_files/*.gz, CHANGESET.txt', followSymlinks: false
                     emailext (
-                        body: '''${SCRIPT, template="K8s-deployment-email_2.template"}${SCRIPT, template="REL_QA_SANITY_CUS_EMAIL_RETEAM_5.template"}''',
+                        body: '''${SCRIPT, template="K8s-deployment-email_2.template"}${SCRIPT, template="REL_QA_SANITY_CUS_EMAIL_6.template"}''',
                         mimeType: 'text/html',
                         subject: "${MESSAGE}",
                         to: "${mailRecipients}",
@@ -229,4 +255,9 @@ pipeline {
             }
         }
     }
+}
+
+def getBuild(job_url) {
+    buildID = sh(script: "curl -XGET -k '${job_url}/api/json' | jq -r '.lastSuccessfulBuild.number'", returnStdout: true).trim()
+    return "$buildID"   
 }
