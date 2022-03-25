@@ -26,10 +26,7 @@ declare -A COMPONENT_LIST=(
                         [cortx-csm_agent]="https://$PASSWD@github.com/Seagate/cortx-manager.git"
                         [cortx-py-utils]="https://$PASSWD@github.com/Seagate/cortx-utils.git"
                         [cortx-rgw-integration]="https://$PASSWD@github.com/Seagate/cortx-rgw-integration.git"
-                        [cortx-rgw]="https://$PASSWD@github.com/Seagate/cortx-rgw.git"
-                        [cortx-prereq]="https://$PASSWD@github.com/Seagate/cortx-re.git"
-                        [cortx-sspl]="https://$PASSWD@github.com/Seagate/cortx-monitor.git"
-                        [cortx-csm_web]="https://$PASSWD@github.com/Seagate/cortx-management-portal.git"
+                        [ceph-base]="https://$PASSWD@github.com/Seagate/cortx-rgw.git"
                 )
         git config --global user.email "cortx-application@seagate.com"
         git config --global user.name "cortx-admin"
@@ -50,6 +47,8 @@ declare -A COMPONENT_LIST=(
                         COMMIT_HASH=$(grep "$component-" RELEASE.INFO | tail -1 | awk -F['_'] '{print $3}' |  cut -d. -f1); echo "$COMMIT_HASH"
                 elif [ "$component" == "cortx-provisioner" ] || [ "$component" == "cortx-motr" ]; then
                         COMMIT_HASH=$(grep "$component-" RELEASE.INFO | tail -1 | awk -F['_'] '{print $2}' | sed 's/git//g' | cut -d. -f1); echo $COMMIT_HASH
+                elif [ "$component" == "ceph-base" ]; then
+                        COMMIT_HASH=$(grep "$component-" RELEASE.INFO | awk -F['-'] '{print $5}'  | cut -d. -f2 | sed s/g//g); echo "$COMMIT_HASH"
                 else
                         COMMIT_HASH=$(grep "$component-" RELEASE.INFO | head -1 | awk -F['_'] '{print $2}' | sed 's/git//g'); echo $COMMIT_HASH
                 fi
