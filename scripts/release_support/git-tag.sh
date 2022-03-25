@@ -19,7 +19,6 @@
 #
 
 declare -A COMPONENT_LIST=(
-                        [cortx-s3server]="https://$PASSWD@github.com/Seagate/cortx-s3server.git"
                         [cortx-motr]="https://$PASSWD@github.com/Seagate/cortx-motr.git"
                         [cortx-hare]="https://$PASSWD@github.com/Seagate/cortx-hare.git"
                         [cortx-ha]="https://$PASSWD@github.com/Seagate/cortx-ha.git"
@@ -29,6 +28,8 @@ declare -A COMPONENT_LIST=(
                         [cortx-csm_web]="https://$PASSWD@github.com/Seagate/cortx-management-portal.git"
                         [cortx-py-utils]="https://$PASSWD@github.com/Seagate/cortx-utils.git"
                         [cortx-prereq]="https://$PASSWD@github.com/Seagate/cortx-re.git"
+                        [cortx-rgw]="https://$PASSWD@github.com/Seagate/cortx-rgw.git"
+                        [cortx-rgw-integration]="https://$PASSWD@github.com/Seagate/cortx-rgw-integration.git"
                 )
 
         git config --global user.email "cortx-application@seagate.com"
