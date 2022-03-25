@@ -196,7 +196,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 script {
                     try {
-                        def buildCortxAllImage = build job: 'cortx-image', wait: true,
+                        def buildCortxAllImage = build job: 'cortx-docker-images-for-PR', wait: true,
                             parameters: [
                                 string(name: 'CORTX_RE_URL', value: "${CORTX_RE_URL}"),
                                 string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
@@ -253,8 +253,12 @@ pipeline {
                         def commandResult = sshCommand remote: remote, command: '''
                             DATA_POD="$(( kubectl get pods | grep "cortx-data" | awk '{print $1}' ) 2>&1)"
                             echo $DATA_POD
-                            wget ${CORTX_ISO_LOCATION}/cortx-py-utils-test*.noarch.rpm
-                            kubectl exec $DATA_POD --container cortx-hax -- bash -c "yum install --nogpgcheck -y cortx-py-utils-test*.noarch.rpm && /opt/seagate/cortx/utils/bin/utils_setup test --config yaml:///etc/cortx/cluster.conf --plan sanity"
+                            kubectl exec $DATA_POD --container cortx-hax -- bash -c "yum install -y wget \
+                                && UTILS_TEST_RPM="$(grep "cortx-py-utils-test" < RELEASE.INFO | awk -d['"'] '{print $2}' | tr -d '"')"
+                                && wget ${CORTX_ISO_LOCATION}/cortx-py-utils-test-2.0.0-12_68a0829.noarch.rpm \
+                                && yum install --nogpgcheck -y cortx-py-utils-test-2.0.0-12_68a0829.noarch.rpm \
+                                && /opt/seagate/cortx/utils/bin/utils_setup test --config yaml:///etc/cortx/cluster.conf --plan sanity \
+                                && cat /tmp/py_utils_test_report.html"
                         '''
                         echo "Result: " + commandResult
                 }
