@@ -23,7 +23,7 @@ pipeline {
     parameters {
         string(name: 'CORTX_ALL_IMAGE', defaultValue: 'cortx-docker.colo.seagate.com/seagate/cortx-all:2.0.0-latest', description: 'CORTX-ALL image', trim: true)
         string(name: 'CORTX_SERVER_IMAGE', defaultValue: 'cortx-docker.colo.seagate.com/seagate/cortx-rgw:2.0.0-latest', description: 'CORTX-SERVER image', trim: true)
-        string(name: 'CORTX_DATA_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-data:2.0.0-latest', description: 'CORTX-DATA image', trim: true)
+        string(name: 'CORTX_DATA_IMAGE', defaultValue: 'cortx-docker.colo.seagate.com/seagate/cortx-data:2.0.0-latest', description: 'CORTX-DATA image', trim: true)
         choice (
             choices: ['ALL', 'DEVOPS', 'DEBUG'],
             description: 'Email Notification Recipients ',

@@ -101,9 +101,9 @@ pipeline {
                         if [ $GITHUB_PUSH == yes ] && [ $TAG_LATEST == yes ];then
                                 sh ./build.sh -b $BUILD -p yes -t yes -r $DOCKER_REGISTRY -e internal-ci -o $OS -s $CORTX_IMAGE
                         elif [ $GITHUB_PUSH == yes ] && [ $TAG_LATEST == no ]; then
-                                 sh ./build.sh -b $BUILD -p yes -t no -r $DOCKER_REGISTRY -e internal-ci -o $OS -s $CORTX_IMAGE
+                                sh ./build.sh -b $BUILD -p yes -t no -r $DOCKER_REGISTRY -e internal-ci -o $OS -s $CORTX_IMAGE
                         else
-                                 sh ./build.sh -b $BUILD -p no -e internal-ci -o $OS -s $CORTX_IMAGE
+                                sh ./build.sh -b $BUILD -p no -e internal-ci -o $OS -s $CORTX_IMAGE
                         fi
                     popd
                     docker logout  
