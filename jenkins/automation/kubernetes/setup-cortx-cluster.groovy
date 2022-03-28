@@ -99,7 +99,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Perform IO Sanity Test', script: '''
                     pushd solutions/kubernetes/
-                        ./cortx-deploy.sh --io-test
+                        ./cortx-deploy.sh --io-sanity
                     popd
                 '''
             }
