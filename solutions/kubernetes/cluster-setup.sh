@@ -22,27 +22,24 @@ source functions.sh
 
 HOST_FILE=$PWD/hosts
 SSH_KEY_FILE=/root/.ssh/id_rsa
+ALL_NODES=$(cat "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+WORKER_NODES=$(cat "$HOST_FILE" | grep -v "$PRIMARY_NODE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
 UNTAINT="$1"
 
-function setup_cluster {
-
+function setup_cluster() {
     validation
     generate_rsa_key
     nodes_setup
+    k8s_deployment_type "$UNTAINT"
 
-    ALL_NODES=$(cat "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
-    PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
-    WORKER_NODES=$(cat "$HOST_FILE" | grep -v "$PRIMARY_NODE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
-
-    echo "---------------[ Setting up kubernetes cluster for following nodes ]--------------------------------------"
+    add_primary_separator "Setting up kubernetes cluster for following nodes"
     echo PRIMARY NODE="$PRIMARY_NODE"
     echo WORKER NODES="$WORKER_NODES"
-    echo "------------------------------------------------------------------------------------------------------"
+    add_common_separator
 
-    for node in $ALL_NODES
-	do 
-	    scp -q cluster-functions.sh functions.sh "$node":/var/tmp/
-	done
+    # Copy scripts to all nodes:
+    scp_all_nodes cluster-functions.sh functions.sh
 
     echo $ALL_NODES > /var/tmp/pdsh-hosts
 
@@ -51,39 +48,41 @@ function setup_cluster {
     # Prepare nodes:
     pdsh -w ^/var/tmp/pdsh-hosts '/var/tmp/cluster-functions.sh --prepare'
 
-    echo "---------------------------------------[ Preparing Primary Node $PRIMARY_NODE ]--------------------------------------"
-    ssh -o 'StrictHostKeyChecking=no' "$PRIMARY_NODE" "/var/tmp/cluster-functions.sh --primary ${UNTAINT}"
+    add_secondary_separator "Setup Primary Node $PRIMARY_NODE"
+    ssh_primary_node "/var/tmp/cluster-functions.sh --primary ${UNTAINT}"
     check_status
-    sleep 10 #To be replaced with status check
-    JOIN_COMMAND=$(ssh -o 'StrictHostKeyChecking=no' "$PRIMARY_NODE" 'kubeadm token create --print-join-command --description "Token to join worker nodes"')
+    sleep 10 # To be replaced with status check
+    JOIN_COMMAND=$(ssh_primary_node 'kubeadm token create --print-join-command --description "Token to join worker nodes"')
     check_status "Failed fetch cluster join command"
 
-    echo $WORKER_NODES > /var/tmp/pdsh-hosts
-    # Join worker nodes.
-    JOIN_WORKER="/var/tmp/cluster-functions.sh --join-worker-nodes $JOIN_COMMAND"
-    pdsh -w ^/var/tmp/pdsh-hosts "$JOIN_WORKER"
+    if [ "$SINGLE_NODE_DEPLOYMENT" == "False" ]; then
+        add_secondary_separator "Setup Worker Nodes"
+        echo $WORKER_NODES | tee /var/tmp/pdsh-hosts
+        # Join worker nodes.
+        JOIN_WORKER="/var/tmp/cluster-functions.sh --join-worker-nodes $JOIN_COMMAND"
+        pdsh -w ^/var/tmp/pdsh-hosts "$JOIN_WORKER"
 
-    # Label worker nodes.
-    for worker_node in $WORKER_NODES
-    do
-        ssh -o 'StrictHostKeyChecking=no' "$PRIMARY_NODE" "kubectl label node $worker_node" node-role.kubernetes.io/worker=worker
-        check_status "Failed to lable $worker_node"
-    done
+        # Label worker nodes.
+        for worker_node in $WORKER_NODES
+            do
+                ssh_primary_node "kubectl label node $worker_node" node-role.kubernetes.io/worker=worker
+                check_status "Failed to label $worker_node"
+            done
+    fi
 }
 
-function print_status {
-
-    echo "---------------------------------------[ Print Node status ]----------------------------------------------"
+function print_status() {
+    add_primary_separator "\t\tPrint Node Status"
     rm -rf /var/tmp/cluster-status.txt
-    ssh -o 'StrictHostKeyChecking=no' "$PRIMARY_NODE" '/var/tmp/cluster-functions.sh --status' | tee /var/tmp/cluster-status.txt
+    ssh_primary_node '/var/tmp/cluster-functions.sh --status' | tee /var/tmp/cluster-status.txt
 
-    #Clean up known_hosts file entries.
+    # Clean up known_hosts file entries.
     for node in $ALL_NODES
     do
         sed -i '/'$node'/d' /root/.ssh/known_hosts
     done
 }
 
-#Execution
+# Execution
 setup_cluster
 print_status

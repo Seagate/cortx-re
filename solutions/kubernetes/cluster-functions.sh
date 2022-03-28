@@ -27,8 +27,14 @@ OS_VERSION=( "CentOS 7.9.2009" "Rocky 8.4" )
 export Exception=100
 export ConfigException=101
 
+ACTION="$1"
+if [ -z "$ACTION" ]; then
+    echo "ERROR : No option provided"
+    usage
+    exit 1
+fi
 
-function usage(){
+function usage() {
     cat << HEREDOC
 Usage : $0 [--prepare, --primary]
 where,
@@ -41,33 +47,20 @@ HEREDOC
 }
 
 # try-catch functions
-function try()
-{
+function try() {
     [[ $- = *e* ]]; SAVED_OPT_E=$?
     set +e
 }
 
-function throw()
-{
+function throw() {
     exit $1
 }
 
-function catch()
-{
+function catch() {
     export ex_code=$?
     (( $SAVED_OPT_E )) && set +e
     return $ex_code
 } 
-
-function throwErrors()
-{
-    set -e
-}
-
-function ignoreErrors()
-{
-    set +e
-}
 
 function verify_os() {
     CURRENT_OS=$(cut -d ' ' -f 1,4 < /etc/redhat-release)
@@ -78,22 +71,20 @@ function verify_os() {
     fi
 }
 
-function print_cluster_status(){
-
-    while kubectl get nodes | grep -v STATUS | awk '{print $2}' | tr '\n' ' ' | grep -q NotReady
+function print_cluster_status() {
+    while kubectl get nodes --no-headers | awk '{print $2}' | tr '\n' ' ' | grep -q NotReady
     do
 		sleep 5
     done
     kubectl get nodes -o wide
 }
 
-function cleanup_node(){
-
-    echo "---------------------------------------[ Cleanup Node $HOSTNAME ]--------------------------------------"
+function cleanup_node() {
+    add_secondary_separator "Cleanup Node $HOSTNAME"
     # Cleanup kubeadm stuff
     if [ -f /usr/bin/kubeadm ]; then
         echo "Cleaning up existing kubeadm configuration"
-        # unmount /var/lib/kubelet is having problem while running `kubeadm reset` in k8s v1.19. It is fixed in 1.20
+        # Unmount /var/lib/kubelet is having problem while running `kubeadm reset` in k8s v1.19. It is fixed in 1.20
         # Ref link - https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm/#kubeadm-reset-unmounts-var-lib-kubelet
         kubeadm reset -f
     fi
@@ -130,14 +121,13 @@ function cleanup_node(){
     fi
     echo "clean_requirements_on_remove=1" >> "$conffile"
 
-    #Stopping Services.
+    # Stopping Services.
     for service_name in ${services_to_stop[@]}; do
         if [ "$(systemctl list-unit-files | grep $service_name.service -c)" != "0" ]; then
             echo "Stopping $service_name"
             systemctl stop $service_name.service
         fi
     done
-
 
     # Remove packages
     echo "Uninstalling packages"
@@ -162,22 +152,23 @@ function cleanup_node(){
     check_status "Node cleanup failed on $HOSTNAME"
 }
 
-function install_prerequisites(){
-    echo "---------------------------------------[ Preparing Node $HOSTNAME ]--------------------------------------"
+function install_prerequisites() {
+    add_secondary_separator "Preparing Node $HOSTNAME"
     try
-    (   # disable swap
+    (
+        # Disable swap
         verify_os 
         sudo swapoff -a
-        # keeps the swaf off during reboot
+        # Keeps the swap off during reboot
         sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
 
-        # disable selinux
+        # Disable selinux
         setenforce 0
         sed -i  -e 's/SELINUX=enforcing/SELINUX=disabled/g' -e 's/SELINUX=enforcing/SELINUX=permissive/g' /etc/sysconfig/selinux || throw $Exception
     
-        # stop and disable firewalld
+        # Stop and disable firewalld
         (systemctl stop firewalld && systemctl disable firewalld && sudo systemctl mask --now firewalld) || throw $Exception
-        # install python packages
+        # Install python packages
         (yum install python3-pip yum-utils wget jq -y && pip3 install --upgrade pip && pip3 install jq yq) || throw $Exception
 
         CURRENT_OS=$(cut -d ' ' -f 1,4 < /etc/redhat-release)
@@ -187,24 +178,24 @@ function install_prerequisites(){
             yum install jq -y     
         fi
 
-        # set yum repositories for k8 and docker-ce
+        # Set yum repositories for k8 and docker-ce
         rm -rf /etc/yum.repos.d/download.docker.com_linux_centos_7_x86_64_stable_.repo /etc/yum.repos.d/packages.cloud.google.com_yum_repos_kubernetes-el7-x86_64.repo docker-ce.repo
         yum-config-manager --add https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64 || throw $ConfigException
         yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo || throw $ConfigException     
         yum install kubeadm-$K8_VERSION kubectl-$K8_VERSION kubelet-$K8_VERSION docker-ce --nogpgcheck -y || throw $ConfigException 
 
-        # setup kernel parameters
+        # Setup kernel parameters
         modprobe br_netfilter || throw $ConfigException
         sysctl -w net.bridge.bridge-nf-call-iptables=1 -w net.bridge.bridge-nf-call-ip6tables=1 > /etc/sysctl.d/k8s.conf || throw $ConfigException
         sysctl -p /etc/sysctl.d/k8s.conf || throw $ConfigException
 
-        # enable cgroupfs 
+        # Enable cgroupfs 
         sed -i '/config.yaml/s/config.yaml"/config.yaml --cgroup-driver=cgroupfs"/g' /usr/lib/systemd/system/kubelet.service.d/10-kubeadm.conf || throw $ConfigException
 
-        # enable unix socket
+        # Enable unix socket
         sed -i 's/fd:\/\//unix:\/\//g' /usr/lib/systemd/system/docker.service && systemctl daemon-reload
 
-        # enable local docker registry.
+        # Enable local docker registry.
         mkdir -p /etc/docker/
         jq -n '{"insecure-registries": $ARGS.positional}' --args "cortx-docker.colo.seagate.com" > /etc/docker/daemon.json || throw $Exception
         echo "Configured /etc/docker/daemon.json for local Harbor docker registry"
@@ -216,7 +207,7 @@ function install_prerequisites(){
         echo "kubelet Configured Successfully"
 
 
-        #Download calico plugin image
+        # Download calico plugin image
         pushd /var/tmp/
             rm -rf calico*.yaml 
             if [ "$CALICO_PLUGIN_VERSION" == "latest" ]; then 
@@ -232,8 +223,9 @@ function install_prerequisites(){
             popd
         popd
     )
+
     catch || {
-    # handle excption
+    # Handle excption
     case $ex_code in
         $Exception)
             echo "An Exception was thrown. Please check logs"
@@ -250,29 +242,28 @@ function install_prerequisites(){
     esac
     }
     check_status "Node preparation failed on $HOSTNAME"
-
 }
 
-function setup_primary_node(){
+function setup_primary_node() {
     local UNTAINT_PRIMARY=$1
     try
     (
-        #cleanup
+        # Cleanup
         echo "y" | kubeadm reset
         
-        #initialize cluster
+        # Initialize cluster
         kubeadm init || throw $Exception
 
         # Verify node added in cluster
-        #kubectl get nodes || throw $Exception
+        # kubectl get nodes || throw $Exception
 
         # Copy cluster configuration for user
         mkdir -p $HOME/.kube
         cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
         chown $(id -u):$(id -g) $HOME/.kube/config
-        # untaint primary node
+        # Untaint primary node
         if [ "$UNTAINT_PRIMARY" == "true" ]; then
-            echo "--------------------------[ Allow POD creation on primary node ]--------------------------"
+            add_secondary_separator "Allow POD creation on primary node"
             kubectl taint nodes $(hostname) node-role.kubernetes.io/master- || throw $Exception
         fi    
 
@@ -296,6 +287,7 @@ function setup_primary_node(){
         curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 || throw $Exception
         (chmod 700 get_helm.sh && ./get_helm.sh) || throw $Exception
     )
+
     catch || {
     # Handle excption
     case $ex_code in
@@ -317,17 +309,10 @@ function setup_primary_node(){
 }
 
 function join_worker_nodes() {
-    echo "---------------------------------------[ Joining Worker Node $HOSTNAME ]--------------------------------------"
+    add_secondary_separator "Joining Worker Node $HOSTNAME"
     echo 'y' | kubeadm reset && "${@:2}"
     check_status "Failed to join $HOSTNAME node to cluster"
 }
-
-ACTION="$1"
-if [ -z "$ACTION" ]; then
-    echo "ERROR : No option provided"
-    usage
-    exit 1
-fi
 
 case $ACTION in
     --cleanup)
