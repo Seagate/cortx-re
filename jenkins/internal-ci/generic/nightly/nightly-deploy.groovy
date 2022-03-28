@@ -23,6 +23,7 @@ pipeline {
     parameters {
         string(name: 'CORTX_ALL_IMAGE', defaultValue: 'cortx-docker.colo.seagate.com/seagate/cortx-all:2.0.0-latest', description: 'CORTX-ALL image', trim: true)
         string(name: 'CORTX_SERVER_IMAGE', defaultValue: 'cortx-docker.colo.seagate.com/seagate/cortx-rgw:2.0.0-latest', description: 'CORTX-SERVER image', trim: true)
+        string(name: 'CORTX_DATA_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-data:2.0.0-latest', description: 'CORTX-DATA image', trim: true)
         choice (
             choices: ['ALL', 'DEVOPS', 'DEBUG'],
             description: 'Email Notification Recipients ',
@@ -66,6 +67,8 @@ pipeline {
                             string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
                             string(name: 'CORTX_ALL_IMAGE', value: "${CORTX_ALL_IMAGE}"),
                             string(name: 'CORTX_SERVER_IMAGE', value: "${CORTX_SERVER_IMAGE}"),
+                            string(name: 'CORTX_DATA_IMAGE', value: "${CORTX_DATA_IMAGE}"),
+                            string(name: 'DEPLOYMENT_METHOD', value: "standard"),
                             text(name: 'hosts', value: "${hosts}"),
                             string(name: 'CORTX_SCRIPTS_BRANCH', value: "${CORTX_SCRIPTS_BRANCH}"),
                             string(name: 'CORTX_SCRIPTS_REPO', value: "${CORTX_SCRIPTS_REPO}"),
