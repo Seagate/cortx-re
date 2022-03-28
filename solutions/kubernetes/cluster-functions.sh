@@ -169,7 +169,7 @@ function install_prerequisites() {
         # Stop and disable firewalld
         (systemctl stop firewalld && systemctl disable firewalld && sudo systemctl mask --now firewalld) || throw $Exception
         # Install python packages
-        (yum install python3-pip yum-utils wget jq -y && pip3 install --upgrade pip && wget -O /usr/local/bin/jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 && chmod +x /usr/local/bin/jq) || throw $Exception
+        (yum install python3-pip yum-utils wget jq -y && pip3 install --upgrade pip && pip3 install jq) || throw $Exception
 
         CURRENT_OS=$(cut -d ' ' -f 1,4 < /etc/redhat-release)
         if [ "$CURRENT_OS" == "Rocky 8.4" ]; then
