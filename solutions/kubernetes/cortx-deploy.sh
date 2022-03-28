@@ -117,7 +117,7 @@ function setup_cluster() {
 }
 
 function support_bundle() {
-    add_primary_separator "Collect CORTX Support Bundle Logs"
+    add_primary_separator "\tCollect CORTX Support Bundle Logs"
     ssh_primary_node '/var/tmp/cortx-deploy-functions.sh --generate-logs'
 }
 
