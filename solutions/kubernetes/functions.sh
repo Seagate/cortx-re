@@ -143,3 +143,32 @@ function scp_primary_node() {
 function ssh_primary_node() {
     ssh -o 'StrictHostKeyChecking=no' "$PRIMARY_NODE" $*
 }
+
+function setup_awscli() {
+   add_secondary_separator "Setup awscli"
+   
+   # Configure plugin, api and endpoints.
+   add_common_separator "Setup aws s3 plugin endpoints"
+   aws configure set plugins.endpoint awscli_plugin_endpoint
+   check_status "Failed to set awscli s3 plugin endpoint"
+   add_common_separator "Setup aws s3 endpoint url"
+   aws configure set s3.endpoint_url $ENDPOINT_URL
+   check_status "Failed to set awscli s3 endpoint url"
+   add_common_separator "Setup default aws region"
+   aws configure set default.region us-east-1
+   check_status "Failed to set default aws region"
+   add_common_separator "Setup awscli s3api endpoint url"
+   aws configure set s3api.endpoint_url $ENDPOINT_URL
+   check_status "Failed to set awscli s3 api endpoint url"
+
+   # Setup awscli authentication.
+   add_common_separator "Setup aws access key"
+   aws configure set aws_access_key_id $ACCESS_KEY
+   check_status "Failed to set awscli access key"
+   add_common_separator "Setup aws secret key"
+   aws configure set aws_secret_access_key $SECRET_KEY
+   check_status "Failed to set awscli secret key"
+   cat /root/.aws/config
+   add_primary_separator "Successfully installed and configured awscli"
+}
+
