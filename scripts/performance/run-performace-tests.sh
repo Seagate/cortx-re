@@ -20,12 +20,20 @@
 
 set -eo pipefail
 
-source /root/cortx-re/solutions/kubernetes/functions.sh
+source ../../solutions/kubernetes/functions.sh
 
-function copy_scripts() {
+function check_params() {
+    if [ -z "$CORTX_TOOLS_REPO" ]; then echo "CORTX_TOOLS_REPO not provided.Using Default Seagate/seagate-tools"; CORTX_TOOLS_REPO="Seagate/seagate-tools" ; fi
+    if [ -z "$CORTX_TOOLS_BRANCH" ]; then echo "CORTX_TOOLS_BRANCH not provided.Using Default main."; CORTX_TOOLS_BRANCH="main"; fi
+    if [ -z "$SOLUTION_FILE" ]; then echo "SOLUTION_FILE not provided.Using Default location /root/deploy-scripts/k8_cortx_cloud/solution.yaml..."; SOLUTION_FILE=/root/deploy-scripts/k8_cortx_cloud/solution.yaml; fi
+    if [ -z "$SCRIPT_LOCATION" ]; then echo "SCRIPT_LOCATION not provided.Using Default location /root/performance-scripts "; SCRIPT_LOCATION="/root/performance-scripts"; fi
+    if [ -z "$GITHUB_TOKEN" ]; then echo "GITHUB_TOKEN not provided.Exiting..."; exit 1; fi
+}
 
+check_params
 HOST_FILE=$PWD/hosts
 SSH_KEY_FILE=/root/.ssh/id_rsa
+ALL_NODES=$(cat "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
 PRIMARY_NODE=$(grep "role=server" $HOST_FILE | awk -F[,] '{print $1}' | cut -d'=' -f2)
 CLIENT_NODE=$(grep "role=client" $HOST_FILE | awk -F[,] '{print $1}' | cut -d'=' -f2)
 
@@ -33,19 +41,11 @@ validation
 generate_rsa_key
 nodes_setup
 
-scp_primary_node run-performace-tests-functions.sh /root/cortx-re/solutions/kubernetes/*
-}
+scp_all_nodes run-performace-tests-functions.sh ../../solutions/kubernetes/*
 
-copy_scripts
-
-#Configured s3 client
-#../../solutions/kubernetes/io-testing.sh
 ENDPOINT_URL=$(ssh_primary_node /var/tmp/run-performace-tests-functions.sh --fetch-setup-info | grep ENDPOINT_URL | cut -d' ' -f2)
 ACCESS_KEY=$(ssh_primary_node /var/tmp/run-performace-tests-functions.sh --fetch-setup-info | grep ACCESS_KEY | cut -d' ' -f2)
 SECRET_KEY=$(ssh_primary_node /var/tmp/run-performace-tests-functions.sh --fetch-setup-info | grep SECRET_KEY | cut -d' ' -f2)
-echo ENDPOINT_URL:$ENDPOINT_URL
-echo ACCESS_KEY:$ACCESS_KEY
-echo SECRET_KEY:$SECRET_KEY
 
 ssh -o 'StrictHostKeyChecking=no' "$CLIENT_NODE" "
 export ENDPOINT_URL=$ENDPOINT_URL && 
@@ -57,8 +57,3 @@ export CORTX_SCRIPTS_REPO="Seagate/seagate-tools" &&
 export PRIMARY_NODE=$PRIMARY_NODE &&
 export CLIENT_NODE=$CLIENT_NODE &&
 /var/tmp/run-performace-tests-functions.sh --setup-client"
-#Clone https://github.com/Seagate/seagate-tools repository
-
-#Updated user credemtails in /root/seagate-tools/performance/PerfPro/roles/benchmark/vars/config.yml 
-
-#Execute anisble playbook

@@ -19,11 +19,6 @@
 #
 
 set -eo pipefail
-
-SOLUTION_FILE="/root/deploy-scripts/k8_cortx_cloud/solution.yaml"
-SCRIPT_LOCATION="/root/performance-scripts"
-CORTX_TOOLS_REPO="Seagate/seagate-tools"
-CORTX_TOOLS_BRANCH="main"
 source /var/tmp/functions.sh
 
 function usage() {
