@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (c) 2021 Seagate Technology LLC and/or its Affiliates
+# Copyright (c) 2022 Seagate Technology LLC and/or its Affiliates
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 # For any questions about this software or licensing,
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
-
 set -eo pipefail
 source /var/tmp/functions.sh
 
@@ -30,7 +29,6 @@ where,
 HEREDOC
 }
 
-
 ACTION="$1"
 if [ -z "$ACTION" ]; then
     echo "ERROR : No option provided"
@@ -38,10 +36,8 @@ if [ -z "$ACTION" ]; then
     exit 1
 fi
 
-#install_awscli
-
 create_endpoint_url() {
-#echo $SOLUTION_FILE
+echo SOLUTION_FILE:$SOLUTION_FILE
 ACCESS_KEY=$(yq e '.solution.common.s3.default_iam_users.auth_admin' $SOLUTION_FILE)
 SECRET_KEY=$(yq e '.solution.secrets.content.s3_auth_admin_secret' $SOLUTION_FILE)
 HTTP_PORT=$(kubectl get svc cortx-io-svc-0 -o=jsonpath='{.spec.ports[?(@.port==80)].nodePort}')
@@ -100,42 +96,7 @@ function run_io_sanity() {
    add_common_separator "Remove '$BUCKET' bucket"
    aws s3 rb s3://$BUCKET
    check_status "Failed to delete '$BUCKET'"
-
-   add_common_separator "Cleanup awscli files"
-   rm -rf ~/.aws/credentials
-   rm -rf ~/.aws/config
-
    add_primary_separator "\tSuccessfully Passed IO Sanity Testing"
-}
-
-function setup_awscli() {
-   add_secondary_separator "Setup awscli"
-   
-   # Configure plugin, api and endpoints.
-   add_common_separator "Setup aws s3 plugin endpoints"
-   aws configure set plugins.endpoint awscli_plugin_endpoint
-   check_status "Failed to set awscli s3 plugin endpoint"
-   add_common_separator "Setup aws s3 endpoint url"
-   aws configure set s3.endpoint_url $ENDPOINT_URL
-   check_status "Failed to set awscli s3 endpoint url"
-   add_common_separator "Setup default aws region"
-   aws configure set default.region us-east-1
-   check_status "Failed to set default aws region"
-   add_common_separator "Setup awscli s3api endpoint url"
-   aws configure set s3api.endpoint_url $ENDPOINT_URL
-   check_status "Failed to set awscli s3 api endpoint url"
-
-   # Setup awscli authentication.
-   add_common_separator "Setup aws access key"
-  echo ACCESS_KEY:$ACCESS_KEY
-  echo SECRET_KEY:$SECRET_KEY
-   aws configure set aws_access_key_id $ACCESS_KEY
-   check_status "Failed to set awscli access key"
-   add_common_separator "Setup aws secret key"
-   aws configure set aws_secret_access_key $SECRET_KEY
-   check_status "Failed to set awscli secret key"
-   cat /root/.aws/config
-   add_primary_separator "Successfully installed and configured awscli"
 }
 
 function clone_segate_tools_repo() {
@@ -153,39 +114,29 @@ function clone_segate_tools_repo() {
 }
 
 function update_setup_confiuration() {
-#Update root password in config.yaml
-sed -i '/CLUSTER_PASS/s/seagate1/$PRIMARY_CREDS/g' $SCRIPT_LOCATION/performance/PerfPro/roles/benchmark/vars/config.yml
-sed -i '/srvnode-1/s/ansible_host=/ansible_host='$PRIMARY_NODE'/' $SCRIPT_LOCATION/performance/PerfPro/inventories/hosts
-sed -i '/clientnode-1/s/ansible_host=/ansible_host='$CLIENT_NODE'/' $SCRIPT_LOCATION/performance/PerfPro/inventories/hosts
-
-
+    #Update root password in config.yaml
+    sed -i '/CLUSTER_PASS/s/seagate1/$PRIMARY_CREDS/g' $SCRIPT_LOCATION/performance/PerfPro/roles/benchmark/vars/config.yml
+    sed -i '/srvnode-1/s/ansible_host=/ansible_host='$PRIMARY_NODE'/' $SCRIPT_LOCATION/performance/PerfPro/inventories/hosts
+    sed -i '/clientnode-1/s/ansible_host=/ansible_host='$CLIENT_NODE'/' $SCRIPT_LOCATION/performance/PerfPro/inventories/hosts
 }
 
 function execute_perfpro() {
-yum install ansible -y 
-pushd $SCRIPT_LOCATION/performance/PerfPro
-ansible-playbook perfpro.yml -i inventories/hosts --extra-vars '{ "EXECUTION_TYPE" : "sanity" ,"REPOSITORY":{"motr":"cortx-motr","rgw":"cortx-rgw"} , "COMMIT_ID": { "main" : "d1234c" , "dev" : "a5678b"},"PR_ID" : "cortx-rgw/1234" , "USER":"Shailesh Vaidya","GID" : "729494" }' -v
-popd
+    yum install ansible -y
+    pushd $SCRIPT_LOCATION/performance/PerfPro
+    ansible-playbook perfpro.yml -i inventories/hosts --extra-vars '{ "EXECUTION_TYPE" : "sanity" ,"REPOSITORY":{"motr":"cortx-motr","rgw":"cortx-rgw"} , "COMMIT_ID": { "main" : "d1234c" , "dev" : "a5678b"},"PR_ID" : "cortx-rgw/1234" , "USER":"Shailesh Vaidya","GID" : "729494" }' -v
+    popd
 }
 
-
-#create_endpoint_url
-#setup_awscli
-#run_io_sanity
-#clone_segate_tools_repo
-#update_setup_confiuration
-#execute_perfpro
-
 function fetch-setup-info() {
-create_endpoint_url
-} 
+    create_endpoint_url
+}
 
 function setup-client() {
-setup_awscli
-run_io_sanity
-clone_segate_tools_repo
-update_setup_confiuration
-execute_perfpro
+    setup_awscli
+    run_io_sanity
+    clone_segate_tools_repo
+    update_setup_confiuration
+    #execute_perfpro
 }
 
 case $ACTION in
@@ -193,11 +144,11 @@ case $ACTION in
         setup-client
     ;;
     --fetch-setup-info)
-        fetch-setup-info 
+        fetch-setup-info
     ;;
     *)
         echo "ERROR : Please provide a valid option"
         usage
         exit 1
-    ;;    
+    ;;
 esac

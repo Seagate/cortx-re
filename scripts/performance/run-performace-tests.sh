@@ -43,14 +43,18 @@ nodes_setup
 
 scp_all_nodes run-performace-tests-functions.sh ../../solutions/kubernetes/*
 
-ENDPOINT_URL=$(ssh_primary_node /var/tmp/run-performace-tests-functions.sh --fetch-setup-info | grep ENDPOINT_URL | cut -d' ' -f2)
-ACCESS_KEY=$(ssh_primary_node /var/tmp/run-performace-tests-functions.sh --fetch-setup-info | grep ACCESS_KEY | cut -d' ' -f2)
-SECRET_KEY=$(ssh_primary_node /var/tmp/run-performace-tests-functions.sh --fetch-setup-info | grep SECRET_KEY | cut -d' ' -f2)
+ENDPOINT_URL=$(ssh_primary_node "export SOLUTION_FILE=$SOLUTION_FILE && /var/tmp/run-performace-tests-functions.sh --fetch-setup-info | grep ENDPOINT_URL | cut -d' ' -f2")
+ACCESS_KEY=$(ssh_primary_node "export SOLUTION_FILE=$SOLUTION_FILE && /var/tmp/run-performace-tests-functions.sh --fetch-setup-info | grep ACCESS_KEY | cut -d' ' -f2")
+SECRET_KEY=$(ssh_primary_node "export SOLUTION_FILE=$SOLUTION_FILE &&/var/tmp/run-performace-tests-functions.sh --fetch-setup-info | grep SECRET_KEY | cut -d' ' -f2")
+
+echo ENDPOINT_URL:$ENDPOINT_URL
+echo ACCESS_KEY:$ACCESS_KEY
+echo SECRET_KEY:$SECRET_KEY
 
 ssh -o 'StrictHostKeyChecking=no' "$CLIENT_NODE" "
-export ENDPOINT_URL=$ENDPOINT_URL && 
-export ACCESS_KEY=$ACCESS_KEY && 
-export SECRET_KEY=$SECRET_KEY && 
+export ENDPOINT_URL=$ENDPOINT_URL &&
+export ACCESS_KEY=$ACCESS_KEY &&
+export SECRET_KEY=$SECRET_KEY &&
 export GITHUB_TOKEN=$GITHUB_TOKEN &&
 export CORTX_SCRIPTS_BRANCH=main &&
 export CORTX_SCRIPTS_REPO="Seagate/seagate-tools" &&
