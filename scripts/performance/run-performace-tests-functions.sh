@@ -116,7 +116,6 @@ function clone_segate_tools_repo() {
 
 function update_setup_confiuration() {
     #Update root password in config.yaml
-    echo PRIMARY_CRED:$PRIMARY_CRED
     sed -i '/CLUSTER_PASS/s/seagate1/'$PRIMARY_CRED'/g' $SCRIPT_LOCATION/performance/PerfPro/roles/benchmark/vars/config.yml
     sed -i -e '/NODES/{n;s/.*/  - 1: '$PRIMARY_NODE'/}' -e '/CLIENTS/{n;s/.*/  - 1: '$CLIENT_NODE'/}' $SCRIPT_LOCATION/performance/PerfPro/roles/benchmark/vars/config.yml
 }
@@ -137,10 +136,15 @@ function setup-client() {
     install_awscli
     setup_awscli
     run_io_sanity
+}
+
+function execute-perf-sanity() {
     clone_segate_tools_repo
     update_setup_confiuration
     execute_perfpro
 }
+
+
 
 case $ACTION in
     --setup-client)
@@ -148,6 +152,9 @@ case $ACTION in
     ;;
     --fetch-setup-info)
         fetch-setup-info
+    ;;
+    --execute-perf-sanity)
+        execute-perf-sanity
     ;;
     *)
         echo "ERROR : Please provide a valid option"

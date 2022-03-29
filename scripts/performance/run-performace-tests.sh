@@ -30,6 +30,8 @@ function check_params() {
     if [ -z "$GITHUB_TOKEN" ]; then echo "GITHUB_TOKEN not provided.Exiting..."; exit 1; fi
 }
 
+add_primary_separator "Fetching setup details"
+
 check_params
 HOST_FILE=$PWD/hosts
 SSH_KEY_FILE=/root/.ssh/id_rsa
@@ -44,18 +46,22 @@ nodes_setup
 
 scp_all_nodes run-performace-tests-functions.sh ../../solutions/kubernetes/*
 
+add_primary_separator "Fetch Endpoint URL,Access Key and Secret Key from CORTX Cluster"
+
 ENDPOINT_URL=$(ssh_primary_node "export SOLUTION_FILE=$SOLUTION_FILE && /var/tmp/run-performace-tests-functions.sh --fetch-setup-info | grep ENDPOINT_URL | cut -d' ' -f2")
 ACCESS_KEY=$(ssh_primary_node "export SOLUTION_FILE=$SOLUTION_FILE && /var/tmp/run-performace-tests-functions.sh --fetch-setup-info | grep ACCESS_KEY | cut -d' ' -f2")
 SECRET_KEY=$(ssh_primary_node "export SOLUTION_FILE=$SOLUTION_FILE &&/var/tmp/run-performace-tests-functions.sh --fetch-setup-info | grep SECRET_KEY | cut -d' ' -f2")
 
-echo ENDPOINT_URL:$ENDPOINT_URL
-echo ACCESS_KEY:$ACCESS_KEY
-echo SECRET_KEY:$SECRET_KEY
 
+add_primary_separator "Configure awscli on client"
 ssh -o 'StrictHostKeyChecking=no' "$CLIENT_NODE" "
 export ENDPOINT_URL=$ENDPOINT_URL &&
 export ACCESS_KEY=$ACCESS_KEY &&
 export SECRET_KEY=$SECRET_KEY &&
+/var/tmp/run-performace-tests-functions.sh --setup-client"
+
+add_primary_separator "Execute PerfPro Sanity"
+ssh -o 'StrictHostKeyChecking=no' "$CLIENT_NODE" "
 export GITHUB_TOKEN=$GITHUB_TOKEN &&
 export SCRIPT_LOCATION=$SCRIPT_LOCATION &&
 export CORTX_TOOLS_BRANCH=main &&
@@ -63,4 +69,4 @@ export CORTX_TOOLS_REPO="Seagate/seagate-tools" &&
 export PRIMARY_NODE=$PRIMARY_NODE &&
 export CLIENT_NODE=$CLIENT_NODE &&
 export PRIMARY_CRED=$PRIMARY_CRED &&
-/var/tmp/run-performace-tests-functions.sh --setup-client"
+/var/tmp/run-performace-tests-functions.sh --execute-perf-sanity"
