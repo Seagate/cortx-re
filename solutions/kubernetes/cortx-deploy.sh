@@ -117,12 +117,12 @@ function setup_cluster() {
     ssh_primary_node "/var/tmp/cortx-deploy-functions.sh --$TARGET"
     add_primary_separator "\tPrint Cluster Status"
     rm -rf /var/tmp/cortx-cluster-status.txt
-    ssh_primary_node '/var/tmp/cortx-deploy-functions.sh --status' | tee /var/tmp/cortx-cluster-status.txt
+    ssh_primary_node 'export DEPLOYMENT_METHOD=$DEPLOYMENT_METHOD && /var/tmp/cortx-deploy-functions.sh --status' | tee /var/tmp/cortx-cluster-status.txt
 }
 
 function support_bundle() {
     add_primary_separator "Collect CORTX Support Bundle Logs"
-    ssh_primary_node 'export DEPLOYMENT_METHOD=$DEPLOYMENT_METHOD && /var/tmp/cortx-deploy-functions.sh --generate-logs'
+    ssh_primary_node '/var/tmp/cortx-deploy-functions.sh --generate-logs'
 }
 
 function destroy-cluster() {
