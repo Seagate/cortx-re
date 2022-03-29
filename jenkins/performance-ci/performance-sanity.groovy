@@ -18,6 +18,10 @@ pipeline {
         text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used for K8 cluster setup. First node will be used as Primary', name: 'hosts')
     }    
 
+    environment {
+        GITHUB_CRED = credentials('shailesh-github-token')
+    }
+
     stages {
         stage('Checkout Script') {
             steps { 
@@ -35,6 +39,7 @@ pipeline {
                     pushd scripts/performance
                         echo $hosts | tr ' ' '\n' > hosts
                         cat hosts
+                        export GITHUB_TOKEN=${GITHUB_CRED}
                         ./run-performace-tests.sh
                     popd
                 '''
