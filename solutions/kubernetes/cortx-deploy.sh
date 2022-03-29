@@ -113,7 +113,7 @@ function setup_cluster() {
         pdsh_worker_exec /var/tmp/pdsh-hosts
     fi
 
-    # Print cluster status.
+    # Deploy CORTX CLuster (deploy-cortx-cloud.sh) :
     ssh_primary_node "/var/tmp/cortx-deploy-functions.sh --$TARGET"
     add_primary_separator "\tPrint Cluster Status"
     rm -rf /var/tmp/cortx-cluster-status.txt
