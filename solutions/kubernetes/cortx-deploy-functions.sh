@@ -341,6 +341,7 @@ function print_pod_status() {
                     add_common_separator "hctl status not working yet. Sleeping for 1min...."
                     sleep 60
                 fi
+            fi    
         done
             add_secondary_separator "Failed to to start services within 20mins. Exiting...."
             exit 1
