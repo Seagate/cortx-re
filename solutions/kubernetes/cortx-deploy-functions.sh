@@ -91,7 +91,7 @@ function update_solution_config(){
         yq e -i '.solution.secrets.content.csm_auth_admin_secret = "seagate2"' solution.yaml
         yq e -i '.solution.secrets.content.csm_mgmt_admin_secret = "Cortxadmin@123"' solution.yaml
 
-        yq e -i '.solution.images.consul = "ghcr.io/seagate/consul:1.10.0"' solution.yaml
+        yq e -i '.solution.images.consul = "ghcr.io/seagate/consul:1.11.4"' solution.yaml
         yq e -i '.solution.images.kafka = "ghcr.io/seagate/kafka:3.0.0-debian-10-r7"' solution.yaml
         yq e -i '.solution.images.zookeeper = "ghcr.io/seagate/zookeeper:3.7.0-debian-10-r182"' solution.yaml
         yq e -i '.solution.images.rancher = "ghcr.io/seagate/local-path-provisioner:v0.0.20"' solution.yaml
