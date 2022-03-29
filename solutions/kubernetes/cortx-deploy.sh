@@ -122,7 +122,7 @@ function setup_cluster() {
 
 function support_bundle() {
     add_primary_separator "Collect CORTX Support Bundle Logs"
-    ssh_primary_node '/var/tmp/cortx-deploy-functions.sh --generate-logs'
+    ssh_primary_node 'export DEPLOYMENT_METHOD=$DEPLOYMENT_METHOD && /var/tmp/cortx-deploy-functions.sh --generate-logs'
 }
 
 function destroy-cluster() {
