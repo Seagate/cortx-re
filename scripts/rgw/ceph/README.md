@@ -25,3 +25,7 @@ popd
 ```
 
 As per template, ceph.spec file is now updated at line no.: 146, 147, 162 and 676.
+
+Use the following command to build rpms:
+`time rpmbuild --clean --rmsource --define "_unpackaged_files_terminate_build 0" --define "debug_package %{nil}" --define "_binary_payload w2T16.xzdio" --define "_topdir `pwd`" --without seastar --without cephfs_java --without ceph_test_package --without selinux --without lttng  --without cephfs_shell  --without amqp_endpoint --without kafka_endpoint --without lua_packages --without zbd --without cmake_verbose_logging --without rbd_rwl_cache --without rbd_ssd_cache  --without system_pmdk --without jaeger --without ocf --without make_check -vv -ba ./SPECS/ceph.spec
+`
