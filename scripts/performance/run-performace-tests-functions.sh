@@ -129,6 +129,7 @@ function execute_perfpro() {
 }
 
 function fetch-setup-info() {
+    install_yq
     create_endpoint_url
 }
 
