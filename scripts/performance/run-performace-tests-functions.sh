@@ -102,8 +102,8 @@ function run_io_sanity() {
 function clone_segate_tools_repo() {
     if [ -z "$SCRIPT_LOCATION" ]; then echo "SCRIPT_LOCATION not provided.Exiting..."; exit 1; fi
     if [ -z "$GITHUB_TOKEN" ]; then echo "GITHUB_TOKEN not provided.Exiting..."; exit 1; fi
-    if [ -z "$CORTX_TOOLS_REPO" ]; then echo "CORTX_SCRIPTS_REPO not provided.Exiting..."; exit 1; fi
-    if [ -z "$CORTX_TOOLS_BRANCH" ]; then echo "CORTX_SCRIPTS_BRANCH not provided.Exiting..."; exit 1; fi
+    if [ -z "$CORTX_TOOLS_REPO" ]; then echo "CORTX_TOOLS_REPO not provided.Exiting..."; exit 1; fi
+    if [ -z "$CORTX_TOOLS_BRANCH" ]; then echo "CORTX_TOOLS_BRANCH not provided.Exiting..."; exit 1; fi
 
     rm -rf $SCRIPT_LOCATION
     yum install git -y
@@ -115,9 +115,9 @@ function clone_segate_tools_repo() {
 
 function update_setup_confiuration() {
     #Update root password in config.yaml
-    sed -i '/CLUSTER_PASS/s/seagate1/$PRIMARY_CREDS/g' $SCRIPT_LOCATION/performance/PerfPro/roles/benchmark/vars/config.yml
-    sed -i '/srvnode-1/s/ansible_host=/ansible_host='$PRIMARY_NODE'/' $SCRIPT_LOCATION/performance/PerfPro/inventories/hosts
-    sed -i '/clientnode-1/s/ansible_host=/ansible_host='$CLIENT_NODE'/' $SCRIPT_LOCATION/performance/PerfPro/inventories/hosts
+    echo PRIMARY_CRED:$PRIMARY_CRED
+    sed -i '/CLUSTER_PASS/s/seagate1/'$PRIMARY_CRED'/g' $SCRIPT_LOCATION/performance/PerfPro/roles/benchmark/vars/config.yml
+    sed -i -e '/NODES/{n;s/.*/  - 1: '$PRIMARY_NODE'/}' -e '/CLIENTS/{n;s/.*/  - 1: '$CLIENT_NODE'/}' $SCRIPT_LOCATION/performance/PerfPro/roles/benchmark/vars/config.yml
 }
 
 function execute_perfpro() {
@@ -136,7 +136,7 @@ function setup-client() {
     run_io_sanity
     clone_segate_tools_repo
     update_setup_confiuration
-    #execute_perfpro
+    execute_perfpro
 }
 
 case $ACTION in

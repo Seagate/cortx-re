@@ -35,6 +35,7 @@ HOST_FILE=$PWD/hosts
 SSH_KEY_FILE=/root/.ssh/id_rsa
 ALL_NODES=$(cat "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
 PRIMARY_NODE=$(grep "role=server" $HOST_FILE | awk -F[,] '{print $1}' | cut -d'=' -f2)
+PRIMARY_CRED=$(grep "role=server" $HOST_FILE | awk -F[,] '{print $3}' | cut -d'=' -f2)
 CLIENT_NODE=$(grep "role=client" $HOST_FILE | awk -F[,] '{print $1}' | cut -d'=' -f2)
 
 validation
@@ -56,8 +57,10 @@ export ENDPOINT_URL=$ENDPOINT_URL &&
 export ACCESS_KEY=$ACCESS_KEY &&
 export SECRET_KEY=$SECRET_KEY &&
 export GITHUB_TOKEN=$GITHUB_TOKEN &&
-export CORTX_SCRIPTS_BRANCH=main &&
-export CORTX_SCRIPTS_REPO="Seagate/seagate-tools" &&
+export SCRIPT_LOCATION=$SCRIPT_LOCATION &&
+export CORTX_TOOLS_BRANCH=main &&
+export CORTX_TOOLS_REPO="Seagate/seagate-tools" &&
 export PRIMARY_NODE=$PRIMARY_NODE &&
 export CLIENT_NODE=$CLIENT_NODE &&
+export PRIMARY_CRED=$PRIMARY_CRED &&
 /var/tmp/run-performace-tests-functions.sh --setup-client"
