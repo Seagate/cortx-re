@@ -193,6 +193,8 @@ function install_awscli() {
 # Install yq 4.13.3
 
 function install_yq() {
+    YQ_VERSION=v4.13.3
+    YQ_BINARY=yq_linux_386
     pip3 show yq && pip3 uninstall yq -y
     wget https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${YQ_BINARY}.tar.gz -O - | tar xz && mv ${YQ_BINARY} /usr/bin/yq
     if [ -f /usr/local/bin/yq ]; then rm -rf /usr/local/bin/yq; fi    
