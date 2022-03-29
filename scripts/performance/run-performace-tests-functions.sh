@@ -48,6 +48,7 @@ echo ENDPOINT_URL $ENDPOINT_URL
 echo ACCESS_KEY $ACCESS_KEY
 echo SECRET_KEY $SECRET_KEY
 }
+
 function run_io_sanity() {
    add_primary_separator "\tStarting IO Sanity Testing"
 
@@ -132,6 +133,7 @@ function fetch-setup-info() {
 }
 
 function setup-client() {
+    install_awscli
     setup_awscli
     run_io_sanity
     clone_segate_tools_repo

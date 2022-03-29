@@ -172,3 +172,20 @@ function setup_awscli() {
    add_primary_separator "Successfully installed and configured awscli"
 }
 
+function install_awscli() {
+   add_primary_separator "\tInstall and setup awscli"
+
+   add_secondary_separator "Check and install pip3 if not present:"
+   if ! which pip3; then
+      yum install python3-pip
+   fi
+
+   add_secondary_separator "Installing awscli"
+   pip3 install awscli
+   pip3 install awscli-plugin-endpoint
+
+   if ! which aws; then
+      add_common_separator "AWS CLI installation failed"
+      exit 1
+   fi
+}
