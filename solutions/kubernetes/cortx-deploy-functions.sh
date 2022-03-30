@@ -232,7 +232,7 @@ function execute_prereq() {
     docker pull $CORTX_DATA_IMAGE || { echo "Failed to pull $CORTX_DATA_IMAGE"; exit 1; }
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         findmnt $SYSTEM_DRIVE && umount -l $SYSTEM_DRIVE
-        ./prereq-deploy-cortx-cloud.sh $SYSTEM_DRIVE
+        ./prereq-deploy-cortx-cloud.sh -d $SYSTEM_DRIVE
     popd    
 }
 
