@@ -125,7 +125,7 @@ function update_setup_confiuration() {
     #Update root password in config.yaml
     sed -i '/CLUSTER_PASS/s/seagate1/'$PRIMARY_CRED'/g' $SCRIPT_LOCATION/performance/PerfPro/roles/benchmark/vars/config.yml
     sed -i -e '/NODES/{n;s/.*/  - 1: '$PRIMARY_NODE'/}' -e '/CLIENTS/{n;s/.*/  - 1: '$CLIENT_NODE'/}' $SCRIPT_LOCATION/performance/PerfPro/roles/benchmark/vars/config.yml
-    sed -i '/BUILD_URL/s/\:/: '${BUILD_URL//\//\\/}'/g'   roles/benchmark/vars/config.yml
+    sed -i '/BUILD_URL/s/\:/: '${BUILD_URL//\//\\/}'/g' $SCRIPT_LOCATION/performance/PerfPro/roles/benchmark/vars/config.yml
 }
 
 function execute_perfpro() {
