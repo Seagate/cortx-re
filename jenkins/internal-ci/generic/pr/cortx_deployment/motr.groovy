@@ -292,7 +292,7 @@ EOF
                              script {
                                   build job: "K8s-1N-deployment", wait: true,
                                   parameters: [
-                                        string(name: 'CORTX_RE_URL', value: "${CORTX_RE_URL}"),
+                                        string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_URL}"),
                                         string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
                                         string(name: 'CORTX_ALL_IMAGE', value: "${env.cortx_all_image}"),
                                         string(name: 'CORTX_SERVER_IMAGE', value: "${env.cortx_rgw_image}"),
@@ -312,7 +312,7 @@ EOF
                              script {
                                   build job: "K8s-3N-deployment", wait: true,
                                   parameters: [
-                                        string(name: 'CORTX_RE_URL', value: "${CORTX_RE_URL}"),
+                                        string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_URL}"),
                                         string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
                                         string(name: 'CORTX_ALL_IMAGE', value: "${env.cortx_all_image}"),
                                         string(name: 'CORTX_SERVER_IMAGE', value: "${env.cortx_rgw_image}"),
