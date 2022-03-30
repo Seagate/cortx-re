@@ -91,7 +91,7 @@ pipeline {
                 }
             }
         }
-        stage('Setup K8s Cluster'){
+        stage('Setup K8s Cluster') {
             when { expression { params.SETUP_K8s_CLUSTER } }
             steps {
                 script {
