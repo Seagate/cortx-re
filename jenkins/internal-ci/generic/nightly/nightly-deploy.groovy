@@ -23,6 +23,7 @@ pipeline {
     parameters {
         string(name: 'CORTX_ALL_IMAGE', defaultValue: 'cortx-docker.colo.seagate.com/seagate/cortx-all:2.0.0-latest', description: 'CORTX-ALL image', trim: true)
         string(name: 'CORTX_SERVER_IMAGE', defaultValue: 'cortx-docker.colo.seagate.com/seagate/cortx-rgw:2.0.0-latest', description: 'CORTX-SERVER image', trim: true)
+        string(name: 'CORTX_DATA_IMAGE', defaultValue: 'cortx-docker.colo.seagate.com/seagate/cortx-data:2.0.0-latest', description: 'CORTX-DATA image', trim: true)
         choice (
             choices: ['ALL', 'DEVOPS', 'DEBUG'],
             description: 'Email Notification Recipients ',
@@ -66,6 +67,8 @@ pipeline {
                             string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
                             string(name: 'CORTX_ALL_IMAGE', value: "${CORTX_ALL_IMAGE}"),
                             string(name: 'CORTX_SERVER_IMAGE', value: "${CORTX_SERVER_IMAGE}"),
+                            string(name: 'CORTX_DATA_IMAGE', value: "${CORTX_DATA_IMAGE}"),
+                            string(name: 'DEPLOYMENT_METHOD', value: "standard"),
                             text(name: 'hosts', value: "${hosts}"),
                             string(name: 'CORTX_SCRIPTS_BRANCH', value: "${CORTX_SCRIPTS_BRANCH}"),
                             string(name: 'CORTX_SCRIPTS_REPO', value: "${CORTX_SCRIPTS_REPO}"),
@@ -93,27 +96,34 @@ pipeline {
                    echo \'y\' | docker image prune
                    docker pull $CORTX_ALL_IMAGE
                    docker pull $CORTX_SERVER_IMAGE
+                   docker pull $CORTX_DATA_IMAGE
 
                    echo "\n RPM Build URL used for Nightly Image"
                    docker inspect $CORTX_ALL_IMAGE | jq -r '.[] | (.ContainerConfig.Cmd)' | grep 'BUILD_URL='
                    docker inspect $CORTX_SERVER_IMAGE | jq -r '.[] | (.ContainerConfig.Cmd)' | grep 'BUILD_URL='
+                   docker inspect $CORTX_DATA_IMAGE | jq -r '.[] | (.ContainerConfig.Cmd)' | grep 'BUILD_URL='
                    #Update VERSION details in RELEASE.INFO file
 
                    docker commit $(docker run -d ${CORTX_ALL_IMAGE} sed -i /VERSION/s/\\"2.0.0.*\\"/\\"${VERSION}-${BUILD_NUMBER}\\"/ /opt/seagate/cortx/RELEASE.INFO) ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}
-                   docker commit $(docker run -d ${CORTX_SERVER_IMAGE} sed -i /VERSION/s/\\"2.0.0.*\\"/\\"${VERSION}-${BUILD_NUMBER}\\"/ /opt/seagate/cortx/RELEASE.INFO) ghcr.io/seagate/cortx-rgw:${VERSION}-${BUILD_NUMBER} 
+                   docker commit $(docker run -d ${CORTX_SERVER_IMAGE} sed -i /VERSION/s/\\"2.0.0.*\\"/\\"${VERSION}-${BUILD_NUMBER}\\"/ /opt/seagate/cortx/RELEASE.INFO) ghcr.io/seagate/cortx-rgw:${VERSION}-${BUILD_NUMBER}
+                   docker commit $(docker run -d ${CORTX_DATA_IMAGE} sed -i /VERSION/s/\\"2.0.0.*\\"/\\"${VERSION}-${BUILD_NUMBER}\\"/ /opt/seagate/cortx/RELEASE.INFO) ghcr.io/seagate/cortx-data:${VERSION}-${BUILD_NUMBER} 
 
                    docker tag ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER} ghcr.io/seagate/cortx-all:${VERSION}-latest
                    docker tag ghcr.io/seagate/cortx-rgw:${VERSION}-${BUILD_NUMBER} ghcr.io/seagate/cortx-rgw:${VERSION}-latest
+                   docker tag ghcr.io/seagate/cortx-data:${VERSION}-${BUILD_NUMBER} ghcr.io/seagate/cortx-data:${VERSION}-latest
 
                    docker login ghcr.io -u ${GITHUB_CRED_USR} -p ${GITHUB_CRED_PSW}
 
                    docker push ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER} && docker push ghcr.io/seagate/cortx-all:${VERSION}-latest
                    docker push ghcr.io/seagate/cortx-rgw:${VERSION}-${BUILD_NUMBER} && docker push ghcr.io/seagate/cortx-rgw:${VERSION}-latest
+                   docker push ghcr.io/seagate/cortx-data:${VERSION}-${BUILD_NUMBER} && docker push ghcr.io/seagate/cortx-data:${VERSION}-latest 
 
                    docker rmi ghcr.io/seagate/cortx-all:${VERSION}-latest
                    docker rmi ghcr.io/seagate/cortx-rgw:${VERSION}-latest
+                   docker rmi ghcr.io/seagate/cortx-data:${VERSION}-latest
                    docker rmi ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}
                    docker rmi ghcr.io/seagate/cortx-rgw:${VERSION}-${BUILD_NUMBER}
+                   docker rmi ghcr.io/seagate/cortx-data:${VERSION}-${BUILD_NUMBER}
                 '''
            }
         }
