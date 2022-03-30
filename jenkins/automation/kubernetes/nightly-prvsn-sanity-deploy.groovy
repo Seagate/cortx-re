@@ -135,7 +135,7 @@ pipeline {
         stage('Update solution.yaml') {
             steps {
                 sh label: 'Update solution.yaml', script: '''
-                    pushd ${WORKSPACE}/devops/ci
+                    pushd ${WORKSPACE}/solutions/kubernetes
                         echo $NODE_HOST_LIST | tr ' ' '\n' > hosts
                         cat hosts
                         export CONTROL_IMAGE=${CONTROL_IMAGE}
