@@ -319,7 +319,7 @@ EOF
                                         string(name: 'CORTX_DATA_IMAGE', value: "${env.cortx_data_image}"),
                                         string(name: 'CORTX_SCRIPTS_REPO', value: "Seagate/cortx-k8s"),
                                         string(name: 'CORTX_SCRIPTS_BRANCH', value: "integration"),
-                                        string(name: 'hosts', value: "${singlenode_host}"),
+                                        string(name: 'hosts', value: "${threenode_hosts}"),
                                         string(name: 'EMAIL_RECIPIENTS', value: "DEBUG")
                                  ] 
                              }
