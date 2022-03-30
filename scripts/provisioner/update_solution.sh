@@ -17,12 +17,20 @@
 #
 
 source "$WORKSPACE"/solutions/kubernetes/functions.sh
-source "$WORKSPACE"/solutions/kubernetes/cortx-deploy-functions.sh
 
 HOST_FILE=$PWD/hosts
 SCRIPT_PATH=/root/cortx-k8s/k8_cortx_cloud
+YQ_VERSION=v4.13.3
+YQ_BINARY=yq_linux_386
 
 cp "$WORKSPACE"/scripts/provisioner/hosts "$WORKSPACE"/solutions/kubernetes/hosts
+
+function install_yq_module() {
+    pip3 show yq && pip3 uninstall yq -y
+    wget https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${YQ_BINARY}.tar.gz -O - | tar xz && mv ${YQ_BINARY} /usr/bin/yq
+    if [ -f /usr/local/bin/yq ]; then rm -rf /usr/local/bin/yq; fi
+    ln -s /usr/bin/yq /usr/local/bin/yq
+}
 
 function add_image_solution_config() {
     pushd "$WORKSPACE"/scripts/provisioner
@@ -63,7 +71,7 @@ function copy_solution_file() {
     popd
 }
 
-install_yq
+install_yq_module
 validation
 generate_rsa_key
 nodes_setup
