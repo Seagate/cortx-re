@@ -51,6 +51,7 @@ add_primary_separator "Fetch Endpoint URL,Access Key and Secret Key from CORTX C
 ENDPOINT_URL=$(ssh_primary_node "export SOLUTION_FILE=$SOLUTION_FILE && /var/tmp/run-performace-tests-functions.sh --fetch-setup-info | grep ENDPOINT_URL | cut -d' ' -f2")
 ACCESS_KEY=$(ssh_primary_node "export SOLUTION_FILE=$SOLUTION_FILE && /var/tmp/run-performace-tests-functions.sh --fetch-setup-info | grep ACCESS_KEY | cut -d' ' -f2")
 SECRET_KEY=$(ssh_primary_node "export SOLUTION_FILE=$SOLUTION_FILE &&/var/tmp/run-performace-tests-functions.sh --fetch-setup-info | grep SECRET_KEY | cut -d' ' -f2")
+BUILD_URL=$(ssh_primary_node "export SOLUTION_FILE=$SOLUTION_FILE &&/var/tmp/run-performace-tests-functions.sh --fetch-setup-info | grep BUILD_URL | cut -d' ' -f2")
 
 
 add_primary_separator "Configure awscli on client"
@@ -69,4 +70,5 @@ export CORTX_TOOLS_REPO="Seagate/seagate-tools" &&
 export PRIMARY_NODE=$PRIMARY_NODE &&
 export CLIENT_NODE=$CLIENT_NODE &&
 export PRIMARY_CRED=$PRIMARY_CRED &&
+export BUILD_URL=$BUILD_URL &&
 /var/tmp/run-performace-tests-functions.sh --execute-perf-sanity"

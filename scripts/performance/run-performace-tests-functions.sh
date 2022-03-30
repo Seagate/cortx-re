@@ -36,17 +36,24 @@ if [ -z "$ACTION" ]; then
     exit 1
 fi
 
-create_endpoint_url() {
-echo SOLUTION_FILE:$SOLUTION_FILE
-ACCESS_KEY=$(yq e '.solution.common.s3.default_iam_users.auth_admin' $SOLUTION_FILE)
-SECRET_KEY=$(yq e '.solution.secrets.content.s3_auth_admin_secret' $SOLUTION_FILE)
-HTTP_PORT=$(kubectl get svc cortx-io-svc-0 -o=jsonpath='{.spec.ports[?(@.port==80)].nodePort}')
-IP_ADDRESS=$(ifconfig eth1 | grep inet -w | awk '{print $2}')
-ENDPOINT_URL="http://$IP_ADDRESS:$HTTP_PORT"
+function fetch_build_url() {
+    RGW_IMAGE=$(kubectl get pod $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -o jsonpath="{.spec.containers[*].image}" | tr ' ' '\n' | uniq)
+    BUILD_ID=$(docker run --rm $RGW_IMAGE cat /RELEASE.INFO | grep BUILD | cut -d' ' -f2 | sed 's/"//g')
+    BUILD_URL="http://cortx-storage.colo.seagate.com/releases/cortx/github/main/rockylinux-8.4/$BUILD_ID/prod/"
+}
 
-echo ENDPOINT_URL $ENDPOINT_URL
-echo ACCESS_KEY $ACCESS_KEY
-echo SECRET_KEY $SECRET_KEY
+function create_endpoint_url() {
+    echo SOLUTION_FILE:$SOLUTION_FILE
+    ACCESS_KEY=$(yq e '.solution.common.s3.default_iam_users.auth_admin' $SOLUTION_FILE)
+    SECRET_KEY=$(yq e '.solution.secrets.content.s3_auth_admin_secret' $SOLUTION_FILE)
+    HTTP_PORT=$(kubectl get svc cortx-io-svc-0 -o=jsonpath='{.spec.ports[?(@.port==80)].nodePort}')
+    IP_ADDRESS=$(ifconfig eth1 | grep inet -w | awk '{print $2}')
+    ENDPOINT_URL="http://$IP_ADDRESS:$HTTP_PORT"
+
+    echo ENDPOINT_URL $ENDPOINT_URL
+    echo ACCESS_KEY $ACCESS_KEY
+    echo SECRET_KEY $SECRET_KEY
+    echo BUILD_URL $BUILD_URL
 }
 
 function run_io_sanity() {
@@ -118,6 +125,7 @@ function update_setup_confiuration() {
     #Update root password in config.yaml
     sed -i '/CLUSTER_PASS/s/seagate1/'$PRIMARY_CRED'/g' $SCRIPT_LOCATION/performance/PerfPro/roles/benchmark/vars/config.yml
     sed -i -e '/NODES/{n;s/.*/  - 1: '$PRIMARY_NODE'/}' -e '/CLIENTS/{n;s/.*/  - 1: '$CLIENT_NODE'/}' $SCRIPT_LOCATION/performance/PerfPro/roles/benchmark/vars/config.yml
+    sed -i '/BUILD_URL/s/\:/: '${BUILD_URL//\//\\/}'/g'   roles/benchmark/vars/config.yml
 }
 
 function execute_perfpro() {
@@ -128,6 +136,7 @@ function execute_perfpro() {
 }
 
 function fetch-setup-info() {
+    fetch_build_url
     install_yq
     create_endpoint_url
 }
