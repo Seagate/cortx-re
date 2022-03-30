@@ -102,7 +102,7 @@ pipeline {
         stage('Update solution.yaml') {
             steps {
                 sh label: "Update solution.yaml", script: '''
-                    pushd ${WORKSPACE}/solutions/kubernetes
+                    pushd ${WORKSPACE}/scripts/provisioner
                         echo $NODE_HOST_LIST | tr " " "\n" > hosts
                         cat hosts
                         export WORKSPACE=${WORKSPACE}
