@@ -43,17 +43,17 @@ function fetch_build_url() {
 }
 
 function create_endpoint_url() {
-    echo SOLUTION_FILE:$SOLUTION_FILE
+    echo SOLUTION_FILE=$SOLUTION_FILE
     ACCESS_KEY=$(yq e '.solution.common.s3.default_iam_users.auth_admin' $SOLUTION_FILE)
     SECRET_KEY=$(yq e '.solution.secrets.content.s3_auth_admin_secret' $SOLUTION_FILE)
     HTTP_PORT=$(kubectl get svc cortx-io-svc-0 -o=jsonpath='{.spec.ports[?(@.port==80)].nodePort}')
     IP_ADDRESS=$(ifconfig eth1 | grep inet -w | awk '{print $2}')
     ENDPOINT_URL="http://$IP_ADDRESS:$HTTP_PORT"
 
-    echo ENDPOINT_URL $ENDPOINT_URL
-    echo ACCESS_KEY $ACCESS_KEY
-    echo SECRET_KEY $SECRET_KEY
-    echo BUILD_URL $BUILD_URL
+    echo ENDPOINT_URL=$ENDPOINT_URL
+    echo ACCESS_KEY=$ACCESS_KEY
+    echo SECRET_KEY=$SECRET_KEY
+    echo BUILD_URL=$BUILD_URL
 }
 
 function run_io_sanity() {

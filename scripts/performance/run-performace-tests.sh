@@ -47,18 +47,13 @@ nodes_setup
 scp_all_nodes run-performace-tests-functions.sh ../../solutions/kubernetes/*
 
 add_primary_separator "Fetch Endpoint URL,Access Key and Secret Key from CORTX Cluster"
-
-ENDPOINT_URL=$(ssh_primary_node "export SOLUTION_FILE=$SOLUTION_FILE && /var/tmp/run-performace-tests-functions.sh --fetch-setup-info | grep ENDPOINT_URL | cut -d' ' -f2")
-ACCESS_KEY=$(ssh_primary_node "export SOLUTION_FILE=$SOLUTION_FILE && /var/tmp/run-performace-tests-functions.sh --fetch-setup-info | grep ACCESS_KEY | cut -d' ' -f2")
-SECRET_KEY=$(ssh_primary_node "export SOLUTION_FILE=$SOLUTION_FILE &&/var/tmp/run-performace-tests-functions.sh --fetch-setup-info | grep SECRET_KEY | cut -d' ' -f2")
-BUILD_URL=$(ssh_primary_node "export SOLUTION_FILE=$SOLUTION_FILE &&/var/tmp/run-performace-tests-functions.sh --fetch-setup-info | grep BUILD_URL | cut -d' ' -f2")
-
+SETUP_INFO=$(ssh_primary_node "export SOLUTION_FILE=$SOLUTION_FILE && /var/tmp/run-performace-tests-functions.sh --fetch-setup-info")
 
 add_primary_separator "Configure awscli on client"
 ssh -o 'StrictHostKeyChecking=no' "$CLIENT_NODE" "
-export ENDPOINT_URL=$ENDPOINT_URL &&
-export ACCESS_KEY=$ACCESS_KEY &&
-export SECRET_KEY=$SECRET_KEY &&
+export ENDPOINT_URL=$(echo $SETUP_INFO | tr ' ' '\n' | grep ENDPOINT_URL | cut -d'=' -f2) &&
+export ACCESS_KEY=$(echo $SETUP_INFO | tr ' ' '\n' | grep ACCESS_KEY | cut -d'=' -f2) &&
+export SECRET_KEY=$(echo $SETUP_INFO | tr ' ' '\n' | grep SECRET_KEY | cut -d'=' -f2) &&
 /var/tmp/run-performace-tests-functions.sh --setup-client"
 
 add_primary_separator "Execute PerfPro Sanity"
