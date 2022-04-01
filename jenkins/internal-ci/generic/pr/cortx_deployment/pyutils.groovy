@@ -93,6 +93,7 @@ pipeline {
                         yum install python36-devel -y
                         ./jenkins/build.sh -v $VERSION -b $BUILD_NUMBER
                         ./statsd-utils/jenkins/build.sh -v $VERSION -b $BUILD_NUMBER
+                        ./jenkins/build_test_rpm.sh -v $VERSION -b $BUILD_NUMBER    
                     '''
                 }
             }
@@ -129,6 +130,7 @@ pipeline {
                     shopt -s extglob
                     ls
                     cp ./cortx_utils/py-utils/dist/!(*.src.rpm|*.tar.gz) "${CORTX_ISO_LOCATION}"
+                    cp ./cortx_utils/py-utils/test/dist/!(*.src.rpm|*.tar.gz) "${CORTX_ISO_LOCATION}"
                     cp ./cortx_utils/statsd-utils/dist/rpmbuild/RPMS/x86_64/*.rpm "${CORTX_ISO_LOCATION}"
                     pushd ${COMPONENTS_RPM}
                         for component in `ls -1 | grep -E -v "${COMPONENT_NAME}"`
@@ -237,11 +239,47 @@ pipeline {
                 }
             }
         }
+
+        stage ("Test Utils") {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                script {
+                        NODE_HOST = sh( script: '''
+                            echo $host | tr ' ' '\n' | head -1 | awk -F["="] '{print $2}' | cut -d',' -f1    
+                        ''', returnStdout: true).trim()
+                        NODE_USER = sh( script: '''
+                            echo $host | tr ' ' '\n' | head -1 | awk -F["="] '{print $3}' | cut -d',' -f1    
+                        ''', returnStdout: true).trim()
+                        NODE_PASS = sh( script: '''
+                            echo $host | tr ' ' '\n' | head -1 | awk -F["="] '{print $4}' | cut -d',' -f1    
+                        ''', returnStdout: true).trim()
+                        def remote = getRemoteMachine(NODE_HOST, NODE_USER, NODE_PASS)
+                        def commandResult = sshCommand remote: remote, command: '''
+                            kubectl exec $(kubectl get pods | awk '/cortx-data/{print $1; exit}') --container cortx-hax -- bash -c 'yum install -y wget yum-utils \
+                                && yum-config-manager --add-repo "http://cortx-storage.colo.seagate.com/releases/cortx/github/pr-build/main/cortx-utils/$(grep BUILD < RELEASE.INFO | awk "{print \\$2}" | sed "s|\\"||g")/cortx_iso/" \
+                                && yum install --nogpgcheck -y cortx-py-utils-test-* \
+                                && /opt/seagate/cortx/utils/bin/utils_setup test --config yaml:///etc/cortx/cluster.conf --plan sanity'
+                            kubectl exec $(kubectl get pods | awk '/cortx-data/{print $1; exit}') --container cortx-hax -- bash -c 'cat /tmp/py_utils_test_report.html' | tee py_utils_test_report.html    
+                        '''
+                        echo "Result: " + commandResult
+                        sshGet remote: remote, from: '/root/py_utils_test_report.html', into: 'py_utils_test_report.html', override: true
+                }
+            }
+        }
 	}
 
     post {
         always {
             script {
+                if (fileExists('py_utils_test_report.html')) {
+                    def testStatus = sh( script: "grep Overall < py_utils_test_report.html | sed 's/<[^>]*>//g' | awk -F[':'] '{ print \$2 }' | tr -d '[:space:]'", returnStdout: true)
+                    if ( "${testStatus}" == "Failed" ) {
+                        currentBuild.result = "FAILURE"
+                    }
+                    archiveArtifacts allowEmptyArchive: true, artifacts: 'py_utils_test_report.html', followSymlinks: false    
+                } else {
+                    echo 'ERROR : py_utils_test_report.html is not present'
+                }
                 sh label: 'Remove artifacts', script: '''rm -rf "${DESTINATION_RELEASE_LOCATION}"'''
             }
         }
@@ -251,4 +289,15 @@ pipeline {
             }  
         }
     }
+}
+
+def getRemoteMachine(String host, String VM_USR, String VM_PWD) {
+    def remote = [:]
+    remote.name = 'cortx-vm'
+    remote.host = host
+    remote.user =  VM_USR
+    remote.password = VM_PWD
+    remote.allowAnyHosts = true
+    remote.fileTransfer = 'scp'
+    return remote
 }
