@@ -24,7 +24,7 @@ pipeline {
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch for cortx-re')
 
         choice (
-            choices: ['all', 'cortx-all' , 'cortx-rgw'],
+            choices: ['all', 'cortx-all' , 'cortx-rgw', 'cortx-data'],
             description: 'CORTX Image to be built. Defaults to all images ',
             name: 'CORTX_IMAGE'
         )
@@ -274,6 +274,8 @@ EOF
                             ]
                         env.cortx_all_image = buildCortxAllImage.buildVariables.cortx_all_image
                         env.cortx_rgw_image = buildCortxAllImage.buildVariables.cortx_rgw_image
+                        env.cortx_data_image = buildCortxAllImage.buildVariables.cortx_data_image
+                        env.cortx_control_image = buildCortxAllImage.buildVariables.cortx_control_image
                     } catch (err) {
                         build_stage = env.STAGE_NAME
                         error "Failed to Build CORTX-ALL image"
@@ -290,10 +292,11 @@ EOF
                              script {
                                   build job: "K8s-1N-deployment", wait: true,
                                   parameters: [
-                                        string(name: 'CORTX_RE_URL', value: "${CORTX_RE_URL}"),
+                                        string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_URL}"),
                                         string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
                                         string(name: 'CORTX_ALL_IMAGE', value: "${env.cortx_all_image}"),
                                         string(name: 'CORTX_SERVER_IMAGE', value: "${env.cortx_rgw_image}"),
+                                        string(name: 'CORTX_DATA_IMAGE', value: "${env.cortx_data_image}"),
                                         string(name: 'CORTX_SCRIPTS_REPO', value: "Seagate/cortx-k8s"),
                                         string(name: 'CORTX_SCRIPTS_BRANCH', value: "integration"),
                                         string(name: 'hosts', value: "${singlenode_host}"),
@@ -309,13 +312,14 @@ EOF
                              script {
                                   build job: "K8s-3N-deployment", wait: true,
                                   parameters: [
-                                        string(name: 'CORTX_RE_URL', value: "${CORTX_RE_URL}"),
+                                        string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_URL}"),
                                         string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
                                         string(name: 'CORTX_ALL_IMAGE', value: "${env.cortx_all_image}"),
                                         string(name: 'CORTX_SERVER_IMAGE', value: "${env.cortx_rgw_image}"),
+                                        string(name: 'CORTX_DATA_IMAGE', value: "${env.cortx_data_image}"),
                                         string(name: 'CORTX_SCRIPTS_REPO', value: "Seagate/cortx-k8s"),
                                         string(name: 'CORTX_SCRIPTS_BRANCH', value: "integration"),
-                                        string(name: 'hosts', value: "${singlenode_host}"),
+                                        string(name: 'hosts', value: "${threenode_hosts}"),
                                         string(name: 'EMAIL_RECIPIENTS', value: "DEBUG")
                                  ] 
                              }
