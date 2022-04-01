@@ -275,8 +275,8 @@ pipeline {
         always {
             script {
                 if (fileExists('py_utils_test_report.html')) {
-                    def test_status = sh( script: "grep Overall < py_utils_test_report.html | sed 's/<[^>]*>//g' | awk -F[':'] '{ print \$2 }' | tr -d '[:space:]'", returnStdout: true)
-                    if ( "${test_status}" == "Failed" ) {
+                    def testStatus = sh( script: "grep Overall < py_utils_test_report.html | sed 's/<[^>]*>//g' | awk -F[':'] '{ print \$2 }' | tr -d '[:space:]'", returnStdout: true)
+                    if ( "${testStatus}" == "Failed" ) {
                         currentBuild.result = "FAILURE"
                     }
                     archiveArtifacts allowEmptyArchive: true, artifacts: 'py_utils_test_report.html', followSymlinks: false    
