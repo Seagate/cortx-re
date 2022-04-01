@@ -255,11 +255,8 @@ pipeline {
                         ''', returnStdout: true).trim()
                         def remote = getRemoteMachine(NODE_HOST, NODE_USER, NODE_PASS)
                         def commandResult = sshCommand remote: remote, command: '''
-                            DATA_POD="$(( kubectl get pods | grep "cortx-data" | awk '{print $1}' ) 2>&1)"
-                            echo $DATA_POD
-                            kubectl exec $DATA_POD --container cortx-hax -- bash -c 'yum install -y wget yum-utils \
-                                && BUILD=$(grep BUILD < RELEASE.INFO | awk -F["\\""] "{ print \\$2 }" | tr -d "\\"") \
-                                && yum-config-manager --add-repo "http://cortx-storage.colo.seagate.com/releases/cortx/github/pr-build/main/cortx-utils/$BUILD/cortx_iso/" \
+                            kubectl exec $(kubectl get pods | awk '/cortx-data/{print $1; exit}') --container cortx-hax -- bash -c 'yum install -y wget yum-utils \
+                                && yum-config-manager --add-repo "http://cortx-storage.colo.seagate.com/releases/cortx/github/pr-build/main/cortx-utils/$(grep BUILD < RELEASE.INFO | awk "{print \\$2}" | sed "s|\\"||g")/cortx_iso/" \
                                 && yum install --nogpgcheck -y cortx-py-utils-test-* \
                                 && /opt/seagate/cortx/utils/bin/utils_setup test --config yaml:///etc/cortx/cluster.conf --plan sanity'
                             kubectl exec $DATA_POD --container cortx-hax -- bash -c 'cat /tmp/py_utils_test_report.html' | tee py_utils_test_report.html    
