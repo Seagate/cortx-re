@@ -258,7 +258,7 @@ pipeline {
                             kubectl exec $(kubectl get pods | awk '/cortx-data/{print $1; exit}') --container cortx-hax -- bash -c 'yum install -y wget yum-utils \
                                 && yum-config-manager --add-repo "http://cortx-storage.colo.seagate.com/releases/cortx/github/pr-build/main/cortx-utils/$(grep BUILD < RELEASE.INFO | awk "{print \\$2}" | sed "s|\\"||g")/cortx_iso/" \
                                 && yum install --nogpgcheck -y cortx-py-utils-test-* \
-                                && /opt/seagate/cortx/utils/bin/utils_setup test --config yaml:///etc/cortx/cluster.conf --plan sanity'
+                                && /opt/seagate/cortx/utils/bin/utils_setup test --config yaml:///etc/cortx/cluster.conf --plan kv_store'
                             kubectl exec $(kubectl get pods | awk '/cortx-data/{print $1; exit}') --container cortx-hax -- bash -c 'cat /tmp/py_utils_test_report.html' | tee py_utils_test_report.html    
                         '''
                         echo "Result: " + commandResult
