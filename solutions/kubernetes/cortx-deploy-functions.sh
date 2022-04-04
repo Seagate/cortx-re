@@ -81,7 +81,7 @@ function update_solution_config(){
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         echo > solution.yaml
         yq e -i '.solution.namespace = "default"' solution.yaml
-        yq e -i '.solution.deployment_type = "standard"' solution.yaml
+        deployment_method=$DEPLOYMENT_METHOD yq e -i '.solution.deployment_type = env(deployment_method)' solution.yaml
         
         yq e -i '.solution.secrets.name = "cortx-secret"' solution.yaml
         yq e -i '.solution.secrets.content.kafka_admin_secret = "Seagate@123"' solution.yaml
@@ -177,7 +177,7 @@ function add_image_info() {
 echo "Updating cortx-all image info in solution.yaml"   
 pushd $SCRIPT_LOCATION/k8_cortx_cloud
     image=$CORTX_ALL_IMAGE yq e -i '.solution.images.cortxcontrol = env(image)' solution.yaml	
-    image=$CORTX_ALL_IMAGE yq e -i '.solution.images.cortxdata = env(image)' solution.yaml
+    image=$CORTX_DATA_IMAGE yq e -i '.solution.images.cortxdata = env(image)' solution.yaml
     image=$CORTX_SERVER_IMAGE yq e -i '.solution.images.cortxserver = env(image)' solution.yaml
     image=$CORTX_ALL_IMAGE yq e -i '.solution.images.cortxha = env(image)' solution.yaml
     image=$CORTX_ALL_IMAGE yq e -i '.solution.images.cortxclient = env(image)' solution.yaml
@@ -229,9 +229,10 @@ function execute_prereq() {
     echo "Pulling latest CORTX-ALL image"
     docker pull $CORTX_ALL_IMAGE || { echo "Failed to pull $CORTX_ALL_IMAGE"; exit 1; }
     docker pull $CORTX_SERVER_IMAGE || { echo "Failed to pull $CORTX_SERVER_IMAGE"; exit 1; }
+    docker pull $CORTX_DATA_IMAGE || { echo "Failed to pull $CORTX_DATA_IMAGE"; exit 1; }
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         findmnt $SYSTEM_DRIVE && umount -l $SYSTEM_DRIVE
-        ./prereq-deploy-cortx-cloud.sh $SYSTEM_DRIVE
+        ./prereq-deploy-cortx-cloud.sh -d $SYSTEM_DRIVE
     popd    
 }
 
@@ -241,15 +242,15 @@ function setup_primary_node() {
     #Third-party images are downloaded from GitHub container registry. 
     download_deploy_script
     install_yq
-    
-    if [ "$(kubectl get  nodes $HOSTNAME  -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints}" | grep -o NoSchedule)" == "" ]; then
-        execute_prereq
-    fi
 
     if [ "$SOLUTION_CONFIG_TYPE" == "manual" ]; then
         copy_solution_config
     else
         update_solution_config
+    fi
+
+    if [ "$(kubectl get  nodes $HOSTNAME  -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints}" | grep -o NoSchedule)" == "" ]; then
+        execute_prereq
     fi
     
     add_image_info
@@ -312,7 +313,22 @@ function print_pod_status() {
         SECONDS=0
         date
         while [[ SECONDS -lt 1200 ]] ; do
-            if kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-hax -- hctl status > /dev/null ; then
+            if [ "$DEPLOYMENT_METHOD" == "data-only" ]; then
+                if kubectl exec -it $(kubectl get pods | awk '/cortx-data/{print $1; exit}') -c cortx-hax -- hctl status > /dev/null ; then
+                    if ! kubectl exec -it $(kubectl get pods | awk '/cortx-data/{print $1; exit}') -c cortx-hax -- hctl status| grep -q -E 'unknown|offline|failed'; then
+                        kubectl exec -it $(kubectl get pods | awk '/cortx-data/{print $1; exit}') -c cortx-hax -- hctl status
+                        add_secondary_separator "Time taken for service to start $((SECONDS/60)) mins"
+                        exit 0
+                    else
+                        add_common_separator "Waiting for services to become online. Sleeping for 1min...."
+                        sleep 60
+                    fi
+                else
+                    add_common_separator "hctl status not working yet. Sleeping for 1min...."
+                    sleep 60
+                fi
+            else
+                if kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-hax -- hctl status > /dev/null ; then
                     if ! kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-hax -- hctl status| grep -q -E 'unknown|offline|failed'; then
                         kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-hax -- hctl status
                         add_secondary_separator "Time taken for service to start $((SECONDS/60)) mins"
@@ -321,10 +337,11 @@ function print_pod_status() {
                         add_common_separator "Waiting for services to become online. Sleeping for 1min...."
                         sleep 60
                     fi
-            else
-                add_common_separator "hctl status not working yet. Sleeping for 1min...."
-                sleep 60
-            fi
+                else
+                    add_common_separator "hctl status not working yet. Sleeping for 1min...."
+                    sleep 60
+                fi
+            fi    
         done
             add_secondary_separator "Failed to to start services within 20mins. Exiting...."
             exit 1
