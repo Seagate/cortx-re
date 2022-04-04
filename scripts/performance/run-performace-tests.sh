@@ -35,7 +35,7 @@ add_primary_separator "Fetching setup details"
 check_params
 HOST_FILE=$PWD/hosts
 SSH_KEY_FILE=/root/.ssh/id_rsa
-ALL_NODES=$(cat "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+ALL_NODES=$(awk -F[,] '{print $1}' $HOST_FILE | cut -d'=' -f2)
 PRIMARY_NODE=$(grep "role=server" $HOST_FILE | awk -F[,] '{print $1}' | cut -d'=' -f2)
 PRIMARY_CRED=$(grep "role=server" $HOST_FILE | awk -F[,] '{print $3}' | cut -d'=' -f2)
 CLIENT_NODE=$(grep "role=client" $HOST_FILE | awk -F[,] '{print $1}' | cut -d'=' -f2)
@@ -54,7 +54,6 @@ ssh -o 'StrictHostKeyChecking=no' "$CLIENT_NODE" "
 export ENDPOINT_URL=$(echo $SETUP_INFO | tr ' ' '\n' | grep ENDPOINT_URL | cut -d'=' -f2) &&
 export ACCESS_KEY=$(echo $SETUP_INFO | tr ' ' '\n' | grep ACCESS_KEY | cut -d'=' -f2) &&
 export SECRET_KEY=$(echo $SETUP_INFO | tr ' ' '\n' | grep SECRET_KEY | cut -d'=' -f2) &&
-export BUILD_URL=$(echo $SETUP_INFO | tr ' ' '\n' | grep BUILD_URL | cut -d'=' -f2) &&
 /var/tmp/run-performace-tests-functions.sh --setup-client"
 
 add_primary_separator "Execute PerfPro Sanity"
@@ -66,5 +65,5 @@ export CORTX_TOOLS_REPO="Seagate/seagate-tools" &&
 export PRIMARY_NODE=$PRIMARY_NODE &&
 export CLIENT_NODE=$CLIENT_NODE &&
 export PRIMARY_CRED=$PRIMARY_CRED &&
-export BUILD_URL=$BUILD_URL &&
+export BUILD_URL=$(echo $SETUP_INFO | tr ' ' '\n' | grep BUILD_URL | cut -d'=' -f2) &&
 /var/tmp/run-performace-tests-functions.sh --execute-perf-sanity"
