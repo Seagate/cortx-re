@@ -54,6 +54,7 @@ ssh -o 'StrictHostKeyChecking=no' "$CLIENT_NODE" "
 export ENDPOINT_URL=$(echo $SETUP_INFO | tr ' ' '\n' | grep ENDPOINT_URL | cut -d'=' -f2) &&
 export ACCESS_KEY=$(echo $SETUP_INFO | tr ' ' '\n' | grep ACCESS_KEY | cut -d'=' -f2) &&
 export SECRET_KEY=$(echo $SETUP_INFO | tr ' ' '\n' | grep SECRET_KEY | cut -d'=' -f2) &&
+export BUILD_URL=$(echo $SETUP_INFO | tr ' ' '\n' | grep BUILD_URL | cut -d'=' -f2) &&
 /var/tmp/run-performace-tests-functions.sh --setup-client"
 
 add_primary_separator "Execute PerfPro Sanity"
