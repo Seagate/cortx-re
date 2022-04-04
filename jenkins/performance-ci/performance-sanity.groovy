@@ -32,7 +32,7 @@ pipeline {
             }
         }
 
-        stage ('Setup Cluster') {
+        stage ('Execute performace sanity') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Tag last_successful', script: '''
