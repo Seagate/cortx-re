@@ -15,8 +15,9 @@ pipeline {
     parameters {
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for Cluster Setup scripts', trim: true)
-        text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used for K8 cluster setup. First node will be used as Primary', name: 'hosts')
-    }    
+        text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>,role=server
+hostname=<hostname>,user=<user>,pass=<password>,role=client''', description: 'CORTX Cluster Primary node and Client details in specified format', name: 'hosts')
+    }
 
     environment {
         GITHUB_CRED = credentials('shailesh-github-token')
