@@ -35,7 +35,7 @@ pipeline {
         stage ('Execute performace sanity') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Tag last_successful', script: '''
+                sh label: 'Execute performace sanity', script: '''
                     pushd scripts/performance
                         echo $hosts | tr ' ' '\n' > hosts
                         cat hosts
