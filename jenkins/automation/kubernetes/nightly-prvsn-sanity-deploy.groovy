@@ -85,8 +85,9 @@ pipeline {
                 script {
                     remotes = remote_host()
                     sshCommand remote: remotes[0], command: """
-                        cd ${WORK_SPACE}
-                        ./destroy-cortx-cloud.sh
+                        pushd ${WORK_SPACE}
+                            ./destroy-cortx-cloud.sh
+                        popd
                     """
                 }
             }
@@ -112,9 +113,10 @@ pipeline {
                     remotes = remote_host()
                     for (remote in remotes) {
                         sshCommand remote: remote, command: """
-                            cd /root
-                            rm -rf cortx-k8s
-                            git clone ${CORTX_SCRIPTS_REPO} -b ${CORTX_SCRIPTS_BRANCH}
+                            pushd /root
+                                rm -rf cortx-k8s
+                                git clone ${CORTX_SCRIPTS_REPO} -b ${CORTX_SCRIPTS_BRANCH}
+                            popd
                         """
                     }
                 }
@@ -153,8 +155,9 @@ pipeline {
                 script {
                     for (remote in remotes) {
                         sshCommand remote: remote, command: """
-                            cd ${WORK_SPACE}
-                            ./prereq-deploy-cortx-cloud.sh -d /dev/sdb
+                            pushd ${WORK_SPACE}
+                                ./prereq-deploy-cortx-cloud.sh -d /dev/sdb
+                            popd
                         """
                     }
                 } 
@@ -165,8 +168,9 @@ pipeline {
             steps {
                 script {
                     sshCommand remote: remotes[0], command: """
-                        cd ${WORK_SPACE}
-                        sh deploy-cortx-cloud.sh
+                        pushd ${WORK_SPACE}
+                            sh deploy-cortx-cloud.sh
+                        popd
                     """
                 }
             }
