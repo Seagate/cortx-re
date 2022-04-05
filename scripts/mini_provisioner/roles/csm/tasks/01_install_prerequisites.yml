@@ -137,7 +137,7 @@
 
 - name: "[install_prereq] : Install csm agent, csm web, cortx-py-utils, python36-cortx-prvsnr and cli"
   yum: 
-    name: ["cortx-cli", "cortx-csm_agent", "cortx-csm_web", "cortx-py-utils", "python36-cortx-prvsnr", "udx-discovery", "uds-pyi"]
+    name: ["cortx-cli", "cortx-csm_agent", "cortx-csm_web", "cortx-py-utils", "python36-cortx-prvsnr", "uds-pyi"]
     state: present
 
 - name: "[install_prereq] : Create a cortx directory if does not exist"
