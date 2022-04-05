@@ -50,7 +50,6 @@ cortx_pkgs=(
     "cortx-libsspl_sec-method_pki"
     "cortx-csm_agent"
     "cortx-csm_web"
-    "udx-discovery"
     "uds-pyi"
     "stats_utils"
     "symas-openldap"
