@@ -5,7 +5,7 @@ file                            #cortx-motr
 less                            #cortx-motr
 which                           #cortx-motr
 ######################################################
-consul                          #cortx-hare
+consul-1.11.4                   #cortx-hare
 jq                              #cortx-hare
 ######################################################
 gperftools-libs                 #cortx-rgw-integration
