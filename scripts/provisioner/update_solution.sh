@@ -73,11 +73,11 @@ function add_storage_solution_config() {
 
 function copy_solution_file() {
     echo "Copying updated solution.yaml"
-    pushd "$WORKSPACE"/scripts/provisioner
+    pushd "$SCRIPT_PATH"
         local ALL_NODES=$(awk -F[,] '{print $1}' < "$HOST_FILE"| cut -d'=' -f2)
         for node in $ALL_NODES
         do
-            scp -q solution_template.yaml "$node":$SCRIPT_PATH/solution.yaml
+            scp -q solution.yaml "$node":$SCRIPT_PATH/solution.yaml
         done
     popd
 }
