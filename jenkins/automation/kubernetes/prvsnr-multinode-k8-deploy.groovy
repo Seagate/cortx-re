@@ -78,21 +78,10 @@ pipeline {
                     remotes = remote_host()
                     for (remote in remotes) {
                         sshCommand remote: remote, command: """
-                            cd /root
-                            rm -rf cortx-k8s
-                            git clone ${CORTX_SCRIPTS_REPO} -b ${CORTX_SCRIPTS_BRANCH}
-                        """
-                    }
-                }
-            }
-        }
-
-        stage('Remove solution.yaml') {
-            steps {
-                script {
-                    for (remote in remotes) {
-                        sshCommand remote: remote, command: """
-                            rm -rf ${WORK_SPACE}/solution.yaml
+                            pushd /root
+                                rm -rf cortx-k8s
+                                git clone ${CORTX_SCRIPTS_REPO} -b ${CORTX_SCRIPTS_BRANCH}
+                            popd
                         """
                     }
                 }
@@ -110,6 +99,8 @@ pipeline {
                         export DATA_IMAGE=${DATA_IMAGE}
                         export HA_IMAGE=${HA_IMAGE}
                         export SERVER_IMAGE=${SERVER_IMAGE}
+                        export CORTX_SCRIPTS_REPO=${CORTX_SCRIPTS_REPO}
+                        export CORTX_SCRIPTS_BRANCH=${CORTX_SCRIPTS_BRANCH}
                         sh update_solution.sh
                     popd
                 '''
@@ -121,8 +112,9 @@ pipeline {
                 script {
                     for (remote in remotes) {
                         sshCommand remote: remote, command: """
-                            cd ${WORK_SPACE}
-                            ./prereq-deploy-cortx-cloud.sh -d /dev/sdb
+                            pushd ${WORK_SPACE}
+                                ./prereq-deploy-cortx-cloud.sh -d /dev/sdb
+                            popd
                         """
                     }
                 }
@@ -133,8 +125,9 @@ pipeline {
             steps {
                 script {
                     sshCommand remote: remotes[0], command: """
-                        cd ${WORK_SPACE}
-                        sh deploy-cortx-cloud.sh
+                        pushd ${WORK_SPACE}
+                            sh deploy-cortx-cloud.sh
+                        popd
                     """
                 }
             }

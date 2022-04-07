@@ -25,6 +25,14 @@ YQ_BINARY=yq_linux_386
 
 cp "$WORKSPACE"/scripts/provisioner/hosts "$WORKSPACE"/solutions/kubernetes/hosts
 
+function clone_script_repo() {
+    pushd /root
+        rm -rf cortx-k8s
+        git clone ${CORTX_SCRIPTS_REPO} -b ${CORTX_SCRIPTS_BRANCH}
+        cp "$WORKSPACE"/scripts/provisioner/hosts "$SCRIPT_PATH"/hosts
+    popd
+}
+
 function install_yq_module() {
     pip3 show yq && pip3 uninstall yq -y
     wget https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${YQ_BINARY}.tar.gz -O - | tar xz && mv ${YQ_BINARY} /usr/bin/yq
@@ -33,31 +41,34 @@ function install_yq_module() {
 }
 
 function add_image_solution_config() {
-    pushd "$WORKSPACE"/scripts/provisioner
-        image=$CONTROL_IMAGE yq e -i '.solution.images.cortxcontrol = env(image)' solution_template.yaml
-        image=$DATA_IMAGE yq e -i '.solution.images.cortxdata = env(image)' solution_template.yaml
-        image=$SERVER_IMAGE yq e -i '.solution.images.cortxserver = env(image)' solution_template.yaml
-        image=$HA_IMAGE yq e -i '.solution.images.cortxha = env(image)' solution_template.yaml
-        image=$CONTROL_IMAGE yq e -i '.solution.images.cortxclient = env(image)' solution_template.yaml
+    pushd "$SCRIPT_PATH"
+        image=$CONTROL_IMAGE yq e -i '.solution.images.cortxcontrol = env(image)' "$SCRIPT_PATH"/solution.yaml
+        image=$DATA_IMAGE yq e -i '.solution.images.cortxdata = env(image)' "$SCRIPT_PATH"/solution.yaml
+        image=$SERVER_IMAGE yq e -i '.solution.images.cortxserver = env(image)' "$SCRIPT_PATH"/solution.yaml
+        image=$HA_IMAGE yq e -i '.solution.images.cortxha = env(image)' "$SCRIPT_PATH"/solution.yaml
+        image=$CONTROL_IMAGE yq e -i '.solution.images.cortxclient = env(image)' "$SCRIPT_PATH"/solution.yaml
     popd
 }
 
 function add_node_solution_config() {
     echo "Updating node info in solution.yaml"
-    pushd "$WORKSPACE"/scripts/provisioner
-        if [ "$(wc -l < "$HOST_FILE")" == "1" ]; then
-            local NODE=$(awk -F[,] '{print $1}' < "$HOST_FILE" | cut -d'=' -f2)
-            i=$NODE yq e -i '.solution.nodes.node1.name = env(i)' solution_template.yaml
-        else
-            count=1
+    pushd "$SCRIPT_PATH"
+        yq e -i "del(.solution.nodes)" "$SCRIPT_PATH"/solution.yaml
+        count=1
             for node in $(awk -F[,] '{print $1}' < "$HOST_FILE"| cut -d'=' -f2)
                 do
-                i=$node yq e -i '.solution.nodes.node'$count'.name = env(i)' solution_template.yaml
+                i=$node yq e -i '.solution.nodes.node'$count'.name = env(i)' "$SCRIPT_PATH"/solution.yaml
                 count=$((count+1))
             done
-            sed -i -e 's/- //g' -e '/null/d' solution_template.yaml
-        popd
-        fi
+    popd
+}
+
+function add_storage_solution_config() {
+    echo "Updating storage info in solution.yaml"
+    pushd "$SCRIPT_PATH"
+        yq e -i "del(.solution.storage.cvg2)" "$SCRIPT_PATH"/solution.yaml
+        yq e -i "del(.solution.storage.cvg1.devices.data.d7)" "$SCRIPT_PATH"/solution.yaml
+    popd
 }
 
 function copy_solution_file() {
@@ -71,10 +82,12 @@ function copy_solution_file() {
     popd
 }
 
+clone_script_repo
 install_yq_module
 validation
 generate_rsa_key
 nodes_setup
 add_image_solution_config
 add_node_solution_config
+add_storage_solution_config
 copy_solution_file
