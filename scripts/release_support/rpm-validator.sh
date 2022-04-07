@@ -48,26 +48,24 @@ RPM_NAMING_PATTERN="cortx-[component_name]-[version]-[bld]_[git_tag].[platform].
 
 COMPONENT_RPM_PATTERN_ARRAY=( 
                     "Motr:cortx-motr"
-                    "S3:cortx-s3server,cortx-s3iamcli"
+                    "RGW:cortx-rgw-integration"
                     "Hare:cortx-hare"
                     "HA:cortx-ha"
-                    "CSM:cortx-csm_agent,csm_web"
+                    "CSM:cortx-csm_agent"
                     "Provisioner:cortx-provisioner"
-                    "SSPL:cortx-sspl"
                     "CORTX-utils:cortx-py-utils,stats_utils"
                 )
 
 RPM_INSTALL_ROOT_PATH="/opt/seagate/cortx"
 RPM_LOG_ROOT_PATH="/var/log/cortx"
 RPM_INSTALL_PATH_EXPECTED=(
-                    "cortx-motr:bin,conf"                                                   # Motr
-                    "cortx-s3server:bin,conf" "cortx-s3iamcli:bin,conf"                     # S3Server
-                    "cortx-hare:bin,conf"                                                   # Hare
-                    "cortx-ha:bin,conf"                                                     # HA
-                    "cortx-csm_agent:bin,conf" "cortx-csm_web:bin,conf"                     # CSM
-                    "cortx-provisioner:bin,conf"                                            # Prvsnr
-                    "cortx-sspl:bin,conf"                                                   # SSPL
-                    "cortx-py-utils:bin,conf" "stats_utils:bin,conf"                        # CORTX Utils
+                    "cortx-motr:bin,conf"                                       # Motr
+                    "cortx-rgw-integration:bin,conf"                            # RGW
+                    "cortx-hare:bin,conf"                                       # Hare
+                    "cortx-ha:bin,conf"                                         # HA
+                    "cortx-csm_agent:bin,conf"                                  # CSM
+                    "cortx-provisioner:bin,conf"                                # Prvsnr
+                    "cortx-py-utils:bin,conf" "stats_utils:bin,conf"            # CORTX Utils
                 )
 
 VALIDATION_ENVIRONMENT="OS : $(cat /etc/redhat-release | sed -e 's/ $//g') , Kernel : $(uname -r)"
@@ -191,16 +189,8 @@ gpgkey=$BUILD_URL/RPM-GPG-KEY-Seagate
 priority=1
 EOF
 
-CENTOS_RELEASE="$(awk '{print $4}' /etc/redhat-release)"
-
-if [[ "$CENTOS_RELEASE" == "7.8.2003" ]]; then
-    yum-config-manager --add-repo http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/centos/centos-7.8.2003-2.0.0-latest/
-fi
-
-if [[ "$CENTOS_RELEASE" == "7.9.2009" ]]; then
-    yum-config-manager --add-repo http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/centos/centos-7.9.2009-2.0.0-latest/
-fi
-
+    OS="$(echo $OS_VERSION | awk -F'-' '{ print $1 }')"
+    yum-config-manager --add-repo http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/$OS/$OS_VERSION-2.0.0-latest/
 }
 
 _clean(){
@@ -232,8 +222,6 @@ _generate_rpm_validation_report(){
             rpm_release=$(rpm -qp "$BUILD_URL/$rpm" --qf '%{RELEASE}')
             rpm_arch=$(rpm -qp "$BUILD_URL/$rpm" --qf '%{ARCH}')
             rpm_files=$(rpm -qp "$BUILD_URL/$rpm" --qf '[%{FILENAMES}]')
-
-            RPM_NAMING_PATTERN="cortx-[component_name]-[version]-[bld]_[git_tag].[platform].rpm"
 
             rpm_name_expected=$(echo -e "$RPM_NAMING_PATTERN" | sed -e "s/cortx-\[component_name\]/$rpm_name/g;s/\[version\]/$RPM_VERSION_EXPECTED/g; s/\[bld\]_\[git_tag\]/$rpm_release/g; s/\[platform\]/$rpm_arch/g")
             name_check="<td $HTML_TD_STYLE><span style='color:green; text-shadow: -2px 0 black, 0 2px black, 2px 0 black, 0 -2px black; font-size: 30px;'>&#10003;</span></td>"
