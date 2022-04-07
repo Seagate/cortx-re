@@ -135,18 +135,21 @@ pipeline {
         }
 
         stage('Update solution.yaml') {
-            steps {
-                sh label: 'Update solution.yaml', script: '''
+           steps {
+                sh label: "Update solution.yaml", script: '''
                     pushd ${WORKSPACE}/scripts/provisioner
-                        echo $NODE_HOST_LIST | tr ' ' '\n' > hosts
+                        echo $NODE_HOST_LIST | tr " " "\n" > hosts
                         cat hosts
+                        export WORKSPACE=${WORKSPACE}
                         export CONTROL_IMAGE=${CONTROL_IMAGE}
                         export DATA_IMAGE=${DATA_IMAGE}
                         export HA_IMAGE=${HA_IMAGE}
                         export SERVER_IMAGE=${SERVER_IMAGE}
+                        export CORTX_SCRIPTS_REPO=${CORTX_SCRIPTS_REPO}
+                        export CORTX_SCRIPTS_BRANCH=${CORTX_SCRIPTS_BRANCH}
                         sh update_solution.sh
                     popd
-                ''' 
+                '''
             }
         }
 
