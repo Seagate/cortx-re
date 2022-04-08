@@ -109,11 +109,11 @@ resource "aws_key_pair" "cortx_key" {
   public_key = tls_private_key.example.public_key_openssh
 }
 
-resource "local_file" "pem_file" {
+resource "local_sensitive_file" "pem_file" {
   filename             = "${path.module}/cortx.pem"
   file_permission      = "600"
   directory_permission = "700"
-  sensitive_content    = tls_private_key.example.private_key_pem
+  content    = tls_private_key.example.private_key_pem
 }
 
 resource "aws_instance" "cortx_deploy" {
