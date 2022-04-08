@@ -22,7 +22,6 @@ set -eo pipefail
 
 source /var/tmp/functions.sh
 
-SYSTEM_DRIVE="/dev/sdb"
 SYSTEM_DRIVE_MOUNT="/mnt/fs-local-volume"
 SCRIPT_LOCATION="/root/deploy-scripts"
 YQ_VERSION=v4.13.3
