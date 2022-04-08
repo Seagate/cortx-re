@@ -70,9 +70,11 @@ function passwordless_ssh() {
     local PASS=$3
     ping -c1 -W1 -q $NODE
     check_status
+    yum list pdsh -q || yum install epel-release -y
     yum install sshpass openssh-clients pdsh -y
+    check_status "$NODE: Package installation failed"
     sshpass -p "$PASS" ssh-copy-id -f -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa.pub "$USER"@"$NODE"
-    check_status "Passwordless ssh setup failed for $NODE. Please validate provided credentails"
+    check_status "$NODE: Passwordless ssh setup failed. Please validate provided credentails"
 }
 
 function nodes_setup() {

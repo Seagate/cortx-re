@@ -28,6 +28,17 @@ ALL_NODES=$(cat "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
 PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
 WORKER_NODES=$(cat "$HOST_FILE" | grep -v "$PRIMARY_NODE" | awk -F[,] '{print $1}' | cut -d'=' -f2) || true
 
+function usage() {
+    cat << HEREDOC
+Usage : $0 [--cortx-cluster, --destroy-cluster, --io-sanity, --support-bundle]
+where,
+    --cortx-cluster - Deploy CORTX Cluster on provided nodes.
+    --destroy-cluster  - Destroy CORTX cluster.
+    --io-sanity - Perform IO sanity test.
+    --support-bundle - Collect support bundle logs.
+HEREDOC
+}
+
 ACTION="$1"
 if [ -z "$ACTION" ]; then
     echo "ERROR : No option provided"
@@ -35,31 +46,39 @@ if [ -z "$ACTION" ]; then
     exit 1
 fi
 
-function usage() {
-    cat << HEREDOC
-Usage : $0 [--cortx-cluster, --destroy-cluster, --io-sanity, --support-bundle]
-where,
-    --cortx-cluster - Deploy Third-Party and CORTX components.
-    --destroy-cluster  - Destroy CORTX cluster.
-    --io-sanity - Perform IO sanity test.
-    --support-bundle - Collect support bundle logs.
-HEREDOC
-}
-
 function check_params() {
-    if [ -z "$CORTX_SCRIPTS_REPO" ]; then echo "CORTX_SCRIPTS_REPO not provided.Exiting..."; exit 1; fi
-    if [ -z "$CORTX_SCRIPTS_BRANCH" ]; then echo "CORTX_SCRIPTS_BRANCH not provided.Exiting..."; exit 1; fi
-    if [ -z "$CORTX_ALL_IMAGE" ]; then echo "CORTX_ALL_IMAGE not provided.Exiting..."; exit 1; fi
-    if [ -z "$CORTX_SERVER_IMAGE" ]; then echo "CORTX_SERVER_IMAGE not provided.Exiting..."; exit 1; fi
-    if [ -z "$CORTX_DATA_IMAGE" ]; then echo "CORTX_DATA_IMAGE not provided.Exiting..."; exit 1; fi
-    if [ -z "$DEPLOYMENT_METHOD" ]; then echo "DEPLOYMENT_METHOD not provided.Exiting..."; exit 1; fi
-    if [ -z "$SOLUTION_CONFIG_TYPE" ]; then echo "SOLUTION_CONFIG_TYPE not provided.Exiting..."; exit 1; fi
+    if [ -z "$CORTX_SCRIPTS_REPO" ]; then echo "CORTX_SCRIPTS_REPO not provided. Using default: Seagate/cortx-k8s ";CORTX_SCRIPTS_REPO="Seagate/cortx-k8s"; fi
+    if [ -z "$CORTX_SCRIPTS_BRANCH" ]; then echo "CORTX_SCRIPTS_BRANCH not provided. Using default: v0.2.1";CORTX_SCRIPTS_BRANCH="v0.2.1"; fi
+    if [ -z "$CORTX_ALL_IMAGE" ]; then echo "CORTX_ALL_IMAGE not provided. Using default: ghcr.io/seagate/cortx-all:2.0.0-latest"; CORTX_ALL_IMAGE=ghcr.io/seagate/cortx-all:2.0.0-latest; fi
+    if [ -z "$CORTX_SERVER_IMAGE" ]; then echo "CORTX_SERVER_IMAGE not provided. Using default : ghcr.io/seagate/cortx-rgw:2.0.0-latest"; CORTX_SERVER_IMAGE=ghcr.io/seagate/cortx-rgw:2.0.0-latest; fi
+    if [ -z "$CORTX_DATA_IMAGE" ]; then echo "CORTX_DATA_IMAGE not provided. Using default : ghcr.io/seagate/cortx-data:2.0.0-latest"; CORTX_DATA_IMAGE=ghcr.io/seagate/cortx-data:2.0.0-latest; fi
+    if [ -z "$DEPLOYMENT_METHOD" ]; then echo "DEPLOYMENT_METHOD not provided. Using default : standard"; DEPLOYMENT_METHOD=standard; fi
+    if [ -z "$SOLUTION_CONFIG_TYPE" ]; then echo "SOLUTION_CONFIG_TYPE not provided. Using default : manual"; SOLUTION_CONFIG_TYPE=manual; fi
     if [ -z "$SNS_CONFIG" ]; then SNS_CONFIG="1+0+0"; fi
     if [ -z "$DIX_CONFIG" ]; then DIX_CONFIG="1+0+0"; fi
     if [ -z "$EXTERNAL_EXPOSURE_SERVICE" ]; then EXTERNAL_EXPOSURE_SERVICE="LoadBalancer"; fi
     if [ -z "$CONTROL_EXTERNAL_NODEPORT" ]; then CONTROL_EXTERNAL_NODEPORT="31169"; fi
     if [ -z "$S3_EXTERNAL_HTTP_NODEPORT" ]; then S3_EXTERNAL_HTTP_NODEPORT="30080"; fi
     if [ -z "$S3_EXTERNAL_HTTPS_NODEPORT" ]; then S3_EXTERNAL_HTTPS_NODEPORT="30443"; fi
+    if [ -z "$SYSTEM_DRIVE" ]; then echo "SYSTEM_DRIVE not provided. Using default: /dev/sdb";SYSTEM_DRIVE="/dev/sdb"; fi
+
+   echo -e "\n\n########################################################################"
+   echo -e "# CORTX_SCRIPTS_REPO         : $CORTX_SCRIPTS_REPO                  "
+   echo -e "# CORTX_SCRIPTS_BRANCH       : $CORTX_SCRIPTS_BRANCH                "
+   echo -e "# CORTX_ALL_IMAGE            : $CORTX_ALL_IMAGE                     "
+   echo -e "# CORTX_SERVER_IMAGE         : $CORTX_SERVER_IMAGE                  "
+   echo -e "# CORTX_DATA_IMAGE           : $CORTX_DATA_IMAGE                    "
+   echo -e "# DEPLOYMENT_METHOD          : $DEPLOYMENT_METHOD                   "
+   echo -e "# SOLUTION_CONFIG_TYPE       : $SOLUTION_CONFIG_TYPE                "
+   echo -e "# SNS_CONFIG                 : $SNS_CONFIG                          "
+   echo -e "# DIX_CONFIG                 : $DIX_CONFIG                          "
+   echo -e "# EXTERNAL_EXPOSURE_SERVICE  : $EXTERNAL_EXPOSURE_SERVICE           "
+   echo -e "# CONTROL_EXTERNAL_NODEPORT  : $CONTROL_EXTERNAL_NODEPORT           "
+   echo -e "# S3_EXTERNAL_HTTP_NODEPORT  : $S3_EXTERNAL_HTTP_NODEPORT           "
+   echo -e "# S3_EXTERNAL_HTTPS_NODEPORT : $S3_EXTERNAL_HTTPS_NODEPORT          "
+   echo -e "# SYSTEM_DRIVE               : $SYSTEM_DRIVE                        "
+   echo -e "#########################################################################"
+
 }
 
 function pdsh_worker_exec() {
@@ -74,11 +93,11 @@ function pdsh_worker_exec() {
 
 function setup_cluster() {
     add_primary_separator "\tSetting up CORTX Cluster"
-    echo  "Using $SOLUTION_CONFIG_TYPE type for generating solution.yaml"
+    add_secondary_separator "Using $SOLUTION_CONFIG_TYPE type for generating solution.yaml"
 
     if [ "$SOLUTION_CONFIG_TYPE" == manual ]; then
         SOLUTION_CONFIG="$PWD/solution.yaml"
-        if [ -f '$SOLUTION_CONFIG' ]; then echo "file $SOLUTION_CONFIG not available..."; exit 1; fi
+        if [ ! -f "$SOLUTION_CONFIG" ]; then echo -e "ERROR:$SOLUTION_CONFIG file is not available..."; exit 1; fi
     fi
 
     validation
@@ -101,6 +120,7 @@ function setup_cluster() {
     export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH && 
     export SNS_CONFIG=$SNS_CONFIG && 
     export DIX_CONFIG=$DIX_CONFIG &&
+    export SYSTEM_DRIVE=$SYSTEM_DRIVE &&
     export CONTROL_EXTERNAL_NODEPORT=$CONTROL_EXTERNAL_NODEPORT &&
     export S3_EXTERNAL_HTTP_NODEPORT=$S3_EXTERNAL_HTTP_NODEPORT &&
     export S3_EXTERNAL_HTTPS_NODEPORT=$S3_EXTERNAL_HTTPS_NODEPORT &&
@@ -131,13 +151,15 @@ function destroy-cluster() {
         if [ -f '$SOLUTION_CONFIG' ]; then echo "file $SOLUTION_CONFIG not available..."; exit 1; fi
     fi
 
+    if [ -z "$SYSTEM_DRIVE" ]; then echo "SYSTEM_DRIVE not provided. Using default: /dev/sdb";SYSTEM_DRIVE="/dev/sdb"; fi
+
     validation
     generate_rsa_key
     nodes_setup
 
     add_primary_separator "Destroying Cluster from $PRIMARY_NODE"
     scp_primary_node cortx-deploy-functions.sh functions.sh
-    ssh_primary_node "/var/tmp/cortx-deploy-functions.sh --destroy"
+    ssh_primary_node "export SYSTEM_DRIVE=$SYSTEM_DRIVE && /var/tmp/cortx-deploy-functions.sh --destroy"
     add_primary_separator "Print Kubernetes Cluster Status after Cleanup"
     ssh_primary_node 'kubectl get pods -o wide' | tee /var/tmp/cortx-cluster-status.txt	
 }
