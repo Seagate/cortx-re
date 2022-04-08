@@ -60,6 +60,7 @@ function check_params() {
     if [ -z "$CONTROL_EXTERNAL_NODEPORT" ]; then CONTROL_EXTERNAL_NODEPORT="31169"; fi
     if [ -z "$S3_EXTERNAL_HTTP_NODEPORT" ]; then S3_EXTERNAL_HTTP_NODEPORT="30080"; fi
     if [ -z "$S3_EXTERNAL_HTTPS_NODEPORT" ]; then S3_EXTERNAL_HTTPS_NODEPORT="30443"; fi
+    if [ -z "$SYSTEM_DRIVE" ]; then echo "SYSTEM_DRIVE not provided. Using default: /dev/sdb";SYSTEM_DRIVE="/dev/sdb"; fi
 
    echo -e "\n\n########################################################################"
    echo -e "# CORTX_SCRIPTS_REPO         : $CORTX_SCRIPTS_REPO                  "
@@ -75,6 +76,7 @@ function check_params() {
    echo -e "# CONTROL_EXTERNAL_NODEPORT  : $CONTROL_EXTERNAL_NODEPORT           "
    echo -e "# S3_EXTERNAL_HTTP_NODEPORT  : $S3_EXTERNAL_HTTP_NODEPORT           "
    echo -e "# S3_EXTERNAL_HTTPS_NODEPORT : $S3_EXTERNAL_HTTPS_NODEPORT          "
+   echo -e "# SYSTEM_DRIVE               : $SYSTEM_DRIVE                        "
    echo -e "#########################################################################"
 
 }
@@ -118,6 +120,7 @@ function setup_cluster() {
     export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH && 
     export SNS_CONFIG=$SNS_CONFIG && 
     export DIX_CONFIG=$DIX_CONFIG &&
+    export SYSTEM_DRIVE=$SYSTEM_DRIVE &&
     export CONTROL_EXTERNAL_NODEPORT=$CONTROL_EXTERNAL_NODEPORT &&
     export S3_EXTERNAL_HTTP_NODEPORT=$S3_EXTERNAL_HTTP_NODEPORT &&
     export S3_EXTERNAL_HTTPS_NODEPORT=$S3_EXTERNAL_HTTPS_NODEPORT &&
