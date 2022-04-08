@@ -51,7 +51,7 @@ function add_image_solution_config() {
 }
 
 function add_node_solution_config() {
-    echo "Updating node info in solution.yaml"
+    add_common_separator "Updating node info in solution.yaml"
     pushd "$SCRIPT_PATH"
         yq e -i "del(.solution.nodes)" "$SCRIPT_PATH"/solution.yaml
         count=1
@@ -64,7 +64,7 @@ function add_node_solution_config() {
 }
 
 function add_storage_solution_config() {
-    echo "Updating storage info in solution.yaml"
+    add_common_separator "Updating storage info in solution.yaml"
     pushd "$SCRIPT_PATH"
         yq e -i "del(.solution.storage.cvg2)" "$SCRIPT_PATH"/solution.yaml
         yq e -i "del(.solution.storage.cvg1.devices.data.d7)" "$SCRIPT_PATH"/solution.yaml
@@ -72,7 +72,7 @@ function add_storage_solution_config() {
 }
 
 function copy_solution_file() {
-    echo "Copying updated solution.yaml"
+    add_common_separator "Copying updated solution.yaml"
     pushd "$SCRIPT_PATH"
         local ALL_NODES=$(awk -F[,] '{print $1}' < "$HOST_FILE"| cut -d'=' -f2)
         for node in $ALL_NODES
