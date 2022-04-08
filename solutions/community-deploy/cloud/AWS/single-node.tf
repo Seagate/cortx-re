@@ -119,7 +119,7 @@ resource "local_file" "pem_file" {
 resource "aws_instance" "cortx_deploy" {
   # https://wiki.centos.org/Cloud/AWS
   ami                    = data.aws_ami.centos.id
-  instance_type          = "c5.large"
+  instance_type          = "t3a.2xlarge"
   availability_zone      = data.aws_availability_zones.available.names[0]
   key_name               = aws_key_pair.cortx_key.key_name
   vpc_security_group_ids = [aws_security_group.cortx_deploy.id]
