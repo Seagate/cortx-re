@@ -157,7 +157,7 @@ function destroy-cluster() {
 
     add_primary_separator "Destroying Cluster from $PRIMARY_NODE"
     scp_primary_node cortx-deploy-functions.sh functions.sh
-    ssh_primary_node "/var/tmp/cortx-deploy-functions.sh --destroy"
+    ssh_primary_node "export SYSTEM_DRIVE=$SYSTEM_DRIVE && /var/tmp/cortx-deploy-functions.sh --destroy"
     add_primary_separator "Print Kubernetes Cluster Status after Cleanup"
     ssh_primary_node 'kubectl get pods -o wide' | tee /var/tmp/cortx-cluster-status.txt	
 }
