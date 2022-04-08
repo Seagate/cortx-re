@@ -36,7 +36,7 @@ services:
       - /var/artifacts:/var/artifacts
       - /root/cortx:/cortx-workspace
 
-  cortx-build-rockylinux-8.4:
+  cortx-build-internal-rockylinux-8.4:
     image: cortx-docker.colo.seagate.com/seagate/cortx-build-internal:rockylinux-8.4
     build:
       context: ../../

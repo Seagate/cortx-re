@@ -111,6 +111,7 @@ glibc-langpack-en \
 glibc-locale-source \
 pinentry \
 kernel-abi-whitelists \
+libmodulemd \
 redhat-lsb && dnf clean all \
 && rm -rf /var/cache/yum ; fi
 
