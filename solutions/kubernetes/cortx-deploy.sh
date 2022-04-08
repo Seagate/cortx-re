@@ -97,7 +97,7 @@ function setup_cluster() {
 
     if [ "$SOLUTION_CONFIG_TYPE" == manual ]; then
         SOLUTION_CONFIG="$PWD/solution.yaml"
-        if [ ! -f '$SOLUTION_CONFIG' ]; then echo -e "ERROR:$SOLUTION_CONFIG file is not available..."; exit 1; fi
+        if [ ! -f "$SOLUTION_CONFIG" ]; then echo -e "ERROR:$SOLUTION_CONFIG file is not available..."; exit 1; fi
     fi
 
     validation
