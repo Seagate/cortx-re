@@ -75,11 +75,10 @@ function clone_segate_tools_repo() {
 }
 
 function update_setup_confiuration() {
-    #Update root password in config.yaml
-    sed -i '/CLUSTER_PASS/s/seagate1/'$PRIMARY_CRED'/g' $SCRIPT_LOCATION/performance/PerfPro/roles/benchmark/vars/config.yml
-    sed -e '/node_number_srvnode-*/d' -e '/#client_number/d' -e '/NODES/{n;s/.*/  - 1: '$PRIMARY_NODE'/}' -e '/CLIENTS/{n;s/.*/  - 1: '$CLIENT_NODE'/}'   performance/PerfPro/roles/benchmark/vars/config.yml    
-    sed -i '/BUILD_URL/s/\:/: '${BUILD_URL//\//\\/}'/g' $SCRIPT_LOCATION/performance/PerfPro/roles/benchmark/vars/config.yml
-    sed -i 's/https\:\/\/s3.seagate.com/'${ENDPOINT_URL//\//\\/}'/g' $SCRIPT_LOCATION/performance/PerfPro/roles/benchmark/vars/config.yml
+    CONFIG_FILE=$SCRIPT_LOCATION/performance/PerfPro/roles/benchmark/vars/config.yml
+    sed -i '/CLUSTER_PASS/s/seagate1/'$PRIMARY_CRED'/g' $CONFIG_FILE
+    sed -i -e '/node_number_srvnode-*/d' -e '/#client_number/d' -e '/NODES/{n;s/.*/  - 1: '$PRIMARY_NODE'/}' -e '/CLIENTS/{n;s/.*/  - 1: '$CLIENT_NODE'/}' $CONFIG_FILE
+    sed -i -e '/BUILD_URL/s/\:/: '${BUILD_URL//\//\\/}'/g' -e 's/https\:\/\/s3.seagate.com/'${ENDPOINT_URL//\//\\/}'/g' $CONFIG_FILE
 }
 
 function execute_perfpro() {
