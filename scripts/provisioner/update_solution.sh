@@ -42,22 +42,22 @@ function install_yq_module() {
 
 function add_image_solution_config() {
     pushd "$SCRIPT_PATH"
-        image=$CONTROL_IMAGE yq e -i '.solution.images.cortxcontrol = env(image)' "$SCRIPT_PATH"/solution.yaml
-        image=$DATA_IMAGE yq e -i '.solution.images.cortxdata = env(image)' "$SCRIPT_PATH"/solution.yaml
-        image=$SERVER_IMAGE yq e -i '.solution.images.cortxserver = env(image)' "$SCRIPT_PATH"/solution.yaml
-        image=$HA_IMAGE yq e -i '.solution.images.cortxha = env(image)' "$SCRIPT_PATH"/solution.yaml
-        image=$CONTROL_IMAGE yq e -i '.solution.images.cortxclient = env(image)' "$SCRIPT_PATH"/solution.yaml
+        image=$CONTROL_IMAGE yq e -i '.solution.images.cortxcontrol = env(image)' "$SCRIPT_PATH"/solution.example.yaml
+        image=$DATA_IMAGE yq e -i '.solution.images.cortxdata = env(image)' "$SCRIPT_PATH"/solution.example.yaml
+        image=$SERVER_IMAGE yq e -i '.solution.images.cortxserver = env(image)' "$SCRIPT_PATH"/solution.example.yaml
+        image=$HA_IMAGE yq e -i '.solution.images.cortxha = env(image)' "$SCRIPT_PATH"/solution.example.yaml
+        image=$CONTROL_IMAGE yq e -i '.solution.images.cortxclient = env(image)' "$SCRIPT_PATH"/solution.example.yaml
     popd
 }
 
 function add_node_solution_config() {
     add_common_separator "Updating node info in solution.yaml"
     pushd "$SCRIPT_PATH"
-        yq e -i "del(.solution.nodes)" "$SCRIPT_PATH"/solution.yaml
+        yq e -i "del(.solution.nodes)" "$SCRIPT_PATH"/solution.example.yaml
         count=1
             for node in $(awk -F[,] '{print $1}' < "$HOST_FILE"| cut -d'=' -f2)
                 do
-                i=$node yq e -i '.solution.nodes.node'$count'.name = env(i)' "$SCRIPT_PATH"/solution.yaml
+                i=$node yq e -i '.solution.nodes.node'$count'.name = env(i)' "$SCRIPT_PATH"/solution.example.yaml
                 count=$((count+1))
             done
     popd
@@ -66,8 +66,8 @@ function add_node_solution_config() {
 function add_storage_solution_config() {
     add_common_separator "Updating storage info in solution.yaml"
     pushd "$SCRIPT_PATH"
-        yq e -i "del(.solution.storage.cvg2)" "$SCRIPT_PATH"/solution.yaml
-        yq e -i "del(.solution.storage.cvg1.devices.data.d7)" "$SCRIPT_PATH"/solution.yaml
+        yq e -i "del(.solution.storage.cvg2)" "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i "del(.solution.storage.cvg1.devices.data.d7)" "$SCRIPT_PATH"/solution.example.yaml
     popd
 }
 
@@ -77,7 +77,7 @@ function copy_solution_file() {
         local ALL_NODES=$(awk -F[,] '{print $1}' < "$HOST_FILE"| cut -d'=' -f2)
         for node in $ALL_NODES
         do
-            scp -q solution.yaml "$node":$SCRIPT_PATH/solution.yaml
+            scp -q solution.example.yaml "$node":$SCRIPT_PATH/solution.yaml
         done
     popd
 }
