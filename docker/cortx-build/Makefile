@@ -36,7 +36,7 @@ build: io-path control-path cortx-prereq release_build
 cortx-all-image: cortx-motr cortx-s3server cortx-hare cortx-prvsnr cortx-manager release_build
 
 ## cortx-all-image: generate packages required for cortx-all image including third-party-deps at "/var/artifacts/0"
-cortx-all-rockylinux-image: cortx-motr cortx-hare cortx-prvsnr cortx-manager cortx-rgw release_build
+cortx-all-rockylinux-image: cortx-motr cortx-hare cortx-prvsnr cortx-manager cortx-rgw cortx-ha release_build
 
 ## control-path: generate control-path packages. cortx-provisioner, cortx-monitor, cortx-manager, cortx-management-portal and cortx-ha.
 control-path: cortx-prvsnr cortx-monitor cortx-manager cortx-management-portal cortx-ha
