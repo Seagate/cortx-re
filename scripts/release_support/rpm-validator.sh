@@ -191,7 +191,7 @@ EOF
     mkdir -p /opt/seagate/cortx
     OS="$(echo $OS_VERSION | awk -F'-' '{ print $1 }')"
     yum-config-manager --add-repo http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/$OS/$OS_VERSION-2.0.0-latest/
-    curl https://raw.githubusercontent.com/Seagate/cortx-re/main/docker/cortx-deploy/python_requirements.ext.txt --output /opt/seagate/cortx/python_requirements.txt
+    curl https://raw.githubusercontent.com/Seagate/cortx-re/main/docker/cortx-deploy/python_requirements.txt --output /opt/seagate/cortx/python_requirements.txt
     curl https://raw.githubusercontent.com/Seagate/cortx-re/main/docker/cortx-deploy/python_requirements.ext.txt --output /opt/seagate/cortx/python_requirements.ext.txt
     curl https://raw.githubusercontent.com/Seagate/cortx-re/main/docker/cortx-deploy/rockylinux-8.4/third-party-rpms.txt --output /opt/seagate/cortx/third-party-rpms.txt
     yum install --nogpgcheck -y python3-pip
