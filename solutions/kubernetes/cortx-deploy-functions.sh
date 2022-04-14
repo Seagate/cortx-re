@@ -22,7 +22,6 @@ set -eo pipefail
 
 source /var/tmp/functions.sh
 
-SYSTEM_DRIVE="/dev/sdb"
 SYSTEM_DRIVE_MOUNT="/mnt/fs-local-volume"
 SCRIPT_LOCATION="/root/deploy-scripts"
 YQ_VERSION=v4.13.3
@@ -232,7 +231,7 @@ function execute_prereq() {
     docker pull $CORTX_DATA_IMAGE || { echo "Failed to pull $CORTX_DATA_IMAGE"; exit 1; }
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         findmnt $SYSTEM_DRIVE && umount -l $SYSTEM_DRIVE
-        ./prereq-deploy-cortx-cloud.sh $SYSTEM_DRIVE
+        ./prereq-deploy-cortx-cloud.sh -d $SYSTEM_DRIVE
     popd    
 }
 
@@ -242,15 +241,15 @@ function setup_primary_node() {
     #Third-party images are downloaded from GitHub container registry. 
     download_deploy_script
     install_yq
-    
-    if [ "$(kubectl get  nodes $HOSTNAME  -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints}" | grep -o NoSchedule)" == "" ]; then
-        execute_prereq
-    fi
 
     if [ "$SOLUTION_CONFIG_TYPE" == "manual" ]; then
         copy_solution_config
     else
         update_solution_config
+    fi
+
+    if [ "$(kubectl get  nodes $HOSTNAME  -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints}" | grep -o NoSchedule)" == "" ]; then
+        execute_prereq
     fi
     
     add_image_info
