@@ -59,7 +59,7 @@
 
 ### 4. Cleanup only EC2 instance
 
-   Once your work don't with above instance then you can exit your VM and run clean-up script to clean your AWS infrastructure which you have created. You can clean-up all AWS infrastructure created using below command. 
+   Once your work done with above instance then you can exit your instance and run clean-up script on it. You can use below command to clean-up all AWS infrastructure.
 ```
       terraform validate && terraform destroy -var-file user.tfvars --auto-approve
 ```
