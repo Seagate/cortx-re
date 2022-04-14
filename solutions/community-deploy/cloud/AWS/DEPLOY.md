@@ -10,7 +10,7 @@
    Connect to system using SSH key or password and centos or your user. After that go with sudo privileges.
 
 ### 2. Prerequisite 
-#### Please make your vm having below drives should be available.
+#### Please make sure your vm having below drives.
 ```
       ls /dev/sd*
 ```
@@ -19,13 +19,17 @@
 ```
       sestatus
 ```
-   If SELinux is enable then you can run below command to disabled SELinux. Once below command run then reboot your system.
+   If SELinux is enable then you can run below command to disabled SELinux.
 
 ```
-      sed -i 's/SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config
-      setenforce 0
-      reboot
+      sed -i 's/SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config && setenforce 0
 ```
+
+   Once above command ran successfully then reboot your system.
+
+```
+      reboot
+```   
 ### 3. Install K8s cluster and deploy cortx cluster on that K8s cluster.
 
    Clone cortx-re repository and change directory to `cortx-re/solutions/kubernetes`
