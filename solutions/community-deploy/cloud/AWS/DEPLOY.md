@@ -1,12 +1,13 @@
-# Build & Deploy CORTX Stack on Amazon Web Services 
+# Setup K8s Cluster and Deploy CORTX Stack on Amazon Web Services.
 
-   This file consists of the procedure to Create K8s cluster & deploy Cortx stack.
-   Connect to system using SSH key or password and centos or your user. After that go with sudo privileges.
-
+   This file consists of the procedure to setup K8s cluster and deploy Cortx stack.
 
 ### 1. Create EC2 instance
 
    If you don't have VM then follow [AWS EC2 Instance Create Terraform Script](https://github.com/Seagate/cortx-re/tree/main/solutions/community-deploy/cloud/AWS). If you already create VM then skip this step.
+
+
+   Connect to system using SSH key or password and centos or your user. After that go with sudo privileges.
 
 ### 2. Prerequisite 
 #### Please make your vm having below drives should be available.
@@ -46,7 +47,7 @@
       ./cluster-setup.sh true
       kubectl get nodes
 ```
-   Execute `cortx-deploy.sh` to deploy Cortx Cluster on your K8s cluster & run IO Sanity on your Cortx Cluster.
+   Execute `cortx-deploy.sh` to deploy Cortx Cluster on your K8s cluster and run IO Sanity on your Cortx Cluster.
 ```
       export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
       ./cortx-deploy.sh --io-sanity
