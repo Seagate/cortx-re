@@ -191,6 +191,15 @@ EOF
 
     OS="$(echo $OS_VERSION | awk -F'-' '{ print $1 }')"
     yum-config-manager --add-repo http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/$OS/$OS_VERSION-2.0.0-latest/
+    curl https://raw.githubusercontent.com/Seagate/cortx-re/main/docker/cortx-deploy/python_requirements.ext.txt --output /opt/seagate/cortx/python_requirements.txt
+    curl https://raw.githubusercontent.com/Seagate/cortx-re/main/docker/cortx-deploy/python_requirements.ext.txt --output /opt/seagate/cortx/python_requirements.ext.txt
+    curl https://raw.githubusercontent.com/Seagate/cortx-re/main/docker/cortx-deploy/rockylinux-8.4/third-party-rpms.txt --output /opt/seagate/cortx/third-party-rpms.txt
+    yum install --nogpgcheck -y python3-pip
+    pip3 install  --no-cache-dir --trusted-host $(echo $BUILD_URL | awk -F '/' '{print $3}') -i http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/python-packages-2.0.0-latest/ -r /opt/seagate/cortx/python_requirements.txt -r /opt/seagate/cortx/python_requirements.ext.txt
+    yum clean all && rm -rf /var/cache/yum
+    yum --nogpgcheck -y --disablerepo="EOS_Rocky_8_OS_x86_64_Rocky_8" install libfabric-1.11.2
+    yum install --nogpgcheck -y  $(sed 's/#.*//g' /opt/seagate/cortx/third-party-rpms.txt)
+    yum clean all && rm -rf /var/cache/yum
 }
 
 _clean(){
