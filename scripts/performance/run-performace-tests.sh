@@ -60,8 +60,8 @@ add_primary_separator "Execute PerfPro Sanity"
 ssh -o 'StrictHostKeyChecking=no' "$CLIENT_NODE" "
 export GITHUB_TOKEN=$GITHUB_TOKEN &&
 export SCRIPT_LOCATION=$SCRIPT_LOCATION &&
-export CORTX_TOOLS_BRANCH=main &&
-export CORTX_TOOLS_REPO="Seagate/seagate-tools" &&
+export CORTX_TOOLS_BRANCH=$CORTX_TOOLS_BRANCH &&
+export CORTX_TOOLS_REPO=$CORTX_TOOLS_REPO &&
 export PRIMARY_NODE=$PRIMARY_NODE &&
 export CLIENT_NODE=$CLIENT_NODE &&
 export PRIMARY_CRED=$PRIMARY_CRED &&
