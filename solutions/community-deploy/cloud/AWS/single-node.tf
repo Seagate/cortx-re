@@ -109,17 +109,17 @@ resource "aws_key_pair" "cortx_key" {
   public_key = tls_private_key.example.public_key_openssh
 }
 
-resource "local_file" "pem_file" {
+resource "local_sensitive_file" "pem_file" {
   filename             = "${path.module}/cortx.pem"
   file_permission      = "600"
   directory_permission = "700"
-  sensitive_content    = tls_private_key.example.private_key_pem
+  content    = tls_private_key.example.private_key_pem
 }
 
 resource "aws_instance" "cortx_deploy" {
   # https://wiki.centos.org/Cloud/AWS
   ami                    = data.aws_ami.centos.id
-  instance_type          = "c5.large"
+  instance_type          = "t3a.2xlarge"
   availability_zone      = data.aws_availability_zones.available.names[0]
   key_name               = aws_key_pair.cortx_key.key_name
   vpc_security_group_ids = [aws_security_group.cortx_deploy.id]
