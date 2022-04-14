@@ -1,16 +1,16 @@
-# Setup K8s Cluster and Deploy CORTX Stack on Amazon Web Services.
+# Setup K8s Cluster and Deploy CORTX Stack on Amazon Web Services
 
    This file consists of the procedure to setup K8s cluster and deploy Cortx stack.
 
-### 1. Create EC2 instance
+## 1. Create EC2 instance
 
    If you don't have VM then follow [AWS EC2 Instance Create Terraform Script](https://github.com/Seagate/cortx-re/tree/main/solutions/community-deploy/cloud/AWS). If you already create VM then skip this step.
 
 
    Connect to system using SSH key or password and centos or your user. After that go with sudo privileges.
 
-### 2. Prerequisite 
-#### Please make sure your vm having below drives.
+## 2. Prerequisite 
+#### Please make sure your vm having below drives
 ```
       ls /dev/sd*
 ```
@@ -30,7 +30,7 @@
 ```
       reboot
 ```   
-### 3. Install K8s cluster and deploy cortx cluster on that K8s cluster.
+## 3. Install K8s cluster and deploy cortx cluster on that K8s cluster
 
    Clone cortx-re repository and change directory to `cortx-re/solutions/kubernetes`
 ```
@@ -57,7 +57,7 @@
       ./cortx-deploy.sh --io-sanity
 ```
 
-### 4. Cleanup only EC2 instance
+## 4. Cleanup only EC2 instance
 
    Once your work done with above instance then you can exit your instance and run clean-up script on it. You can use below command to clean-up all AWS infrastructure.
 ```
