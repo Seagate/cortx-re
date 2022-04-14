@@ -188,7 +188,7 @@ gpgcheck=1
 gpgkey=$BUILD_URL/RPM-GPG-KEY-Seagate
 priority=1
 EOF
-
+    mkdir -p /opt/seagate/cortx
     OS="$(echo $OS_VERSION | awk -F'-' '{ print $1 }')"
     yum-config-manager --add-repo http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/$OS/$OS_VERSION-2.0.0-latest/
     curl https://raw.githubusercontent.com/Seagate/cortx-re/main/docker/cortx-deploy/python_requirements.ext.txt --output /opt/seagate/cortx/python_requirements.txt
