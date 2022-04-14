@@ -15,6 +15,8 @@ pipeline {
     parameters {
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for Cluster Setup scripts', trim: true)
+        string(name: 'CORTX_TOOLS_BRANCH', defaultValue: 'https://github.com/Seagate/seagate-tools', description: 'Repository for Cluster Setup scripts', trim: true)
+        string(name: 'CORTX_TOOLS_REPO', defaultValue: 'main', description: 'Repository for Cluster Setup scripts', trim: true)
         text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>,role=server
 hostname=<hostname>,user=<user>,pass=<password>,role=client''', description: 'CORTX Cluster Primary node and Client details in specified format', name: 'hosts')
     }
@@ -41,6 +43,8 @@ hostname=<hostname>,user=<user>,pass=<password>,role=client''', description: 'CO
                         echo $hosts | tr ' ' '\n' > hosts
                         cat hosts
                         export GITHUB_TOKEN=${GITHUB_CRED}
+                        export CORTX_TOOLS_REPO=${CORTX_TOOLS_REPO}
+                        export CORTX_TOOLS_BRANCH=${CORTX_TOOLS_BRANCH}
                         ./run-performace-tests.sh
                     popd
                 '''
