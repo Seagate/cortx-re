@@ -106,7 +106,7 @@ function update_solution_config(){
         yq e -i '.solution.common.s3.start_port_num = 28051' solution.yaml
         yq e -i '.solution.common.s3.max_start_timeout = 240' solution.yaml
         yq e -i '.solution.common.s3.extra_configuration = ""' solution.yaml
-        yq e -i '.solution.common.motr.num_client_inst = 2' solution.yaml   
+        yq e -i '.solution.common.motr.num_client_inst = 1' solution.yaml   
         yq e -i '.solution.common.motr.start_port_num = 29000' solution.yaml
         yq e -i '.solution.common.motr.extra_configuration = ""' solution.yaml
         yq e -i '.solution.common.hax.protocol = "https"' solution.yaml
