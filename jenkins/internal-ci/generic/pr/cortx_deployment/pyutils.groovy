@@ -6,7 +6,7 @@ pipeline {
             label "docker-${OS_VERSION}-node"
         }
     }
-
+    triggers { cron('30 18 * * *') }
     options { 
         skipDefaultCheckout()
         timeout(time: 180, unit: 'MINUTES')
@@ -300,7 +300,7 @@ EOF
                         mimeType: 'text/html',
                         subject: "[Nightly Py-Utils Build] : ${currentBuild.currentResult}",
                         attachLog: true,
-                        to: "CORTX-DevOps@seagate.com",
+                        to: "CORTX.Foundation@seagate.com",
                         recipientProviders: recipientProvidersClass
                     )
                 }    
