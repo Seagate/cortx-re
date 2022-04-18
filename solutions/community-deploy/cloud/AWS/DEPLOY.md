@@ -1,20 +1,24 @@
-# Setup K8s Cluster and Deploy CORTX Stack on Amazon Web Services
+# Setup K8s Cluster and Deploy CORTX Stack
 
    This file consists of the procedure to setup K8s cluster and deploy Cortx stack.
 
-## 1. Create EC2 instance
+## 1. Prerequisite 
+#### Minimum specification require for Cortx Stack
+   RAM: 16GB
+   CPU: 8Core
+   DISK: 100GB
 
-   If you don't have VM then follow [AWS EC2 Instance Create Terraform Script](https://github.com/Seagate/cortx-re/tree/main/solutions/community-deploy/cloud/AWS). If you already create VM then skip this step.
-
-
-   Connect to system using SSH key or password and centos or your user. After that go with sudo privileges.
-
-## 2. Prerequisite 
-#### Please make sure your vm having below drives
+#### If you have automated deployment for solution yaml, please make sure your vm having below drives
 ```
       ls /dev/sd*
 ```
    - `/dev/sdb  /dev/sdc  /dev/sdd  /dev/sde  /dev/sdf  /dev/sdg  /dev/sdh  /dev/sdi  /dev/sdj`
+
+#### If Git doesn't exist in your system then run below command to install it
+
+```
+      yum install git -y
+```
 #### SELinux should be disable
 ```
       sestatus
@@ -30,6 +34,9 @@
 ```
       reboot
 ```   
+#### Note: 1. All node should ssh connection happen properly
+####       2. If you don't have VM and if you want to create EC2 Instance. Then follow this document [link](https://github.com/Seagate/cortx-re/tree/main/solutions/community-deploy/cloud/AWS)
+
 ## 3. Install K8s cluster and deploy cortx cluster on that K8s cluster
 
    Clone cortx-re repository and change directory to `cortx-re/solutions/kubernetes`
@@ -40,11 +47,6 @@
    Create hosts file by below command change root user password in below command.
 ```
       echo "hostname=$(hostname),user=root,pass=rootuserpassword" > hosts && cat hosts
-```
-   Run git command if git doesn't exist in your system then run below command to install it.
-
-```
-      yum install git -y
 ```
    Execute `cluster-setup.sh` to setup K8s cluster on your VM. Once your K8s setup script run successfully then check your nodes should ready in state.
 ```
