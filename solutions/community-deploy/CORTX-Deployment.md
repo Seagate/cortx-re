@@ -71,7 +71,7 @@
    6. CONTROL_EXTERNAL_NODEPORT - If you want to use different port for control service, then export this variable with another port (Default value CONTROL_EXTERNAL_NODEPORT="31169").
    7. S3_EXTERNAL_HTTP_NODEPORT - If you want to use different port for HTTP Port to IO service, then export this variable with another port (Default value S3_EXTERNAL_HTTP_NODEPORT="30080").
    8. S3_EXTERNAL_HTTPS_NODEPORT - If you want to use different port for HTTPS Port to IO service, then export this variable with another port (Default value S3_EXTERNAL_HTTPS_NODEPORT="30443").
-   9. SOLUTION_CONFIG_TYPE - If you wanted to create solution yaml manually, then create it and place it at script location and configure SOLUTION_CONFIG_TYPE variable as manual (Default value SOLUTION_CONFIG_TYPE=manual).
+   9. SOLUTION_CONFIG_TYPE - There are two types config for solution yaml file manual and automated. Automated means solution.yaml is created automatically but it needs VM with required specifications and manual means we need to create solution.yaml file and replace it at script location. If you wanted to create solution yaml manually, then create it and place it at script location and configure SOLUTION_CONFIG_TYPE variable as manual (Default value SOLUTION_CONFIG_TYPE=manual).
 
       e.g.
 ```
