@@ -14,17 +14,17 @@
 ```
    - `/dev/sdb  /dev/sdc  /dev/sdd  /dev/sde  /dev/sdf  /dev/sdg  /dev/sdh  /dev/sdi  /dev/sdj`
 
-### Git package should be installed on the system. You can use below command to install it
+### Git should be installed on the system. You can use below command to install it
 
 ```
       yum install git -y
 ```
-### SElinux should be disabled
-   - Use below command to check status of SElinux.
+### SELinux should be disabled
+   - Use below command to check status of SELinux.
 ```
       sestatus
 ```
-   - If SElinux is enable then you can run below command to disabled SElinux.
+   - If SELinux is enable then you can run below command to disabled SELinux.
 
 ```
       sed -i 's/SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config && setenforce 0
@@ -51,18 +51,18 @@
       echo "hostname=$(hostname),user=root,pass=rootuserpassword" > hosts && cat hosts
 ```
    - Execute `cluster-setup.sh` to setup K8s cluster on your VM.
-
-## Deploy Cortx Stack on K8s Cluster
-
 ```
       ./cluster-setup.sh true
 ```
+
+## Deploy Cortx Stack on K8s Cluster
+
    - Execute `cortx-deploy.sh` to deploy Cortx Cluster on your K8s Cluster.
 ```
       export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
 ```
 
-   Note:
+   Parameters
    1. CORTX_SCRIPTS_BRANCH - If you want to use another cortx-K8s branch then export this variable with your branch (Default value CORTX_SCRIPTS_BRANCH="v0.2.1").
    2. CORTX_SCRIPTS_REPO - If you want to use another cortx-K8s repo (like your fork), then export this variable with your repo (Default value CORTX_SCRIPTS_REPO="Seagate/cortx-k8s").
    3. CORTX_ALL_IMAGE - In automated case we are using latest cortx-all image. If you want to use different image then export that image by this variable(Default value CORTX_ALL_IMAGE=ghcr.io/seagate/cortx-all:2.0.0-latest).
