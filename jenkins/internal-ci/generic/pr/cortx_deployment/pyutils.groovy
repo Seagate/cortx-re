@@ -290,24 +290,20 @@ EOF
                 }
 
                 env.build_stage = "${build_stage}"
-                env.test_report_url = sh( script: "echo ${BUILD_URL}/artifact/artifacts/py_utils_test_report.html", returnStdout: true)
+                env.test_report_url = sh( script: "echo ${BUILD_URL}/artifact/py_utils_test_report.html", returnStdout: true)
 
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
 
                 if ( env.BUILD_TRIGGER_BY == 'Started by timer' ) {
-                    mailRecipients = "CORTX.DevOps.RE@seagate.com"
-                } else {
-                    mailRecipients = "gaurav.chaudhari@seagate.com"
-                }
-
-                emailext ( 
-                    body: '''${SCRIPT, template="pr-deployment-email.template"}''',
-                    mimeType: 'text/html',
-                    subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
-                    attachLog: true,
-                    to: "${mailRecipients}",
-                    recipientProviders: recipientProvidersClass
-                )
+                    emailext ( 
+                        body: '''${SCRIPT, template="pr-deployment-email.template"}''',
+                        mimeType: 'text/html',
+                        subject: "[Nightly Py-Utils Build] : ${currentBuild.currentResult}",
+                        attachLog: true,
+                        to: "CORTX-DevOps@seagate.com",
+                        recipientProviders: recipientProvidersClass
+                    )
+                }    
 
                 sh label: 'Remove artifacts', script: '''rm -rf "${DESTINATION_RELEASE_LOCATION}"'''
             }
