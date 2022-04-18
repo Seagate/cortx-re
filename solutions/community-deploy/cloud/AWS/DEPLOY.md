@@ -45,24 +45,19 @@
       git clone https://github.com/Seagate/cortx-re 
       cd $PWD/cortx-re/solutions/kubernetes
 ```
-   Create hosts file by below command change root user password in below command.
+   Create hosts file by below command, change root user password in below command.
 ```
       echo "hostname=$(hostname),user=root,pass=rootuserpassword" > hosts && cat hosts
 ```
-   Execute `cluster-setup.sh` to setup K8s cluster on your VM. Once your K8s setup script run successfully then check your nodes should ready in state.
+   Execute `cluster-setup.sh` to setup K8s cluster on your VM.
 ```
       ./cluster-setup.sh true
-      kubectl get nodes
 ```
-   Execute `cortx-deploy.sh` to deploy Cortx Cluster on your K8s cluster and run IO Sanity on your Cortx Cluster.
+   Execute `cortx-deploy.sh` to deploy Cortx Cluster on your K8s Cluster.
 ```
       export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
+```
+   Run IO Sanity on your Cortx Cluster, use below command to run it.
+```
       ./cortx-deploy.sh --io-sanity
-```
-
-## 4. Cleanup only EC2 instance
-
-   Once your work done with above instance then you can exit your instance and run clean-up script on it. You can use below command to clean-up all AWS infrastructure.
-```
-      terraform validate && terraform destroy -var-file user.tfvars --auto-approve
 ```
