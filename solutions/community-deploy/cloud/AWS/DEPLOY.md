@@ -3,23 +3,23 @@
    Please find below steps to setup K8s cluster and deploy CORTX Stack.
 
 ## Prerequisite 
-#### Minimum specification required for Cortx Stack
+### Minimum specification required for Cortx Stack
    - RAM: 16GB
    - CPU: 8Core
    - DISK: Need 8 Disk with 10GB per disk.
 
-#### If you have automated deployment for solution yaml, please make sure your vm having below drives available
+### If you have automated deployment for solution yaml, please make sure your vm having below drives available
 ```
       ls /dev/sd*
 ```
    - `/dev/sdb  /dev/sdc  /dev/sdd  /dev/sde  /dev/sdf  /dev/sdg  /dev/sdh  /dev/sdi  /dev/sdj`
 
-#### If Git doesn't exist in your system then run below command to install it
+### If Git doesn't exist in your system then run below command to install it
 
 ```
       yum install git -y
 ```
-#### SELinux should be disable
+### SELinux should be disable
    - Use below command to check status of SELinux.
 ```
       sestatus
@@ -35,7 +35,7 @@
 ```
       reboot
 ```   
-#### Note: 
+### Note: 
  1. All node should be ssh connection happen properly
  2. If you wanted to deploy on AWS environment then follow this document [link](https://github.com/Seagate/cortx-re/blob/main/solutions/community-deploy/cloud/AWS/README.md)
 
