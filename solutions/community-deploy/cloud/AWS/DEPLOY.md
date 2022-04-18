@@ -39,7 +39,7 @@
  1. All node should be ssh connection happen properly
  2. If you don't have VM and if you want to create EC2 Instance. Then follow this document [link](https://github.com/Seagate/cortx-re/blob/main/solutions/community-deploy/cloud/AWS/README.md)
 
-## 3. Install K8s cluster and deploy cortx cluster on that K8s cluster
+## Install K8s cluster and deploy cortx cluster on that K8s cluster
 
    - Clone cortx-re repository and change directory to `cortx-re/solutions/kubernetes`
 ```
