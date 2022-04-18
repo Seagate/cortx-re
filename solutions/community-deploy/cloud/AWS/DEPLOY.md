@@ -2,11 +2,11 @@
 
    This file consists of the procedure to setup K8s cluster and deploy Cortx stack.
 
-## 1. Prerequisite 
+## Prerequisite 
 #### Minimum specification required for Cortx Stack
    - RAM: 16GB
    - CPU: 8Core
-   - DISK: 100GB
+   - DISK: Need 8 Disk with 10GB per disk.
 
 #### If you have automated deployment for solution yaml, please make sure your vm having below drives available
 ```
@@ -54,7 +54,7 @@
 ```
       ./cluster-setup.sh true
 ```
-   - Execute `cortx-deploy.sh` to deploy Cortx Cluster on your K8s Cluster. In this case we have follow automated way for solution yaml file. If you want to manual configure solution yaml file, then create solution yaml file and pass that solution yaml file with this command and configure SOLUTION_CONFIG_TYPE variable as manual (export SOLUTION_CONFIG_TYPE=manual).
+   - Execute `cortx-deploy.sh` to deploy Cortx Cluster on your K8s Cluster. In this document we are creating `solution.yaml` file automatically. If you want to create it manually, then create it and place it at script location and configure SOLUTION_CONFIG_TYPE variable as manual (export SOLUTION_CONFIG_TYPE=manual).
 ```
       export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
 ```
