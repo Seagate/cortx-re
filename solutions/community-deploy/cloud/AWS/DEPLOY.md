@@ -68,6 +68,7 @@
    6. CONTROL_EXTERNAL_NODEPORT - If you want to use different port for control service, then export this variable with another port.
    7. S3_EXTERNAL_HTTP_NODEPORT - If you want to use different port for HTTP Port to IO service, then export this variable with another port.
    8. S3_EXTERNAL_HTTPS_NODEPORT - If you want to use different port for HTTPS Port to IO service, then export this variable with another port.
+
       e.g.
 ```
       export CORTX_SCRIPTS_BRANCH=integration && export CORTX_SCRIPTS_REPO=AbhijitPatil1992/cortx-k8s && export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
