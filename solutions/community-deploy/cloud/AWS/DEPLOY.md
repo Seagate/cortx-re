@@ -8,7 +8,7 @@
    CPU: 8Core
    DISK: 100GB
 
-#### If you have automated deployment for solution yaml, please make sure your vm having below drives
+#### If you have automated deployment for solution yaml, please make sure your vm having below drives available
 ```
       ls /dev/sd*
 ```
@@ -53,10 +53,26 @@
 ```
       ./cluster-setup.sh true
 ```
-   Execute `cortx-deploy.sh` to deploy Cortx Cluster on your K8s Cluster.
+   Execute `cortx-deploy.sh` to deploy Cortx Cluster on your K8s Cluster. In this case we have follow automated way for solution yaml file. If you want to manual configure solution yaml file, then create solution yaml file and pass that solution yaml file with this command and configure SOLUTION_CONFIG_TYPE variable as manual (export SOLUTION_CONFIG_TYPE=manual).
 ```
       export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
 ```
+
+   Note:
+   1. CORTX_SCRIPTS_BRANCH - If you want to use another cortx-K8s branch then export this variable with your branch.
+   2. CORTX_SCRIPTS_REPO - If you want to use another cortx-K8s repo (like your fork), then export this variable with your repo.
+   3. CORTX_ALL_IMAGE - In automated case we are using latest cortx-all image. If you want to use different image then export that image by this variable.
+   4. CORTX_SERVER_IMAGE - Also cortx-server image if you want to use different then export this variable with that image.
+   5. CORTX_DATA_IMAGE - Also cortx-data image if you want to use different then export this variable with that image.
+   6. CONTROL_EXTERNAL_NODEPORT - If you want to use different port for control service, then export this variable with another port.
+   7. S3_EXTERNAL_HTTP_NODEPORT - If you want to use different port for HTTP Port to IO service, then export this variable with another port.
+   8. S3_EXTERNAL_HTTPS_NODEPORT - If you want to use different port for HTTPS Port to IO service, then export this variable with another port.
+
+```
+      e.g.
+      export CORTX_SCRIPTS_BRANCH=integration && export CORTX_SCRIPTS_REPO=AbhijitPatil1992/cortx-k8s && export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
+```
+
    Run IO Sanity on your Cortx Cluster, use below command to run it.
 ```
       ./cortx-deploy.sh --io-sanity
