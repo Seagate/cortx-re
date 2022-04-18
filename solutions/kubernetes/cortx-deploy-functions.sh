@@ -83,11 +83,11 @@ function update_solution_config(){
         deployment_method=$DEPLOYMENT_METHOD yq e -i '.solution.deployment_type = env(deployment_method)' solution.yaml
         
         yq e -i '.solution.secrets.name = "cortx-secret"' solution.yaml
-        yq e -i '.solution.secrets.content.kafka_admin_secret = "Seagate@123"' solution.yaml
-        yq e -i '.solution.secrets.content.consul_admin_secret = "Seagate@123"' solution.yaml
-        yq e -i '.solution.secrets.content.common_admin_secret = "Seagate@123"' solution.yaml
+        yq e -i '.solution.secrets.content.kafka_admin_secret = "null"' solution.yaml
+        yq e -i '.solution.secrets.content.consul_admin_secret = "null"' solution.yaml
+        yq e -i '.solution.secrets.content.common_admin_secret = "null"' solution.yaml
         yq e -i '.solution.secrets.content.s3_auth_admin_secret = "ldapadmin"' solution.yaml
-        yq e -i '.solution.secrets.content.csm_auth_admin_secret = "seagate2"' solution.yaml
+        yq e -i '.solution.secrets.content.csm_auth_admin_secret = "null"' solution.yaml
         yq e -i '.solution.secrets.content.csm_mgmt_admin_secret = "Cortxadmin@123"' solution.yaml
 
         yq e -i '.solution.images.consul = "ghcr.io/seagate/consul:1.11.4"' solution.yaml
