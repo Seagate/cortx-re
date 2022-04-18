@@ -16,7 +16,6 @@ pipeline {
         GITHUB_CRED = credentials('shailesh-github-token')
     }
 
-
     parameters {
 
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
