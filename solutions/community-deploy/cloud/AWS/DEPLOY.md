@@ -1,6 +1,6 @@
 # Setup K8s Cluster and Deploy CORTX Stack
 
-   This file consists of the procedure to setup K8s cluster and deploy Cortx stack.
+   Please find below steps to setup K8s cluster and deploy CORTX Stack.
 
 ## Prerequisite 
 #### Minimum specification required for Cortx Stack
@@ -37,7 +37,7 @@
 ```   
 #### Note: 
  1. All node should be ssh connection happen properly
- 2. If you don't have VM and if you want to create EC2 Instance. Then follow this document [link](https://github.com/Seagate/cortx-re/blob/main/solutions/community-deploy/cloud/AWS/README.md)
+ 2. If you wanted to deploy on AWS environment then follow this document [link](https://github.com/Seagate/cortx-re/blob/main/solutions/community-deploy/cloud/AWS/README.md)
 
 ## Install K8s cluster and deploy cortx cluster on that K8s cluster
 
@@ -54,7 +54,7 @@
 ```
       ./cluster-setup.sh true
 ```
-   - Execute `cortx-deploy.sh` to deploy Cortx Cluster on your K8s Cluster. In this document we are creating `solution.yaml` file automatically. If you want to create it manually, then create it and place it at script location and configure SOLUTION_CONFIG_TYPE variable as manual (export SOLUTION_CONFIG_TYPE=manual).
+   - Execute `cortx-deploy.sh` to deploy Cortx Cluster on your K8s Cluster. In this document we are creating `solution.yaml` file automatically. If you wanted to create it manually, then create it and place it at script location and configure SOLUTION_CONFIG_TYPE variable as manual (export SOLUTION_CONFIG_TYPE=manual).
 ```
       export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
 ```
