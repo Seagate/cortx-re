@@ -61,6 +61,7 @@ function check_params() {
     if [ -z "$S3_EXTERNAL_HTTP_NODEPORT" ]; then S3_EXTERNAL_HTTP_NODEPORT="30080"; fi
     if [ -z "$S3_EXTERNAL_HTTPS_NODEPORT" ]; then S3_EXTERNAL_HTTPS_NODEPORT="30443"; fi
     if [ -z "$SYSTEM_DRIVE" ]; then echo "SYSTEM_DRIVE not provided. Using default: /dev/sdb";SYSTEM_DRIVE="/dev/sdb"; fi
+    if [ -z "$NAMESPACE" ]; then echo "NAMESPACE not provided. Using default: default";NAMESPACE="default"; fi
 
    echo -e "\n\n########################################################################"
    echo -e "# CORTX_SCRIPTS_REPO         : $CORTX_SCRIPTS_REPO                  "
@@ -77,6 +78,7 @@ function check_params() {
    echo -e "# S3_EXTERNAL_HTTP_NODEPORT  : $S3_EXTERNAL_HTTP_NODEPORT           "
    echo -e "# S3_EXTERNAL_HTTPS_NODEPORT : $S3_EXTERNAL_HTTPS_NODEPORT          "
    echo -e "# SYSTEM_DRIVE               : $SYSTEM_DRIVE                        "
+   echo -e "# NAMESPACE                  : $NAMESPACE                           "
    echo -e "#########################################################################"
 
 }
@@ -124,6 +126,7 @@ function setup_cluster() {
     export CONTROL_EXTERNAL_NODEPORT=$CONTROL_EXTERNAL_NODEPORT &&
     export S3_EXTERNAL_HTTP_NODEPORT=$S3_EXTERNAL_HTTP_NODEPORT &&
     export S3_EXTERNAL_HTTPS_NODEPORT=$S3_EXTERNAL_HTTPS_NODEPORT &&
+    export NAMESPACE=$NAMESPACE &&
     export EXTERNAL_EXPOSURE_SERVICE=$EXTERNAL_EXPOSURE_SERVICE && /var/tmp/cortx-deploy-functions.sh --setup-primary"
 
     if [ "$SINGLE_NODE_DEPLOYMENT" == "False" ]; then
