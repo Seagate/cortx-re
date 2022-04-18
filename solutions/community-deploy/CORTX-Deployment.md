@@ -64,7 +64,7 @@
 
    Note:
    1. CORTX_SCRIPTS_BRANCH - If you want to use another cortx-K8s branch then export this variable with your branch (Default value CORTX_SCRIPTS_BRANCH="v0.2.1").
-   2. CORTX_SCRIPTS_REPO - If you want to use another cortx-K8s repo (like your fork), then export this variable with your repo (Default value CORTX_SCRIPTS_REPO="Seagate/cortx-k8s";).
+   2. CORTX_SCRIPTS_REPO - If you want to use another cortx-K8s repo (like your fork), then export this variable with your repo (Default value CORTX_SCRIPTS_REPO="Seagate/cortx-k8s").
    3. CORTX_ALL_IMAGE - In automated case we are using latest cortx-all image. If you want to use different image then export that image by this variable(Default value CORTX_ALL_IMAGE=ghcr.io/seagate/cortx-all:2.0.0-latest).
    4. CORTX_SERVER_IMAGE - Also cortx-server image if you want to use different then export this variable with that image (Default value CORTX_SERVER_IMAGE=ghcr.io/seagate/cortx-rgw:2.0.0-latest).
    5. CORTX_DATA_IMAGE - Also cortx-data image if you want to use different then export this variable with that image (Default value CORTX_DATA_IMAGE=ghcr.io/seagate/cortx-data:2.0.0-latest).
