@@ -205,6 +205,10 @@ copy_solution_config() {
         popd 
 }
 
+setup_kubectl_context() {
+    kubectl config set-context --current --namespace=$NAMESPACE
+}
+
 #execute script
 
 function execute_deploy_script() {
@@ -252,6 +256,7 @@ function setup_primary_node() {
     
     add_image_info
     add_node_info_solution_config
+    setup_kubectl_context
 }
 
 function setup_worker_node() {
