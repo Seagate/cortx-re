@@ -206,6 +206,7 @@ copy_solution_config() {
 }
 
 setup_kubectl_context() {
+    add_secondary_separator "Updated kubectl contex to use $NAMESPACE"
     kubectl config set-context --current --namespace=$NAMESPACE
 }
 
