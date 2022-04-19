@@ -7,7 +7,6 @@
    - RAM: 16GB
    - CPU: 8Core
    - DISK: Need 8 Disk with 25GB per disk
-   - OS: CentOS, RockyLinux
 
 ### There are two types config for `solution.yaml` file manual and automated. If you have automated config type for `solution.yaml`, please make sure your vm having below drives available
 ```
@@ -15,7 +14,7 @@
 ```
    - `/dev/sdb  /dev/sdc  /dev/sdd  /dev/sde  /dev/sdf  /dev/sdg  /dev/sdh  /dev/sdi  /dev/sdj`
 
-### Git should be installed on the system. You can use below command to install it
+### Git should be installed on the system. You can use below command for Redhat family OS to install Git
 
 ```
       yum install git -y
