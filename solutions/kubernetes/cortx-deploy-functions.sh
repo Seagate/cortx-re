@@ -62,6 +62,8 @@ function download_deploy_script() {
     git clone https://github.com/$CORTX_SCRIPTS_REPO $SCRIPT_LOCATION
     pushd $SCRIPT_LOCATION
     git checkout $CORTX_SCRIPTS_BRANCH
+    echo "DEBUG:Dummy solution.yaml"
+    cp k8_cortx_cloud/solution.example.yaml k8_cortx_cloud/solution.yaml
     popd
 }
 
