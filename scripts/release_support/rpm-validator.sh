@@ -256,7 +256,7 @@ _generate_rpm_validation_report(){
                 fi
             fi
 
-            dependency_check=$({ yum install -y --nogpgcheck "$BUILD_URL/$rpm"; } 2>&1 >/dev/null)
+            dependency_check=$({ yum install -y "$BUILD_URL/$rpm"; } 2>&1 >/dev/null)
             if [ ! -z "$dependency_check" ]; then
                 dependency_check="<td><details><summary>Error Log</summary><p>$dependency_check</p></details></td>"
             else
