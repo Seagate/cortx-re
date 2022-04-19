@@ -62,6 +62,8 @@ function download_deploy_script() {
     git clone https://github.com/$CORTX_SCRIPTS_REPO $SCRIPT_LOCATION
     pushd $SCRIPT_LOCATION
     git checkout $CORTX_SCRIPTS_BRANCH
+    echo "DEBUG:Dummy solution.yaml"
+    cp k8_cortx_cloud/solution.example.yaml k8_cortx_cloud/solution.yaml
     popd
 }
 
@@ -228,12 +230,14 @@ function execute_deploy_script() {
 }
 
 function execute_prereq() {
-    echo "Pulling latest CORTX-ALL image"
+    add_secondary_separator "Pulling latest CORTX images"
     docker pull $CORTX_ALL_IMAGE || { echo "Failed to pull $CORTX_ALL_IMAGE"; exit 1; }
     docker pull $CORTX_SERVER_IMAGE || { echo "Failed to pull $CORTX_SERVER_IMAGE"; exit 1; }
     docker pull $CORTX_DATA_IMAGE || { echo "Failed to pull $CORTX_DATA_IMAGE"; exit 1; }
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
+        add_secondary_separator "Un-mounting $SYSTEM_DRIVE partition if already mounted"
         findmnt $SYSTEM_DRIVE && umount -l $SYSTEM_DRIVE
+        add_secondary_separator "Executing ./prereq-deploy-cortx-cloud.sh"
         ./prereq-deploy-cortx-cloud.sh -d $SYSTEM_DRIVE
     popd    
 }
