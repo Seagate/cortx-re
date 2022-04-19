@@ -6,9 +6,10 @@
 ### Minimum specification required for Cortx Stack
    - RAM: 16GB
    - CPU: 8Core
-   - DISK: Need 8 Disk with 25GB per disk.
+   - DISK: Need 8 Disk with 25GB per disk
+   - OS: CentOS, RockyLinux
 
-### If you have automated deployment for solution yaml, please make sure your vm having below drives available
+### There are two types config for `solution.yaml` file manual and automated. If you have automated config type for `solution.yaml`, please make sure your vm having below drives available
 ```
       ls /dev/sd*
 ```
@@ -50,7 +51,7 @@
 ```
       echo "hostname=$(hostname),user=root,pass=rootuserpassword" > hosts && cat hosts
 ```
-   - Execute `cluster-setup.sh` to setup K8s cluster on your VM. If you want run pods on to master node as well then we need to give first input parameter for `cluster-setup.sh` script true else false. If you have single node cluster then pass input parameter should be true.
+   - Execute `cluster-setup.sh` to setup K8s cluster on your VM. If you wanted to run pods on to master node as well then we need to give first input parameter for `cluster-setup.sh` script true else false. If you have single node cluster then pass input parameter should be true.
 ```
       ./cluster-setup.sh true
 ```
