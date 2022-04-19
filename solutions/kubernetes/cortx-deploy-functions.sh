@@ -318,7 +318,7 @@ function print_pod_status() {
         while [[ SECONDS -lt 1200 ]] ; do
             if [ "$DEPLOYMENT_METHOD" == "data-only" ]; then
                 if kubectl exec -it $(kubectl get pods | awk '/cortx-data/{print $1; exit}') -c cortx-hax -- hctl status > /dev/null ; then
-                    if ! kubectl exec -it $(kubectl get pods | awk '/cortx-data/{print $1; exit}') -c cortx-hax -- hctl status| grep -q -E 'unknown|offline|failed'; then
+                    if ! kubectl exec -it $(kubectl get pods | awk '/cortx-data/{print $1; exit}') -c cortx-hax -- hctl status| grep -v motr_client | grep -q -E 'unknown|offline|failed'; then
                         kubectl exec -it $(kubectl get pods | awk '/cortx-data/{print $1; exit}') -c cortx-hax -- hctl status
                         add_secondary_separator "Time taken for service to start $((SECONDS/60)) mins"
                         exit 0
