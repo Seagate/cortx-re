@@ -53,7 +53,7 @@ COMPONENT_RPM_PATTERN_ARRAY=(
                     "HA:cortx-ha"
                     "CSM:cortx-csm_agent"
                     "Provisioner:cortx-provisioner"
-                    "CORTX-utils:cortx-py-utils,stats_utils"
+                    "CORTX-utils:cortx-py-utils"
                 )
 
 RPM_INSTALL_ROOT_PATH="/opt/seagate/cortx"
@@ -65,7 +65,7 @@ RPM_INSTALL_PATH_EXPECTED=(
                     "cortx-ha:bin,conf"                                         # HA
                     "cortx-csm_agent:bin,conf"                                  # CSM
                     "cortx-provisioner:bin,conf"                                # Prvsnr
-                    "cortx-py-utils:bin,conf" "stats_utils:bin,conf"            # CORTX Utils
+                    "cortx-py-utils:bin,conf"                                   # CORTX Utils
                 )
 
 VALIDATION_ENVIRONMENT="OS : $(cat /etc/redhat-release | sed -e 's/ $//g') , Kernel : $(uname -r)"
