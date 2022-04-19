@@ -352,6 +352,7 @@ function print_pod_status() {
 
 function io_exec() {
     pushd /var/tmp/
+        export DEPLOYMENT_METHOD=$DEPLOYMENT_METHOD
         ./io-sanity.sh
     popd
 }

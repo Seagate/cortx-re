@@ -132,7 +132,19 @@ function run_io_sanity() {
    add_primary_separator "\tSuccessfully Passed IO Sanity Testing"
 }
 
+function run_data_io_sanity() {
+   kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-hax sh -c "pushd /opt/seagate/cortx/motr/workload/
+   && ./create_workload_from_excel -t sample_workload_excel_test.xls \
+   && ./m0workload -t out*/workload_output.yaml \
+   && popd
+   "   
+}
+
 # Execution
-install_awscli
-setup_awscli
-run_io_sanity
+if [[ "$DEPLOYMENT_METHOD" == "data-only" ]]; then
+   run_data_io_sanity
+else   
+   install_awscli
+   setup_awscli
+   run_io_sanity
+fi   
