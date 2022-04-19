@@ -6,7 +6,7 @@ pipeline {
             label "docker-${OS_VERSION}-node"
         }
     }
-
+    triggers { cron('30 18 * * *') }
     options { 
         skipDefaultCheckout()
         timeout(time: 180, unit: 'MINUTES')
@@ -25,6 +25,11 @@ pipeline {
             choices: ['all', 'cortx-all' , 'cortx-rgw', 'cortx-data'],
             description: 'CORTX Image to be built. Defaults to all images ',
             name: 'CORTX_IMAGE'
+        )
+        choice (
+            choices: ['kv_store', 'sanity'],
+            description: 'Test plan to be executed for py-utils. Defaults to kv_store',
+            name: 'TEST_PLAN'
         )
     }
 
@@ -49,7 +54,7 @@ pipeline {
         VERSION = "2.0.0" 
 
         OS_FAMILY=sh(script: "echo '${OS_VERSION}' | cut -d '-' -f1", returnStdout: true).trim()
-
+        BUILD_TRIGGER_BY = "${currentBuild.getBuildCauses()[0].shortDescription}"
 		
 	    // Artifacts root location
 		
@@ -66,6 +71,15 @@ pipeline {
 		
         build_id = sh(script: "echo ${CORTX_BUILD} | rev | cut -d '/' -f2,3 | rev", returnStdout: true).trim()
         STAGE_DEPLOY = "yes"
+        NODE_HOST = sh( script: '''
+            echo $host | tr ' ' '\n' | head -1 | awk -F["="] '{print $2}' | cut -d',' -f1    
+        ''', returnStdout: true).trim()
+        NODE_USER = sh( script: '''
+            echo $host | tr ' ' '\n' | head -1 | awk -F["="] '{print $3}' | cut -d',' -f1    
+        ''', returnStdout: true).trim()
+        NODE_PASS = sh( script: '''
+            echo $host | tr ' ' '\n' | head -1 | awk -F["="] '{print $4}' | cut -d',' -f1    
+        ''', returnStdout: true).trim()
     }
 
     stages {
@@ -108,7 +122,7 @@ pipeline {
                     checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 1, honorRefspec: true, noTags: true, reference: '', shallow: true], [$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
                 }
 
-               // Install tools required for release process
+                // Install tools required for release process
                 sh label: 'Installed Dependecies', script: '''
                     yum install -y expect rpm-sign rng-tools python3-pip
                     #if [ "${OS_FAMILY}" == "rockylinux" ]
@@ -212,6 +226,7 @@ pipeline {
                         env.cortx_rgw_image = buildCortxAllImage.buildVariables.cortx_rgw_image
                         env.cortx_data_image = buildCortxAllImage.buildVariables.cortx_data_image
                         env.cortx_control_image = buildCortxAllImage.buildVariables.cortx_control_image
+                        env.image = buildCortxAllImage.buildVariables.image
                     } catch (err) {
                         build_stage = env.STAGE_NAME
                         error "Failed to Build CORTX-ALL image"
@@ -244,25 +259,18 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
-                        NODE_HOST = sh( script: '''
-                            echo $host | tr ' ' '\n' | head -1 | awk -F["="] '{print $2}' | cut -d',' -f1    
-                        ''', returnStdout: true).trim()
-                        NODE_USER = sh( script: '''
-                            echo $host | tr ' ' '\n' | head -1 | awk -F["="] '{print $3}' | cut -d',' -f1    
-                        ''', returnStdout: true).trim()
-                        NODE_PASS = sh( script: '''
-                            echo $host | tr ' ' '\n' | head -1 | awk -F["="] '{print $4}' | cut -d',' -f1    
-                        ''', returnStdout: true).trim()
-                        def remote = getRemoteMachine(NODE_HOST, NODE_USER, NODE_PASS)
-                        def commandResult = sshCommand remote: remote, command: '''
-                            kubectl exec $(kubectl get pods | awk '/cortx-data/{print $1; exit}') --container cortx-hax -- bash -c 'yum install -y wget yum-utils \
-                                && yum-config-manager --add-repo "http://cortx-storage.colo.seagate.com/releases/cortx/github/pr-build/main/cortx-utils/$(grep BUILD < RELEASE.INFO | awk "{print \\$2}" | sed "s|\\"||g")/cortx_iso/" \
-                                && yum install --nogpgcheck -y cortx-py-utils-test-* \
-                                && /opt/seagate/cortx/utils/bin/utils_setup test --config yaml:///etc/cortx/cluster.conf --plan sanity'
-                            kubectl exec $(kubectl get pods | awk '/cortx-data/{print $1; exit}') --container cortx-hax -- bash -c 'cat /tmp/py_utils_test_report.html' | tee py_utils_test_report.html    
-                        '''
-                        echo "Result: " + commandResult
-                        sshGet remote: remote, from: '/root/py_utils_test_report.html', into: 'py_utils_test_report.html', override: true
+                    sh '''
+ 	                    yum install -y sshpass
+ 	                    sshpass -p $NODE_PASS ssh -o StrictHostKeyChecking=no $NODE_USER@$NODE_HOST env TEST_PLAN="$TEST_PLAN" BUILD_NUMBER="$BUILD_NUMBER" 'bash -s' <<'EOF'
+                        kubectl exec $(kubectl get pods | awk '/cortx-data/{print $1; exit}') --container cortx-hax -- sh -c "yum install -y wget yum-utils \
+                            && yum-config-manager --add-repo http://cortx-storage.colo.seagate.com/releases/cortx/github/pr-build/main/cortx-utils/$BUILD_NUMBER/cortx_iso \
+                            && yum install --nogpgcheck -y cortx-py-utils-test-* \
+                            && /opt/seagate/cortx/utils/bin/utils_setup test --config yaml:///etc/cortx/cluster.conf --plan $TEST_PLAN"
+                        kubectl exec $(kubectl get pods | awk '/cortx-data/{print $1; exit}') --container cortx-hax -- bash -c 'cat /tmp/py_utils_test_report.html' | tee py_utils_test_report.html    
+EOF
+	 	            '''
+	 	            def remote = getRemoteMachine(NODE_HOST, NODE_USER, NODE_PASS)
+                    sshGet remote: remote, from: '/root/py_utils_test_report.html', into: 'py_utils_test_report.html', override: true
                 }
             }
         }
@@ -280,6 +288,23 @@ pipeline {
                 } else {
                     echo 'ERROR : py_utils_test_report.html is not present'
                 }
+
+                env.build_stage = "${build_stage}"
+                env.test_report_url = sh( script: "echo ${BUILD_URL}/artifact/py_utils_test_report.html", returnStdout: true)
+
+                def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
+
+                if ( env.BUILD_TRIGGER_BY == 'Started by timer' ) {
+                    emailext ( 
+                        body: '''${SCRIPT, template="pr-deployment-email.template"}''',
+                        mimeType: 'text/html',
+                        subject: "[Nightly Py-Utils Build] : ${currentBuild.currentResult}",
+                        attachLog: true,
+                        to: "CORTX.Foundation@seagate.com",
+                        recipientProviders: recipientProvidersClass
+                    )
+                }    
+
                 sh label: 'Remove artifacts', script: '''rm -rf "${DESTINATION_RELEASE_LOCATION}"'''
             }
         }
