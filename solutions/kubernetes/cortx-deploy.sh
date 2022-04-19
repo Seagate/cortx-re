@@ -86,7 +86,13 @@ function check_params() {
 function pdsh_worker_exec() {
     # Commands to run in parallel on pdsh hosts (workers nodes).
     commands=(
-       "export CORTX_SERVER_IMAGE=$CORTX_SERVER_IMAGE && export CORTX_ALL_IMAGE=$CORTX_ALL_IMAGE && export CORTX_DATA_IMAGE=$CORTX_DATA_IMAGE && export CORTX_SCRIPTS_REPO=$CORTX_SCRIPTS_REPO && export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH && /var/tmp/cortx-deploy-functions.sh --setup-worker"
+       "export CORTX_SERVER_IMAGE=$CORTX_SERVER_IMAGE && 
+        export CORTX_ALL_IMAGE=$CORTX_ALL_IMAGE && 
+        export CORTX_DATA_IMAGE=$CORTX_DATA_IMAGE && 
+        export CORTX_SCRIPTS_REPO=$CORTX_SCRIPTS_REPO && 
+        export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH &&
+        export SYSTEM_DRIVE=$SYSTEM_DRIVE &&
+        /var/tmp/cortx-deploy-functions.sh --setup-worker"
     )
     for cmds in "${commands[@]}"; do
        pdsh -w ^$1 $cmds
