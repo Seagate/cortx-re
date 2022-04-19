@@ -55,15 +55,10 @@ This file consists of the procedure to compile complete CORTX stack and Deploy o
 ```
 ## Network and Storage Configuration.
 
-   Connect to system using SSH key and centos as user.
-
-```
-   ssh -i cortx.pem centos@"<AWS instance public-ip>" 
-```
-
    Execute `/home/centos/setup.sh` to setup Network and Storage devices for CORTX. Script will reboot instance on completion. 
+
 ```
-   sudo bash /home/centos/setup.sh
+   ssh -i cortx.pem centos@"<AWS instance public-ip>" sudo bash /home/centos/setup.sh
 ```
    AWS instance is ready for CORTX Build and deployment now. Connect to instance over SSH and validate that all three network card's has IP address assigned.
    
@@ -77,19 +72,11 @@ This file consists of the procedure to compile complete CORTX stack and Deploy o
 
 ### 1. CORTX Build
 
-   We will use [cortx-build](https://github.com/Seagate/cortx/pkgs/container/cortx-build) docker image to compile entire CORTX stack. Please follow [CORTX compilation](https://github.com/Seagate/cortx/blob/main/doc/community-build/Generate-Cortx-Build-Stack.md) steps for compilation.
+   We will use [cortx-build](https://github.com/Seagate/cortx/pkgs/container/cortx-build) docker image to compile entire CORTX stack. Please follow [CORTX Container Image generation](https://github.com/Seagate/cortx/blob/main/doc/community-build/docker/cortx-all/README.md) steps for compilation.
 
 ### 2. CORTX Deployment
 
-   After CORTX build is ready follow [CORTX Deployment](https://github.com/Seagate/cortx/blob/main/doc/community-build/ProvisionReleaseBuild.md) to deploy CORTX on AWS instance. Please exclude SELINUX and Hostname setup steps.
-
-### 3. OnBoarding 
-
-   Configure CORTX by following [Onboarding](https://github.com/Seagate/cortx/blob/main/doc/Preboarding_and_Onboarding.rst) steps.
-
-### 4. Testing IO operations 
-
-   We will need separate AWS instance to test IO operations. Follow [IO Test using AWS ](https://github.com/Seagate/cortx/blob/main/doc/integrations/AWS_EC2.md#step-7-create-another-ec2-instance-to-access-to-act-as-the-s3-client) and subsequent steps. 
+   After CORTX build is ready follow [CORTX Deployment](https://github.com/Seagate/cortx-k8s/blob/main/doc/cortx-aws-k8s-installation.md) to deploy CORTX on AWS instance. Please exclude SELINUX and Hostname setup steps.
 
 ## Cleanup 
 
