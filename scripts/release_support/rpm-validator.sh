@@ -48,26 +48,24 @@ RPM_NAMING_PATTERN="cortx-[component_name]-[version]-[bld]_[git_tag].[platform].
 
 COMPONENT_RPM_PATTERN_ARRAY=( 
                     "Motr:cortx-motr"
-                    "S3:cortx-s3server,cortx-s3iamcli"
+                    "RGW:cortx-rgw-integration"
                     "Hare:cortx-hare"
                     "HA:cortx-ha"
-                    "CSM:cortx-csm_agent,csm_web"
+                    "CSM:cortx-csm_agent"
                     "Provisioner:cortx-provisioner"
-                    "SSPL:cortx-sspl"
-                    "CORTX-utils:cortx-py-utils,stats_utils"
+                    "CORTX-utils:cortx-py-utils"
                 )
 
 RPM_INSTALL_ROOT_PATH="/opt/seagate/cortx"
 RPM_LOG_ROOT_PATH="/var/log/cortx"
 RPM_INSTALL_PATH_EXPECTED=(
-                    "cortx-motr:bin,conf"                                                   # Motr
-                    "cortx-s3server:bin,conf" "cortx-s3iamcli:bin,conf"                     # S3Server
-                    "cortx-hare:bin,conf"                                                   # Hare
-                    "cortx-ha:bin,conf"                                                     # HA
-                    "cortx-csm_agent:bin,conf" "cortx-csm_web:bin,conf"                     # CSM
-                    "cortx-provisioner:bin,conf"                                            # Prvsnr
-                    "cortx-sspl:bin,conf"                                                   # SSPL
-                    "cortx-py-utils:bin,conf" "stats_utils:bin,conf"                        # CORTX Utils
+                    "cortx-motr:bin,conf"                                       # Motr
+                    "cortx-rgw-integration:bin,conf"                            # RGW
+                    "cortx-hare:bin,conf"                                       # Hare
+                    "cortx-ha:bin,conf"                                         # HA
+                    "cortx-csm_agent:bin,conf"                                  # CSM
+                    "cortx-provisioner:bin,conf"                                # Prvsnr
+                    "cortx-py-utils:bin,conf"                                   # CORTX Utils
                 )
 
 VALIDATION_ENVIRONMENT="OS : $(cat /etc/redhat-release | sed -e 's/ $//g') , Kernel : $(uname -r)"
@@ -95,10 +93,10 @@ HTML_TD_STYLE="style='border: 1px solid #AAAAAA;padding: 3px 2px;font-size: 13px
 
 # Validation Logic
 build_number=$(wget "${RPM_LOCATION}/last_successful/RELEASE.INFO" -q -O - | grep BUILD |  sed 's/"//g' | cut -d: -f2 | xargs )
-release_rpms_array=$(wget "${RPM_LOCATION}/kubernetes-post-merge-build-${build_number}/dev" -q -O - | grep -Po '(?<=href=")[^"]*' | grep -v debuginfo | grep ".rpm")
+release_rpms_array=$(wget "${RPM_LOCATION}/${build_number}/dev" -q -O - | grep -Po '(?<=href=")[^"]*' | grep -v debuginfo | grep ".rpm")
 
-echo "RPM Validation Initiated for Build = kubernetes-post-merge-build-$build_number"
-BUILD_URL="${RPM_LOCATION}/kubernetes-post-merge-build-${build_number}/dev"
+echo "RPM Validation Initiated for Build = $build_number"
+BUILD_URL="${RPM_LOCATION}/${build_number}/dev"
 
 components_rpm_array=()
 
@@ -190,17 +188,18 @@ gpgcheck=1
 gpgkey=$BUILD_URL/RPM-GPG-KEY-Seagate
 priority=1
 EOF
-
-CENTOS_RELEASE="$(awk '{print $4}' /etc/redhat-release)"
-
-if [[ "$CENTOS_RELEASE" == "7.8.2003" ]]; then
-    yum-config-manager --add-repo http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/centos/centos-7.8.2003-2.0.0-latest/
-fi
-
-if [[ "$CENTOS_RELEASE" == "7.9.2009" ]]; then
-    yum-config-manager --add-repo http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/centos/centos-7.9.2009-2.0.0-latest/
-fi
-
+    mkdir -p /opt/seagate/cortx
+    OS="$(echo $OS_VERSION | awk -F'-' '{ print $1 }')"
+    yum-config-manager --add-repo http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/$OS/$OS_VERSION-2.0.0-latest/
+    curl https://raw.githubusercontent.com/Seagate/cortx-re/main/docker/cortx-deploy/python_requirements.txt --output /opt/seagate/cortx/python_requirements.txt
+    curl https://raw.githubusercontent.com/Seagate/cortx-re/main/docker/cortx-deploy/python_requirements.ext.txt --output /opt/seagate/cortx/python_requirements.ext.txt
+    curl https://raw.githubusercontent.com/Seagate/cortx-re/main/docker/cortx-deploy/rockylinux-8.4/third-party-rpms.txt --output /opt/seagate/cortx/third-party-rpms.txt
+    yum install --nogpgcheck -y python3-pip
+    pip3 install  --no-cache-dir --trusted-host $(echo $BUILD_URL | awk -F '/' '{print $3}') -i http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/python-packages-2.0.0-latest/ -r /opt/seagate/cortx/python_requirements.txt -r /opt/seagate/cortx/python_requirements.ext.txt
+    yum clean all && rm -rf /var/cache/yum
+    yum --nogpgcheck -y --disablerepo="EOS_Rocky_8_OS_x86_64_Rocky_8" install libfabric-1.11.2
+    yum install --nogpgcheck -y  $(sed 's/#.*//g' /opt/seagate/cortx/third-party-rpms.txt)
+    yum clean all && rm -rf /var/cache/yum
 }
 
 _clean(){
@@ -233,8 +232,6 @@ _generate_rpm_validation_report(){
             rpm_arch=$(rpm -qp "$BUILD_URL/$rpm" --qf '%{ARCH}')
             rpm_files=$(rpm -qp "$BUILD_URL/$rpm" --qf '[%{FILENAMES}]')
 
-            RPM_NAMING_PATTERN="cortx-[component_name]-[version]-[bld]_[git_tag].[platform].rpm"
-
             rpm_name_expected=$(echo -e "$RPM_NAMING_PATTERN" | sed -e "s/cortx-\[component_name\]/$rpm_name/g;s/\[version\]/$RPM_VERSION_EXPECTED/g; s/\[bld\]_\[git_tag\]/$rpm_release/g; s/\[platform\]/$rpm_arch/g")
             name_check="<td $HTML_TD_STYLE><span style='color:green; text-shadow: -2px 0 black, 0 2px black, 2px 0 black, 0 -2px black; font-size: 30px;'>&#10003;</span></td>"
             if [[ ! "$rpm" =~ $rpm_name_expected ]]
@@ -259,7 +256,7 @@ _generate_rpm_validation_report(){
                 fi
             fi
 
-            dependency_check=$({ yum install "$BUILD_URL/$rpm" --assumeno; } 2>&1 >/dev/null)
+            dependency_check=$({ yum install -y --nogpgcheck "$BUILD_URL/$rpm"; } 2>&1 >/dev/null)
             if [ ! -z "$dependency_check" ]; then
                 dependency_check="<td><details><summary>Error Log</summary><p>$dependency_check</p></details></td>"
             else
