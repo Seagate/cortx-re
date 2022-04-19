@@ -135,6 +135,10 @@ function setup_cluster() {
     export NAMESPACE=$NAMESPACE &&
     export EXTERNAL_EXPOSURE_SERVICE=$EXTERNAL_EXPOSURE_SERVICE && /var/tmp/cortx-deploy-functions.sh --setup-primary"
 
+    add_secondary_separator "Copy solution.yaml to all worker nodes"
+    scp -q $PRIMARY_NODE:/root/deploy-scripts/k8_cortx_cloud/solution.yaml .
+    scp_all_nodes solution.yaml /root/deploy-scripts/k8_cortx_cloud/
+
     if [ "$SINGLE_NODE_DEPLOYMENT" == "False" ]; then
         # pdsh hosts to run parallel implementations on worker nodes.
         echo $WORKER_NODES > /var/tmp/pdsh-hosts
