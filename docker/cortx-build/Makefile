@@ -20,7 +20,9 @@ help : Makefile
 checkout:
 	@echo "*************** checkout code *********************"
 	pushd cortx-workspace && \
-        for component in $$(ls -1d cortx-* | grep -Evx 'cortx-k8s||cortx-experiments||cortx-posix||cortx-multisite||cortx-s3samplecode'); do pushd $$component; git clean -fdx; git checkout .; git pull -p --all; git checkout $$BRANCH || exit 1; popd ; done  && \
+        for component in cortx-motr cortx-hare cortx-rgw-integration cortx-manager cortx-utils cortx-ha; do pushd $$component; git clean -fdx; git checkout .; git pull -p --all; git checkout $$BRANCH || exit 1; popd ; done  && \
+		rm -rf cortx-rgw && \
+		git clone https://github.com/Seagate/cortx-rgw -b $$BRANCH && \
 	popd || (echo "ERROR: Failed to checkout specified branch/tag Exiting..."; exit 1)
 
 ## clean: remove existing /var/artifacts/0 directory. 
