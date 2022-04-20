@@ -21,8 +21,8 @@ checkout:
 	@echo "*************** checkout code *********************"
 	pushd cortx-workspace && \
         for component in cortx-motr cortx-hare cortx-rgw-integration cortx-manager cortx-utils cortx-ha; do pushd $$component; git clean -fdx; git checkout .; git pull -p --all; git checkout $$BRANCH || exit 1; popd ; done  && \
-		# Cloning cortx-rgw separatley as with submodule clone does not work
-		git clone https://github.com/Seagate/cortx-rgw -b $$BRANCH
+		rm -rf cortx-rgw && \
+		git clone https://github.com/Seagate/cortx-rgw -b $$BRANCH && \
 	popd || (echo "ERROR: Failed to checkout specified branch/tag Exiting..."; exit 1)
 
 ## clean: remove existing /var/artifacts/0 directory. 
