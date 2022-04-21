@@ -27,7 +27,7 @@ pipeline {
             name: 'CORTX_IMAGE'
         )
         choice (
-            choices: ['kv_store', 'sanity'],
+            choices: ['sanity','regression','audit_log','cli_framework','cmd_framework','conf_store','consul_service','iem_framework','kv_store','message_bus','support_bundle','validator'],
             description: 'Test plan to be executed for py-utils. Defaults to kv_store',
             name: 'TEST_PLAN'
         )
