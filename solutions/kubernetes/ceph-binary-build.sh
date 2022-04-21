@@ -79,13 +79,13 @@ function build_ubuntu() {
     docker run --rm -t -d --name ceph_ubuntu -v /$MOUNT_LOCATION/ubuntu:/home ubuntu:latest
 
     add_secondary_separator "Write build script"
-    cp functions.sh $MOUNT_LOCATION/ubuntu
+    cp functions.sh /var/tmp
     pushd $MOUNT_LOCATION/ubuntu
         rm -rvf *
         cat << EOF > build.sh
 #/bin/bash
 
-source functions.sh
+source /var/tmp/functions.sh
 
 apt update && apt install git -y
 pushd /home/
@@ -140,13 +140,13 @@ function build_centos() {
     docker run --rm -t -d --name ceph_centos -v /$MOUNT_LOCATION/centos:/home centos:latest
 
     add_secondary_separator "Write build script"
-    cp functions.sh $MOUNT_LOCATION/centos
+    cp functions.sh /var/tmp
     pushd $MOUNT_LOCATION/centos
         rm -rvf *
         cat << EOF > build.sh
 #/bin/bash
 
-source functions.sh
+source /var/tmp/functions.sh
 
 rpm -ivh http://mirror.centos.org/centos/8-stream/BaseOS/x86_64/os/Packages/centos-gpg-keys-8-3.el8.noarch.rpm
 dnf --disablerepo '*' --enablerepo=extras swap centos-linux-repos centos-stream-repos -y
@@ -204,13 +204,13 @@ function build_rockylinux() {
     docker run --rm -t -d --name ceph_rockylinux -v /$MOUNT_LOCATION/rockylinux:/home rockylinux:latest
 
     add_secondary_separator "Write build script"
-    cp functions.sh $MOUNT_LOCATION/rockylinux
+    cp functions.sh /var/tmp
     pushd $MOUNT_LOCATION/rockylinux
         rm -rvf *
         cat << EOF > build.sh
 #/bin/bash
 
-source functions.sh
+source /var/tmp/functions.sh
 
 yum makecache && yum install git -y
 yum install wget bzip2 rpm-build rpmdevtools dnf-plugins-core -y
