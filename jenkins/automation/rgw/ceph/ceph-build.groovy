@@ -1,7 +1,7 @@
 pipeline {
     agent {
         node {
-            label 'ceph-build-hw-iu20'
+            label 'ceph-build-hw'
         }
     }
 

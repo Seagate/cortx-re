@@ -78,16 +78,22 @@ function build_ubuntu() {
     mkdir -p $MOUNT_LOCATION/ubuntu
     docker run --rm -t -d --name ceph_ubuntu -v /$MOUNT_LOCATION/ubuntu:/home ubuntu:latest
 
-    add_secondary_separator "Write build script"
-    cp functions.sh /var/tmp
     pushd $MOUNT_LOCATION/ubuntu
+        add_common_separator "Removing previous files"
         rm -rvf *
+    popd
+
+    add_secondary_separator "Write build script"
+    cp functions.sh $MOUNT_LOCATION/ubuntu
+    pushd $MOUNT_LOCATION/ubuntu
         cat << EOF > build.sh
 #/bin/bash
 
-source /var/tmp/functions.sh
+source /home/functions.sh
 
+add_common_separator "Update repolist cache and install prerequisites"
 apt update && apt install git -y
+DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata
 pushd /home/
     add_common_separator "Clone Repo"
     git clone $CEPH_REPO -b $CEPH_BRANCH
@@ -113,6 +119,7 @@ pushd /home/
         dpkg-buildpackage -us -uc
     popd
 
+    add_common_separator "List generated binary packages (*.deb)"
     ls *.deb
 popd
 EOF
@@ -139,15 +146,21 @@ function build_centos() {
     mkdir -p $MOUNT_LOCATION/centos
     docker run --rm -t -d --name ceph_centos -v /$MOUNT_LOCATION/centos:/home centos:latest
 
-    add_secondary_separator "Write build script"
-    cp functions.sh /var/tmp
     pushd $MOUNT_LOCATION/centos
+        add_common_separator "Removing previous files"
         rm -rvf *
+    popd
+
+    add_secondary_separator "Write build script"
+    cp functions.sh $MOUNT_LOCATION/centos
+    pushd $MOUNT_LOCATION/centos
+
         cat << EOF > build.sh
 #/bin/bash
 
-source /var/tmp/functions.sh
+source /home/functions.sh
 
+add_common_separator "Update repolist cache and install prerequisites"
 rpm -ivh http://mirror.centos.org/centos/8-stream/BaseOS/x86_64/os/Packages/centos-gpg-keys-8-3.el8.noarch.rpm
 dnf --disablerepo '*' --enablerepo=extras swap centos-linux-repos centos-stream-repos -y
 yum makecache && yum install git -y
@@ -174,10 +187,11 @@ pushd /home/
 
     pushd rpmbuild/
         add_common_separator "Start Build"
-        rpmbuild -ba --define "_topdir `pwd`" SPECS/ceph.spec
+        rpmbuild --define "_topdir /home/rpmbuild" -ba SPECS/ceph.spec
     popd
 
-    ls RPMS/*
+    add_common_separator "List generated binary packages (*.rpm)"
+    ls rpmbuild/RPMS/*
 popd
 EOF
 
@@ -203,15 +217,20 @@ function build_rockylinux() {
     mkdir -p $MOUNT_LOCATION/rockylinux
     docker run --rm -t -d --name ceph_rockylinux -v /$MOUNT_LOCATION/rockylinux:/home rockylinux:latest
 
-    add_secondary_separator "Write build script"
-    cp functions.sh /var/tmp
     pushd $MOUNT_LOCATION/rockylinux
+        add_common_separator "Removing previous files"
         rm -rvf *
+    popd
+
+    add_secondary_separator "Write build script"
+    cp functions.sh $MOUNT_LOCATION/rockylinux
+    pushd $MOUNT_LOCATION/rockylinux
         cat << EOF > build.sh
 #/bin/bash
 
-source /var/tmp/functions.sh
+source /home/functions.sh
 
+add_common_separator "Update repolist cache and install prerequisites"
 yum makecache && yum install git -y
 yum install wget bzip2 rpm-build rpmdevtools dnf-plugins-core -y
 dnf config-manager --set-enabled powertools
@@ -239,10 +258,11 @@ pushd /home/
 
     pushd rpmbuild/
         add_common_separator "Start Build"
-        rpmbuild -ba --define "_topdir `pwd`" SPECS/ceph.spec
+        rpmbuild --define "_topdir /home/rpmbuild" -ba SPECS/ceph.spec
     popd
 
-    ls RPMS/*
+    add_common_separator "List generated binary packages (*.rpm)"
+    ls rpmbuild/RPMS/*
 popd
 EOF
 
