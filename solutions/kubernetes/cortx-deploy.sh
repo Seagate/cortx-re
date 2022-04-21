@@ -52,6 +52,7 @@ function check_params() {
     if [ -z "$CORTX_ALL_IMAGE" ]; then echo "CORTX_ALL_IMAGE not provided. Using default: ghcr.io/seagate/cortx-all:2.0.0-latest"; CORTX_ALL_IMAGE=ghcr.io/seagate/cortx-all:2.0.0-latest; fi
     if [ -z "$CORTX_SERVER_IMAGE" ]; then echo "CORTX_SERVER_IMAGE not provided. Using default : ghcr.io/seagate/cortx-rgw:2.0.0-latest"; CORTX_SERVER_IMAGE=ghcr.io/seagate/cortx-rgw:2.0.0-latest; fi
     if [ -z "$CORTX_DATA_IMAGE" ]; then echo "CORTX_DATA_IMAGE not provided. Using default : ghcr.io/seagate/cortx-data:2.0.0-latest"; CORTX_DATA_IMAGE=ghcr.io/seagate/cortx-data:2.0.0-latest; fi
+    if [ -z "$CORTX_CONTROL_IMAGE" ]; then echo "CORTX_CONTROL_IMAGE not provided. Using default : ghcr.io/seagate/cortx-control:2.0.0-latest"; CORTX_CONTROL_IMAGE=ghcr.io/seagate/cortx-control:2.0.0-latest; fi
     if [ -z "$DEPLOYMENT_METHOD" ]; then echo "DEPLOYMENT_METHOD not provided. Using default : standard"; DEPLOYMENT_METHOD=standard; fi
     if [ -z "$SOLUTION_CONFIG_TYPE" ]; then echo "SOLUTION_CONFIG_TYPE not provided. Using default : manual"; SOLUTION_CONFIG_TYPE=manual; fi
     if [ -z "$SNS_CONFIG" ]; then SNS_CONFIG="1+0+0"; fi
@@ -69,6 +70,7 @@ function check_params() {
    echo -e "# CORTX_ALL_IMAGE            : $CORTX_ALL_IMAGE                     "
    echo -e "# CORTX_SERVER_IMAGE         : $CORTX_SERVER_IMAGE                  "
    echo -e "# CORTX_DATA_IMAGE           : $CORTX_DATA_IMAGE                    "
+   echo -e "# CORTX_CONTROL_IMAGE        : $CORTX_CONTROL_IMAGE                 "
    echo -e "# DEPLOYMENT_METHOD          : $DEPLOYMENT_METHOD                   "
    echo -e "# SOLUTION_CONFIG_TYPE       : $SOLUTION_CONFIG_TYPE                "
    echo -e "# SNS_CONFIG                 : $SNS_CONFIG                          "
@@ -88,7 +90,8 @@ function pdsh_worker_exec() {
     commands=(
        "export CORTX_SERVER_IMAGE=$CORTX_SERVER_IMAGE && 
         export CORTX_ALL_IMAGE=$CORTX_ALL_IMAGE && 
-        export CORTX_DATA_IMAGE=$CORTX_DATA_IMAGE && 
+        export CORTX_DATA_IMAGE=$CORTX_DATA_IMAGE &&
+        export CORTX_CONTROL_IMAGE=$CORTX_CONTROL_IMAGE && 
         export CORTX_SCRIPTS_REPO=$CORTX_SCRIPTS_REPO && 
         export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH &&
         export SYSTEM_DRIVE=$SYSTEM_DRIVE &&
@@ -123,6 +126,7 @@ function setup_cluster() {
     export CORTX_SERVER_IMAGE=$CORTX_SERVER_IMAGE && 
     export CORTX_ALL_IMAGE=$CORTX_ALL_IMAGE &&
     export CORTX_DATA_IMAGE=$CORTX_DATA_IMAGE &&
+    export CORTX_CONTROL_IMAGE=$CORTX_CONTROL_IMAGE &&
     export DEPLOYMENT_METHOD=$DEPLOYMENT_METHOD &&
     export CORTX_SCRIPTS_REPO=$CORTX_SCRIPTS_REPO && 
     export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH && 

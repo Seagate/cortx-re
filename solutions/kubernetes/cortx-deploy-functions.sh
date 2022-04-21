@@ -175,7 +175,7 @@ function update_solution_config(){
 function add_image_info() {
 echo "Updating cortx-all image info in solution.yaml"   
 pushd $SCRIPT_LOCATION/k8_cortx_cloud
-    image=$CORTX_ALL_IMAGE yq e -i '.solution.images.cortxcontrol = env(image)' solution.yaml	
+    image=$CORTX_CONTROL_IMAGE yq e -i '.solution.images.cortxcontrol = env(image)' solution.yaml	
     image=$CORTX_DATA_IMAGE yq e -i '.solution.images.cortxdata = env(image)' solution.yaml
     image=$CORTX_SERVER_IMAGE yq e -i '.solution.images.cortxserver = env(image)' solution.yaml
     image=$CORTX_ALL_IMAGE yq e -i '.solution.images.cortxha = env(image)' solution.yaml
@@ -234,6 +234,7 @@ function execute_prereq() {
     docker pull $CORTX_ALL_IMAGE || { echo "Failed to pull $CORTX_ALL_IMAGE"; exit 1; }
     docker pull $CORTX_SERVER_IMAGE || { echo "Failed to pull $CORTX_SERVER_IMAGE"; exit 1; }
     docker pull $CORTX_DATA_IMAGE || { echo "Failed to pull $CORTX_DATA_IMAGE"; exit 1; }
+    docker pull $CORTX_CONTROL_IMAGE || { echo "Failed to pull $CORTX_CONTROL_IMAGE"; exit 1; }
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         add_secondary_separator "Un-mounting $SYSTEM_DRIVE partition if already mounted"
         findmnt $SYSTEM_DRIVE && umount -l $SYSTEM_DRIVE
