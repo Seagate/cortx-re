@@ -55,15 +55,10 @@ This file consists of the procedure to compile complete CORTX stack and Deploy o
 ```
 ## Network and Storage Configuration.
 
-   Connect to system using SSH key and centos as user.
-
-```
-   ssh -i cortx.pem centos@"<AWS instance public-ip>" 
-```
-
    Execute `/home/centos/setup.sh` to setup Network and Storage devices for CORTX. Script will reboot instance on completion. 
+
 ```
-   sudo bash /home/centos/setup.sh
+   ssh -i cortx.pem centos@"<AWS instance public-ip>" sudo bash /home/centos/setup.sh
 ```
    AWS instance is ready for CORTX Build and deployment now. Connect to instance over SSH and validate that all three network card's has IP address assigned.
    
