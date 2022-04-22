@@ -137,6 +137,8 @@ function run_data_io_sanity() {
    && pushd /opt/seagate/cortx/motr/workload/ \
    && ./create_workload_from_excel -t sample_workload_excel_test.xls \
    && ./m0workload -t out*/workload_output.yaml \
+   && echo $(cat temp-*/report.txt | grep 'Return Value' | awk -F'=' '{if($2>0)print $2}' | wc -l) \
+   && echo $(cat temp-*/report.txt | grep 'Return Value' | awk -F'=' '{if($2==0)print $2}' | wc -l) \
    && popd"   
 }
 
