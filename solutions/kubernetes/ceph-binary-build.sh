@@ -109,12 +109,11 @@ pushd /home/
         ./make-dist
         
         mv ceph-*tar.bz2 ../
+        version=\$(git describe --long --match 'v*' | sed 's/^v//')
     popd
 
-    tar -xf ceph-*tar.bz2
-    version=$(git describe --long --match 'v*' | sed 's/^v//')
-    
-    pushd ceph-$version
+    tar -xf ceph-*tar.bz2    
+    pushd /home/ceph-"\$version"
         add_common_separator "Start Build"
         dpkg-buildpackage -us -uc
     popd
