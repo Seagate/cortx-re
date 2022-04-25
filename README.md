@@ -52,3 +52,4 @@ master
 salve
 slave
 master
+slave
