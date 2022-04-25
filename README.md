@@ -50,3 +50,4 @@ All RE related documents are available in the below locations
 ## 2 new one new line 
 master
 salve
+slave
