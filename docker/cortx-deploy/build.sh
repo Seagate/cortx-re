@@ -21,7 +21,7 @@
 set -e -o pipefail
 
 usage() {
-echo "Generate cortx-all docker image from provided CORTX release build"
+echo "Generate CORTX container images from provided CORTX release build"
 echo "Usage: $0 [ -b build ] [ -p push docker-image to GHCR yes/no. Default no] [ -t tag latest yes/no. Default no" ] [ -r registry location ] [ -e environment ] [ -o operating-system ][ -s service ] [ -h print help message ] 1>&2; exit 1; }
 
 VERSION=2.0.0
@@ -32,14 +32,13 @@ REGISTRY="cortx-docker.colo.seagate.com"
 PROJECT="seagate"
 ARTFACT_URL="http://cortx-storage.colo.seagate.com/releases/cortx/github/"
 SERVICE=all
-OS=centos-7.9.2009
+OS=rockylinux-8.4
 IMAGE_LIST=( "cortx-all" "cortx-rgw" "cortx-data" "cortx-control" )
 
 
 while getopts "b:p:t:r:e:o:s:h:" opt; do
     case $opt in
         b ) BUILD=$OPTARG;;
-
         p ) DOCKER_PUSH=$OPTARG;;
         t ) TAG_LATEST=$OPTARG;;
         e ) ENVIRONMENT=$OPTARG;;
@@ -85,6 +84,9 @@ echo -e "# BUILD_URL  : $BUILD_URL                               "
 echo -e "# Base OS    : $OS_TYPE                                 "
 echo -e "# Base image : $OS_TYPE:$OS_RELEASE                     "
 echo -e "########################################################"
+
+#Copy helper script in current docker context
+cp ../../scripts/versioning/compatibility.info .
 
 function get_git_hash {
 sed -i '/KERNEL/d' RELEASE.INFO
