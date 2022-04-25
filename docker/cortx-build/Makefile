@@ -20,7 +20,9 @@ help : Makefile
 checkout:
 	@echo "*************** checkout code *********************"
 	pushd cortx-workspace && \
-        for component in $$(ls -1d cortx-* | grep -Evx 'cortx-k8s||cortx-experiments||cortx-posix||cortx-multisite||cortx-s3samplecode'); do pushd $$component; git clean -fdx; git checkout .; git pull -p --all; git checkout $$BRANCH || exit 1; popd ; done  && \
+        for component in cortx-motr cortx-hare cortx-rgw-integration cortx-manager cortx-utils cortx-ha; do pushd $$component; git clean -fdx; git checkout .; git pull -p --all; git checkout $$BRANCH || exit 1; popd ; done  && \
+		rm -rf cortx-rgw && \
+		git clone https://github.com/Seagate/cortx-rgw -b $$BRANCH && \
 	popd || (echo "ERROR: Failed to checkout specified branch/tag Exiting..."; exit 1)
 
 ## clean: remove existing /var/artifacts/0 directory. 
@@ -36,7 +38,7 @@ build: io-path control-path cortx-prereq release_build
 cortx-all-image: cortx-motr cortx-s3server cortx-hare cortx-prvsnr cortx-manager release_build
 
 ## cortx-all-image: generate packages required for cortx-all image including third-party-deps at "/var/artifacts/0"
-cortx-all-rockylinux-image: cortx-motr cortx-hare cortx-prvsnr cortx-manager cortx-rgw release_build
+cortx-all-rockylinux-image: cortx-motr cortx-hare cortx-prvsnr cortx-manager cortx-rgw cortx-ha release_build
 
 ## control-path: generate control-path packages. cortx-provisioner, cortx-monitor, cortx-manager, cortx-management-portal and cortx-ha.
 control-path: cortx-prvsnr cortx-monitor cortx-manager cortx-management-portal cortx-ha
