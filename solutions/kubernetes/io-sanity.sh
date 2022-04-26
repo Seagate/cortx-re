@@ -133,13 +133,13 @@ function run_io_sanity() {
 }
 
 function run_data_io_sanity() {
-   kubectl exec -it $(kubectl get pods | awk '/cortx-client/{print $1; exit}') -c cortx-hax -- bash -c "pip3 install pandas xlrd"
-   # && pushd /opt/seagate/cortx/motr/workload/ \
-   # && ./create_workload_from_excel -t sample_workload_excel_test.xls \
-   # && ./m0workload -t out*/workload_output.yaml \
-   # && echo $(cat temp-*/report.txt | grep 'Return Value' | awk -F'=' '{if($2>0)print $2}' | wc -l) \
-   # && echo $(cat temp-*/report.txt | grep 'Return Value' | awk -F'=' '{if($2==0)print $2}' | wc -l) \
-   # && popd"   
+   kubectl exec -it $(kubectl get pods | awk '/cortx-client/{print $1; exit}') -c cortx-hax -- bash -c "pip3 install pandas xlrd \
+   && pushd /opt/seagate/cortx/motr/workload/ \
+   && ./create_workload_from_excel -t sample_workload_excel_test.xls \
+   && ./m0workload -t out*/workload_output.yaml \
+   && echo $(cat temp-*/report.txt | grep 'Return Value' | awk -F'=' '{if($2>0)print $2}' | wc -l) \
+   && echo $(cat temp-*/report.txt | grep 'Return Value' | awk -F'=' '{if($2==0)print $2}' | wc -l) \
+   && popd"   
 }
 
 # Execution
