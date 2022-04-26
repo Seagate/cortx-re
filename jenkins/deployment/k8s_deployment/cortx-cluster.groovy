@@ -21,7 +21,7 @@ pipeline {
         string(name: 'CORTX_ALL_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-all:2.0.0-latest', description: 'CORTX-ALL image', trim: true)
         string(name: 'CORTX_SERVER_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-rgw:2.0.0-latest', description: 'CORTX-RGW image', trim: true)
         string(name: 'CORTX_DATA_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-data:2.0.0-latest', description: 'CORTX-DATA image', trim: true)
-
+        string(name: 'CORTX_CONTROL_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-control:2.0.0-latest', description: 'CORTX-CONTROL image', trim: true)
         choice (
             choices: ['DEVOPS', 'ALL', 'DEBUG'],
             description: 'Email Notification Recipients ',
@@ -66,6 +66,7 @@ pipeline {
                         string(name: 'CORTX_ALL_IMAGE', value: "${CORTX_ALL_IMAGE}"),
                         string(name: 'CORTX_SERVER_IMAGE', value: "${CORTX_SERVER_IMAGE}"),
                         string(name: 'CORTX_DATA_IMAGE', value: "${CORTX_DATA_IMAGE}"),
+                        string(name: 'CORTX_CONTROL_IMAGE', value: "${CORTX_CONTROL_IMAGE}"),
                         string(name: 'DEPLOYMENT_METHOD', value: "standard"),
                         text(name: 'hosts', value: "${hosts}"),
                         string(name: 'EXTERNAL_EXPOSURE_SERVICE', value: "NodePort"),
