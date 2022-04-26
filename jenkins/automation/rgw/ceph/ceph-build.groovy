@@ -35,43 +35,15 @@ pipeline {
             }
         }
 
-        stage ('Build Ubuntu Binary Packages') {
-            when { expression { params.BUILD_OS == "Ubuntu" } }
+        stage ('Build Ceph Binary Packages') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Build Binary Packages', script: '''
                     pushd solutions/kubernetes/
                         export CEPH_REPO=${CEPH_REPO}
                         export CEPH_BRANCH=${CEPH_BRANCH}
-                        ./ceph-binary-build.sh --build-ubuntu
-                    popd
-                '''
-            }
-        }
-
-        stage ('Build CentOS Binary Packages') {
-            when { expression { params.BUILD_OS == "CentOS" } }
-            steps {
-                script { build_stage = env.STAGE_NAME }
-                sh label: 'Build Binary Packages', script: '''
-                    pushd solutions/kubernetes/
-                        export CEPH_REPO=${CEPH_REPO}
-                        export CEPH_BRANCH=${CEPH_BRANCH}
-                        ./ceph-binary-build.sh --build-centos
-                    popd
-                '''
-            }
-        }
-
-        stage ('Build Rocky Linux Binary Packages') {
-            when { expression { params.BUILD_OS == "Rocky Linux" } }
-            steps {
-                script { build_stage = env.STAGE_NAME }
-                sh label: 'Build Binary Packages', script: '''
-                    pushd solutions/kubernetes/
-                        export CEPH_REPO=${CEPH_REPO}
-                        export CEPH_BRANCH=${CEPH_BRANCH}
-                        ./ceph-binary-build.sh --build-rockylinux
+                        export BUILD_OS=${BUILD_OS}
+                        bash ceph-binary-build.sh --ceph-build
                     popd
                 '''
             }

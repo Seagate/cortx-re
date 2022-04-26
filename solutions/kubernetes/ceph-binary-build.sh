@@ -39,256 +39,195 @@ function usage() {
     cat << HEREDOC
 Usage : $0 [--build-ubuntu, --build-centos, --build-rockylinux]
 where,
-    --build-ubuntu - Build Ubuntu binary packages (*.debs).
-    --build-centos  - Build CentOS binary packages (*.rpms).
-    --build-rockylinux - Build Rocky Linux binary packages (*.rpms).
+    --ceph-build - Build Ceph binary packages.
 HEREDOC
 }
 
 function check_params() {
+    add_primary_separator "Checking parameters"
     if [ -z "$CEPH_REPO" ]; then echo "CEPH_REPO not provided. Using default: ceph/ceph ";CEPH_REPO="ceph/ceph"; fi
     if [ -z "$CEPH_BRANCH" ]; then echo "CEPH_BRANCH not provided. Using default: quincy";CEPH_BRANCH="quincy"; fi
+    if [ -z "$BUILD_OS" ]; then echo "BUILD_OS not provided. Using default: centos";BUILD_OS="centos"; fi
 
    echo -e "\n\n########################################################################"
    echo -e "# CEPH_REPO         : $CEPH_REPO                  "
    echo -e "# CEPH_BRANCH       : $CEPH_BRANCH                "
+   echo -e "# BUILD_OS          : $BUILD_OS                "
    echo -e "#########################################################################"
 }
 
 function prereq() {
-    add_primary_separator "\t\tPreparing Build node"
+    add_primary_separator "\t\tRunning Preequisites"
 
-    # Verify docker installation:
     add_secondary_separator "Verify docker installation"
     if ! which docker; then
-        add_secondary_separator "Please install Docker on Build Node Agent"
-        exit 1
+        add_common_separator "Installing Docker on Build Node Agent"
+        curl -fsSL https://get.docker.com -o get-docker.sh
+        chmod +x get-docker.sh
+        ./get-docker.sh
+    fi
+
+    pushd $MOUNT_LOCATION/$BUILD_OS
+        add_common_separator "Removing previous files"
+        rm -rvf *
+    popd
+
+    add_secondary_separator "Copy build scripts to $MOUNT_LOCATION/$BUILD_OS"
+    mkdir -p $MOUNT_LOCATION/$BUILD_OS
+    cp $0 $MOUNT_LOCATION/$BUILD_OS/build.sh
+    cp functions.sh $MOUNT_LOCATION/$BUILD_OS
+}
+
+function ceph_build() {
+    add_primary_separator "Start Ceph Build"
+    if [[ $BUILD_OS == "Ubuntu" ]]; then
+        if [[ $(docker images --format "{{.Repository}}:{{.Tag}}" --filter reference=ubuntu:20.04) != "ubuntu:20.04" ]]; then
+            docker pull ubuntu:20.04
+            add_secondary_separator "Run Ubuntu 20.04 container and run build script"
+            docker run --rm -t -d -e CEPH_REPO=$CEPH_REPO -e CEPH_BRANCH=$CEPH_BRANCH --name ceph_ubuntu -v $MOUNT_LOCATION/$BUILD_OS:/home --entrypoint "/bin/bash /home/build.sh --build-ubuntu" ubuntu:20.04
+        fi
+
+    elif [[ $BUILD_OS == "CentOS" ]]; then
+        if [[ $(docker images --format "{{.Repository}}:{{.Tag}}" --filter reference=centos:8) != "centos:8" ]]; then
+            docker pull centos:8
+            add_secondary_separator "Run CentOS 8 container and run build script"
+            docker run --rm -t -d -e CEPH_REPO=$CEPH_REPO -e CEPH_BRANCH=$CEPH_BRANCH --name ceph_centos -v /$MOUNT_LOCATION/centos:/home --entrypoint "/bin/bash /home/build.sh --build-centos" centos:8
+        fi
+
+    elif [[ $BUILD_OS == "Rocky Linux" ]]; then
+        if [[ $(docker images --format "{{.Repository}}:{{.Tag}}" --filter reference=rockylinux:8) != "rockylinux:8" ]]; then
+            docker pull rockylinux:8
+            add_secondary_separator "Run Rocky Linux 8 container and run build script"
+            docker run --rm -t -d -e CEPH_REPO=$CEPH_REPO -e CEPH_BRANCH=$CEPH_BRANCH --name ceph_rockylinux -v /$MOUNT_LOCATION/rockylinux:/home --entrypoint "/bin/bash /home/build.sh --build-rockylinux" rockylinux:8
+        fi
+
+    else
+        add_secondary_separator "Failed to build ceph, please check logs"
     fi
 }
 
 function build_ubuntu() {
-    add_primary_separator "Building ubuntu binary packages"
+    add_primary_separator "Building Ubuntu ceph binary packages"
+    add_common_separator "Update repolist cache and install prerequisites"
+    apt update && apt install git -y
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata
+    pushd /home/
+        add_common_separator "Clone Repo"
+        git clone $CEPH_REPO -b $CEPH_BRANCH
 
-    add_secondary_separator "Verfiy/pull Ubuntu docker image"
-    if [[ $(docker images | tail -n+2 | awk '{ print $1":"$2 }' | grep ubuntu) != "ubuntu:latest" ]]; then
-        docker pull ubuntu:latest
-    fi
+        pushd ceph
+            add_common_separator "Checkout Submodules"
+            git submodule update --init --recursive
 
-    add_secondary_separator "Make build directory and run Ubuntu container"
-    mkdir -p $MOUNT_LOCATION/ubuntu
-    docker run --rm -t -d --name ceph_ubuntu -v /$MOUNT_LOCATION/ubuntu:/home ubuntu:latest
+            add_common_separator "Install Dependencies"
+            ./install-deps.sh
 
-    pushd $MOUNT_LOCATION/ubuntu
-        add_common_separator "Removing previous files"
-        rm -rvf *
+            add_common_separator "Make Source Tarball"
+            ./make-dist
+            
+            mv ceph-*tar.bz2 ../
+            version=$(git describe --long --match 'v*' | sed 's/^v//')
+        popd
+
+        tar -xf ceph-*tar.bz2
+        pushd /home/ceph-"$version"
+            add_common_separator "Start Build"
+            dpkg-buildpackage -us -uc
+        popd
+
+        add_common_separator "List generated binary packages (*.deb)"
+        ls *.deb
     popd
-
-    add_secondary_separator "Write build script"
-    cp functions.sh $MOUNT_LOCATION/ubuntu
-    pushd $MOUNT_LOCATION/ubuntu
-        cat << EOF > build.sh
-#/bin/bash
-
-source /home/functions.sh
-
-add_common_separator "Update repolist cache and install prerequisites"
-apt update && apt install git -y
-DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata
-pushd /home/
-    add_common_separator "Clone Repo"
-    git clone $CEPH_REPO -b $CEPH_BRANCH
-
-    pushd ceph
-        add_common_separator "Checkout Submodules"
-        git submodule update --init --recursive
-
-        add_common_separator "Install Dependencies"
-        ./install-deps.sh
-
-        add_common_separator "Make Source Tarball"
-        ./make-dist
-        
-        mv ceph-*tar.bz2 ../
-        version=\$(git describe --long --match 'v*' | sed 's/^v//')
-    popd
-
-    tar -xf ceph-*tar.bz2    
-    pushd /home/ceph-"\$version"
-        add_common_separator "Start Build"
-        dpkg-buildpackage -us -uc
-    popd
-
-    add_common_separator "List generated binary packages (*.deb)"
-    ls *.deb
-popd
-EOF
-
-    chmod +x build.sh
-    popd
-
-    add_secondary_separator "Run build script"
-    docker exec ceph_ubuntu bash /home/build.sh
-
-    add_primary_separator "\t\tDestroy build environment"
-    docker stop ceph_ubuntu
 }
 
 function build_centos() {
     add_primary_separator "Building centos binary packages"
+    add_common_separator "Update repolist cache and install prerequisites"
+    rpm -ivh http://mirror.centos.org/centos/8-stream/BaseOS/x86_64/os/Packages/centos-gpg-keys-8-3.el8.noarch.rpm
+    dnf --disablerepo '*' --enablerepo=extras swap centos-linux-repos centos-stream-repos -y
+    yum makecache && yum install git -y
+    yum install wget bzip2 rpm-build rpmdevtools dnf-plugins-core -y
+    dnf config-manager --set-enabled powertools
+    pushd /home/
+        add_common_separator "Clone Repo"
+        git clone $CEPH_REPO -b $CEPH_BRANCH
 
-    add_secondary_separator "Verfiy/pull CentOS docker image"
-    if [[ $(docker images | tail -n+2 | awk '{ print $1":"$2 }' | grep centos) != "centos:latest" ]]; then
-        docker pull centos:latest
-    fi
+        pushd ceph
+            add_common_separator "Checkout Submodules"
+            git submodule update --init --recursive
 
-    add_secondary_separator "Make build directory and run CentOS container"
-    mkdir -p $MOUNT_LOCATION/centos
-    docker run --rm -t -d --name ceph_centos -v /$MOUNT_LOCATION/centos:/home centos:latest
+            add_common_separator "Install Dependencies"
+            ./install-deps.sh
 
-    pushd $MOUNT_LOCATION/centos
-        add_common_separator "Removing previous files"
-        rm -rvf *
+            add_common_separator "Make Source Tarball"
+            ./make-dist
+            
+            mkdir -p ../rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
+            tar --strip-components=1 -C ../rpmbuild/SPECS --no-anchored -xvjf ceph-*tar.bz2 "ceph.spec"
+            mv ceph*tar.bz2 ../rpmbuild/SOURCES/
+        popd
+
+        pushd rpmbuild/
+            add_common_separator "Start Build"
+            rpmbuild --define "_topdir /home/rpmbuild" -ba SPECS/ceph.spec
+        popd
+
+        add_common_separator "List generated binary packages (*.rpm)"
+        ls rpmbuild/RPMS/*
     popd
-
-    add_secondary_separator "Write build script"
-    cp functions.sh $MOUNT_LOCATION/centos
-    pushd $MOUNT_LOCATION/centos
-
-        cat << EOF > build.sh
-#/bin/bash
-
-source /home/functions.sh
-
-add_common_separator "Update repolist cache and install prerequisites"
-rpm -ivh http://mirror.centos.org/centos/8-stream/BaseOS/x86_64/os/Packages/centos-gpg-keys-8-3.el8.noarch.rpm
-dnf --disablerepo '*' --enablerepo=extras swap centos-linux-repos centos-stream-repos -y
-yum makecache && yum install git -y
-yum install wget bzip2 rpm-build rpmdevtools dnf-plugins-core -y
-dnf config-manager --set-enabled powertools
-pushd /home/
-    add_common_separator "Clone Repo"
-    git clone $CEPH_REPO -b $CEPH_BRANCH
-
-    pushd ceph
-        add_common_separator "Checkout Submodules"
-        git submodule update --init --recursive
-
-        add_common_separator "Install Dependencies"
-        ./install-deps.sh
-
-        add_common_separator "Make Source Tarball"
-        ./make-dist
-        
-        mkdir -p ../rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
-        tar --strip-components=1 -C ../rpmbuild/SPECS --no-anchored -xvjf ceph-*tar.bz2 "ceph.spec"
-        mv ceph*tar.bz2 ../rpmbuild/SOURCES/
-    popd
-
-    pushd rpmbuild/
-        add_common_separator "Start Build"
-        rpmbuild --define "_topdir /home/rpmbuild" -ba SPECS/ceph.spec
-    popd
-
-    add_common_separator "List generated binary packages (*.rpm)"
-    ls rpmbuild/RPMS/*
-popd
-EOF
-
-    chmod +x build.sh
-    popd
-
-    add_secondary_separator "Run build script"
-    docker exec ceph_centos bash /home/build.sh
-
-    add_primary_separator "\t\tDestroy build environment"
-    docker stop ceph_centos
 }
 
 function build_rockylinux() {
     add_primary_separator "Building rocky linux binary packages"
+    add_common_separator "Update repolist cache and install prerequisites"
+    yum makecache && yum install git -y
+    yum install wget bzip2 rpm-build rpmdevtools dnf-plugins-core -y
+    dnf config-manager --set-enabled powertools
+    pushd /home/
+        add_common_separator "Clone Repo"
+        git clone $CEPH_REPO -b $CEPH_BRANCH
 
-    add_secondary_separator "Verfiy/pull Rocky Linux docker image"
-    if [[ $(docker images | tail -n+2 | awk '{ print $1":"$2 }' | grep rockylinux) != "rockylinux:latest" ]]; then
-        docker pull rockylinux:latest
-    fi
-    
-    add_secondary_separator "Make build directory and run Rocky Linux container"
-    mkdir -p $MOUNT_LOCATION/rockylinux
-    docker run --rm -t -d --name ceph_rockylinux -v /$MOUNT_LOCATION/rockylinux:/home rockylinux:latest
+        pushd ceph
+            add_common_separator "Checkout Submodules"
+            git submodule update --init --recursive
 
-    pushd $MOUNT_LOCATION/rockylinux
-        add_common_separator "Removing previous files"
-        rm -rvf *
+            sed -i 's/centos|fedora|rhel|ol|virtuozzo/centos|fedora|rhel|ol|virtuozzo|rocky/g' install-deps.sh
+            sed -i 's/centos|rhel|ol|virtuozzo/centos|rhel|ol|virtuozzo|rocky/g' install-deps.sh
+
+            add_common_separator "Install Dependencies"
+            ./install-deps.sh
+
+            add_common_separator "Make Source Tarball"
+            ./make-dist
+            
+            mkdir -p ../rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
+            tar --strip-components=1 -C ../rpmbuild/SPECS --no-anchored -xvjf ceph-*tar.bz2 "ceph.spec"
+            mv ceph*tar.bz2 ../rpmbuild/SOURCES/
+        popd
+
+        pushd rpmbuild/
+            add_common_separator "Start Build"
+            rpmbuild --define "_topdir /home/rpmbuild" -ba SPECS/ceph.spec
+        popd
+
+        add_common_separator "List generated binary packages (*.rpm)"
+        ls rpmbuild/RPMS/*
     popd
-
-    add_secondary_separator "Write build script"
-    cp functions.sh $MOUNT_LOCATION/rockylinux
-    pushd $MOUNT_LOCATION/rockylinux
-        cat << EOF > build.sh
-#/bin/bash
-
-source /home/functions.sh
-
-add_common_separator "Update repolist cache and install prerequisites"
-yum makecache && yum install git -y
-yum install wget bzip2 rpm-build rpmdevtools dnf-plugins-core -y
-dnf config-manager --set-enabled powertools
-pushd /home/
-    add_common_separator "Clone Repo"
-    git clone $CEPH_REPO -b $CEPH_BRANCH
-
-    pushd ceph
-        add_common_separator "Checkout Submodules"
-        git submodule update --init --recursive
-
-        sed -i 's/centos|fedora|rhel|ol|virtuozzo/centos|fedora|rhel|ol|virtuozzo|rocky/g' install-deps.sh
-        sed -i 's/centos|rhel|ol|virtuozzo/centos|rhel|ol|virtuozzo|rocky/g' install-deps.sh
-
-        add_common_separator "Install Dependencies"
-        ./install-deps.sh
-
-        add_common_separator "Make Source Tarball"
-        ./make-dist
-        
-        mkdir -p ../rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
-        tar --strip-components=1 -C ../rpmbuild/SPECS --no-anchored -xvjf ceph-*tar.bz2 "ceph.spec"
-        mv ceph*tar.bz2 ../rpmbuild/SOURCES/
-    popd
-
-    pushd rpmbuild/
-        add_common_separator "Start Build"
-        rpmbuild --define "_topdir /home/rpmbuild" -ba SPECS/ceph.spec
-    popd
-
-    add_common_separator "List generated binary packages (*.rpm)"
-    ls rpmbuild/RPMS/*
-popd
-EOF
-
-    chmod +x build.sh
-    popd
-
-    add_secondary_separator "Run build script"
-    docker exec ceph_rockylinux bash /home/build.sh
-
-    add_primary_separator "\t\tDestroy build environment"
-    docker stop ceph_rockylinux
 }
 
 case $ACTION in
-    --build-ubuntu)
+    --ceph-build)
         check_params
         prereq
+        ceph_build
+    ;;
+    --build-ubuntu)
         build_ubuntu
     ;;
     --build-centos)
-        check_params
-        prereq
         build_centos
     ;;
     --build-rockylinux)
-        check_params
-        prereq
         build_rockylinux
     ;;
     *)
