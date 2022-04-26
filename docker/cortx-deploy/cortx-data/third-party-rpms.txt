@@ -10,3 +10,4 @@ python3-dbus
 python3-m2crypto
 python3-psutil
 consul-1.11.4 #cortx-hare
+logrotate
