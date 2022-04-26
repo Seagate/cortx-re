@@ -28,20 +28,20 @@ source functions.sh
 
 MOUNT_LOCATION="/var/log/ceph-build"
 
+function usage() {
+    cat << HEREDOC
+Usage : $0 [--ceph-build]
+where,
+    --ceph-build - Build Ceph binary packages.
+HEREDOC
+}
+
 ACTION="$1"
 if [ -z "$ACTION" ]; then
     echo "ERROR : No option provided"
     usage
     exit 1
 fi
-
-function usage() {
-    cat << HEREDOC
-Usage : $0 [--build-ubuntu, --build-centos, --build-rockylinux]
-where,
-    --ceph-build - Build Ceph binary packages.
-HEREDOC
-}
 
 function check_params() {
     add_primary_separator "Checking parameters"
@@ -80,27 +80,28 @@ function prereq() {
 }
 
 function ceph_build() {
-    add_primary_separator "Start Ceph Build"
+    add_primary_separator "\t\tStart Ceph Build"
     if [[ $BUILD_OS == "Ubuntu" ]]; then
         if [[ $(docker images --format "{{.Repository}}:{{.Tag}}" --filter reference=ubuntu:20.04) != "ubuntu:20.04" ]]; then
             docker pull ubuntu:20.04
-            add_secondary_separator "Run Ubuntu 20.04 container and run build script"
-            docker run --rm -t -d -e CEPH_REPO=$CEPH_REPO -e CEPH_BRANCH=$CEPH_BRANCH --name ceph_ubuntu -v $MOUNT_LOCATION/$BUILD_OS:/home --entrypoint "/bin/bash /home/build.sh --build-ubuntu" ubuntu:20.04
         fi
+        add_secondary_separator "Run Ubuntu 20.04 container and run build script"
+        docker run --rm -t -e CEPH_REPO=$CEPH_REPO -e CEPH_BRANCH=$CEPH_BRANCH --name ceph_ubuntu -v $MOUNT_LOCATION/$BUILD_OS:/home --entrypoint /bin/bash ubuntu:20.04 -c "pushd /home && ./build.sh --build-ubuntu && popd"
 
     elif [[ $BUILD_OS == "CentOS" ]]; then
         if [[ $(docker images --format "{{.Repository}}:{{.Tag}}" --filter reference=centos:8) != "centos:8" ]]; then
             docker pull centos:8
-            add_secondary_separator "Run CentOS 8 container and run build script"
-            docker run --rm -t -d -e CEPH_REPO=$CEPH_REPO -e CEPH_BRANCH=$CEPH_BRANCH --name ceph_centos -v /$MOUNT_LOCATION/centos:/home --entrypoint "/bin/bash /home/build.sh --build-centos" centos:8
         fi
+        add_secondary_separator "Run CentOS 8 container and run build script"
+        docker run --rm -t -e CEPH_REPO=$CEPH_REPO -e CEPH_BRANCH=$CEPH_BRANCH --name ceph_centos -v /$MOUNT_LOCATION/$BUILD_OS:/home --entrypoint /bin/bash centos:8 -c "pushd /home && ./build.sh --build-centos && popd"
 
     elif [[ $BUILD_OS == "Rocky Linux" ]]; then
         if [[ $(docker images --format "{{.Repository}}:{{.Tag}}" --filter reference=rockylinux:8) != "rockylinux:8" ]]; then
             docker pull rockylinux:8
-            add_secondary_separator "Run Rocky Linux 8 container and run build script"
-            docker run --rm -t -d -e CEPH_REPO=$CEPH_REPO -e CEPH_BRANCH=$CEPH_BRANCH --name ceph_rockylinux -v /$MOUNT_LOCATION/rockylinux:/home --entrypoint "/bin/bash /home/build.sh --build-rockylinux" rockylinux:8
         fi
+        add_secondary_separator "Run Rocky Linux 8 container and run build script"
+        docker run --rm -t -e CEPH_REPO=$CEPH_REPO -e CEPH_BRANCH=$CEPH_BRANCH --name ceph_rockylinux -v /$MOUNT_LOCATION/rockylinux:/home --entrypoint /bin/bash rockylinux:8 -c "pushd /home && ./build.sh --build-rockylinux && popd"
+
 
     else
         add_secondary_separator "Failed to build ceph, please check logs"
