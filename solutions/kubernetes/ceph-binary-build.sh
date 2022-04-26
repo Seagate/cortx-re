@@ -67,13 +67,14 @@ function prereq() {
         ./get-docker.sh
     fi
 
+    mkdir -p $MOUNT_LOCATION/$BUILD_OS
+
     pushd $MOUNT_LOCATION/$BUILD_OS
         add_common_separator "Removing previous files"
         rm -rvf *
     popd
 
     add_secondary_separator "Copy build scripts to $MOUNT_LOCATION/$BUILD_OS"
-    mkdir -p $MOUNT_LOCATION/$BUILD_OS
     cp $0 $MOUNT_LOCATION/$BUILD_OS/build.sh
     cp functions.sh $MOUNT_LOCATION/$BUILD_OS
 }
