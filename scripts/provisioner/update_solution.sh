@@ -71,6 +71,7 @@ function update_secret() {
         yq e -i '.solution.secrets.content.s3_auth_admin_secret = "ldapadmin"' "$SCRIPT_PATH"/solution.example.yaml
         yq e -i '.solution.secrets.content.csm_auth_admin_secret = "seagate2"' "$SCRIPT_PATH"/solution.example.yaml
         yq e -i '.solution.secrets.content.csm_mgmt_admin_secret = "Cortxadmin@123"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.images.consul = "cortx-docker.colo.seagate.com/consul/consul:1.12"' "$SCRIPT_PATH"/solution.example.yaml
     popd
 }
 
