@@ -102,7 +102,6 @@ function ceph_build() {
         add_secondary_separator "Run Rocky Linux 8 container and run build script"
         docker run --rm -t -e CEPH_REPO=$CEPH_REPO -e CEPH_BRANCH=$CEPH_BRANCH --name ceph_rockylinux -v /$MOUNT_LOCATION/$BUILD_OS:/home --entrypoint /bin/bash rockylinux:8 -c "pushd /home && ./build.sh --build-rockylinux && popd"
 
-
     else
         add_secondary_separator "Failed to build ceph, please check logs"
     fi
