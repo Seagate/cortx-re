@@ -48,7 +48,7 @@ fi
 
 function check_params() {
     if [ -z "$CORTX_SCRIPTS_REPO" ]; then echo "CORTX_SCRIPTS_REPO not provided. Using default: Seagate/cortx-k8s ";CORTX_SCRIPTS_REPO="Seagate/cortx-k8s"; fi
-    if [ -z "$CORTX_SCRIPTS_BRANCH" ]; then echo "CORTX_SCRIPTS_BRANCH not provided. Using default: v0.2.1";CORTX_SCRIPTS_BRANCH="v0.2.1"; fi
+    if [ -z "$CORTX_SCRIPTS_BRANCH" ]; then echo "CORTX_SCRIPTS_BRANCH not provided. Using default: v0.2.1";CORTX_SCRIPTS_BRANCH="v0.3.0"; fi
     if [ -z "$CORTX_ALL_IMAGE" ]; then echo "CORTX_ALL_IMAGE not provided. Using default: ghcr.io/seagate/cortx-all:2.0.0-latest"; CORTX_ALL_IMAGE=ghcr.io/seagate/cortx-all:2.0.0-latest; fi
     if [ -z "$CORTX_SERVER_IMAGE" ]; then echo "CORTX_SERVER_IMAGE not provided. Using default : ghcr.io/seagate/cortx-rgw:2.0.0-latest"; CORTX_SERVER_IMAGE=ghcr.io/seagate/cortx-rgw:2.0.0-latest; fi
     if [ -z "$CORTX_DATA_IMAGE" ]; then echo "CORTX_DATA_IMAGE not provided. Using default : ghcr.io/seagate/cortx-data:2.0.0-latest"; CORTX_DATA_IMAGE=ghcr.io/seagate/cortx-data:2.0.0-latest; fi
@@ -61,6 +61,7 @@ function check_params() {
     if [ -z "$S3_EXTERNAL_HTTP_NODEPORT" ]; then S3_EXTERNAL_HTTP_NODEPORT="30080"; fi
     if [ -z "$S3_EXTERNAL_HTTPS_NODEPORT" ]; then S3_EXTERNAL_HTTPS_NODEPORT="30443"; fi
     if [ -z "$SYSTEM_DRIVE" ]; then echo "SYSTEM_DRIVE not provided. Using default: /dev/sdb";SYSTEM_DRIVE="/dev/sdb"; fi
+    if [ -z "$NAMESPACE" ]; then echo "NAMESPACE not provided. Using default: default";NAMESPACE="default"; fi
 
    echo -e "\n\n########################################################################"
    echo -e "# CORTX_SCRIPTS_REPO         : $CORTX_SCRIPTS_REPO                  "
@@ -77,6 +78,7 @@ function check_params() {
    echo -e "# S3_EXTERNAL_HTTP_NODEPORT  : $S3_EXTERNAL_HTTP_NODEPORT           "
    echo -e "# S3_EXTERNAL_HTTPS_NODEPORT : $S3_EXTERNAL_HTTPS_NODEPORT          "
    echo -e "# SYSTEM_DRIVE               : $SYSTEM_DRIVE                        "
+   echo -e "# NAMESPACE                  : $NAMESPACE                           "
    echo -e "#########################################################################"
 
 }
@@ -84,7 +86,13 @@ function check_params() {
 function pdsh_worker_exec() {
     # Commands to run in parallel on pdsh hosts (workers nodes).
     commands=(
-       "export CORTX_SERVER_IMAGE=$CORTX_SERVER_IMAGE && export CORTX_ALL_IMAGE=$CORTX_ALL_IMAGE && export CORTX_DATA_IMAGE=$CORTX_DATA_IMAGE && export CORTX_SCRIPTS_REPO=$CORTX_SCRIPTS_REPO && export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH && /var/tmp/cortx-deploy-functions.sh --setup-worker"
+       "export CORTX_SERVER_IMAGE=$CORTX_SERVER_IMAGE && 
+        export CORTX_ALL_IMAGE=$CORTX_ALL_IMAGE && 
+        export CORTX_DATA_IMAGE=$CORTX_DATA_IMAGE && 
+        export CORTX_SCRIPTS_REPO=$CORTX_SCRIPTS_REPO && 
+        export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH &&
+        export SYSTEM_DRIVE=$SYSTEM_DRIVE &&
+        /var/tmp/cortx-deploy-functions.sh --setup-worker"
     )
     for cmds in "${commands[@]}"; do
        pdsh -w ^$1 $cmds
@@ -124,6 +132,7 @@ function setup_cluster() {
     export CONTROL_EXTERNAL_NODEPORT=$CONTROL_EXTERNAL_NODEPORT &&
     export S3_EXTERNAL_HTTP_NODEPORT=$S3_EXTERNAL_HTTP_NODEPORT &&
     export S3_EXTERNAL_HTTPS_NODEPORT=$S3_EXTERNAL_HTTPS_NODEPORT &&
+    export NAMESPACE=$NAMESPACE &&
     export EXTERNAL_EXPOSURE_SERVICE=$EXTERNAL_EXPOSURE_SERVICE && /var/tmp/cortx-deploy-functions.sh --setup-primary"
 
     if [ "$SINGLE_NODE_DEPLOYMENT" == "False" ]; then
