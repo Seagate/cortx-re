@@ -57,9 +57,18 @@ export SECRET_KEY=$(echo $SETUP_INFO | tr ' ' '\n' | grep SECRET_KEY | cut -d'='
 /var/tmp/run-performace-tests-functions.sh --setup-client"
 
 export CLUSTER_TYPE=$(echo $SETUP_INFO | tr ' ' '\n' | grep CLUSTER_TYPE | cut -d'=' -f2)
-echo $CLUSTER_TYPE
 
-add_primary_separator "Execute PerfPro Sanity"
+echo -e "\n\n########################################################################"
+echo -e "# CORTX_TOOLS_REPO           : $CORTX_TOOLS_REPO                            "
+echo -e "# CORTX_TOOLS_BRANCH         : $CORTX_TOOLS_BRANCH                          "
+echo -e "# PRIMARY_NODE               : $PRIMARY_NODE                                "
+echo -e "# CLIENT_NODE                : $CLIENT_NODE                                 "
+echo -e "# ENDPOINT_URL               : $ENDPOINT_URL                                "
+echo -e "# BUILD_URL                  : $BUILD_URL                                   "
+echo -e "# CLUSTER_TYPE               : $CLUSTER_TYPE                                "
+echo -e "############################################################################"
+
+add_primary_separator "Execute PerfPro Sanity Suit"
 ssh -o 'StrictHostKeyChecking=no' "$CLIENT_NODE" "
 export GITHUB_TOKEN=$GITHUB_TOKEN &&
 export SCRIPT_LOCATION=$SCRIPT_LOCATION &&

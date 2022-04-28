@@ -114,11 +114,11 @@ function setup-client() {
 function execute-perf-sanity() {
     if [ -z "$CORTX_TOOLS_REPO" ]; then echo "CORTX_TOOLS_REPO not provided.Using Default Seagate/seagate-tools"; CORTX_TOOLS_REPO="Seagate/seagate-tools" ; fi
     if [ -z "$CORTX_TOOLS_BRANCH" ]; then echo "CORTX_TOOLS_BRANCH not provided.Using Default main."; CORTX_TOOLS_BRANCH="main"; fi
-    if [ -z "$PRIMARY_NODE" ]; then echo "PRIMARY_NODE not provided.Exiting..."; exit 1; fi
-    if [ -z "$CLIENT_NODE" ]; then echo "CLIENT_NODE not provided.Exiting..."; exit 1; fi
-    if [ -z "$PRIMARY_CRED" ]; then echo "PRIMARY_CRED not provided.Exiting..."; exit 1; fi
-    if [ -z "$GITHUB_TOKEN" ]; then echo "GITHUB_TOKEN not provided.Exiting..."; exit 1; fi
-    if [ -z "$BUILD_URL" ]; then echo "BUILD_URL not provided.Exiting..."; exit 1; fi
+    if [ -z "$PRIMARY_NODE" ]; then echo "ERROR:PRIMARY_NODE not provided.Exiting..."; exit 1; fi
+    if [ -z "$CLIENT_NODE" ]; then echo "ERROR:CLIENT_NODE not provided.Exiting..."; exit 1; fi
+    if [ -z "$PRIMARY_CRED" ]; then echo "ERROR:PRIMARY_CRED not provided.Exiting..."; exit 1; fi
+    if [ -z "$GITHUB_TOKEN" ]; then echo "ERROR:GITHUB_TOKEN not provided.Exiting..."; exit 1; fi
+    if [ -z "$BUILD_URL" ]; then echo "ERROR:BUILD_URL not provided.Exiting..."; exit 1; fi
     
     clone_segate_tools_repo
     update_setup_confiuration
