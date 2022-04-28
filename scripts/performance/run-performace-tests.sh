@@ -56,6 +56,9 @@ export ACCESS_KEY=$(echo $SETUP_INFO | tr ' ' '\n' | grep ACCESS_KEY | cut -d'='
 export SECRET_KEY=$(echo $SETUP_INFO | tr ' ' '\n' | grep SECRET_KEY | cut -d'=' -f2) &&
 /var/tmp/run-performace-tests-functions.sh --setup-client"
 
+export CLUSTER_TYPE=$(echo $SETUP_INFO | tr ' ' '\n' | grep CLUSTER_TYPE | cut -d'=' -f2)
+echo $CLUSTER_TYPE
+
 add_primary_separator "Execute PerfPro Sanity"
 ssh -o 'StrictHostKeyChecking=no' "$CLIENT_NODE" "
 export GITHUB_TOKEN=$GITHUB_TOKEN &&
@@ -67,4 +70,5 @@ export CLIENT_NODE=$CLIENT_NODE &&
 export PRIMARY_CRED=$PRIMARY_CRED &&
 export ENDPOINT_URL=$(echo $SETUP_INFO | tr ' ' '\n' | grep ENDPOINT_URL | cut -d'=' -f2) &&
 export BUILD_URL=$(echo $SETUP_INFO | tr ' ' '\n' | grep BUILD_URL | cut -d'=' -f2) &&
+export CLUSTER_TYPE=$CLUSTER_TYPE &&
 /var/tmp/run-performace-tests-functions.sh --execute-perf-sanity"
