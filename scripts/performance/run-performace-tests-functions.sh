@@ -48,8 +48,10 @@ function create_endpoint_url() {
     SECRET_KEY=$(yq e '.solution.secrets.content.s3_auth_admin_secret' $SOLUTION_FILE)
     HTTP_PORT=$(kubectl get svc cortx-io-svc-0 -o=jsonpath='{.spec.ports[?(@.port==80)].nodePort}')
     if [ $(systemd-detect-virt -v) == "none" ];then
+            CLUSTER_TYPE=HW 
 	    IP_ADDRESS=$(ifconfig eno5 | grep inet -w | awk '{print $2}')
     else
+            CLUSTER_TYPE=VM		
 	    IP_ADDRESS=$(ifconfig eth1 | grep inet -w | awk '{print $2}')
     fi 
     ENDPOINT_URL="http://$IP_ADDRESS:$HTTP_PORT"
@@ -58,6 +60,7 @@ function create_endpoint_url() {
     echo ACCESS_KEY=$ACCESS_KEY
     echo SECRET_KEY=$SECRET_KEY
     echo BUILD_URL=$BUILD_URL
+    echo CLUSTER_TYPE=$CLUSTER_TYPE
 }
 
 function clone_segate_tools_repo() {
@@ -76,9 +79,14 @@ function clone_segate_tools_repo() {
 
 function update_setup_confiuration() {
     CONFIG_FILE=$SCRIPT_LOCATION/performance/PerfPro/roles/benchmark/vars/config.yml
+    S3_CONFIG_FILE=$SCRIPT_LOCATION/performance/PerfPro/roles/benchmark/vars/s3config.yml 
     sed -i '/CLUSTER_PASS/s/seagate1/'$PRIMARY_CRED'/g' $CONFIG_FILE
     sed -i -e '/node_number_srvnode-*/d' -e '/#client_number/d' -e '/NODES/{n;s/.*/  - 1: '$PRIMARY_NODE'/}' -e '/CLIENTS/{n;s/.*/  - 1: '$CLIENT_NODE'/}' $CONFIG_FILE
     sed -i -e '/BUILD_URL/s/\:/: '${BUILD_URL//\//\\/}'/g' -e 's/https\:\/\/s3.seagate.com/'${ENDPOINT_URL//\//\\/}'/g' $CONFIG_FILE
+
+    if [ $CLUSTER_TYPE == VM ]; then
+	sed -i -e 's/00/0/g' -e 's/450/45/g'  /root/performance-scripts/performance/PerfPro/roles/benchmark/vars/s3config.yml    
+    fi
 }
 
 function execute_perfpro() {
