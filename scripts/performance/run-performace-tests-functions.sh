@@ -47,13 +47,20 @@ function create_endpoint_url() {
     ACCESS_KEY=$(yq e '.solution.common.s3.default_iam_users.auth_admin' $SOLUTION_FILE)
     SECRET_KEY=$(yq e '.solution.secrets.content.s3_auth_admin_secret' $SOLUTION_FILE)
     HTTP_PORT=$(kubectl get svc cortx-io-svc-0 -o=jsonpath='{.spec.ports[?(@.port==80)].nodePort}')
-    IP_ADDRESS=$(ifconfig eth1 | grep inet -w | awk '{print $2}')
+    if [ $(systemd-detect-virt -v) == "none" ];then
+            CLUSTER_TYPE=HW 
+	    IP_ADDRESS=$(ifconfig eno5 | grep inet -w | awk '{print $2}')
+    else
+            CLUSTER_TYPE=VM		
+	    IP_ADDRESS=$(ifconfig eth1 | grep inet -w | awk '{print $2}')
+    fi 
     ENDPOINT_URL="http://$IP_ADDRESS:$HTTP_PORT"
 
     echo ENDPOINT_URL=$ENDPOINT_URL
     echo ACCESS_KEY=$ACCESS_KEY
     echo SECRET_KEY=$SECRET_KEY
     echo BUILD_URL=$BUILD_URL
+    echo CLUSTER_TYPE=$CLUSTER_TYPE
 }
 
 function clone_segate_tools_repo() {
@@ -71,10 +78,15 @@ function clone_segate_tools_repo() {
 }
 
 function update_setup_confiuration() {
-    #Update root password in config.yaml
-    sed -i '/CLUSTER_PASS/s/seagate1/'$PRIMARY_CRED'/g' $SCRIPT_LOCATION/performance/PerfPro/roles/benchmark/vars/config.yml
-    sed -i -e '/NODES/{n;s/.*/  - 1: '$PRIMARY_NODE'/}' -e '/CLIENTS/{n;s/.*/  - 1: '$CLIENT_NODE'/}' $SCRIPT_LOCATION/performance/PerfPro/roles/benchmark/vars/config.yml
-    sed -i '/BUILD_URL/s/\:/: '${BUILD_URL//\//\\/}'/g' $SCRIPT_LOCATION/performance/PerfPro/roles/benchmark/vars/config.yml
+    CONFIG_FILE=$SCRIPT_LOCATION/performance/PerfPro/roles/benchmark/vars/config.yml
+    S3_CONFIG_FILE=$SCRIPT_LOCATION/performance/PerfPro/roles/benchmark/vars/s3config.yml 
+    sed -i '/CLUSTER_PASS/s/seagate1/'$PRIMARY_CRED'/g' $CONFIG_FILE
+    sed -i -e '/node_number_srvnode-*/d' -e '/#client_number/d' -e '/NODES/{n;s/.*/  - 1: '$PRIMARY_NODE'/}' -e '/CLIENTS/{n;s/.*/  - 1: '$CLIENT_NODE'/}' $CONFIG_FILE
+    sed -i -e '/BUILD_URL/s/\:/: '${BUILD_URL//\//\\/}'/g' -e 's/https\:\/\/s3.seagate.com/'${ENDPOINT_URL//\//\\/}'/g' $CONFIG_FILE
+
+    if [ $CLUSTER_TYPE == VM ]; then
+	sed -i -e 's/00/0/g' -e 's/450/45/g'  /root/performance-scripts/performance/PerfPro/roles/benchmark/vars/s3config.yml    
+    fi
 }
 
 function execute_perfpro() {
@@ -102,11 +114,11 @@ function setup-client() {
 function execute-perf-sanity() {
     if [ -z "$CORTX_TOOLS_REPO" ]; then echo "CORTX_TOOLS_REPO not provided.Using Default Seagate/seagate-tools"; CORTX_TOOLS_REPO="Seagate/seagate-tools" ; fi
     if [ -z "$CORTX_TOOLS_BRANCH" ]; then echo "CORTX_TOOLS_BRANCH not provided.Using Default main."; CORTX_TOOLS_BRANCH="main"; fi
-    if [ -z "$PRIMARY_NODE" ]; then echo "PRIMARY_NODE not provided.Exiting..."; exit 1; fi
-    if [ -z "$CLIENT_NODE" ]; then echo "CLIENT_NODE not provided.Exiting..."; exit 1; fi
-    if [ -z "$PRIMARY_CRED" ]; then echo "PRIMARY_CRED not provided.Exiting..."; exit 1; fi
-    if [ -z "$GITHUB_TOKEN" ]; then echo "GITHUB_TOKEN not provided.Exiting..."; exit 1; fi
-    if [ -z "$BUILD_URL" ]; then echo "BUILD_URL not provided.Exiting..."; exit 1; fi
+    if [ -z "$PRIMARY_NODE" ]; then echo "ERROR:PRIMARY_NODE not provided.Exiting..."; exit 1; fi
+    if [ -z "$CLIENT_NODE" ]; then echo "ERROR:CLIENT_NODE not provided.Exiting..."; exit 1; fi
+    if [ -z "$PRIMARY_CRED" ]; then echo "ERROR:PRIMARY_CRED not provided.Exiting..."; exit 1; fi
+    if [ -z "$GITHUB_TOKEN" ]; then echo "ERROR:GITHUB_TOKEN not provided.Exiting..."; exit 1; fi
+    if [ -z "$BUILD_URL" ]; then echo "ERROR:BUILD_URL not provided.Exiting..."; exit 1; fi
     
     clone_segate_tools_repo
     update_setup_confiuration
