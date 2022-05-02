@@ -242,7 +242,7 @@ case $ACTION in
         prereq
         prvsn_env
     ;;
-    --env-build
+    --env-build)
         ceph_build
     ;;
     *)
