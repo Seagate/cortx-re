@@ -58,36 +58,32 @@ pipeline {
         
         stage ("Deploy CORTX Cluster") {
             steps {
-                catchError(stageResult: 'FAILURE') {
-                    script { build_stage = env.STAGE_NAME }
-                    script {
-                        def cortxCluster = build job: '/Cortx-Automation/RGW/setup-cortx-rgw-cluster', wait: true,
-                        parameters: [
-                            string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
-                            string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
-                            string(name: 'CORTX_ALL_IMAGE', value: "${CORTX_ALL_IMAGE}"),
-                            string(name: 'CORTX_SERVER_IMAGE', value: "${CORTX_SERVER_IMAGE}"),
-                            string(name: 'CORTX_DATA_IMAGE', value: "${CORTX_DATA_IMAGE}"),
-                            string(name: 'DEPLOYMENT_METHOD', value: "standard"),
-                            text(name: 'hosts', value: "${hosts}"),
-                            string(name: 'CORTX_SCRIPTS_BRANCH', value: "${CORTX_SCRIPTS_BRANCH}"),
-                            string(name: 'CORTX_SCRIPTS_REPO', value: "${CORTX_SCRIPTS_REPO}"),
-                            string(name: 'EXTERNAL_EXPOSURE_SERVICE', value: "NodePort"),
-                            string(name: 'SNS_CONFIG', value: "${SNS_CONFIG}"),
-                            string(name: 'DIX_CONFIG', value: "${DIX_CONFIG}")
-                        ]
-                        env.cortxcluster_build_url = cortxCluster.absoluteUrl
-                        env.cortxCluster_status = cortxCluster.currentResult
-                    }
+                script { build_stage = env.STAGE_NAME }
+                script {
+                    def cortxCluster = build job: '/Cortx-Automation/RGW/setup-cortx-rgw-cluster', wait: true,
+                    parameters: [
+                        string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
+                        string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
+                        string(name: 'CORTX_ALL_IMAGE', value: "${CORTX_ALL_IMAGE}"),
+                        string(name: 'CORTX_SERVER_IMAGE', value: "${CORTX_SERVER_IMAGE}"),
+                        string(name: 'CORTX_DATA_IMAGE', value: "${CORTX_DATA_IMAGE}"),
+                        string(name: 'DEPLOYMENT_METHOD', value: "standard"),
+                        text(name: 'hosts', value: "${hosts}"),
+                        string(name: 'CORTX_SCRIPTS_BRANCH', value: "${CORTX_SCRIPTS_BRANCH}"),
+                        string(name: 'CORTX_SCRIPTS_REPO', value: "${CORTX_SCRIPTS_REPO}"),
+                        string(name: 'EXTERNAL_EXPOSURE_SERVICE', value: "NodePort"),
+                        string(name: 'SNS_CONFIG', value: "${SNS_CONFIG}"),
+                        string(name: 'DIX_CONFIG', value: "${DIX_CONFIG}")
+                    ]
+                    env.cortxcluster_build_url = cortxCluster.absoluteUrl
+                    env.cortxCluster_status = cortxCluster.currentResult
                 }
             }
         }
 
         stage('Push Image to GitHub') {
             agent {
-                node {
-                label 'docker-image-builder-centos-7.9.2009'
-                }
+                node { label 'docker-image-builder-centos-7.9.2009' }
             }
            steps {
                 sh label: 'Push Image to GitHub', script: '''                   
