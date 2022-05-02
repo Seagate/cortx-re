@@ -20,7 +20,7 @@
 
 #Install Terraform
 echo -e "-------------------------[ Installing Terraform ]----------------------------------------" 
-yum install -y yum-utils
+yum install -y yum-utils unzip
 yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
 yum -y install terraform
 
