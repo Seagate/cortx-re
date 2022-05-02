@@ -137,8 +137,7 @@ function run_data_io_sanity() {
    && pushd /opt/seagate/cortx/motr/workload/ \
    && ./create_workload_from_excel -t sample_workload_excel_test.xls \
    && ./m0workload -t out*/workload_output.yaml \
-   && FAILED_TEST_COUNT=$(cat /tmp/sandbox/temp-*/report.txt | grep 'Return Value' | awk -F'=' '{if($2>0)print $2}' | wc -l) \
-   && if [[ $FAILED_TEST_COUNT -gt 0 ]]; then echo 'IO Failed' \
+   && if [ ! -z $(cat /tmp/sandbox/temp-*/report.txt | grep 'Return Value' | awk -F'=' '{if($2>0)print $2}' | wc -l) ]; then echo 'IO Failed' && exit 1; fi \
    && popd"   
 }
 
