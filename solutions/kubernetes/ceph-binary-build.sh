@@ -70,7 +70,7 @@ function prereq() {
         rm -rvf *
     popd
 
-    if [[ "$1" == "--ceph-build-env" ]]; then
+    if [[ "$ACTION" == "--ceph-build-env" ]]; then
         add_secondary_separator "Copy build scripts to $BUILD_LOCATION/$BUILD_OS"
         mkdir -p "$BUILD_LOCATION/$BUILD_OS"
         cp $0 "$BUILD_LOCATION/$BUILD_OS/build.sh"
@@ -79,7 +79,7 @@ function prereq() {
 }
 
 function prvsn_env() {
-    add_primary_separator "\t\tProvision $BUILD_OS Build Environment"
+    add_primary_separator "\tProvision $BUILD_OS Build Environment"
 
     add_secondary_separator "Verify docker installation"
     if ! which docker; then
