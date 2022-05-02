@@ -35,16 +35,11 @@ pipeline {
                 script {              
                     sh label: 'run compatibility test', script: '''
                         #set +x
-                        hostentrycheck=$(grep -r "s3.seagate.com" /etc/hosts|grep -e s3.seagate.com -e $RGW_SERVICE_IP|wc -l)
-                        if [ $hostentrycheck -eq "0" ]; then
-                            echo "Adding host entry"
-                            echo "$RGW_SERVICE_IP s3.seagate.com" >> /etc/hosts
-                        else
-                            echo "Removing host entry"
-                            sed -i '/s3.seagate.com/d' /etc/hosts
-                            echo "Adding host entry"
-                            echo "$RGW_SERVICE_IP s3.seagate.com" >> /etc/hosts
-                        fi
+                        echo "Removing host entry"
+                        sed -i '/s3.seagate.com/d' /etc/hosts
+                        echo "Adding host entry"
+                        echo "$RGW_SERVICE_IP s3.seagate.com" >> /etc/hosts
+                        
                         pushd scripts/automation/s3-test/
                             chmod +x ./*.sh
                             S3_MAIN_USER="s3-test-main_${BUILD_NUMBER}"
