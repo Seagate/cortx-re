@@ -20,7 +20,7 @@ pipeline {
         string(name: 'CEPH_BRANCH', defaultValue: 'quincy', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
         choice(
             name: 'BUILD_OS',
-            choices: ['Ubuntu', 'CentOS', 'RockyLinux'],
+            choices: ['Ubuntu', 'CentOS', 'Rocky Linux'],
             description: 'OS to build binary packages for (*.deb, *.rpm).'
         )
     }    
@@ -43,7 +43,7 @@ pipeline {
                         export CEPH_REPO=${CEPH_REPO}
                         export CEPH_BRANCH=${CEPH_BRANCH}
                         export BUILD_OS=${BUILD_OS}
-                        bash ceph-binary-build.sh --ceph-build
+                        bash ceph-binary-build.sh --ceph-build-env /var/log/ceph-build
                     popd
                 '''
             }
