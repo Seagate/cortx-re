@@ -28,13 +28,6 @@ YQ_VERSION=v4.13.3
 YQ_BINARY=yq_linux_386
 SOLUTION_CONFIG="/var/tmp/solution.yaml"
 
-ACTION="$1"
-if [ -z "$ACTION" ]; then
-    echo "ERROR : No option provided"
-    usage
-    exit 1
-fi
-
 function usage() {
     cat << HEREDOC
 Usage : $0 [--cortx-cluster, --setup-primary, --setup-worker, --status, --io-sanity, --destroy, --generate-logs]
@@ -48,6 +41,13 @@ where,
     --generate-logs - Generate support bundle logs. 
 HEREDOC
 }
+
+ACTION="$1"
+if [ -z "$ACTION" ]; then
+    echo "ERROR : No option provided"
+    usage
+    exit 1
+fi
 
 # On primary
 # Download CORTX k8 deployment scripts
@@ -93,7 +93,7 @@ function update_solution_config(){
         yq e -i '.solution.secrets.content.csm_mgmt_admin_secret = "Cortxadmin@123"' solution.yaml
 
         yq e -i '.solution.images.consul = "ghcr.io/seagate/consul:1.11.4"' solution.yaml
-        yq e -i '.solution.images.kafka = "ghcr.io/seagate/kafka:3.0.0-debian-10-r7"' solution.yaml
+        yq e -i '.solution.images.kafka = "ghcr.io/seagate/kafka:3.0.0-debian-10-r97"' solution.yaml
         yq e -i '.solution.images.zookeeper = "ghcr.io/seagate/zookeeper:3.8.0-debian-10-r9"' solution.yaml
         yq e -i '.solution.images.rancher = "ghcr.io/seagate/local-path-provisioner:v0.0.20"' solution.yaml
         yq e -i '.solution.images.busybox = "ghcr.io/seagate/busybox:latest"' solution.yaml
