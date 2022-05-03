@@ -144,7 +144,7 @@ function ceph_build() {
                 popd
 
                 tar -xf ceph-*tar.bz2
-                pushd "$BUILD_LOCATION"/ceph-"$version"
+                pushd ceph-"$version"
                     add_common_separator "Start Build"
                     dpkg-buildpackage -us -uc
                 popd
