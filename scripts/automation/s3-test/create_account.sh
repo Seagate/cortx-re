@@ -2,6 +2,8 @@
 
 S3_USER=$1
 BUILD_NUMBER=$2
+CORTX_USER_NAME=$3
+CORTX_PASSWORD=$4
 
 add_common_separator() {
     echo -e '\n--------------- '"$*"' ---------------\n'
@@ -26,7 +28,7 @@ if [ -f bearertoken.log ]; then
     rm -rf bearertoken.log
 fi
 
-TOKEN=$(curl -s -i -k -d '{"username": "cortxadmin", "password": "Cortxadmin@123"}' https://s3.seagate.com:31169/api/v2/login|awk '/Bearer/{print $(NF)}'|sed -e "s/\r//g")
+TOKEN=$(curl -s -i -k -d "{\"username\": \"${CORTX_USER_NAME}\", \"password\": \"${CORTX_PASSWORD}\"}" https://s3.seagate.com:31169/api/v2/login|awk '/Bearer/{print $(NF)}'|sed -e "s/\r//g")
 if [ "x$TOKEN" == "x" ]; then
     echo "token not found in log file please check"
     exit 1

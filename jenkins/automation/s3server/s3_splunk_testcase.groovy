@@ -16,7 +16,9 @@ pipeline {
     }
 
     parameters {
-	    string(name: 'RGW_PORT', defaultValue: '30080', description: 's3-test rgw port', trim: true)
+	    string(name: 'CORTX_USER_NAME', defaultValue: 'cortxadmin', description: 'cortx user name', trim: true)
+        string(name: 'CORTX_PASSWORD', defaultValue: 'Cortxadmin@123', description: 'Cortx Password', trim: true)
+        string(name: 'RGW_PORT', defaultValue: '30080', description: 's3-test rgw port', trim: true)
         string(name: 'RGW_SERVICE_IP', defaultValue: '', description: 's3-test rgw ip address', trim: true)
         string(name: 'S3_TEST_REPO', defaultValue: 'https://github.com/splunk/s3-tests', description: 's3-test splunk repo', trim: true)
         // we are using specific revision of 'https://github.com/splunk/s3-tests' for our tests  - default
@@ -48,13 +50,13 @@ pipeline {
                             S3_EXT_USER="s3-test-ext_${BUILD_NUMBER}"
 
                             # Set Main & Ext user cred in environment variable. This is required in config file
-                            ./create_account.sh "${S3_MAIN_USER}" "${BUILD_NUMBER}"
+                            ./create_account.sh "${S3_MAIN_USER}" "${BUILD_NUMBER}" "${CORTX_USER_NAME}" "${CORTX_PASSWORD}"
                             S3_MAIN_USER_NAME="${S3_MAIN_USER}"
                             S3_MAIN_USER_ID="${S3_MAIN_USER}"
                             S3_MAIN_ACCESS_KEY=$(cat ${S3_MAIN_USER}_${BUILD_NUMBER}.log |tail -2|awk '{print $19}'|head -1|cut -d '"' -f2|sed -e "s/\r//g")
                             S3_MAIN_SECRET_KEY=$(cat ${S3_MAIN_USER}_${BUILD_NUMBER}.log |tail -2|awk '{print $21}'|head -1|cut -d '"' -f2|sed -e "s/\r//g")
 
-                            ./create_account.sh "${S3_EXT_USER}" "${BUILD_NUMBER}"
+                            ./create_account.sh "${S3_EXT_USER}" "${BUILD_NUMBER}" "${CORTX_USER_NAME}" "${CORTX_PASSWORD}"
                             S3_ALT_USER_NAME="${S3_EXT_USER}"
                             S3_ALT_USER_ID="${S3_EXT_USER}"
                             S3_ALT_ACCESS_KEY=$(cat ${S3_ALT_USER_ID}_${BUILD_NUMBER}.log |tail -2|awk '{print $19}'|head -1|cut -d '"' -f2|sed -e "s/\r//g")
