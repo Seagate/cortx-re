@@ -19,13 +19,9 @@ check_status() {
     add_common_separator SUCCESS
 }
 
-if [ "$2x" == "x" ]; then
+if [ "$4x" == "x" ]; then
     echo "Please pass proper input"
     exit 1
-fi
-
-if [ -f bearertoken.log ]; then
-    rm -rf bearertoken.log
 fi
 
 TOKEN=$(curl -s -i -k -d "{\"username\": \"${CORTX_USER_NAME}\", \"password\": \"${CORTX_PASSWORD}\"}" https://s3.seagate.com:31169/api/v2/login|awk '/Bearer/{print $(NF)}'|sed -e "s/\r//g")
