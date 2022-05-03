@@ -16,8 +16,6 @@ pipeline {
     }
 
     parameters {
-	    string(name: 'CORTX_USER_NAME', defaultValue: 'cortxadmin', description: 'cortx user name', trim: true)
-        string(name: 'CORTX_PASSWORD', defaultValue: 'Cortxadmin@123', description: 'Cortx Password', trim: true)
         string(name: 'RGW_PORT', defaultValue: '30080', description: 's3-test rgw port', trim: true)
         string(name: 'RGW_SERVICE_IP', defaultValue: '', description: 's3-test rgw ip address', trim: true)
         string(name: 'S3_TEST_REPO', defaultValue: 'https://github.com/splunk/s3-tests', description: 's3-test splunk repo', trim: true)
@@ -29,6 +27,8 @@ pipeline {
     environment {
         // This config file used for splunk compatibility tests
         S3_TEST_CONF_FILE = "${INTEGRATION_TYPE}_${BUILD_NUMBER}.conf"
+        CORTX_USER_NAME = "cortxadmin"
+        CORTX_PASSWORD = "Cortxadmin@123"
     }
 
 	stages {
