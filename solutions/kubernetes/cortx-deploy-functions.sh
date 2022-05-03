@@ -106,7 +106,11 @@ function update_solution_config(){
         yq e -i '.solution.common.s3.default_iam_users.auth_user = "user_name"' solution.yaml
         yq e -i '.solution.common.s3.max_start_timeout = 240' solution.yaml
         yq e -i '.solution.common.s3.extra_configuration = ""' solution.yaml
-        yq e -i '.solution.common.motr.num_client_inst = 0' solution.yaml
+        if [ "$DEPLOYMENT_METHOD" == "data-only" ]; then
+            yq e -i '.solution.common.motr.num_client_inst = 1' solution.yaml
+        else
+            yq e -i '.solution.common.motr.num_client_inst = 0' solution.yaml
+        fi       
         yq e -i '.solution.common.motr.start_port_num = 29000' solution.yaml
         yq e -i '.solution.common.motr.extra_configuration = ""' solution.yaml
         yq e -i '.solution.common.hax.protocol = "https"' solution.yaml
@@ -322,7 +326,7 @@ function print_pod_status() {
         while [[ SECONDS -lt 1200 ]] ; do
             if [ "$DEPLOYMENT_METHOD" == "data-only" ]; then
                 if kubectl exec -it $(kubectl get pods | awk '/cortx-data/{print $1; exit}') -c cortx-hax -- hctl status > /dev/null ; then
-                    if ! kubectl exec -it $(kubectl get pods | awk '/cortx-data/{print $1; exit}') -c cortx-hax -- hctl status| grep -q -E 'unknown|offline|failed'; then
+                    if ! kubectl exec -it $(kubectl get pods | awk '/cortx-data/{print $1; exit}') -c cortx-hax -- hctl status| grep -v motr_client | grep -q -E 'unknown|offline|failed'; then
                         kubectl exec -it $(kubectl get pods | awk '/cortx-data/{print $1; exit}') -c cortx-hax -- hctl status
                         add_secondary_separator "Time taken for service to start $((SECONDS/60)) mins"
                         exit 0
@@ -356,6 +360,7 @@ function print_pod_status() {
 
 function io_exec() {
     pushd /var/tmp/
+        export DEPLOYMENT_METHOD=$DEPLOYMENT_METHOD
         ./io-sanity.sh
     popd
 }
