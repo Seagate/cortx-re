@@ -44,9 +44,9 @@ pipeline {
                         
                         pushd scripts/automation/s3-test/
                             chmod +x ./*.sh
-                            S3_MAIN_USER="s3-test-main_${BUILD_NUMBER}"
-                            S3_EXT_USER="s3-test-ext_${BUILD_NUMBER}"
-                            S3_TNT_USER="s3-test-tnt_${BUILD_NUMBER}"
+                            S3_MAIN_USER="s3-ceph-main_${BUILD_NUMBER}"
+                            S3_EXT_USER="s3-ceph-ext_${BUILD_NUMBER}"
+                            S3_TNT_USER="s3-ceph-tnt_${BUILD_NUMBER}"
 
                             # Set Main & Ext user cred in environment variable. This is required in config file
 

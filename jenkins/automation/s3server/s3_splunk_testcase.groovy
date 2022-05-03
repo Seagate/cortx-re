@@ -46,8 +46,8 @@ pipeline {
 
                         pushd scripts/automation/s3-test/
                             chmod +x ./*.sh
-                            S3_MAIN_USER="s3-test-main_${BUILD_NUMBER}"
-                            S3_EXT_USER="s3-test-ext_${BUILD_NUMBER}"
+                            S3_MAIN_USER="s3-splunk-main_${BUILD_NUMBER}"
+                            S3_EXT_USER="s3-splunk-ext_${BUILD_NUMBER}"
 
                             # Set Main & Ext user cred in environment variable. This is required in config file
                             ./create_account.sh "${S3_MAIN_USER}" "${BUILD_NUMBER}" "${CORTX_USER_NAME}" "${CORTX_PASSWORD}"
