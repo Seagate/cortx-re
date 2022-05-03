@@ -106,7 +106,11 @@ function update_solution_config(){
         yq e -i '.solution.common.s3.default_iam_users.auth_user = "user_name"' solution.yaml
         yq e -i '.solution.common.s3.max_start_timeout = 240' solution.yaml
         yq e -i '.solution.common.s3.extra_configuration = ""' solution.yaml
-        yq e -i '.solution.common.motr.num_client_inst = 1' solution.yaml   
+        if [ "$DEPLOYMENT_METHOD" == "data-only" ]; then
+            yq e -i '.solution.common.motr.num_client_inst = 1' solution.yaml
+        else
+            yq e -i '.solution.common.motr.num_client_inst = 0' solution.yaml
+        fi       
         yq e -i '.solution.common.motr.start_port_num = 29000' solution.yaml
         yq e -i '.solution.common.motr.extra_configuration = ""' solution.yaml
         yq e -i '.solution.common.hax.protocol = "https"' solution.yaml
