@@ -134,6 +134,7 @@ function run_io_sanity() {
 
 function run_data_io_sanity() {
    kubectl exec -it $(kubectl get pods | awk '/cortx-client/{print $1; exit}') -c cortx-hax -- bash -c "pip3 install pandas xlrd \
+   && yum install -y diffutils \
    && pushd /opt/seagate/cortx/motr/workload/ \
    && ./create_workload_from_excel -t /opt/seagate/cortx/motr/workload/sample_workload_excel_test.xls \
    && ./m0workload -t /opt/seagate/cortx/motr/workload/out*/workload_output.yaml \
