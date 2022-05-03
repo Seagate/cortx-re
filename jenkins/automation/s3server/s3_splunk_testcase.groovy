@@ -67,7 +67,6 @@ pipeline {
                             sed -i "s#<S3_ALT_USER_NAME>#${S3_ALT_USER_NAME}#;s#<S3_ALT_USER_ID>#${S3_ALT_USER_ID}#;s#<S3_ALT_ACCESS_KEY>#${S3_ALT_ACCESS_KEY}#;s#<S3_ALT_SECRET_KEY>#${S3_ALT_SECRET_KEY}#g;" ${S3_TEST_CONF_FILE}
                             sed -i "s/# port =.*/port = $RGW_PORT/g" ${S3_TEST_CONF_FILE}
                             sed -i "s/port =.*/port = $RGW_PORT/g" ${S3_TEST_CONF_FILE}
-                            cat ${S3_TEST_CONF_FILE}
 
                             echo "---------------------------------"
                             echo ""
