@@ -26,13 +26,12 @@ pipeline {
     environment {
         // This config file used for ceph compatibility tests
         S3_TEST_CONF_FILE = "${INTEGRATION_TYPE}_${BUILD_NUMBER}.conf"
-        CORTX_USER_NAME = "cortxadmin"
-        CORTX_PASSWORD = "Cortxadmin@123"
     }
  	
 	stages {
         stage ('Update Test Config') { 
             steps {
+                withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'cortxadmin', usernameVariable: 'CORTX_USER_NAME', passwordVariable: 'CORTX_PASSWORD']]) {
                 script { build_stage = env.STAGE_NAME }
                 script {              
                     sh label: 'run compatibility test', script: '''
@@ -84,6 +83,7 @@ pipeline {
                         popd
                     '''
                 }
+            }
             }
         }		
     }	
