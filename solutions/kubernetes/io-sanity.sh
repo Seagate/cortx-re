@@ -132,7 +132,21 @@ function run_io_sanity() {
    add_primary_separator "\tSuccessfully Passed IO Sanity Testing"
 }
 
+function run_data_io_sanity() {
+   kubectl exec -it $(kubectl get pods | awk '/cortx-client/{print $1; exit}') -c cortx-hax -- bash -c "pip3 install pandas xlrd \
+   && yum install -y diffutils \
+   && pushd /opt/seagate/cortx/motr/workload/ \
+   && ./create_workload_from_excel -t /opt/seagate/cortx/motr/workload/sample_workload_excel_test.xls \
+   && ./m0workload -t /opt/seagate/cortx/motr/workload/out*/workload_output.yaml \
+   && if [ ! -z $(cat /tmp/sandbox/temp-*/report.txt | grep 'Return Value' | awk -F'=' '{if($2>0)print $2}' | wc -l) ]; then echo 'ERROR : IO Operation Failed' && exit 1; else echo 'SUCCESS : IO Operation Successful'; fi \
+   && popd"   
+}
+
 # Execution
-install_awscli
-setup_awscli
-run_io_sanity
+if [[ "$DEPLOYMENT_METHOD" == "data-only" ]]; then
+   run_data_io_sanity
+else   
+   install_awscli
+   setup_awscli
+   run_io_sanity
+fi   
