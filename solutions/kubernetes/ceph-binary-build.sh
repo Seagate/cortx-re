@@ -182,7 +182,7 @@ function ceph_build() {
 
                     pushd rpmbuild
                         add_common_separator "Start Build"
-                        rpmbuild --define "_topdir $BUILD_LOCATION/rpmbuild" -ba SPECS/ceph.spec
+                        rpmbuild --define "_topdir `pwd`" -ba SPECS/ceph.spec
                     popd
 
                     add_common_separator "List generated binary packages (*.rpm)"
@@ -221,7 +221,7 @@ function ceph_build() {
 
                     pushd rpmbuild
                         add_common_separator "Start Build"
-                        rpmbuild --define "_topdir $BUILD_LOCATION/rpmbuild" -ba SPECS/ceph.spec
+                        rpmbuild --define "_topdir `pwd`" -ba SPECS/ceph.spec
                     popd
 
                     add_common_separator "List generated binary packages (*.rpm)"
