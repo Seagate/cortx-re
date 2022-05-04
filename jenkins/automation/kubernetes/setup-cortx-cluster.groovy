@@ -102,7 +102,6 @@ pipeline {
         }
 
         stage ('IO Sanity Test') {
-            when { expression { params.DEPLOYMENT_METHOD == "standard" } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Perform IO Sanity Test', script: '''
