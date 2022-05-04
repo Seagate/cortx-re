@@ -260,6 +260,13 @@ pipeline {
                         to: "${mailRecipients}",
                         recipientProviders: [[$class: 'RequesterRecipientProvider']]
                     )
+                    emailext (
+                        body: '''${SCRIPT, template="K8s-deployment-email_2.template"}${SCRIPT, template="REL_QA_SANITY_CUS_EMAIL_7.template"}''',
+                        mimeType: 'text/html',
+                        subject: "${MESSAGE}",
+                        to: "${mailRecipients}",
+                        recipientProviders: [[$class: 'RequesterRecipientProvider']]
+                    )
                 }
                 cleanWs()
             }
