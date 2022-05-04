@@ -31,7 +31,7 @@ pipeline {
 
 	stages {
         // Update test config for s3server auth credentials
-        stage ('Update Test Config') {    
+        stage ('Execute Test cases') {    
             steps {
                 withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'cortxadmin', usernameVariable: 'CORTX_USER_NAME', passwordVariable: 'CORTX_PASSWORD']]) {
                 script { build_stage = env.STAGE_NAME } 
