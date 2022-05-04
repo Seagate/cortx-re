@@ -181,7 +181,7 @@ function io-sanity() {
 
     add_primary_separator "\tSetting up IO Sanity Testing"
     scp_primary_node io-sanity.sh
-    ssh_primary_node "/var/tmp/cortx-deploy-functions.sh --io-sanity"
+    ssh_primary_node "export DEPLOYMENT_METHOD=$DEPLOYMENT_METHOD && /var/tmp/cortx-deploy-functions.sh --io-sanity"
 }
 
 case $ACTION in
