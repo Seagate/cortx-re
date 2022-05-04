@@ -250,7 +250,7 @@ pipeline {
                 catchError(stageResult: 'FAILURE') {
                     archiveArtifacts allowEmptyArchive: true, artifacts: 'log/*report.xml, log/*report.html, support_bundle/*.tar, crash_files/*.gz, CHANGESET.txt', followSymlinks: false
                     emailext (
-                        body: '''${SCRIPT, template="K8s-deployment-email_2.template"}${SCRIPT, template="REL_QA_SANITY_CUS_EMAIL_6.template"}''',
+                        body: '''${SCRIPT, template="K8s-deployment-email_2.template"}${SCRIPT, template="REL_QA_SANITY_CUS_EMAIL_7.template"}''',
                         mimeType: 'text/html',
                         subject: "${MESSAGE}",
                         to: "${mailRecipients}",
