@@ -206,6 +206,9 @@ function install_yq() {
 function run_io_sanity() {
    add_primary_separator "\tStarting IO Sanity Testing"
 
+   add_primary_separator "\tClean up existing buckets"
+   for bucket in $(aws s3 ls | awk '{ print $NF}'); do add_common_separator "Deleteing $bucket"; aws s3 rm s3://$bucket --recursive && aws s3 rb s3://$bucket; done
+
    BUCKET="test-bucket"
    FILE1="file10mb"
    FILE2="test-obj.bin"
