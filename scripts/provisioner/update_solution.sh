@@ -63,6 +63,18 @@ function add_node_solution_config() {
     popd
 }
 
+function update_secret() {
+    pushd "$SCRIPT_PATH"
+        yq e -i '.solution.secrets.content.kafka_admin_secret = "Seagate@123"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.secrets.content.consul_admin_secret = "Seagate@123"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.secrets.content.common_admin_secret = "Seagate@123"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.secrets.content.s3_auth_admin_secret = "ldapadmin"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.secrets.content.csm_auth_admin_secret = "seagate2"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.secrets.content.csm_mgmt_admin_secret = "Cortxadmin@123"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.images.consul = "cortx-docker.colo.seagate.com/consul/consul:1.12"' "$SCRIPT_PATH"/solution.example.yaml
+    popd
+}
+
 function add_storage_solution_config() {
     add_common_separator "Updating storage info in solution.yaml"
     pushd "$SCRIPT_PATH"
@@ -87,6 +99,7 @@ install_yq_module
 validation
 generate_rsa_key
 nodes_setup
+update_secret
 add_image_solution_config
 add_node_solution_config
 add_storage_solution_config
