@@ -171,7 +171,7 @@ resource "aws_volume_attachment" "deploy_server_data" {
   count       = var.ebs_volume_count * var.instance_count
   volume_id   = aws_ebs_volume.data_vol.*.id[count.index]
   device_name = element(var.ec2_device_names, count.index)
-  instance_id = element(aws_instance.cortx_deploy.*.id, ((count.index+1)%2))
+  instance_id = element(aws_instance.cortx_deploy.*.id, floor(count.index/var.ebs_volume_count))
 }
 
 resource "aws_eip" "elastic_ip" {
@@ -180,7 +180,7 @@ resource "aws_eip" "elastic_ip" {
 
 resource "aws_eip_association" "eip_assoc" {
   count         = var.instance_count
-  instance_id   = aws_instance.cortx_deploy.*.id[count.index]
+  instance_id   = element(aws_instance.cortx_deploy.*.id, floor(count.index/var.ebs_volume_count))
   allocation_id = aws_eip.elastic_ip.id
 }
 
@@ -188,5 +188,4 @@ output "cortx_deploy_ip_addr" {
   value       = aws_eip_association.eip_assoc.*.public_ip
   description = "Public IP to connect CORTX server"
 }
-
 
