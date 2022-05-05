@@ -150,6 +150,9 @@ pipeline {
                             string(name: 'NUM_NODES', value: "${env.numberofnodes}")
                         ]
                         env.Sanity_Failed = qaSanity.buildVariables.Sanity_Failed
+                        env.Regression_Failed = qaSanity.buildVariables.Regression_Failed
+                        env.Io_Path_Failed = qaSanity.buildVariables.Io_Path_Failed
+                        env.Failure_Domain_Failed = qaSanity.buildVariables.Failure_Domain_Failed
                         env.sanity_result = qaSanity.currentResult
                         env.Current_TP = qaSanity.buildVariables.Current_TP
                         env.Health = qaSanity.buildVariables.Health
