@@ -60,6 +60,14 @@ resource "aws_security_group" "cortx_deploy" {
     cidr_blocks = [var.security_group_cidr]
   }
 
+  ingress {
+    description = "Allow access within security group"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    self        = true
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -174,6 +182,7 @@ resource "aws_volume_attachment" "deploy_server_data" {
   instance_id = element(aws_instance.cortx_deploy.*.id, floor(count.index/var.ebs_volume_count))
 }
 
+/*
 resource "aws_eip" "elastic_ip" {
   vpc = true
 }
@@ -188,4 +197,4 @@ output "cortx_deploy_ip_addr" {
   value       = aws_eip_association.eip_assoc.*.public_ip
   description = "Public IP to connect CORTX server"
 }
-
+*/
