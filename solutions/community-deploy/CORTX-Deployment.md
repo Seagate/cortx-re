@@ -31,17 +31,17 @@ You can use following command for RedHat family OS to install the Git
 
 ### SELinux should be disabled
 
-Use the following command to check status of SELinux.
+-  Use the following command to check status of SELinux.
 ```
 # sestatus
 ```
-If SELinux is enable, run the following command to disable the SELinux.
+-  If SELinux is enable, run the following command to disable the SELinux.
 
 ```
 # sed -i 's/SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config && setenforce 0
 ```
 
-Once above command runs successfully, reboot your system.
+-  Once above command runs successfully, reboot your system.
 
 ```
 # reboot
@@ -54,19 +54,19 @@ Once above command runs successfully, reboot your system.
 ## Install K8s cluster
 **To install the K8s cluster, run the following commands:**
 
-Clone cortx-re repository and change directory to `cortx-re/solutions/kubernetes`
+-  Clone cortx-re repository and change directory to `cortx-re/solutions/kubernetes`
 ```
 # git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/kubernetes
 ```
 
-To create the host file and change the root user password with your system password, run the following command
+-  To create the host file and change the root user password with your system password, run the following command
 ```
 # echo "hostname=$(hostname),user=root,pass=rootuserpassword" > hosts && cat hosts
 ```
 
-Execute `cluster-setup.sh` to setup K8s cluster on your VM.  
-If you want to run pods on to the master node as well, pass the first input parameter for `cluster-setup.sh` script as true.  
-If you have single node cluster, pass the input parameter as true.
+-  Execute `cluster-setup.sh` to setup K8s cluster on your VM.  
+-  If you want to run pods on to the master/primary node as well, pass the first input parameter for `cluster-setup.sh` script as true.  
+-  If you have single node cluster, pass the input parameter as true.
 
 ```
 # ./cluster-setup.sh true
@@ -80,7 +80,8 @@ Execute `cortx-deploy.sh` to deploy the CORTX on your K8s Cluster.
 # export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
 ```
 
-Note: 
+**Note:**  
+
 Following parameter/s are passed when the cluster deployment command executes. If no parameter is passed, the default ones are chosen.
 ( Format used here : parameter name | default parameter value : description )
 
@@ -92,9 +93,7 @@ Following parameter/s are passed when the cluster deployment command executes. I
    6. CONTROL_EXTERNAL_NODEPORT | CONTROL_EXTERNAL_NODEPORT="31169" : If you want to use different port for control service, export this variable with another port.
    7. S3_EXTERNAL_HTTP_NODEPORT | S3_EXTERNAL_HTTP_NODEPORT="30080" : If you want to use different port for HTTP Port to IO service, then export this variable with another port.
    8. S3_EXTERNAL_HTTPS_NODEPORT | S3_EXTERNAL_HTTPS_NODEPORT="30443" : If you want to use different port for HTTPS Port to IO service, then export this variable with another port.
-   9. SOLUTION_CONFIG_TYPE | SOLUTION_CONFIG_TYPE=manual : There are two types config for solution.yaml file; manual and automated. 
-   -  Automated - solution.yaml is created by script if VM is created as per standard specification.
-   -  Manual - User needs to create solution.yaml with required disks, image details etc.; place it at script location and configure SOLUTION_CONFIG_TYPE variable as manual.
+   9. SOLUTION_CONFIG_TYPE | SOLUTION_CONFIG_TYPE=manual : There are two config types for solution.yaml file; manual and automated. In automated type the solution.yaml is created by script if VM is created as per standard specification. In manual type the user needs to create solution.yaml with required disks, image details etc.; place it at script location and configure SOLUTION_CONFIG_TYPE variable as manual.
 
 For example:
 ```
