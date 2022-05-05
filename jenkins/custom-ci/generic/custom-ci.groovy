@@ -86,6 +86,24 @@ pipeline {
             description: 'Build cortx-rgw from latest code or use last-successful build.'
         )
 
+        choice(
+            name: 'BUILD_LATEST_CORTX_UTILS',
+            choices: ['yes', 'no'],
+            description: 'Build cortx-utils from latest code or use last-successful build.'
+        )
+
+        choice(
+            name: 'BUILD_LATEST_CORTX_HA',
+            choices: ['yes', 'no'],
+            description: 'Build cortx-ha from latest code or use last-successful build.'
+        )
+
+        choice(
+            name: 'BUILD_LATEST_CSM_AGENT',
+            choices: ['yes', 'no'],
+            description: 'Build cortx-management from latest code or use last-successful build.'
+        )
+
     }
 
     stages {
@@ -99,7 +117,8 @@ pipeline {
                         parameters: [
                             string(name: 'CORTX_UTILS_URL', value: "${CORTX_UTILS_URL}"),
                             string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}"),
-                            string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}")
+                            string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}"),
+                            string(name: 'BUILD_LATEST_CORTX_UTILS', value: "${BUILD_LATEST_CORTX_UTILS}")
                         ]
                     } catch (err) {
                         build_stage = env.STAGE_NAME
@@ -179,7 +198,7 @@ pipeline {
                                               string(name: 'CORTX_RGW_INTEGRATION_URL', value: "${CORTX_RGW_INTEGRATION_URL}"),
                                               string(name: 'CORTX_RGW_INTEGRATION_BRANCH', value: "${CORTX_RGW_INTEGRATION_BRANCH}"),
                                               string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}")
-                                                ]
+                                          ]
                             } catch (err) {
                                 build_stage = env.STAGE_NAME
                                 error "Failed to Build RGW Integration"
@@ -200,8 +219,9 @@ pipeline {
                                               string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}"),
                                               string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}"),
                                               string(name: 'CORTX_UTILS_URL', value: "${CORTX_UTILS_URL}"),
-                                              string(name: 'THIRD_PARTY_PYTHON_VERSION', value: "${THIRD_PARTY_PYTHON_VERSION}")
-                                                ]
+                                              string(name: 'THIRD_PARTY_PYTHON_VERSION', value: "${THIRD_PARTY_PYTHON_VERSION}"),
+                                              string(name: 'BUILD_LATEST_CORTX_HA', value: "${BUILD_LATEST_CORTX_HA}")
+                                          ]
                             } catch (err) {
                                 build_stage = env.STAGE_NAME
                                 error "Failed to Build HA"
@@ -222,7 +242,8 @@ pipeline {
                                                     string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}"),
                                                     string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}"),
                                                     string(name: 'CORTX_UTILS_URL', value: "${CORTX_UTILS_URL}"),
-                                                    string(name: 'THIRD_PARTY_PYTHON_VERSION', value: "${THIRD_PARTY_PYTHON_VERSION}")
+                                                    string(name: 'THIRD_PARTY_PYTHON_VERSION', value: "${THIRD_PARTY_PYTHON_VERSION}"),
+                                                    string(name: 'BUILD_LATEST_CSM_AGENT', value: "${BUILD_LATEST_CSM_AGENT}")
                                               ]
                             } catch (err) {
                                 build_stage = env.STAGE_NAME

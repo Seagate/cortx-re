@@ -22,6 +22,11 @@ pipeline {
         string(name: 'CORTX_UTILS_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX Utils', trim: true)
         string(name: 'CORTX_UTILS_URL', defaultValue: 'https://github.com/Seagate/cortx-utils', description: 'CORTX Utils Repository URL', trim: true)
         string(name: 'THIRD_PARTY_PYTHON_VERSION', defaultValue: 'custom', description: 'Third Party Python Version to use', trim: true)
+        choice(
+            name: 'BUILD_LATEST_CORTX_HA',
+            choices: ['yes', 'no'],
+            description: 'Build cortx-ha from latest code or use last-successful build.'
+        )
         // Add os_version parameter in jenkins configuration
     }
     
@@ -35,6 +40,7 @@ pipeline {
 
     stages {
         stage('Checkout') {
+            when { expression { params.BUILD_LATEST_CORTX_HA == 'yes' } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 dir ('cortx-ha') {
@@ -50,6 +56,7 @@ pipeline {
 
         // Install third-party dependencies. This needs to be removed once components move away from self-contained binaries 
         stage('Install python packages') {
+            when { expression { params.BUILD_LATEST_CORTX_HA == 'yes' } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: '', script: '''
@@ -71,6 +78,7 @@ EOF
 
 
         stage('Install Dependencies') {
+            when { expression { params.BUILD_LATEST_CORTX_HA == 'yes' } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: '', script: '''
@@ -89,6 +97,7 @@ EOF
         }
 
         stage('Build') {
+            when { expression { params.BUILD_LATEST_CORTX_HA == 'yes' } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Build', script: '''
@@ -101,6 +110,7 @@ EOF
         }
         
         stage('Test') {
+            when { expression { params.BUILD_LATEST_CORTX_HA == 'yes' } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Test', script: '''
@@ -118,7 +128,12 @@ EOF
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Copy RPMS', script: '''
                     mkdir -p $build_upload_dir
-                    cp $WORKSPACE/cortx-ha/dist/rpmbuild/RPMS/*/*.rpm $build_upload_dir
+                    if [ "$BUILD_LATEST_CORTX_HA" == "yes" ]; then
+                        cp $WORKSPACE/cortx-ha/dist/rpmbuild/RPMS/*/*.rpm $build_upload_dir
+                    else
+                        echo "Copy packages form last_successful"
+                        cp /mnt/bigstorage/releases/cortx/components/github/main/rockylinux-8.4/dev/cortx-ha/last_successful/*.rpm $build_upload_dir
+                    fi    
                 '''
             }
         } 
