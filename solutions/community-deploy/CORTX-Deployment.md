@@ -85,15 +85,17 @@ Following parameter/s are passed when the cluster deployment command executes. I
 
 | Parameter     | Default value     | Description     |
 | :------------- | :----------- | :---------|
-| CORTX_SCRIPTS_BRANCH      | CORTX_SCRIPTS_BRANCH="v0.2.1"  | If you want to use another cortx-K8s branch then export this variable with your branch           |
-| CORTX_SCRIPTS_REPO | CORTX_SCRIPTS_REPO="Seagate/cortx-k8s" | If you want to use another cortx-K8s repo (like your fork), export this variable with your repo |
-| CORTX_ALL_IMAGE | CORTX_ALL_IMAGE=ghcr.io/seagate/cortx-all:2.0.0-latest  | In automated case we are using latest cortx-all image. If you want to use different image then export the image by this variable |
-| CORTX_SERVER_IMAGE | CORTX_SERVER_IMAGE=ghcr.io/seagate/cortx-rgw:2.0.0-latest | Also, if you want to use different server image then export this variable with new image |
-| CORTX_DATA_IMAGE | CORTX_DATA_IMAGE=ghcr.io/seagate/cortx-data:2.0.0-latest | Also, if you want to use different data image then export this variable with new image |
-|CONTROL_EXTERNAL_NODEPORT | CONTROL_EXTERNAL_NODEPORT="31169" | If you want to use different port for control service, export this variable with another port |
-| S3_EXTERNAL_HTTP_NODEPORT | S3_EXTERNAL_HTTP_NODEPORT="30080" | If you want to use different port for HTTP Port to IO service, then export this variable with another port |
-| S3_EXTERNAL_HTTPS_NODEPORT | S3_EXTERNAL_HTTPS_NODEPORT="30443" | If you want to use different port for HTTPS Port to IO service, then export this variable with another port |
-| SOLUTION_CONFIG_TYPE | SOLUTION_CONFIG_TYPE=manual | There are two config types for solution.yaml file; manual and automated. In automated type the solution.yaml is created by script if VM is created as per standard specification. In manual type the user needs to create solution.yaml with required disks, image details etc.; place it at script location and configure SOLUTION_CONFIG_TYPE variable as manual |
+| CORTX_SCRIPTS_BRANCH      | v0.5.0  | If you want to use another cortx-K8s branch then export this variable with your branch.     |
+| CORTX_SCRIPTS_REPO | Seagate/cortx-k8s | If you want to use another cortx-K8s repo (like your fork), export this variable with your repo. |
+| CORTX_ALL_IMAGE | ghcr.io/seagate/cortx-all:2.0.0-latest  | In automated case we are using latest cortx-all image. If you want to use different image then export the image by this variable. |
+| CORTX_SERVER_IMAGE | ghcr.io/seagate/cortx-rgw:2.0.0-latest | Also, if you want to use different server image then export this variable with new image. |
+| CORTX_DATA_IMAGE | ghcr.io/seagate/cortx-data:2.0.0-latest | Also, if you want to use different data image then export this variable with new image. |
+|CONTROL_EXTERNAL_NODEPORT | 31169 | If you want to use different port for control service, export this variable with another port. |
+| S3_EXTERNAL_HTTP_NODEPORT | 30080 | If you want to use different port for HTTP Port to IO service, then export this variable with another port. |
+| S3_EXTERNAL_HTTPS_NODEPORT | 30443 | If you want to use different port for HTTPS Port to IO service, then export this variable with another port. |
+| SOLUTION_CONFIG_TYPE | manual | There are two config types for solution.yaml file; manual and automated. In automated type the solution.yaml is created by script if VM is created as per standard specification. In manual type the user needs to create solution.yaml with required disks, image details etc.; place it at script location and configure SOLUTION_CONFIG_TYPE variable as manual. |
+| SNS_CONFIG | 1+0+0 | SNS configuration for deployment. Please select value based on disks available on nodes. |
+| DIX_CONFIG | 1+0+0 | DIX configuration for deployment. Please select value based on disks available on nodes. |
 
 For example:
 ```
