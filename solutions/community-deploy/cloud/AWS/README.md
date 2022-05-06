@@ -67,6 +67,8 @@ security_group_cidr = "134.204.222.36/32"
 *The root password is required as a part of CORTX deployment.*
    
 ```
+# sudo su -
+
 # passwd root
 ```   
 
