@@ -5,9 +5,10 @@ The following sections discusses how to set up the K8s cluster and deploy the CO
 ## Prerequisites
 Following are the minimum system specifications required to set up the K8s cluster and deploy the CORTX stack.
 
-   - RAM: 16GB
-   - CPU: 8Core
-   - DISK: Need 8 Disk with 25GB per disk
+-  RAM: 16GB
+-  CPU: 8Core
+-  DISK: 9 Disks (1 with 50GB (For operating system) and rest 8 with 25GB per disk)
+-  OS: CentOS 7.9 (64-bit)
 
 ## Deploy the CORTX Stack on K8s cluster
 This section enlists the commands to deploy the CORTX Stack on K8s cluster. 
