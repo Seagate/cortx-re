@@ -150,7 +150,9 @@ pipeline {
                             string(name: 'NUM_NODES', value: "${env.numberofnodes}")
                         ]
                         env.Sanity_Failed = qaSanity.buildVariables.Sanity_Failed
+                        env.Sanity_status = qaSanity.buildVariables.Sanity_Failed.toString() == 'true' ? 'Failed' : qaSanity.buildVariables.Sanity_Failed.toString() == 'false' ? 'Passed' : 'Skipped'
                         env.Regression_Failed = qaSanity.buildVariables.Regression_Failed
+                        env.Regression_status = qaSanity.buildVariables.Regression_Failed.toString() == 'true' ? 'Failed' : qaSanity.buildVariables.Regression_Failed.toString() == 'false' ? 'Passed' : 'Skipped'
                         env.Io_Path_Failed = qaSanity.buildVariables.Io_Path_Failed
                         env.Failure_Domain_Failed = qaSanity.buildVariables.Failure_Domain_Failed
                         env.sanity_result = qaSanity.currentResult
@@ -189,7 +191,7 @@ pipeline {
                     currentBuild.result = "SUCCESS"
                 } else if ( "${env.cortxCluster_status}" == "FAILURE" || "${env.cortxCluster_status}" == "UNSTABLE" || "${env.cortxCluster_status}" == "null" ) {
                     manager.buildFailure()
-                    MESSAGE = "K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=failed, SanityTest=skipped, Regression=skipped"
+                    MESSAGE = "K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=failed, SanityTest=${env.Sanity_status}, Regression=${env.Regression_status}"
                     ICON = "error.gif"
                     STATUS = "FAILURE"
                     env.sanity_result = "SKIPPED"
@@ -197,14 +199,14 @@ pipeline {
                     currentBuild.result = "FAILURE"
                 } else if ( "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "FAILURE" || "${env.qaSanity_status}" == "null" ) {
                     manager.buildFailure()
-                    MESSAGE = "K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=Passed, SanityTest=failed, Regression=skipped"
+                    MESSAGE = "K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=Passed, SanityTest=${env.Sanity_status}, Regression=${env.Regression_status}"
                     ICON = "error.gif"
                     STATUS = "FAILURE"
                     env.sanity_result = "FAILURE"
                     env.deployment_result = "SUCCESS"
                     currentBuild.result = "FAILURE"
                 } else if ( "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "UNSTABLE" ) {
-                    MESSAGE = "K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=Passed, SanityTest=passed, Regression=failed"
+                    MESSAGE = "K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=Passed, SanityTest=${env.Sanity_status}, Regression=${env.Regression_status}"
                     ICON = "unstable.gif"
                     STATUS = "UNSTABLE"
                     env.deployment_result = "SUCCESS"
@@ -253,7 +255,7 @@ pipeline {
                 catchError(stageResult: 'FAILURE') {
                     archiveArtifacts allowEmptyArchive: true, artifacts: 'log/*report.xml, log/*report.html, support_bundle/*.tar, crash_files/*.gz, CHANGESET.txt', followSymlinks: false
                     emailext (
-                        body: '''${SCRIPT, template="K8s-deployment-email_2.template"}${SCRIPT, template="REL_QA_SANITY_CUS_EMAIL_7.template"}''',
+                        body: '''${SCRIPT, template="K8s-deployment-email_3.template"}${SCRIPT, template="REL_QA_SANITY_CUS_EMAIL_7.template"}''',
                         mimeType: 'text/html',
                         subject: "${MESSAGE}",
                         to: "${mailRecipients}",
