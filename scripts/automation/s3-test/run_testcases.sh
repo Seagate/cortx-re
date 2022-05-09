@@ -95,8 +95,6 @@ _prepare() {
             git checkout "${S3_TEST_REPO_REVISION}"
 
             # boostrap s3-test
-            echo "Installing python3-virtualenv python36-devel "
-            yum install python-virtualenv python-devel -y
             ./bootstrap
 
       popd
