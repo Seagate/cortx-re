@@ -1,4 +1,4 @@
-- CORTX >= 2.0.0
+- CORTX >= 2.0.0-0
 - cortx-motr >= 2.0.0-0
 - cortx-rgw >= 2.0.0-0
 - cortx-hare >= 2.0.0-0
