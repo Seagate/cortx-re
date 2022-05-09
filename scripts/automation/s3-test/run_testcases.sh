@@ -98,6 +98,7 @@ _prepare() {
             echo "Installing python3-virtualenv python36-devel "
             pip3 install virtualenv
             yum install python3-virtualenv python3-devel python36-virtualenv python36-devel -y
+            sleep 120000
             ./bootstrap
 
       popd
