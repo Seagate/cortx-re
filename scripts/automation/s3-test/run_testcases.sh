@@ -96,6 +96,8 @@ _prepare() {
 
             # boostrap s3-test
             echo "Installing python3-virtualenv python36-devel "
+            export PATH=$PATH:/usr/local/bin
+            export PATH=$PATH:/usr/local/bin/python
             yum install python3-virtualenv python3-devel python36-virtualenv python36-devel -y
             ./bootstrap
 
