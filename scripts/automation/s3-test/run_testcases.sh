@@ -102,7 +102,7 @@ _prepare() {
 
 }
 
-# Execute compatability test against s3.seagate.com
+# Execute compatability test against s3test.seagate.com
 _execute_compatability_tets() {
 
       echo -e "[ ${S3_INTEGRATION_TYPE} ] : Test Execution : Running tests - ${1}"

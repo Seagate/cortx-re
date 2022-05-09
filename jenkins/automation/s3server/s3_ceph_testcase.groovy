@@ -37,9 +37,9 @@ pipeline {
                     sh label: 'run compatibility test', script: '''
                         #set +x
                         echo "Removing host entry"
-                        sed -i '/s3.seagate.com/d' /etc/hosts
+                        sed -i '/s3test.seagate.com/d' /etc/hosts
                         echo "Adding host entry"
-                        echo "$RGW_SERVICE_IP s3.seagate.com" >> /etc/hosts
+                        echo "$RGW_SERVICE_IP s3test.seagate.com" >> /etc/hosts
                         
                         pushd scripts/automation/s3-test/
                             chmod +x ./*.sh
