@@ -89,11 +89,11 @@ pipeline {
         choice(
             name: 'BUILD_MANAGEMENT_PATH_COMPONENTS',
             choices: ['yes', 'no'],
-            description: '''<pre>
-            Build cortx-management, cortx-ha, cortx-provisioner and cortx-py-utils from latest code or use last-successful build.
-            If you select <strong>no</strong>, below parameter values will get ignored
+            description: '''
+            Build cortx-management, cortx-ha, cortx-provisioner and cortx-py-utils from latest code or use last-successful build.<br>
+            If you select <strong>no</strong>, below parameter values will get ignored<br>
             <strong>CSM_AGENT_BRANCH, CSM_AGENT_URL, HA_BRANCH, HA_URL, PRVSNR_BRANCH, PRVSNR_URL, CORTX_UTILS_BRANCH, CORTX_UTILS_URL</strong>
-            </pre>'''
+            '''
         )
 
     }
