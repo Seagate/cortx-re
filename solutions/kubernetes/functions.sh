@@ -70,9 +70,11 @@ function passwordless_ssh() {
     local PASS=$3
     ping -c1 -W1 -q $NODE
     check_status
+    yum list pdsh -q || yum install epel-release -y
     yum install sshpass openssh-clients pdsh -y
+    check_status "$NODE: Package installation failed"
     sshpass -p "$PASS" ssh-copy-id -f -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa.pub "$USER"@"$NODE"
-    check_status "Passwordless ssh setup failed for $NODE. Please validate provided credentails"
+    check_status "$NODE: Passwordless ssh setup failed. Please validate provided credentails"
 }
 
 function nodes_setup() {
@@ -203,6 +205,9 @@ function install_yq() {
 
 function run_io_sanity() {
    add_primary_separator "\tStarting IO Sanity Testing"
+
+   add_primary_separator "\tClean up existing buckets"
+   for bucket in $(aws s3 ls | awk '{ print $NF}'); do add_common_separator "Deleteing $bucket"; aws s3 rm s3://$bucket --recursive && aws s3 rb s3://$bucket; done
 
    BUCKET="test-bucket"
    FILE1="file10mb"

@@ -58,36 +58,32 @@ pipeline {
         
         stage ("Deploy CORTX Cluster") {
             steps {
-                catchError(stageResult: 'FAILURE') {
-                    script { build_stage = env.STAGE_NAME }
-                    script {
-                        def cortxCluster = build job: '/Cortx-Automation/RGW/setup-cortx-rgw-cluster', wait: true,
-                        parameters: [
-                            string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
-                            string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
-                            string(name: 'CORTX_ALL_IMAGE', value: "${CORTX_ALL_IMAGE}"),
-                            string(name: 'CORTX_SERVER_IMAGE', value: "${CORTX_SERVER_IMAGE}"),
-                            string(name: 'CORTX_DATA_IMAGE', value: "${CORTX_DATA_IMAGE}"),
-                            string(name: 'DEPLOYMENT_METHOD', value: "standard"),
-                            text(name: 'hosts', value: "${hosts}"),
-                            string(name: 'CORTX_SCRIPTS_BRANCH', value: "${CORTX_SCRIPTS_BRANCH}"),
-                            string(name: 'CORTX_SCRIPTS_REPO', value: "${CORTX_SCRIPTS_REPO}"),
-                            string(name: 'EXTERNAL_EXPOSURE_SERVICE', value: "NodePort"),
-                            string(name: 'SNS_CONFIG', value: "${SNS_CONFIG}"),
-                            string(name: 'DIX_CONFIG', value: "${DIX_CONFIG}")
-                        ]
-                        env.cortxcluster_build_url = cortxCluster.absoluteUrl
-                        env.cortxCluster_status = cortxCluster.currentResult
-                    }
+                script { build_stage = env.STAGE_NAME }
+                script {
+                    def cortxCluster = build job: '/Cortx-Automation/RGW/setup-cortx-rgw-cluster', wait: true,
+                    parameters: [
+                        string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
+                        string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
+                        string(name: 'CORTX_ALL_IMAGE', value: "${CORTX_ALL_IMAGE}"),
+                        string(name: 'CORTX_SERVER_IMAGE', value: "${CORTX_SERVER_IMAGE}"),
+                        string(name: 'CORTX_DATA_IMAGE', value: "${CORTX_DATA_IMAGE}"),
+                        string(name: 'DEPLOYMENT_METHOD', value: "standard"),
+                        text(name: 'hosts', value: "${hosts}"),
+                        string(name: 'CORTX_SCRIPTS_BRANCH', value: "${CORTX_SCRIPTS_BRANCH}"),
+                        string(name: 'CORTX_SCRIPTS_REPO', value: "${CORTX_SCRIPTS_REPO}"),
+                        string(name: 'EXTERNAL_EXPOSURE_SERVICE', value: "NodePort"),
+                        string(name: 'SNS_CONFIG', value: "${SNS_CONFIG}"),
+                        string(name: 'DIX_CONFIG', value: "${DIX_CONFIG}")
+                    ]
+                    env.cortxcluster_build_url = cortxCluster.absoluteUrl
+                    env.cortxCluster_status = cortxCluster.currentResult
                 }
             }
         }
 
         stage('Push Image to GitHub') {
             agent {
-                node {
-                label 'docker-image-builder-centos-7.9.2009'
-                }
+                node { label 'docker-image-builder-centos-7.9.2009' }
             }
            steps {
                 sh label: 'Push Image to GitHub', script: '''                   
@@ -154,6 +150,11 @@ pipeline {
                             string(name: 'NUM_NODES', value: "${env.numberofnodes}")
                         ]
                         env.Sanity_Failed = qaSanity.buildVariables.Sanity_Failed
+                        env.Sanity_status = qaSanity.buildVariables.Sanity_Failed.toString() == 'true' ? 'Failed' : qaSanity.buildVariables.Sanity_Failed.toString() == 'false' ? 'Passed' : 'Skipped'
+                        env.Regression_Failed = qaSanity.buildVariables.Regression_Failed
+                        env.Regression_status = qaSanity.buildVariables.Regression_Failed.toString() == 'true' ? 'Failed' : qaSanity.buildVariables.Regression_Failed.toString() == 'false' ? 'Passed' : 'Skipped'
+                        env.Io_Path_Failed = qaSanity.buildVariables.Io_Path_Failed
+                        env.Failure_Domain_Failed = qaSanity.buildVariables.Failure_Domain_Failed
                         env.sanity_result = qaSanity.currentResult
                         env.Current_TP = qaSanity.buildVariables.Current_TP
                         env.Health = qaSanity.buildVariables.Health
@@ -190,7 +191,7 @@ pipeline {
                     currentBuild.result = "SUCCESS"
                 } else if ( "${env.cortxCluster_status}" == "FAILURE" || "${env.cortxCluster_status}" == "UNSTABLE" || "${env.cortxCluster_status}" == "null" ) {
                     manager.buildFailure()
-                    MESSAGE = "K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=failed, SanityTest=skipped, Regression=skipped"
+                    MESSAGE = "K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=failed, SanityTest=${env.Sanity_status}, Regression=${env.Regression_status}"
                     ICON = "error.gif"
                     STATUS = "FAILURE"
                     env.sanity_result = "SKIPPED"
@@ -198,14 +199,14 @@ pipeline {
                     currentBuild.result = "FAILURE"
                 } else if ( "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "FAILURE" || "${env.qaSanity_status}" == "null" ) {
                     manager.buildFailure()
-                    MESSAGE = "K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=Passed, SanityTest=failed, Regression=skipped"
+                    MESSAGE = "K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=Passed, SanityTest=${env.Sanity_status}, Regression=${env.Regression_status}"
                     ICON = "error.gif"
                     STATUS = "FAILURE"
                     env.sanity_result = "FAILURE"
                     env.deployment_result = "SUCCESS"
                     currentBuild.result = "FAILURE"
                 } else if ( "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "UNSTABLE" ) {
-                    MESSAGE = "K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=Passed, SanityTest=passed, Regression=failed"
+                    MESSAGE = "K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=Passed, SanityTest=${env.Sanity_status}, Regression=${env.Regression_status}"
                     ICON = "unstable.gif"
                     STATUS = "UNSTABLE"
                     env.deployment_result = "SUCCESS"
@@ -254,7 +255,7 @@ pipeline {
                 catchError(stageResult: 'FAILURE') {
                     archiveArtifacts allowEmptyArchive: true, artifacts: 'log/*report.xml, log/*report.html, support_bundle/*.tar, crash_files/*.gz, CHANGESET.txt', followSymlinks: false
                     emailext (
-                        body: '''${SCRIPT, template="K8s-deployment-email_2.template"}${SCRIPT, template="REL_QA_SANITY_CUS_EMAIL_6.template"}''',
+                        body: '''${SCRIPT, template="K8s-deployment-email_3.template"}${SCRIPT, template="REL_QA_SANITY_CUS_EMAIL_7.template"}''',
                         mimeType: 'text/html',
                         subject: "${MESSAGE}",
                         to: "${mailRecipients}",

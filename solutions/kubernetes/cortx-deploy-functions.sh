@@ -22,19 +22,11 @@ set -eo pipefail
 
 source /var/tmp/functions.sh
 
-SYSTEM_DRIVE="/dev/sdb"
 SYSTEM_DRIVE_MOUNT="/mnt/fs-local-volume"
 SCRIPT_LOCATION="/root/deploy-scripts"
 YQ_VERSION=v4.13.3
 YQ_BINARY=yq_linux_386
 SOLUTION_CONFIG="/var/tmp/solution.yaml"
-
-ACTION="$1"
-if [ -z "$ACTION" ]; then
-    echo "ERROR : No option provided"
-    usage
-    exit 1
-fi
 
 function usage() {
     cat << HEREDOC
@@ -50,6 +42,13 @@ where,
 HEREDOC
 }
 
+ACTION="$1"
+if [ -z "$ACTION" ]; then
+    echo "ERROR : No option provided"
+    usage
+    exit 1
+fi
+
 # On primary
 # Download CORTX k8 deployment scripts
 
@@ -63,6 +62,8 @@ function download_deploy_script() {
     git clone https://github.com/$CORTX_SCRIPTS_REPO $SCRIPT_LOCATION
     pushd $SCRIPT_LOCATION
     git checkout $CORTX_SCRIPTS_BRANCH
+    echo "DEBUG:Dummy solution.yaml"
+    cp k8_cortx_cloud/solution.example.yaml k8_cortx_cloud/solution.yaml
     popd
 }
 
@@ -80,34 +81,36 @@ function install_yq() {
 function update_solution_config(){
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         echo > solution.yaml
-        yq e -i '.solution.namespace = "default"' solution.yaml
+        NAMESPACE=$NAMESPACE yq e -i '.solution.namespace = env(NAMESPACE)' solution.yaml
         deployment_method=$DEPLOYMENT_METHOD yq e -i '.solution.deployment_type = env(deployment_method)' solution.yaml
         
         yq e -i '.solution.secrets.name = "cortx-secret"' solution.yaml
-        yq e -i '.solution.secrets.content.kafka_admin_secret = "Seagate@123"' solution.yaml
-        yq e -i '.solution.secrets.content.consul_admin_secret = "Seagate@123"' solution.yaml
-        yq e -i '.solution.secrets.content.common_admin_secret = "Seagate@123"' solution.yaml
+        yq e -i '.solution.secrets.content.kafka_admin_secret = "null"' solution.yaml
+        yq e -i '.solution.secrets.content.consul_admin_secret = "null"' solution.yaml
+        yq e -i '.solution.secrets.content.common_admin_secret = "null"' solution.yaml
         yq e -i '.solution.secrets.content.s3_auth_admin_secret = "ldapadmin"' solution.yaml
-        yq e -i '.solution.secrets.content.csm_auth_admin_secret = "seagate2"' solution.yaml
+        yq e -i '.solution.secrets.content.csm_auth_admin_secret = "null"' solution.yaml
         yq e -i '.solution.secrets.content.csm_mgmt_admin_secret = "Cortxadmin@123"' solution.yaml
 
         yq e -i '.solution.images.consul = "ghcr.io/seagate/consul:1.11.4"' solution.yaml
-        yq e -i '.solution.images.kafka = "ghcr.io/seagate/kafka:3.0.0-debian-10-r7"' solution.yaml
-        yq e -i '.solution.images.zookeeper = "ghcr.io/seagate/zookeeper:3.7.0-debian-10-r182"' solution.yaml
+        yq e -i '.solution.images.kafka = "ghcr.io/seagate/kafka:3.0.0-debian-10-r97"' solution.yaml
+        yq e -i '.solution.images.zookeeper = "ghcr.io/seagate/zookeeper:3.8.0-debian-10-r9"' solution.yaml
         yq e -i '.solution.images.rancher = "ghcr.io/seagate/local-path-provisioner:v0.0.20"' solution.yaml
         yq e -i '.solution.images.busybox = "ghcr.io/seagate/busybox:latest"' solution.yaml
 
         drive=$SYSTEM_DRIVE_MOUNT yq e -i '.solution.common.storage_provisioner_path = env(drive)' solution.yaml
         yq e -i '.solution.common.setup_size = "small"' solution.yaml
         yq e -i '.solution.common.container_path.local = "/etc/cortx"' solution.yaml
-        yq e -i '.solution.common.container_path.shared = "/share"' solution.yaml
         yq e -i '.solution.common.container_path.log = "/etc/cortx/log"' solution.yaml
         yq e -i '.solution.common.s3.default_iam_users.auth_admin = "sgiamadmin"' solution.yaml
         yq e -i '.solution.common.s3.default_iam_users.auth_user = "user_name"' solution.yaml
-        yq e -i '.solution.common.s3.start_port_num = 28051' solution.yaml
         yq e -i '.solution.common.s3.max_start_timeout = 240' solution.yaml
         yq e -i '.solution.common.s3.extra_configuration = ""' solution.yaml
-        yq e -i '.solution.common.motr.num_client_inst = 0' solution.yaml
+        if [ "$DEPLOYMENT_METHOD" == "data-only" ]; then
+            yq e -i '.solution.common.motr.num_client_inst = 1' solution.yaml
+        else
+            yq e -i '.solution.common.motr.num_client_inst = 0' solution.yaml
+        fi       
         yq e -i '.solution.common.motr.start_port_num = 29000' solution.yaml
         yq e -i '.solution.common.motr.extra_configuration = ""' solution.yaml
         yq e -i '.solution.common.hax.protocol = "https"' solution.yaml
@@ -208,6 +211,11 @@ copy_solution_config() {
         popd 
 }
 
+setup_kubectl_context() {
+    add_secondary_separator "Updated kubectl contex to use $NAMESPACE"
+    kubectl config set-context --current --namespace=$NAMESPACE
+}
+
 #execute script
 
 function execute_deploy_script() {
@@ -226,12 +234,14 @@ function execute_deploy_script() {
 }
 
 function execute_prereq() {
-    echo "Pulling latest CORTX-ALL image"
+    add_secondary_separator "Pulling latest CORTX images"
     docker pull $CORTX_ALL_IMAGE || { echo "Failed to pull $CORTX_ALL_IMAGE"; exit 1; }
     docker pull $CORTX_SERVER_IMAGE || { echo "Failed to pull $CORTX_SERVER_IMAGE"; exit 1; }
     docker pull $CORTX_DATA_IMAGE || { echo "Failed to pull $CORTX_DATA_IMAGE"; exit 1; }
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
+        add_secondary_separator "Un-mounting $SYSTEM_DRIVE partition if already mounted"
         findmnt $SYSTEM_DRIVE && umount -l $SYSTEM_DRIVE
+        add_secondary_separator "Executing ./prereq-deploy-cortx-cloud.sh"
         ./prereq-deploy-cortx-cloud.sh -d $SYSTEM_DRIVE
     popd    
 }
@@ -255,6 +265,7 @@ function setup_primary_node() {
     
     add_image_info
     add_node_info_solution_config
+    setup_kubectl_context
 }
 
 function setup_worker_node() {
@@ -315,7 +326,7 @@ function print_pod_status() {
         while [[ SECONDS -lt 1200 ]] ; do
             if [ "$DEPLOYMENT_METHOD" == "data-only" ]; then
                 if kubectl exec -it $(kubectl get pods | awk '/cortx-data/{print $1; exit}') -c cortx-hax -- hctl status > /dev/null ; then
-                    if ! kubectl exec -it $(kubectl get pods | awk '/cortx-data/{print $1; exit}') -c cortx-hax -- hctl status| grep -q -E 'unknown|offline|failed'; then
+                    if ! kubectl exec -it $(kubectl get pods | awk '/cortx-data/{print $1; exit}') -c cortx-hax -- hctl status| grep -v motr_client | grep -q -E 'unknown|offline|failed'; then
                         kubectl exec -it $(kubectl get pods | awk '/cortx-data/{print $1; exit}') -c cortx-hax -- hctl status
                         add_secondary_separator "Time taken for service to start $((SECONDS/60)) mins"
                         exit 0
@@ -349,6 +360,7 @@ function print_pod_status() {
 
 function io_exec() {
     pushd /var/tmp/
+        export DEPLOYMENT_METHOD=$DEPLOYMENT_METHOD
         ./io-sanity.sh
     popd
 }
