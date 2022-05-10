@@ -10,6 +10,11 @@ pipeline {
         string(name: 'PRVSNR_URL', defaultValue: 'https://github.com/Seagate/cortx-prvsnr', description: 'Repository URL for Provisioner.')
         string(name: 'PRVSNR_BRANCH', defaultValue: 'main', description: 'Branch for Provisioner.')
         string(name: 'CUSTOM_CI_BUILD_ID', defaultValue: '0', description: 'Custom CI Build Number')
+        choice(
+            name: 'BUILD_LATEST_CORTX_PROVISIONER',
+            choices: ['yes', 'no'],
+            description: 'Build cortx-provisioner from latest code or use last-successful build.'
+        )
         // Add os_version parameter in jenkins configuration
     }
 
@@ -30,6 +35,7 @@ pipeline {
 
     stages {
         stage('Checkout') {
+            when { expression { params.BUILD_LATEST_CORTX_PROVISIONER == 'yes' } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                     checkout([$class: 'GitSCM', branches: [[name: "${PRVSNR_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${PRVSNR_URL}"]]])
@@ -37,6 +43,7 @@ pipeline {
         }
 
         stage('Build') {
+            when { expression { params.BUILD_LATEST_CORTX_PROVISIONER == 'yes' } }
             steps {
                 script { build_stage = env.STAGE_NAME }
 
@@ -55,12 +62,16 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Copy RPMS', script: '''
                     mkdir -p $build_upload_dir
-                    #cp /root/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir
                     shopt -s extglob
-                    if ls ./dist/*.rpm; then
-                        cp ./dist/!(*.src.rpm|*.tar.gz) $build_upload_dir
-                    fi
-                    createrepo -v --update $build_upload_dir
+                    if [ "$BUILD_LATEST_CORTX_PROVISIONER" == "yes" ]; then
+                        if ls ./dist/*.rpm; then
+                            cp ./dist/!(*.src.rpm|*.tar.gz) $build_upload_dir
+                        fi
+                        createrepo -v --update $build_upload_dir
+                    else
+                        echo "Copy packages form last_successful"
+                        cp /mnt/bigstorage/releases/cortx/components/github/main/rockylinux-8.4/dev/provisioner/last_successful/*.rpm $build_upload_dir
+                    fi    
                 '''
             }
         }
