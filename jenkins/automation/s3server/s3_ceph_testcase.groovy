@@ -16,7 +16,7 @@ pipeline {
     }
     parameters {
         string(name: 'RGW_PORT', defaultValue: '30080', description: 's3-test rgw port', trim: true)
-        string(name: 'RGW_SERVICE_IP', defaultValue: '', description: 's3-test rgw ip address', trim: true)
+        string(name: 'RGW_MASTER_NODE', defaultValue: '', description: 's3-test rgw master node', trim: true)
 	    string(name: 'S3_TEST_REPO', defaultValue: 'https://github.com/ceph/s3-tests', description: 's3-test ceph repo', trim: true)
         // we are using specific revision of 'https://github.com/ceph/s3-tests' for our tests  - default
         string(name: 'S3_TEST_REPO_REV', defaultValue: 'bacab3cadfdd7c4ce1f03793239f919c0a3c09e2', description: 's3-test repo revision', trim: true)
@@ -37,6 +37,7 @@ pipeline {
                     sh label: 'run compatibility test', script: '''
                         #set +x
                         echo "Removing host entry"
+                        RGW_SERVICE_IP=$(ping ssc-vm-rhev4-2571.colo.seagate.com -c 1|grep PING|cut -d "(" -f2|cut -d ")" -f1)
                         sed -i '/s3test.seagate.com/d' /etc/hosts
                         echo "Adding host entry"
                         echo "$RGW_SERVICE_IP s3test.seagate.com" >> /etc/hosts
