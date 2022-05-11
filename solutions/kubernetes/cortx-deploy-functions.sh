@@ -28,13 +28,6 @@ YQ_VERSION=v4.13.3
 YQ_BINARY=yq_linux_386
 SOLUTION_CONFIG="/var/tmp/solution.yaml"
 
-ACTION="$1"
-if [ -z "$ACTION" ]; then
-    echo "ERROR : No option provided"
-    usage
-    exit 1
-fi
-
 function usage() {
     cat << HEREDOC
 Usage : $0 [--cortx-cluster, --setup-primary, --setup-worker, --status, --io-sanity, --destroy, --generate-logs]
@@ -48,6 +41,13 @@ where,
     --generate-logs - Generate support bundle logs. 
 HEREDOC
 }
+
+ACTION="$1"
+if [ -z "$ACTION" ]; then
+    echo "ERROR : No option provided"
+    usage
+    exit 1
+fi
 
 # On primary
 # Download CORTX k8 deployment scripts
@@ -93,7 +93,7 @@ function update_solution_config(){
         yq e -i '.solution.secrets.content.csm_mgmt_admin_secret = "Cortxadmin@123"' solution.yaml
 
         yq e -i '.solution.images.consul = "ghcr.io/seagate/consul:1.11.4"' solution.yaml
-        yq e -i '.solution.images.kafka = "ghcr.io/seagate/kafka:3.0.0-debian-10-r7"' solution.yaml
+        yq e -i '.solution.images.kafka = "ghcr.io/seagate/kafka:3.0.0-debian-10-r97"' solution.yaml
         yq e -i '.solution.images.zookeeper = "ghcr.io/seagate/zookeeper:3.8.0-debian-10-r9"' solution.yaml
         yq e -i '.solution.images.rancher = "ghcr.io/seagate/local-path-provisioner:v0.0.20"' solution.yaml
         yq e -i '.solution.images.busybox = "ghcr.io/seagate/busybox:latest"' solution.yaml
@@ -106,7 +106,11 @@ function update_solution_config(){
         yq e -i '.solution.common.s3.default_iam_users.auth_user = "user_name"' solution.yaml
         yq e -i '.solution.common.s3.max_start_timeout = 240' solution.yaml
         yq e -i '.solution.common.s3.extra_configuration = ""' solution.yaml
-        yq e -i '.solution.common.motr.num_client_inst = 0' solution.yaml
+        if [ "$DEPLOYMENT_METHOD" == "data-only" ]; then
+            yq e -i '.solution.common.motr.num_client_inst = 1' solution.yaml
+        else
+            yq e -i '.solution.common.motr.num_client_inst = 0' solution.yaml
+        fi       
         yq e -i '.solution.common.motr.start_port_num = 29000' solution.yaml
         yq e -i '.solution.common.motr.extra_configuration = ""' solution.yaml
         yq e -i '.solution.common.hax.protocol = "https"' solution.yaml
@@ -322,7 +326,7 @@ function print_pod_status() {
         while [[ SECONDS -lt 1200 ]] ; do
             if [ "$DEPLOYMENT_METHOD" == "data-only" ]; then
                 if kubectl exec -it $(kubectl get pods | awk '/cortx-data/{print $1; exit}') -c cortx-hax -- hctl status > /dev/null ; then
-                    if ! kubectl exec -it $(kubectl get pods | awk '/cortx-data/{print $1; exit}') -c cortx-hax -- hctl status| grep -q -E 'unknown|offline|failed'; then
+                    if ! kubectl exec -it $(kubectl get pods | awk '/cortx-data/{print $1; exit}') -c cortx-hax -- hctl status| grep -v motr_client | grep -q -E 'unknown|offline|failed'; then
                         kubectl exec -it $(kubectl get pods | awk '/cortx-data/{print $1; exit}') -c cortx-hax -- hctl status
                         add_secondary_separator "Time taken for service to start $((SECONDS/60)) mins"
                         exit 0
@@ -356,6 +360,7 @@ function print_pod_status() {
 
 function io_exec() {
     pushd /var/tmp/
+        export DEPLOYMENT_METHOD=$DEPLOYMENT_METHOD
         ./io-sanity.sh
     popd
 }

@@ -20,19 +20,12 @@
 
 source /var/tmp/functions.sh
 
-CALICO_PLUGIN_VERSION=latest
+CALICO_PLUGIN_VERSION=v3.20.1
 K8_VERSION=1.22.6
 DOCKER_VERSION=latest
 OS_VERSION=( "CentOS 7.9.2009" "Rocky 8.4" )
 export Exception=100
 export ConfigException=101
-
-ACTION="$1"
-if [ -z "$ACTION" ]; then
-    echo "ERROR : No option provided"
-    usage
-    exit 1
-fi
 
 function usage() {
     cat << HEREDOC
@@ -45,6 +38,13 @@ where,
     --join-worker-nodes Join worker nodes to kubernetes cluster.
 HEREDOC
 }
+
+ACTION="$1"
+if [ -z "$ACTION" ]; then
+    echo "ERROR : No option provided"
+    usage
+    exit 1
+fi
 
 # try-catch functions
 function try() {
