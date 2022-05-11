@@ -2,7 +2,7 @@ pipeline {
     agent {
 		node {
             // Agent created with 4GB ram/16GB memory in EOS_SVC_RE1 account 
-			label "s3-compatibility-test-ceph-rhev-7.9"
+			label "docker-image-builder-centos-7.9.2009"
             // Use custom workspace for easy troublshooting
             customWorkspace "/root/compatability-test/${INTEGRATION_TYPE}"
 		}
