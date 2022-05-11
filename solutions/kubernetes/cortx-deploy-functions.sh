@@ -133,28 +133,28 @@ function update_solution_config(){
         control_external_nodeport=$CONTROL_EXTERNAL_NODEPORT yq e -i '.solution.common.external_services.control.nodePorts.https = env(control_external_nodeport)' solution.yaml
 
         yq e -i '.solution.common.resource_allocation.consul.server.storage = "10Gi"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.consul.server.resources.requests.memory = "100Mi"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.consul.server.resources.requests.cpu = "100m"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.consul.server.resources.limits.memory = "300Mi"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.consul.server.resources.limits.cpu = "100m"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.consul.client.resources.requests.memory = "100Mi"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.consul.client.resources.requests.cpu = "100m"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.consul.client.resources.limits.memory = "300Mi"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.consul.client.resources.limits.cpu = "100m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.consul.server.resources.requests.memory = "200Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.consul.server.resources.requests.cpu = "200m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.consul.server.resources.limits.memory = "500Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.consul.server.resources.limits.cpu = "500m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.consul.client.resources.requests.memory = "200Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.consul.client.resources.requests.cpu = "200m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.consul.client.resources.limits.memory = "500Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.consul.client.resources.limits.cpu = "500m"' solution.yaml
 
         yq e -i '.solution.common.resource_allocation.zookeeper.storage_request_size = "8Gi"' solution.yaml
         yq e -i '.solution.common.resource_allocation.zookeeper.data_log_dir_request_size = "8Gi"' solution.yaml
         yq e -i '.solution.common.resource_allocation.zookeeper.resources.requests.memory = "256Mi"' solution.yaml
         yq e -i '.solution.common.resource_allocation.zookeeper.resources.requests.cpu = "250m"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.zookeeper.resources.limits.memory = "512Mi"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.zookeeper.resources.limits.cpu = "500m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.zookeeper.resources.limits.memory = "1Gi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.zookeeper.resources.limits.cpu = "1000m"' solution.yaml
 
         yq e -i '.solution.common.resource_allocation.kafka.storage_request_size = "8Gi"' solution.yaml
         yq e -i '.solution.common.resource_allocation.kafka.log_persistence_request_size = "8Gi"' solution.yaml
         yq e -i '.solution.common.resource_allocation.kafka.resources.requests.memory = "1Gi"' solution.yaml
         yq e -i '.solution.common.resource_allocation.kafka.resources.requests.cpu = "250m"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.kafka.resources.limits.memory = "2Gi"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.kafka.resources.limits.cpu = 1' solution.yaml
+        yq e -i '.solution.common.resource_allocation.kafka.resources.limits.memory = "3Gi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.kafka.resources.limits.cpu = "1000m"' solution.yaml
 
         yq e -i '.solution.storage.cvg1.name = "cvg-01"' solution.yaml
         yq e -i '.solution.storage.cvg1.type = "ios"' solution.yaml
