@@ -1,5 +1,18 @@
 #!/bin/bash
 
+usage() { 
+echo "Generate cortx-all docker image from provided CORTX release build"
+echo "Usage: $0 [ -b brunch ] [ -p push docker-image to GHCR yes/no. Default no] [ -t tag latest yes/no. Default no" ] [ -e environment ] [ -h print help message ] 1>&2; exit 1; }
+while getopts "b:h:" opt; do
+    case $opt in
+        b ) BRANCH=$OPTARG;;
+        h ) usage
+        exit 0;;
+        *) usage
+        exit 1;;
+    esac
+done
+
 function DockerCheck() {
         docker --version >/dev/null 2>&1
         if [ $? -eq 0 ]; then
@@ -46,7 +59,7 @@ docker pull ghcr.io/seagate/cortx-build:rockylinux-8.4
 cd /mnt && git clone https://github.com/Seagate/cortx --recursive --depth=1
 
 # Checkout main branch for generating CORTX packages
-docker run --rm -v /mnt/cortx:/cortx-workspace ghcr.io/seagate/cortx-build:rockylinux-8.4 make checkout BRANCH=main
+docker run --rm -v /mnt/cortx:/cortx-workspace ghcr.io/seagate/cortx-build:rockylinux-8.4 make checkout BRANCH=$BRANCH
 
 # Validate CORTX component clone status
 cd /mnt/cortx/ 
@@ -106,7 +119,7 @@ NginxValidation
 # clone cortx-re repository & run build.sh
 
 git clone https://github.com/Seagate/cortx-re && cd cortx-re/docker/cortx-deploy/
-./build.sh -b http://$HOSTNAME -o rockylinux-8.4 -s all -e opensource-ci
+./build.sh -b http://$(ip route get 8.8.8.8| cut -d' ' -f7) -o rockylinux-8.4 -s all -e opensource-ci
 #sed -i "/^[[:space:]].*TAG/a\    extra_hosts:\n      - \"$(ip route get 8.8.8.8| cut -d' ' -f7)"\" docker-compose.yml
 #cat docker-compose.yml | egrep -iw "extra_hosts|$(ip route get 8.8.8.8| cut -d' ' -f7)"
 #        if [ $? -eq 0 ]; then
