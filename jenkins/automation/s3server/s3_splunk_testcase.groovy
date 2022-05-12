@@ -89,7 +89,7 @@ pipeline {
                 emailext body: '''${SCRIPT, template="s3-comp-test-email.template"}''',
                 mimeType: 'text/html',
                 recipientProviders: [requestor()], 
-                subject: "[Jenkins] S3Ceph : ${currentBuild.currentResult}, ${JOB_BASE_NAME}#${BUILD_NUMBER}",
+                subject: "[Jenkins] S3Splunk : ${currentBuild.currentResult}, ${JOB_BASE_NAME}#${BUILD_NUMBER}",
                 to: "${mailRecipients}"
             }
             cleanWs()
