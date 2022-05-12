@@ -208,11 +208,12 @@ copy_solution_config() {
             if [ -f '$SOLUTION_CONFIG' ]; then echo "file $SOLUTION_CONFIG not available..."; exit 1; fi	
             cp $SOLUTION_CONFIG .
             yq eval -i 'del(.solution.nodes)' solution.yaml
+            NAMESPACE=$(yq e '.solution.namespace' solution.yaml)
         popd 
 }
 
 setup_kubectl_context() {
-    add_secondary_separator "Updated kubectl contex to use $NAMESPACE"
+    add_secondary_separator "Updated kubectl context to use $NAMESPACE"
     kubectl config set-context --current --namespace=$NAMESPACE
 }
 
