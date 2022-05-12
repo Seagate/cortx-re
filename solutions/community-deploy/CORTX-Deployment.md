@@ -106,3 +106,7 @@ Run IO Sanity on your Cortx Cluster to validate if you are able to create bucket
 ```
 # ./cortx-deploy.sh --io-sanity
 ```
+
+Tested by:
+
+* May 06, 2022: Rahul Shenoy (rahul.shenoy@seagate.com) - Windows + VMware Workstation 16 + CentOS 7.9 Linux
