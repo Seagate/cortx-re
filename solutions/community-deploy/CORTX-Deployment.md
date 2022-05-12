@@ -34,7 +34,7 @@ You can use following command for RedHat family OS to install the Git.
 ```
 # sestatus
 ```
--  If SELinux is enable, run the following command to disable the SELinux.
+-  If SELinux is enabled, run the following command to disable the SELinux.
 
 ```
 # sed -i 's/SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config && setenforce 0
@@ -102,7 +102,11 @@ For example:
 # export CORTX_SCRIPTS_BRANCH=integration && export CORTX_SCRIPTS_REPO=AbhijitPatil1992/cortx-k8s && export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
 ```
 
-Run IO Sanity on your Cortx Cluster to validate if you are able to create bucket and upload the object in deployed cluster.
+Run IO Sanity on your CORTX Cluster to validate if you are able to create bucket and upload the object in deployed cluster.
 ```
 # ./cortx-deploy.sh --io-sanity
 ```
+
+Tested by:
+
+* May 06, 2022: Rahul Shenoy (rahul.shenoy@seagate.com) - Windows + VMware Workstation 16 + CentOS 7.9 Linux
