@@ -29,11 +29,6 @@ pipeline {
         string(name: 'CORTX_UTILS_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX Utils', trim: true)
         string(name: 'CORTX_UTILS_URL', defaultValue: 'https://github.com/Seagate/cortx-utils', description: 'CORTX Utils Repository URL', trim: true)
         string(name: 'THIRD_PARTY_PYTHON_VERSION', defaultValue: 'cortx-2.0', description: 'Third Party Python Version to use', trim: true)
-        choice(
-            name: 'BUILD_LATEST_CSM_AGENT',
-            choices: ['yes', 'no'],
-            description: 'Build cortx-management from latest code or use last-successful build.'
-        )
         // Add os_version parameter in jenkins configuration
     }    
 
@@ -41,7 +36,6 @@ pipeline {
     stages {
 
         stage('Checkout') {
-            when { expression { params.BUILD_LATEST_CSM_AGENT == 'yes' } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 dir('cortx-manager') {
@@ -57,7 +51,6 @@ pipeline {
         }
         
         stage('Install Dependencies') {
-            when { expression { params.BUILD_LATEST_CSM_AGENT == 'yes' } }
             steps {
                 script { build_stage = env.STAGE_NAME }
 
@@ -78,7 +71,6 @@ pipeline {
         }    
         
         stage('Build') {
-            when { expression { params.BUILD_LATEST_CSM_AGENT == 'yes' } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 // Exclude return code check for csm_setup and csm_test
@@ -100,12 +92,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Copy RPMS', script: '''
                     mkdir -p $build_upload_dir
-                    if [ "$BUILD_LATEST_CSM_AGENT" == "yes" ]; then
-                        cp ./cortx-manager/dist/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir
-                    else
-                        echo "Copy packages form last_successful"
-                        cp /mnt/bigstorage/releases/cortx/components/github/main/rockylinux-8.4/dev/csm-agent/last_successful/*.rpm $build_upload_dir
-                    fi    
+                    cp ./cortx-manager/dist/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir    
                 '''
             }
         }

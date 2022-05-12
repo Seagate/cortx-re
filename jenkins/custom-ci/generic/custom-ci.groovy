@@ -101,6 +101,7 @@ pipeline {
     stages {
 
         stage ("Build CORTX Utils") {
+            when { expression { params.BUILD_MANAGEMENT_PATH_COMPONENTS == 'yes' } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
@@ -109,8 +110,7 @@ pipeline {
                         parameters: [
                             string(name: 'CORTX_UTILS_URL', value: "${CORTX_UTILS_URL}"),
                             string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}"),
-                            string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}"),
-                            string(name: 'BUILD_LATEST_CORTX_UTILS', value: "${BUILD_MANAGEMENT_PATH_COMPONENTS}")
+                            string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}")
                         ]
                     } catch (err) {
                         build_stage = env.STAGE_NAME
@@ -121,6 +121,7 @@ pipeline {
         }
 
         stage ("Build Provisioner") {
+            when { expression { params.BUILD_MANAGEMENT_PATH_COMPONENTS == 'yes' } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
@@ -129,8 +130,7 @@ pipeline {
                         parameters: [
                             string(name: 'PRVSNR_URL', value: "${PRVSNR_URL}"),
                             string(name: 'PRVSNR_BRANCH', value: "${PRVSNR_BRANCH}"),
-                            string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}"),
-                            string(name: 'BUILD_LATEST_CORTX_PROVISIONER', value: "${BUILD_MANAGEMENT_PATH_COMPONENTS}")
+                            string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}")
                         ]
                     } catch (err) {
                         build_stage = env.STAGE_NAME
@@ -201,6 +201,7 @@ pipeline {
                 }
 
                 stage ("Build HA") {
+                    when { expression { params.BUILD_MANAGEMENT_PATH_COMPONENTS == 'yes' } }
                     steps {
                         script { build_stage = env.STAGE_NAME }
                         script {
@@ -212,8 +213,7 @@ pipeline {
                                               string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}"),
                                               string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}"),
                                               string(name: 'CORTX_UTILS_URL', value: "${CORTX_UTILS_URL}"),
-                                              string(name: 'THIRD_PARTY_PYTHON_VERSION', value: "${THIRD_PARTY_PYTHON_VERSION}"),
-                                              string(name: 'BUILD_LATEST_CORTX_HA', value: "${BUILD_MANAGEMENT_PATH_COMPONENTS}")
+                                              string(name: 'THIRD_PARTY_PYTHON_VERSION', value: "${THIRD_PARTY_PYTHON_VERSION}")
                                           ]
                             } catch (err) {
                                 build_stage = env.STAGE_NAME
@@ -224,6 +224,7 @@ pipeline {
                 }
 
                 stage ("Build CSM Agent") {
+                    when { expression { params.BUILD_MANAGEMENT_PATH_COMPONENTS == 'yes' } }
                     steps {
                         script { build_stage = env.STAGE_NAME }
                         script {
@@ -235,8 +236,7 @@ pipeline {
                                                     string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}"),
                                                     string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}"),
                                                     string(name: 'CORTX_UTILS_URL', value: "${CORTX_UTILS_URL}"),
-                                                    string(name: 'THIRD_PARTY_PYTHON_VERSION', value: "${THIRD_PARTY_PYTHON_VERSION}"),
-                                                    string(name: 'BUILD_LATEST_CSM_AGENT', value: "${BUILD_MANAGEMENT_PATH_COMPONENTS}")
+                                                    string(name: 'THIRD_PARTY_PYTHON_VERSION', value: "${THIRD_PARTY_PYTHON_VERSION}")
                                               ]
                             } catch (err) {
                                 build_stage = env.STAGE_NAME
@@ -258,7 +258,10 @@ pipeline {
                 sh label: 'Copy RPMS', script:'''
                     RPM_COPY_PATH="/mnt/bigstorage/releases/cortx/components/github/main/$os_version/dev/"
 
-                    CUSTOM_COMPONENT_NAME="motr|s3server|hare|cortx-ha|provisioner|csm-agent|csm-web|sspl|cortx-utils|cortx-rgw|cortx-rgw-integration"
+                    if [ "$BUILD_MANAGEMENT_PATH_COMPONENTS" == "yes" ]; then
+                        CUSTOM_COMPONENT_NAME="motr|hare|cortx-ha|provisioner|csm-agent|cortx-utils|cortx-rgw|cortx-rgw-integration"
+                    else
+                        CUSTOM_COMPONENT_NAME="motr|hare|cortx-rgw|cortx-rgw-integration"    
 
                     pushd $RPM_COPY_PATH
                     for component in `ls -1 | grep -E -v "$CUSTOM_COMPONENT_NAME" | grep -E -v 'luster|halon|mero|motr|csm|cortx-extension|nfs|cortx-utils|cortx-prereq'`
