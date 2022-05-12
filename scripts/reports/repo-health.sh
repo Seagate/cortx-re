@@ -20,8 +20,8 @@
 
 #Install reuired packages
 curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.rpm.sh | sudo bash
-yum install gcc python3-devel git-lfs -y
-pip3 install seaborn matplotlib pandas xlrd requests python-dateutil pyGithub jupyterlab
+yum install gcc python3-devel git-lfs pango-devel -y
+pip3 install seaborn matplotlib pandas xlrd requests python-dateutil pyGithub jupyterlab django-weasyprint weasyprint==52.5
 git lfs install && git lfs pull
 
 echo GH_OATH:$GH_OATH
@@ -35,3 +35,7 @@ pushd cortx/metrics
     mkdir report cache
     jupyter nbconvert --debug --log-level 10 --execute --to html --ExecutePreprocessor.timeout=18000 --output-dir=/tmp --no-input --output-dir=report --output Repo_Health Repo_Health.ipynb
 popd
+
+#Generate PDF
+cp report/Repo_Health.html /tmp/
+python3 ./html_to_pdf.py
