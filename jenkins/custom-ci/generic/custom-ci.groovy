@@ -90,9 +90,9 @@ pipeline {
             name: 'BUILD_MANAGEMENT_PATH_COMPONENTS',
             choices: ['yes', 'no'],
             description: '''
-            Build cortx-management, cortx-ha, cortx-provisioner and cortx-py-utils from latest code or use last-successful build.<br>
+            Build cortx-management, cortx-ha and cortx-provisioner from latest code or use last-successful build.<br>
             If you select <strong>no</strong>, below parameter values will get ignored<br>
-            <strong>CSM_AGENT_BRANCH, CSM_AGENT_URL, HA_BRANCH, HA_URL, PRVSNR_BRANCH, PRVSNR_URL, CORTX_UTILS_BRANCH, CORTX_UTILS_URL</strong>
+            <strong>CSM_AGENT_BRANCH, CSM_AGENT_URL, HA_BRANCH, HA_URL, PRVSNR_BRANCH, PRVSNR_URL</strong>
             '''
         )
 
@@ -101,7 +101,6 @@ pipeline {
     stages {
 
         stage ("Build CORTX Utils") {
-            when { expression { params.BUILD_MANAGEMENT_PATH_COMPONENTS == 'yes' } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
@@ -262,6 +261,7 @@ pipeline {
                         CUSTOM_COMPONENT_NAME="motr|hare|cortx-ha|provisioner|csm-agent|cortx-utils|cortx-rgw|cortx-rgw-integration"
                     else
                         CUSTOM_COMPONENT_NAME="motr|hare|cortx-rgw|cortx-rgw-integration"    
+                    fi
 
                     pushd $RPM_COPY_PATH
                     for component in `ls -1 | grep -E -v "$CUSTOM_COMPONENT_NAME" | grep -E -v 'luster|halon|mero|motr|csm|cortx-extension|nfs|cortx-utils|cortx-prereq'`
