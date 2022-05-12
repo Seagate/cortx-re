@@ -30,5 +30,5 @@ git clone https://github.com/Seagate/cortx
 #Execute notebook
 pushd cortx/metrics
     mkdir report cache
-    jupyter nbconvert --execute --to html --ExecutePreprocessor.timeout=18000 --output-dir=/tmp --no-input --output-dir=report --output Repo_Health Repo_Health.ipynb
+    jupyter nbconvert --debug --log-level 10 --execute --to html --ExecutePreprocessor.timeout=18000 --output-dir=/tmp --no-input --output-dir=report --output Repo_Health Repo_Health.ipynb
 popd
