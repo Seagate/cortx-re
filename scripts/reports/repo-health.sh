@@ -34,8 +34,6 @@ git clone https://github.com/Seagate/cortx
 pushd cortx/metrics
     mkdir report cache
     jupyter nbconvert --debug --log-level 10 --execute --to html --ExecutePreprocessor.timeout=18000 --output-dir=/tmp --no-input --output-dir=report --output Repo_Health Repo_Health.ipynb
-popd
-
 #Generate PDF
-cp cortx/metrics/report/Repo_Health.html /tmp/
-python3 ./cortx/metrics/html_to_pdf.py
+    cp report/Repo_Health.html /tmp/ && python3 ./html_to_pdf.py
+popd
