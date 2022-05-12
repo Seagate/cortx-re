@@ -24,8 +24,8 @@ yum install gcc python3-devel git-lfs -y
 pip3 install seaborn matplotlib pandas xlrd requests python-dateutil pyGithub jupyterlab
 git lfs install && git lfs pull
 
-echo $GH_OATH
-echo $CODACY_OATH
+echo GH_OATH:$GH_OATH
+echo CODACY_OATH:$CODACY_OATH
 
 #Clone Repo
 git clone https://github.com/Seagate/cortx
