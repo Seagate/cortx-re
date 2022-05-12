@@ -90,3 +90,8 @@ You can clean-up all AWS infrastructure created using following command.
 ```
 terraform validate && terraform destroy -var-file user.tfvars --auto-approve
 ```
+
+Tested by:
+
+* May 06, 2022: Rahul Shenoy (rahul.shenoy@seagate.com) - Windows + VMware Workstation 16 + CentOS 7.9 Linux
+* April 29, 2022: Pranav Sahasrabudhe (pranav.p.sahasrabudhe@seagate.com) - Mac + VMware Fusion 12 + CentOS 7.9 Linux
