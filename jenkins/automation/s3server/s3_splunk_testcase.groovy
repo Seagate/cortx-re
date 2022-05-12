@@ -91,9 +91,8 @@ pipeline {
                 recipientProviders: [requestor()], 
                 subject: "[Jenkins] S3Ceph : ${currentBuild.currentResult}, ${JOB_BASE_NAME}#${BUILD_NUMBER}",
                 to: "${mailRecipients}"
-                }
-                cleanWs()
             }
+            cleanWs()
         }
     }
 }
