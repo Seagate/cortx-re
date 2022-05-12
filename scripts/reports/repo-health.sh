@@ -37,5 +37,5 @@ pushd cortx/metrics
 popd
 
 #Generate PDF
-cp report/Repo_Health.html /tmp/
-python3 ./html_to_pdf.py
+cp cortx/metrics/report/Repo_Health.html /tmp/
+python3 ./cortx/metrics/html_to_pdf.py
