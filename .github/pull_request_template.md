@@ -14,6 +14,7 @@
 - [ ] Unit and System Tests are added
 - [ ] Test Cases cover Happy Path, Non-Happy Path and Scalability
 - [ ] Testing was performed with RPM
+- [ ] Jenkins pipelines used for testing
 
 # Impact Analysis
   Checklist for Author/Reviewer/GateKeeper
