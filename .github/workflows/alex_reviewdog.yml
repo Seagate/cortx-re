@@ -31,12 +31,16 @@ jobs:
   # Let's start the alex to scan
   alex:
     name: Alex report
-    # Label alex will trigger the workflow without creating new PR. Useful for debugging. 
     #if: ${{ github.event.label.name == 'alex' || github.event.action == 'synchronize' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: Seagate/action-alex@v1
+      
+      - name: "Enable the permissions"
+        run: |
+          sudo chown -R root:root $GITHUB_WORKSPACE
+      
+      - uses: seagate/action-alex@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           filter_mode: added

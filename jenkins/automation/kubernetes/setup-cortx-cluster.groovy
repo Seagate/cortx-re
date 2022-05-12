@@ -16,27 +16,31 @@ pipeline {
         GITHUB_CRED = credentials('shailesh-github-token')
     }
 
-
     parameters {
 
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
-        string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for Cluster Setup scripts', trim: true)
+        string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repository for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_ALL_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-all:2.0.0-latest', description: 'CORTX-ALL image', trim: true)
         string(name: 'CORTX_SERVER_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-rgw:2.0.0-latest', description: 'CORTX-SERVER image', trim: true)
+        string(name: 'CORTX_DATA_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-data:2.0.0-latest', description: 'CORTX-DATA image', trim: true)
+        choice(
+            name: 'DEPLOYMENT_METHOD',
+            choices: ['standard', 'data-only'],
+            description: 'Method to deploy required CORTX service. standard method will deploy all CORTX services'
+        )
         string(name: 'SNS_CONFIG', defaultValue: '1+0+0', description: 'sns configuration for deployment. Please select value based on disks available on nodes.', trim: true)
         string(name: 'DIX_CONFIG', defaultValue: '1+0+0', description: 'dix configuration for deployment. Please select value based on disks available on nodes.', trim: true)
         string(name: 'CONTROL_EXTERNAL_NODEPORT', defaultValue: '31169', description: 'Port to be used for control service.', trim: true)
         string(name: 'S3_EXTERNAL_HTTP_NODEPORT', defaultValue: '30080', description: 'HTTP Port to be used for IO service.', trim: true)
         string(name: 'S3_EXTERNAL_HTTPS_NODEPORT', defaultValue: '30443', description: 'HTTPS to be used for IO service.', trim: true)
+        string(name: 'NAMESPACE', defaultValue: 'cortx', description: 'kubernetes namespace to be used for CORTX deployment.', trim: true)
         text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used for CORTX cluster setup. First node will be used as Primary node', name: 'hosts')
-        // Please configure CORTX_SCRIPTS_BRANCH and CORTX_SCRIPTS_REPO parameter in Jenkins job configuration.
-
         choice(
             name: 'EXTERNAL_EXPOSURE_SERVICE',
             choices: ['LoadBalancer', 'NodePort'],
             description: 'K8s Service to be used to expose RGW Service to outside cluster.'
         )
-
+        // Please configure CORTX_SCRIPTS_BRANCH and CORTX_SCRIPTS_REPO parameter in Jenkins job configuration.
     }    
 
     stages {
@@ -82,12 +86,15 @@ pipeline {
                         export CORTX_SCRIPTS_REPO=${CORTX_SCRIPTS_REPO}
                         export CORTX_ALL_IMAGE=${CORTX_ALL_IMAGE}
                         export CORTX_SERVER_IMAGE=${CORTX_SERVER_IMAGE}
+                        export CORTX_DATA_IMAGE=${CORTX_DATA_IMAGE}
+                        export DEPLOYMENT_METHOD=${DEPLOYMENT_METHOD}
                         export SNS_CONFIG=${SNS_CONFIG}
                         export DIX_CONFIG=${DIX_CONFIG}
                         export EXTERNAL_EXPOSURE_SERVICE=${EXTERNAL_EXPOSURE_SERVICE}
                         export CONTROL_EXTERNAL_NODEPORT=${CONTROL_EXTERNAL_NODEPORT}
                         export S3_EXTERNAL_HTTP_NODEPORT=${S3_EXTERNAL_HTTP_NODEPORT}
                         export S3_EXTERNAL_HTTPS_NODEPORT=${S3_EXTERNAL_HTTPS_NODEPORT}
+                        export NAMESPACE=${NAMESPACE}
                         ./cortx-deploy.sh --cortx-cluster
                     popd
                 '''
@@ -99,7 +106,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Perform IO Sanity Test', script: '''
                     pushd solutions/kubernetes/
-                        ./cortx-deploy.sh --io-test
+                        ./cortx-deploy.sh --io-sanity
                     popd
                 '''
             }
