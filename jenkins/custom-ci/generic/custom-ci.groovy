@@ -105,7 +105,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 script {
                     try {
-                        def cortx_utils_build = build job: '/Release_Engineering/re-workspace/custom-cortx-py-utils-temp', wait: true,
+                        def cortx_utils_build = build job: '/GitHub-custom-ci-builds/generic/custom-cortx-py-utils', wait: true,
                         parameters: [
                             string(name: 'CORTX_UTILS_URL', value: "${CORTX_UTILS_URL}"),
                             string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}"),
@@ -125,7 +125,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 script {
                     try {
-                        def prvsnrbuild = build job: '/Release_Engineering/re-workspace/custom-cortx-prvsnr-temp', wait: true,
+                        def prvsnrbuild = build job: '/GitHub-custom-ci-builds/generic/prvsnr-custom-build', wait: true,
                         parameters: [
                             string(name: 'PRVSNR_URL', value: "${PRVSNR_URL}"),
                             string(name: 'PRVSNR_BRANCH', value: "${PRVSNR_BRANCH}"),
@@ -205,7 +205,7 @@ pipeline {
                         script { build_stage = env.STAGE_NAME }
                         script {
                             try {
-                                def habuild = build job: '/Release_Engineering/re-workspace/custom-cortx-ha-temp', wait: true,
+                                def habuild = build job: '/GitHub-custom-ci-builds/generic/cortx-ha-custom-build', wait: true,
                                           parameters: [
                                               string(name: 'HA_URL', value: "${HA_URL}"),
                                               string(name: 'HA_BRANCH', value: "${HA_BRANCH}"),
@@ -228,7 +228,7 @@ pipeline {
                         script { build_stage = env.STAGE_NAME }
                         script {
                             try {
-                                def csm_agent_build = build job: '/Release_Engineering/re-workspace/custom-csm-agent-temp', wait: true,
+                                def csm_agent_build = build job: '/GitHub-custom-ci-builds/generic/custom-csm-agent-build', wait: true,
                                               parameters: [
                                                     string(name: 'CSM_AGENT_URL', value: "${CSM_AGENT_URL}"),
                                                     string(name: 'CSM_AGENT_BRANCH', value: "${CSM_AGENT_BRANCH}"),
