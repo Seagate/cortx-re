@@ -45,7 +45,7 @@ pipeline {
 
     post {
         always {
-            script{ 
+            script { 
                echo 'Cleanup Workspace.'
                 archiveArtifacts artifacts: "scripts/reports/cortx/metrics/report/*.html, scripts/reports/cortx/metrics/cache/repo_health.pdf", onlyIfSuccessful: false, allowEmptyArchive: true
                 
