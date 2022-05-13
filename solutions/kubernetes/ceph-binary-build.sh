@@ -94,21 +94,21 @@ function prvsn_env() {
             docker pull ubuntu:20.04
         fi
         add_secondary_separator "Run Ubuntu 20.04 container and run build script"
-        docker run --rm -t -e CEPH_REPO=$CEPH_REPO -e CEPH_BRANCH=$CEPH_BRANCH -e BUILD_LOCATION="/home/$BUILD_OS" --name ceph_ubuntu -v "$BUILD_LOCATION/$BUILD_OS":/home --entrypoint /bin/bash ubuntu:20.04 -c "pushd /home && ./build.sh --env-build && popd"
+        docker run --rm -t -e CEPH_REPO=$CEPH_REPO -e CEPH_BRANCH=$CEPH_BRANCH -e BUILD_LOCATION="/home" --name ceph_ubuntu -v "$BUILD_LOCATION/$BUILD_OS":/home --entrypoint /bin/bash ubuntu:20.04 -c "pushd /home && ./build.sh --env-build && popd"
 
     elif [[ "$BUILD_OS" == "CentOS" ]]; then
         if [[ $(docker images --format "{{.Repository}}:{{.Tag}}" --filter reference=centos:8) != "centos:8" ]]; then
             docker pull centos:8
         fi
         add_secondary_separator "Run CentOS 8 container and run build script"
-        docker run --rm -t -e CEPH_REPO=$CEPH_REPO -e CEPH_BRANCH=$CEPH_BRANCH  -e BUILD_LOCATION="/home/$BUILD_OS" --name ceph_centos -v "$BUILD_LOCATION/$BUILD_OS":/home --entrypoint /bin/bash centos:8 -c "pushd /home && ./build.sh --env-build && popd"
+        docker run --rm -t -e CEPH_REPO=$CEPH_REPO -e CEPH_BRANCH=$CEPH_BRANCH  -e BUILD_LOCATION="/home" --name ceph_centos -v "$BUILD_LOCATION/$BUILD_OS":/home --entrypoint /bin/bash centos:8 -c "pushd /home && ./build.sh --env-build && popd"
 
     elif [[ "$BUILD_OS" == "Rocky Linux" ]]; then
         if [[ $(docker images --format "{{.Repository}}:{{.Tag}}" --filter reference=rockylinux:8) != "rockylinux:8" ]]; then
             docker pull rockylinux:8
         fi
         add_secondary_separator "Run Rocky Linux 8 container and run build script"
-        docker run --rm -t -e CEPH_REPO=$CEPH_REPO -e CEPH_BRANCH=$CEPH_BRANCH  -e BUILD_LOCATION="/home/$BUILD_OS" --name ceph_rockylinux -v "$BUILD_LOCATION/$BUILD_OS":/home --entrypoint /bin/bash rockylinux:8 -c "pushd /home && ./build.sh --env-build && popd"
+        docker run --rm -t -e CEPH_REPO=$CEPH_REPO -e CEPH_BRANCH=$CEPH_BRANCH  -e BUILD_LOCATION="/home" --name ceph_rockylinux -v "$BUILD_LOCATION/$BUILD_OS":/home --entrypoint /bin/bash rockylinux:8 -c "pushd /home && ./build.sh --env-build && popd"
 
     else
         add_secondary_separator "Failed to build ceph, please check logs"
@@ -144,7 +144,7 @@ function ceph_build() {
                 popd
 
                 tar -xf ceph-*tar.bz2
-                pushd "$BUILD_LOCATION"/ceph-"$version"
+                pushd ceph-"$version"
                     add_common_separator "Start Build"
                     dpkg-buildpackage -us -uc
                 popd
@@ -180,9 +180,9 @@ function ceph_build() {
                         mv ceph*tar.bz2 ../rpmbuild/SOURCES/
                     popd
 
-                    pushd rpmbuild/
+                    pushd rpmbuild
                         add_common_separator "Start Build"
-                        rpmbuild --define "_topdir $BUILD_LOCATION/rpmbuild" -ba SPECS/ceph.spec
+                        rpmbuild --define "_topdir `pwd`" -ba SPECS/ceph.spec
                     popd
 
                     add_common_separator "List generated binary packages (*.rpm)"
@@ -219,9 +219,9 @@ function ceph_build() {
                         mv ceph*tar.bz2 ../rpmbuild/SOURCES/
                     popd
 
-                    pushd rpmbuild/
+                    pushd rpmbuild
                         add_common_separator "Start Build"
-                        rpmbuild --define "_topdir $BUILD_LOCATION/rpmbuild" -ba SPECS/ceph.spec
+                        rpmbuild --define "_topdir `pwd`" -ba SPECS/ceph.spec
                     popd
 
                     add_common_separator "List generated binary packages (*.rpm)"
