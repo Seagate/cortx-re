@@ -39,7 +39,8 @@ check_status() {
 }
 
 if [ "$4x" == "x" ]; then
-    echo "Please check cortx-user password not provided"
+    echo "ERROR: Required inputs not provided properly. Please provide inputs like below."
+    echo "./create_account.sh S3_USER 0 CORTX_USER_NAME CORTX_PASSWORD"
     exit 1
 fi
 
