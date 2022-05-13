@@ -25,5 +25,4 @@ sudo                            #cortx-py-utils
 python36                        #cortx-py-utils
 python3-dbus                    #cortx-py-utils
 python3-ldap                    #cortx-py-utils
-python3-psutil                  #cortx-py-utils
 logrotate                       #cortx-py-utils
