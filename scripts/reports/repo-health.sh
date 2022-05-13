@@ -18,14 +18,16 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
+set -eo pipefail
+
+if [ -z "$GH_OATH" ]; then echo "GH_OATH is not set. Existing..."; exit 1; fi
+if [ -z "$CODACY_OATH" ]; then echo "CODACY_OATH is not set. Existing..."; exit 1; fi
+
 #Install reuired packages
 curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.rpm.sh | sudo bash
 yum install gcc python3-devel git-lfs pango-devel -y
 pip3 install seaborn matplotlib pandas xlrd requests python-dateutil pyGithub jupyterlab django-weasyprint weasyprint==52.5
 git lfs install && git lfs pull
-
-echo GH_OATH:$GH_OATH
-echo CODACY_OATH:$CODACY_OATH
 
 #Clone Repo
 git clone https://github.com/Seagate/cortx
