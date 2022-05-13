@@ -94,7 +94,7 @@ pipeline {
                 archiveArtifacts artifacts: "scripts/automation/s3-test/*.txt, ${S3_TEST_CONF_FILE}, scripts/automation/s3-test/reports/*", onlyIfSuccessful: false, allowEmptyArchive: true
                 junit testResults: 'scripts/automation/s3-test/reports/*.xml', testDataPublishers: [[$class: 'AttachmentPublisher']]  
                 def mailRecipients = "abhijit.patil@seagate.com"
-                emailext body: '''${SCRIPT, template="s3-comp-test-email.template"}''',
+                emailext body: '''${SCRIPT, template="s3-comp-test-email-v2.template"}''',
                 mimeType: 'text/html',
                 recipientProviders: [requestor()], 
                 subject: "[Jenkins] S3Ceph : ${currentBuild.currentResult}, ${JOB_BASE_NAME}#${BUILD_NUMBER}",
