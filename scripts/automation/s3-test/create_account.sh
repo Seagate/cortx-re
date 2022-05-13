@@ -39,15 +39,16 @@ check_status() {
 }
 
 if [ "$4x" == "x" ]; then
-    echo "Please pass proper input"
+    echo "Please check cortx-user password not provided"
     exit 1
 fi
 
 TOKEN=$(curl -s -i -k -d "{\"username\": \"${CORTX_USER_NAME}\", \"password\": \"${CORTX_PASSWORD}\"}" https://s3test.seagate.com:31169/api/v2/login|awk '/Bearer/{print $(NF)}'|sed -e "s/\r//g")
 if [ "x$TOKEN" == "x" ]; then
-    echo "token not found in log file please check"
+    echo "token not getting proper, Need to check application logs"
     exit 1
 fi
 
 curl -k -v -d "{\"uid\":\"${S3_USER}\", \"display_name\":\"${S3_USER}\", \"email\":\"${S3_USER}@seagate.com\"}" https://s3test.seagate.com:31169/api/v2/s3/iam/users --header "Authorization: Bearer $TOKEN" > ${S3_USER}_${BUILD_NUMBER}.log
-check_status "Access key & Secret key not created properly please look into that."
+errorvar=$(cat ${S3_USER}_${BUILD_NUMBER}.log)
+check_status "Access key & Secret key not created properly, please below logs \n $errorvar"

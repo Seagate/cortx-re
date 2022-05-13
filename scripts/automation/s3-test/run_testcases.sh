@@ -19,20 +19,22 @@ set +e
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 
 # Help function which stdouts possible arguments for this script 
-_help_function(){
-      echo ""
-      echo -e " Usage:"
-      echo -e "--------"
-      echo ""
-      echo -e "\t sh $0 -c=s3_test_config -i=integration_type"
-      echo ""
-      echo -e "\t -c   | --test_conf            = S3 test Config Path  -[ Required ]"
-      echo -e "\t -i   | --integration_type     = Integration type ('ceph', 'splunk') - [ Required ]"
-      echo -e "\t -v   | --test_version         = S3 Test version ('v2', 'v4', 'all') - [ Optional ] "
-      echo -e "\t -tr  | --test_repo            = S3 Test repo url ('https://github.com/splunk/s3-tests', 'https://github.com/ceph/s3-tests') - [ Optional ] "
-      echo -e "\t -trr | --test_repo_revision   = S3 Test repo Revision/Hash ('master', '#commit_hash#') - [ Optional ] "
-      echo ""
-      exit 1 
+
+_help_function() {
+    cat << HEREDOC
+
+ Usage:
+ ---------------------------------------------------------
+ sh $0 -c=s3_test_config -i=integration_type
+ 
+ -c   | --test_conf            = S3 test Config Path  -[ Required ]
+ -i   | --integration_type     = Integration type ('ceph', 'splunk') - [ Required ]
+ -v   | --test_version         = S3 Test version ('v2', 'v4', 'all') - [ Optional ] 
+ -tr  | --test_repo            = S3 Test repo url ('https://github.com/splunk/s3-tests', 'https://github.com/ceph/s3-tests') - [ Optional ] 
+ -trr | --test_repo_revision   = S3 Test repo Revision/Hash ('master', '#commit_hash#') - [ Optional ] 
+ ----------------------------------------------------------
+HEREDOC
+ exit 1
 }
 
 # Validate input arguments
