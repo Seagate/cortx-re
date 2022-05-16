@@ -27,12 +27,17 @@ ALL_NODES=$(cat "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
 
 function usage() {
     cat << HEREDOC
-Usage : $0 [--cortx-cluster, --destroy-cluster, --io-sanity, --support-bundle]
+Usage : $0 [--install-pereq, --install-ceph, --deploy-prereq, --deploy-mon, --deploy-mgr, --deploy-osd, --deploy-mds, --deploy-fs, --deploy-rgw]
 where,
-    --cortx-cluster - Deploy CORTX Cluster on provided nodes.
-    --destroy-cluster  - Destroy CORTX cluster.
-    --io-sanity - Perform IO sanity test.
-    --support-bundle - Collect support bundle logs.
+    --install-prereq - Install Ceph Dependencies.
+    --install-ceph - Install Ceph Packages.
+    --deploy-prereq - Prerquisites before Ceph Deployemnt.
+    --deploy-mon - Deploy Ceph Monitor.
+    --deploy-mgr - Deploy Ceph Manager.
+    --deploy-osd - Deploy Ceph OSD.
+    --deploy-mds - Deploy Ceph Metadata Service.
+    --deploy-fs - Deploy Ceph FS.
+    --deploy-rgw - Deploy Ceph Rados Gateway.
 HEREDOC
 }
 

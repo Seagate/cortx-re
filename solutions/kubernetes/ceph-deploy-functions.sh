@@ -24,12 +24,18 @@ CEPH_NODES=$(cat "$HOST_FILE" | grep -v "$PRIMARY_NODE" | awk -F[,] '{print $1}'
 
 function usage() {
     cat << HEREDOC
-Usage : $0 [--deploy-mon, --deploy-mgr, --deploy-osd, --deploy-mds]
+Usage : $0 [--install-pereq, --install-ceph, --deploy-prereq, --deploy-mon, --deploy-mgr, --deploy-osd, --deploy-mds, --deploy-fs, --deploy-rgw, --status]
 where,
+    --install-prereq - Install Ceph Dependencies.
+    --install-ceph - Install Ceph Packages.
+    --deploy-prereq - Prerquisites before Ceph Deployemnt.
     --deploy-mon - Deploy Ceph Monitor.
     --deploy-mgr - Deploy Ceph Manager.
     --deploy-osd - Deploy Ceph OSD.
     --deploy-mds - Deploy Ceph Metadata Service.
+    --deploy-fs - Deploy Ceph FS.
+    --deploy-rgw - Deploy Ceph Rados Gateway.
+    --status - Show Ceph Status.
 HEREDOC
 }
 
@@ -148,6 +154,12 @@ function deploy_osd() {
     do
         ssh_ceph_node "ceph-volume lvm create --data $disks"
     done
+
+    add_secondary_separator "Ceph OSD status"
+    ceph osd tree
+
+    add_secondary_separator "Ceph OSD details"
+    ceph osd df
 }
 
 function deploy_mds() {
@@ -194,9 +206,6 @@ case $ACTION in
     --deploy-prereq)
         deploy_prereq
     ;;
-    --status)
-        ceph_status
-    ;;
     --deploy-mon)
         deploy_mon
     ;;
@@ -214,6 +223,9 @@ case $ACTION in
     ;;
     --deploy-rgw)
         deploy_rgw
+    ;;
+    --status)
+        ceph_status
     ;;
     *)
         echo "ERROR : Please provide a valid option"
