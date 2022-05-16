@@ -40,7 +40,28 @@ if [ -z "$ACTION" ]; then
     exit 1
 fi
 
-function prereq() {
+function install_prereq() {
+    add_secondary_separator "Installing Ceph Dependencies on $HOSTNAME"
+    yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm -y && \
+    yum install -y dnf-plugins-core  && \
+    yum copr enable -y tchaikov/python-scikit-learn  && \
+    yum copr enable -y tchaikov/python3-asyncssh  && \
+    dnf config-manager --set-enabled powertools resilientstorage && \
+    yum install -y --setopt=install_weak_deps=False resource-agents python3-natsort binutils sharutils s3cmd logrotate python3-pyyaml sqlite-devel which openssh-server xfsprogs parted cryptsetup xmlstarlet socat jq selinux-policy-base policycoreutils  \
+        libselinux-utils sudo mailcap python3-jsonpatch python3-kubernetes python3-requests python3-werkzeug python3-pyOpenSSL python3-pecan python3-bcrypt python3-cherrypy python3-routes python3-jwt python3-jinja2 ca-certificates \
+        python3-asyncssh openssh-clients fuse python3-prettytable psmisc librdmacm libbabeltrace librabbitmq librdkafka liboath lttng-tools lttng-ust libicu thrift wget unzip util-linux python3-setuptools udev device-mapper \
+        e2fsprogs python3-saml kmod lvm2 gdisk smartmontools nvme-cli libstoragemgmt systemd-udev procps-ng hostname python3-rtslib attr python3-scikit-learn gperftools
+}
+
+function install_ceph() {
+    add_secondary_separator "Installing Ceph Packages on $HOSTNAME"
+    pushd /root/RPMS
+        mv noarch/*.rpm . && mv x86_64/*.rpm . && rmdir noarch/ x86_64/
+        rpm -ivh *.rpm
+    popd
+}
+
+function deploy_prereq() {
     validation
     generate_rsa_key
     nodes_setup
@@ -164,8 +185,14 @@ function deploy_rgw() {
 }
 
 case $ACTION in
-    --prereq)
-        prereq
+    --install-prereq)
+        install_prereq
+    ;;
+    --install-ceph)
+        install_ceph
+    ;;
+    --deploy-prereq)
+        deploy_prereq
     ;;
     --status)
         ceph_status

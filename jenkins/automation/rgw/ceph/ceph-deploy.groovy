@@ -34,6 +34,45 @@ pipeline {
             }
         }
 
+        stage ('Install Ceph Prerequisites') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'Install Ceph Prerequisites', script: '''
+                    pushd solutions/kubernetes/
+                        echo $hosts | tr ' ' '\n' > hosts
+                        cat hosts
+                        bash ceph-deploy.sh --install-prereq
+                    popd
+                '''
+            }
+        }
+
+        stage ('Install Ceph Packages') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'Install Ceph Packages', script: '''
+                    pushd solutions/kubernetes/
+                        echo $hosts | tr ' ' '\n' > hosts
+                        cat hosts
+                        bash ceph-deploy.sh --install-ceph
+                    popd
+                '''
+            }
+        }
+
+        stage ('Deploy Ceph Prerequisites') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'Deploy Ceph Prerequisites', script: '''
+                    pushd solutions/kubernetes/
+                        echo $hosts | tr ' ' '\n' > hosts
+                        cat hosts
+                        bash ceph-deploy.sh --deploy-prereq
+                    popd
+                '''
+            }
+        }
+
         stage ('Deploy Ceph Monitor') {
             steps {
                 script { build_stage = env.STAGE_NAME }

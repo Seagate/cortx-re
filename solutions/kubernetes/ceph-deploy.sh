@@ -24,8 +24,6 @@ HOST_FILE=$PWD/hosts
 OSD_DISKS=$PWD/osd_disks
 SSH_KEY_FILE=/root/.ssh/id_rsa
 ALL_NODES=$(cat "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
-PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
-WORKER_NODES=$(cat "$HOST_FILE" | grep -v "$PRIMARY_NODE" | awk -F[,] '{print $1}' | cut -d'=' -f2) || true
 
 function usage() {
     cat << HEREDOC
@@ -45,7 +43,24 @@ if [ -z "$ACTION" ]; then
     exit 1
 fi
 
-function prereq() {
+function install_prereq() {
+    validation
+    generate_rsa_key
+    nodes_setup
+
+    add_primary_separator "Install dependencies for Ceph"
+    scp_all_node functions.sh ceph-deploy-functions.sh
+
+    echo $ALL_NODES > /var/tmp/pdsh-hosts
+    pdsh -w ^/var/tmp/pdsh-hosts "/var/tmp/ceph-deploy-functions.sh --install-prereq"
+}
+
+function install_ceph() {
+    add_primary_separator "Install Ceph Packages"
+    pdsh -w ^/var/tmp/pdsh-hosts "/var/tmp/ceph-deploy-functions.sh --install-ceph"
+}
+
+function deploy_prereq() {
     validation
     generate_rsa_key
     nodes_setup
@@ -59,7 +74,7 @@ function prereq() {
     scp_primary_node functions.sh ceph-deploy-functions.sh osd_disks hosts
 
     add_secondary_separator "Setup passwordless ssh on deployment nodes"
-    ssh_primary_node "export HOST_FILE=/var/tmp/hosts && export SSH_KEY_FILE=$SSH_KEY_FILE && /var/tmp/ceph-deploy-functions.sh --prereq"
+    ssh_primary_node "export HOST_FILE=/var/tmp/hosts && export SSH_KEY_FILE=$SSH_KEY_FILE && /var/tmp/ceph-deploy-functions.sh --deploy-prereq"
 }
 
 function check_params() {
@@ -107,8 +122,14 @@ function deploy_rgw() {
 }
 
 case $ACTION in
-    --prereq)
-        prereq check_params
+    --install-prereq)
+        install_prereq
+    ;;
+    --install-ceph)
+        install_ceph
+    ;;
+    --deploy-prereq)
+        deploy_prereq check_params
     ;;
     --deploy-mon)
         deploy_mon
