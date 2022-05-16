@@ -91,8 +91,8 @@ pipeline {
     post {
         always {
             script {
-                archiveArtifacts artifacts: "scripts/automation/s3-test/*.txt, ${S3_TEST_CONF_FILE}, scripts/automation/s3-test/reports/*", onlyIfSuccessful: false, allowEmptyArchive: true
-                junit testResults: 'scripts/automation/s3-test/reports/*.xml', testDataPublishers: [[$class: 'AttachmentPublisher']]  
+                archiveArtifacts artifacts: "cortx-re/scripts/automation/s3-test/*.txt, ${S3_TEST_CONF_FILE}, cortx-re/scripts/automation/s3-test/reports/*", onlyIfSuccessful: false, allowEmptyArchive: true
+                junit testResults: 'cortx-re/scripts/automation/s3-test/reports/*.xml', testDataPublishers: [[$class: 'AttachmentPublisher']]  
                 def mailRecipients = "shailesh.vaidya@seagate.com, abhijit.patil@seagate.com, kapil.jinna@seagate.com, shazia.ahmad@seagate.com"
                 emailext body: '''${SCRIPT, template="s3-comp-test-email-v2.template"}''',
                 mimeType: 'text/html',
