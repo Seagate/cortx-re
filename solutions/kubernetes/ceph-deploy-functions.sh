@@ -19,6 +19,7 @@
 #
 
 source /var/tmp/functions.sh
+source /etc/os-release
 
 CEPH_NODES=$(cat "$HOST_FILE" | grep -v "$PRIMARY_NODE" | awk -F[,] '{print $1}' | cut -d'=' -f2) || true
 
@@ -48,23 +49,66 @@ fi
 
 function install_prereq() {
     add_secondary_separator "Installing Ceph Dependencies on $HOSTNAME"
-    yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm -y && \
-    yum install -y dnf-plugins-core  && \
-    yum copr enable -y tchaikov/python-scikit-learn  && \
-    yum copr enable -y tchaikov/python3-asyncssh  && \
-    dnf config-manager --set-enabled powertools resilientstorage && \
-    yum install -y --setopt=install_weak_deps=False resource-agents python3-natsort binutils sharutils s3cmd logrotate python3-pyyaml sqlite-devel which openssh-server xfsprogs parted cryptsetup xmlstarlet socat jq selinux-policy-base policycoreutils  \
-        libselinux-utils sudo mailcap python3-jsonpatch python3-kubernetes python3-requests python3-werkzeug python3-pyOpenSSL python3-pecan python3-bcrypt python3-cherrypy python3-routes python3-jwt python3-jinja2 ca-certificates \
-        python3-asyncssh openssh-clients fuse python3-prettytable psmisc librdmacm libbabeltrace librabbitmq librdkafka liboath lttng-tools lttng-ust libicu thrift wget unzip util-linux python3-setuptools udev device-mapper \
-        e2fsprogs python3-saml kmod lvm2 gdisk smartmontools nvme-cli libstoragemgmt systemd-udev procps-ng hostname python3-rtslib attr python3-scikit-learn gperftools
+
+    if [[ "$(df -BG  / | awk '{ print $4 }' | tail -n 1 | sed 's/G//')" < "30" ]]; then
+        add_secondary_separator "Root partition doesn't have sufficient disk space"
+        exit 1
+    fi
+
+    case "$ID" in:
+        rocky)
+            yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm -y && \
+            yum install -y dnf-plugins-core  && \
+            yum copr enable -y tchaikov/python-scikit-learn  && \
+            yum copr enable -y tchaikov/python3-asyncssh
+            dnf config-manager --set-enabled powertools resilientstorage
+            yum install -y --setopt=install_weak_deps=False resource-agents python3-natsort binutils sharutils s3cmd logrotate python3-pyyaml sqlite-devel which openssh-server xfsprogs parted cryptsetup xmlstarlet socat jq selinux-policy-base policycoreutils  \
+                libselinux-utils sudo mailcap python3-jsonpatch python3-kubernetes python3-requests python3-werkzeug python3-pyOpenSSL python3-pecan python3-bcrypt python3-cherrypy python3-routes python3-jwt python3-jinja2 ca-certificates \
+                python3-asyncssh openssh-clients fuse python3-prettytable psmisc librdmacm libbabeltrace librabbitmq librdkafka liboath lttng-tools lttng-ust libicu thrift wget unzip util-linux python3-setuptools udev device-mapper \
+                e2fsprogs python3-saml kmod lvm2 gdisk smartmontools nvme-cli libstoragemgmt systemd-udev procps-ng hostname python3-rtslib attr python3-scikit-learn gperftools
+        ;;
+        centos)
+            yum remove epel-next-release-8-13.el8.noarch -y && dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm -y && \
+            yum install epel-release -y && \
+            yum install -y dnf-plugins-core  && \
+            yum copr enable -y tchaikov/python-scikit-learn  && \
+            yum copr enable -y tchaikov/python3-asyncssh  && \
+            yum install -y --setopt=install_weak_deps=False sharutils s3cmd logrotate python3-pyyaml sqlite-devel which openssh-server xfsprogs parted cryptsetup xmlstarlet socat jq selinux-policy-base policycoreutils  \
+                libselinux-utils sudo mailcap python3-jsonpatch python3-kubernetes python3-requests python3-werkzeug python3-pyOpenSSL python3-pecan python3-bcrypt python3-cherrypy python3-routes python3-jwt python3-jinja2 ca-certificates \
+                python3-asyncssh openssh-clients fuse python3-prettytable psmisc librdmacm libbabeltrace librabbitmq librdkafka liboath lttng-tools lttng-ust libicu thrift wget unzip util-linux python3-setuptools udev device-mapper \
+                e2fsprogs python3-saml kmod lvm2 gdisk smartmontools nvme-cli libstoragemgmt systemd-udev procps-ng hostname python3-rtslib attr python3-scikit-learn gperftools && \
+                yum install python3-natsort binutils -y
+            rpm -ivh http://mirror.centos.org/centos/8-stream/HighAvailability/x86_64/os/Packages/resource-agents-4.1.1-97.el8.x86_64.rpm
+        ;;
+        ubuntu)
+            pushd /root/RPMS # subject to change until binaries are fetched from a central repo
+                dpkg -i *.deb     # this command will throw errors which is expected as it collects required dependencies for the installation
+                apt-get -f install -y
+            popd
+        ;;
+    esac
 }
 
 function install_ceph() {
     add_secondary_separator "Installing Ceph Packages on $HOSTNAME"
-    pushd /root/RPMS
-        mv noarch/*.rpm . && mv x86_64/*.rpm . && rmdir noarch/ x86_64/
-        rpm -ivh *.rpm
-    popd
+
+    case "$ID" in:
+        rocky)
+            pushd /root/RPMS
+                mv noarch/*.rpm . && mv x86_64/*.rpm . && rmdir noarch/ x86_64/
+                rpm -ivh *.rpm
+            popd
+        ;;
+        centos)
+            pushd /root/RPMS
+                mv noarch/*.rpm . && mv x86_64/*.rpm . && rmdir noarch/ x86_64/
+                rpm -ivh *.rpm
+            popd
+        ;;
+        ubuntu)
+            echo "All pacakges are installed in install_prereq step only."
+        ;;
+    esac
 }
 
 function deploy_prereq() {
