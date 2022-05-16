@@ -6,7 +6,7 @@ Package Name  |
 Version | 
 license |
 Source  | 
-
+Component Team |
 
 ### Please add below details about package
 
