@@ -162,7 +162,24 @@ EOF
 }
 
 function ceph_status() {
+    add_primary_separator "Ceph Cluster Status"
     ceph -s
+    ceph health detail
+ 
+    add_secondary_separator "Ceph mgr active modules"
+    ceph mgr module ls
+
+    add_secondary_separator "Ceph OSD details"
+    ceph osd tree
+    ceph osd df
+
+    add_secondary_separator "Ceph FS details"
+    ceph fs ls
+    rados lspools
+    ceph osd pool ls detail
+
+    add_secondary_separator "Running Ceph Frontend Services"
+    ceph mgr services
 }
 
 function deploy_dashboard() {
@@ -176,6 +193,10 @@ function deploy_dashboard() {
 
     ceph mgr services
     echo "Dashboard creds: admin/cephadmin"
+
+    add_secondary_separator "Disable 'mons are allowing insecure global_id reclaim' health warning"
+    ceph config set mon mon_warn_on_insecure_global_id_reclaim false
+    ceph config set mon mon_warn_on_insecure_global_id_reclaim_allowed false
 }
 
 function deploy_mgr() {
@@ -230,6 +251,8 @@ EOF
 
     add_secondary_separator "MDS Status"
     ceph mds stat
+
+    ceph_status
 }
 
 function deploy_fs() {
