@@ -1,48 +1,55 @@
-pipeline {	 
+pipeline {     
     agent {
-		node {
+        node {
             // Agent created with 4GB ram/16GB memory in EOS_SVC_RE1 account 
-			label "docker-image-builder-centos-7.9.2009"
+            label "docker-k8-deployment-node"
             // Use custom workspace for easy troublshooting
             customWorkspace "/root/compatability-test/${INTEGRATION_TYPE}"
-		}
-	}
+        }
+    }
 
-	options {
+    options {
         timeout(time: 240, unit: 'MINUTES')
         timestamps()
         ansiColor('xterm') 
         buildDiscarder(logRotator(daysToKeepStr: '5', numToKeepStr: '5')) 
     }
     parameters {
+        string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
+        string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repository for Cluster Setup scripts', trim: true)
         string(name: 'RGW_PORT', defaultValue: '30080', description: 's3-test rgw port', trim: true)
         string(name: 'RGW_MASTER_NODE', defaultValue: '', description: 's3-test rgw master node', trim: true)
-	    string(name: 'S3_TEST_REPO', defaultValue: 'https://github.com/ceph/s3-tests', description: 's3-test ceph repo', trim: true)
+        string(name: 'S3_TEST_REPO', defaultValue: 'https://github.com/ceph/s3-tests', description: 's3-test ceph repo', trim: true)
         // we are using specific revision of 'https://github.com/ceph/s3-tests' for our tests  - default
         string(name: 'S3_TEST_REPO_REV', defaultValue: 'bacab3cadfdd7c4ce1f03793239f919c0a3c09e2', description: 's3-test repo revision', trim: true)
         choice(name: 'INTEGRATION_TYPE', choices: [ "ceph"], description: 'S3 Integration Type')
-	}
+    }
 
     environment {
         // This config file used for ceph compatibility tests
         S3_TEST_CONF_FILE = "${INTEGRATION_TYPE}_${BUILD_NUMBER}.conf"
     }
- 	
-	stages {
+     
+    stages {
         stage ('Execute Test cases') { 
             steps {
                 withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'cortxadmin', usernameVariable: 'CORTX_USER_NAME', passwordVariable: 'CORTX_PASSWORD']]) {
                     script { build_stage = env.STAGE_NAME }
-                    script {              
+                    script {
+
+                        dir('cortx-re') {
+                            checkout changelog: false, poll: false, scm: [$class: 'GitSCM', branches: [[name: "${CORTX_RE_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${CORTX_RE_REPO}"]]]
+                        }
+
                         sh label: 'run compatibility test', script: '''
                             #set +x
                             echo "Removing host entry"
                             RGW_SERVICE_IP=$(ping ${RGW_MASTER_NODE} -c 1|grep PING|cut -d "(" -f2|cut -d ")" -f1)
-                            sed -i '/s3test.seagate.com/d' /etc/hosts
+                            #sed -i '/s3test.seagate.com/d' /etc/hosts
                             echo "Adding host entry"
                             echo "$RGW_SERVICE_IP s3test.seagate.com" >> /etc/hosts
 
-                            pushd scripts/automation/s3-test/
+                            pushd cortx-re/scripts/automation/s3-test/
                                 chmod +x ./*.sh
                                 S3_MAIN_USER="s3-ceph-main_${BUILD_NUMBER}"
                                 S3_EXT_USER="s3-ceph-ext_${BUILD_NUMBER}"
@@ -87,13 +94,13 @@ pipeline {
                     }
                 }
             }
-        }		
+        }        
     }
     post {
         always {
             script {
-                archiveArtifacts artifacts: "scripts/automation/s3-test/*.txt, ${S3_TEST_CONF_FILE}, scripts/automation/s3-test/reports/*", onlyIfSuccessful: false, allowEmptyArchive: true
-                junit testResults: 'scripts/automation/s3-test/reports/*.xml', testDataPublishers: [[$class: 'AttachmentPublisher']]  
+                archiveArtifacts artifacts: "cortx-re/scripts/automation/s3-test/*.txt, ${S3_TEST_CONF_FILE}, cortx-re/scripts/automation/s3-test/reports/*", onlyIfSuccessful: false, allowEmptyArchive: true
+                junit testResults: 'cortx-re/scripts/automation/s3-test/reports/*.xml', testDataPublishers: [[$class: 'AttachmentPublisher']]  
                 def mailRecipients = "shailesh.vaidya@seagate.com, abhijit.patil@seagate.com, kapil.jinna@seagate.com, shazia.ahmad@seagate.com"
                 emailext body: '''${SCRIPT, template="s3-comp-test-email-v2.template"}''',
                 mimeType: 'text/html',
