@@ -86,6 +86,16 @@ pipeline {
             description: 'Build cortx-rgw from latest code or use last-successful build.'
         )
 
+        choice(
+            name: 'BUILD_MANAGEMENT_PATH_COMPONENTS',
+            choices: ['yes', 'no'],
+            description: '''
+            Build cortx-management, cortx-ha and cortx-provisioner from latest code or use last-successful build.<br>
+            If you select <strong>no</strong>, below parameter values will get ignored<br>
+            <strong>CSM_AGENT_BRANCH, CSM_AGENT_URL, HA_BRANCH, HA_URL, PRVSNR_BRANCH, PRVSNR_URL</strong>
+            '''
+        )
+
     }
 
     stages {
@@ -110,15 +120,16 @@ pipeline {
         }
 
         stage ("Build Provisioner") {
+            when { expression { params.BUILD_MANAGEMENT_PATH_COMPONENTS == 'yes' } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
                     try {
                         def prvsnrbuild = build job: '/GitHub-custom-ci-builds/generic/prvsnr-custom-build', wait: true,
                         parameters: [
-                        string(name: 'PRVSNR_URL', value: "${PRVSNR_URL}"),
-                        string(name: 'PRVSNR_BRANCH', value: "${PRVSNR_BRANCH}"),
-                        string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}")
+                            string(name: 'PRVSNR_URL', value: "${PRVSNR_URL}"),
+                            string(name: 'PRVSNR_BRANCH', value: "${PRVSNR_BRANCH}"),
+                            string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}")
                         ]
                     } catch (err) {
                         build_stage = env.STAGE_NAME
@@ -179,7 +190,7 @@ pipeline {
                                               string(name: 'CORTX_RGW_INTEGRATION_URL', value: "${CORTX_RGW_INTEGRATION_URL}"),
                                               string(name: 'CORTX_RGW_INTEGRATION_BRANCH', value: "${CORTX_RGW_INTEGRATION_BRANCH}"),
                                               string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}")
-                                                ]
+                                          ]
                             } catch (err) {
                                 build_stage = env.STAGE_NAME
                                 error "Failed to Build RGW Integration"
@@ -189,6 +200,7 @@ pipeline {
                 }
 
                 stage ("Build HA") {
+                    when { expression { params.BUILD_MANAGEMENT_PATH_COMPONENTS == 'yes' } }
                     steps {
                         script { build_stage = env.STAGE_NAME }
                         script {
@@ -201,7 +213,7 @@ pipeline {
                                               string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}"),
                                               string(name: 'CORTX_UTILS_URL', value: "${CORTX_UTILS_URL}"),
                                               string(name: 'THIRD_PARTY_PYTHON_VERSION', value: "${THIRD_PARTY_PYTHON_VERSION}")
-                                                ]
+                                          ]
                             } catch (err) {
                                 build_stage = env.STAGE_NAME
                                 error "Failed to Build HA"
@@ -211,6 +223,7 @@ pipeline {
                 }
 
                 stage ("Build CSM Agent") {
+                    when { expression { params.BUILD_MANAGEMENT_PATH_COMPONENTS == 'yes' } }
                     steps {
                         script { build_stage = env.STAGE_NAME }
                         script {
@@ -244,10 +257,14 @@ pipeline {
                 sh label: 'Copy RPMS', script:'''
                     RPM_COPY_PATH="/mnt/bigstorage/releases/cortx/components/github/main/$os_version/dev/"
 
-                    CUSTOM_COMPONENT_NAME="motr|s3server|hare|cortx-ha|provisioner|csm-agent|csm-web|sspl|cortx-utils|cortx-rgw|cortx-rgw-integration"
+                    if [ "$BUILD_MANAGEMENT_PATH_COMPONENTS" == "yes" ]; then
+                        CUSTOM_COMPONENT_NAME="motr|hare|cortx-ha|provisioner|csm-agent|cortx-utils|cortx-rgw|cortx-rgw-integration"
+                    else
+                        CUSTOM_COMPONENT_NAME="motr|hare|cortx-rgw|cortx-rgw-integration"    
+                    fi
 
                     pushd $RPM_COPY_PATH
-                    for component in `ls -1 | grep -E -v "$CUSTOM_COMPONENT_NAME" | grep -E -v 'luster|halon|mero|motr|csm|cortx-extension|nfs|cortx-utils|cortx-prereq'`
+                    for component in `ls -1 | grep -E -v "$CUSTOM_COMPONENT_NAME" | grep -E -v 'luster|halon|mero|motr|cortx-extension|nfs|cortx-utils|cortx-prereq'`
                     do
                         echo -e "Copying RPM's for $component"
                         if ls $component/last_successful/*.rpm 1> /dev/null 2>&1; then
@@ -439,7 +456,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 script {
                     try {
-                        def build_cortx_all_image = build job: 'cortx-all-docker-image', wait: true,
+                        def build_cortx_all_image = build job: 'GitHub-custom-ci-builds/generic/cortx-all-docker-image/', wait: true,
                                     parameters: [
                                         string(name: 'CORTX_RE_URL', value: "${CORTX_RE_URL}"),
                                         string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
