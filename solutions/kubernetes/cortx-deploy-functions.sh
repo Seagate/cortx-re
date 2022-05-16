@@ -393,7 +393,7 @@ case $ACTION in
     ;;
     --io-sanity)
         io_exec
-    ;;
+    ;;F
     --destroy)
         destroy
     ;;

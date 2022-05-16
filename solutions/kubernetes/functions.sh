@@ -46,13 +46,13 @@ function validation() {
     if [ ! -f "$HOST_FILE" ]; then
         echo "$HOST_FILE is not present"
         exit 1
-    fi	
+    fi
 
     if [ "$SOLUTION_CONFIG_TYPE" == "manual" ]; then
         if [ ! -f "$SOLUTION_CONFIG" ]; then
             echo "$SOLUTION_CONFIG is not present"
             exit 1
-        fi	
+        fi
     fi
 }
 
@@ -142,8 +142,19 @@ function scp_primary_node() {
         done
 }
 
+function scp_ceph_node() {
+    for ceph_nodes in $CEPH_NODE
+        do
+            scp -q ${@:2} "$ceph_nodes":$1
+        done
+}
+
 function ssh_primary_node() {
     ssh -o 'StrictHostKeyChecking=no' "$PRIMARY_NODE" $*
+}
+
+function ssh_ceph_node() {
+    ssh -o 'StrictHostKeyChecking=no' "$CEPH_NODE" $*
 }
 
 function setup_awscli() {
