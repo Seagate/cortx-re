@@ -47,7 +47,7 @@ pipeline {
                             #set +x
                             echo "Removing host entry"
                             RGW_SERVICE_IP=$(ping ${RGW_MASTER_NODE} -c 1|grep PING|cut -d "(" -f2|cut -d ")" -f1)
-                            sed -i '/s3test.seagate.com/d' /etc/hosts
+                            #sed -i '/s3test.seagate.com/d' /etc/hosts
                             echo "Adding host entry"
                             echo "$RGW_SERVICE_IP s3test.seagate.com" >> /etc/hosts
 
