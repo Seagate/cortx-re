@@ -67,6 +67,8 @@ pipeline {
                     pushd solutions/kubernetes/
                         echo $hosts | tr ' ' '\n' > hosts
                         cat hosts
+                        echo $OSD_Disks | tr ' ' '\n' > osd_disks
+                        cat osd_disks
                         bash ceph-deploy.sh --deploy-prereq
                     popd
                 '''

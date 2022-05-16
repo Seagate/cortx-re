@@ -21,6 +21,7 @@
 source /var/tmp/functions.sh
 source /etc/os-release
 
+HOST_FILE=/var/tmp/hosts
 CEPH_NODES=$(cat "$HOST_FILE" | grep -v "$PRIMARY_NODE" | awk -F[,] '{print $1}' | cut -d'=' -f2) || true
 
 function usage() {
@@ -55,7 +56,7 @@ function install_prereq() {
         exit 1
     fi
 
-    case "$ID" in:
+    case "$ID" in
         rocky)
             yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm -y && \
             yum install -y dnf-plugins-core  && \
@@ -92,15 +93,15 @@ function install_prereq() {
 function install_ceph() {
     add_secondary_separator "Installing Ceph Packages on $HOSTNAME"
 
-    case "$ID" in:
+    case "$ID" in
         rocky)
-            pushd /root/RPMS
+            pushd /root/RPMS # subject to change until binaries are fetched from a central repo
                 mv noarch/*.rpm . && mv x86_64/*.rpm . && rmdir noarch/ x86_64/
                 rpm -ivh *.rpm
             popd
         ;;
         centos)
-            pushd /root/RPMS
+            pushd /root/RPMS # subject to change until binaries are fetched from a central repo
                 mv noarch/*.rpm . && mv x86_64/*.rpm . && rmdir noarch/ x86_64/
                 rpm -ivh *.rpm
             popd
@@ -205,14 +206,15 @@ function deploy_mgr() {
     ceph auth get-or-create mgr.foo mon 'allow profile mgr' osd 'allow *' mds 'allow *' > /var/lib/ceph/mgr/ceph-foo/keyring
     ceph-mgr -i foo
 
+    sleep 10
     deploy_dashboard
 }
 
 function deploy_osd() {
     add_secondary_separator "Copy config files"
-    scp_ceph_node "/etc/ceph" "/etc/ceph/ceph.conf"
-    scp_ceph_node "/var/lib/ceph/bootstrap-osd/" "/var/lib/ceph/bootstrap-osd/ceph.keyring"
-    scp_ceph_node "/etc/ceph/" "/var/lib/ceph/bootstrap-osd/ceph.keyring"
+    scp_ceph_nodes "/etc/ceph" "/etc/ceph/ceph.conf"
+    scp_ceph_nodes "/var/lib/ceph/bootstrap-osd/" "/var/lib/ceph/bootstrap-osd/ceph.keyring"
+    scp_ceph_nodes "/etc/ceph/" "/var/lib/ceph/bootstrap-osd/ceph.keyring"
 
     add_secondary_separator "Setup OSD"
     for disks in $(cat "$OSD_DISKS")
@@ -229,7 +231,7 @@ function deploy_osd() {
 
 function deploy_mds() {
     add_secondary_separator "Copy keyring"
-    scp_ceph_node "/etc/ceph" "/etc/ceph/ceph.client.admin.keyring"
+    scp_ceph_nodes "/etc/ceph" "/etc/ceph/ceph.client.admin.keyring"
 
     add_secondary_separator "Setup MDS"
     mkdir -p /var/lib/ceph/mds/ceph-$(hostname -s)
@@ -256,11 +258,11 @@ EOF
 }
 
 function deploy_fs() {
-
+    echo "empty"
 }
 
 function deploy_rgw() {
-
+    echo "empty"
 }
 
 case $ACTION in

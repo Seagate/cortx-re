@@ -142,7 +142,7 @@ function scp_primary_node() {
         done
 }
 
-function scp_ceph_node() {
+function scp_ceph_nodes() {
     for ceph_nodes in $CEPH_NODE
         do
             scp -q ${@:2} "$ceph_nodes":$1

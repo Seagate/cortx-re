@@ -24,6 +24,7 @@ HOST_FILE=$PWD/hosts
 OSD_DISKS=$PWD/osd_disks
 SSH_KEY_FILE=/root/.ssh/id_rsa
 ALL_NODES=$(cat "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
 
 function usage() {
     cat << HEREDOC
@@ -53,15 +54,15 @@ function install_prereq() {
     generate_rsa_key
     nodes_setup
 
-    add_primary_separator "Install dependencies for Ceph"
-    scp_all_node functions.sh ceph-deploy-functions.sh
+    add_primary_separator "\tInstall dependencies for Ceph"
+    scp_all_nodes functions.sh ceph-deploy-functions.sh
 
     echo $ALL_NODES > /var/tmp/pdsh-hosts
     pdsh -w ^/var/tmp/pdsh-hosts "/var/tmp/ceph-deploy-functions.sh --install-prereq"
 }
 
 function install_ceph() {
-    add_primary_separator "Install Ceph Packages"
+    add_primary_separator "\t\tInstall Ceph Packages"
     pdsh -w ^/var/tmp/pdsh-hosts "/var/tmp/ceph-deploy-functions.sh --install-ceph"
 }
 
@@ -97,32 +98,32 @@ function check_params() {
 }
 
 function deploy_mon() {
-    add_primary_separator "Deploy Ceph Monitor Daemon"
-    ssh_primary_node "/var/tmp/ceph-deploy-functions.sh export OSD_POOL_DEFAULT_SIZE=$OSD_POOL_DEFAULT_SIZE && export OSD_POOL_DEFAULT_MIN_SIZE=$OSD_POOL_DEFAULT_MIN_SIZE && export OSD_POOL_DEFAULT_PG_NUM=$OSD_POOL_DEFAULT_PG_NUM && export OSD_POOL_DEFAULT_PGP_NUM=$OSD_POOL_DEFAULT_PGP_NUM && --deploy-mon"
+    add_primary_separator "\tDeploy Ceph Monitor Daemon"
+    ssh_primary_node "export OSD_POOL_DEFAULT_SIZE=$OSD_POOL_DEFAULT_SIZE && export OSD_POOL_DEFAULT_MIN_SIZE=$OSD_POOL_DEFAULT_MIN_SIZE && export OSD_POOL_DEFAULT_PG_NUM=$OSD_POOL_DEFAULT_PG_NUM && export OSD_POOL_DEFAULT_PGP_NUM=$OSD_POOL_DEFAULT_PGP_NUM && /var/tmp/ceph-deploy-functions.sh --deploy-mon"
 }
 
 function deploy_mgr() {
-    add_primary_separator "Deploy Ceph Manager Daemon"
+    add_primary_separator "\tDeploy Ceph Manager Daemon"
     ssh_primary_node "/var/tmp/ceph-deploy-functions.sh --deploy-mgr"
 }
 
 function deploy_osd() {
-    add_primary_separator "Deploy Ceph OSD"
+    add_primary_separator "\t\tDeploy Ceph OSD"
     ssh_primary_node "export HOST_FILE=/var/tmp/hosts && export SSH_KEY_FILE=$SSH_KEY_FILE && export OSD_DISKS=/var/tmp/osd_disks && /var/tmp/ceph-deploy-functions.sh --deploy-osd"
 }
 
 function deploy_mds() {
-    add_primary_separator "Deploy Ceph Metadata Service Daemon"
+    add_primary_separator "\tDeploy Ceph Metadata Service Daemon"
     ssh_primary_node "/var/tmp/ceph-deploy-functions.sh --deploy-mds"
 }
 
 function deploy_fs() {
-    add_primary_separator "Deploy Ceph FS and pool"
+    add_primary_separator "\tDeploy Ceph FS and pool"
     ssh_primary_node "/var/tmp/ceph-deploy-functions.sh --deploy-fs"
 }
 
 function deploy_rgw() {
-    add_primary_separator "Deploy Ceph RADOS Gateway"
+    add_primary_separator "\tDeploy Ceph RADOS Gateway"
     ssh_primary_node "/var/tmp/ceph-deploy-functions.sh --deploy-rgw"
 }
 
