@@ -1,16 +1,16 @@
 pipeline {
-          
+	 	 
     agent {
-        node {
+		node {
             // Agent created with 4GB ram/16GB memory in EOS_SVC_RE1 account 
-            label "s3-compatibility-test-splunk-rhev-7.9"
+			label "s3-compatibility-test-splunk-rhev-7.9"
 
             // Use custom workspace for easy troublshooting
             customWorkspace "/root/compatability-test/${INTEGRATION_TYPE}"
-        }
-    }
+		}
+	}
 
-    options {
+	options {
         timeout(time: 240, unit: 'MINUTES')
         timestamps()
         ansiColor('xterm') 
@@ -22,25 +22,23 @@ pipeline {
         cron('H 20 * * *')
     }
 
-    parameters {
-        string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
-        string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repository for Cluster Setup scripts', trim: true)  
-        string(name: 'S3_URL', defaultValue: 'https://github.com/Seagate/cortx-s3server', description: 'Repo for s3server', trim: true)
+    parameters {  
+	    string(name: 'S3_URL', defaultValue: 'https://github.com/Seagate/cortx-s3server', description: 'Repo for s3server', trim: true)
         string(name: 'S3_BRANCH', defaultValue: 'main', description: 'Branch for S3Server', trim: true)
         string(name: 'S3_TEST_REPO', defaultValue: 'https://github.com/splunk/s3-tests', description: 's3-test splunk repo', trim: true)
         // we are using specific revision of 'https://github.com/splunk/s3-tests' for our tests  - default
         string(name: 'S3_TEST_REPO_REV', defaultValue: '3dc9362b1d322a59bd4e8f207d5a94070502b78b', description: 's3-test repo revision', trim: true)
         choice(name: 'UPLOAD_TEST_CONF', choices: [ "no", 'yes'], description: 'S3 Integration Type')
         choice(name: 'INTEGRATION_TYPE', choices: [ "splunk"], description: 'S3 Integration Type') 
-    }
+	}
 
     environment {
 
         // This config file used for splunk compatibility tests
         S3_TEST_CONF_FILE = "${INTEGRATION_TYPE}_${BUILD_NUMBER}.conf"
     }
-     
-    stages {    
+ 	
+	stages {	
 
         // Clones s3server source code into workspace
         stage ('Checkout') {
@@ -99,7 +97,7 @@ pipeline {
                     }         
                 }
             }
-        }    
+        }	
 
         // If we want to execute test against any prebuild server (eg: aws)
         stage ('Upload Test Config') {
@@ -128,7 +126,7 @@ pipeline {
                     } else {
                         
                         dir('cortx-re') {
-                            checkout changelog: false, poll: false, scm: [$class: 'GitSCM', branches: [[name: "${CORTX_RE_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${CORTX_RE_REPO}"]]]
+                            checkout changelog: false, poll: false, scm: [$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]]
                         }
                                         
                         sh label: 'run compatibility test', script: '''
@@ -198,7 +196,7 @@ pipeline {
                     '''      
                 }
             }
-        }    
+        }	
     }
         
     post {
@@ -221,5 +219,5 @@ pipeline {
                 to: "${mailRecipients}"
             }
         }
-    }    
+    }	
 }
