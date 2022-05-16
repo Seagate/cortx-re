@@ -26,7 +26,7 @@ CEPH_NODES=$(cat "$HOST_FILE" | grep -v "$PRIMARY_NODE" | awk -F[,] '{print $1}'
 
 function usage() {
     cat << HEREDOC
-Usage : $0 [--install-pereq, --install-ceph, --deploy-prereq, --deploy-mon, --deploy-mgr, --deploy-osd, --deploy-mds, --deploy-fs, --deploy-rgw, --status]
+Usage : $0 [--install-pereq, --install-ceph, --deploy-prereq, --deploy-mon, --deploy-mgr, --deploy-osd, --deploy-mds, --deploy-fs, --deploy-rgw, --io-operation, --status]
 where,
     --install-prereq - Install Ceph Dependencies.
     --install-ceph - Install Ceph Packages.
@@ -37,6 +37,7 @@ where,
     --deploy-mds - Deploy Ceph Metadata Service.
     --deploy-fs - Deploy Ceph FS.
     --deploy-rgw - Deploy Ceph Rados Gateway.
+    --io-operation - Perform IO operation.
     --status - Show Ceph Status.
 HEREDOC
 }
@@ -245,12 +246,13 @@ host = $(hostname -s)
 keyring = /var/lib/ceph/mds/ceph-$(hostname -s)/keyring
 EOF
 
-    chmod o+r /var/lib/ceph/mds/ceph-ssc-vm-g4-rhev4-1395/keyring
-    chmod g+r /var/lib/ceph/mds/ceph-ssc-vm-g4-rhev4-1395/keyring
+    chmod o+r /var/lib/ceph/mds/ceph-$(hostname -s)/keyring
+    chmod g+r /var/lib/ceph/mds/ceph-$(hostname -s)/keyring
 
     add_secondary_separator "Start Ceph MDS"
     systemctl start ceph-mds@$(hostname -s)
 
+    sleep 5
     add_secondary_separator "MDS Status"
     ceph mds stat
 
@@ -292,6 +294,9 @@ case $ACTION in
     ;;
     --deploy-rgw)
         deploy_rgw
+    ;;
+    --io-operation
+        io_operation
     ;;
     --status)
         ceph_status

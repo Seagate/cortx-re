@@ -52,8 +52,6 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Install Ceph Packages', script: '''
                     pushd solutions/kubernetes/
-                        echo $hosts | tr ' ' '\n' > hosts
-                        cat hosts
                         bash ceph-deploy.sh --install-ceph
                     popd
                 '''
@@ -65,8 +63,6 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Deploy Ceph Prerequisites', script: '''
                     pushd solutions/kubernetes/
-                        echo $hosts | tr ' ' '\n' > hosts
-                        cat hosts
                         echo $OSD_Disks | tr ' ' '\n' > osd_disks
                         cat osd_disks
                         bash ceph-deploy.sh --deploy-prereq
@@ -80,10 +76,6 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Deploy Ceph Monitor', script: '''
                     pushd solutions/kubernetes/
-                        echo $hosts | tr ' ' '\n' > hosts
-                        cat hosts
-                        echo $OSD_Disks | tr ' ' '\n' > osd_disks
-                        cat osd_disks
                         export OSD_POOL_DEFAULT_SIZE=${OSD_POOL_DEFAULT_SIZE}
                         export OSD_POOL_DEFAULT_MIN_SIZE=${OSD_POOL_DEFAULT_MIN_SIZE}
                         export OSD_POOL_DEFAULT_PG_NUM=${OSD_POOL_DEFAULT_PG_NUM}
@@ -99,14 +91,6 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Deploy Ceph Manager', script: '''
                     pushd solutions/kubernetes/
-                        echo $hosts | tr ' ' '\n' > hosts
-                        cat hosts
-                        echo $OSD_Disks | tr ' ' '\n' > osd_disks
-                        cat osd_disks
-                        export OSD_POOL_DEFAULT_SIZE=${OSD_POOL_DEFAULT_SIZE}
-                        export OSD_POOL_DEFAULT_MIN_SIZE=${OSD_POOL_DEFAULT_MIN_SIZE}
-                        export OSD_POOL_DEFAULT_PG_NUM=${OSD_POOL_DEFAULT_PG_NUM}
-                        export OSD_POOL_DEFAULT_PGP_NUM=${OSD_POOL_DEFAULT_PGP_NUM}
                         bash ceph-deploy.sh --deploy-mgr
                     popd
                 '''
@@ -118,14 +102,6 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Deploy Ceph OSD', script: '''
                     pushd solutions/kubernetes/
-                        echo $hosts | tr ' ' '\n' > hosts
-                        cat hosts
-                        echo $OSD_Disks | tr ' ' '\n' > osd_disks
-                        cat osd_disks
-                        export OSD_POOL_DEFAULT_SIZE=${OSD_POOL_DEFAULT_SIZE}
-                        export OSD_POOL_DEFAULT_MIN_SIZE=${OSD_POOL_DEFAULT_MIN_SIZE}
-                        export OSD_POOL_DEFAULT_PG_NUM=${OSD_POOL_DEFAULT_PG_NUM}
-                        export OSD_POOL_DEFAULT_PGP_NUM=${OSD_POOL_DEFAULT_PGP_NUM}
                         bash ceph-deploy.sh --deploy-osd
                     popd
                 '''
@@ -137,14 +113,6 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Deploy Ceph MDS', script: '''
                     pushd solutions/kubernetes/
-                        echo $hosts | tr ' ' '\n' > hosts
-                        cat hosts
-                        echo $OSD_Disks | tr ' ' '\n' > osd_disks
-                        cat osd_disks
-                        export OSD_POOL_DEFAULT_SIZE=${OSD_POOL_DEFAULT_SIZE}
-                        export OSD_POOL_DEFAULT_MIN_SIZE=${OSD_POOL_DEFAULT_MIN_SIZE}
-                        export OSD_POOL_DEFAULT_PG_NUM=${OSD_POOL_DEFAULT_PG_NUM}
-                        export OSD_POOL_DEFAULT_PGP_NUM=${OSD_POOL_DEFAULT_PGP_NUM}
                         bash ceph-deploy.sh --deploy-mds
                     popd
                 '''
@@ -156,14 +124,6 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Deploy Ceph FS', script: '''
                     pushd solutions/kubernetes/
-                        echo $hosts | tr ' ' '\n' > hosts
-                        cat hosts
-                        echo $OSD_Disks | tr ' ' '\n' > osd_disks
-                        cat osd_disks
-                        export OSD_POOL_DEFAULT_SIZE=${OSD_POOL_DEFAULT_SIZE}
-                        export OSD_POOL_DEFAULT_MIN_SIZE=${OSD_POOL_DEFAULT_MIN_SIZE}
-                        export OSD_POOL_DEFAULT_PG_NUM=${OSD_POOL_DEFAULT_PG_NUM}
-                        export OSD_POOL_DEFAULT_PGP_NUM=${OSD_POOL_DEFAULT_PGP_NUM}
                         bash ceph-deploy.sh --deploy-fs
                     popd
                 '''
@@ -175,15 +135,18 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Deploy Ceph RGW', script: '''
                     pushd solutions/kubernetes/
-                        echo $hosts | tr ' ' '\n' > hosts
-                        cat hosts
-                        echo $OSD_Disks | tr ' ' '\n' > osd_disks
-                        cat osd_disks
-                        export OSD_POOL_DEFAULT_SIZE=${OSD_POOL_DEFAULT_SIZE}
-                        export OSD_POOL_DEFAULT_MIN_SIZE=${OSD_POOL_DEFAULT_MIN_SIZE}
-                        export OSD_POOL_DEFAULT_PG_NUM=${OSD_POOL_DEFAULT_PG_NUM}
-                        export OSD_POOL_DEFAULT_PGP_NUM=${OSD_POOL_DEFAULT_PGP_NUM}
                         bash ceph-deploy.sh --deploy-rgw
+                    popd
+                '''
+            }
+        }
+
+        stage ('IO Operation') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'IO Operation', script: '''
+                    pushd solutions/kubernetes/
+                        bash ceph-deploy.sh --io-operation
                     popd
                 '''
             }
