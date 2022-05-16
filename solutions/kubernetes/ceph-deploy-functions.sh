@@ -179,6 +179,7 @@ function ceph_status() {
     ceph fs ls
     rados lspools
     ceph osd pool ls detail
+    ceph mds stat
 
     add_secondary_separator "Running Ceph Frontend Services"
     ceph mgr services
@@ -260,10 +261,33 @@ EOF
 }
 
 function deploy_fs() {
-    echo "empty"
+    ceph osd pool create cephfs_data 128
+    ceph osd pool create cephfs_metadata 128
+    ceph fs new cephfs cephfs_metadata cephfs_data
+
+    ceph_status
 }
 
 function deploy_rgw() {
+    mkdir -p /var/lib/ceph/radosgw/ceph-rgw.$(hostname -s)
+    ceph auth get-or-create client.rgw.$(hostname -s) osd 'allow rwx' mon 'allow rw' -o /var/lib/ceph/radosgw/ceph-rgw.$(hostname -s)/keyring
+    cat << EOF >> /etc/ceph/ceph.conf
+
+[client.rgw.$(hostname -s)]
+host = $(hostname -s)
+keyring = /var/lib/ceph/radosgw/ceph-rgw.$(hostname -s)/keyring
+log file = /var/log/ceph/ceph-rgw-$(hostname -s).log
+rgw frontends = "beast endpoint=$(hostname -i):9999"
+EOF
+
+    systemctl start ceph-radosgw@rgw.$(hostname -s)
+    systemctl status ceph-radosgw@rgw.$(hostname -s)
+    systemctl enable ceph-radosgw@rgw.$(hostname -s)
+
+    ceph_status
+}
+
+function io_operation() {
     echo "empty"
 }
 
@@ -295,7 +319,7 @@ case $ACTION in
     --deploy-rgw)
         deploy_rgw
     ;;
-    --io-operation
+    --io-operation)
         io_operation
     ;;
     --status)

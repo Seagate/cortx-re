@@ -60,6 +60,7 @@ function install_prereq() {
 
     echo $ALL_NODES > /var/tmp/pdsh-hosts
     pdsh -w ^/var/tmp/pdsh-hosts "/var/tmp/ceph-deploy-functions.sh --install-prereq"
+    check_status
 }
 
 function install_ceph() {
@@ -128,6 +129,11 @@ function deploy_rgw() {
     ssh_primary_node "/var/tmp/ceph-deploy-functions.sh --deploy-rgw"
 }
 
+function io_operation() {
+    add_primary_separator "\tPerform IO Operation"
+    ssh_primary_node "/var/tmp/ceph-deploy-functions.sh --io-operation"
+}
+
 case $ACTION in
     --install-prereq)
         install_prereq
@@ -156,7 +162,7 @@ case $ACTION in
     --deploy-rgw)
         deploy_rgw
     ;;
-    --io-operation
+    --io-operation)
         io_operation
     ;;
     *)
