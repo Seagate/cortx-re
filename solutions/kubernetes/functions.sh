@@ -149,15 +149,15 @@ function scp_ceph_nodes() {
         done
 }
 
-function ssh_primary_node() {
-    ssh -o 'StrictHostKeyChecking=no' "$PRIMARY_NODE" $*
+function ssh_all_nodes() {
+    for nodes in $ALL_NODES
+        do
+            ssh -o 'StrictHostKeyChecking=no' "$nodes" $*
+        done
 }
 
-function ssh_ceph_nodes() {
-    for ceph_nodes in $CEPH_NODES
-        do
-            ssh -o 'StrictHostKeyChecking=no' "$ceph_nodes" $*
-        done
+function ssh_primary_node() {
+    ssh -o 'StrictHostKeyChecking=no' "$PRIMARY_NODE" $*
 }
 
 function setup_awscli() {
