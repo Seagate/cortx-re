@@ -80,7 +80,6 @@ function check_params() {
    echo -e "# SYSTEM_DRIVE               : $SYSTEM_DRIVE                        "
    echo -e "# NAMESPACE                  : $NAMESPACE                           "
    echo -e "#########################################################################"
-
 }
 
 function pdsh_worker_exec() {

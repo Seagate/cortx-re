@@ -18,12 +18,6 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
-######################################################################
-# This script is specific for the reserved HW by RE team.
-# To use on other HW/VM please install docker and change
-# container volume $MOUNT_LOCATION for build os container.
-######################################################################
-
 source functions.sh
 
 BUILD_LOCATION="$2"

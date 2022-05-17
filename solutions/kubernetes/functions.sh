@@ -46,13 +46,13 @@ function validation() {
     if [ ! -f "$HOST_FILE" ]; then
         echo "$HOST_FILE is not present"
         exit 1
-    fi	
+    fi
 
     if [ "$SOLUTION_CONFIG_TYPE" == "manual" ]; then
         if [ ! -f "$SOLUTION_CONFIG" ]; then
             echo "$SOLUTION_CONFIG is not present"
             exit 1
-        fi	
+        fi
     fi
 }
 
@@ -139,6 +139,20 @@ function scp_primary_node() {
     for primary_nodes in $PRIMARY_NODE
         do
             scp -q $* "$primary_nodes":/var/tmp/
+        done
+}
+
+function scp_ceph_nodes() {
+    for ceph_nodes in $CEPH_NODES
+        do
+            scp -q ${@:2} "$ceph_nodes":$1
+        done
+}
+
+function ssh_all_nodes() {
+    for nodes in $ALL_NODES
+        do
+            ssh -o 'StrictHostKeyChecking=no' "$nodes" $*
         done
 }
 
