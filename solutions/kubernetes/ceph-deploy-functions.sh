@@ -222,6 +222,7 @@ function deploy_osd() {
     scp_ceph_nodes "/etc/ceph" "/etc/ceph/ceph.conf"
     scp_ceph_nodes "/var/lib/ceph/bootstrap-osd/" "/var/lib/ceph/bootstrap-osd/ceph.keyring"
     scp_ceph_nodes "/etc/ceph/" "/var/lib/ceph/bootstrap-osd/ceph.keyring"
+    cp /var/lib/ceph/bootstrap-osd/ceph.keyring /etc/ceph
 
     add_secondary_separator "Setup OSD"
     echo "OSD Disks: $(cat $OSD_DISKS)"
@@ -284,8 +285,10 @@ host = $(hostname -s)
 keyring = /var/lib/ceph/radosgw/ceph-rgw.$(hostname -s)/keyring
 log file = /var/log/ceph/ceph-rgw-$(hostname -s).log
 rgw frontends = "beast endpoint=$(hostname -i):9999"
+rgw thread pool size = 512
 EOF
 
+    scp_ceph_nodes "/etc/ceph" "/etc/ceph/ceph.conf"
     sleep 15
     systemctl start ceph-radosgw@rgw.$(hostname -s)
     systemctl status ceph-radosgw@rgw.$(hostname -s)
