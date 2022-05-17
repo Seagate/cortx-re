@@ -30,9 +30,9 @@ function usage() {
     cat << HEREDOC
 Usage : $0 [--install-pereq, --install-ceph, --deploy-prereq, --deploy-mon, --deploy-mgr, --deploy-osd, --deploy-mds, --deploy-fs, --deploy-rgw, --io-operation, --status]
 where,
-    --install-prereq - Install Ceph Dependencies.
+    --install-prereq - Install Ceph Dependencies before installing ceph packages.
     --install-ceph - Install Ceph Packages.
-    --deploy-prereq - Prerquisites before Ceph Deployemnt.
+    --deploy-prereq - Prerquisites before Ceph Deployemnt on cluster nodes required for passwordless ssh to copy ceph configuration and keys.
     --deploy-mon - Deploy Ceph Monitor.
     --deploy-mgr - Deploy Ceph Manager.
     --deploy-osd - Deploy Ceph OSD.
