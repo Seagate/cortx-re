@@ -135,7 +135,8 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Deploy Ceph RGW', script: '''
                     pushd solutions/kubernetes/
-                        bash ceph-deploy.sh --deploy-rgw
+                        #bash ceph-deploy.sh --deploy-rgw
+                        bash ceph-deploy.sh --io-operation
                     popd
                 '''
             }
