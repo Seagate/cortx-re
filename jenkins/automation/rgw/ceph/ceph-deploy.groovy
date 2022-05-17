@@ -1,7 +1,7 @@
 pipeline {
     agent {
         node {
-            label 'docker-centos-7.9-node'
+            label 'docker-rockylinux-8.4-node'
         }
     }
 
