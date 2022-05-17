@@ -22,7 +22,8 @@ source /var/tmp/functions.sh
 source /etc/os-release
 
 HOST_FILE=/var/tmp/hosts
-CEPH_NODES=$(cat "$HOST_FILE" | grep -v "$PRIMARY_NODE" | awk -F[,] '{print $1}' | cut -d'=' -f2) || true
+PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+CEPH_NODES=$(cat "$HOST_FILE" | grep -v "$PRIMARY_NODE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
 
 function usage() {
     cat << HEREDOC
@@ -59,6 +60,9 @@ function install_prereq() {
 
     case "$ID" in
         rocky)
+            systemctl stop firewalld && systemctl disable firewalld && sudo systemctl mask --now firewalld
+            setenforce 0
+            sed -i  -e 's/SELINUX=enforcing/SELINUX=disabled/g' -e 's/SELINUX=enforcing/SELINUX=permissive/g' /etc/sysconfig/selinux
             yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm -y && \
             yum install -y dnf-plugins-core  && \
             yum copr enable -y tchaikov/python-scikit-learn  && \
@@ -219,10 +223,11 @@ function deploy_osd() {
     scp_ceph_nodes "/etc/ceph/" "/var/lib/ceph/bootstrap-osd/ceph.keyring"
 
     add_secondary_separator "Setup OSD"
-    for disks in $(cat "$OSD_DISKS")
-    do
-        ssh_ceph_node "ceph-volume lvm create --data $disks"
-    done
+    echo "OSD Disks: $(cat $OSD_DISKS)"
+    for disks in $(cat $OSD_DISKS)
+        do
+            ssh_ceph_nodes "ceph-volume lvm create --data $disks"
+        done
 
     add_secondary_separator "Ceph OSD status"
     ceph osd tree
