@@ -84,12 +84,10 @@ pushd /mnt && git clone https://github.com/Seagate/cortx --recursive --depth=1
 
 # Checkout main branch for generating CORTX packages
 docker run --rm -v /mnt/cortx:/cortx-workspace ghcr.io/seagate/cortx-build:rockylinux-8.4 make checkout BRANCH=$BRANCH
-pushd /mnt/cortx/cortx-rgw
-git checkout -f b1087c306d5f88d11fcab05244f139e25b02145d
-popd
+
 # Validate CORTX component clone status
 pushd /mnt/cortx/ 
-for component in cortx-motr cortx-hare cortx-rgw-integration cortx-manager cortx-utils cortx-ha
+for component in cortx-motr cortx-hare cortx-rgw-integration cortx-manager cortx-utils cortx-ha cortx-rgw
 do 
 echo -e "\n==[ Checking git branch for $component ]=="
 pushd $component
