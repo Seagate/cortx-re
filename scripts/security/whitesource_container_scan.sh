@@ -18,15 +18,15 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 source /root/cortx-re/solutions/kubernetes/functions.sh
-
+PATH=/root/ws-k8s-agent/helm-chart/values.yaml
 #Download WhiteSource Plugin 
 wget http://cortx-storage.colo.seagate.com/releases/cortx/security/whitesource/ws-k8s-agent.tar && tar -xvf ws-k8s-agent.tar >/dev/null 2>&1
 
 #Updating the configuration file
-sed -Ei 's,(url: ).*,\1"'"$WHITESOURCE_SERVER_URL"'",g' /root/ws-k8s-agent/helm-chart/values.yaml; sed -Ei 's,(apiKey: ).*,\1"'"$API_KEY"'",g' /root/ws-k8s-agent/helm-chart/values.yaml
-sed -Ei 's,(userKey: ).*,\1"'"$USER_KEY"'",g' /root/ws-k8s-agent/helm-chart/values.yaml; sed -Ei "s,(productName: ).*,\1$PRODUCT_NAME,g" /root/ws-k8s-agent/helm-chart/values.yaml
-sed -Ei "s,(registry: ).*,\1$DOCKER_REGISTRY,g" /root/ws-k8s-agent/helm-chart/values.yaml; sed -Ei "s,(mainPod: ).*,\1$MAIN_POD,g" /root/ws-k8s-agent/helm-chart/values.yaml
-sed -Ei "s,(workerPod: ).*,\1$WORKER_POD,g" /root/ws-k8s-agent/helm-chart/values.yaml; sed -Ei 's,(pullSecret: ).*,\1"'"$PULL_SECRET"'",g' /root/ws-k8s-agent/helm-chart/values.yaml
+sed -Ei 's,(url: ).*,\1"'"$WHITESOURCE_SERVER_URL"'",g' $PATH; sed -Ei 's,(apiKey: ).*,\1"'"$API_KEY"'",g' $PATH
+sed -Ei 's,(userKey: ).*,\1"'"$USER_KEY"'",g' $PATH; sed -Ei "s,(productName: ).*,\1$PRODUCT_NAME,g" $PATH
+sed -Ei "s,(registry: ).*,\1$DOCKER_REGISTRY,g" $PATH; sed -Ei "s,(mainPod: ).*,\1$MAIN_POD,g" $PATH
+sed -Ei "s,(workerPod: ).*,\1$WORKER_POD,g" $PATH; sed -Ei 's,(pullSecret: ).*,\1"'"$PULL_SECRET"'",g' $PATH
 
 #print values.yaml
 cat /root/ws-k8s-agent/helm-chart/values.yaml | egrep -iw "url: |apiKey: |userKey: |pullSecret: |productName:|registry:|mainPod:|workerPod:"| head -8
