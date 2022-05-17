@@ -1,8 +1,33 @@
 #!/bin/bash
+#
+# Copyright (c) 2020 Seagate Technology LLC and/or its Affiliates
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# For any questions about this software or licensing,
+# please email opensource@seagate.com or cortx-questions@seagate.com.
+#
 
-usage() { 
-echo "Generate cortx-all docker image from provided CORTX release build"
-echo "Usage: $0 [ -b brunch ] [ -p push docker-image to GHCR yes/no. Default no] [ -t tag latest yes/no. Default no" ] [ -e environment ] [ -h print help message ] 1>&2; exit 1; }
+source /root/cortx-re/solutions/kubernetes/functions.sh
+
+function usage() {
+    cat << HEREDOC
+Usage : $0 [--branch]
+where,
+    --branch - provide spesific branch.
+HEREDOC
+}
+
 while getopts "b:h:" opt; do
     case $opt in
         b ) BRANCH=$OPTARG;;
@@ -13,121 +38,106 @@ while getopts "b:h:" opt; do
     esac
 done
 
-function DockerCheck() {
+
+IP=$(ip route get 8.8.8.8| cut -d' ' -f7)
+DOCKER_VERSION=latest
+
+function docker_check() {
         docker --version >/dev/null 2>&1
         if [ $? -eq 0 ]; then
-                echo "Docker is installed and $(docker --version)."
+                add_common_separator "Installed Docker version: $(docker --version)."
         else
-                echo "Docker not installed"
-                printf "\n################################################################################\n"
-                printf "\tInstalling Docker Engine\n"
-                printf "\n################################################################################\n"
-                yum install -y yum-utils
-                yum-config-manager \
-    --add-repo \
-    https://download.docker.com/linux/centos/docker-ce.repo -y
-                yum install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+                add_common_separator "Docker not installed"
+                add_primary_separator "Installing Docker engine"
+                rm -rf /etc/yum.repos.d/download.docker.com_linux_centos_7_x86_64_stable_.repo docker-ce.repo
+                yum install -y yum-utils; yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo -y; yum install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+                sleep 30
                 systemctl start docker
-                docker --version
-#               exit 1
         fi
 }
-DockerCheck
+docker_check
 
-function DockerComposeCheck() {
+function docker_compose_check() {
         docker-compose --version >/dev/null 2>&1
         if [ $? -eq 0 ]; then
-                echo "Docker-Compose is installed and $(docker-compose --version)."
+                add_common_separator "Installed Docker-Compose version: $(docker-compose --version)."
         else
-                echo "Docker-Compose not installed"
-                printf "\n################################################################################\n"
-                printf "\tInstalling Docker-Compose\n"
-                printf "\n################################################################################\n"
+                add_common_separator "Docker-compose not installed"
+                add_primary_separator "Installing Docker-compose"
                 curl -SL https://github.com/docker/compose/releases/download/v2.5.0/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose
                 chmod +x /usr/local/bin/docker-compose
                 ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
                 docker-compose --version
-#               exit 1
         fi
 }
-DockerComposeCheck
+docker_compose_check
+
+#Install git
+yum install git -y
 
 # Compile and Build CORTX Stack
+docker rmi -f $(docker images | grep -i 'ghcr.io/seagate/cortx-build*')
 docker pull ghcr.io/seagate/cortx-build:rockylinux-8.4
 
 # Clone the CORTX repository
-cd /mnt && git clone https://github.com/Seagate/cortx --recursive --depth=1
+pushd /mnt && git clone https://github.com/Seagate/cortx --recursive --depth=1
 
 # Checkout main branch for generating CORTX packages
 docker run --rm -v /mnt/cortx:/cortx-workspace ghcr.io/seagate/cortx-build:rockylinux-8.4 make checkout BRANCH=$BRANCH
-
+pushd /mnt/cortx/cortx-rgw
+git checkout -f b1087c306d5f88d11fcab05244f139e25b02145d
+popd
 # Validate CORTX component clone status
-cd /mnt/cortx/ 
-for component in cortx-motr cortx-hare cortx-rgw-integration cortx-manager cortx-utils cortx-ha cortx-rgw
+pushd /mnt/cortx/ 
+for component in cortx-motr cortx-hare cortx-rgw-integration cortx-manager cortx-utils cortx-ha
 do 
-echo -e "\n==[ Checking Git Branch for $component ]=="
+echo -e "\n==[ Checking git branch for $component ]=="
 pushd $component
 git status | egrep -iw 'Head|modified|Untracked'
     if [ $? -eq 0 ]; then
-        echo "GIT STATUS PENDING"
+       add_common_separator "Git status pending"
         exit 1
     else    
         popd
     fi    
-done && cd -
+done && pushd -
 
 # Build the CORTX packages
 docker run --rm -v /var/artifacts:/var/artifacts -v /mnt/cortx:/cortx-workspace ghcr.io/seagate/cortx-build:rockylinux-8.4 make clean cortx-all-rockylinux-image
 
-function PacketValidation() {
+function packet_validation() {
         ls -l /var/artifacts/0 | egrep -iw '3rd_party|python_deps'
         if [ $? -eq 0 ]; then
-            echo "Required Packages Are Available"
+            add_common_separator "Required packages are available"
         else
-            echo "Required Packages Are Not Available To Proceed Further"
+            add_common_separator "Required packages are not available to proceed further"
             exit 1
         fi
 }
-PacketValidation
+packet_validation
 
 # Nginx container creation with required configuration
 docker run --name release-packages-server -v /var/artifacts/0/:/usr/share/nginx/html:ro -d -p 80:80 nginx
 
-function NginxValidation() {
+function nginx_validation() {
+        sleep 60
         docker ps | grep -iw 'nginx'
         if [ $? -eq 0 ]; then
-            curl -L http://$(ip route get 8.8.8.8| cut -d' ' -f7)/RELEASE.INFO
+            curl -L http://$IP/RELEASE.INFO
         else
-            docker restart nginx
-            sleep 10
-            docker ps | grep -iw 'nginx'
-                if [ $? -eq 0 ]; then
-                    curl -L http://$(ip route get 8.8.8.8| cut -d' ' -f7)/RELEASE.INFO
-                else
-                    docker run --name release-packages-server -v /var/artifacts/0/:/usr/share/nginx/html:ro -d -p 80:80 nginx
-                    docker ps | grep -iw 'nginx'
-                        if [ $? -eq 0 ]; then
-                            curl -L http://$(ip route get 8.8.8.8| cut -d' ' -f7)/RELEASE.INFO
-                        else
-                            exit 1
-                        fi                
-                fi
-        fi        
+            exit 1
 }
-NginxValidation
-
+nginx_validation
 # clone cortx-re repository & run build.sh
-
-git clone https://github.com/Seagate/cortx-re && cd cortx-re/docker/cortx-deploy/
-./build.sh -b http://$(ip route get 8.8.8.8| cut -d' ' -f7) -o rockylinux-8.4 -s all -e opensource-ci
-#sed -i "/^[[:space:]].*TAG/a\    extra_hosts:\n      - \"$(ip route get 8.8.8.8| cut -d' ' -f7)"\" docker-compose.yml
-#cat docker-compose.yml | egrep -iw "extra_hosts|$(ip route get 8.8.8.8| cut -d' ' -f7)"
-#        if [ $? -eq 0 ]; then
-#            ./build.sh -b http://$(ip route get 8.8.8.8| cut -d' ' -f7) -o rockylinux-8.4 -s all -e opensource-ci
-#        else
-#            sed -i "/^[[:space:]].*TAG/a\    extra_hosts:\n      - \"$(ip route get 8.8.8.8| cut -d' ' -f7)"\" docker-compose.yml
-#            ./build.sh -b http://$(ip route get 8.8.8.8| cut -d' ' -f7) -o rockylinux-8.4 -s all -e opensource-ci
-#        fi
+git clone https://github.com/Seagate/cortx-re && pushd cortx-re/docker/cortx-deploy/
+./build.sh -b http://$IP -o rockylinux-8.4 -s all -e opensource-ci
 
 # Show recently generated cortx-all images
 docker images --format='{{.Repository}}:{{.Tag}} {{.CreatedAt}}' --filter=reference='cortx-*'
+
+# Execution
+#docker_check
+#docker_compose_check
+#packet_validation
+#nginx_validation
+
