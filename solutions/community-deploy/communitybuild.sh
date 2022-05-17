@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (c) 2020 Seagate Technology LLC and/or its Affiliates
+# Copyright (c) 2022 Seagate Technology LLC and/or its Affiliates
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,8 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
-source /root/cortx-re/solutions/kubernetes/functions.sh
+REPO_ROOT=$PWD/../..
+source $REPO_ROOT/solutions/kubernetes/functions.sh
 
 function usage() {
     cat << HEREDOC
