@@ -152,12 +152,6 @@ public network = $(ip -o -f inet addr show | awk '/scope global/ {print $4}' | h
 auth cluster required = cephx
 auth service required = cephx
 auth client required = cephx
-osd journal size = 10000
-osd pool default size = $(echo "$OSD_POOL_DEFAULT_SIZE")
-osd pool default min size = $(echo "$OSD_POOL_DEFAULT_MIN_SIZE")
-osd pool default pg num = $(echo "$OSD_POOL_DEFAULT_PG_NUM")
-osd pool default pgp num = $(echo "$OSD_POOL_DEFAULT_PGP_NUM")
-osd crush chooseleaf type = 1
 mon allow pool delete = true
 EOF
 
@@ -268,8 +262,8 @@ EOF
 }
 
 function deploy_fs() {
-    ceph osd pool create cephfs_data 128
-    ceph osd pool create cephfs_metadata 128
+    ceph osd pool create cephfs_data 1
+    ceph osd pool create cephfs_metadata 1
     ceph fs new cephfs cephfs_metadata cephfs_data
 
     ceph_status
@@ -289,9 +283,7 @@ rgw thread pool size = 512
 EOF
 
     scp_ceph_nodes "/etc/ceph" "/etc/ceph/ceph.conf"
-    sleep 15
     systemctl start ceph-radosgw@rgw.$(hostname -s)
-    systemctl status ceph-radosgw@rgw.$(hostname -s)
     systemctl enable ceph-radosgw@rgw.$(hostname -s)
 
     ceph_status

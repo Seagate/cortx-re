@@ -18,10 +18,6 @@ pipeline {
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
         text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used. First node will be used as Primary node. Please provide a minimum of 3 nodes', name: 'hosts')
         text(defaultValue: '''/dev/sdX''', description: 'Disks for OSD on VMs. This assumes the disk name and no. of disk is same on all nodes', name: 'OSD_Disks')
-        string(name: 'OSD_POOL_DEFAULT_SIZE', defaultValue: '3', description: 'Write an object n times', trim: true)
-        string(name: 'OSD_POOL_DEFAULT_MIN_SIZE', defaultValue: '2', description: 'Accept an I/O operation to a PG that has n copies of an object..', trim: true)
-        string(name: 'OSD_POOL_DEFAULT_PG_NUM', defaultValue: '128', description: 'Default number of placement groups for placement for a pool. Use nearest power of 2', trim: true)
-        string(name: 'OSD_POOL_DEFAULT_PGP_NUM', defaultValue: '128', description: 'Default number of placement groups for placement for a pool. Use nearest power of 2, same as pg num', trim: true)
     }    
 
     stages {
@@ -76,10 +72,6 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Deploy Ceph Monitor', script: '''
                     pushd solutions/kubernetes/
-                        export OSD_POOL_DEFAULT_SIZE=${OSD_POOL_DEFAULT_SIZE}
-                        export OSD_POOL_DEFAULT_MIN_SIZE=${OSD_POOL_DEFAULT_MIN_SIZE}
-                        export OSD_POOL_DEFAULT_PG_NUM=${OSD_POOL_DEFAULT_PG_NUM}
-                        export OSD_POOL_DEFAULT_PGP_NUM=${OSD_POOL_DEFAULT_PGP_NUM}
                         bash ceph-deploy.sh --deploy-mon
                     popd
                 '''

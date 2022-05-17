@@ -85,23 +85,9 @@ function deploy_prereq() {
     ssh_primary_node "export HOST_FILE=/var/tmp/hosts && export SSH_KEY_FILE=$SSH_KEY_FILE && /var/tmp/ceph-deploy-functions.sh --deploy-prereq"
 }
 
-function check_params() {
-    if [ -z "$OSD_POOL_DEFAULT_SIZE" ]; then echo "OSD_POOL_DEFAULT_SIZE not provided. Using default: Seagate/cortx-k8s ";OSD_POOL_DEFAULT_SIZE="Seagate/cortx-k8s"; fi
-    if [ -z "$OSD_POOL_DEFAULT_MIN_SIZE" ]; then echo "OSD_POOL_DEFAULT_MIN_SIZE not provided. Using default: v0.5.0";OSD_POOL_DEFAULT_MIN_SIZE="v0.5.0"; fi
-    if [ -z "$OSD_POOL_DEFAULT_PG_NUM" ]; then echo "OSD_POOL_DEFAULT_PG_NUM not provided. Using default: ghcr.io/seagate/cortx-all:2.0.0-latest"; OSD_POOL_DEFAULT_PG_NUM=ghcr.io/seagate/cortx-all:2.0.0-latest; fi
-    if [ -z "$OSD_POOL_DEFAULT_PGP_NUM" ]; then echo "OSD_POOL_DEFAULT_PGP_NUM not provided. Using default : ghcr.io/seagate/cortx-rgw:2.0.0-latest"; OSD_POOL_DEFAULT_PGP_NUM=ghcr.io/seagate/cortx-rgw:2.0.0-latest; fi
-
-   echo -e "\n\n########################################################################"
-   echo -e "# OSD_POOL_DEFAULT_SIZE         : $OSD_POOL_DEFAULT_SIZE            "
-   echo -e "# OSD_POOL_DEFAULT_MIN_SIZE     : $OSD_POOL_DEFAULT_MIN_SIZE        "
-   echo -e "# OSD_POOL_DEFAULT_PG_NUM       : $OSD_POOL_DEFAULT_PG_NUM          "
-   echo -e "# OSD_POOL_DEFAULT_PGP_NUM      : $OSD_POOL_DEFAULT_PGP_NUM         "
-   echo -e "#########################################################################"
-}
-
 function deploy_mon() {
     add_primary_separator "\tDeploy Ceph Monitor Daemon"
-    ssh_primary_node "export OSD_POOL_DEFAULT_SIZE=$OSD_POOL_DEFAULT_SIZE && export OSD_POOL_DEFAULT_MIN_SIZE=$OSD_POOL_DEFAULT_MIN_SIZE && export OSD_POOL_DEFAULT_PG_NUM=$OSD_POOL_DEFAULT_PG_NUM && export OSD_POOL_DEFAULT_PGP_NUM=$OSD_POOL_DEFAULT_PGP_NUM && /var/tmp/ceph-deploy-functions.sh --deploy-mon"
+    ssh_primary_node "/var/tmp/ceph-deploy-functions.sh --deploy-mon"
 }
 
 function deploy_mgr() {
@@ -142,7 +128,7 @@ case $ACTION in
         install_ceph
     ;;
     --deploy-prereq)
-        deploy_prereq check_params
+        deploy_prereq
     ;;
     --deploy-mon)
         deploy_mon
