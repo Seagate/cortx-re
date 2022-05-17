@@ -30,15 +30,15 @@ function usage() {
     cat << HEREDOC
 Usage : $0 [--install-pereq, --install-ceph, --deploy-prereq, --deploy-mon, --deploy-mgr, --deploy-osd, --deploy-mds, --deploy-fs, --deploy-rgw, --io-operation]
 where,
-    --install-prereq - Install Ceph Dependencies.
+    --install-prereq - Install Ceph Dependencies before installing ceph packages.
     --install-ceph - Install Ceph Packages.
-    --deploy-prereq - Prerquisites before Ceph Deployemnt.
-    --deploy-mon - Deploy Ceph Monitor.
-    --deploy-mgr - Deploy Ceph Manager.
-    --deploy-osd - Deploy Ceph OSD.
-    --deploy-mds - Deploy Ceph Metadata Service.
-    --deploy-fs - Deploy Ceph FS.
-    --deploy-rgw - Deploy Ceph Rados Gateway.
+    --deploy-prereq - Prerquisites before Ceph Deployemnt on cluster nodes required for passwordless ssh to copy ceph configuration and keys.
+    --deploy-mon - Deploy Ceph Monitor daemon on primary node.
+    --deploy-mgr - Deploy Ceph Manager daemon on primary node.
+    --deploy-osd - Deploy Ceph OSD daemon on all nodes.
+    --deploy-mds - Deploy Ceph Metadata Service daemon on primary node.
+    --deploy-fs - Deploy Ceph FS daemon on primary node.
+    --deploy-rgw - Deploy Ceph Rados Gateway daemon on primary node.
     --io-operation - Perform IO operation.
 HEREDOC
 }
