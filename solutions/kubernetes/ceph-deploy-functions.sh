@@ -158,9 +158,9 @@ EOF
 
     add_secondary_separator "Start Ceph Monitor"
     systemctl start ceph-mon@$(hostname -s)
-    sleep 5
+    sleep 10
     ceph mon enable-msgr2
-    sleep 5
+    sleep 10
 }
 
 function ceph_status() {
@@ -208,7 +208,7 @@ function deploy_mgr() {
     ceph auth get-or-create mgr.foo mon 'allow profile mgr' osd 'allow *' mds 'allow *' > /var/lib/ceph/mgr/ceph-foo/keyring
     ceph-mgr -i foo
 
-    sleep 10
+    sleep 30
     deploy_dashboard
 }
 
@@ -253,7 +253,7 @@ EOF
     add_secondary_separator "Start Ceph MDS"
     systemctl start ceph-mds@$(hostname -s)
 
-    sleep 5
+    sleep 10
     add_secondary_separator "MDS Status"
     ceph mds stat
 
