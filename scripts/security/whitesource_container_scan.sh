@@ -25,15 +25,14 @@ wget http://cortx-storage.colo.seagate.com/releases/cortx/security/whitesource/w
 
 function default_parameter() {
     if [ -z "$WHITESOURCE_SERVER_URL" ]; then echo "WHITESOURCE_SERVER_URL not provided. Using default: https://saas.whitesourcesoftware.com ";WHITESOURCE_SERVER_URL=https://saas.whitesourcesoftware.com; fi
-    if [ -z "$USER_KEY" ]; then echo "USER_KEY not provided. Using default: 9b7231edebf249e6a0fee2c7d03a0e9fbead7e1ec81d463f9fa0fa988de6a07a";USER_KEY=9b7231edebf249e6a0fee2c7d03a0e9fbead7e1ec81d463f9fa0fa988de6a07a; fi
+    if [ -z "$USER_KEY" ]; then echo "USER_KEY not provided. Exiting script"; exit 1; fi
     if [ -z "$DOCKER_REGISTRY" ]; then echo "DOCKER_REGISTRY not provided. Using default: ghcr.io/seagate"; DOCKER_REGISTRY=ghcr.io/seagate; fi
 echo -e "\n\n########################################################################"
    echo -e "# WHITESOURCE_SERVER_URL     : $WHITESOURCE_SERVER_URL              "
-   echo -e "# USER_KEY                   : $USER_KEY                            "
    echo -e "# DOCKER_REGISTRY            : $DOCKER_REGISTRY                     "
    echo -e "#########################################################################"
-
 }
+default_parameter
 #Updating the configuration file
 sed -Ei 's,(url: ).*,\1"'"$WHITESOURCE_SERVER_URL"'",g' $AGENT_TAR_LOCATION; sed -Ei 's,(apiKey: ).*,\1"'"$API_KEY"'",g' $AGENT_TAR_LOCATION
 sed -Ei 's,(userKey: ).*,\1"'"$USER_KEY"'",g' $AGENT_TAR_LOCATION; sed -Ei "s,(productName: ).*,\1$PRODUCT_NAME,g" $AGENT_TAR_LOCATION
@@ -57,6 +56,3 @@ pushd ws-k8s-agent
 #Kubectl get pods -n whitesource-namespace
 
 add_common_separator "Run helm install whitesource-k8s ./helm-chart –wait to setup whiteSource Containers & trigger the Scan"
-
-#Execution
-default_parameter
