@@ -56,10 +56,10 @@ function install_prereq() {
     nodes_setup
 
     add_primary_separator "\tInstall dependencies for Ceph"
-    scp_all_nodes functions.sh ceph-deploy-functions.sh
+    scp_all_nodes functions.sh ceph-deploy-functions.sh hosts
 
     echo $ALL_NODES > /var/tmp/pdsh-hosts
-    pdsh -w ^/var/tmp/pdsh-hosts "/var/tmp/ceph-deploy-functions.sh --install-prereq"
+    pdsh -S -w ^/var/tmp/pdsh-hosts "/var/tmp/ceph-deploy-functions.sh --install-prereq"
     check_status
 }
 
