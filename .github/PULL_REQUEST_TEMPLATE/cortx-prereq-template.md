@@ -6,7 +6,7 @@ Package Name  |
 Version | 
 license |
 Source  | 
-
+Component Team |
 
 ### Please add below details about package
 
@@ -18,4 +18,6 @@ Source  |
 * [ ] Who will be supporting this package ?
 * [ ] Is there a configuration required for this? Who will be configuring it ?
 * [ ] Which component is responsible for deploying on nodes ?
-* [ ] What is the licensing policy ? Is it approved by legal ? 
+* [ ] What is the licensing policy ? Is it approved by legal ?
+* [ ] Are we modifying the software or just using it as-is?
+* [ ] How are we interfacing with this software? (e.g. command-line, static link, python import, dynamic link, etc)
