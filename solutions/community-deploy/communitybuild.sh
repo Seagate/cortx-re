@@ -73,7 +73,7 @@ function docker_compose_check() {
 }
 docker_compose_check
 
-#Installing git
+#Instal git
 yum install git -y
 
 # Compile and Build CORTX Stack
