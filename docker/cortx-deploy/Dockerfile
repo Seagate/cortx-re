@@ -29,14 +29,16 @@ ARG OS_RELEASE
 ARG CORTX_IMAGE
 ARG ENVIRONMENT
 ARG GIT_HASH
+ARG CORTX_VERSION
 ARG BUILD_URL
 ARG CREATED_DATE
 ARG VERSION
 
 LABEL maintainer="cortx.opensource@seagate.com" \
-      org.opencontainers.image.title="CORTX ALL" \
+      org.opencontainers.image.title="$CORTX_IMAGE" \
       org.opencontainers.image.description="CORTX is 100% Open Source, Distributed object storage system designed for great efficiency, Massive capacity, and High HDD-utilization" \
       org.opencontainers.image.revision=$GIT_HASH \
+      org.opencontainers.image.version=$CORTX_VERSION \ 
       org.opencontainers.image.created=$CREATED_DATE
 
 ENV GIT_HASH $GIT_HASH
