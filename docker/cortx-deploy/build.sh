@@ -39,7 +39,6 @@ IMAGE_LIST=( "cortx-all" "cortx-rgw" "cortx-data" "cortx-control" )
 while getopts "b:p:t:r:e:o:s:h:" opt; do
     case $opt in
         b ) BUILD=$OPTARG;;
-
         p ) DOCKER_PUSH=$OPTARG;;
         t ) TAG_LATEST=$OPTARG;;
         e ) ENVIRONMENT=$OPTARG;;
