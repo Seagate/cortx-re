@@ -26,22 +26,24 @@ services:
       context: ./
       dockerfile: ./Dockerfile
       args:
-       OS_TYPE: centos
-       OS_RELEASE: 7.9.2009
-       OS: centos-7.9.2009
+       OS_TYPE: rockylinux
+       OS_RELEASE: 8.4
+       OS: rockylinux-8.4
+       CORTX_IMAGE: cortx-all
        ENVIRONMENT: internal-ci
        CREATED_DATE: $CREATED_DATE
-       BUILD_URL: http://cortx-storage.colo.seagate.com/releases/cortx/github/main/centos-7.9.2009/last_successful_prod/
+       BUILD_URL: http://cortx-storage.colo.seagate.com/releases/cortx/github/main/rockylinux-8.4/last_successful_prod/
 
   cortx-rgw:
     image: cortx-rgw:$TAG
     build:
       context: ./
-      dockerfile: ./cortx-rgw/Dockerfile
+      dockerfile: ./Dockerfile
       args:
        OS_TYPE: rockylinux
        OS_RELEASE: 8.4
        OS: rockylinux-8.4
+       CORTX_IMAGE: cortx-rgw
        ENVIRONMENT: internal-ci
        CREATED_DATE: $CREATED_DATE
        BUILD_URL: http://cortx-storage.colo.seagate.com/releases/cortx/github/main/rockylinux-8.4/last_successful_prod/
@@ -49,11 +51,12 @@ services:
     image: cortx-data:$TAG
     build:
       context: ./
-      dockerfile: ./cortx-data/Dockerfile
+      dockerfile: ./Dockerfile
       args:
         OS_TYPE: rockylinux
         OS_RELEASE: 8.4
         OS: rockylinux-8.4
+        CORTX_IMAGE: cortx-data
         ENVIRONMENT: internal-ci
         CREATED_DATE: $CREATED_DATE
         BUILD_URL: http://cortx-storage.colo.seagate.com/releases/cortx/github/main/rockylinux-8.4/last_successful_prod/
@@ -61,11 +64,12 @@ services:
     image: cortx-control:$TAG
     build:
       context: ./
-      dockerfile: ./cortx-control/Dockerfile
+      dockerfile: ./Dockerfile
       args:
         OS_TYPE: rockylinux
         OS_RELEASE: 8.4
         OS: rockylinux-8.4
+        CORTX_IMAGE: cortx-control
         ENVIRONMENT: internal-ci
         CREATED_DATE: $CREATED_DATE
         BUILD_URL: http://cortx-storage.colo.seagate.com/releases/cortx/github/main/rockylinux-8.4/last_successful_prod/           
