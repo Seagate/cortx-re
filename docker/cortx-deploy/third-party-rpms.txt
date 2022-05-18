@@ -1,0 +1,29 @@
+isa-l                           #cortx-motr
+libfabric-1.11.2                #cortx-motr
+libfabric-devel-1.11.2          #cortx-motr
+file                            #cortx-motr
+less                            #cortx-motr
+which                           #cortx-motr
+######################################################
+consul-1.11.4                   #cortx-hare
+jq                              #cortx-hare
+######################################################
+gperftools-libs                 #cortx-rgw-integration
+libicu                          #cortx-rgw-integration
+liboath                         #cortx-rgw-integration
+librabbitmq                     #cortx-rgw-integration
+librdmacm                       #cortx-rgw-integration
+libunwind                       #cortx-rgw-integration
+mailcap                         #cortx-rgw-integration
+nvme-cli                        #cortx-rgw-integration
+psmisc                          #cortx-rgw-integration
+smartmontools                   #cortx-rgw-integration
+######################################################
+crontabs                        #cortx-py-utils
+sshpass                         #cortx-py-utils
+sudo                            #cortx-py-utils
+python36                        #cortx-py-utils
+python3-dbus                    #cortx-py-utils
+python3-ldap                    #cortx-py-utils
+python3-psutil                  #cortx-py-utils
+logrotate                       #cortx-py-utils
