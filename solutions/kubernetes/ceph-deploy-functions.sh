@@ -290,7 +290,16 @@ EOF
 }
 
 function io_operation() {
-    echo "empty"
+    add_secondary_separator "Add RADOS-GW User"
+    radosgw-admin user create --uid=io-test --display-name="io-ops"
+
+    add_secondary_separator "Setup Dashboard RADOS User"
+    ceph dashboard set-rgw-credentials
+
+    pushd /var/tmp/
+        ./io-sanity.sh
+    popd
+
 }
 
 case $ACTION in

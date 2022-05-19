@@ -25,6 +25,7 @@ OSD_DISKS=$PWD/osd_disks
 SSH_KEY_FILE=/root/.ssh/id_rsa
 ALL_NODES=$(cat "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
 PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+CEPH_DEPLOYMENT="True"
 
 function usage() {
     cat << HEREDOC
@@ -79,7 +80,7 @@ function deploy_prereq() {
     fi
 
     add_secondary_separator "Copy scripts and files to primary ceph monitor node"
-    scp_primary_node functions.sh ceph-deploy-functions.sh osd_disks hosts
+    scp_primary_node functions.sh ceph-deploy-functions.sh io-sanity.sh osd_disks hosts
 
     add_secondary_separator "Setup passwordless ssh on deployment nodes"
     ssh_primary_node "export HOST_FILE=/var/tmp/hosts && export SSH_KEY_FILE=$SSH_KEY_FILE && /var/tmp/ceph-deploy-functions.sh --deploy-prereq"
@@ -117,7 +118,7 @@ function deploy_rgw() {
 
 function io_operation() {
     add_primary_separator "\tPerform IO Operation"
-    ssh_primary_node "/var/tmp/ceph-deploy-functions.sh --io-operation"
+    ssh_primary_node "export CEPH_DEPLOYMENT=$CEPH_DEPLOYMENT && /var/tmp/ceph-deploy-functions.sh --io-operation"
 }
 
 case $ACTION in
