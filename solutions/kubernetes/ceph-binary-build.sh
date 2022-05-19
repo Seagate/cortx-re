@@ -19,8 +19,10 @@
 #
 
 source functions.sh
+source /etc/os-release
 
 BUILD_LOCATION="$2"
+mount="cortx-storage.colo.seagate.com:/mnt/data1/releases/ceph"
 
 function usage() {
     cat << HEREDOC
@@ -112,7 +114,6 @@ function prvsn_env() {
 function ceph_build() {
     add_primary_separator "\t\tStart Ceph Build"
 
-    source /etc/os-release
     case "$ID" in
         ubuntu)
             add_primary_separator "Building Ubuntu ceph binary packages"
@@ -225,6 +226,63 @@ function ceph_build() {
     esac
 }
 
+function upload_packcages() {
+    add_primary_separator "Uploading Binary Packages to CORTX-Storage"
+    mkdir -p $build_upload_dir
+
+    add_secondary_separator "Check CORTX-Storage Mountpoint"
+    grep -qs "$mount" /proc/mounts;
+    if grep -qs "$mount" /proc/mounts; then
+        echo "cortx-storage.colo.seagate.com:/mnt/data1/releases/ceph is mounted."
+    else
+        echo "cortx-storage.colo.seagate.com:/mnt/data1/releases/ceph is not mounted."
+        sudo mount -t nfs4 "$mount" $build_upload_dir
+        check_status
+    fi
+
+    add_secondary_separator "Upload Binary Packages to CORTX-Storage"
+    pushd $build_upload_dir
+        mkdir -p $BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER
+    popd
+
+    case "$ID" in
+        ubuntu)
+            pushd $BUILD_LOCATION/
+                cp -r *.deb $build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER
+                check_status
+            popd
+
+            add_secondary_separator "List files after upload"
+            pushd $build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER
+                ls -la *.deb
+            popd
+
+        ;;
+        centos)
+            pushd $BUILD_LOCATION/rpmbuild
+                cp -r RPMS $build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER
+                check_status
+            popd
+
+            add_secondary_separator "List files after upload"
+            pushd $build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER
+                ls -la *
+            popd
+        ;;
+        rocky)
+            pushd $BUILD_LOCATION/rpmbuild
+                cp -r RPMS $build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER
+                check_status
+            popd
+
+            add_secondary_separator "List files after upload"
+            pushd $build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER
+                ls -la *
+            popd
+        ;;
+    esac
+}
+
 case $ACTION in
     --ceph-build)
         check_params
@@ -238,6 +296,9 @@ case $ACTION in
     ;;
     --env-build)
         ceph_build
+    ;;
+    --upload-packages)
+        upload_packcages
     ;;
     *)
         echo "ERROR : Please provide a valid option"

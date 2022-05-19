@@ -13,6 +13,11 @@ pipeline {
         disableConcurrentBuilds()   
     }
 
+    environment {
+        component="ceph"
+        build_upload_dir="/mnt/bigstorage/releases/ceph"        
+    }
+
     parameters {
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
@@ -45,6 +50,19 @@ pipeline {
                         export BUILD_OS=${BUILD_OS}
                         bash ceph-binary-build.sh --ceph-build-env /var/log/ceph-build
                     popd
+                '''
+            }
+        }
+
+        stage ('Upload RPMS') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'Upload RPMS', script: '''
+                pushd solutions/kubernetes/
+                    export CEPH_BRANCH=${CEPH_BRANCH}
+                    export BUILD_OS=${BUILD_OS}
+                    bash ceph-binary-build.sh --upload-packages /var/log/ceph-build
+                popd
                 '''
             }
         }
