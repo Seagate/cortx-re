@@ -165,7 +165,7 @@ pipeline {
                         env.failcount = qaSanity.buildVariables.failcount
                         env.skipcount = qaSanity.buildVariables.skipcount
                         env.todocount = qaSanity.buildVariables.todocount
-
+                        env.abortcount = qaSanity.buildVariables.abortcount
                     }
                     copyArtifacts filter: 'log/*report.xml', fingerprintArtifacts: true, flatten: true, optional: true, projectName: 'QA-Sanity-Multinode-RGW', selector: lastCompleted(), target: 'log/'
                     copyArtifacts filter: 'log/*report.html', fingerprintArtifacts: true, flatten: true, optional: true, projectName: 'QA-Sanity-Multinode-RGW', selector: lastCompleted(), target: 'log/'
