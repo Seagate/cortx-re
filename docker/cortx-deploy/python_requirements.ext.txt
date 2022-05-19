@@ -1,14 +1,13 @@
-#Python packages transitional dependencies
-
+# Python packages transitional dependencies
 # depdendencies of cryptography 
-cffi==1.14.5
+cffi==1.14.5                #cortx-py-utils
 # depdendencies of python==3.6
-numpy==1.19.5
+numpy==1.19.5               #cortx-py-utils
 # dependency of cifi
-pycparser==2.20
+pycparser==2.20             #cortx-py-utils
 # dependency of aiohttp
-aiosignal==1.2.0
-async-timeout==4.0.2
-asynctest==0.13.0
-charset-normalizer==2.0.12
-frozenlist==1.2.0
+aiosignal==1.2.0            #cortx-py-utils
+async-timeout==4.0.2        #cortx-py-utils
+asynctest==0.13.0           #cortx-py-utils
+charset-normalizer==2.0.12  #cortx-py-utils
+frozenlist==1.2.0           #cortx-py-utils
