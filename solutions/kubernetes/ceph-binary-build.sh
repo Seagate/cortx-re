@@ -227,8 +227,8 @@ function ceph_build() {
 }
 
 function upload_packcages() {
-    add_primary_separator "Uploading Binary Packages to CORTX-Storage"
-    mkdir -p $build_upload_dir
+    add_primary_separator "Upload Binary Packages to CORTX-Storage"
+    mkdir -p "$build_upload_dir"
 
     add_secondary_separator "Check CORTX-Storage Mountpoint"
     grep -qs "$mount" /proc/mounts;
@@ -236,51 +236,89 @@ function upload_packcages() {
         echo "cortx-storage.colo.seagate.com:/mnt/data1/releases/ceph is mounted."
     else
         echo "cortx-storage.colo.seagate.com:/mnt/data1/releases/ceph is not mounted."
-        sudo mount -t nfs4 "$mount" $build_upload_dir
+        sudo mount -t nfs4 "$mount" "$build_upload_dir"
         check_status
     fi
 
-    add_secondary_separator "Upload Binary Packages to CORTX-Storage"
-    pushd $build_upload_dir
-        mkdir -p $BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER
+    add_secondary_separator "Uploading Binary Packages to CORTX-Storage"
+    pushd "$build_upload_dir"
+        mkdir -p "$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
     popd
 
     case "$ID" in
         ubuntu)
-            pushd $BUILD_LOCATION/
-                cp -r *.deb $build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER
+            pushd "$BUILD_LOCATION"
+                cp -r *.deb "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
                 check_status
             popd
 
             add_secondary_separator "List files after upload"
-            pushd $build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER
+            pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
                 ls -la *.deb
             popd
 
+            add_secondary_separator "Create Repo"
+            pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
+                apt-get install -y dpkg-dev
+                dpkg-scanpackages . /dev/null | gzip -9c > Packages.gz
+            popd
+
+            add_secondary_separator "Tag Last Successful"
+            pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH"
+                test -d last_successful && unlink last_successful
+                ln -s "$BUILD_NUMBER" last_successful
+            popd
         ;;
         centos)
-            pushd $BUILD_LOCATION/rpmbuild
-                cp -r RPMS $build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER
+            pushd "$BUILD_LOCATION/rpmbuild"
+                cp -r RPMS/*/*.rpm "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
                 check_status
             popd
 
             add_secondary_separator "List files after upload"
-            pushd $build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER
+            pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
                 ls -la *
             popd
+
+            add_secondary_separator "Create Repo"
+            pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
+                rpm -qi createrepo || yum install -y createrepo
+                createrepo .
+            popd
+
+            add_secondary_separator "Tag Last Successful"
+            pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH"
+                test -d last_successful && unlink last_successful
+                ln -s "$BUILD_NUMBER" last_successful
+            popd
+
         ;;
         rocky)
-            pushd $BUILD_LOCATION/rpmbuild
-                cp -r RPMS $build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER
+            pushd "$BUILD_LOCATION/rpmbuild"
+                cp -r RPMS*/*.rpm "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
                 check_status
             popd
 
             add_secondary_separator "List files after upload"
-            pushd $build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER
+            pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
                 ls -la *
+            popd
+            
+            add_secondary_separator "Create Repo"
+            pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
+                rpm -qi createrepo || yum install -y createrepo
+                createrepo .
+            popd
+
+            add_secondary_separator "Tag Last Successful"
+            pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH"
+                test -d last_successful && unlink last_successful
+                ln -s "$BUILD_NUMBER" last_successful
             popd
         ;;
     esac
+
+    add
 }
 
 case $ACTION in

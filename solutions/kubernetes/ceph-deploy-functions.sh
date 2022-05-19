@@ -90,7 +90,7 @@ function install_prereq() {
         ubuntu)
             pushd /root/RPMS # subject to change until binaries are fetched from a central repo
                 dpkg -i *.deb     # this command will throw errors which is expected as it collects required dependencies for the installation
-                apt-get -f install -y
+                apt-get -f install -y # this command will install all the required dependencies and ceph packages
             popd
         ;;
     esac

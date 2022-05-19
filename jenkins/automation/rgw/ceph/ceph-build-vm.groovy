@@ -15,7 +15,7 @@ pipeline {
 
     environment {
         component="ceph"
-        build_upload_dir="/mnt/bigstorage/releases/ceph"        
+        build_upload_dir="/mnt/bigstorage/releases/ceph/ceph"
     }
 
     parameters {
