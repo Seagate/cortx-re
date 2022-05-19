@@ -24,7 +24,7 @@ source /var/tmp/functions.sh
 
 SYSTEM_DRIVE_MOUNT="/mnt/fs-local-volume"
 SCRIPT_LOCATION="/root/deploy-scripts"
-YQ_VERSION=v4.13.3
+YQ_VERSION=v4.25.1
 YQ_BINARY=yq_linux_386
 SOLUTION_CONFIG="/var/tmp/solution.yaml"
 
@@ -70,6 +70,7 @@ function download_deploy_script() {
 # Install yq 4.13.3
 
 function install_yq() {
+    add_secondary_separator "Installing yq-$YQ_VERSION"
     pip3 show yq && pip3 uninstall yq -y
     wget https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${YQ_BINARY}.tar.gz -O - | tar xz && mv ${YQ_BINARY} /usr/bin/yq
     if [ -f /usr/local/bin/yq ]; then rm -rf /usr/local/bin/yq; fi    
@@ -275,6 +276,7 @@ function setup_worker_node() {
     cleanup
     #Third-party images are downloaded from GitHub container registry.
     download_deploy_script
+    install_yq
     execute_prereq
 }
 
