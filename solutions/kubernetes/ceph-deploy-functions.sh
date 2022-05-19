@@ -88,10 +88,10 @@ function install_prereq() {
             rpm -ivh http://mirror.centos.org/centos/8-stream/HighAvailability/x86_64/os/Packages/resource-agents-4.1.1-97.el8.x86_64.rpm
         ;;
         ubuntu)
-            pushd /root/RPMS # subject to change until binaries are fetched from a central repo
-                dpkg -i *.deb     # this command will throw errors which is expected as it collects required dependencies for the installation
-                apt-get -f install -y # this command will install all the required dependencies and ceph packages
-            popd
+            echo "deb http://cortx-storage.colo.seagate.com/releases/ceph/ceph/Ubuntu-20.04/quincy/last_successful/"
+            apt update
+            dpkg -i *.deb     # this command will throw errors which is expected as it collects required dependencies for the installation
+            apt-get -f install -y # this command will install all the required dependencies and ceph packages
         ;;
     esac
 }
@@ -101,16 +101,44 @@ function install_ceph() {
 
     case "$ID" in
         rocky)
-            pushd /root/RPMS # subject to change until binaries are fetched from a central repo
-                mv noarch/*.rpm . && mv x86_64/*.rpm . && rmdir noarch/ x86_64/
-                rpm -ivh *.rpm
-            popd
+            cat << EOF > /etc/yum.repos.d/ceph.repo
+[Ceph]
+name=Ceph Packages
+# baseurl=http://cortx-storage.colo.seagate.com/releases/ceph/ceph/RockyLinux-8.4/quincy/last_successful/
+gpgcheck=0
+enabled=1
+EOF
+            yum repolist
+            yum install cephadm cephfs-top ceph-grafana-dashboards ceph-mgr-cephadm ceph-mgr-dashboard ceph-mgr-diskprediction-local ceph-mgr-k8sevents ceph-mgr-modules-core \
+            ceph-mgr-rookceph-prometheus-alerts ceph-resource-agents ceph-volume ceph ceph-base ceph-base-debuginfo ceph-common ceph-common-debuginfo \
+            ceph-debuginfo ceph-debugsource cephfs-mirror cephfs-mirror-debuginfo ceph-fuse ceph-fuse-debuginfo ceph-immutable-object-cache \
+            ceph-immutable-object-cache-debuginfo ceph-mds ceph-mds-debuginfo ceph-mgr ceph-mgr-debuginfo ceph-mon ceph-mon-debuginfo \
+            ceph-osd ceph-osd-debuginfo ceph-radosgw ceph-radosgw-debuginfo ceph-selinux ceph-test ceph-test-debuginfo libcephfs2 \
+            libcephfs2-debuginfo libcephfs-devel libcephsqlite libcephsqlite-debuginfo libcephsqlite-devel librados2 librados2-debuginfo \
+            librados-devel librados-devel-debuginfo libradospp-devel libradosstriper1 libradosstriper1-debuginfo libradosstriper-devel librbd1 librbd1-debuginfo \
+            librbd-devel librgw2 librgw2-debuginfo librgw-devel python3-ceph-argparse python3-ceph-common python3-cephfs python3-cephfs-debuginfo \
+            python3-rados python3-rados-debuginfo python3-rbd python3-rbd-debuginfo python3-rgw python3-rgw-debuginfo rados-objclass-devel rbd-fuse \
+            rbd-fuse-debuginfo rbd-mirror rbd-mirror-debuginfo rbd-nbd rbd-nbd-debuginfo
         ;;
         centos)
-            pushd /root/RPMS # subject to change until binaries are fetched from a central repo
-                mv noarch/*.rpm . && mv x86_64/*.rpm . && rmdir noarch/ x86_64/
-                rpm -ivh *.rpm
-            popd
+            cat << EOF > /etc/yum.repos.d/ceph.repo
+[Ceph]
+name=Ceph Packages
+# baseurl=http://cortx-storage.colo.seagate.com/releases/ceph/ceph/CentOS-8/quincy/last_successful/
+gpgcheck=0
+enabled=1
+EOF
+            yum repolist
+            yum install cephadm cephfs-top ceph-grafana-dashboards ceph-mgr-cephadm ceph-mgr-dashboard ceph-mgr-diskprediction-local ceph-mgr-k8sevents ceph-mgr-modules-core \
+            ceph-mgr-rookceph-prometheus-alerts ceph-resource-agents ceph-volume ceph ceph-base ceph-base-debuginfo ceph-common ceph-common-debuginfo \
+            ceph-debuginfo ceph-debugsource cephfs-mirror cephfs-mirror-debuginfo ceph-fuse ceph-fuse-debuginfo ceph-immutable-object-cache \
+            ceph-immutable-object-cache-debuginfo ceph-mds ceph-mds-debuginfo ceph-mgr ceph-mgr-debuginfo ceph-mon ceph-mon-debuginfo \
+            ceph-osd ceph-osd-debuginfo ceph-radosgw ceph-radosgw-debuginfo ceph-selinux ceph-test ceph-test-debuginfo libcephfs2 \
+            libcephfs2-debuginfo libcephfs-devel libcephsqlite libcephsqlite-debuginfo libcephsqlite-devel librados2 librados2-debuginfo \
+            librados-devel librados-devel-debuginfo libradospp-devel libradosstriper1 libradosstriper1-debuginfo libradosstriper-devel librbd1 librbd1-debuginfo \
+            librbd-devel librgw2 librgw2-debuginfo librgw-devel python3-ceph-argparse python3-ceph-common python3-cephfs python3-cephfs-debuginfo \
+            python3-rados python3-rados-debuginfo python3-rbd python3-rbd-debuginfo python3-rgw python3-rgw-debuginfo rados-objclass-devel rbd-fuse \
+            rbd-fuse-debuginfo rbd-mirror rbd-mirror-debuginfo rbd-nbd rbd-nbd-debuginfo
         ;;
         ubuntu)
             echo "All pacakges are installed in install_prereq step only."

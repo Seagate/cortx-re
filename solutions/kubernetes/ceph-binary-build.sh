@@ -85,21 +85,21 @@ function prvsn_env() {
         ./get-docker.sh
     fi
 
-    if [[ "$BUILD_OS" == "Ubuntu" ]]; then
+    if [[ "$BUILD_OS" == "Ubuntu-20.04" ]]; then
         if [[ $(docker images --format "{{.Repository}}:{{.Tag}}" --filter reference=ubuntu:20.04) != "ubuntu:20.04" ]]; then
             docker pull ubuntu:20.04
         fi
         add_secondary_separator "Run Ubuntu 20.04 container and run build script"
         docker run --rm -t -e CEPH_REPO=$CEPH_REPO -e CEPH_BRANCH=$CEPH_BRANCH -e BUILD_LOCATION="/home" --name ceph_ubuntu -v "$BUILD_LOCATION/$BUILD_OS":/home --entrypoint /bin/bash ubuntu:20.04 -c "pushd /home && ./build.sh --env-build && popd"
 
-    elif [[ "$BUILD_OS" == "CentOS" ]]; then
+    elif [[ "$BUILD_OS" == "CentOS-8" ]]; then
         if [[ $(docker images --format "{{.Repository}}:{{.Tag}}" --filter reference=centos:8) != "centos:8" ]]; then
             docker pull centos:8
         fi
         add_secondary_separator "Run CentOS 8 container and run build script"
         docker run --rm -t -e CEPH_REPO=$CEPH_REPO -e CEPH_BRANCH=$CEPH_BRANCH  -e BUILD_LOCATION="/home" --name ceph_centos -v "$BUILD_LOCATION/$BUILD_OS":/home --entrypoint /bin/bash centos:8 -c "pushd /home && ./build.sh --env-build && popd"
 
-    elif [[ "$BUILD_OS" == "Rocky Linux" ]]; then
+    elif [[ "$BUILD_OS" == "RockyLinux-8.4" ]]; then
         if [[ $(docker images --format "{{.Repository}}:{{.Tag}}" --filter reference=rockylinux:8) != "rockylinux:8" ]]; then
             docker pull rockylinux:8
         fi
@@ -107,7 +107,8 @@ function prvsn_env() {
         docker run --rm -t -e CEPH_REPO=$CEPH_REPO -e CEPH_BRANCH=$CEPH_BRANCH  -e BUILD_LOCATION="/home" --name ceph_rockylinux -v "$BUILD_LOCATION/$BUILD_OS":/home --entrypoint /bin/bash rockylinux:8 -c "pushd /home && ./build.sh --env-build && popd"
 
     else
-        add_secondary_separator "Failed to build ceph, please check logs"
+        add_secondary_separator "Failed to build ceph, please container image not present."
+        exit 1
     fi
 }
 
@@ -226,7 +227,7 @@ function ceph_build() {
     esac
 }
 
-function upload_packcages() {
+function upload_packages() {
     add_primary_separator "Upload Binary Packages to CORTX-Storage"
     mkdir -p "$build_upload_dir"
 
@@ -247,8 +248,8 @@ function upload_packcages() {
 
     case "$ID" in
         ubuntu)
-            pushd "$BUILD_LOCATION"
-                cp -r *.deb "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
+            pushd "$BUILD_LOCATION/$BUILD_OS"
+                cp *.deb "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
                 check_status
             popd
 
@@ -270,8 +271,8 @@ function upload_packcages() {
             popd
         ;;
         centos)
-            pushd "$BUILD_LOCATION/rpmbuild"
-                cp -r RPMS/*/*.rpm "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
+            pushd "$BUILD_LOCATION/$BUILD_OS/rpmbuild"
+                cp RPMS/*/*.rpm "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
                 check_status
             popd
 
@@ -294,8 +295,8 @@ function upload_packcages() {
 
         ;;
         rocky)
-            pushd "$BUILD_LOCATION/rpmbuild"
-                cp -r RPMS*/*.rpm "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
+            pushd "$BUILD_LOCATION/$BUILD_OS/rpmbuild"
+                cp RPMS/*/*.rpm "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
                 check_status
             popd
 
@@ -317,8 +318,6 @@ function upload_packcages() {
             popd
         ;;
     esac
-
-    add
 }
 
 case $ACTION in
@@ -336,7 +335,7 @@ case $ACTION in
         ceph_build
     ;;
     --upload-packages)
-        upload_packcages
+        upload_packages
     ;;
     *)
         echo "ERROR : Please provide a valid option"
