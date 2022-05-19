@@ -29,6 +29,8 @@ NAME: "CORTX"
 VERSION: "$VERSION"
 OS: $(cat /etc/redhat-release | sed -e 's/ $//g' -e 's/^/\"/g' -e 's/$/\"/g')
 DATETIME: $(date +"%d-%b-%Y %H:%M %Z" | sed -e 's/^/\"/g' -e 's/$/\"/g')
+REQUIRES:
+$(sed 's/^/    /g' "/opt/seagate/cortx/compatibility.info")
 COMPONENTS:
 $(for component in $(sed 's/#.*//g' /opt/seagate/cortx/cortx-component-rpms.txt /opt/seagate/cortx/ceph-component-rpms.txt); do echo "    - \"$(rpm -q $component).rpm\"" ; done)
 THIRD_PARTY_RPM_PACKAGES:
