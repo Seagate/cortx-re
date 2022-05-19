@@ -197,7 +197,7 @@ EOF
 
                 def toEmail = ""
                 def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
-                if( manager.build.result.toString() == "FAILURE" ) {
+                if ( manager.build.result.toString() == "FAILURE" ) {
                     toEmail = "shailesh.vaidya@seagate.com"
                     recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'],[$class: 'RequesterRecipientProvider']]
                 }
@@ -222,11 +222,11 @@ def getAuthor(issue) {
     def author= ""
     def response = ""
     // Grab build information
-    for (int i = 0; i < changeLogSets.size(); i++){
+    for (int i = 0; i < changeLogSets.size(); i++) {
         def entries = changeLogSets[i].items
         for (int j = 0; j < entries.length; j++) {
             def entry = entries[j]
-            if((entry.msg).contains(issue)){
+            if ((entry.msg).contains(issue)) {
                 author = entry.author
             }
         }
