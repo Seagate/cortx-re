@@ -185,7 +185,7 @@ function update_solution_config(){
         yq e -i '.solution.common.resource_allocation.ha.fault_tolerance.resources.requests.memory = "128Mi"' solution.yaml
         yq e -i '.solution.common.resource_allocation.ha.fault_tolerance.resources.requests.cpu = "250m"' solution.yaml
         yq e -i '.solution.common.resource_allocation.ha.fault_tolerance.resources.limits.memory = "1Gi"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.ha.fault_tolerancet.resources.limits.cpu = "500m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.ha.fault_tolerance.resources.limits.cpu = "500m"' solution.yaml
 
         yq e -i '.solution.common.resource_allocation.ha.health_monitor.resources.requests.memory = "128Mi"' solution.yaml
         yq e -i '.solution.common.resource_allocation.ha.health_monitor.resources.requests.cpu = "250m"' solution.yaml
