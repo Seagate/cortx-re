@@ -277,7 +277,6 @@ function execute_deploy_script() {
 
 function execute_prereq() {
     add_secondary_separator "Pulling latest CORTX images"
-    docker pull $CORTX_ALL_IMAGE || { echo "Failed to pull $CORTX_ALL_IMAGE"; exit 1; }
     docker pull $CORTX_SERVER_IMAGE || { echo "Failed to pull $CORTX_SERVER_IMAGE"; exit 1; }
     docker pull $CORTX_DATA_IMAGE || { echo "Failed to pull $CORTX_DATA_IMAGE"; exit 1; }
     docker pull $CORTX_CONTROL_IMAGE || { echo "Failed to pull $CORTX_CONTROL_IMAGE"; exit 1; }
