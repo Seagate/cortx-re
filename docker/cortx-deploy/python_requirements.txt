@@ -1,37 +1,33 @@
-aiohttp==3.8.1
-argparse==1.4.0
-boto3==1.10.27
-configparser==4.0.2
-confluent-kafka==1.5.0
-cryptography==3.3.2
-dataclasses==0.7
-dict2xml==1.6.1
-elasticsearch==7.12.0
-elasticsearch-dsl==7.3.0
-Flask==1.1.1
-jsonschema==3.2.0
-# Dependency of Monitor module in HA
-kubernetes==19.15.0
-marshmallow==3.2.1
-matplotlib==3.1.3
-netifaces==0.10.9
-networkx==2.4
-paramiko==2.7.1
-pathlib==1.0.1
-pika==1.1.0
-prettytable==0.7.2
-pyinotify==0.9.6
-python-consul==1.1.0
-python-crontab==2.5.1
-python-daemon==2.2.4
-PyYAML==5.4.1
-requests==2.25.1
-schematics==2.1.0
-secure==0.2.1
-statsd==3.2.2
-toml==0.10.0
-xmltodict==0.12.0
-zope.component==4.6.2
-zope.event==4.5.0
-zope.interface==5.2.0
-
+setuptools==36.0.1          #cortx-ha
+argparse==1.4.0             #cortx-ha
+dataclasses==0.7            #cortx-ha
+pathlib==1.0.1              #cortx-ha
+kubernetes==19.15.0         #cortx-ha
+############################################
+aiohttp==3.8.1              #cortx-py-utils
+configparser==4.0.2         #cortx-py-utils
+confluent-kafka==1.5.0      #cortx-py-utils
+cryptography==3.3.2         #cortx-py-utils
+dict2xml==1.6.1             #cortx-py-utils
+elasticsearch-dsl==7.3.0    #cortx-py-utils
+elasticsearch==7.12.0       #cortx-py-utils
+matplotlib==3.1.3           #cortx-py-utils
+networkx==2.4               #cortx-py-utils
+paramiko==2.7.1             #cortx-py-utils
+prettytable==0.7.2          #cortx-py-utils
+python-consul==1.1.0        #cortx-py-utils
+python-crontab==2.5.1       #cortx-py-utils
+PyYAML==5.4.1               #cortx-py-utils
+schematics==2.1.0           #cortx-py-utils
+toml==0.10.0                #cortx-py-utils
+############################################
+pika==1.1.0                 #cortx-csm_agent
+idna==2.10                  #cortx-csm_agent
+jsonschema==3.0.2           #cortx-csm_agent
+boto3==1.10.27              #cortx-csm_agent
+marshmallow==3.2.1          #cortx-csm_agent
+secure==0.2.1               #cortx-csm_agent
+requests==2.25.1            #cortx-csm_agent
+statsd==3.2.2               #cortx-csm_agent
+urllib3==1.26.8             #cortx-csm_agent
+netifaces==0.10.9           #cortx-csm_agent

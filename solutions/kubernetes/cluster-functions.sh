@@ -20,7 +20,7 @@
 
 source /var/tmp/functions.sh
 
-CALICO_PLUGIN_VERSION=v3.20.1
+CALICO_PLUGIN_VERSION=v3.23.0
 K8_VERSION=1.22.6
 DOCKER_VERSION=latest
 OS_VERSION=( "CentOS 7.9.2009" "Rocky 8.4" )
@@ -211,10 +211,10 @@ function install_prerequisites() {
         pushd /var/tmp/
             rm -rf calico*.yaml 
             if [ "$CALICO_PLUGIN_VERSION" == "latest" ]; then 
-                curl  https://docs.projectcalico.org/manifests/calico.yaml -o calico-$CALICO_PLUGIN_VERSION.yaml || throw $Exception
+                curl  https://projectcalico.docs.tigera.io/manifests/calico.yaml -o calico-$CALICO_PLUGIN_VERSION.yaml || throw $Exception
             else
                 CALICO_PLUGIN_MAJOR_VERSION=$(echo $CALICO_PLUGIN_VERSION | awk -F[.] '{print $1"."$2}')
-                curl https://docs.projectcalico.org/archive/$CALICO_PLUGIN_MAJOR_VERSION/manifests/calico.yaml -o calico-$CALICO_PLUGIN_VERSION.yaml || throw $Exception
+                curl https://projectcalico.docs.tigera.io/archive/$CALICO_PLUGIN_MAJOR_VERSION/manifests/calico.yaml -o calico-$CALICO_PLUGIN_VERSION.yaml || throw $Exception
             fi
             CALICO_IMAGE_VERSION=$(grep 'docker.io/calico/cni' calico-$CALICO_PLUGIN_VERSION.yaml | uniq | awk -F':' '{ print $3}')	
             wget -c https://github.com/projectcalico/calico/releases/download/$CALICO_IMAGE_VERSION/release-$CALICO_IMAGE_VERSION.tgz -O - | tar -xz || throw $Exception
@@ -269,10 +269,10 @@ function setup_primary_node() {
 
         # Apply calcio plugin 	
         if [ "$CALICO_PLUGIN_VERSION" == "latest" ]; then
-            curl https://docs.projectcalico.org/manifests/calico.yaml -o calico-$CALICO_PLUGIN_VERSION.yaml || throw $Exception
+            curl https://projectcalico.docs.tigera.io/manifests/calico.yaml -o calico-$CALICO_PLUGIN_VERSION.yaml || throw $Exception
         else
             CALICO_PLUGIN_MAJOR_VERSION=$(echo $CALICO_PLUGIN_VERSION | awk -F[.] '{print $1"."$2}')
-            curl https://docs.projectcalico.org/archive/$CALICO_PLUGIN_MAJOR_VERSION/manifests/calico.yaml -o calico-$CALICO_PLUGIN_VERSION.yaml || throw $Exception    
+            curl https://projectcalico.docs.tigera.io/archive/$CALICO_PLUGIN_MAJOR_VERSION/manifests/calico.yaml -o calico-$CALICO_PLUGIN_VERSION.yaml || throw $Exception    
         fi
 
         IS_VM=$(systemd-detect-virt -v)
