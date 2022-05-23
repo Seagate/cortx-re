@@ -24,7 +24,7 @@ source /var/tmp/functions.sh
 
 SYSTEM_DRIVE_MOUNT="/mnt/fs-local-volume"
 SCRIPT_LOCATION="/root/deploy-scripts"
-YQ_VERSION=v4.13.3
+YQ_VERSION=v4.25.1
 YQ_BINARY=yq_linux_386
 SOLUTION_CONFIG="/var/tmp/solution.yaml"
 
@@ -70,6 +70,7 @@ function download_deploy_script() {
 # Install yq 4.13.3
 
 function install_yq() {
+    add_secondary_separator "Installing yq-$YQ_VERSION"
     pip3 show yq && pip3 uninstall yq -y
     wget https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${YQ_BINARY}.tar.gz -O - | tar xz && mv ${YQ_BINARY} /usr/bin/yq
     if [ -f /usr/local/bin/yq ]; then rm -rf /usr/local/bin/yq; fi    
@@ -155,6 +156,46 @@ function update_solution_config(){
         yq e -i '.solution.common.resource_allocation.kafka.resources.requests.cpu = "250m"' solution.yaml
         yq e -i '.solution.common.resource_allocation.kafka.resources.limits.memory = "3Gi"' solution.yaml
         yq e -i '.solution.common.resource_allocation.kafka.resources.limits.cpu = "1000m"' solution.yaml
+
+        yq e -i '.solution.common.resource_allocation.hare.hax.resources.requests.memory = "128Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.hare.hax.resources.requests.cpu = "250m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.hare.hax.resources.limits.memory = "2Gi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.hare.hax.resources.limits.cpu = "1000m"' solution.yaml
+
+        yq e -i '.solution.common.resource_allocation.data.motr.resources.requests.memory = "1Gi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.data.motr.resources.requests.cpu = "250m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.data.motr.resources.limits.memory = "2Gi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.data.motr.resources.limits.cpu = "1000m"' solution.yaml
+
+        yq e -i '.solution.common.resource_allocation.data.confd.resources.requests.memory = "128Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.data.confd.resources.requests.cpu = "250m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.data.confd.resources.limits.memory = "512Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.data.confd.resources.limits.cpu = "500m"' solution.yaml
+
+        yq e -i '.solution.common.resource_allocation.server.rgw.resources.requests.memory = "128Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.server.rgw.resources.requests.cpu = "250m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.server.rgw.resources.limits.memory = "2Gi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.server.rgw.resources.limits.cpu = "2000m"' solution.yaml
+
+        yq e -i '.solution.common.resource_allocation.control.agent.resources.requests.memory = "128Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.control.agent.resources.requests.cpu = "250m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.control.agent.resources.limits.memory = "256Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.control.agent.resources.limits.cpu = "500m"' solution.yaml
+
+        yq e -i '.solution.common.resource_allocation.ha.fault_tolerance.resources.requests.memory = "128Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.ha.fault_tolerance.resources.requests.cpu = "250m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.ha.fault_tolerance.resources.limits.memory = "1Gi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.ha.fault_tolerance.resources.limits.cpu = "500m"' solution.yaml
+
+        yq e -i '.solution.common.resource_allocation.ha.health_monitor.resources.requests.memory = "128Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.ha.health_monitor.resources.requests.cpu = "250m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.ha.health_monitor.resources.limits.memory = "1Gi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.ha.health_monitor.resources.limits.cpu = "500m"' solution.yaml
+
+        yq e -i '.solution.common.resource_allocation.ha.k8s_monitor.resources.requests.memory = "128Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.ha.k8s_monitor.resources.requests.cpu = "250m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.ha.k8s_monitor.resources.limits.memory = "1Gi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.ha.k8s_monitor.resources.limits.cpu = "500m"' solution.yaml
 
         yq e -i '.solution.storage.cvg1.name = "cvg-01"' solution.yaml
         yq e -i '.solution.storage.cvg1.type = "ios"' solution.yaml
@@ -275,6 +316,7 @@ function setup_worker_node() {
     cleanup
     #Third-party images are downloaded from GitHub container registry.
     download_deploy_script
+    install_yq
     execute_prereq
 }
 
