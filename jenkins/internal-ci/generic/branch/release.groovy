@@ -304,7 +304,6 @@ pipeline {
                     parameters: [
                         string(name: 'CORTX_RE_BRANCH', value: "main"),
                         string(name: 'CORTX_RE_REPO', value: "https://github.com/Seagate/cortx-re"),
-                        string(name: 'CORTX_ALL_IMAGE', value: "${env.cortx_all_image}"),
                         string(name: 'CORTX_SERVER_IMAGE', value: "${env.cortx_rgw_image}"),
                         string(name: 'CORTX_DATA_IMAGE', value: "${env.cortx_data_image}"),
                         string(name: 'CORTX_CONTROL_IMAGE', value: "${env.cortx_control_image}")
@@ -313,7 +312,6 @@ pipeline {
                     parameters: [
                         string(name: 'CORTX_RE_BRANCH', value: "main"),
                         string(name: 'CORTX_RE_REPO', value: "https://github.com/Seagate/cortx-re"),
-                        string(name: 'CORTX_ALL_IMAGE', value: "${env.cortx_all_image}"),
                         string(name: 'CORTX_SERVER_IMAGE', value: "${env.cortx_rgw_image}"),
                         string(name: 'CORTX_DATA_IMAGE', value: "${env.cortx_data_image}"),
                         string(name: 'CORTX_CONTROL_IMAGE', value: "${env.cortx_control_image}")

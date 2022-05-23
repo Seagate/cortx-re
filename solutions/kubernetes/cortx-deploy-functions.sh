@@ -177,7 +177,7 @@ function update_solution_config(){
 }        
 
 function add_image_info() {
-echo "Updating cortx-all image info in solution.yaml"   
+echo "Updating cortx images info in solution.yaml"   
 pushd $SCRIPT_LOCATION/k8_cortx_cloud
     image=$CORTX_CONTROL_IMAGE yq e -i '.solution.images.cortxcontrol = env(image)' solution.yaml	
     image=$CORTX_DATA_IMAGE yq e -i '.solution.images.cortxdata = env(image)' solution.yaml

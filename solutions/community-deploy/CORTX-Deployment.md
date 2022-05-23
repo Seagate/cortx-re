@@ -87,7 +87,6 @@ Following parameter/s are passed when the cluster deployment command executes. I
 | :------------- | :----------- | :---------|
 | CORTX_SCRIPTS_BRANCH      | v0.5.0  | If you want to use another cortx-K8s branch then export this variable with your branch.     |
 | CORTX_SCRIPTS_REPO | Seagate/cortx-k8s | If you want to use another cortx-K8s repo (like your fork), export this variable with your repo. |
-| CORTX_ALL_IMAGE | ghcr.io/seagate/cortx-all:2.0.0-latest  | In automated case we are using latest cortx-all image. If you want to use different image then export the image by this variable. |
 | CORTX_SERVER_IMAGE | ghcr.io/seagate/cortx-rgw:2.0.0-latest | Also, if you want to use different server image then export this variable with new image. |
 | CORTX_DATA_IMAGE | ghcr.io/seagate/cortx-data:2.0.0-latest | Also, if you want to use different data image then export this variable with new image. |
 |CONTROL_EXTERNAL_NODEPORT | 31169 | If you want to use different port for control service, export this variable with another port. |

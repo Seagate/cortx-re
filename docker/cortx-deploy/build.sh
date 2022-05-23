@@ -21,7 +21,7 @@
 set -e -o pipefail
 
 usage() {
-echo "Generate cortx-all docker image from provided CORTX release build"
+echo "Generate cortx component docker images from provided CORTX release build"
 echo "Usage: $0 [ -b build ] [ -p push docker-image to GHCR yes/no. Default no] [ -t tag latest yes/no. Default no" ] [ -r registry location ] [ -e environment ] [ -o operating-system ][ -s service ] [ -h print help message ] 1>&2; exit 1; }
 
 VERSION=2.0.0
