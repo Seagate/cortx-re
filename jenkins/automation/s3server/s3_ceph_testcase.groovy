@@ -99,7 +99,7 @@ pipeline {
             script {
                 archiveArtifacts artifacts: "cortx-re/scripts/automation/s3-test/*.txt, ${S3_TEST_CONF_FILE}, cortx-re/scripts/automation/s3-test/reports/*", onlyIfSuccessful: false, allowEmptyArchive: true
                 junit testResults: 'cortx-re/scripts/automation/s3-test/reports/*.xml', testDataPublishers: [[$class: 'AttachmentPublisher']]  
-                def mailRecipients = "shailesh.vaidya@seagate.com
+                def mailRecipients = "shailesh.vaidya@seagate.com"
                 emailext body: '''${SCRIPT, template="s3-comp-test-email-v2.template"}''',
                 mimeType: 'text/html',
                 recipientProviders: [requestor()], 
