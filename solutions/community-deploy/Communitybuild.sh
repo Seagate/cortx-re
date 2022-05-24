@@ -40,7 +40,7 @@ while getopts "b:h:" opt; do
 done
 
 
-IP=$(ip route get 8.8.8.8| cut -d' ' -f7)
+IP=$(ip route get 8.8.8.8| cut -d' ' -f7|awk '!/^$/')
 DOCKER_VERSION=latest
 
 function docker_check() {
@@ -122,9 +122,11 @@ function nginx_validation() {
         sleep 60
         docker ps | grep -iw 'nginx'
         if [ $? -eq 0 ]; then
+            add_common_separator "Nginx is running"
             curl -L http://$IP/RELEASE.INFO
         else
             exit 1
+        fi    
 }
 nginx_validation
 # clone cortx-re repository & run build.sh
