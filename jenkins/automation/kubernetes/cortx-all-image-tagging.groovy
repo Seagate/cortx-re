@@ -69,7 +69,7 @@ pipeline {
         always {
             cleanWs()
             script {
-                env.docker_image_location = "${BASE_IMAGE_NAME}"
+                env.docker_image_location = "https://github.com/orgs/Seagate/packages?repo_name=cortx"
                 env.image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' | head -1", returnStdout: true).trim()
                 env.build_stage = "${build_stage}"
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
