@@ -14,6 +14,7 @@ pipeline {
 
     environment {
         PODS_ON_PRIMARY = "true"
+        GITHUB_CRED = credentials('shailesh-github')
     }
 
 
@@ -39,13 +40,12 @@ pipeline {
             choices: ['LoadBalancer', 'NodePort'],
             description: 'K8s Service to be used to expose RGW Service to outside cluster.'
         )
-        string(name: 'WHITESOURCE_SERVER_URL', defaultValue: ' ', description: 'WhiteSource Server URL', trim: true)
+        string(name: 'WHITESOURCE_SERVER_URL', defaultValue: 'https://saas.whitesourcesoftware.com', description: 'WhiteSource Server URL', trim: true)
         string(name: 'API_KEY', defaultValue: ' ', description: 'apiKey', trim: true)
         string(name: 'USER_KEY', defaultValue: ' ', description: 'userKey', trim: true)
-        string(name: 'PRODUCT_NAME', defaultValue: ' ', description: 'productName', trim: true)
-        string(name: 'DOCKER_REGISTRY', defaultValue: ' ', description: 'docker registry', trim: true)
-        string(name: 'MAIN_POD', defaultValue: ' ', description: 'mainPod details', trim: true)
-        string(name: 'WORKER_POD', defaultValue: ' ', description: 'workerPod details', trim: true)
+        string(name: 'PRODUCT_NAME', defaultValue: 'cortx-all-k8s-cluster', description: 'productName', trim: true)
+        string(name: 'DOCKER_REGISTRY', defaultValue: 'ghcr.io/seagate', description: 'docker registry', trim: true)
+        string(name: 'WHITESOURCE_VERSION', defaultValue: '20.11.1', description: 'mainPod & workerPod version', trim: true)
         string(name: 'PULL_SECRET', defaultValue: ' ', description: 'image pullSecretL', trim: true)
         // Please configure CORTX_SCRIPTS_BRANCH and CORTX_SCRIPTS_REPO parameter in Jenkins job configuration.
     }    
@@ -104,6 +104,15 @@ pipeline {
             }
         }
 
+        stage ('Docker Registry Login') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'Docker Registry Login', script: '''
+                    docker login ghcr.io -u ${GITHUB_CRED_USR} -p ${GITHUB_CRED_PSW}
+                '''
+            }
+        }
+
         stage ('WhiteSource container scan') {
            steps {
                 sh label: 'WhiteSource container scanning', script: '''
@@ -114,89 +123,12 @@ pipeline {
                         export USER_KEY=${USER_KEY}
                         export PRODUCT_NAME=${PRODUCT_NAME}
                         export DOCKER_REGISTRY=${DOCKER_REGISTRY}
-                        export MAIN_POD=${MAIN_POD}
-                        export WORKER_POD=${WORKER_POD}
+                        export WHITESOURCE_VERSION=${WHITESOURCE_VERSION}
                         export PULL_SECRET=${PULL_SECRET}
                         ./whitesource_container_scan.sh
                     popd
+                    docker logout
                 '''
             }
         }
     }
-
-    post {
-        always {
-
-            script {
-
-                // Jenkins Summary
-                clusterStatus = ""
-                if ( fileExists('/var/tmp/cortx-cluster-status.txt') && currentBuild.currentResult == "SUCCESS" ) {
-                    clusterStatus = readFile(file: '/var/tmp/cortx-cluster-status.txt')
-                    MESSAGE = "CORTX Cluster Setup Success for the build ${build_id}"
-                    ICON = "accept.gif"
-                    STATUS = "SUCCESS"
-                } else if ( currentBuild.currentResult == "FAILURE" ) {
-                    manager.buildFailure()
-                    MESSAGE = "CORTX Cluster Setup Failed for the build ${build_id}"
-                    ICON = "error.gif"
-                    STATUS = "FAILURE"
- 
-                } else {
-                    manager.buildUnstable()
-                    MESSAGE = "CORTX Cluster Setup is Unstable"
-                    ICON = "warning.gif"
-                    STATUS = "UNSTABLE"
-                }
-                
-                clusterStatusHTML = "<pre>${clusterStatus}</pre>"
-
-                manager.createSummary("${ICON}").appendText("<h3>CORTX Cluster Setup ${currentBuild.currentResult} </h3><p>Please check <a href=\"${BUILD_URL}/console\">cluster setup logs</a> for more info <h4>Cluster Status:</h4>${clusterStatusHTML}", false, false, false, "red")
-
-                // Email Notification
-                env.cluster_status = "${clusterStatusHTML}"
-                def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
-                mailRecipients = "shailesh.vaidya@seagate.com"
-                emailext ( 
-                    body: '''${SCRIPT, template="cluster-setup-email.template"}''',
-                    mimeType: 'text/html',
-                    subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
-                    attachLog: true,
-                    to: "${mailRecipients}",
-                    recipientProviders: recipientProvidersClass
-                )
-            }
-        }
-
-        cleanup {
-            sh label: 'Collect Artifacts', script: '''
-            mkdir -p artifacts
-            pushd solutions/kubernetes/
-                HOST_FILE=$PWD/hosts
-                PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
-                scp -q "$PRIMARY_NODE":/root/deploy-scripts/k8_cortx_cloud/solution.yaml $WORKSPACE/artifacts/
-                if [ -f /var/tmp/cortx-cluster-status.txt ]; then
-                    cp /var/tmp/cortx-cluster-status.txt $WORKSPACE/artifacts/
-                fi
-            popd    
-            '''
-            script {
-                // Archive Deployment artifacts in jenkins build
-                archiveArtifacts artifacts: "artifacts/*.*", onlyIfSuccessful: false, allowEmptyArchive: true 
-            }    
-        }
-
-        failure {
-            sh label: 'Collect CORTX support bundle logs in artifacts', script: '''
-            mkdir -p artifacts
-            pushd solutions/kubernetes/
-                ./cortx-deploy.sh --support-bundle
-                HOST_FILE=$PWD/hosts
-                PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
-                LOG_FILE=$(ssh -o 'StrictHostKeyChecking=no' $PRIMARY_NODE 'ls -t /root/deploy-scripts/k8_cortx_cloud | grep logs-cortx-cloud | grep .tar | head -1')
-                scp -q "$PRIMARY_NODE":/root/deploy-scripts/k8_cortx_cloud/$LOG_FILE $WORKSPACE/artifacts/
-            popd
-            '''
-        }  
-    }
-}

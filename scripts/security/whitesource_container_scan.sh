@@ -19,7 +19,8 @@
 #
 REPO_ROOT=$PWD/../..
 source $REPO_ROOT/solutions/kubernetes/functions.sh
-AGENT_TAR_LOCATION=/root/ws-k8s-agent/helm-chart/values.yaml
+
+AGENT_TAR_LOCATION=$(pwd)/ws-k8s-agent/helm-chart/values.yaml
 #Download WhiteSource Plugin 
 wget http://cortx-storage.colo.seagate.com/releases/cortx/security/whitesource/ws-k8s-agent.tar && tar -xvf ws-k8s-agent.tar >/dev/null 2>&1
 
@@ -36,8 +37,8 @@ default_parameter
 #Updating the configuration file
 sed -Ei 's,(url: ).*,\1"'"$WHITESOURCE_SERVER_URL"'",g' $AGENT_TAR_LOCATION; sed -Ei 's,(apiKey: ).*,\1"'"$API_KEY"'",g' $AGENT_TAR_LOCATION
 sed -Ei 's,(userKey: ).*,\1"'"$USER_KEY"'",g' $AGENT_TAR_LOCATION; sed -Ei "s,(productName: ).*,\1$PRODUCT_NAME,g" $AGENT_TAR_LOCATION
-sed -Ei "s,(registry: ).*,\1$DOCKER_REGISTRY,g" $AGENT_TAR_LOCATION; sed -Ei "s,(mainPod: ).*,\1$MAIN_POD,g" $AGENT_TAR_LOCATION
-sed -Ei "s,(workerPod: ).*,\1$WORKER_POD,g" $AGENT_TAR_LOCATION; sed -Ei 's,(pullSecret: ).*,\1"'"$PULL_SECRET"'",g' $AGENT_TAR_LOCATION
+sed -Ei "s,(registry: ).*,\1$DOCKER_REGISTRY,g" $AGENT_TAR_LOCATION; sed -Ei "s,(mainPod: whitesource-main:).*,\1$WHITESOURCE_VERSION,g" $AGENT_TAR_LOCATION
+sed -Ei "s,(workerPod: whitesource-worker:).*,\1$WHITESOURCE_VERSION,g" $AGENT_TAR_LOCATION; sed -Ei 's,(pullSecret: ).*,\1"'"$PULL_SECRET"'",g' $AGENT_TAR_LOCATION
 
 #print values.yaml
 cat /root/ws-k8s-agent/helm-chart/values.yaml | egrep -iw "url: |apiKey: |userKey: |pullSecret: |productName:|registry:|mainPod:|workerPod:"| head -8
