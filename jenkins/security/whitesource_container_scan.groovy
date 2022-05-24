@@ -13,7 +13,6 @@ pipeline {
     }
 
     environment {
-        PODS_ON_PRIMARY = "true"
         GITHUB_CRED = credentials('shailesh-github')
     }
 
@@ -74,7 +73,7 @@ pipeline {
                            echo "Exiting Jenkins job."
                            exit 1
                         fi
-                        ./cluster-setup.sh ${PODS_ON_PRIMARY}
+                        ./cluster-setup.sh
                     popd
                 '''
             }
