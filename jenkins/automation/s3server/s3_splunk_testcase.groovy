@@ -20,10 +20,8 @@ pipeline {
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repository for Cluster Setup scripts', trim: true)
         string(name: 'RGW_PORT', defaultValue: '30080', description: 's3-test rgw port', trim: true)
         string(name: 'RGW_MASTER_NODE', defaultValue: '', description: 's3-test rgw master node', trim: true)
-        string(name: 'S3_TEST_REPO', defaultValue: 'https://github.com/splunk/s3-tests', description: 's3-test splunk repo', trim: true)
-        // we are using specific revision of 'https://github.com/splunk/s3-tests' for our tests  - default
-        string(name: 'S3_TEST_REPO_REV', defaultValue: '3dc9362b1d322a59bd4e8f207d5a94070502b78b', description: 's3-test repo revision', trim: true)
-        choice(name: 'INTEGRATION_TYPE', choices: [ "splunk"], description: 'S3 Integration Type') 
+        choice(name: 'INTEGRATION_TYPE', choices: [ "splunk"], description: 'S3 Integration Type')
+        // Please configure S3_TEST_REPO and S3_TEST_REPO_REV as input parameters manually in Jenkins configuration.
     }
 
     environment {
@@ -93,7 +91,7 @@ pipeline {
             script {
                 archiveArtifacts artifacts: "cortx-re/scripts/automation/s3-test/*.txt, ${S3_TEST_CONF_FILE}, cortx-re/scripts/automation/s3-test/reports/*", onlyIfSuccessful: false, allowEmptyArchive: true
                 junit testResults: 'cortx-re/scripts/automation/s3-test/reports/*.xml', testDataPublishers: [[$class: 'AttachmentPublisher']]  
-                def mailRecipients = "shailesh.vaidya@seagate.com, abhijit.patil@seagate.com, kapil.jinna@seagate.com, shazia.ahmad@seagate.com, amit.kapil@seagate.com"
+                def mailRecipients = "shailesh.vaidya@seagate.com, kapil.jinna@seagate.com, shazia.ahmad@seagate.com, amit.kapil@seagate.com"
                 emailext body: '''${SCRIPT, template="s3-comp-test-email-v2.template"}''',
                 mimeType: 'text/html',
                 recipientProviders: [requestor()], 
