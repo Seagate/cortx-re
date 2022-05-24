@@ -21,7 +21,8 @@
 set -e -o pipefail
 
 usage() {
-echo "Generate cortx-all docker image from provided CORTX release build"
+
+echo "Generate CORTX container images from provided CORTX release build"
 echo "Usage: $0 [ -b build ] [ -p push docker-image to GHCR yes/no. Default no] [ -t tag latest yes/no. Default no" ] [ -r registry location ] [ -e environment ] [ -o operating-system ][ -s service ] [ -h print help message ] 1>&2; exit 1; }
 
 VERSION=2.0.0
@@ -32,14 +33,13 @@ REGISTRY="cortx-docker.colo.seagate.com"
 PROJECT="seagate"
 ARTFACT_URL="http://cortx-storage.colo.seagate.com/releases/cortx/github/"
 SERVICE=all
-OS=centos-7.9.2009
+OS=rockylinux-8.4
 IMAGE_LIST=( "cortx-all" "cortx-rgw" "cortx-data" "cortx-control" )
 
 
 while getopts "b:p:t:r:e:o:s:h:" opt; do
     case $opt in
         b ) BUILD=$OPTARG;;
-
         p ) DOCKER_PUSH=$OPTARG;;
         t ) TAG_LATEST=$OPTARG;;
         e ) ENVIRONMENT=$OPTARG;;
@@ -102,8 +102,10 @@ for PARAM in BRANCH BUILD
 do
      export DOCKER_BUILD_$PARAM="$(grep $PARAM RELEASE.INFO | cut -d'"' -f2)"
 done
-CORTX_VERSION=$(get_git_hash | tr '\n' ' ')
+GIT_HASH=$(get_git_hash | tr '\n' ' ')
 rm -rf RELEASE.INFO
+
+CORTX_VERSION=$(sed 's/^- /, /g' compatibility.info  | tr -d '\n' | sed 's/^, //g')
 
 if [ "$DOCKER_BUILD_BRANCH" != "main" ]; then
         export TAG=$VERSION-$DOCKER_BUILD_BUILD-$DOCKER_BUILD_BRANCH
@@ -113,7 +115,7 @@ fi
 
 CREATED_DATE=$(date -u +'%Y-%m-%d %H:%M:%S%:z')
 
-docker-compose -f ./docker-compose.yml build --parallel --force-rm --compress --build-arg GIT_HASH="$CORTX_VERSION" --build-arg VERSION="$VERSION-$DOCKER_BUILD_BUILD" --build-arg CREATED_DATE="$CREATED_DATE" --build-arg BUILD_URL=$BUILD_URL --build-arg ENVIRONMENT=$ENVIRONMENT --build-arg OS=$OS --build-arg OS_TYPE=$OS_TYPE --build-arg OS_RELEASE=$OS_RELEASE $SERVICE
+docker-compose -f ./docker-compose.yml build --parallel --force-rm --compress --build-arg GIT_HASH="$GIT_HASH" --build-arg VERSION="$VERSION-$DOCKER_BUILD_BUILD" --build-arg CREATED_DATE="$CREATED_DATE" --build-arg BUILD_URL=$BUILD_URL --build-arg ENVIRONMENT=$ENVIRONMENT --build-arg OS=$OS --build-arg OS_TYPE=$OS_TYPE --build-arg OS_RELEASE=$OS_RELEASE --build-arg CORTX_VERSION="$CORTX_VERSION" $SERVICE
 
 for SERVICE_NAME in $SERVICE
 do

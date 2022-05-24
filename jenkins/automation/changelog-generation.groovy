@@ -12,9 +12,9 @@ pipeline {
     
     parameters {
         string(name: 'BUILD_FROM', defaultValue: '', description: '''Provide full build url till RELEASE.INFO like below OR Provide docker image name like below.
- <h6> e.g. http://cortx-storage.colo.seagate.com/releases/cortx/github/stable/centos-7.9.2009/105/dev/RELEASE.INFO </h6><br>OR<br><h6>cortx-docker.colo.seagate.com/seagate/cortx-all:2.0.0-27-motr-pr</h6>''')
+ <h6> e.g. http://cortx-storage.colo.seagate.com/releases/cortx/github/main/rockylinux-8.4/5477/dev/RELEASE.INFO </h6><br>OR<br><h6>cortx-docker.colo.seagate.com/seagate/cortx-<component>:2.0.0-27-motr-pr</h6>''')
         string(name: 'BUILD_TO', defaultValue: '', description: '''In BUILD_FROM parameter if you provided build full url then here also provide build full url only, not docker image or not build number. You should follow same for docker image & build number as well. Same type of parameter should be provide in BUILD_FROM and BUILD_TO parameters.
- <h6> e.g. http://cortx-storage.colo.seagate.com/releases/cortx/github/stable/centos-7.9.2009/105/dev/RELEASE.INFO </h6><br>OR<br><h6>cortx-docker.colo.seagate.com/seagate/cortx-all:2.0.0-27-motr-pr</h6>''')
+ <h6> e.g. http://cortx-storage.colo.seagate.com/releases/cortx/github/main/rockylinux-8.4/5478/dev/RELEASE.INFO </h6><br>OR<br><h6>cortx-docker.colo.seagate.com/seagate/cortx-<component>:2.0.0-27-motr-pr</h6>''')
     }
 
     stages {    
