@@ -11,17 +11,12 @@ pipeline {
         buildDiscarder(logRotator(daysToKeepStr: '20', numToKeepStr: '20'))
         disableConcurrentBuilds()
     }
-    environment {
-        DOCKER_IMAGE_LOCATION = "https://github.com/Seagate/cortx-re/pkgs/container/cortx-all"
-        // Need to make this variable dynamic based on repository selected
-    }
     parameters {
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repository for Cluster Setup scripts', trim: true)
-        string(name: 'CORTX_ALL_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-all:2.0.0-latest', description: 'CORTX-ALL image', trim: true)
         string(name: 'CORTX_SERVER_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-rgw:2.0.0-latest', description: 'CORTX-RGW image', trim: true)
         string(name: 'CORTX_DATA_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-data:2.0.0-latest', description: 'CORTX-DATA image', trim: true)
-
+        string(name: 'CORTX_CONTROL_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-control:2.0.0-latest', description: 'CORTX-CONTROL image', trim: true)
         choice (
             choices: ['DEVOPS', 'ALL', 'DEBUG'],
             description: 'Email Notification Recipients ',
@@ -63,9 +58,9 @@ pipeline {
                     parameters: [
                         string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
                         string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
-                        string(name: 'CORTX_ALL_IMAGE', value: "${CORTX_ALL_IMAGE}"),
                         string(name: 'CORTX_SERVER_IMAGE', value: "${CORTX_SERVER_IMAGE}"),
                         string(name: 'CORTX_DATA_IMAGE', value: "${CORTX_DATA_IMAGE}"),
+                        string(name: 'CORTX_CONTROL_IMAGE', value: "${CORTX_CONTROL_IMAGE}"),
                         string(name: 'DEPLOYMENT_METHOD', value: "standard"),
                         text(name: 'hosts', value: "${hosts}"),
                         string(name: 'EXTERNAL_EXPOSURE_SERVICE', value: "NodePort"),
@@ -104,8 +99,8 @@ pipeline {
                 }
                 env.build_setupcortx_url = sh( script: "echo ${env.cortxcluster_build_url}/artifact/artifacts/cortx-cluster-status.txt", returnStdout: true)
                 env.host = "${env.allhost}"
-                env.build_id = "${CORTX_ALL_IMAGE}"
-                env.build_location = "${DOCKER_IMAGE_LOCATION}"
+                env.build_id = "${CORTX_SERVER_IMAGE}"
+                env.build_location = "${CORTX_SERVER_IMAGE},${CORTX_DATA_IMAGE},${CORTX_CONTROL_IMAGE}"
                 env.deployment_status = "${MESSAGE}"
                 env.cluster_status = "${env.build_setupcortx_url}"
                 env.CORTX_DOCKER_IMAGE = "${env.dockerimage_id}"

@@ -19,9 +19,9 @@ pipeline {
     }
 
     parameters {  
-        string(name: 'CORTX_RE_URL', defaultValue: 'https://github.com/Seagate/cortx-re.git', description: 'Repository URL for cortx-all image build.')
-        string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch for cortx-all image build.')
-        string(name: 'BUILD', defaultValue: 'last_successful_prod', description: 'Build for cortx-all docker image')
+        string(name: 'CORTX_RE_URL', defaultValue: 'https://github.com/Seagate/cortx-re.git', description: 'Repository URL for cortx images build.')
+        string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch for cortx images build.')
+        string(name: 'BUILD', defaultValue: 'last_successful_prod', description: 'Build for cortx docker images')
         
         choice (
             choices: ['centos-7.9.2009' , 'rockylinux-8.4'],
@@ -96,7 +96,7 @@ pipeline {
         stage('Build & push Image') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh encoding: 'utf-8', label: 'Build cortx-all docker image', script: """
+                sh encoding: 'utf-8', label: 'Build cortx docker images', script: """
                     pushd ./docker/cortx-deploy
                         if [ $GITHUB_PUSH == yes ] && [ $TAG_LATEST == yes ];then
                                 sh ./build.sh -b $BUILD -p yes -t yes -r $DOCKER_REGISTRY -e internal-ci -o $OS -s $CORTX_IMAGE

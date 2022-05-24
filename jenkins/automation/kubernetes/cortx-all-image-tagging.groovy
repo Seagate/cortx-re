@@ -19,8 +19,8 @@ pipeline {
     }
 
     parameters {  
-        string(name: 'BASE_IMAGE_NAME', defaultValue: 'ghcr.io/seagate/cortx-all:2.0.0-latest', description: 'Docker Image to be tagged.')
-        string(name: 'TAGGED_IMAGE_NAME', defaultValue: 'ghcr.io/seagate/cortx-all:TAG', description: 'Tag to be used.')
+        string(name: 'BASE_IMAGE_NAME', defaultValue: 'ghcr.io/seagate/cortx-<component>:2.0.0-latest', description: 'Docker Image to be tagged.')
+        string(name: 'TAGGED_IMAGE_NAME', defaultValue: 'ghcr.io/seagate/cortx-<component>:TAG', description: 'Tag to be used.')
     
         choice (
             choices: ['DEVOPS', 'DEBUG'],
@@ -50,10 +50,10 @@ pipeline {
             }
         }
 
-        stage('Tage and Push Image') {
+        stage('Tag and Push Image') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh encoding: 'utf-8', label: 'Build cortx-all docker image', script: """
+                sh encoding: 'utf-8', label: 'Tag and push docker image', script: """
                     docker pull $BASE_IMAGE_NAME
                     docker tag $BASE_IMAGE_NAME $TAGGED_IMAGE_NAME
                     docker push $TAGGED_IMAGE_NAME
@@ -69,7 +69,7 @@ pipeline {
         always {
             cleanWs()
             script {
-                env.docker_image_location = "https://github.com/Seagate/cortx-re/pkgs/container/cortx-all"
+                env.docker_image_location = "https://github.com/orgs/Seagate/packages?repo_name=cortx"
                 env.image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' | head -1", returnStdout: true).trim()
                 env.build_stage = "${build_stage}"
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]

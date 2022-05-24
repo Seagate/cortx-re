@@ -451,7 +451,7 @@ pipeline {
             }
         }
         
-       stage ("Build CORTX-ALL image") {
+       stage ("Build CORTX images") {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
@@ -470,7 +470,7 @@ pipeline {
                     env.cortx_all_image = build_cortx_all_image.buildVariables.image
                     } catch (err) {
                         build_stage = env.STAGE_NAME
-                        error "Failed to Build CORTX-ALL image"
+                        error "Failed to Build CORTX images"
                     }
                 }
             }
