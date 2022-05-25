@@ -371,7 +371,7 @@ pipeline {
                 script{
                     withCredentials([usernamePassword(credentialsId: 'cortx-admin-github', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
 						sh '''
-							pushd ./cortx
+							pushd ./cortx/metrics/pickles
 							git add alex.pickle
 							git commit -m "Update the Alex pickle"
 							git push https://${USERNAME}:${PASSWORD}@github.com/seagate/cortx.git HEAD:main
