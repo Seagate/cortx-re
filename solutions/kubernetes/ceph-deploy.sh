@@ -60,6 +60,7 @@ function install_prereq() {
     scp_all_nodes functions.sh ceph-deploy-functions.sh hosts
 
     echo $ALL_NODES > /var/tmp/pdsh-hosts
+    cat /var/tmp/pdsh-hosts
     pdsh -S -w ^/var/tmp/pdsh-hosts "/var/tmp/ceph-deploy-functions.sh --install-prereq"
     check_status
 }
