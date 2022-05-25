@@ -246,8 +246,8 @@ function upload_packages() {
         mkdir -p "$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
     popd
 
-    case "$ID" in
-        ubuntu)
+    case "$BUILD_OS" in
+        ubuntu-20.04)
             pushd "$BUILD_LOCATION/$BUILD_OS"
                 cp *.deb "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
                 check_status
@@ -270,7 +270,7 @@ function upload_packages() {
                 ln -s "$BUILD_NUMBER" last_successful
             popd
         ;;
-        centos)
+        centos-8)
             pushd "$BUILD_LOCATION/$BUILD_OS/rpmbuild"
                 cp RPMS/*/*.rpm "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
                 check_status
@@ -294,7 +294,7 @@ function upload_packages() {
             popd
 
         ;;
-        rocky)
+        rockylinux-8.4)
             pushd "$BUILD_LOCATION/$BUILD_OS/rpmbuild"
                 cp RPMS/*/*.rpm "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
                 check_status
