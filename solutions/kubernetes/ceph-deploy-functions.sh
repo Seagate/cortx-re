@@ -54,7 +54,7 @@ fi
 function install_prereq() {
     add_secondary_separator "Installing Ceph Dependencies on $HOSTNAME"
 
-    if [[ "$(df -BG  / | awk '{ print $4 }' | tail -n 1 | sed 's/G//')" < "30" ]]; then
+    if [[ "$(df -BG  / | awk '{ print $4 }' | tail -n 1 | sed 's/G//')" -lt "30" ]]; then
         add_secondary_separator "Root partition doesn't have sufficient disk space"
         exit 1
     fi
