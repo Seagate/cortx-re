@@ -110,7 +110,12 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Docker Registry Login', script: '''
-                    docker login ghcr.io -u ${GITHUB_CRED_USR} -p ${GITHUB_CRED_PSW}
+                    HOST_FILE=$PWD/hosts
+                    SSH_KEY_FILE=/root/.ssh/id_rsa
+                    ALL_NODES=$(cat "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+                    PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+                    WORKER_NODES=$(cat "$HOST_FILE" | grep -v "$PRIMARY_NODE" | awk -F[,] '{print $1}' | cut -d'=' -f2) || true
+                    ssh_primary_node "docker login ghcr.io -u ${GITHUB_CRED_USR} -p ${GITHUB_CRED_PSW}"
                 '''
             }
         }
@@ -118,7 +123,8 @@ pipeline {
         stage ('WhiteSource container scan') {
            steps {
                 sh label: 'WhiteSource container scanning', script: '''
-                    pushd script/security/
+                        ssh_primary_node "
+                        pushd script/security/
                         export SOLUTION_CONFIG_TYPE=automated
                         export WHITESOURCE_SERVER_URL=${WHITESOURCE_SERVER_URL}
                         export API_KEY=${API_KEY}
@@ -129,7 +135,7 @@ pipeline {
                         export PULL_SECRET=${PULL_SECRET}
                         ./whitesource_container_scan.sh
                     popd
-                    docker logout
+                    docker logout"
                 '''
             }
         }
