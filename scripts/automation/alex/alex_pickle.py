@@ -66,7 +66,7 @@ for file in html_files:
     alex_report_status[date][repo] = counts
 
 print ("Updating the pickle object..")
-with open('./cortx/alex.pickle', "wb") as f:
+with open('./cortx/metrics/pickles/alex.pickle', "wb") as f:
     pickle.dump(alex_report_status, f)
 
 with open('./cortx/alex.pickle', "rb") as f:
