@@ -18,6 +18,8 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
+#set -eo pipefail
+
 START_BUILD=$1
 TARGET_BUILD=$2
 BUILD_LOCATION=$3
@@ -37,13 +39,13 @@ if [ -z "$START_BUILD" ]; then echo "No START_BUILD provided.."; exit 1 ; fi
 if [ -z "$TARGET_BUILD" ]; then echo "No TARGET_BUILD provided.."; exit 1; fi
 
 declare -A COMPONENT_LIST=(
-[cortx-motr]="https://github.com/Seagate/cortx-motr.git"
-[cortx-hare]="https://github.com/Seagate/cortx-hare.git"
-[cortx-ha]="https://github.com/Seagate/cortx-ha.git"
-[cortx-provisioner]="https://github.com/Seagate/cortx-prvsnr.git"
-[cortx-csm_agent]="https://github.com/Seagate/cortx-manager.git"
-[cortx-py-utils]="https://github.com/Seagate/cortx-utils.git"
-[cortx-rgw-integration]="https://github.com/Seagate/cortx-rgw-integration.git"
+[cortx-motr]="https://github.com/Seagate/cortx-motr"
+[cortx-hare]="https://github.com/Seagate/cortx-hare"
+[cortx-ha]="https://github.com/Seagate/cortx-ha"
+[cortx-provisioner]="https://github.com/Seagate/cortx-prvsnr"
+[cortx-csm_agent]="https://github.com/Seagate/cortx-manager"
+[cortx-py-utils]="https://github.com/Seagate/cortx-utils"
+[cortx-rgw-integration]="https://github.com/Seagate/cortx-rgw-integration"
 [ceph-base]="https://github.com/Seagate/cortx-rgw"
 )
 
@@ -115,14 +117,17 @@ do
 
                  pushd "$dir" || exit
 
-                        echo -e "\t--[ Check-ins for $dir from $START_BUILD ($start_hash) to $TARGET_BUILD ($target_hash) ]--" >> $report_file
-                        echo -e "Githash|Description|Author|" >> $report_file
-                        change="$(git log "$start_hash..$target_hash" --oneline --pretty=format:"%h|%cd|%s|%an|")";
+#                        echo -e "\t--[ Check-ins for $dir from $START_BUILD ($start_hash) to $TARGET_BUILD ($target_hash) ]--" >> $report_file
+#                        echo -e "Githash|Description|Author|" >> $report_file
+                        change="$(git log "$start_hash..$target_hash" --oneline --pretty=format:"%s")";
                 if [ "$change" ]; then
                         echo "$change" >> $report_file
-                        else
-                        echo -e "No Changes" >> $report_file
-                        echo -e "---------------------------------------------------------------------------------------------" >> $report_file
+                        GITHUB_URL="${COMPONENT_LIST[$component]}"
+                        sed -i -e s/\(#/"${GITHUB_URL//\//\\/}\/pull\/"/g -e s/\)//g  $report_file >> $report_file
+#                        sed -e s/\(#/"${GITHUB_URL//\//\\/}\/pull\/"/g -e s/\)//g  $report_file >> $report_file-converted
+#                        else
+#                        echo -e "No Changes" >> $report_file
+#                        echo -e "---------------------------------------------------------------------------------------------" >> $report_file
                 fi
          popd || exit
 
