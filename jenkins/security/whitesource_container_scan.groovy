@@ -108,7 +108,6 @@ pipeline {
 
         stage ('WhiteSource container scan') {
            steps {
-                script { build_stage = env.STAGE_NAME }
                 sh label: 'WhiteSource container scanning', script: '''
                         pushd script/security/
                         export SOLUTION_CONFIG_TYPE=automated
@@ -119,6 +118,7 @@ pipeline {
                         export DOCKER_REGISTRY=${DOCKER_REGISTRY}
                         export WHITESOURCE_VERSION=${WHITESOURCE_VERSION}
                         export PULL_SECRET=${PULL_SECRET}
+                        chmod +x whitesource_container_scan.sh
                         ./whitesource_container_scan.sh
                     popd
                     docker logout
