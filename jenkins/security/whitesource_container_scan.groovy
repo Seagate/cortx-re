@@ -108,6 +108,7 @@ pipeline {
 
         stage ('WhiteSource container scan') {
            steps {
+                script { build_stage = env.STAGE_NAME }
                 sh label: 'WhiteSource container scanning', script: '''
                         pushd script/security/
                         export SOLUTION_CONFIG_TYPE=automated
