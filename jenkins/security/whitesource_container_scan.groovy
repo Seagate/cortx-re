@@ -13,6 +13,7 @@ pipeline {
     }
 
     environment {
+        PODS_ON_PRIMARY = "true"
         GITHUB_CRED = credentials('shailesh-github')
     }
 
@@ -22,6 +23,7 @@ pipeline {
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for CORTX Cluster scripts', trim: true)
         string(name: 'CORTX_SERVER_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-rgw:2.0.0-latest', description: 'CORTX-SERVER image', trim: true)
         string(name: 'CORTX_DATA_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-data:2.0.0-latest', description: 'CORTX-DATA image', trim: true)
+        string(name: 'CORTX_CONTROL_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-control:2.0.0-latest', description: 'CORTX-CONTROL image', trim: true)
         choice(
             name: 'DEPLOYMENT_METHOD',
             choices: ['standard', 'data-only'],
@@ -73,7 +75,7 @@ pipeline {
                            echo "Exiting Jenkins job."
                            exit 1
                         fi
-                        ./cluster-setup.sh
+                        ./cluster-setup.sh ${PODS_ON_PRIMARY}
                     popd
                 '''
             }
