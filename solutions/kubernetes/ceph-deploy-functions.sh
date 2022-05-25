@@ -107,8 +107,8 @@ gpgcheck=0
 enabled=1
 EOF
             yum repolist
-            yum install cephadm cephfs-top ceph-grafana-dashboards ceph-mgr-cephadm ceph-mgr-dashboard ceph-mgr-diskprediction-local ceph-mgr-k8sevents ceph-mgr-modules-core \
-                ceph-mgr-rookceph-prometheus-alerts ceph-resource-agents ceph-volume ceph ceph-base ceph-base-debuginfo ceph-common ceph-common-debuginfo \
+            yum install -y cephadm cephfs-top ceph-grafana-dashboards ceph-mgr-cephadm ceph-mgr-dashboard ceph-mgr-diskprediction-local ceph-mgr-k8sevents ceph-mgr-modules-core \
+                ceph-mgr-rook ceph-prometheus-alerts ceph-resource-agents ceph-volume ceph ceph-base ceph-base-debuginfo ceph-common ceph-common-debuginfo \
                 ceph-debuginfo ceph-debugsource cephfs-mirror cephfs-mirror-debuginfo ceph-fuse ceph-fuse-debuginfo ceph-immutable-object-cache \
                 ceph-immutable-object-cache-debuginfo ceph-mds ceph-mds-debuginfo ceph-mgr ceph-mgr-debuginfo ceph-mon ceph-mon-debuginfo \
                 ceph-osd ceph-osd-debuginfo ceph-radosgw ceph-radosgw-debuginfo ceph-selinux ceph-test ceph-test-debuginfo libcephfs2 \
@@ -127,8 +127,8 @@ gpgcheck=0
 enabled=1
 EOF
             yum repolist
-            yum install cephadm cephfs-top ceph-grafana-dashboards ceph-mgr-cephadm ceph-mgr-dashboard ceph-mgr-diskprediction-local ceph-mgr-k8sevents ceph-mgr-modules-core \
-                ceph-mgr-rookceph-prometheus-alerts ceph-resource-agents ceph-volume ceph ceph-base ceph-base-debuginfo ceph-common ceph-common-debuginfo \
+            yum install -y cephadm cephfs-top ceph-grafana-dashboards ceph-mgr-cephadm ceph-mgr-dashboard ceph-mgr-diskprediction-local ceph-mgr-k8sevents ceph-mgr-modules-core \
+                ceph-mgr-rook ceph-prometheus-alerts ceph-resource-agents ceph-volume ceph ceph-base ceph-base-debuginfo ceph-common ceph-common-debuginfo \
                 ceph-debuginfo ceph-debugsource cephfs-mirror cephfs-mirror-debuginfo ceph-fuse ceph-fuse-debuginfo ceph-immutable-object-cache \
                 ceph-immutable-object-cache-debuginfo ceph-mds ceph-mds-debuginfo ceph-mgr ceph-mgr-debuginfo ceph-mon ceph-mon-debuginfo \
                 ceph-osd ceph-osd-debuginfo ceph-radosgw ceph-radosgw-debuginfo ceph-selinux ceph-test ceph-test-debuginfo libcephfs2 \
