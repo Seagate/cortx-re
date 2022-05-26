@@ -61,7 +61,7 @@ pipeline {
                 pushd solutions/kubernetes/
                     export CEPH_BRANCH=${CEPH_BRANCH}
                     export BUILD_OS=${BUILD_OS}
-                    bash ceph-binary-build.sh --upload-packages /var/log/ceph-build
+                    bash ceph-binary-build.sh --upload-packages /var/log/ceph-build cortx-storage.colo.seagate.com:/mnt/data1/releases/ceph
                 popd
                 '''
             }

@@ -22,7 +22,7 @@ source functions.sh
 source /etc/os-release
 
 BUILD_LOCATION="$2"
-mount="cortx-storage.colo.seagate.com:/mnt/data1/releases/ceph"
+mount="$3"
 
 function usage() {
     cat << HEREDOC

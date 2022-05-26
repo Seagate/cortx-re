@@ -45,7 +45,7 @@ function install_awscli() {
 function setup_awscli() {
    add_secondary_separator "Setup awscli"
 
-   if [[ $CEPH_DEPLOYMENT = "True" ]]; then
+   if [[ $CEPH_DEPLOYMENT = "true" ]]; then
       case "$ID" in
          rocky)
             yum install http://mirror.centos.org/centos/8-stream/AppStream/x86_64/os/Packages/jq-1.6-3.el8.x86_64.rpm -y 

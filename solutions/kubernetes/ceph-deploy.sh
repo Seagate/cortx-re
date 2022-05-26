@@ -25,7 +25,7 @@ OSD_DISKS=$PWD/osd_disks
 SSH_KEY_FILE=/root/.ssh/id_rsa
 ALL_NODES=$(cat "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
 PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
-CEPH_DEPLOYMENT="True"
+CEPH_DEPLOYMENT="true"
 
 function usage() {
     cat << HEREDOC
