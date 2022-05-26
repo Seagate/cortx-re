@@ -1,39 +1,32 @@
 solution:
-  namespace: default
+  namespace: cortx
   deployment_type: standard
   secrets:
     name: cortx-secret
     content:
-      kafka_admin_secret: Seagate@123
-      consul_admin_secret: Seagate@123
-      common_admin_secret: Seagate@123
       s3_auth_admin_secret: ldapadmin
-      csm_auth_admin_secret: seagate2
       csm_mgmt_admin_secret: Cortxadmin@123
   images:
-    cortxcontrol: ghcr.io/seagate/cortx-all:2.0.0-713-06505
-    cortxdata: ghcr.io/seagate/cortx-all:2.0.0-713-06505
-    cortxserver: ghcr.io/seagate/cortx-rgw:2.0.0-713-06505
-    cortxha: ghcr.io/seagate/cortx-all:2.0.0-713-06505
-    cortxclient: ghcr.io/seagate/cortx-all:2.0.0-713-06505
     consul: ghcr.io/seagate/consul:1.11.4
-    kafka: ghcr.io/seagate/kafka:3.0.0-debian-10-r7
-    zookeeper: ghcr.io/seagate/zookeeper:3.7.0-debian-10-r182
+    kafka: ghcr.io/seagate/kafka:3.0.0-debian-10-r97
+    zookeeper: ghcr.io/seagate/zookeeper:3.8.0-debian-10-r9
     rancher: ghcr.io/seagate/local-path-provisioner:v0.0.20
     busybox: ghcr.io/seagate/busybox:latest
+    cortxcontrol: ghcr.io/seagate/cortx-control:2.0.0-790-07401
+    cortxdata: ghcr.io/seagate/cortx-data:2.0.0-790-07401
+    cortxserver: ghcr.io/seagate/cortx-rgw:2.0.0-790-07401
+    cortxha: ghcr.io/seagate/cortx-control:2.0.0-790-07401
+    cortxclient: ghcr.io/seagate/cortx-data:2.0.0-790-07401
   common:
-    setup_size: large
     storage_provisioner_path: /mnt/fs-local-volume
+    setup_size: small
     container_path:
       local: /etc/cortx
-      shared: /share
       log: /etc/cortx/log
     s3:
       default_iam_users:
-        auth_admin: "sgiamadmin"
-        auth_user: "user_name"
-        #auth_secret defined above in solution.secrets.content.s3_auth_admin_secret
-      start_port_num: 28051
+        auth_admin: sgiamadmin
+        auth_user: user_name
       max_start_timeout: 240
       extra_configuration: ""
     motr:
@@ -54,15 +47,15 @@ solution:
         type: NodePort
         count: 1
         ports:
-          http: 80
-          https: 443
+          http: "80"
+          https: "443"
         nodePorts:
           http: 30080
           https: 30443
       control:
         type: NodePort
         ports:
-          https: 8081
+          https: "8081"
         nodePorts:
           https: 31169
     resource_allocation:
@@ -71,19 +64,19 @@ solution:
           storage: 10Gi
           resources:
             requests:
-              memory: 100Mi
-              cpu: 100m
+              memory: 200Mi
+              cpu: 200m
             limits:
-              memory: 300Mi
-              cpu: 100m
+              memory: 500Mi
+              cpu: 500m
         client:
           resources:
             requests:
-              memory: 100Mi
-              cpu: 100m
+              memory: 200Mi
+              cpu: 200m
             limits:
-              memory: 300Mi
-              cpu: 100m
+              memory: 500Mi
+              cpu: 500m
       zookeeper:
         storage_request_size: 8Gi
         data_log_dir_request_size: 8Gi
@@ -92,8 +85,8 @@ solution:
             memory: 256Mi
             cpu: 250m
           limits:
-            memory: 512Mi
-            cpu: 500m
+            memory: 1Gi
+            cpu: 1000m
       kafka:
         storage_request_size: 8Gi
         log_persistence_request_size: 8Gi
@@ -102,22 +95,91 @@ solution:
             memory: 1Gi
             cpu: 250m
           limits:
-            memory: 2Gi
-            cpu: 1
+            memory: 3Gi
+            cpu: 1000m
+      hare:
+        hax:
+          resources:
+            requests:
+              memory: 128Mi
+              cpu: 250m
+            limits:
+              memory: 2Gi
+              cpu: 1000m
+      data:
+        motr:
+          resources:
+            requests:
+              memory: 1Gi
+              cpu: 250m
+            limits:
+              memory: 2Gi
+              cpu: 1000m
+        confd:
+          resources:
+            requests:
+              memory: 128Mi
+              cpu: 250m
+            limits:
+              memory: 512Mi
+              cpu: 500m
+      server:
+        rgw:
+          resources:
+            requests:
+              memory: 128Mi
+              cpu: 250m
+            limits:
+              memory: 2Gi
+              cpu: 2000m
+      control:
+        agent:
+          resources:
+            requests:
+              memory: 128Mi
+              cpu: 250m
+            limits:
+              memory: 256Mi
+              cpu: 500m
+      ha:
+        fault_tolerance:
+          resources:
+            requests:
+              memory: 128Mi
+              cpu: 250m
+            limits:
+              memory: 1Gi
+              cpu: 500m
+        health_monitor:
+          resources:
+            requests:
+              memory: 128Mi
+              cpu: 250m
+            limits:
+              memory: 1Gi
+              cpu: 500m
+        k8s_monitor:
+          resources:
+            requests:
+              memory: 128Mi
+              cpu: 250m
+            limits:
+              memory: 1Gi
+              cpu: 500m
   storage:
     cvg1:
       name: cvg-01
       type: ios
       devices:
         metadata:
-          device: /dev/sdb
+          device: /dev/sdc
           size: 5Gi
         data:
           d1:
-            device: /dev/sdc
+            device: /dev/sdd
             size: 5Gi
           d2:
-            device: /dev/sdd
+            device: /dev/sde
             size: 5Gi
 
   nodes:
