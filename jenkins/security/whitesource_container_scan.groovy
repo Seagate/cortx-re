@@ -122,7 +122,6 @@ pipeline {
                         export PULL_SECRET=${PULL_SECRET}
                         ./whitesource_container_scan_function.sh
                     popd
-                    docker logout
                 '''
             }
         }
