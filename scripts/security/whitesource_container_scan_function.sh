@@ -18,8 +18,8 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
-REPO_ROOT=$PWD/../..
-source $REPO_ROOT/solutions/kubernetes/functions.sh
+
+source ../../solutions/kubernetes/functions.sh
 
 #variables
 HOST_FILE=$PWD/hosts
