@@ -48,7 +48,7 @@ pipeline {
         string(name: 'DOCKER_REGISTRY', defaultValue: 'ghcr.io/seagate', description: 'Docker registry', trim: true)
         string(name: 'WHITESOURCE_VERSION', defaultValue: '20.11.1', description: 'MainPod & WorkerPod version', trim: true)
         string(name: 'PULL_SECRET', defaultValue: ' ', description: 'Image pull secret', trim: true)
-        // Please configure CORTX_SCRIPTS_BRANCH and CORTX_SCRIPTS_REPO parameter in Jenkins job configuration.
+
     }    
 
     stages {
@@ -109,7 +109,9 @@ pipeline {
         stage ('WhiteSource container scan') {
            steps {
                 sh label: 'WhiteSource container scanning', script: '''
-                        pushd script/security/
+                        pushd scripts/security/
+                        echo $hosts | tr ' ' '\n' > hosts
+                        cat hosts
                         export SOLUTION_CONFIG_TYPE=automated
                         export WHITESOURCE_SERVER_URL=${WHITESOURCE_SERVER_URL}
                         export API_KEY=${API_KEY}
@@ -118,8 +120,7 @@ pipeline {
                         export DOCKER_REGISTRY=${DOCKER_REGISTRY}
                         export WHITESOURCE_VERSION=${WHITESOURCE_VERSION}
                         export PULL_SECRET=${PULL_SECRET}
-                        chmod +x whitesource_container_scan.sh
-                        ./whitesource_container_scan.sh
+                        ./whitesource_container_scan_function.sh
                     popd
                     docker logout
                 '''

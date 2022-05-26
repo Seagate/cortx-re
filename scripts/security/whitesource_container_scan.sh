@@ -17,10 +17,8 @@
 # For any questions about this software or licensing,
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
-REPO_ROOT=$PWD/../..
-source $REPO_ROOT/solutions/kubernetes/functions.sh
+source /var/tmp/functions.sh
 
-#AGENT_TAR_LOCATION=$(pwd)/ws-k8s-agent/helm-chart/values.yaml
 #Download WhiteSource Plugin 
 wget http://cortx-storage.colo.seagate.com/releases/cortx/security/whitesource/ws-k8s-agent.tar && tar -xvf ws-k8s-agent.tar >/dev/null 2>&1
 
@@ -44,7 +42,7 @@ sed -Ei "s,(workerPod: whitesource-worker:).*,\1$WHITESOURCE_VERSION,g" values.y
 
 #print values.yaml
 cat values.yaml | egrep -iw "url: |apiKey: |userKey: |pullSecret: |productName:|registry:|mainPod:|workerPod:"| head -8
-
+popd
 #Pulling whitesource images https://ghcr.io/v2/
 docker pull ghcr.io/seagate/whitesource-pre-configure:20.11.1 && docker pull ghcr.io/seagate/whitesource-main:20.11.1 && docker pull ghcr.io/seagate/whitesource-worker:20.11.1
 
