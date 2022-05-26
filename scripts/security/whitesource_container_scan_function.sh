@@ -17,8 +17,10 @@
 # For any questions about this software or licensing,
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
+
 REPO_ROOT=$PWD/../..
 source $REPO_ROOT/solutions/kubernetes/functions.sh
+
 #variables
 HOST_FILE=$PWD/hosts
 SSH_KEY_FILE=/root/.ssh/id_rsa
