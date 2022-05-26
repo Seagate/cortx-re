@@ -85,7 +85,6 @@ pipeline {
                         export CORTX_ALL_IMAGE=${CORTX_ALL_IMAGE}
                         export CORTX_SERVER_IMAGE=${CORTX_SERVER_IMAGE}
                         export CORTX_DATA_IMAGE=${CORTX_DATA_IMAGE}
-                        export CORTX_CLIENT_IMAGE=${CORTX_DATA_IMAGE}
                         export DEPLOYMENT_METHOD=${DEPLOYMENT_METHOD}
                         export SNS_CONFIG=${SNS_CONFIG}
                         export DIX_CONFIG=${DIX_CONFIG}
