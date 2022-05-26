@@ -47,7 +47,7 @@ function add_image_solution_config() {
         image=$DATA_IMAGE yq e -i '.solution.images.cortxdata = env(image)' "$SCRIPT_PATH"/solution.example.yaml
         image=$SERVER_IMAGE yq e -i '.solution.images.cortxserver = env(image)' "$SCRIPT_PATH"/solution.example.yaml
         image=$HA_IMAGE yq e -i '.solution.images.cortxha = env(image)' "$SCRIPT_PATH"/solution.example.yaml
-        image=$CONTROL_IMAGE yq e -i '.solution.images.cortxclient = env(image)' "$SCRIPT_PATH"/solution.example.yaml
+        image=$CLIENT_IMAGE yq e -i '.solution.images.cortxclient = env(image)' "$SCRIPT_PATH"/solution.example.yaml
     popd
 }
 
