@@ -31,7 +31,7 @@ function script_execution() {
     validation
     generate_rsa_key
     nodes_setup
-    scp_primary_node functions.sh whitesource_container_scan.sh
+    scp_primary_node ../../solutions/kubernetes/functions.sh whitesource_container_scan.sh
     ssh_primary_node "
     export SOLUTION_CONFIG_TYPE=automated && 
     export WHITESOURCE_SERVER_URL=$WHITESOURCE_SERVER_URL && 
@@ -42,4 +42,6 @@ function script_execution() {
     export WHITESOURCE_VERSION=$WHITESOURCE_VERSION && 
     export PULL_SECRET=$PULL_SECRET && /var/tmp/whitesource_container_scan.sh"
 }
+
+#Execution
 script_execution
