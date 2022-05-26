@@ -22,7 +22,7 @@ source functions.sh
 source /etc/os-release
 
 BUILD_LOCATION="$2"
-mount="$3"
+MOUNT="$3"
 
 function usage() {
     cat << HEREDOC
@@ -47,12 +47,14 @@ function check_params() {
     if [ -z "$CEPH_BRANCH" ]; then echo "CEPH_BRANCH not provided. Using default: quincy";CEPH_BRANCH="quincy"; fi
     if [ -z "$BUILD_OS" ]; then echo "BUILD_OS not provided. Using default: centos";BUILD_OS="centos"; fi
     if [ -z "$BUILD_LOCATION" ]; then echo "BUILD_LOCATION for container to mount not provided. Using default: /var/log/ceph-build";BUILD_LOCATION="/var/log/ceph-build"; fi
+    if [ -z "$MOUNT" ]; then echo "MOUNT for uploading packages is not provided. Using default: cortx-storage.colo.seagate.com:/mnt/data1/releases/ceph";MOUNT="cortx-storage.colo.seagate.com:/mnt/data1/releases/ceph"; fi
 
    echo -e "\n\n########################################################################"
    echo -e "# CEPH_REPO         : $CEPH_REPO                  "
    echo -e "# CEPH_BRANCH       : $CEPH_BRANCH                "
    echo -e "# BUILD_OS          : $BUILD_OS                   "
    echo -e "# BUILD_LOCATION    : $BUILD_LOCATION             "
+   echo -e "# MOUNT             : $MOUNT                      "
    echo -e "#########################################################################"
 }
 
@@ -232,12 +234,12 @@ function upload_packages() {
     mkdir -p "$build_upload_dir"
 
     add_secondary_separator "Check CORTX-Storage Mountpoint"
-    grep -qs "$mount" /proc/mounts;
-    if grep -qs "$mount" /proc/mounts; then
+    grep -qs "$MOUNT" /proc/mounts;
+    if grep -qs "$MOUNT" /proc/mounts; then
         echo "cortx-storage.colo.seagate.com:/mnt/data1/releases/ceph is mounted."
     else
         echo "cortx-storage.colo.seagate.com:/mnt/data1/releases/ceph is not mounted."
-        sudo mount -t nfs4 "$mount" "$build_upload_dir"
+        sudo mount -t nfs4 "$MOUNT" "$build_upload_dir"
         check_status
     fi
 
