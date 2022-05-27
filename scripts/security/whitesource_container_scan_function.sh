@@ -17,30 +17,41 @@
 # For any questions about this software or licensing,
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
+source /var/tmp/functions.sh
 
-source ../../solutions/kubernetes/functions.sh
+#Download WhiteSource Plugin 
+wget http://cortx-storage.colo.seagate.com/releases/cortx/security/whitesource/ws-k8s-agent.tar && tar -xvf ws-k8s-agent.tar >/dev/null 2>&1
 
-#variables
-HOST_FILE=$PWD/hosts
-SSH_KEY_FILE=/root/.ssh/id_rsa
-ALL_NODES=$(cat "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
-PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
-
-function script_execution() {
-    validation
-    generate_rsa_key
-    nodes_setup
-    scp_primary_node ../../solutions/kubernetes/functions.sh whitesource_container_scan.sh
-    ssh_primary_node "
-    export SOLUTION_CONFIG_TYPE=automated && 
-    export WHITESOURCE_SERVER_URL=$WHITESOURCE_SERVER_URL && 
-    export API_KEY=$API_KEY && 
-    export USER_KEY=$USER_KEY && 
-    export PRODUCT_NAME=$PRODUCT_NAME && 
-    export DOCKER_REGISTRY=$DOCKER_REGISTRY && 
-    export WHITESOURCE_VERSION=$WHITESOURCE_VERSION && 
-    export PULL_SECRET=$PULL_SECRET && /var/tmp/whitesource_container_scan.sh"
+function default_parameter() {
+    if [ -z "$WHITESOURCE_SERVER_URL" ]; then echo "WHITESOURCE_SERVER_URL not provided. Using default: https://saas.whitesourcesoftware.com ";WHITESOURCE_SERVER_URL=https://saas.whitesourcesoftware.com; fi
+    if [ -z "$USER_KEY" ]; then echo "USER_KEY not provided. Exiting script"; exit 1; fi
+    if [ -z "$DOCKER_REGISTRY" ]; then echo "DOCKER_REGISTRY not provided. Using default: ghcr.io/seagate"; DOCKER_REGISTRY=ghcr.io/seagate; fi
+echo -e "\n\n########################################################################"
+   echo -e "# WHITESOURCE_SERVER_URL     : $WHITESOURCE_SERVER_URL              "
+   echo -e "# DOCKER_REGISTRY            : $DOCKER_REGISTRY                     "
+   echo -e "#########################################################################"
 }
+default_parameter
+pushd ws-k8s-agent/helm-chart/
+#Updating the configuration file
+sed -Ei 's,(url: ).*,\1"'"$WHITESOURCE_SERVER_URL"'",g' values.yaml; sed -Ei 's,(apiKey: ).*,\1"'"$API_KEY"'",g' values.yaml
+sed -Ei 's,(userKey: ).*,\1"'"$USER_KEY"'",g' values.yaml; sed -Ei "s,(productName: ).*,\1$PRODUCT_NAME,g" values.yaml
+sed -Ei "s,(registry: ).*,\1$DOCKER_REGISTRY,g" values.yaml; sed -Ei "s,(mainPod: ).*,\1$MAIN_POD,g" values.yaml
+sed -Ei "s,(workerPod: ).*,\1$WORKER_POD,g" values.yaml; sed -Ei 's,(pullSecret: ).*,\1"'"$PULL_SECRET"'",g' values.yaml
 
-#Execution
-script_execution
+#print values.yaml
+cat values.yaml | egrep -iw "url: |apiKey: |userKey: |pullSecret: |productName:|registry:|mainPod:|workerPod:"| head -8
+popd
+#Pulling whitesource images https://ghcr.io/v2/
+docker pull ghcr.io/seagate/whitesource-pre-configure:20.11.1 && docker pull ghcr.io/seagate/whitesource-main:20.11.1 && docker pull ghcr.io/seagate/whitesource-worker:20.11.1
+docker logout
+#Uninstall/stop existing scanner
+#pushd root/ws-k8s-agent
+#helm uninstall whitesource-k8s
+add_common_separator "Run helm uninstall whitesource-k8s to stop existing scanner"
+
+#Running the hem-chart to setup whiteSource Containers & trigger the Scan
+pushd ws-k8s-agent
+#helm install whitesource-k8s ./helm-chart –wait
+#Kubectl get pods -n whitesource-namespace
+add_common_separator "Run helm install whitesource-k8s ./helm-chart –wait to setup whiteSource Containers & trigger the Scan"

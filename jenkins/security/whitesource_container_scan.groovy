@@ -114,7 +114,7 @@ pipeline {
                         export DOCKER_REGISTRY=${DOCKER_REGISTRY}
                         export WHITESOURCE_VERSION=${WHITESOURCE_VERSION}
                         export PULL_SECRET=${PULL_SECRET}
-                        ./whitesource_container_scan_function.sh
+                        ./whitesource_container_scan.sh
                     popd
                 '''
             }
