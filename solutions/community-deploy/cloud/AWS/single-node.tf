@@ -132,7 +132,7 @@ resource "aws_instance" "cortx_deploy" {
         yum install -y yum-utils git firewalld -y
   EOT
   root_block_device {
-    volume_size = 25
+    volume_size = 90
   }
 
   tags = {

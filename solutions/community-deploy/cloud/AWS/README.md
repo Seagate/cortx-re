@@ -26,6 +26,7 @@ git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/comm
 os_version          = "<OS VERSION>"
 region              = "<AWS REGION>"
 security_group_cidr = "<YOUR PUBLIC IP CIDR>"
+key_name            = "<AWK KEY NAME>"
 ```
 - Use `CentOS 7.8.2003 x86_64` or `CentOS 7.9.2009 x86_64` as os_version as required.
 
@@ -44,6 +45,8 @@ cat user.tfvars
 os_version          = "CentOS 7.9.2009 x86_64"
 region              = "ap-south-1"
 security_group_cidr = "134.204.222.36/32"
+key_name            = "devops-key"
+
 ```
 
 ## Create AWS instance
@@ -59,7 +62,7 @@ terraform validate && terraform apply -var-file user.tfvars --auto-approve
 - Execute `/home/centos/setup.sh` to setup Network and Storage devices for CORTX. Script will reboot instance on completion. 
 
 ```
-ssh -i cortx.pem centos@"<AWS instance public-ip>" sudo bash /home/centos/setup.sh
+ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip>" sudo bash /home/centos/setup.sh
 ```
 - AWS instance is ready for CORTX Build and deployment now. Connect to instance over SSH and validate that all three network cards has IP address assigned.
    
@@ -77,7 +80,18 @@ passwd root
 ### CORTX Build
 
 - We will use [cortx-build](https://github.com/Seagate/cortx/pkgs/container/cortx-build) docker image to compile entire CORTX stack.  
-- Please follow [CORTX Container Image generation](https://github.com/Seagate/cortx/blob/main/doc/community-build/docker/cortx-all/README.md) steps for compilation.
+- Login into AWS instance over SSH using IP address from Terraform script execution output
+```
+ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip>"
+```
+- Clone cortx-re repository and switch to `solutions/kubernetes` directory
+```
+git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/community-deploy
+```
+- Execute `build-cortx.sh` script. This script will generate CORTX container images from `main` of CORTX components
+```
+time ./build-cortx.sh
+```
 
 ### CORTX Deployment
 
