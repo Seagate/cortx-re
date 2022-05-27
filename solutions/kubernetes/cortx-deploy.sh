@@ -27,6 +27,7 @@ SSH_KEY_FILE=/root/.ssh/id_rsa
 ALL_NODES=$(cat "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
 PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
 WORKER_NODES=$(cat "$HOST_FILE" | grep -v "$PRIMARY_NODE" | awk -F[,] '{print $1}' | cut -d'=' -f2) || true
+CEPH_DEPLOYMENT="false"
 
 function usage() {
     cat << HEREDOC
@@ -180,7 +181,7 @@ function io-sanity() {
 
     add_primary_separator "\tSetting up IO Sanity Testing"
     scp_primary_node io-sanity.sh
-    ssh_primary_node "export DEPLOYMENT_METHOD=$DEPLOYMENT_METHOD && /var/tmp/cortx-deploy-functions.sh --io-sanity"
+    ssh_primary_node "export CEPH_DEPLOYMENT=$CEPH_DEPLOYMENT && export DEPLOYMENT_METHOD=$DEPLOYMENT_METHOD && /var/tmp/cortx-deploy-functions.sh --io-sanity"
 }
 
 case $ACTION in
