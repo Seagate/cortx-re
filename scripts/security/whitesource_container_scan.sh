@@ -23,8 +23,6 @@ source ../../solutions/kubernetes/functions.sh
 #variables
 HOST_FILE=$PWD/hosts
 
-
-
     validation
     generate_rsa_key
     nodes_setup

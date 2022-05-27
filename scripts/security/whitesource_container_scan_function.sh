@@ -39,12 +39,14 @@ sed -Ei 's,(userKey: ).*,\1"'"$USER_KEY"'",g' values.yaml; sed -Ei "s,(productNa
 sed -Ei "s,(registry: ).*,\1$DOCKER_REGISTRY,g" values.yaml; sed -Ei "s,(mainPod: ).*,\1$MAIN_POD,g" values.yaml
 sed -Ei "s,(workerPod: ).*,\1$WORKER_POD,g" values.yaml; sed -Ei 's,(pullSecret: ).*,\1"'"$PULL_SECRET"'",g' values.yaml
 
-#print values.yaml
-cat values.yaml | egrep -iw "url: |apiKey: |userKey: |pullSecret: |productName:|registry:|mainPod:|workerPod:"| head -8
-popd
 #Pulling whitesource images https://ghcr.io/v2/
 docker pull ghcr.io/seagate/whitesource-pre-configure:20.11.1 && docker pull ghcr.io/seagate/whitesource-main:20.11.1 && docker pull ghcr.io/seagate/whitesource-worker:20.11.1
 docker logout
+
+#print values.yaml
+cat values.yaml | egrep -iw "url: |apiKey: |userKey: |pullSecret: |productName:|registry:|mainPod:|workerPod:"| head -8
+popd
+
 #Uninstall/stop existing scanner
 #pushd root/ws-k8s-agent
 #helm uninstall whitesource-k8s

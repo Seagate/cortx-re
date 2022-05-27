@@ -42,7 +42,11 @@ pipeline {
         string(name: 'PRODUCT_NAME', defaultValue: 'cortx-all-k8s-cluster', description: 'Product name', trim: true)
         string(name: 'DOCKER_REGISTRY', defaultValue: 'ghcr.io/seagate', description: 'Docker registry', trim: true)
         string(name: 'WHITESOURCE_VERSION', defaultValue: '20.11.1', description: 'MainPod & WorkerPod version', trim: true)
-        string(name: 'PULL_SECRET', defaultValue: ' ', description: 'Image pull secret', trim: true)       
+        properties([
+                parameters([
+                    password(name: 'PULL_SECRET', description: 'Image pull secret')
+                            ])
+                    ])       
     }    
 
     stages {
