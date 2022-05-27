@@ -251,7 +251,7 @@ pipeline {
             }
         }
 
-        stage ("Build CORTX-ALL image") {
+        stage ("Build CORTX-RGW image") {
                 steps {
                     script { build_stage = env.STAGE_NAME }
                     script {

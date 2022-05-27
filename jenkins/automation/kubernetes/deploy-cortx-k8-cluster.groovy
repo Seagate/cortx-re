@@ -20,9 +20,9 @@ pipeline {
     parameters {
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX Cluster scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for CORTX Cluster scripts', trim: true)
-        string(name: 'CORTX_ALL_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-all:2.0.0-latest', description: 'CORTX-ALL image', trim: true)
         string(name: 'CORTX_SERVER_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-rgw:2.0.0-latest', description: 'CORTX-SERVER image', trim: true)
         string(name: 'CORTX_DATA_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-data:2.0.0-latest', description: 'CORTX-DATA image', trim: true)
+        string(name: 'CORTX_CONTROL_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-control:2.0.0-latest', description: 'CORTX-CONTROL image', trim: true)
         choice(
             name: 'DEPLOYMENT_METHOD',
             choices: ['standard', 'data-only'],
@@ -33,6 +33,7 @@ pipeline {
         string(name: 'CONTROL_EXTERNAL_NODEPORT', defaultValue: '31169', description: 'Port to be used for control service.', trim: true)
         string(name: 'S3_EXTERNAL_HTTP_NODEPORT', defaultValue: '30080', description: 'HTTP Port to be used for IO service.', trim: true)
         string(name: 'S3_EXTERNAL_HTTPS_NODEPORT', defaultValue: '30443', description: 'HTTPS to be used for IO service.', trim: true)
+        string(name: 'NAMESPACE', defaultValue: 'cortx', description: 'kubernetes namespace to be used for CORTX deployment.', trim: true)
         text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used. First node will be used as Primary node', name: 'hosts')
         choice(
             name: 'EXTERNAL_EXPOSURE_SERVICE',
@@ -80,9 +81,9 @@ pipeline {
                         export SOLUTION_CONFIG_TYPE=automated
                         export CORTX_SCRIPTS_BRANCH=${CORTX_SCRIPTS_BRANCH}
                         export CORTX_SCRIPTS_REPO=${CORTX_SCRIPTS_REPO}
-                        export CORTX_ALL_IMAGE=${CORTX_ALL_IMAGE}
                         export CORTX_SERVER_IMAGE=${CORTX_SERVER_IMAGE}
                         export CORTX_DATA_IMAGE=${CORTX_DATA_IMAGE}
+                        export CORTX_CONTROL_IMAGE=${CORTX_CONTROL_IMAGE}
                         export DEPLOYMENT_METHOD=${DEPLOYMENT_METHOD}
                         export SNS_CONFIG=${SNS_CONFIG}
                         export DIX_CONFIG=${DIX_CONFIG}
@@ -90,6 +91,7 @@ pipeline {
                         export CONTROL_EXTERNAL_NODEPORT=${CONTROL_EXTERNAL_NODEPORT}
                         export S3_EXTERNAL_HTTP_NODEPORT=${S3_EXTERNAL_HTTP_NODEPORT}
                         export S3_EXTERNAL_HTTPS_NODEPORT=${S3_EXTERNAL_HTTPS_NODEPORT}
+                        export NAMESPACE=${NAMESPACE}
                         ./cortx-deploy.sh --cortx-cluster
                     popd
                 '''
