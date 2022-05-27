@@ -83,7 +83,7 @@ ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip>"
 ```
 - Clone cortx-re repository and switch to `solutions/kubernetes` directory
 ```
-git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/kubernetes
+git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/community-deploy
 ```
 - Execute `build-cortx.sh` script. This script will generate CORTX container images from `main` of CORTX components
 ```
