@@ -73,11 +73,11 @@ function docker_compose_check() {
 }
 docker_compose_check
 
-#Instal git
+#Install git
 yum install git -y
 
 # Compile and Build CORTX Stack
-docker rmi -f $(docker images | grep -i 'ghcr.io/seagate/cortx-build*')
+docker rmi --force $(docker images --filter=reference='*/*/cortx-build:*' --filter=reference='*cortx-build:*' -q)
 docker pull ghcr.io/seagate/cortx-build:rockylinux-8.4
 
 # Clone the CORTX repository
