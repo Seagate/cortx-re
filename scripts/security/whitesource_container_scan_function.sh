@@ -36,8 +36,8 @@ pushd ws-k8s-agent/helm-chart/
 #Updating the configuration file
 sed -Ei 's,(url: ).*,\1"'"$WHITESOURCE_SERVER_URL"'",g' values.yaml; sed -Ei 's,(apiKey: ).*,\1"'"$API_KEY"'",g' values.yaml
 sed -Ei 's,(userKey: ).*,\1"'"$USER_KEY"'",g' values.yaml; sed -Ei "s,(productName: ).*,\1$PRODUCT_NAME,g" values.yaml
-sed -Ei "s,(registry: ).*,\1$DOCKER_REGISTRY,g" values.yaml; sed -Ei "s,(mainPod: ).*,\1$MAIN_POD,g" values.yaml
-sed -Ei "s,(workerPod: ).*,\1$WORKER_POD,g" values.yaml; sed -Ei 's,(pullSecret: ).*,\1"'"$PULL_SECRET"'",g' values.yaml
+sed -Ei "s,(registry: ).*,\1$DOCKER_REGISTRY,g" values.yaml; sed -Ei "s,(mainPod: whitesource-main:).*,\1$WHITESOURCE_VERSION,g" values.yaml
+sed -Ei "s,(workerPod: whitesource-worker:).*,\1$WHITESOURCE_VERSION,g" values.yaml; sed -Ei 's,(pullSecret: ).*,\1"'"$PULL_SECRET"'",g' values.yaml
 
 #Pulling whitesource images https://ghcr.io/v2/
 docker pull ghcr.io/seagate/whitesource-pre-configure:20.11.1 && docker pull ghcr.io/seagate/whitesource-main:20.11.1 && docker pull ghcr.io/seagate/whitesource-worker:20.11.1
