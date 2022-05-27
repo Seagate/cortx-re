@@ -33,7 +33,7 @@ pipeline {
         text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used. First node will be used as Primary node', name: 'hosts')
         choice(
             name: 'EXTERNAL_EXPOSURE_SERVICE',
-            choices: ['LoadBalancer', 'NodePort'],
+            choices: ['NodePort', 'LoadBalancer'],
             description: 'K8s Service to be used to expose RGW Service to outside cluster.'
         )
         string(name: 'WHITESOURCE_SERVER_URL', defaultValue: 'https://saas.whitesourcesoftware.com', description: 'WhiteSource Server URL', trim: true)
