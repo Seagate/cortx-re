@@ -38,7 +38,13 @@ pipeline {
             choices: ['LoadBalancer', 'NodePort'],
             description: 'K8s Service to be used to expose RGW Service to outside cluster.'
         )
-        
+        string(name: 'WHITESOURCE_SERVER_URL', defaultValue: 'https://saas.whitesourcesoftware.com', description: 'WhiteSource Server URL', trim: true)
+        string(name: 'API_KEY', defaultValue: ' ', description: 'Api Key', trim: true)
+        string(name: 'USER_KEY', defaultValue: ' ', description: 'User Key', trim: true)
+        string(name: 'PRODUCT_NAME', defaultValue: 'cortx-all-k8s-cluster', description: 'Product name', trim: true)
+        string(name: 'DOCKER_REGISTRY', defaultValue: 'ghcr.io/seagate', description: 'Docker registry', trim: true)
+        string(name: 'WHITESOURCE_VERSION', defaultValue: '20.11.1', description: 'MainPod & WorkerPod version', trim: true)
+        string(name: 'PULL_SECRET', defaultValue: ' ', description: 'Image pull secret', trim: true)       
     }    
 
     stages {
