@@ -22,11 +22,9 @@ source ../../solutions/kubernetes/functions.sh
 
 #variables
 HOST_FILE=$PWD/hosts
-SSH_KEY_FILE=/root/.ssh/id_rsa
-ALL_NODES=$(cat "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
-PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
 
-function script_execution() {
+
+
     validation
     generate_rsa_key
     nodes_setup
@@ -39,8 +37,4 @@ function script_execution() {
     export PRODUCT_NAME=$PRODUCT_NAME && 
     export DOCKER_REGISTRY=$DOCKER_REGISTRY && 
     export WHITESOURCE_VERSION=$WHITESOURCE_VERSION && 
-    export PULL_SECRET=$PULL_SECRET && /var/tmp/whitesource_container_scan.sh"
-}
-
-#Execution
-script_execution
+    export PULL_SECRET=$PULL_SECRET && /var/tmp/whitesource_container_scan_function.sh"
