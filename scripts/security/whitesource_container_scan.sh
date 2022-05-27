@@ -22,6 +22,9 @@ source ../../solutions/kubernetes/functions.sh
 
 #variables
 HOST_FILE=$PWD/hosts
+SSH_KEY_FILE=/root/.ssh/id_rsa
+ALL_NODES=$(cat "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
 
     validation
     generate_rsa_key
