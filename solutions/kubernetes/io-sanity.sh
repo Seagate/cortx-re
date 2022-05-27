@@ -21,6 +21,7 @@
 set -euo pipefail
 
 source /var/tmp/functions.sh
+source /etc/os-release
 
 SOLUTION_FILE="/root/deploy-scripts/k8_cortx_cloud/solution.yaml"
 

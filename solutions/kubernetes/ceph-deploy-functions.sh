@@ -196,7 +196,7 @@ EOF
 }
 
 function ceph_status() {
-    add_primary_separator "Ceph Cluster Status"
+    add_primary_separator "\t\tCeph Cluster Status"
     ceph -s
     ceph health detail
  
