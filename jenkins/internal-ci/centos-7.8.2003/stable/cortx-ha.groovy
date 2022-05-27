@@ -172,7 +172,7 @@ EOF
 	
 	post {
 		always {
-			script{    	
+			script {
 				echo 'Cleanup Workspace.'
 				deleteDir() /* clean up our workspace */
 
@@ -182,13 +182,13 @@ EOF
 				env.build_stage = "${build_stage}"
 
                 env.vm_deployment = (env.deployVMURL != null) ? env.deployVMURL : "" 
-                if (env.deployVMStatus != null && env.deployVMStatus != "SUCCESS" && manager.build.result.toString() == "SUCCESS"){
+                if (env.deployVMStatus != null && env.deployVMStatus != "SUCCESS" && manager.build.result.toString() == "SUCCESS") {
                     manager.buildUnstable()
                 }
                 
 				def toEmail = ""
 				def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
-				if( manager.build.result.toString() == "FAILURE"){
+				if ( manager.build.result.toString() == "FAILURE") {
 					toEmail = "CORTX.HA@seagate.com,shailesh.vaidya@seagate.com"
 					
 				}
@@ -212,11 +212,11 @@ def getAuthor(issue) {
     def author= ""
     def response = ""
     // Grab build information
-    for (int i = 0; i < changeLogSets.size(); i++){ 
+    for (int i = 0; i < changeLogSets.size(); i++) {
         def entries = changeLogSets[i].items
         for (int j = 0; j < entries.length; j++) {                                             
             def entry = entries[j]
-            if((entry.msg).contains(issue)){
+            if ((entry.msg).contains(issue)) {
                 author = entry.author
             }
         }

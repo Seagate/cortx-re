@@ -108,4 +108,4 @@ Run IO Sanity on your CORTX Cluster to validate if you are able to create bucket
 
 Tested by:
 
-* May 06, 2022: Rahul Shenoy (rahul.shenoy@seagate.com) - Windows + VMware Workstation 16 + CentOS 7.9 Linux
+* May 06, 2022: Rahul Shenoy (rahul.shenoy@seagate.com) - Windows , VMware Workstation 16 , CentOS 7.9 Linux
