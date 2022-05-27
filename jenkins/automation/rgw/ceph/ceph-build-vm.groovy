@@ -25,7 +25,7 @@ pipeline {
         string(name: 'CEPH_BRANCH', defaultValue: 'quincy', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
         choice(
             name: 'BUILD_OS',
-            choices: ['ubuntu-20.04', 'centos-8', 'rockylinux-8.4'],
+            choices: ['rockylinux-8.4', 'ubuntu-20.04', 'centos-8'],
             description: 'OS to build binary packages for (*.deb, *.rpm).'
         )
     }    
