@@ -24,6 +24,7 @@ from datetime import datetime
 from collections import defaultdict
 
 eof = ''
+eof_file = ''
 TOTAL_WORDS_SCANNED = 0
 TOTAL_FILES_SCANNED = 0
 CUSTOM_CONT = []
@@ -51,6 +52,7 @@ def get_block_content(file_name):
     """
     count = 0
     global eof
+    global eof_file
     file_dict = {}
     print ("Generator function called..")
     with open(file_name, "r") as fp:
@@ -71,10 +73,12 @@ def get_block_content(file_name):
                     file_dict = {}
                     file_dict[filename] = ''
                     eof = ''
+                    eof_file = ''
             else:
                 file_dict[filename] += line
                 eof += line
                 count += 1
+                eof_file = filename
 
 
 def html_row_gen(file, word_cont, component):
@@ -83,6 +87,8 @@ def html_row_gen(file, word_cont, component):
     Returns:
     html_content: html row content
     """
+    if file == "":
+       return ""
     print ("Generate row %s" % file)
     tabe_row = '<tr><td><h2>%s</h2><div class="file-diff"><table class="inner">' % file
     header = '<tr><th class="word_width">Word</th><th class="line_width">Line Number</th><th>Recommendation</th></tr>'
@@ -105,6 +111,7 @@ def html_row_gen(file, word_cont, component):
     custom_scan_cont = ''
     with open(component_name, "r") as fc:
        custom_scan_cont = fc.read()
+       custom_scan_cont = re.sub('Binary file[^>]*?\\n', '', custom_scan_cont)
        file = file.strip()
        if file in custom_scan_cont:
           #global CUSTOM_CONT
@@ -172,6 +179,7 @@ def main():
     print ("Processing %s ....." %args)
     component_name = args.file
     files_generator = get_block_content(component_name)
+    print ("File", files_generator)
     for file in files_generator:
         for file_name, words in file.items():
             if words == '':
@@ -187,7 +195,15 @@ def main():
     with open("alex_template.html", "r") as fp:
         html_tmpl_cont = fp.read()
 
+    if eof and last_file_name == "":
+        last_file_name = eof_file
     rows_cont += html_row_gen(last_file_name, eof, component_name)
+
+    print (">>>>>>", rows_cont)
+    if rows_cont == "":
+        rows_cont = '<tr><td><h2></h2><div class="file-diff"><table class="inner">'
+        rows_cont += '<tr><th class="word_width">Word</th><th class="line_width">Line Number</th><th>Recommendation</th></tr>'
+        rows_cont += '<tr><td class="word_width" colspan=3><pre>No word found</pre></tr></table></div></td></tr>'
 
     if eof: TOTAL_FILES_SCANNED += 1
 
