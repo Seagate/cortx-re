@@ -1,7 +1,7 @@
 pipeline {
     agent {
         node {
-            label 'docker-rockylinux-8.4-node'
+            label 'docker-k8-deployment-node'
         }
     }
 
