@@ -36,7 +36,7 @@ pipeline {
        stage ('checkout script') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Setting up EC2 instance and run the community build', script: '''
+                sh label: 'checkout script', script: '''
                     VM_IP=$(curl ipinfo.io/ip)
                     export OS_VERSION=${OS_VERSION}
                     export REGION=${REGION}
