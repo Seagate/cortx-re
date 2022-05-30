@@ -65,6 +65,8 @@ if [ -z "$BUILD_LOCATION" ]; then
                 docker run --rm "$START_BUILD" cat /RELEASE.INFO > start_build_manifest.txt
                 docker pull "$TARGET_BUILD" || { echo "Failed to pull $TARGET_BUILD"; exit 1; }
                 docker run --rm "$TARGET_BUILD" cat /RELEASE.INFO > target_build_manifest.txt
+                START_IMAGE=${START_BUILD##*/*:}
+                TARGET_IMAGE=${TARGET_BUILD##*/*:}
                 START_BUILD=$(grep "BUILD:" start_build_manifest.txt| awk '{print $2}'|tr -d '"')
                 TARGET_BUILD=$(grep "BUILD:" target_build_manifest.txt| awk '{print $2}'|tr -d '"')
         else
@@ -85,7 +87,7 @@ else
         wget -q "$BUILD_LOCATION"/"$START_BUILD"/dev/RELEASE.INFO -O start_build_manifest.txt
         wget -q "$BUILD_LOCATION"/"$TARGET_BUILD"/dev/RELEASE.INFO -O target_build_manifest.txt
 fi
-
+echo -e "Changelog from $START_IMAGE to $TARGET_IMAGE \n" > $clone_dir/clone/git-build-checkin-report.txt
 for component in "${!COMPONENT_LIST[@]}"
 do
         echo "Component:$component"
@@ -116,18 +118,12 @@ do
                 fi
 
                  pushd "$dir" || exit
-
-#                        echo -e "\t--[ Check-ins for $dir from $START_BUILD ($start_hash) to $TARGET_BUILD ($target_hash) ]--" >> $report_file
-#                        echo -e "Githash|Description|Author|" >> $report_file
                         change="$(git log "$start_hash..$target_hash" --oneline --pretty=format:"%s")";
                 if [ "$change" ]; then
-                        echo "$change" >> $report_file
+                        echo "$dir" >> $report_file
+                        echo -e  "$change \n" >> $report_file
                         GITHUB_URL="${COMPONENT_LIST[$component]}"
                         sed -i -e s/\(#/"${GITHUB_URL//\//\\/}\/pull\/"/g -e s/\)//g  $report_file >> $report_file
-#                        sed -e s/\(#/"${GITHUB_URL//\//\\/}\/pull\/"/g -e s/\)//g  $report_file >> $report_file-converted
-#                        else
-#                        echo -e "No Changes" >> $report_file
-#                        echo -e "---------------------------------------------------------------------------------------------" >> $report_file
                 fi
          popd || exit
 
