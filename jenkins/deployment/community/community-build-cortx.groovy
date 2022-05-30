@@ -22,7 +22,7 @@ pipeline {
 
     }
 
-        stages {
+    stages {
 
         stage('Checkout Script') {
             steps { 
@@ -33,24 +33,46 @@ pipeline {
             }
         }
 
-        stage ('Setup AWS instance') {
+       stage ('checkout script') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Setting up EC2 instance and run the community build', script: '''
                     VM_IP=$(curl ipinfo.io/ip)
-                    AWS_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.cortx_deploy_ip_addr.value)
-                    export CORTX_SCRIPTS_BRANCH=${CORTX_SCRIPTS_BRANCH}
                     export OS_VERSION=${OS_VERSION}
                     export REGION=${REGION}
                     git clone https://github.com/Seagate/cortx-re && pushd $PWD/cortx-re/solutions/community-deploy/cloud/AWS
                     ./tool_setup.sh
                     sed -Ei 's,(os_version          =).*,\1 "'"$OS_VERSION"'",g' user.tfvars && sed -Ei 's,(region              =).*,\1 "'"$REGION"'",g' user.tfvars && sed -Ei 's,(security_group_cidr =).*,\1 "'"$VM_IP/32"'",g' user.tfvars
                     cat user.tfvars | tail -3
+            '''
+            }
+        }            
+        stage ('create EC2 instace') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'Setting up EC2 instance', script: '''
+                    AWS_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.cortx_deploy_ip_addr.value)
                     terraform validate && terraform apply -var-file user.tfvars --auto-approve
                     ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$AWS_IP sudo bash /home/centos/setup.sh
                     sleep 60
+            '''
+            }
+        }
+        stage ('execute cortx build script') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'executing cortx build script', script: '''
+                    export CORTX_SCRIPTS_BRANCH=${CORTX_SCRIPTS_BRANCH}
                     ssh -i cortx.pem -o 'StrictHostKeyChecking=no' root@$AWS_IP git clone https://github.com/Seagate/cortx-re && pushd $PWD/cortx-re/solutions/community-deploy && time ./build-cortx.sh -b ${CORTX_RE_BRANCH}
                 popd
+            '''
+            }
+        }
+        stage ('destroy AWS infrastructure') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'executing cortx build script', script: '''
+                terraform validate && terraform destroy -var-file user.tfvars --auto-approve
             '''
             }
         }
