@@ -157,6 +157,46 @@ function update_solution_config(){
         yq e -i '.solution.common.resource_allocation.kafka.resources.limits.memory = "3Gi"' solution.yaml
         yq e -i '.solution.common.resource_allocation.kafka.resources.limits.cpu = "1000m"' solution.yaml
 
+        yq e -i '.solution.common.resource_allocation.hare.hax.resources.requests.memory = "128Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.hare.hax.resources.requests.cpu = "250m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.hare.hax.resources.limits.memory = "2Gi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.hare.hax.resources.limits.cpu = "1000m"' solution.yaml
+
+        yq e -i '.solution.common.resource_allocation.data.motr.resources.requests.memory = "1Gi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.data.motr.resources.requests.cpu = "250m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.data.motr.resources.limits.memory = "2Gi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.data.motr.resources.limits.cpu = "1000m"' solution.yaml
+
+        yq e -i '.solution.common.resource_allocation.data.confd.resources.requests.memory = "128Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.data.confd.resources.requests.cpu = "250m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.data.confd.resources.limits.memory = "512Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.data.confd.resources.limits.cpu = "500m"' solution.yaml
+
+        yq e -i '.solution.common.resource_allocation.server.rgw.resources.requests.memory = "128Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.server.rgw.resources.requests.cpu = "250m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.server.rgw.resources.limits.memory = "2Gi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.server.rgw.resources.limits.cpu = "2000m"' solution.yaml
+
+        yq e -i '.solution.common.resource_allocation.control.agent.resources.requests.memory = "128Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.control.agent.resources.requests.cpu = "250m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.control.agent.resources.limits.memory = "256Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.control.agent.resources.limits.cpu = "500m"' solution.yaml
+
+        yq e -i '.solution.common.resource_allocation.ha.fault_tolerance.resources.requests.memory = "128Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.ha.fault_tolerance.resources.requests.cpu = "250m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.ha.fault_tolerance.resources.limits.memory = "1Gi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.ha.fault_tolerance.resources.limits.cpu = "500m"' solution.yaml
+
+        yq e -i '.solution.common.resource_allocation.ha.health_monitor.resources.requests.memory = "128Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.ha.health_monitor.resources.requests.cpu = "250m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.ha.health_monitor.resources.limits.memory = "1Gi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.ha.health_monitor.resources.limits.cpu = "500m"' solution.yaml
+
+        yq e -i '.solution.common.resource_allocation.ha.k8s_monitor.resources.requests.memory = "128Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.ha.k8s_monitor.resources.requests.cpu = "250m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.ha.k8s_monitor.resources.limits.memory = "1Gi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.ha.k8s_monitor.resources.limits.cpu = "500m"' solution.yaml
+
         yq e -i '.solution.storage.cvg1.name = "cvg-01"' solution.yaml
         yq e -i '.solution.storage.cvg1.type = "ios"' solution.yaml
         yq e -i '.solution.storage.cvg1.devices.metadata.device = "/dev/sdc"' solution.yaml
@@ -178,13 +218,13 @@ function update_solution_config(){
 }        
 
 function add_image_info() {
-echo "Updating cortx-all image info in solution.yaml"   
+echo "Updating cortx images info in solution.yaml"   
 pushd $SCRIPT_LOCATION/k8_cortx_cloud
-    image=$CORTX_ALL_IMAGE yq e -i '.solution.images.cortxcontrol = env(image)' solution.yaml	
+    image=$CORTX_CONTROL_IMAGE yq e -i '.solution.images.cortxcontrol = env(image)' solution.yaml	
     image=$CORTX_DATA_IMAGE yq e -i '.solution.images.cortxdata = env(image)' solution.yaml
     image=$CORTX_SERVER_IMAGE yq e -i '.solution.images.cortxserver = env(image)' solution.yaml
-    image=$CORTX_ALL_IMAGE yq e -i '.solution.images.cortxha = env(image)' solution.yaml
-    image=$CORTX_ALL_IMAGE yq e -i '.solution.images.cortxclient = env(image)' solution.yaml
+    image=$CORTX_CONTROL_IMAGE yq e -i '.solution.images.cortxha = env(image)' solution.yaml
+    image=$CORTX_DATA_IMAGE yq e -i '.solution.images.cortxclient = env(image)' solution.yaml
 popd 
 }
 
@@ -237,9 +277,9 @@ function execute_deploy_script() {
 
 function execute_prereq() {
     add_secondary_separator "Pulling latest CORTX images"
-    docker pull $CORTX_ALL_IMAGE || { echo "Failed to pull $CORTX_ALL_IMAGE"; exit 1; }
     docker pull $CORTX_SERVER_IMAGE || { echo "Failed to pull $CORTX_SERVER_IMAGE"; exit 1; }
     docker pull $CORTX_DATA_IMAGE || { echo "Failed to pull $CORTX_DATA_IMAGE"; exit 1; }
+    docker pull $CORTX_CONTROL_IMAGE || { echo "Failed to pull $CORTX_CONTROL_IMAGE"; exit 1; }
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         add_secondary_separator "Un-mounting $SYSTEM_DRIVE partition if already mounted"
         findmnt $SYSTEM_DRIVE && umount -l $SYSTEM_DRIVE
@@ -364,6 +404,7 @@ function print_pod_status() {
 function io_exec() {
     pushd /var/tmp/
         export DEPLOYMENT_METHOD=$DEPLOYMENT_METHOD
+        export CEPH_DEPLOYMENT=$CEPH_DEPLOYMENT
         ./io-sanity.sh
     popd
 }
