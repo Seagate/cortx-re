@@ -85,23 +85,29 @@ Following parameter/s are passed when the cluster deployment command executes. I
 
 | Parameter     | Default value     | Description     |
 | :------------- | :----------- | :---------|
-| CORTX_SCRIPTS_BRANCH      | v0.5.0  | If you want to use another cortx-K8s branch then export this variable with your branch.     |
+| CORTX_SCRIPTS_BRANCH      | v0.6.0  | If you want to use another cortx-K8s branch then export this variable with your branch.     |
 | CORTX_SCRIPTS_REPO | Seagate/cortx-k8s | If you want to use another cortx-K8s repo (like your fork), export this variable with your repo. |
 | CORTX_SERVER_IMAGE | ghcr.io/seagate/cortx-rgw:2.0.0-latest | Also, if you want to use different server image then export this variable with new image. |
 | CORTX_DATA_IMAGE | ghcr.io/seagate/cortx-data:2.0.0-latest | Also, if you want to use different data image then export this variable with new image. |
-|CONTROL_EXTERNAL_NODEPORT | 31169 | If you want to use different port for control service, export this variable with another port. |
+| CORTX_CONTROL_IMAGE | ghcr.io/seagate/cortx-control:2.0.0-latest | Also, if you want to use different control image then export this variable with new image. |
+| DEPLOYMENT_METHOD | standard | CORTX supports two dpeloyment methods `Standard` will deploy full cluster and `data-only` will deploy on CORTX data pods. |
+| CONTROL_EXTERNAL_NODEPORT | 31169 | If you want to use different port for control service, export this variable with another port. |
 | S3_EXTERNAL_HTTP_NODEPORT | 30080 | If you want to use different port for HTTP Port to IO service, then export this variable with another port. |
 | S3_EXTERNAL_HTTPS_NODEPORT | 30443 | If you want to use different port for HTTPS Port to IO service, then export this variable with another port. |
-| SOLUTION_CONFIG_TYPE | manual | There are two config types for solution.yaml file; manual and automated. In automated type the solution.yaml is created by script if VM is created as per standard specification. In manual type the user needs to create solution.yaml with required disks, image details etc.; place it at script location and configure SOLUTION_CONFIG_TYPE variable as manual. |
 | SNS_CONFIG | 1+0+0 | SNS configuration for deployment. Please select value based on disks available on nodes. |
 | DIX_CONFIG | 1+0+0 | DIX configuration for deployment. Please select value based on disks available on nodes. |
+| NAMESPACE  | default | Kubernetes cluster Namesapce for CORTX deployments. |
+| SOLUTION_CONFIG_TYPE | manual | There are two config types for solution.yaml file; manual and automated. In automated type the solution.yaml is created by script if VM is created as per standard specification. In manual type the user needs to create solution.yaml with required disks, image details etc.; place it at script location and configure SOLUTION_CONFIG_TYPE variable as manual. |
+
 
 For example:
 ```
 # export CORTX_SCRIPTS_BRANCH=integration && export CORTX_SCRIPTS_REPO=AbhijitPatil1992/cortx-k8s && export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
 ```
 
-Run IO Sanity on your CORTX Cluster to validate if you are able to create bucket and upload the object in deployed cluster.
+## Sanity test 
+
+Run IO Sanity on your CORTX Cluster to validate bucket creation and object upload in deployed cluster.
 ```
 # ./cortx-deploy.sh --io-sanity
 ```
