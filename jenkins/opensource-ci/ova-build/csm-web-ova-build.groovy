@@ -31,7 +31,7 @@ pipeline {
 		stage('Checkout') {
 			steps {
 				script { build_stage=env.STAGE_NAME }
-				dir('cortx-management-portal'){
+				dir('cortx-management-portal') {
 				    checkout([$class: 'GitSCM', branches: [[name: "${CSM_WEB_BRANCH}"]], doGenerateSubmoduleConfigurations: false,  extensions: [[$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-management-portal']]])
 				}
 			}
@@ -99,7 +99,7 @@ pipeline {
 	
 	post {
 		always {
-			script{
+			script {
             	
 				echo 'Cleanup Workspace.'
 				deleteDir() /* clean up our workspace */
