@@ -166,7 +166,7 @@ pipeline {
 			}
 		}
 
-        stage('Release cortx_build'){
+        stage('Release cortx_build') {
             steps {
                 script { build_stage=env.STAGE_NAME }
                 sh label: 'Release cortx_build', script: '''
