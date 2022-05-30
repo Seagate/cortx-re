@@ -33,10 +33,10 @@ pipeline {
             }
         }
 
-       stage ('checkout script') {
+       stage ('clone repo') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'checkout script', script: '''
+                sh label: 'clone repo', script: '''
                     VM_IP=$(curl ipinfo.io/ip)
                     export OS_VERSION=${OS_VERSION}
                     export REGION=${REGION}
