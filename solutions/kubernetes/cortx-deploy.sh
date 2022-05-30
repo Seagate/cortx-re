@@ -56,7 +56,7 @@ function check_params() {
     if [ -z "$SOLUTION_CONFIG_TYPE" ]; then echo "SOLUTION_CONFIG_TYPE not provided. Using default : manual"; SOLUTION_CONFIG_TYPE=manual; fi
     if [ -z "$SNS_CONFIG" ]; then SNS_CONFIG="1+0+0"; fi
     if [ -z "$DIX_CONFIG" ]; then DIX_CONFIG="1+0+0"; fi
-    if [ -z "$EXTERNAL_EXPOSURE_SERVICE" ]; then EXTERNAL_EXPOSURE_SERVICE="LoadBalancer"; fi
+    if [ -z "$EXTERNAL_EXPOSURE_SERVICE" ]; then EXTERNAL_EXPOSURE_SERVICE="NodePort"; fi
     if [ -z "$CONTROL_EXTERNAL_NODEPORT" ]; then CONTROL_EXTERNAL_NODEPORT="31169"; fi
     if [ -z "$S3_EXTERNAL_HTTP_NODEPORT" ]; then S3_EXTERNAL_HTTP_NODEPORT="30080"; fi
     if [ -z "$S3_EXTERNAL_HTTPS_NODEPORT" ]; then S3_EXTERNAL_HTTPS_NODEPORT="30443"; fi
