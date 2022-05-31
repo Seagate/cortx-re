@@ -1,7 +1,10 @@
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/edb2670e6aa24aeb899c496c15b596c9)](https://www.codacy.com?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Seagate/cortx-re&amp;utm_campaign=Badge_Grade) [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://github.com/Seagate/cortx-re/blob/main/LICENSE)
-[![YouTube Badge](https://img.shields.io/badge/Video-YouTube-red)](https://cortx.link/videos )
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/a3d60ecc5d8942c9a4b04bcf4b60bf20)](https://www.codacy.com/gh/Seagate/cortx/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Seagate/cortx&amp;utm_campaign=Badge_Grade)
+[![license](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/Seagate/cortx/blob/main/LICENSE)
 [![Slack](https://img.shields.io/badge/chat-on%20Slack-blue")](https://cortx.link/join-slack)
-[![GitHub contributors](https://img.shields.io/github/contributors/Seagate/cortx-re)](https://github.com/Seagate/cortx-re/graphs/contributors/)
+[![YouTube](https://img.shields.io/badge/Video-YouTube-red)](https://cortx.link/videos)
+[![Latest Release](https://img.shields.io/github/v/release/Seagate/cortx?label=Latest%20Release)](https://github.com/seagate/cortx/releases/latest)
+[![GitHub contributors](https://img.shields.io/github/contributors/Seagate/cortx)](https://github.com/Seagate/cortx/graphs/contributors/)
+[![SODA Eco project](https://img.shields.io/badge/SODA-ECO%20Project-9cf)](./doc/Soda-welcome-page.md)
 
 # CORTX DevOps and Release Engineering
 The purpose of this repository is to keep the scripts, tools, and other configuration used in the CORTX DevOps and Release Engineering. 
@@ -34,6 +37,11 @@ An overview of folder structure in cortx-re repo
 
 ### Solutions
 -   Solution specific scripts, configuration files. 
+-   CORTX deployment
+
+    1. Automated scripts: [LINK](https://github.com/Seagate/cortx-re/blob/main/solutions/community-deploy/CORTX-Deployment.md)
+
+    2. On AWS Using Terraform: [LINK](https://github.com/Seagate/cortx-re/blob/main/solutions/community-deploy/cloud/AWS/README.md)
 
 ## Documents 
 
