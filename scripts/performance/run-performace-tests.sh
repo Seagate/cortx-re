@@ -35,10 +35,15 @@ add_primary_separator "Fetching setup details"
 check_params
 HOST_FILE=$PWD/hosts
 SSH_KEY_FILE=/root/.ssh/id_rsa
-ALL_NODES=$(awk -F[,] '{print $1}' $HOST_FILE | cut -d'=' -f2)
-PRIMARY_NODE=$(grep "role=server" $HOST_FILE | awk -F[,] '{print $1}' | cut -d'=' -f2)
-PRIMARY_CRED=$(grep "role=server" $HOST_FILE | awk -F[,] '{print $3}' | cut -d'=' -f2)
-CLIENT_NODE=$(grep "role=client" $HOST_FILE | awk -F[,] '{print $1}' | cut -d'=' -f2)
+ALL_NODES=$(awk -F[,] '{print $1}' $HOST_FILE | cut -d'=' -f2) || (echo -e "\n###### Could not fetch ALL_NODES value.Please check provided hosts file ######"; exit)
+PRIMARY_NODE=$(grep "role=server" $HOST_FILE | awk -F[,] '{print $1}' | cut -d'=' -f2) || { echo -e "\n###### Could not fetch PRIMARY_NODE value. Please check provided hosts file ######"; exit; }
+PRIMARY_CRED=$(grep "role=server" $HOST_FILE | awk -F[,] '{print $3}' | cut -d'=' -f2) || { echo -e "\n###### Could not fetch PRIMARY_CRED value. Please check provided hosts file ######" ;exit; }
+CLIENT_NODE=$(grep "role=client" $HOST_FILE | awk -F[,] '{print $1}' | cut -d'=' -f2) || { echo -e "\n###### Could not fetch CLIENT_NODE value. Please check provided hosts file ######";exit; }
+
+if [ $(echo $ALL_NODES | tr ' ' '\n' | wc -l) -gt 2 ]; then
+echo -e "\n###### There are multiple entries in hosts.Please check provided hosts file ######"
+exit
+fi
 
 validation
 generate_rsa_key
@@ -67,6 +72,7 @@ echo -e "# ENDPOINT_URL               : $ENDPOINT_URL                           
 echo -e "# BUILD_URL                  : $BUILD_URL                                   "
 echo -e "# CLUSTER_TYPE               : $CLUSTER_TYPE                                "
 echo -e "############################################################################"
+
 
 add_primary_separator "Execute PerfPro Sanity Suit"
 ssh -o 'StrictHostKeyChecking=no' "$CLIENT_NODE" "
