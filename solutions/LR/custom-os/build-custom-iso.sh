@@ -92,7 +92,7 @@ createrepo -g comps.xml .
 popd
 
 pushd $LOCAL_BOOT_PATH
-genisoimage -J -R -o $ISO_PATH/$CUSTOM_ISO_VERSION -c isolinux/boot.cat -b isolinux/isolinux.bin -no-emul-boot -boot-load-size 4 -boot-info-table -eltorito-alt-boot -e images/efiboot.img -no-emul-boot -V CORTX_OS `pwd`
+genisoimage -J -R -o $ISO_PATH/$CUSTOM_ISO_VERSION -c isolinux/boot.cat -b isolinux/isolinux.bin -no-emul-boot -boot-load-size 4 -boot-info-table -eltorito-alt-boot -e images/efiboot.img -no-emul-boot -V CORTX_OS $(pwd)
 popd
 
 #Add md5sum for custom iso
