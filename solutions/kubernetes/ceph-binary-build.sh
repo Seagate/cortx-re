@@ -121,7 +121,9 @@ function ceph_build() {
             add_primary_separator "Building Ubuntu ceph binary packages"
             add_common_separator "Update repolist cache and install prerequisites"
             apt update && apt install git -y
+            check_status
             DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata
+            check_status
             pushd "$BUILD_LOCATION"
                 add_common_separator "Clone Repo"
                 git clone $CEPH_REPO -b $CEPH_BRANCH
@@ -154,9 +156,13 @@ function ceph_build() {
                 add_primary_separator "Building centos binary packages"
                 add_common_separator "Update repolist cache and install prerequisites"
                 rpm -ivh http://mirror.centos.org/centos/8-stream/BaseOS/x86_64/os/Packages/centos-gpg-keys-8-3.el8.noarch.rpm
+                check_status
                 dnf --disablerepo '*' --enablerepo=extras swap centos-linux-repos centos-stream-repos -y
+                check_status
                 yum makecache && yum install git -y
+                check_status
                 yum install wget bzip2 rpm-build rpmdevtools dnf-plugins-core -y
+                check_status
                 dnf config-manager --set-enabled powertools
                 pushd "$BUILD_LOCATION"
                     add_common_separator "Clone Repo"
@@ -190,7 +196,9 @@ function ceph_build() {
                 add_primary_separator "Building rocky linux binary packages"
                 add_common_separator "Update repolist cache and install prerequisites"
                 yum makecache && yum install git -y
+                check_status
                 yum install wget bzip2 rpm-build rpmdevtools dnf-plugins-core -y
+                check_status
                 dnf config-manager --set-enabled powertools
                 pushd "$BUILD_LOCATION"
                     add_common_separator "Clone Repo"
