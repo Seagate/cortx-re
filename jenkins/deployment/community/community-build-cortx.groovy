@@ -19,7 +19,8 @@ pipeline {
         string(name: 'OS_VERSION', defaultValue: 'CentOS 7.9.2009 x86_64', description: 'Operating system version', trim: true)
         string(name: 'REGION', defaultValue: 'ap-south-1', description: 'AWS region', trim: true)
         text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used. First node will be used as Primary node', name: 'hosts')
-
+        password(name: 'SECRET_KEY', description: 'secret key for AWS account')
+        password(name: 'ACCESS_KEY', description: 'access key for AWS account')
     }
 
     stages {
@@ -40,6 +41,8 @@ pipeline {
                     VM_IP=$(curl ipinfo.io/ip)
                     export OS_VERSION=${OS_VERSION}
                     export REGION=${REGION}
+                    export SECRET_KEY=${SECRET_KEY}
+                    export ACCESS_KEY=${ACCESS_KEY}
                     git clone https://github.com/Seagate/cortx-re && pushd $PWD/cortx-re/solutions/community-deploy/cloud/AWS
                     ./tool_setup.sh
                     sed -Ei 's,(os_version          =).*,\1 "'"$OS_VERSION"'",g' user.tfvars && sed -Ei 's,(region              =).*,\1 "'"$REGION"'",g' user.tfvars && sed -Ei 's,(security_group_cidr =).*,\1 "'"$VM_IP/32"'",g' user.tfvars
