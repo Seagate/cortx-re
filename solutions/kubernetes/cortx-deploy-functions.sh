@@ -404,6 +404,7 @@ function print_pod_status() {
 function io_exec() {
     pushd /var/tmp/
         export DEPLOYMENT_METHOD=$DEPLOYMENT_METHOD
+        export CEPH_DEPLOYMENT=$CEPH_DEPLOYMENT
         ./io-sanity.sh
     popd
 }
