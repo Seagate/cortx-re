@@ -45,7 +45,7 @@ pipeline {
                     export ACCESS_KEY=${ACCESS_KEY}
                     git clone https://github.com/Seagate/cortx-re && pushd $PWD/cortx-re/solutions/community-deploy/cloud/AWS
                     ./tool_setup.sh
-                    sed -Ei 's,(os_version          =).*,\1 "'"$OS_VERSION"'",g' user.tfvars && sed -Ei 's,(region              =).*,\1 "'"$REGION"'",g' user.tfvars && sed -Ei 's,(security_group_cidr =).*,\1 "'"$VM_IP/32"'",g' user.tfvars
+                    sed -Ei 's,(os_version          =).*,\1"'"$OS_VERSION"'",g' user.tfvars && sed -Ei 's,(region              =).*,\1"'"$REGION"'",g' user.tfvars && sed -Ei 's,(security_group_cidr =).*,\1"'"$VM_IP/32"'",g' user.tfvars
                     cat user.tfvars | tail -3
             '''
             }
