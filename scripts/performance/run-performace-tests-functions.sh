@@ -82,7 +82,7 @@ function update_setup_confiuration() {
     S3_CONFIG_FILE=$SCRIPT_LOCATION/performance/PerfPro/roles/benchmark/vars/s3config.yml 
     sed -i -e '/CLUSTER_PASS/s/:/: '$PRIMARY_CRED'/g' -e '/END_POINTS/s/:/: '${ENDPOINT_URL//\//\\/}'/g' $CONFIG_FILE
     sed -i -e '/node_number_srvnode-*/d' -e '/#client_number/d' -e '/NODES/{n;s/.*/  - 1: '$PRIMARY_NODE'/}' -e '/CLIENTS/{n;s/.*/  - 1: '$CLIENT_NODE'/}' $CONFIG_FILE
-    sed -i -e '/BUILD_URL/s/\:/: '${BUILD_URL//\//\\/}'/g' 
+    sed -i -e '/BUILD_URL/s/\:/: '${BUILD_URL//\//\\/}'/g' $CONFIG_FILE
     #-e 's/https\:\/\/s3.seagate.com/'${ENDPOINT_URL//\//\\/}'/g' $CONFIG_FILE
 
     if [ $CLUSTER_TYPE == VM ]; then
