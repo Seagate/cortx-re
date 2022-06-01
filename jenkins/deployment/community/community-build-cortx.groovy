@@ -56,9 +56,10 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Setting up EC2 instance', script: '''
                     pushd solutions/community-deploy/cloud/AWS
-                        AWS_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.cortx_deploy_ip_addr.value)
+                        AWS_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.cortx_deploy_ip_addr.value 2>&1 | tee ip.txt)
+                        IP=$(cat ip.txt | tr -d '""')
                         terraform validate && terraform apply -var-file user.tfvars --auto-approve
-                        ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$AWS_IP sudo bash /home/centos/setup.sh
+                        ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$IP sudo bash /home/centos/setup.sh
                         sleep 120
                     popd
             '''
