@@ -54,11 +54,19 @@ scp_all_nodes run-performace-tests-functions.sh ../../solutions/kubernetes/*
 add_primary_separator "Fetch Endpoint URL,Access Key and Secret Key from CORTX Cluster"
 SETUP_INFO=$(ssh_primary_node "export SOLUTION_FILE=$SOLUTION_FILE && /var/tmp/run-performace-tests-functions.sh --fetch-setup-info")
 
-add_primary_separator "Configure awscli on client"
-ssh -o 'StrictHostKeyChecking=no' "$CLIENT_NODE" "
-export ENDPOINT_URL=$(echo $SETUP_INFO | tr ' ' '\n' | grep ENDPOINT_URL | cut -d'=' -f2) &&
+export ENDPOINT_URL=$(echo $SETUP_INFO | tr ' ' '\n' | grep ENDPOINT_URL | cut -d'=' -f2)
 export ACCESS_KEY=$(echo $SETUP_INFO | tr ' ' '\n' | grep ACCESS_KEY | cut -d'=' -f2) &&
 export SECRET_KEY=$(echo $SETUP_INFO | tr ' ' '\n' | grep SECRET_KEY | cut -d'=' -f2) &&
+export BUILD_URL=$(echo $SETUP_INFO | tr ' ' '\n' | grep BUILD_URL | cut -d'=' -f2)
+
+
+echo $ENDPOINT_URL
+
+add_primary_separator "Configure awscli on client"
+ssh -o 'StrictHostKeyChecking=no' "$CLIENT_NODE" "
+export ENDPOINT_URL=$ENDPOINT_URL &&
+export ACCESS_KEY=$ACCESS_KEY &&
+export SECRET_KEY=$SECRET_KEY &&
 /var/tmp/run-performace-tests-functions.sh --setup-client"
 
 export CLUSTER_TYPE=$(echo $SETUP_INFO | tr ' ' '\n' | grep CLUSTER_TYPE | cut -d'=' -f2)
@@ -73,6 +81,7 @@ echo -e "# BUILD_URL                  : $BUILD_URL                              
 echo -e "# CLUSTER_TYPE               : $CLUSTER_TYPE                                "
 echo -e "############################################################################"
 
+exit
 
 add_primary_separator "Execute PerfPro Sanity Suit"
 ssh -o 'StrictHostKeyChecking=no' "$CLIENT_NODE" "
@@ -83,7 +92,7 @@ export CORTX_TOOLS_REPO=$CORTX_TOOLS_REPO &&
 export PRIMARY_NODE=$PRIMARY_NODE &&
 export CLIENT_NODE=$CLIENT_NODE &&
 export PRIMARY_CRED=$PRIMARY_CRED &&
-export ENDPOINT_URL=$(echo $SETUP_INFO | tr ' ' '\n' | grep ENDPOINT_URL | cut -d'=' -f2) &&
-export BUILD_URL=$(echo $SETUP_INFO | tr ' ' '\n' | grep BUILD_URL | cut -d'=' -f2) &&
+export ENDPOINT_URL=$ENDPOINT_URL &&
+export BUILD_URL=$BUILD_URL &&
 export CLUSTER_TYPE=$CLUSTER_TYPE &&
 /var/tmp/run-performace-tests-functions.sh --execute-perf-sanity"
