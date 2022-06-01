@@ -51,10 +51,15 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Push Image to Registry', script: '''
 
-                    echo "Currently pushing to test DockerHub repository will migrate to internal Harbor pending versioning process."
-
+                    echo "Tag container images"
                     docker tag ceph/daemon:centos-custom-quincy-centos-8-x86_64 nitisdev/ceph:daemon-centos-custom-quincy-centos-8-x86_64
                     docker tag ceph/daemon-base:centos-custom-quincy-centos-8-x86_64 nitisdev/ceph:daemon-base-centos-custom-quincy-centos-8-x86_64
+
+                    echo -e "==============================\n"
+
+                    echo "Pushing images"
+                    echo "Currently pushing to test DockerHub repository will migrate to internal Harbor pending versioning process."
+                    docker push -a nitisdev/ceph
 
                     echo -e "==============================\n"
 
