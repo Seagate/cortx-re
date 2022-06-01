@@ -40,8 +40,8 @@ pipeline {
                     echo -e "==============================\n"
 
                     echo "List created images:"
-                    docker images --format "{{.Repository}}:{{.Tag}}" --filter reference=ceph/daemon-base:centos-custom-quincy-centos-8-x86_64
-                    docker images --format "{{.Repository}}:{{.Tag}}" --filter reference=ceph/daemon:centos-custom-quincy-centos-8-x86_64
+                    docker images --format "{{.Repository}}:{{.Tag}}" --filter reference=ceph/daemon-base:HEAD-quincy-centos-8-x86_64
+                    docker images --format "{{.Repository}}:{{.Tag}}" --filter reference=ceph/daemon:HEAD-quincy-centos-8-x86_64
                 '''
             }
         }
@@ -52,8 +52,8 @@ pipeline {
                 sh label: 'Push Image to Registry', script: '''
 
                     echo "Tag container images"
-                    docker tag ceph/daemon:centos-custom-quincy-centos-8-x86_64 nitisdev/ceph:daemon-centos-custom-quincy-centos-8-x86_64
-                    docker tag ceph/daemon-base:centos-custom-quincy-centos-8-x86_64 nitisdev/ceph:daemon-base-centos-custom-quincy-centos-8-x86_64
+                    docker tag ceph/daemon:HEAD-quincy-centos-8-x86_64 nitisdev/ceph:daemon-centos-custom-quincy-centos-8-x86_64
+                    docker tag ceph/daemon-base:HEAD-quincy-centos-8-x86_64 nitisdev/ceph:daemon-base-centos-custom-quincy-centos-8-x86_64
 
                     echo -e "==============================\n"
 
