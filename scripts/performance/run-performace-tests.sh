@@ -81,8 +81,6 @@ echo -e "# BUILD_URL                  : $BUILD_URL                              
 echo -e "# CLUSTER_TYPE               : $CLUSTER_TYPE                                "
 echo -e "############################################################################"
 
-exit
-
 add_primary_separator "Execute PerfPro Sanity Suit"
 ssh -o 'StrictHostKeyChecking=no' "$CLIENT_NODE" "
 export GITHUB_TOKEN=$GITHUB_TOKEN &&
