@@ -1,7 +1,7 @@
 pipeline {
     agent {
         node {
-            label 'docker-k8-deployment-node'
+            label 'community-build-executor-ssc-vm-g3-rhev4-3187'
         }
     }
     
