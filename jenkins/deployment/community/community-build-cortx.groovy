@@ -43,10 +43,11 @@ pipeline {
                     export REGION=${REGION}
                     export SECRET_KEY=${SECRET_KEY}
                     export ACCESS_KEY=${ACCESS_KEY}
-                    git clone https://github.com/Seagate/cortx-re && pushd $PWD/cortx-re/solutions/community-deploy/cloud/AWS
-                    ./tool_setup.sh
-                    sed -i 's,os_version          =.*,os_version          = "'"$OS_VERSION"'",g' user.tfvars && sed -i 's,region              =.*,region              = "'"$REGION"'",g' user.tfvars && sed -i 's,security_group_cidr =.*,security_group_cidr = "'"$VM_IP/32"'",g' user.tfvars
-                    cat user.tfvars | tail -3
+                    pushd solutions/community-deploy/cloud/AWS
+                        ./tool_setup.sh
+                        sed -i 's,os_version          =.*,os_version          = "'"$OS_VERSION"'",g' user.tfvars && sed -i 's,region              =.*,region              = "'"$REGION"'",g' user.tfvars && sed -i 's,security_group_cidr =.*,security_group_cidr = "'"$VM_IP/32"'",g' user.tfvars
+                        cat user.tfvars | tail -3
+                    popd
             '''
             }
         }            
@@ -54,10 +55,12 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Setting up EC2 instance', script: '''
-                    AWS_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.cortx_deploy_ip_addr.value)
-                    terraform validate && terraform apply -var-file user.tfvars --auto-approve
-                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$AWS_IP sudo bash /home/centos/setup.sh
-                    sleep 60
+                    pushd solutions/community-deploy/cloud/AWS
+                        AWS_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.cortx_deploy_ip_addr.value)
+                        terraform validate && terraform apply -var-file user.tfvars --auto-approve
+                        ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$AWS_IP sudo bash /home/centos/setup.sh
+                        sleep 120
+                    popd
             '''
             }
         }
@@ -65,9 +68,9 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'executing cortx build script', script: '''
-                    export CORTX_SCRIPTS_BRANCH=${CORTX_SCRIPTS_BRANCH}
-                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' root@$AWS_IP git clone https://github.com/Seagate/cortx-re && pushd $PWD/cortx-re/solutions/community-deploy && time ./build-cortx.sh -b ${CORTX_RE_BRANCH}
-                popd
+                export CORTX_SCRIPTS_BRANCH=${CORTX_SCRIPTS_BRANCH}
+                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' root@$AWS_IP "export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH && git clone https://github.com/Seagate/cortx-re && pushd $PWD/cortx-re/solutions/community-deploy && time ./build-cortx.sh -b ${CORTX_RE_BRANCH} \
+                popd"
             '''
             }
         }
@@ -75,7 +78,9 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'executing cortx build script', script: '''
-                terraform validate && terraform destroy -var-file user.tfvars --auto-approve
+                pushd solutions/community-deploy/cloud/AWS
+                    terraform validate && terraform destroy -var-file user.tfvars --auto-approve
+                popd
             '''
             }
         }
