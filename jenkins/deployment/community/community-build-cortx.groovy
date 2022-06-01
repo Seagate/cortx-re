@@ -56,10 +56,10 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Setting up EC2 instance', script: '''
                     pushd solutions/community-deploy/cloud/AWS
-                        AWS_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.cortx_deploy_ip_addr.value 2>&1 | tee ip.txt)
-                        IP=$(cat ip.txt | tr -d '""')
                         terraform validate && terraform apply -var-file user.tfvars --auto-approve
-                        ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$IP sudo bash /home/centos/setup.sh
+                        AWS_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.cortx_deploy_ip_addr.value 2>&1 | tee ip.txt)
+                        IP=$(cat ip.txt | tr -d '""')                        
+                        ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$"{IP}" sudo bash /home/centos/setup.sh
                         sleep 120
                     popd
             '''
@@ -73,7 +73,7 @@ pipeline {
                     export CORTX_SCRIPTS_BRANCH=${CORTX_SCRIPTS_BRANCH}
                     AWS_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.cortx_deploy_ip_addr.value 2>&1 | tee ip.txt)
                     IP=$(cat ip.txt | tr -d '""')                
-                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' root@$IP "export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH && git clone https://github.com/Seagate/cortx-re && pushd $PWD/cortx-re/solutions/community-deploy && time ./build-cortx.sh -b ${CORTX_RE_BRANCH} \
+                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' root@$"{IP}" "export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH && git clone https://github.com/Seagate/cortx-re && pushd $PWD/cortx-re/solutions/community-deploy && time ./build-cortx.sh -b ${CORTX_RE_BRANCH} \
                 popd"
             '''
             }
