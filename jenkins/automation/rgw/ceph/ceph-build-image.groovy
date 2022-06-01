@@ -66,6 +66,12 @@ pipeline {
                     echo "To pull image from docker:"
                     echo "docker pull nitisdev/ceph:daemon-centos-custom-quincy-centos-8-x86_64"
 
+                    echo "Untag & remove local images"
+                    docker rmi ceph/daemon-base:HEAD-quincy-centos-8-x86_64
+                    docker rmi ceph/daemon:HEAD-quincy-centos-8-x86_64
+                    docker rmi nitisdev/ceph:daemon-centos-custom-quincy-centos-8-x86_64
+                    docker rmi nitisdev/ceph:daemon-base-centos-custom-quincy-centos-8-x86_64
+
                 '''
             }
         }
