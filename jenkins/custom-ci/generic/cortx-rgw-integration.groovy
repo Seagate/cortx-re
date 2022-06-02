@@ -11,6 +11,12 @@ pipeline {
         string(name: 'CORTX_RGW_INTEGRATION_BRANCH', defaultValue: 'main', description: 'Branch for cortx-rgw-integration.')
         string(name: 'CUSTOM_CI_BUILD_ID', defaultValue: '0', description: 'Custom CI Build Number')
         // Add os_version parameter in jenkins configuration
+
+        choice(
+            name: 'ENABLE_ADDB_PLUGIN',
+                choices: ['yes', 'no'],
+                description: 'Generates addb plugin as part of cortx-rgw-integration.'
+        )
     }
 
     environment {
@@ -41,7 +47,11 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
 
                 sh encoding: 'UTF-8', label: 'cortx-provisioner', script: '''
-                bash ./jenkins/build.sh -v 2.0.0 -b ${CUSTOM_CI_BUILD_ID}
+                    if [ "${ENABLE_ADDB_PLUGIN}" == "yes" ]; then
+                        bash ./jenkins/build.sh -addb
+                    else
+                        bash ./jenkins/build.sh -v 2.0.0 -b ${CUSTOM_CI_BUILD_ID}
+                    fi
                 '''
             }
         }
