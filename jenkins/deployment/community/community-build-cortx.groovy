@@ -81,11 +81,11 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'executing cortx build script', script: '''
                 pushd solutions/community-deploy/cloud/AWS
-                    export CORTX_SCRIPTS_BRANCH=${CORTX_SCRIPTS_BRANCH}
+                    export CORTX_RE_BRANCH=${CORTX_RE_BRANCH}
                     AWS_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.cortx_deploy_ip_addr.value 2>&1 | tee ip.txt)
                     IP=$(cat ip.txt | tr -d '""')                
-                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${IP} "export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH && git clone https://github.com/Seagate/cortx-re && pushd $PWD/cortx-re/solutions/community-deploy && time ./build-cortx.sh -b ${CORTX_RE_BRANCH} \
-                popd"
+                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${IP} "export CORTX_RE_BRANCH=$CORTX_RE_BRANCH; git clone https://github.com/Seagate/cortx-re; pushd /home/centos/cortx-re/solutions/community-deploy; time sudo ./build-cortx.sh -b ${CORTX_RE_BRANCH}"
+                popd
             '''
             }
         }
