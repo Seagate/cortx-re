@@ -57,6 +57,16 @@ pipeline {
                 sh label: 'Setting up EC2 instance', script: '''
                     pushd solutions/community-deploy/cloud/AWS
                         terraform validate && terraform apply -var-file user.tfvars --auto-approve
+                    popd
+            '''
+            }
+        }
+        stage ('Network and Storage Configuration') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                sh label: 'Setting up Network and Storage devices for CORTX. Script will reboot the instance on completion', script: '''
+                    pushd solutions/community-deploy/cloud/AWS
                         AWS_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.cortx_deploy_ip_addr.value 2>&1 | tee ip.txt)
                         IP=$(cat ip.txt | tr -d '""')                        
                         ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${IP} sudo bash /home/centos/setup.sh
@@ -65,6 +75,7 @@ pipeline {
             '''
             }
         }
+    }
         stage ('execute cortx build script') {
             steps {
                 script { build_stage = env.STAGE_NAME }
