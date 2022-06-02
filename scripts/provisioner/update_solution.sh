@@ -71,25 +71,25 @@ function update_secret() {
         yq e -i '.solution.images.consul = "cortx-docker.colo.seagate.com/consul/consul:1.12"' "$SCRIPT_PATH"/solution.example.yaml
         yq e -i '.solution.namespace = "cortx"' "$SCRIPT_PATH"/solution.example.yaml
         yq e -i '.solution.common.setup_size = "small"' "$SCRIPT_PATH"/solution.example.yaml
-        yq e -i '.solution.external_services.control.ports.https = ""8081""' "$SCRIPT_PATH"/solution.example.yaml
-        yq e -i '.solution.external_services.control.nodePorts.https = "31169"' "$SCRIPT_PATH"/solution.example.yaml
-        yq e -i '.solution.external_services.s3.ports.http = ""80""' "$SCRIPT_PATH"/solution.example.yaml
-        yq e -i '.solution.external_services.s3.ports.https = ""443""' "$SCRIPT_PATH"/solution.example.yaml
-        yq e -i '.solution.external_services.s3.nodePorts.http = "30080"' "$SCRIPT_PATH"/solution.example.yaml
-        yq e -i '.solution.external_services.s3.nodePorts.https = "30443"' "$SCRIPT_PATH"/solution.example.yaml
-        yq e -i '.solution.resource_allocation.consul.server.requests.memory = "200Mi"' "$SCRIPT_PATH"/solution.example.yaml
-        yq e -i '.solution.resource_allocation.consul.server.requests.cpu = "200m"' "$SCRIPT_PATH"/solution.example.yaml
-        yq e -i '.solution.resource_allocation.consul.server.limits.memory = "500Mi"' "$SCRIPT_PATH"/solution.example.yaml
-        yq e -i '.solution.resource_allocation.consul.server.limits.cpu = "500m"' "$SCRIPT_PATH"/solution.example.yaml
-        yq e -i '.solution.resource_allocation.consul.client.requests.memory = "200Mi"' "$SCRIPT_PATH"/solution.example.yaml
-        yq e -i '.solution.resource_allocation.consul.client.requests.cpu = "200m"' "$SCRIPT_PATH"/solution.example.yaml
-        yq e -i '.solution.resource_allocation.consul.client.limits.memory = "500Mi"' "$SCRIPT_PATH"/solution.example.yaml
-        yq e -i '.solution.resource_allocation.consul.client.limits.cpu = "500m"' "$SCRIPT_PATH"/solution.example.yaml
-        yq e -i '.solution.resource_allocation.zookeeper.resources.limits.memory = "1Gi"' "$SCRIPT_PATH"/solution.example.yaml
-        yq e -i '.solution.resource_allocation.zookeeper.resources.limits.cpu = "1000m"' "$SCRIPT_PATH"/solution.example.yaml
-        yq e -i '.solution.resource_allocation.kafka.log_persistence_request_size = "8Gi"' "$SCRIPT_PATH"/solution.example.yaml
-        yq e -i '.solution.resource_allocation.kafka.resources.limits.memory = "3Gi"' "$SCRIPT_PATH"/solution.example.yaml
-        yq e -i '.solution.resource_allocation.kafka.resources.limits.cpu = "1000m"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.common.external_services.control.ports.https = ""8081""' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.common.external_services.control.nodePorts.https = "31169"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.common.external_services.s3.ports.http = ""80""' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.common.external_services.s3.ports.https = ""443""' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.common.external_services.s3.nodePorts.http = "30080"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.common.external_services.s3.nodePorts.https = "30443"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.common.resource_allocation.consul.server.requests.memory = "200Mi"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.common.resource_allocation.consul.server.requests.cpu = "200m"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.common.resource_allocation.consul.server.limits.memory = "500Mi"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.common.resource_allocation.consul.server.limits.cpu = "500m"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.common.resource_allocation.consul.client.requests.memory = "200Mi"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.common.resource_allocation.consul.client.requests.cpu = "200m"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.common.resource_allocation.consul.client.limits.memory = "500Mi"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.common.resource_allocation.consul.client.limits.cpu = "500m"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.common.resource_allocation.zookeeper.resources.limits.memory = "1Gi"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.common.resource_allocation.zookeeper.resources.limits.cpu = "1000m"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.common.resource_allocation.kafka.log_persistence_request_size = "8Gi"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.common.resource_allocation.kafka.resources.limits.memory = "3Gi"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.common.resource_allocation.kafka.resources.limits.cpu = "1000m"' "$SCRIPT_PATH"/solution.example.yaml
     popd
 }
 
