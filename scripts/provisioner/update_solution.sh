@@ -79,7 +79,13 @@ function update_secret() {
 function add_storage_solution_config() {
     add_common_separator "Updating storage info in solution.yaml"
     pushd "$SCRIPT_PATH"
-        yq e -i "del(.solution.storage.cvg2)" "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i "del(.solution.storage.cvg2.devices.data.d4)" "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i "del(.solution.storage.cvg2.devices.data.d5)" "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i "del(.solution.storage.cvg2.devices.data.d6)" "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i "del(.solution.storage.cvg2.devices.data.d7)" "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i "del(.solution.storage.cvg1.devices.data.d4)" "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i "del(.solution.storage.cvg1.devices.data.d5)" "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i "del(.solution.storage.cvg1.devices.data.d6)" "$SCRIPT_PATH"/solution.example.yaml
         yq e -i "del(.solution.storage.cvg1.devices.data.d7)" "$SCRIPT_PATH"/solution.example.yaml
     popd
 }
