@@ -66,17 +66,21 @@ function add_node_solution_config() {
 
 function update_secret() {
     pushd "$SCRIPT_PATH"
+        yq e -i '.solution.secrets.content.csm_auth_admin_secret = "Seagate@123"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.secrets.content.common_admin_secret = "Seagate@123"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.secrets.content.consul_admin_secret = "Seagate@123"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.secrets.content.kafka_admin_secret = "Seagate@123"' "$SCRIPT_PATH"/solution.example.yaml
         yq e -i '.solution.secrets.content.s3_auth_admin_secret = "ldapadmin"' "$SCRIPT_PATH"/solution.example.yaml
         yq e -i '.solution.secrets.content.csm_mgmt_admin_secret = "Cortxadmin@123"' "$SCRIPT_PATH"/solution.example.yaml
         yq e -i '.solution.images.consul = "cortx-docker.colo.seagate.com/consul/consul:1.12"' "$SCRIPT_PATH"/solution.example.yaml
         yq e -i '.solution.namespace = "cortx"' "$SCRIPT_PATH"/solution.example.yaml
         yq e -i '.solution.common.setup_size = "small"' "$SCRIPT_PATH"/solution.example.yaml
-        yq e -i '.solution.common.external_services.control.ports.https = ""8081""' "$SCRIPT_PATH"/solution.example.yaml
-        yq e -i '.solution.common.external_services.control.nodePorts.https = "31169"' "$SCRIPT_PATH"/solution.example.yaml
-        yq e -i '.solution.common.external_services.s3.ports.http = ""80""' "$SCRIPT_PATH"/solution.example.yaml
-        yq e -i '.solution.common.external_services.s3.ports.https = ""443""' "$SCRIPT_PATH"/solution.example.yaml
-        yq e -i '.solution.common.external_services.s3.nodePorts.http = "30080"' "$SCRIPT_PATH"/solution.example.yaml
-        yq e -i '.solution.common.external_services.s3.nodePorts.https = "30443"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.common.external_services.control.ports.https = "8081"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.common.external_services.control.nodePorts.https = 31169' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.common.external_services.s3.ports.http = "80"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.common.external_services.s3.ports.https = "443"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.common.external_services.s3.nodePorts.http = 30080' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.common.external_services.s3.nodePorts.https = 30443' "$SCRIPT_PATH"/solution.example.yaml
         yq e -i '.solution.common.resource_allocation.consul.server.resources.requests.memory = "200Mi"' "$SCRIPT_PATH"/solution.example.yaml
         yq e -i '.solution.common.resource_allocation.consul.server.resources.requests.cpu = "200m"' "$SCRIPT_PATH"/solution.example.yaml
         yq e -i '.solution.common.resource_allocation.consul.server.resources.limits.memory = "500Mi"' "$SCRIPT_PATH"/solution.example.yaml
@@ -90,12 +94,16 @@ function update_secret() {
         yq e -i '.solution.common.resource_allocation.kafka.log_persistence_request_size = "8Gi"' "$SCRIPT_PATH"/solution.example.yaml
         yq e -i '.solution.common.resource_allocation.kafka.resources.limits.memory = "3Gi"' "$SCRIPT_PATH"/solution.example.yaml
         yq e -i '.solution.common.resource_allocation.kafka.resources.limits.cpu = "1000m"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.storage.cvg2.devices.data.d1.device = "/dev/sdg"' solution.yaml
+        yq e -i '.solution.storage.cvg2.devices.metadata.device = "/dev/sdf"' solution.yaml
+        yq e -i '.solution.storage.cvg2.devices.data.d2.device = "/dev/sdh"' solution.yaml
     popd
 }
 
 function add_storage_solution_config() {
     add_common_separator "Updating storage info in solution.yaml"
     pushd "$SCRIPT_PATH"
+        yq e -i '.solution.storage.cvg2.devices.data.d1.device = "/dev/sdg"' solution.yaml
         yq e -i "del(.solution.storage.cvg2.devices.data.d3)" "$SCRIPT_PATH"/solution.example.yaml
         yq e -i "del(.solution.storage.cvg2.devices.data.d4)" "$SCRIPT_PATH"/solution.example.yaml
         yq e -i "del(.solution.storage.cvg2.devices.data.d5)" "$SCRIPT_PATH"/solution.example.yaml
