@@ -19,36 +19,55 @@ pipeline {
         string(name: 'OS_VERSION', defaultValue: 'CentOS 7.9.2009 x86_64', description: 'Operating system version', trim: true)
         string(name: 'REGION', defaultValue: 'ap-south-1', description: 'AWS region', trim: true)
         text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used. First node will be used as Primary node', name: 'hosts')
+        choice(
+            name: 'INSTALL_AWS_CLI',
+                choices: ['no', 'yes'],
+                description: 'Insatll AWS cli for updating the access and secret key.'
+        )
         password(name: 'SECRET_KEY', description: 'secret key for AWS account')
         password(name: 'ACCESS_KEY', description: 'access key for AWS account')
+
     }
 
-    stages {
+        stages {
 
-        stage('Checkout Script') {
-            steps { 
-                cleanWs()            
-                script {
-                    checkout([$class: 'GitSCM', branches: [[name: "${CORTX_RE_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${CORTX_RE_REPO}"]]])                
+            stage('Checkout Script') {
+                steps { 
+                    cleanWs()            
+                    script {
+                        checkout([$class: 'GitSCM', branches: [[name: "${CORTX_RE_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${CORTX_RE_REPO}"]]])                
+                    }
                 }
             }
-        }
 
-       stage ('clone repo') {
+        stage ('install tools') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'clone repo', script: '''
-                    VM_IP=$(curl ipinfo.io/ip)
-                    export OS_VERSION=${OS_VERSION}
-                    export REGION=${REGION}
-                    export SECRET_KEY=${SECRET_KEY}
-                    export ACCESS_KEY=${ACCESS_KEY}
-                    pushd solutions/community-deploy/cloud/AWS
-                        ./tool_setup.sh
-                        sed -i 's,os_version          =.*,os_version          = "'"$OS_VERSION"'",g' user.tfvars && sed -i 's,region              =.*,region              = "'"$REGION"'",g' user.tfvars && sed -i 's,security_group_cidr =.*,security_group_cidr = "'"$VM_IP/32"'",g' user.tfvars
-                        cat user.tfvars | tail -3
-                    popd
-            '''
+                sh label: 'install tools', script: '''
+                VM_IP=$(curl ipinfo.io/ip)
+                export OS_VERSION=${OS_VERSION}
+                export REGION=${REGION}
+                export SECRET_KEY=${SECRET_KEY}
+                export ACCESS_KEY=${ACCESS_KEY}
+                export INSTALL_AWS_CLI=${INSTALL_AWS_CLI}
+                    if [ "${INSTALL_AWS_CLI}" == "yes" ]; then
+                            rm -rvf /usr/local/bin/aws /usr/local/bin/aws_completer /usr/local/aws-cli >/dev/null 2>&1
+                            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && yum install unzip && unzip awscliv2.zip
+                            ./aws/install
+                            aws configure set default.region $REGION; aws configure set aws_access_key_id $ACCESS_KEY; aws configure set aws_secret_access_key $SECRET_KEY
+                        pushd solutions/community-deploy/cloud/AWS
+                            ./tool_setup.sh
+                            sed -i 's,os_version          =.*,os_version          = "'"$OS_VERSION"'",g' user.tfvars && sed -i 's,region              =.*,region              = "'"$REGION"'",g' user.tfvars && sed -i 's,security_group_cidr =.*,security_group_cidr = "'"$VM_IP/32"'",g' user.tfvars
+                            cat user.tfvars | tail -3
+                        popd          
+                    else
+                        pushd solutions/community-deploy/cloud/AWS
+                            ./tool_setup.sh
+                            sed -i 's,os_version          =.*,os_version          = "'"$OS_VERSION"'",g' user.tfvars && sed -i 's,region              =.*,region              = "'"$REGION"'",g' user.tfvars && sed -i 's,security_group_cidr =.*,security_group_cidr = "'"$VM_IP/32"'",g' user.tfvars
+                            cat user.tfvars | tail -3
+                        popd                                
+                    fi
+                '''
             }
         }            
         stage ('create EC2 instace') {
