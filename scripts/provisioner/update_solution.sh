@@ -94,9 +94,9 @@ function update_secret() {
         yq e -i '.solution.common.resource_allocation.kafka.log_persistence_request_size = "8Gi"' "$SCRIPT_PATH"/solution.example.yaml
         yq e -i '.solution.common.resource_allocation.kafka.resources.limits.memory = "3Gi"' "$SCRIPT_PATH"/solution.example.yaml
         yq e -i '.solution.common.resource_allocation.kafka.resources.limits.cpu = "1000m"' "$SCRIPT_PATH"/solution.example.yaml
-        yq e -i '.solution.storage.cvg2.devices.data.d1.device = "/dev/sdg"' solution.yaml
-        yq e -i '.solution.storage.cvg2.devices.metadata.device = "/dev/sdf"' solution.yaml
-        yq e -i '.solution.storage.cvg2.devices.data.d2.device = "/dev/sdh"' solution.yaml
+        yq e -i '.solution.storage.cvg2.devices.data.d1.device = "/dev/sdg"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.storage.cvg2.devices.metadata.device = "/dev/sdf"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.storage.cvg2.devices.data.d2.device = "/dev/sdh"' "$SCRIPT_PATH"/solution.example.yaml
     popd
 }
 
