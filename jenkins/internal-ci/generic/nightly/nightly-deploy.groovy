@@ -14,16 +14,15 @@ pipeline {
     environment {
         CORTX_RE_BRANCH = "main"
         CORTX_RE_REPO = "https://github.com/Seagate/cortx-re"
-        DOCKER_IMAGE_LOCATION = "https://github.com/Seagate/cortx-re/pkgs/container/cortx-all"
         LOCAL_REG_CRED = credentials('local-registry-access')
         GITHUB_CRED = credentials('shailesh-github')
         VERSION = "2.0.0"
         last_success_build_number = getBuild(JOB_URL)
     }
     parameters {
-        string(name: 'CORTX_ALL_IMAGE', defaultValue: 'cortx-docker.colo.seagate.com/seagate/cortx-all:2.0.0-latest', description: 'CORTX-ALL image', trim: true)
         string(name: 'CORTX_SERVER_IMAGE', defaultValue: 'cortx-docker.colo.seagate.com/seagate/cortx-rgw:2.0.0-latest', description: 'CORTX-SERVER image', trim: true)
         string(name: 'CORTX_DATA_IMAGE', defaultValue: 'cortx-docker.colo.seagate.com/seagate/cortx-data:2.0.0-latest', description: 'CORTX-DATA image', trim: true)
+        string(name: 'CORTX_CONTROL_IMAGE', defaultValue: 'cortx-docker.colo.seagate.com/seagate/cortx-control:2.0.0-latest', description: 'CORTX-CONTROL image', trim: true)
         choice (
             choices: ['ALL', 'DEVOPS', 'DEBUG'],
             description: 'Email Notification Recipients ',
@@ -64,9 +63,9 @@ pipeline {
                     parameters: [
                         string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
                         string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
-                        string(name: 'CORTX_ALL_IMAGE', value: "${CORTX_ALL_IMAGE}"),
                         string(name: 'CORTX_SERVER_IMAGE', value: "${CORTX_SERVER_IMAGE}"),
                         string(name: 'CORTX_DATA_IMAGE', value: "${CORTX_DATA_IMAGE}"),
+                        string(name: 'CORTX_CONTROL_IMAGE', value: "${CORTX_CONTROL_IMAGE}"),
                         string(name: 'DEPLOYMENT_METHOD', value: "standard"),
                         text(name: 'hosts', value: "${hosts}"),
                         string(name: 'CORTX_SCRIPTS_BRANCH', value: "${CORTX_SCRIPTS_BRANCH}"),
@@ -90,36 +89,36 @@ pipeline {
                    systemctl status docker
                    /usr/local/bin/docker-compose --version
                    echo \'y\' | docker image prune
-                   docker pull $CORTX_ALL_IMAGE
                    docker pull $CORTX_SERVER_IMAGE
                    docker pull $CORTX_DATA_IMAGE
+                   docker pull $CORTX_CONTROL_IMAGE
 
                    echo "\n RPM Build URL used for Nightly Image"
-                   docker inspect $CORTX_ALL_IMAGE | jq -r '.[] | (.ContainerConfig.Cmd)' | grep 'BUILD_URL='
                    docker inspect $CORTX_SERVER_IMAGE | jq -r '.[] | (.ContainerConfig.Cmd)' | grep 'BUILD_URL='
                    docker inspect $CORTX_DATA_IMAGE | jq -r '.[] | (.ContainerConfig.Cmd)' | grep 'BUILD_URL='
+                   docker inspect $CORTX_CONTROL_IMAGE | jq -r '.[] | (.ContainerConfig.Cmd)' | grep 'BUILD_URL='
                    #Update VERSION details in RELEASE.INFO file
 
-                   docker commit $(docker run -d ${CORTX_ALL_IMAGE} sed -i /VERSION/s/\\"2.0.0.*\\"/\\"${VERSION}-${BUILD_NUMBER}\\"/ /opt/seagate/cortx/RELEASE.INFO) ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}
                    docker commit $(docker run -d ${CORTX_SERVER_IMAGE} sed -i /VERSION/s/\\"2.0.0.*\\"/\\"${VERSION}-${BUILD_NUMBER}\\"/ /opt/seagate/cortx/RELEASE.INFO) ghcr.io/seagate/cortx-rgw:${VERSION}-${BUILD_NUMBER}
-                   docker commit $(docker run -d ${CORTX_DATA_IMAGE} sed -i /VERSION/s/\\"2.0.0.*\\"/\\"${VERSION}-${BUILD_NUMBER}\\"/ /opt/seagate/cortx/RELEASE.INFO) ghcr.io/seagate/cortx-data:${VERSION}-${BUILD_NUMBER} 
+                   docker commit $(docker run -d ${CORTX_DATA_IMAGE} sed -i /VERSION/s/\\"2.0.0.*\\"/\\"${VERSION}-${BUILD_NUMBER}\\"/ /opt/seagate/cortx/RELEASE.INFO) ghcr.io/seagate/cortx-data:${VERSION}-${BUILD_NUMBER}
+                   docker commit $(docker run -d ${CORTX_CONTROL_IMAGE} sed -i /VERSION/s/\\"2.0.0.*\\"/\\"${VERSION}-${BUILD_NUMBER}\\"/ /opt/seagate/cortx/RELEASE.INFO) ghcr.io/seagate/cortx-control:${VERSION}-${BUILD_NUMBER} 
 
-                   docker tag ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER} ghcr.io/seagate/cortx-all:${VERSION}-latest
                    docker tag ghcr.io/seagate/cortx-rgw:${VERSION}-${BUILD_NUMBER} ghcr.io/seagate/cortx-rgw:${VERSION}-latest
                    docker tag ghcr.io/seagate/cortx-data:${VERSION}-${BUILD_NUMBER} ghcr.io/seagate/cortx-data:${VERSION}-latest
+                   docker tag ghcr.io/seagate/cortx-control:${VERSION}-${BUILD_NUMBER} ghcr.io/seagate/cortx-control:${VERSION}-latest
 
                    docker login ghcr.io -u ${GITHUB_CRED_USR} -p ${GITHUB_CRED_PSW}
 
-                   docker push ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER} && docker push ghcr.io/seagate/cortx-all:${VERSION}-latest
                    docker push ghcr.io/seagate/cortx-rgw:${VERSION}-${BUILD_NUMBER} && docker push ghcr.io/seagate/cortx-rgw:${VERSION}-latest
-                   docker push ghcr.io/seagate/cortx-data:${VERSION}-${BUILD_NUMBER} && docker push ghcr.io/seagate/cortx-data:${VERSION}-latest 
+                   docker push ghcr.io/seagate/cortx-data:${VERSION}-${BUILD_NUMBER} && docker push ghcr.io/seagate/cortx-data:${VERSION}-latest
+                   docker push ghcr.io/seagate/cortx-control:${VERSION}-${BUILD_NUMBER} && docker push ghcr.io/seagate/cortx-control:${VERSION}-latest
 
-                   docker rmi ghcr.io/seagate/cortx-all:${VERSION}-latest
                    docker rmi ghcr.io/seagate/cortx-rgw:${VERSION}-latest
                    docker rmi ghcr.io/seagate/cortx-data:${VERSION}-latest
-                   docker rmi ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}
+                   docker rmi ghcr.io/seagate/cortx-control:${VERSION}-latest
                    docker rmi ghcr.io/seagate/cortx-rgw:${VERSION}-${BUILD_NUMBER}
                    docker rmi ghcr.io/seagate/cortx-data:${VERSION}-${BUILD_NUMBER}
+                   docker rmi ghcr.io/seagate/cortx-control:${VERSION}-${BUILD_NUMBER}
                 '''
            }
         }
@@ -129,8 +128,8 @@ pipeline {
                 script {
                     def changelog = build job: '/Release_Engineering/Cortx-Automation/changelog-generation', wait: true, propagate: false,
                     parameters: [
-                        string(name: 'BUILD_FROM', value: "ghcr.io/seagate/cortx-all:${VERSION}-${last_success_build_number}"),
-                        string(name: 'BUILD_TO', value: "ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}"),
+                        string(name: 'BUILD_FROM', value: "ghcr.io/seagate/cortx-rgw:${VERSION}-${last_success_build_number}"),
+                        string(name: 'BUILD_TO', value: "ghcr.io/seagate/cortx-rgw:${VERSION}-${BUILD_NUMBER}"),
                     ]
                     env.changeset_log_url = changelog.absoluteUrl
                     copyArtifacts filter: 'CHANGESET.txt', fingerprintArtifacts: true, flatten: true, optional: true, projectName: '/Release_Engineering/Cortx-Automation/changelog-generation', selector: lastCompleted(), target: ''
@@ -146,7 +145,7 @@ pipeline {
                         parameters: [
                             string(name: 'M_NODE', value: "${env.master_node}"),
                             password(name: 'HOST_PASS', value: "${env.hostpasswd}"),
-                            string(name: 'CORTX_IMAGE', value: "ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}"),
+                            string(name: 'CORTX_IMAGE', value: "ghcr.io/seagate/cortx-rgw:${VERSION}-${BUILD_NUMBER}"),
                             string(name: 'NUM_NODES', value: "${env.numberofnodes}")
                         ]
                         env.Sanity_Failed = qaSanity.buildVariables.Sanity_Failed
@@ -223,12 +222,12 @@ pipeline {
                 }
                 env.build_setupcortx_url = sh( script: "echo ${env.cortxcluster_build_url}/artifact/artifacts/cortx-cluster-status.txt", returnStdout: true)
                 env.host = "${env.allhost}"
-                env.build_id = "ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}"
-                env.build_location = "${DOCKER_IMAGE_LOCATION}"
+                env.build_id = "ghcr.io/seagate/cortx-rgw:${VERSION}-${BUILD_NUMBER}"
+                env.build_location = "ghcr.io/seagate/cortx-rgw:${VERSION}-${BUILD_NUMBER},ghcr.io/seagate/cortx-data:${VERSION}-${BUILD_NUMBER},ghcr.io/seagate/cortx-control:${VERSION}-${BUILD_NUMBER}"
                 env.deployment_status = "${MESSAGE}"
                 env.cluster_status = "${env.build_setupcortx_url}"
                 env.cortx_script_branch = "${CORTX_SCRIPTS_BRANCH}"
-                env.CORTX_DOCKER_IMAGE = "ghcr.io/seagate/cortx-all:${VERSION}-${BUILD_NUMBER}"
+                env.CORTX_DOCKER_IMAGE = "ghcr.io/seagate/cortx-rgw:${VERSION}-${BUILD_NUMBER}"
 
                 if ( params.EMAIL_RECIPIENTS == "ALL" && currentBuild.result == "SUCCESS" ) {
                     mailRecipients = "CORTX.All@seagate.com"
