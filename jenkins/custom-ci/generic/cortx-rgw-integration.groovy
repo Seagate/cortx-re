@@ -48,10 +48,14 @@ pipeline {
 
                 sh encoding: 'UTF-8', label: 'cortx-provisioner', script: '''
                     if [ "${ENABLE_ADDB_PLUGIN}" == "yes" ]; then
+                        pushd ../
+                        git clone https://github.com/Seagate/cortx-motr.git && git clone https://github.com/Seagate/cortx-rgw
+                        popd
                         bash ./jenkins/build.sh -v 2.0.0 -b ${CUSTOM_CI_BUILD_ID} -addb
                     else
                         bash ./jenkins/build.sh -v 2.0.0 -b ${CUSTOM_CI_BUILD_ID}
                     fi
+    
                 '''
             }
         }
