@@ -174,6 +174,7 @@ pipeline {
                     sshCommand remote: remotes[0], command: """
                         pushd ${WORK_SPACE}
                             sh deploy-cortx-cloud.sh
+                            sleep 600
                         popd
                     """
                 }
