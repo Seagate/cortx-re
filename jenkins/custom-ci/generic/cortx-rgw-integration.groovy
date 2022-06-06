@@ -53,7 +53,7 @@ pipeline {
                 sh encoding: 'UTF-8', label: 'cortx-provisioner', script: '''          
                     if [ "${ENABLE_ADDB_PLUGIN}" == "yes" ]; then
                         pushd ../
-                        git clone $MOTR_URL && git clone $CORTX_RGW_URL
+                        git clone -b $MOTR_BRANCH $MOTR_URL && git clone -b $CORTX_RGW_BRANCH $CORTX_RGW_URL
                         popd
                         bash ./jenkins/build.sh -v 2.0.0 -b ${CUSTOM_CI_BUILD_ID} -addb
                     else
