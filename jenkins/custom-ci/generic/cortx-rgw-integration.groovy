@@ -9,6 +9,10 @@ pipeline {
     parameters {
         string(name: 'CORTX_RGW_INTEGRATION_URL', defaultValue: 'https://github.com/Seagate/cortx-rgw-integration', description: 'Repository URL for cortx-rgw integration.')
         string(name: 'CORTX_RGW_INTEGRATION_BRANCH', defaultValue: 'main', description: 'Branch for cortx-rgw-integration.')
+        string(name: 'MOTR_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Motr', trim: true)
+        string(name: 'MOTR_URL', defaultValue: 'https://github.com/Seagate/cortx-motr.git', description: 'Motr Repository URL', trim: true)
+        string(name: 'CORTX_RGW_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX-RGW', trim: true)
+        string(name: 'CORTX_RGW_URL', defaultValue: 'https://github.com/Seagate/cortx-rgw', description: 'CORTX-RGW Repository URL', trim: true)
         string(name: 'CUSTOM_CI_BUILD_ID', defaultValue: '0', description: 'Custom CI Build Number')
         // Add os_version parameter in jenkins configuration
 
@@ -46,10 +50,10 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
 
-                sh encoding: 'UTF-8', label: 'cortx-provisioner', script: '''
+                sh encoding: 'UTF-8', label: 'cortx-provisioner', script: '''          
                     if [ "${ENABLE_ADDB_PLUGIN}" == "yes" ]; then
                         pushd ../
-                        git clone https://github.com/Seagate/cortx-motr.git && git clone https://github.com/Seagate/cortx-rgw
+                        git clone $MOTR_URL && git clone $CORTX_RGW_URL
                         popd
                         bash ./jenkins/build.sh -v 2.0.0 -b ${CUSTOM_CI_BUILD_ID} -addb
                     else
