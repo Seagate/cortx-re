@@ -196,6 +196,10 @@ pipeline {
                                               string(name: 'CORTX_RGW_INTEGRATION_URL', value: "${CORTX_RGW_INTEGRATION_URL}"),
                                               string(name: 'CORTX_RGW_INTEGRATION_BRANCH', value: "${CORTX_RGW_INTEGRATION_BRANCH}"),
                                               string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}"),
+                                              string(name: 'MOTR_URL', value: "${MOTR_URL}"),
+                                              string(name: 'MOTR_BRANCH', value: "${MOTR_BRANCH}"),
+                                              string(name: 'CORTX_RGW_URL', value: "${CORTX_RGW_URL}"),
+                                              string(name: 'CORTX_RGW_BRANCH', value: "${CORTX_RGW_BRANCH}"),                                             
                                               string(name: 'ENABLE_ADDB_PLUGIN', value: "${ENABLE_ADDB_PLUGIN}")
                                           ]
                             } catch (err) {
