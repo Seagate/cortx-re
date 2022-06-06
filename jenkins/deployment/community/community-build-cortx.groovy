@@ -44,7 +44,7 @@ pipeline {
                 export REGION=${REGION}
                 export SECRET_KEY=${SECRET_KEY}
                 export ACCESS_KEY=${ACCESS_KEY}
-                export INSTALL_AWS_CLI=${INSTALL_AWS_CLI}
+                export KEY_NAME=${KEY_NAME}
                             rm -rvf /usr/local/bin/aws /usr/local/bin/aws_completer /usr/local/aws-cli >/dev/null 2>&1
                             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && yum install unzip && unzip awscliv2.zip
                             ./aws/install
