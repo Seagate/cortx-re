@@ -14,7 +14,7 @@ pipeline {
 
         choice(
             name: 'ENABLE_ADDB_PLUGIN',
-                choices: ['yes', 'no'],
+                choices: ['no', 'yes'],
                 description: 'Generates addb plugin as part of cortx-rgw-integration.'
         )        
     }
