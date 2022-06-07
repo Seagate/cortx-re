@@ -22,7 +22,9 @@ set -eo pipefail
 
 source functions.sh cortx-deploy-functions.sh
 
-HOST_FILE=$(head -1 $PWD/hosts)
+HOST_FILE="$PWD/hosts"
+PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+SSH_KEY_FILE=/root/.ssh/id_rsa
 SOLUTION_CONFIG_TYPE="automated"
 
 
@@ -63,18 +65,9 @@ function upgrade_cluster() {
     generate_rsa_key
     nodes_setup
     add_secondary_separator "Verifying Pre-Upgrade CORTX Cluster health"
-}
-
-function suspend_cluster_upgrade() {
-
-}
-
-function resume_cluster_upgrade() {
-
-}
-
-function get_cluster_upgrade_status() {
-
+    scp_primary_node cortx-deploy-functions.sh functions.sh
+    rm -rf /var/tmp/cortx-cluster-status.txt
+    ssh_primary_node "export DEPLOYMENT_METHOD="standard" && /var/tmp/cortx-deploy-functions.sh --status" | tee /var/tmp/cortx-cluster-status.txt
 }
 
 ACTION="$1"
