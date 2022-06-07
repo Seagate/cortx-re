@@ -19,8 +19,8 @@
 #
 
 source functions.sh
-source /etc/os-release
 
+ACTION="$1"
 BUILD_LOCATION="$2"
 MOUNT="$3"
 
@@ -34,7 +34,6 @@ where,
 HEREDOC
 }
 
-ACTION="$1"
 if [ -z "$ACTION" ]; then
     echo "ERROR : No option provided"
     usage
@@ -92,21 +91,21 @@ function prvsn_env() {
             docker pull ubuntu:20.04
         fi
         add_secondary_separator "Run Ubuntu 20.04 container and run build script"
-        docker run --rm -t -e CEPH_REPO=$CEPH_REPO -e CEPH_BRANCH=$CEPH_BRANCH -e BUILD_LOCATION="/home" --name ceph_ubuntu -v "$BUILD_LOCATION/$BUILD_OS":/home --entrypoint /bin/bash ubuntu:20.04 -c "pushd /home && ./build.sh --env-build && popd"
+        docker run --rm -t -e CEPH_REPO=$CEPH_REPO -e CEPH_BRANCH=$CEPH_BRANCH -e BUILD_OS=$BUILD_OS -e BUILD_LOCATION="/home" --name ceph_ubuntu -v "$BUILD_LOCATION/$BUILD_OS":/home --entrypoint /bin/bash ubuntu:20.04 -c "pushd /home && ./build.sh --env-build && popd"
 
     elif [[ "$BUILD_OS" == "centos-8" ]]; then
         if [[ $(docker images --format "{{.Repository}}:{{.Tag}}" --filter reference=centos:8) != "centos:8" ]]; then
             docker pull centos:8
         fi
         add_secondary_separator "Run CentOS 8 container and run build script"
-        docker run --rm -t -e CEPH_REPO=$CEPH_REPO -e CEPH_BRANCH=$CEPH_BRANCH  -e BUILD_LOCATION="/home" --name ceph_centos -v "$BUILD_LOCATION/$BUILD_OS":/home --entrypoint /bin/bash centos:8 -c "pushd /home && ./build.sh --env-build && popd"
+        docker run --rm -t -e CEPH_REPO=$CEPH_REPO -e CEPH_BRANCH=$CEPH_BRANCH -e BUILD_OS=$BUILD_OS -e BUILD_LOCATION="/home" --name ceph_centos -v "$BUILD_LOCATION/$BUILD_OS":/home --entrypoint /bin/bash centos:8 -c "pushd /home && ./build.sh --env-build && popd"
 
     elif [[ "$BUILD_OS" == "rockylinux-8.4" ]]; then
         if [[ $(docker images --format "{{.Repository}}:{{.Tag}}" --filter reference=rockylinux:8) != "rockylinux:8" ]]; then
             docker pull rockylinux:8
         fi
         add_secondary_separator "Run Rocky Linux 8 container and run build script"
-        docker run --rm -t -e CEPH_REPO=$CEPH_REPO -e CEPH_BRANCH=$CEPH_BRANCH  -e BUILD_LOCATION="/home" --name ceph_rockylinux -v "$BUILD_LOCATION/$BUILD_OS":/home --entrypoint /bin/bash rockylinux:8 -c "pushd /home && ./build.sh --env-build && popd"
+        docker run --rm -t -e CEPH_REPO=$CEPH_REPO -e CEPH_BRANCH=$CEPH_BRANCH -e BUILD_OS=$BUILD_OS -e BUILD_LOCATION="/home" --name ceph_rockylinux -v "$BUILD_LOCATION/$BUILD_OS":/home --entrypoint /bin/bash rockylinux:8 -c "pushd /home && ./build.sh --env-build && popd"
 
     else
         add_secondary_separator "Failed to build ceph, container image not present."
@@ -117,12 +116,14 @@ function prvsn_env() {
 function ceph_build() {
     add_primary_separator "\t\tStart Ceph Build"
 
-    case "$ID" in
-        ubuntu)
+    case "$BUILD_OS" in
+        ubuntu-20.04)
             add_primary_separator "Building Ubuntu ceph binary packages"
             add_common_separator "Update repolist cache and install prerequisites"
             apt update && apt install git -y
+            check_status
             DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata
+            check_status
             pushd "$BUILD_LOCATION"
                 add_common_separator "Clone Repo"
                 git clone $CEPH_REPO -b $CEPH_BRANCH
@@ -151,13 +152,17 @@ function ceph_build() {
                 ls *.deb
             popd
         ;;
-        centos)
+        centos-8)
                 add_primary_separator "Building centos binary packages"
                 add_common_separator "Update repolist cache and install prerequisites"
                 rpm -ivh http://mirror.centos.org/centos/8-stream/BaseOS/x86_64/os/Packages/centos-gpg-keys-8-3.el8.noarch.rpm
+                check_status
                 dnf --disablerepo '*' --enablerepo=extras swap centos-linux-repos centos-stream-repos -y
+                check_status
                 yum makecache && yum install git -y
+                check_status
                 yum install wget bzip2 rpm-build rpmdevtools dnf-plugins-core -y
+                check_status
                 dnf config-manager --set-enabled powertools
                 pushd "$BUILD_LOCATION"
                     add_common_separator "Clone Repo"
@@ -187,11 +192,13 @@ function ceph_build() {
                     ls rpmbuild/RPMS/*
                 popd
         ;;
-        rocky)
+        rockylinux-8.4)
                 add_primary_separator "Building rocky linux binary packages"
                 add_common_separator "Update repolist cache and install prerequisites"
                 yum makecache && yum install git -y
+                check_status
                 yum install wget bzip2 rpm-build rpmdevtools dnf-plugins-core -y
+                check_status
                 dnf config-manager --set-enabled powertools
                 pushd "$BUILD_LOCATION"
                     add_common_separator "Clone Repo"
@@ -248,78 +255,154 @@ function upload_packages() {
         mkdir -p "$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
     popd
 
-    case "$BUILD_OS" in
-        ubuntu-20.04)
-            pushd "$BUILD_LOCATION/$BUILD_OS"
-                cp *.deb "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
-                check_status
-            popd
+    if [[ "$VM_BUILD" = true ]]; then
+        case "$BUILD_OS" in
+            ubuntu-20.04)
+                pushd "$BUILD_LOCATION"
+                    cp *.deb "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
+                    check_status
+                popd
 
-            add_secondary_separator "List files after upload"
-            pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
-                ls -la *.deb
-            popd
+                add_secondary_separator "List files after upload"
+                pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
+                    ls -la *.deb
+                popd
 
-            add_secondary_separator "Create Repo"
-            pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
-                apt-get install -y dpkg-dev
-                dpkg-scanpackages . /dev/null | gzip -9c > Packages.gz
-            popd
+                add_secondary_separator "Create Repo"
+                pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
+                    apt-get install -y dpkg-dev
+                    dpkg-scanpackages . /dev/null | gzip -9c > Packages.gz
+                popd
 
-            add_secondary_separator "Tag Last Successful"
-            pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH"
-                test -d last_successful && unlink last_successful
-                ln -s "$BUILD_NUMBER" last_successful
-            popd
-        ;;
-        centos-8)
-            pushd "$BUILD_LOCATION/$BUILD_OS/rpmbuild"
-                cp RPMS/*/*.rpm "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
-                check_status
-            popd
+                add_secondary_separator "Tag Last Successful"
+                pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH"
+                    test -d last_successful && unlink last_successful
+                    ln -s "$BUILD_NUMBER" last_successful
+                popd
+            ;;
+            centos-8)
+                pushd "$BUILD_LOCATION/rpmbuild"
+                    cp RPMS/*/*.rpm "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
+                    check_status
+                popd
 
-            add_secondary_separator "List files after upload"
-            pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
-                ls -la *
-            popd
+                add_secondary_separator "List files after upload"
+                pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
+                    ls -la *
+                popd
 
-            add_secondary_separator "Create Repo"
-            pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
-                rpm -qi createrepo || yum install -y createrepo
-                createrepo .
-            popd
+                add_secondary_separator "Create Repo"
+                pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
+                    rpm -qi createrepo || yum install -y createrepo
+                    createrepo .
+                popd
 
-            add_secondary_separator "Tag Last Successful"
-            pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH"
-                test -d last_successful && unlink last_successful
-                ln -s "$BUILD_NUMBER" last_successful
-            popd
+                add_secondary_separator "Tag Last Successful"
+                pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH"
+                    test -d last_successful && unlink last_successful
+                    ln -s "$BUILD_NUMBER" last_successful
+                popd
 
-        ;;
-        rockylinux-8.4)
-            pushd "$BUILD_LOCATION/$BUILD_OS/rpmbuild"
-                cp RPMS/*/*.rpm "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
-                check_status
-            popd
+            ;;
+            rockylinux-8.4)
+                pushd "$BUILD_LOCATION/rpmbuild"
+                    cp RPMS/*/*.rpm "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
+                    check_status
+                popd
 
-            add_secondary_separator "List files after upload"
-            pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
-                ls -la *
-            popd
-            
-            add_secondary_separator "Create Repo"
-            pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
-                rpm -qi createrepo || yum install -y createrepo
-                createrepo .
-            popd
+                add_secondary_separator "List files after upload"
+                pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
+                    ls -la *
+                popd
+                
+                add_secondary_separator "Create Repo"
+                pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
+                    rpm -qi createrepo || yum install -y createrepo
+                    createrepo .
+                popd
 
-            add_secondary_separator "Tag Last Successful"
-            pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH"
-                test -d last_successful && unlink last_successful
-                ln -s "$BUILD_NUMBER" last_successful
-            popd
-        ;;
-    esac
+                add_secondary_separator "Tag Last Successful"
+                pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH"
+                    test -d last_successful && unlink last_successful
+                    ln -s "$BUILD_NUMBER" last_successful
+                popd
+            ;;
+        esac
+    
+    else
+        case "$BUILD_OS" in
+            ubuntu-20.04)
+                pushd "$BUILD_LOCATION/$BUILD_OS"
+                    cp *.deb "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
+                    check_status
+                popd
+
+                add_secondary_separator "List files after upload"
+                pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
+                    ls -la *.deb
+                popd
+
+                add_secondary_separator "Create Repo"
+                pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
+                    apt-get install -y dpkg-dev
+                    dpkg-scanpackages . /dev/null | gzip -9c > Packages.gz
+                popd
+
+                add_secondary_separator "Tag Last Successful"
+                pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH"
+                    test -d last_successful && unlink last_successful
+                    ln -s "$BUILD_NUMBER" last_successful
+                popd
+            ;;
+            centos-8)
+                pushd "$BUILD_LOCATION/$BUILD_OS/rpmbuild"
+                    cp RPMS/*/*.rpm "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
+                    check_status
+                popd
+
+                add_secondary_separator "List files after upload"
+                pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
+                    ls -la *
+                popd
+
+                add_secondary_separator "Create Repo"
+                pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
+                    rpm -qi createrepo || yum install -y createrepo
+                    createrepo .
+                popd
+
+                add_secondary_separator "Tag Last Successful"
+                pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH"
+                    test -d last_successful && unlink last_successful
+                    ln -s "$BUILD_NUMBER" last_successful
+                popd
+
+            ;;
+            rockylinux-8.4)
+                pushd "$BUILD_LOCATION/$BUILD_OS/rpmbuild"
+                    cp RPMS/*/*.rpm "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
+                    check_status
+                popd
+
+                add_secondary_separator "List files after upload"
+                pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
+                    ls -la *
+                popd
+                
+                add_secondary_separator "Create Repo"
+                pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
+                    rpm -qi createrepo || yum install -y createrepo
+                    createrepo .
+                popd
+
+                add_secondary_separator "Tag Last Successful"
+                pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH"
+                    test -d last_successful && unlink last_successful
+                    ln -s "$BUILD_NUMBER" last_successful
+                popd
+            ;;
+        esac
+    fi
 }
 
 case $ACTION in
