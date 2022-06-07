@@ -419,6 +419,7 @@ function logs_generation() {
 function cleanup() {
     add_secondary_separator "Clean up untagged/unused images and stopped containers..."
     docker system prune -a -f --filter "label!=vendor=Project Calico"
+    check_status
 }
 
 case $ACTION in
