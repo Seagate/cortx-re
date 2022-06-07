@@ -109,7 +109,7 @@ function pull_image() {
 function update_image() {
     local POD_TYPE=$1
     local IMAGE=$2
-    local SCRIPT_LOCATION="${$3:-"/root/deploy-scripts/k8_cortx_cloud/"}"
+    local SCRIPT_LOCATION="${3:-"/root/deploy-scripts/k8_cortx_cloud/"}"
     pushd $SCRIPT_LOCATION
         if [ $POD_TYPE == 'control-pod' ]; then 
             image=$IMAGE yq e -i '.solution.images.cortxcontrol = env(image)' solution.yaml
