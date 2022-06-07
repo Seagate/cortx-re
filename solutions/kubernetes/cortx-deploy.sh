@@ -95,7 +95,8 @@ function pdsh_worker_exec() {
         /var/tmp/cortx-deploy-functions.sh --setup-worker"
     )
     for cmds in "${commands[@]}"; do
-       pdsh -w ^$1 $cmds
+       pdsh -S -w ^$1 $cmds
+       check_status
     done
 }
 
