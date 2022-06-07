@@ -22,6 +22,10 @@ set -eo pipefail
 
 source functions.sh cortx-deploy-functions.sh
 
+HOST_FILE=$(head -1 $PWD/hosts)
+SOLUTION_CONFIG_TYPE="automated"
+
+
 function usage() {
     cat << HEREDOC
 Usage : $0 [--rolling-upgrade, --cold-upgrade,  --suspend, --resume, --status]
@@ -53,13 +57,12 @@ function check_params() {
 }
 
 function upgrade_cluster() {
+    UPGRADE_TYPE=$1
     add_primary_separator "\tUpgrading CORTX Cluster"
     validation
     generate_rsa_key
     nodes_setup
     add_secondary_separator "Verifying Pre-Upgrade CORTX Cluster health"
-    print_pod_status
-    
 }
 
 function suspend_cluster_upgrade() {
@@ -84,11 +87,11 @@ fi
 case $ACTION in
     --rolling-upgrade)
         check_params
-        upgrade_cluster
+        upgrade_cluster "rolling"
     ;;
     --cold-upgrade)
         check_params
-        upgrade_cluster
+        upgrade_cluster "cold"
     ;;
     --suspend)
         suspend_cluster_upgrade
