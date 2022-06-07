@@ -88,8 +88,12 @@ function install_prereq() {
             rpm -ivh http://mirror.centos.org/centos/8-stream/HighAvailability/x86_64/os/Packages/resource-agents-4.1.1-97.el8.x86_64.rpm
         ;;
         ubuntu)
-            echo "deb http://cortx-storage.colo.seagate.com/releases/ceph/ceph/ubuntu-20.04/quincy/last_successful/"
-            apt update
+            #echo "deb [trusted=yes] http://cortx-storage.colo.seagate.com/releases/ceph/ceph/ubuntu-20.04/quincy/last_successful/ amd64/" > /etc/apt/sources.list.d/ceph-cortx-storage.list
+            #apt update
+
+            add_common_separator "Currently mounting bigstorage to nodes and installing packages until ubuntu repo is setup."
+            mkdir -p /mnt/bigstorage/releases/ceph
+            mount -t nfs4 cortx-storage.colo.seagate.com:/mnt/data1/releases/ceph /mnt/bigstorage/releases/ceph/
         ;;
     esac
 }
@@ -139,14 +143,23 @@ EOF
                 rbd-fuse-debuginfo rbd-mirror rbd-mirror-debuginfo rbd-nbd rbd-nbd-debuginfo
         ;;
         ubuntu)
-            apt install -y ceph cephadm ceph-base \
-                ceph-base-debuginfo ceph-common ceph-common-debuginfo ceph-debuginfo ceph-debugsource cephfs-mirror cephfs-mirror-debuginfo cephfs-top ceph-fuse ceph-fuse-debuginfo ceph-grafana-dashboards ceph-immutable-object-cache \
-                ceph-immutable-object-cache-debuginfo ceph-mds ceph-mds-debuginfo ceph-mgr ceph-mgr-cephadm ceph-mgr-dashboard ceph-mgr-debuginfo ceph-mgr-diskprediction-local ceph-mgr-k8sevents ceph-mgr-modules-core ceph-mgr-rook ceph-mon \
-                ceph-mon-debuginfo ceph-osd ceph-osd-debuginfo ceph-prometheus-alerts ceph-radosgw ceph-radosgw-debuginfo ceph-resource-agents ceph-selinux ceph-test ceph-test-debuginfo ceph-volume libcephfs2 libcephfs2-debuginfo libcephfs-devel \
-                libcephsqlite libcephsqlite-debuginfo libcephsqlite-devel librados2 librados2-debuginfo librados-devel librados-devel-debuginfo libradospp-devel libradosstriper1 libradosstriper1-debuginfo libradosstriper-devel librbd1 \
-                librbd1-debuginfo librbd-devel librgw2 librgw2-debuginfo librgw-devel python3-ceph-argparse python3-ceph-common python3-cephfs python3-cephfs-debuginfo python3-rados python3-rados-debuginfo python3-rbd \
-                python3-rbd-debuginfo python3-rgw python3-rgw-debuginfo rados-objclass-devel rbd-fuse rbd-fuse-debuginfo rbd-mirror rbd-mirror-debuginfo rbd-nbd rbd-nbd-debuginfo
+            # apt install -y ceph ceph-base ceph-base-dbg ceph-common ceph-common-dbg ceph-fuse ceph-fuse-dbg ceph-grafana-dashboards ceph-immutable-object-cache \
+            #    ceph-immutable-object-cache-dbg ceph-mds ceph-mds-dbg ceph-mgr ceph-mgr-cephadm ceph-mgr-dashboard ceph-mgr-dbg ceph-mgr-diskprediction-local \
+            #    ceph-mgr-k8sevents ceph-mgr-modules-core ceph-mgr-rook ceph-mon ceph-mon-dbg ceph-osd ceph-osd-dbg ceph-prometheus-alerts ceph-resource-agents \
+            #    ceph-test ceph-test-dbg ceph-volume cephadm cephfs-mirror cephfs-mirror-dbg cephfs-shell cephfs-top libcephfs-dev libcephfs-java libcephfs-jni \
+            #    libcephfs2 libcephfs2-dbg librados-dev librados2 librados2-dbg libradospp-dev libradosstriper-dev libradosstriper1 libradosstriper1-dbg librbd-dev \
+            #    librbd1 librbd1-dbg librgw-dev librgw2 librgw2-dbg libsqlite3-mod-ceph libsqlite3-mod-ceph-dbg libsqlite3-mod-ceph-dev python3-ceph python3-ceph-argparse \
+            #    python3-ceph-common python3-cephfs python3-cephfs-dbg python3-rados python3-rados-dbg python3-rbd python3-rbd-dbg python3-rgw python3-rgw-dbg rados-objclass-dev \
+            #    radosgw radosgw-dbg rbd-fuse rbd-fuse-dbg rbd-mirror rbd-mirror-dbg rbd-nbd rbd-nbd-dbg
 
+            add_common_separator "Currently mounting bigstorage to nodes and installing packages until ubuntu repo is setup."
+            pushd /mnt/bigstorage/releases/ceph/ceph/ubuntu-20.04/quincy/last_successful
+                echo "Moving cephadm & ceph-mgr-cephadm to /var/tmp as they conflict with installation and are not required for deployment."
+                ls | grep cephadm | xargs -I {} mv {} /var/tmp
+                dpkg -i *.deb; apt-get -f install -y; apt --fix-broken install
+            popd
+            add_common_separator "Unmounting bigstorage"
+            umount cortx-storage.colo.seagate.com:/mnt/data1/releases/ceph
         ;;
     esac
 }

@@ -18,6 +18,8 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
+source /etc/os-release
+
 function add_primary_separator() {
     printf "\n################################################################################\n"
     printf "\t\t$*\n"
@@ -70,9 +72,18 @@ function passwordless_ssh() {
     local PASS=$3
     ping -c1 -W1 -q $NODE
     check_status
-    yum list pdsh -q || yum install epel-release -y
-    yum install sshpass openssh-clients pdsh -y
-    check_status "$NODE: Package installation failed"
+
+    if [[ "$ID" == "rocky" || "$ID" == "centos" ]]; then
+        yum list pdsh -q || yum install epel-release -y
+        yum install sshpass openssh-clients pdsh -y
+        check_status "$NODE: Package installation failed"
+    fi
+    
+    if [[ "$ID" == "ubuntu" ]]; then
+        apt install -y pdsh sshpass openssh-client
+        check_status "$NODE: Package installation failed"
+    fi
+
     sshpass -p "$PASS" ssh-copy-id -f -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa.pub "$USER"@"$NODE"
     check_status "$NODE: Passwordless ssh setup failed. Please validate provided credentails"
 }
