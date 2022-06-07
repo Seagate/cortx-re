@@ -20,7 +20,7 @@
 
 set -eo pipefail
 
-source functions.sh
+source functions.sh cortx-deploy-functions.sh
 
 function usage() {
     cat << HEREDOC
@@ -53,9 +53,13 @@ function check_params() {
 }
 
 function upgrade_cluster() {
+    add_primary_separator "\tUpgrading CORTX Cluster"
     validation
     generate_rsa_key
     nodes_setup
+    add_secondary_separator "Verifying Pre-Upgrade CORTX Cluster health"
+    print_pod_status
+    
 }
 
 function suspend_cluster_upgrade() {
