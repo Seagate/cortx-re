@@ -30,7 +30,13 @@ function install_awscli() {
 
    add_secondary_separator "Check and install pip3 if not present:"
    if ! which pip3; then
-      yum install python3-pip
+      if [[ "$ID" == "rocky" || "$ID" == "centos" ]]; then
+         yum install -y python3-pip
+      fi
+
+      if [[ "$ID" == "ubuntu" ]]; then
+         apt install -y python3-pip
+      fi
    fi
 
    add_secondary_separator "Installing awscli"
