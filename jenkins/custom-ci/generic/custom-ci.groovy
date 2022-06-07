@@ -81,6 +81,12 @@ pipeline {
         )
 
         choice(
+            name: 'ENABLE_ADDB_PLUGIN',
+                choices: ['no', 'yes'],
+                description: 'Generates addb plugin as part of cortx-rgw-integration.'
+        )
+
+        choice(
             name: 'BUILD_LATEST_CORTX_RGW',
             choices: ['yes', 'no'],
             description: 'Build cortx-rgw from latest code or use last-successful build.'
@@ -189,7 +195,12 @@ pipeline {
                                           parameters: [
                                               string(name: 'CORTX_RGW_INTEGRATION_URL', value: "${CORTX_RGW_INTEGRATION_URL}"),
                                               string(name: 'CORTX_RGW_INTEGRATION_BRANCH', value: "${CORTX_RGW_INTEGRATION_BRANCH}"),
-                                              string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}")
+                                              string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}"),
+                                              string(name: 'MOTR_URL', value: "${MOTR_URL}"),
+                                              string(name: 'MOTR_BRANCH', value: "${MOTR_BRANCH}"),
+                                              string(name: 'CORTX_RGW_URL', value: "${CORTX_RGW_URL}"),
+                                              string(name: 'CORTX_RGW_BRANCH', value: "${CORTX_RGW_BRANCH}"),                                             
+                                              string(name: 'ENABLE_ADDB_PLUGIN', value: "${ENABLE_ADDB_PLUGIN}")
                                           ]
                             } catch (err) {
                                 build_stage = env.STAGE_NAME
