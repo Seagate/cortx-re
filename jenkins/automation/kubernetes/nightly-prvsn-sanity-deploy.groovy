@@ -145,6 +145,7 @@ pipeline {
                         export DATA_IMAGE=${DATA_IMAGE}
                         export HA_IMAGE=${HA_IMAGE}
                         export SERVER_IMAGE=${SERVER_IMAGE}
+                        export CLIENT_IMAGE=${CLIENT_IMAGE}
                         export CORTX_SCRIPTS_REPO=${CORTX_SCRIPTS_REPO}
                         export CORTX_SCRIPTS_BRANCH=${CORTX_SCRIPTS_BRANCH}
                         sh update_solution.sh
@@ -173,6 +174,7 @@ pipeline {
                     sshCommand remote: remotes[0], command: """
                         pushd ${WORK_SPACE}
                             sh deploy-cortx-cloud.sh
+                            sleep 600
                         popd
                     """
                 }
