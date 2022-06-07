@@ -12,8 +12,8 @@ pipeline {
         disableConcurrentBuilds()
     }
     environment {
-        CORTX_RE_BRANCH = "main"
-        CORTX_RE_REPO = "https://github.com/Seagate/cortx-re"
+        CORTX_RE_BRANCH = "k8s-0.7.0-support"
+        CORTX_RE_REPO = "https://github.com/shailesh-vaidya/cortx-re"
         LOCAL_REG_CRED = credentials('local-registry-access')
         GITHUB_CRED = credentials('shailesh-github')
         VERSION = "2.0.0"
