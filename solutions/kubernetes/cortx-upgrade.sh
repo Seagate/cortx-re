@@ -20,7 +20,7 @@
 
 set -eo pipefail
 
-source functions.sh cortx-deploy-functions.sh
+source /var/tmp/functions.sh /var/tmp/cortx-deploy-functions.sh
 
 HOST_FILE="$PWD/hosts"
 PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
