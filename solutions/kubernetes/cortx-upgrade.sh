@@ -66,8 +66,24 @@ function upgrade_cluster() {
     nodes_setup
     add_secondary_separator "Verifying Pre-Upgrade CORTX Cluster health"
     scp_primary_node cortx-deploy-functions.sh functions.sh
-    rm -rf /var/tmp/cortx-cluster-status.txt
-    ssh_primary_node "export DEPLOYMENT_METHOD="standard" && /var/tmp/cortx-deploy-functions.sh --status" | tee /var/tmp/cortx-cluster-status.txt
+    rm -rf /var/tmp/pre-upgrade-cortx-cluster-status.txt
+    ssh_primary_node "export DEPLOYMENT_METHOD="standard" && /var/tmp/cortx-deploy-functions.sh --status" | tee /var/tmp/pre-upgrade-cortx-cluster-status.txt
+    add_secondary_separator "Download Upgrade Images"
+    pull_image $CORTX_SERVER_IMAGE
+    pull_image $CORTX_DATA_IMAGE
+    pull_image $CORTX_CONTROL_IMAGE
+    add_secondary_separator "Updating CORTX Images info in solution.yaml"   
+    update_image control-pod $CORTX_CONTROL_IMAGE
+    update_image data-pod $CORTX_DATA_IMAGE
+    update_image server-pod $CORTX_SERVER_IMAGE
+    update_image ha-pod $CORTX_CONTROL_IMAGE
+    update_image client-pod $CORTX_DATA_IMAGE
+    add_secondary_separator "Begin CORTX Cluster Upgrade"
+    ./upgrade-cortx-cloud.sh start -p $POD_TYPE
+    add_secondary_separator "Verifying Post-Upgrade CORTX Cluster health"
+    rm -rf /var/tmp/post-upgrade-cortx-cluster-status.txt
+    ssh_primary_node "export DEPLOYMENT_METHOD="standard" && /var/tmp/cortx-deploy-functions.sh --status" | tee /var/tmp/post-upgrade-cortx-cluster-status.txt
+
 }
 
 ACTION="$1"

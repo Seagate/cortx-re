@@ -218,7 +218,7 @@ function update_solution_config(){
 }        
 
 function add_image_info() {
-    echo "Updating cortx images info in solution.yaml"   
+    add_secondary_separator "Updating cortx images info in solution.yaml"   
     update_image control-pod $CORTX_CONTROL_IMAGE
     update_image data-pod $CORTX_DATA_IMAGE
     update_image server-pod $CORTX_SERVER_IMAGE
