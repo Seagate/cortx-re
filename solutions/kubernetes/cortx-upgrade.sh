@@ -70,7 +70,7 @@ function check_cluster_status() {
 function upgrade_cluster() {
     UPGRADE_TYPE=$1
     add_primary_separator "\tUpgrading CORTX Cluster"
-    ssh_primary_node "source functions.sh cortx-deploy-functions.sh &&
+    ssh_primary_node "source /var/tmp/functions.sh /var/tmp/cortx-deploy-functions.sh &&
     add_secondary_separator 'Download Upgrade Images' && 
     pull_image $CORTX_SERVER_IMAGE &&
     pull_image $CORTX_DATA_IMAGE &&
