@@ -16,8 +16,10 @@ pipeline {
     }
 
     parameters {
-        string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash to Generate Repo Health Report', trim: true)
-        string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repository to to Generate Repo Health Report', trim: true)
+        string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'CORTX RE Branch or GitHash to Generate Repo Health Report', trim: true)
+        string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'CORTX RE Repository to to Generate Repo Health Report', trim: true)
+        string(name: 'CORTX_BRANCH', defaultValue: 'main', description: 'CORTX Branch or GitHash to Generate Repo Health Report', trim: true)
+        string(name: 'CORTX_REPO', defaultValue: 'https://github.com/Seagate/cortx', description: 'CORTX Repository to to Generate Repo Health Report', trim: true)
     }    
 
     stages {
@@ -35,6 +37,8 @@ pipeline {
                 script {
                     sh '''
                         pushd scripts/reports
+                            export CORTX_REPO=${CORTX_REPO}
+                            export CORTX_BRANCH=${CORTX_BRANCH}
                             sh ./repo-health.sh
                         popd
                     '''
