@@ -100,7 +100,6 @@ function update_solution_config(){
         yq e -i '.solution.images.busybox = "ghcr.io/seagate/busybox:latest"' solution.yaml
 
         drive=$SYSTEM_DRIVE_MOUNT yq e -i '.solution.common.storage_provisioner_path = env(drive)' solution.yaml
-        yq e -i '.solution.common.setup_size = "small"' solution.yaml
         yq e -i '.solution.common.container_path.local = "/etc/cortx"' solution.yaml
         yq e -i '.solution.common.container_path.log = "/etc/cortx/log"' solution.yaml
         yq e -i '.solution.common.s3.default_iam_users.auth_admin = "sgiamadmin"' solution.yaml
@@ -117,7 +116,6 @@ function update_solution_config(){
         yq e -i '.solution.common.motr.group_size = 1' solution.yaml
         yq e -i '.solution.common.motr.extra_configuration = ""' solution.yaml
         yq e -i '.solution.common.hax.protocol = "https"' solution.yaml
-        yq e -i '.solution.common.hax.service_name = "cortx-hax-svc"' solution.yaml
         yq e -i '.solution.common.hax.port_num = 22003' solution.yaml
         yq e -i '.solution.common.storage_sets.name = "storage-set-1"' solution.yaml
 
@@ -153,7 +151,6 @@ function update_solution_config(){
         yq e -i '.solution.common.resource_allocation.zookeeper.resources.limits.cpu = "1000m"' solution.yaml
 
         yq e -i '.solution.common.resource_allocation.kafka.storage_request_size = "8Gi"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.kafka.log_persistence_request_size = "8Gi"' solution.yaml
         yq e -i '.solution.common.resource_allocation.kafka.resources.requests.memory = "1Gi"' solution.yaml
         yq e -i '.solution.common.resource_allocation.kafka.resources.requests.cpu = "250m"' solution.yaml
         yq e -i '.solution.common.resource_allocation.kafka.resources.limits.memory = "3Gi"' solution.yaml
