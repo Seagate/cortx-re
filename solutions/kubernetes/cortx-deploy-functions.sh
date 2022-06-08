@@ -100,7 +100,6 @@ function update_solution_config(){
         yq e -i '.solution.images.busybox = "ghcr.io/seagate/busybox:latest"' solution.yaml
 
         drive=$SYSTEM_DRIVE_MOUNT yq e -i '.solution.common.storage_provisioner_path = env(drive)' solution.yaml
-        yq e -i '.solution.common.setup_size = "small"' solution.yaml
         yq e -i '.solution.common.container_path.local = "/etc/cortx"' solution.yaml
         yq e -i '.solution.common.container_path.log = "/etc/cortx/log"' solution.yaml
         yq e -i '.solution.common.s3.default_iam_users.auth_admin = "sgiamadmin"' solution.yaml
