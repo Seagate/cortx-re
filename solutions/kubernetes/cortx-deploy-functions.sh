@@ -116,6 +116,7 @@ function update_solution_config(){
         yq e -i '.solution.common.motr.group_size = 1' solution.yaml
         yq e -i '.solution.common.motr.extra_configuration = ""' solution.yaml
         yq e -i '.solution.common.hax.protocol = "https"' solution.yaml
+        yq e -i '.solution.common.hax.service_name = "cortx-hax-svc"' solution.yaml
         yq e -i '.solution.common.hax.port_num = 22003' solution.yaml
         yq e -i '.solution.common.storage_sets.name = "storage-set-1"' solution.yaml
 
