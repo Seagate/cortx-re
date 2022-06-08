@@ -21,6 +21,7 @@
 set -euo pipefail
 
 source /var/tmp/functions.sh
+source /etc/os-release
 
 SOLUTION_FILE="/root/deploy-scripts/k8_cortx_cloud/solution.yaml"
 
@@ -29,7 +30,13 @@ function install_awscli() {
 
    add_secondary_separator "Check and install pip3 if not present:"
    if ! which pip3; then
-      yum install python3-pip
+      if [[ "$ID" == "rocky" || "$ID" == "centos" ]]; then
+         yum install -y python3-pip
+      fi
+
+      if [[ "$ID" == "ubuntu" ]]; then
+         apt install -y python3-pip
+      fi
    fi
 
    add_secondary_separator "Installing awscli"
@@ -44,11 +51,32 @@ function install_awscli() {
 
 function setup_awscli() {
    add_secondary_separator "Setup awscli"
-   
-   # Get credentials and create dir. 
-   access_key=$(yq e '.solution.common.s3.default_iam_users.auth_admin' $SOLUTION_FILE)
-   secret_key=$(yq e '.solution.secrets.content.s3_auth_admin_secret' $SOLUTION_FILE)
-   endpoint_url="http://""$(kubectl get svc | grep cortx-io | awk '{ print $3 }')"":80"
+
+   if [[ $CEPH_DEPLOYMENT = "true" ]]; then
+      case "$ID" in
+         rocky)
+            yum install http://mirror.centos.org/centos/8-stream/AppStream/x86_64/os/Packages/jq-1.6-3.el8.x86_64.rpm -y 
+         ;;
+         centos)
+            yum install jq -y
+         ;;
+         ubuntu)
+            apt install -y jq
+        ;;
+      esac
+
+      # Get credentials.
+      access_key=$(radosgw-admin user info --uid=io-test | jq .keys[].access_key | tr -d '"')
+      secret_key=$(radosgw-admin user info --uid=io-test | jq .keys[].secret_key | tr -d '"')
+      endpoint_url="http://""$(hostname -i)"":9999"
+
+   else
+      # Get credentials.
+      access_key=$(yq e '.solution.common.s3.default_iam_users.auth_admin' $SOLUTION_FILE)
+      secret_key=$(yq e '.solution.secrets.content.s3_auth_admin_secret' $SOLUTION_FILE)
+      endpoint_url="http://""$(kubectl get svc | grep cortx-io | awk '{ print $3 }')"":80"
+   fi
+
    mkdir -p /root/.aws/
 
    # Configure plugin, api and endpoints.
