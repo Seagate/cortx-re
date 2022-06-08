@@ -113,6 +113,8 @@ function update_solution_config(){
             yq e -i '.solution.common.motr.num_client_inst = 0' solution.yaml
         fi       
         yq e -i '.solution.common.motr.start_port_num = 29000' solution.yaml
+        yq e -i '.solution.common.motr.md_size = 10' solution.yaml
+        yq e -i '.solution.common.motr.group_size = 1' solution.yaml
         yq e -i '.solution.common.motr.extra_configuration = ""' solution.yaml
         yq e -i '.solution.common.hax.protocol = "https"' solution.yaml
         yq e -i '.solution.common.hax.service_name = "cortx-hax-svc"' solution.yaml
