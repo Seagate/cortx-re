@@ -1,2 +1,2 @@
 # CORTX is happy to be a SODA Eco Project.
-![image](./images/SODA image.png)
+[![image](./images/SODAimage.png)](https://www.sodafoundation.io/)
