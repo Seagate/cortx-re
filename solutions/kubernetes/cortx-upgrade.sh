@@ -82,7 +82,7 @@ function upgrade_cluster() {
     update_image ha-pod $CORTX_CONTROL_IMAGE &&
     update_image client-pod $CORTX_DATA_IMAGE &&
     add_secondary_separator 'Begin CORTX Cluster Upgrade' &&
-    ./upgrade-cortx-cloud.sh start -p $POD_TYPE"
+    ./deploy-scripts/k8_cortx_cloud/upgrade-cortx-cloud.sh start -p $POD_TYPE"
 }
 
 ACTION="$1"
