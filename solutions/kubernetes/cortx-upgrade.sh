@@ -70,8 +70,6 @@ function check_cluster_status() {
 function upgrade_cluster() {
     UPGRADE_TYPE=$1
     add_primary_separator "\tUpgrading CORTX Cluster"
-    add_secondary_separator "Verifying Pre-Upgrade CORTX Cluster health"
-    check_cluster_status
     ssh_primary_node "add_secondary_separator 'Download Upgrade Images' && 
     pull_image $CORTX_SERVER_IMAGE &&
     pull_image $CORTX_DATA_IMAGE &&
@@ -84,8 +82,6 @@ function upgrade_cluster() {
     update_image client-pod $CORTX_DATA_IMAGE &&
     add_secondary_separator 'Begin CORTX Cluster Upgrade' &&
     ./upgrade-cortx-cloud.sh start -p $POD_TYPE"
-    add_secondary_separator "Verifying Post-Upgrade CORTX Cluster health"
-    check_cluster_status
 }
 
 ACTION="$1"
