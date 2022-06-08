@@ -72,18 +72,18 @@ function upgrade_cluster() {
     add_primary_separator "\tUpgrading CORTX Cluster"
     add_secondary_separator "Verifying Pre-Upgrade CORTX Cluster health"
     check_cluster_status
-    add_secondary_separator "Download Upgrade Images"
-    pull_image $CORTX_SERVER_IMAGE
-    pull_image $CORTX_DATA_IMAGE
-    pull_image $CORTX_CONTROL_IMAGE
-    add_secondary_separator "Updating CORTX Images info in solution.yaml"   
-    update_image control-pod $CORTX_CONTROL_IMAGE
-    update_image data-pod $CORTX_DATA_IMAGE
-    update_image server-pod $CORTX_SERVER_IMAGE
-    update_image ha-pod $CORTX_CONTROL_IMAGE
-    update_image client-pod $CORTX_DATA_IMAGE
-    add_secondary_separator "Begin CORTX Cluster Upgrade"
-    ./upgrade-cortx-cloud.sh start -p $POD_TYPE
+    ssh_primary_node "add_secondary_separator 'Download Upgrade Images' && 
+    pull_image $CORTX_SERVER_IMAGE &&
+    pull_image $CORTX_DATA_IMAGE &&
+    pull_image $CORTX_CONTROL_IMAGE &&
+    add_secondary_separator 'Updating CORTX Images info in solution.yaml' &&   
+    update_image control-pod $CORTX_CONTROL_IMAGE &&
+    update_image data-pod $CORTX_DATA_IMAGE &&
+    update_image server-pod $CORTX_SERVER_IMAGE &&
+    update_image ha-pod $CORTX_CONTROL_IMAGE &&
+    update_image client-pod $CORTX_DATA_IMAGE &&
+    add_secondary_separator 'Begin CORTX Cluster Upgrade' &&
+    ./upgrade-cortx-cloud.sh start -p $POD_TYPE"
     add_secondary_separator "Verifying Post-Upgrade CORTX Cluster health"
     check_cluster_status
 }
