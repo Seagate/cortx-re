@@ -20,7 +20,7 @@
 
 set -eo pipefail
 
-source /var/tmp/functions.sh /var/tmp/cortx-deploy-functions.sh
+source functions.sh cortx-deploy-functions.sh
 
 HOST_FILE="$PWD/hosts"
 PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
@@ -70,7 +70,8 @@ function check_cluster_status() {
 function upgrade_cluster() {
     UPGRADE_TYPE=$1
     add_primary_separator "\tUpgrading CORTX Cluster"
-    ssh_primary_node "add_secondary_separator 'Download Upgrade Images' && 
+    ssh_primary_node "source functions.sh cortx-deploy-functions.sh &&
+    add_secondary_separator 'Download Upgrade Images' && 
     pull_image $CORTX_SERVER_IMAGE &&
     pull_image $CORTX_DATA_IMAGE &&
     pull_image $CORTX_CONTROL_IMAGE &&
