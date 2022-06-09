@@ -6,7 +6,7 @@ pipeline {
     }
     options { 
         skipDefaultCheckout()
-        timeout(time: 180, unit: 'MINUTES')
+        timeout(time: 360, unit: 'MINUTES')
         timestamps()
         disableConcurrentBuilds()
         ansiColor('xterm')  
