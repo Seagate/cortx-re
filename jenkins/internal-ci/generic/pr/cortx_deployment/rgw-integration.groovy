@@ -20,7 +20,7 @@ pipeline {
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch for cortx-re')
 
         choice (
-            choices: ['all', 'cortx-all', 'cortx-control', 'cortx-rgw', 'cortx-data'],
+            choices: ['all', 'cortx-control', 'cortx-rgw', 'cortx-data'],
             description: 'CORTX Image to be built. Defaults to all images ',
             name: 'CORTX_IMAGE'
         )
@@ -39,7 +39,7 @@ pipeline {
         RGW_INTEGRATION_PR_REFSEPEC = "${ghprbPullId != null ? RGW_INTEGRATION_GPR_REFSEPEC : RGW_INTEGRATION_BRANCH_REFSEPEC}"
 
         //////////////////////////////// BUILD VARS //////////////////////////////////////////////////
-        // OS_VERSION, singlenode_host, threenode_hosts, COMPONENTS_BRANCH and CORTX_SCRIPTS_BRANCH are manually created parameters in jenkins job.
+        // OS_VERSION, singlenode_host and COMPONENTS_BRANCH are manually created parameters in jenkins job.
 
         COMPONENT_NAME = "rgw-integration".trim()
         BRANCH = "${ghprbTargetBranch != null ? ghprbTargetBranch : COMPONENTS_BRANCH}"
