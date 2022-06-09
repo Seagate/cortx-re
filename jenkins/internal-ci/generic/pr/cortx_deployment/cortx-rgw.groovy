@@ -96,6 +96,7 @@ pipeline {
                     checkout([$class: 'GitSCM', branches: [[name: "${RGW_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog'], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${RGW_URL}",  name: 'origin', refspec: "${RGW_PR_REFSEPEC}"]]])
 
                 sh label: 'Build', script: '''                    
+                ls -lrt
                 pushd cortx-rgw
                     ./install-deps.sh
                     ./make-dist
