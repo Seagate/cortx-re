@@ -16,8 +16,6 @@ pipeline {
     parameters {  
 	    string(name: 'RGW_INTEGRATION_URL', defaultValue: 'https://github.com/Seagate/cortx-rgw-integration', description: 'Repo for rgw-integration')
         string(name: 'RGW_INTEGRATION_BRANCH', defaultValue: 'main', description: 'Branch for rgw-integration')
-        choice(name: 'DEPLOY_BUILD_ON_NODES', choices: ["Both", "1node", "3node" ], description: '''<pre>If you select Both then build will be deploy on 1 node as well as 3 node. If you select 1 node then build will be deploy on 1 node only. If you select 3 node then build will be deploy on 3 node only. 
-</pre>''')
         string(name: 'CORTX_RE_URL', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repo for cortx-re')
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch for cortx-re')
 
@@ -227,50 +225,25 @@ pipeline {
                 }
             }
         }
-	stage ('Deploy Cortx Cluster') {
-             parallel {
-                  stage ("Deploy 1Node") {
-                       when { expression { params.DEPLOY_BUILD_ON_NODES ==~ /Both|1node/ } }
-                       steps {
-                             script { build_stage = env.STAGE_NAME }
-                             script {
-                                  build job: "K8s-1N-deployment", wait: true,
-                                  parameters: [
-                                        string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_URL}"),
-                                        string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
-                                        string(name: 'CORTX_SERVER_IMAGE', value: "${env.cortx_rgw_image}"),
-                                        string(name: 'CORTX_DATA_IMAGE', value: "${env.cortx_data_image}"),
-                                        string(name: 'CORTX_CONTROL_IMAGE', value: "${env.cortx_control_image}"),
-                                        string(name: 'CORTX_SCRIPTS_REPO', value: "Seagate/cortx-k8s"),
-                                        string(name: 'CORTX_SCRIPTS_BRANCH', value: "integration"),
-                                        string(name: 'hosts', value: "${singlenode_host}"),
-                                        string(name: 'EMAIL_RECIPIENTS', value: "DEBUG")
-                                 ] 
-                             }
-                       }
-                } 
-                stage ("Deploy 3Node") {
-                       when { expression { params.DEPLOY_BUILD_ON_NODES ==~ /Both|3node/ } }
-                       steps {
-                             script { build_stage = env.STAGE_NAME }
-                             script {
-                                  build job: "K8s-3N-deployment", wait: true,
-                                  parameters: [
-                                        string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_URL}"),
-                                        string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
-                                        string(name: 'CORTX_SERVER_IMAGE', value: "${env.cortx_rgw_image}"),
-                                        string(name: 'CORTX_DATA_IMAGE', value: "${env.cortx_data_image}"),
-                                        string(name: 'CORTX_CONTROL_IMAGE', value: "${env.cortx_control_image}"),
-                                        string(name: 'CORTX_SCRIPTS_REPO', value: "Seagate/cortx-k8s"),
-                                        string(name: 'CORTX_SCRIPTS_BRANCH', value: "integration"),
-                                        string(name: 'hosts', value: "${threenode_hosts}"),
-                                        string(name: 'EMAIL_RECIPIENTS', value: "DEBUG")
-                                 ] 
-                             }
-                       }
+        stage ('Deploy Cortx Cluster') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                script {
+                    build job: "K8s-1N-deployment", wait: true,
+                    parameters: [
+                        string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_URL}"),
+                        string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
+                        string(name: 'CORTX_SERVER_IMAGE', value: "${env.cortx_rgw_image}"),
+                        string(name: 'CORTX_DATA_IMAGE', value: "${env.cortx_data_image}"),
+                        string(name: 'CORTX_CONTROL_IMAGE', value: "${env.cortx_control_image}"),
+                        string(name: 'CORTX_SCRIPTS_REPO', value: "Seagate/cortx-k8s"),
+                        string(name: 'CORTX_SCRIPTS_BRANCH', value: "integration"),
+                        string(name: 'hosts', value: "${singlenode_host}"),
+                        string(name: 'EMAIL_RECIPIENTS', value: "DEBUG")
+                    ] 
                 }
-             }
-        }
+            }
+        }                 
     }
 
     post {
