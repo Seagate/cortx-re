@@ -22,7 +22,7 @@ pipeline {
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch for cortx-re')
 
         choice (
-            choices: ['all', 'cortx-all' , 'cortx-rgw', 'cortx-data'],
+            choices: ['all', 'cortx-rgw', 'cortx-data', 'cortx-control'],
             description: 'CORTX Image to be built. Defaults to all images ',
             name: 'CORTX_IMAGE'
         )
@@ -168,24 +168,6 @@ EOF
                     # Symlink python dependencies
                     ln -s "${PYTHON_DEPS}" "${PYTHON_LIB_LOCATION}"
                 '''
-
-                // sh label: 'RPM Signing', script: '''
-                //     pushd cortx-re/scripts/rpm-signing
-                //         cat gpgoptions >>  ~/.rpmmacros
-                //         sed -i 's/passphrase/'${PASSPHARASE}'/g' genkey-batch
-                //         gpg --batch --gen-key genkey-batch
-                //         gpg --export -a 'Seagate'  > RPM-GPG-KEY-Seagate
-                //         rpm --import RPM-GPG-KEY-Seagate
-                //     popd
-                //     pushd cortx-re/scripts/rpm-signing
-                //         chmod +x rpm-sign.sh
-                //         cp RPM-GPG-KEY-Seagate ${CORTX_ISO_LOCATION}
-                //         for rpm in `ls -1 ${CORTX_ISO_LOCATION}/*.rpm`
-                //         do
-                //             ./rpm-sign.sh ${PASSPHARASE} ${rpm}
-                //         done
-                //     popd
-                // '''
                 
                 sh label: 'Repo Creation', script: '''
                     pushd ${CORTX_ISO_LOCATION}

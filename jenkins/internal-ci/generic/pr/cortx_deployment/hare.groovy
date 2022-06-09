@@ -23,7 +23,7 @@ pipeline {
         choice(name: 'DEPLOY_BUILD_ON_NODES', choices: ["Both", "1node", "3node" ], description: '''<pre>If you select Both then build will be deploy on 1 node as well as 3 node. If you select 1 node then build will be deploy on 1 node only. If you select 3 node then build will be deploy on 3 node only. 
 </pre>''')
         choice (
-            choices: ['all', 'cortx-all' , 'cortx-rgw', 'cortx-data'],
+            choices: ['all', 'cortx-rgw', 'cortx-data', 'cortx-control'],
             description: 'CORTX Image to be built. Defaults to all images ',
             name: 'CORTX_IMAGE'
         )
@@ -166,26 +166,6 @@ EOF
                     # Symlink python dependencies
                     ln -s "${PYTHON_DEPS}" "${PYTHON_LIB_LOCATION}"
                 '''
-
-                // sh label: 'RPM Signing', script: '''
-                //     pushd cortx-re/scripts/rpm-signing
-                //         cat gpgoptions >>  ~/.rpmmacros
-                //         sed -i 's/passphrase/'${PASSPHARASE}'/g' genkey-batch
-                //         gpg --batch --gen-key genkey-batch
-                //         gpg --export -a 'Seagate'  > RPM-GPG-KEY-Seagate
-                //         rpm --import RPM-GPG-KEY-Seagate
-                //     popd
-
-
-                //     pushd cortx-re/scripts/rpm-signing
-                //         chmod +x rpm-sign.sh
-                //         cp RPM-GPG-KEY-Seagate ${CORTX_ISO_LOCATION}
-                //         for rpm in `ls -1 ${CORTX_ISO_LOCATION}/*.rpm`
-                //         do
-                //             ./rpm-sign.sh ${PASSPHARASE} ${rpm}
-                //         done
-                //     popd
-                // '''
                 
                 sh label: 'Create repo', script: '''
                     pushd ${CORTX_ISO_LOCATION}
