@@ -16,7 +16,7 @@ pipeline {
     parameters {  
 	    string(name: 'RGW_URL', defaultValue: 'https://github.com/Seagate/cortx-rgw', description: 'Repo for rgw')
         string(name: 'RGW_BRANCH', defaultValue: 'main', description: 'Branch for rgw')
-        choice(name: 'DEPLOY_BUILD_ON_NODES', choices: ["Both", "1node", "3node" ], description: '''<pre>If you select Both then build will be deploy on 1 node as well as 3 node. If you select 1 node then build will be deploy on 1 node only. If you select 3 node then build will be deploy on 3 node only. 
+        choice(name: 'DEPLOY_BUILD_ON_NODES', choices: ["1node", "Both", "3node" ], description: '''<pre>If you select Both then build will be deploy on 1 node as well as 3 node. If you select 1 node then build will be deploy on 1 node only. If you select 3 node then build will be deploy on 3 node only. 
 </pre>''')
         string(name: 'CORTX_RE_URL', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repo for cortx-re')
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch for cortx-re')
@@ -94,6 +94,7 @@ pipeline {
                 dir ('cortx-rgw') {
 
                     checkout([$class: 'GitSCM', branches: [[name: "${RGW_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog'], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${RGW_URL}",  name: 'origin', refspec: "${RGW_PR_REFSEPEC}"]]])
+                }
 
                 sh label: 'Build', script: '''                    
                 ls -lrt
@@ -131,7 +132,7 @@ pipeline {
                 '''
                     }
                 }
-            }
+    }
 
         // Release cortx deployment stack
         stage('Release') {
