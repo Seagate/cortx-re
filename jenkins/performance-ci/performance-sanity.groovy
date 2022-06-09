@@ -16,8 +16,8 @@ pipeline {
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_TOOLS_BRANCH', defaultValue: 'main', description: 'Repository for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_TOOLS_REPO', defaultValue: 'Seagate/seagate-tools', description: 'Repository for Cluster Setup scripts', trim: true)
-        text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>,role=server
-hostname=<hostname>,user=<user>,pass=<password>,role=client''', description: 'CORTX Cluster Primary node and Client details in specified format', name: 'hosts')
+        text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'CORTX Cluster Primary node details', name: 'primary_nodes')
+        text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'Client node details', name: 'client_nodes')
     }
 
     environment {
@@ -39,8 +39,8 @@ hostname=<hostname>,user=<user>,pass=<password>,role=client''', description: 'CO
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Execute performace sanity', script: '''
                     pushd scripts/performance
-                        echo $hosts | tr ' ' '\n' > hosts
-                        cat hosts
+                        echo $client_nodes | tr ' ' '\n' > client_nodes
+                        echo $primary_nodes | tr ' ' '\n' > primary_nodes
                         export GITHUB_TOKEN=${GITHUB_CRED}
                         export CORTX_TOOLS_REPO=${CORTX_TOOLS_REPO}
                         export CORTX_TOOLS_BRANCH=${CORTX_TOOLS_BRANCH}
