@@ -1,3 +1,4 @@
+/* groovylint-disable DuplicateStringLiteral, LineLength, NestedBlockDepth */
 pipeline {
     agent {
         node {
