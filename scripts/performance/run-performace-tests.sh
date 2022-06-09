@@ -33,17 +33,21 @@ function check_params() {
 add_primary_separator "Fetching setup details"
 
 check_params
+PRIMARY_NODES_FILE=$PWD/primary_nodes
+CLIENT_NODES_FILE=$PWD/client_nodes
 HOST_FILE=$PWD/hosts
 SSH_KEY_FILE=/root/.ssh/id_rsa
-ALL_NODES=$(awk -F[,] '{print $1}' $HOST_FILE | cut -d'=' -f2) || (echo -e "\n###### Could not fetch ALL_NODES value.Please check provided hosts file ######"; exit)
-PRIMARY_NODE=$(grep "role=server" $HOST_FILE | awk -F[,] '{print $1}' | cut -d'=' -f2) || { echo -e "\n###### Could not fetch PRIMARY_NODE value. Please check provided hosts file ######"; exit; }
-PRIMARY_CRED=$(grep "role=server" $HOST_FILE | awk -F[,] '{print $3}' | cut -d'=' -f2) || { echo -e "\n###### Could not fetch PRIMARY_CRED value. Please check provided hosts file ######" ;exit; }
-CLIENT_NODE=$(grep "role=client" $HOST_FILE | awk -F[,] '{print $1}' | cut -d'=' -f2) || { echo -e "\n###### Could not fetch CLIENT_NODE value. Please check provided hosts file ######";exit; }
+cat $PRIMARY_NODES_FILE $CLIENT_NODES_FILE > $PWD/hosts
+#ALL_NODES=$(awk -F[,] '{print $1}' $HOST_FILE | cut -d'=' -f2) || (echo -e "\n###### Could not fetch ALL_NODES value.Please check provided hosts file ######"; exit)
+PRIMARY_NODE=$(head -1 "$PRIMARY_NODES_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2) || { echo -e "\n###### Could not fetch PRIMARY_NODE value. Please check provided hosts file ######"; exit; }
+PRIMARY_CRED=$(head -1 "$PRIMARY_NODES_FILE" | awk -F[,] '{print $3}' | cut -d'=' -f2) || { echo -e "\n###### Could not fetch PRIMARY_CRED value. Please check provided hosts file ######" ;exit; }
+CLIENT_NODE=$(head -1 "$CLIENT_NODES_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2) || { echo -e "\n###### Could not fetch CLIENT_NODE value. Please check provided hosts file ######";exit; }
 
-if [ $(echo $ALL_NODES | tr ' ' '\n' | wc -l) -gt 2 ]; then
+if [ $(echo $PRIMARY_NODE | tr ' ' '\n' | wc -l) -gt 2 ]; then
 echo -e "\n###### There are multiple entries in hosts.Please check provided hosts file ######"
 exit
 fi
+
 
 validation
 generate_rsa_key
