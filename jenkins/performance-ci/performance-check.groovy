@@ -44,9 +44,12 @@ pipeline {
             description: 'Build cortx-rgw from latest code or use last-successful build.'
         )
 
-        text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>,role=server
-hostname=<hostname>,user=<user>,pass=<password>,role=client''', description: 'CORTX Cluster Primary node and Client details in specified format', name: 'hosts')
+        text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used for CORTX cluster setup. First node will be used as Primary', name: 'hosts')
+   
+	
+	    text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'Client Nodes', name: 'client_nodes')
     }
+
 
     environment {
         GITHUB_CRED = credentials('shailesh-github-token')
@@ -123,8 +126,8 @@ hostname=<hostname>,user=<user>,pass=<password>,role=client''', description: 'CO
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Execute performace sanity', script: '''
                     pushd scripts/performance
-                        echo $hosts | tr ' ' '\n' > hosts
-                        cat hosts
+                        echo $hosts | tr ' ' '\n' | head -1 > primary_nodes
+                        echo $client_nodes | tr ' ' '\n' > client_nodes
                         export GITHUB_TOKEN=${GITHUB_CRED}
                         export CORTX_TOOLS_REPO=${CORTX_TOOLS_REPO}
                         export CORTX_TOOLS_BRANCH=${CORTX_TOOLS_BRANCH}
