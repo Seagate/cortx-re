@@ -217,7 +217,6 @@ pipeline {
                         string(name: 'CORTX_DATA_IMAGE', value: "${env.cortx_data_image}"),
                         string(name: 'CORTX_CONTROL_IMAGE', value: "${env.cortx_control_image}"),
                         string(name: 'CORTX_SCRIPTS_REPO', value: "Seagate/cortx-k8s"),
-                        string(name: 'CORTX_SCRIPTS_BRANCH', value: "integration"),
                         string(name: 'hosts', value: "${singlenode_host}"),
                         string(name: 'EMAIL_RECIPIENTS', value: "DEBUG")
                     ] 
