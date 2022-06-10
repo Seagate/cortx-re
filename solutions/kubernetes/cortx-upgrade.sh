@@ -30,13 +30,14 @@ SOLUTION_CONFIG_TYPE="automated"
 
 function usage() {
     cat << HEREDOC
-Usage : $0 [--upgrade,  --suspend, --resume, --status]
+Usage : $0 [--upgrade,  --suspend, --resume, --status, --io-sanity]
 where,
     --upgrade - Perform upgrade on given CORTX cluster. Options - [rolling-upgrade, cold-upgrade] 
-    --suspend - Suspends current ongoing upgrade and saves the state of upgrade.
-    --resume - Resumes the suspended upgrade and continues from the last pod which was being upgraded.
-    --upgrade-status - Displays current state of upgrade.
-    --cluster-status - Displays current CORTX cluster status.
+    --suspend - Suspend current ongoing upgrade and save the state of upgrade.
+    --resume - Resume suspended upgrade and continue from the last pod which was being upgraded.
+    --upgrade-status - Display current state of upgrade.
+    --cluster-status - Display current CORTX cluster status.
+    --io-sanity - Execute basic IO operations on CORTX cluster.
 HEREDOC
 }
 
@@ -63,9 +64,13 @@ function check_params() {
 }
 
 function check_cluster_status() {
-    scp_primary_node cortx-deploy-functions.sh functions.sh
     rm -rf /var/tmp/cortx-cluster-status.txt
     ssh_primary_node "export DEPLOYMENT_METHOD=$DEPLOYMENT_METHOD && /var/tmp/cortx-deploy-functions.sh --status" | tee /var/tmp/cortx-cluster-status.txt
+}
+
+function check_io_operations() {
+    add_primary_separator "\tSetting up IO Sanity Testing"
+    ssh_primary_node "export CEPH_DEPLOYMENT='false' && export DEPLOYMENT_METHOD=$DEPLOYMENT_METHOD && /var/tmp/cortx-deploy-functions.sh --io-sanity"
 }
 
 function upgrade_cluster() {
@@ -97,6 +102,7 @@ fi
 validation
 generate_rsa_key
 nodes_setup
+scp_primary_node cortx-deploy-functions.sh functions.sh io-sanity.sh
 
 case $ACTION in
     --upgrade)
@@ -114,7 +120,10 @@ case $ACTION in
     ;;
     --cluster-status)
         check_cluster_status
-    ;;  
+    ;;
+    --io-sanity)
+        check_io_operations
+    ;;
     *)
         echo "ERROR : Please provide a valid option"
         usage

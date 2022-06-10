@@ -65,8 +65,6 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Upgrade cluster', script: '''
                     pushd solutions/kubernetes/
-                        echo $hosts | tr ' ' '\n' | head -n 1 > hosts
-                        cat hosts
                         export CORTX_SCRIPTS_BRANCH=${CORTX_SCRIPTS_BRANCH}
                         export CORTX_SCRIPTS_REPO=${CORTX_SCRIPTS_REPO}
                         export CORTX_SERVER_IMAGE=${CORTX_SERVER_IMAGE}
@@ -86,9 +84,18 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'fetch cluster status', script: '''
                     pushd solutions/kubernetes/
-                        echo $hosts | tr ' ' '\n' | head -n 1 > hosts
-                        cat hosts
                         ./cortx-upgrade.sh --cluster-status
+                    popd
+                '''
+            }
+        }
+
+        stage('Post-Upgrade IO Sanity') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'execute IO operations', script: '''
+                    pushd solutions/kubernetes/
+                        ./cortx-upgrade.sh --io-sanity
                     popd
                 '''
             }
