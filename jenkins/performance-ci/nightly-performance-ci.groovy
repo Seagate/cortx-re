@@ -5,6 +5,8 @@ pipeline {
         }
     }
 
+    triggers { cron('30 20 * * *') }
+
     options {
         timeout(time: 180, unit: 'MINUTES')
         timestamps()
@@ -12,19 +14,19 @@ pipeline {
         disableConcurrentBuilds()
     }
     parameters {
-        string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
-        string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repository for Cluster Setup scripts', trim: true)
+        string(name: 'CORTX_RE_BRANCH', defaultValue: 'performance-ci-fix', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
+        string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/shailesh-vaidya/cortx-re/', description: 'Repository for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_SERVER_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-rgw:2.0.0-latest', description: 'CORTX-RGW image', trim: true)
         string(name: 'CORTX_DATA_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-data:2.0.0-latest', description: 'CORTX-DATA image', trim: true)
         string(name: 'CORTX_CONTROL_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-control:2.0.0-latest', description: 'CORTX-CONTROL image', trim: true)
-        string(name: 'CORTX_TOOLS_BRANCH', defaultValue: 'main', description: 'Repository for Cluster Setup scripts', trim: true)
-        string(name: 'CORTX_TOOLS_REPO', defaultValue: 'Seagate/seagate-tools', description: 'Repository for Cluster Setup scripts', trim: true)
+        string(name: 'CORTX_TOOLS_BRANCH', defaultValue: 'sanity-fix', description: 'Repository for Cluster Setup scripts', trim: true)
+        string(name: 'CORTX_TOOLS_REPO', defaultValue: 'shailesh-vaidya/seagate-tools', description: 'Repository for Cluster Setup scripts', trim: true)
         choice (
             choices: ['DEVOPS', 'ALL', 'DEBUG'],
             description: 'Email Notification Recipients ',
             name: 'EMAIL_RECIPIENTS'
         )
-        
+
         // Please configure hosts, client_node, SNS and DIX parameter in Jenkins job configuration..
 
     }
@@ -102,20 +104,20 @@ pipeline {
             script {
                 echo "${env.cortxCluster_status}"
                 if ( "${env.cortxCluster_status}" == "SUCCESS") {
-                    MESSAGE = "K8s Post Merge Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=Passed"
+                    MESSAGE = "Performance CI Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=Passed"
                     ICON = "accept.gif"
                     STATUS = "SUCCESS"
                     env.deployment_result = "SUCCESS"
                     currentBuild.result = "SUCCESS"
                 } else if ( "${env.cortxCluster_status}" == "FAILURE") {
                     manager.buildFailure()
-                    MESSAGE = "K8s Post Merge Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=failed"
+                    MESSAGE = "Performance CI Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=failed"
                     ICON = "error.gif"
                     STATUS = "FAILURE"
                     env.deployment_result = "FAILURE"
                     currentBuild.result = "FAILURE"
                 } else {
-                    MESSAGE = "K8s Post Merge Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=unstable"
+                    MESSAGE = "Performance CI Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=unstable"
                     ICON = "unstable.gif"
                     STATUS = "UNSTABLE"
                     env.deployment_result = "UNSTABLE"
