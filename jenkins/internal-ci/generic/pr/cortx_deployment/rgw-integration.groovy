@@ -20,7 +20,7 @@ pipeline {
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch for cortx-re')
 
         choice (
-            choices: ['all', 'cortx-all', 'cortx-control', 'cortx-rgw', 'cortx-data'],
+            choices: ['all', 'cortx-control', 'cortx-rgw', 'cortx-data'],
             description: 'CORTX Image to be built. Defaults to all images ',
             name: 'CORTX_IMAGE'
         )
@@ -194,7 +194,7 @@ pipeline {
                                 string(name: 'DOCKER_REGISTRY', value: "cortx-docker.colo.seagate.com"),
                                 string(name: 'EMAIL_RECIPIENTS', value: "DEBUG")
                             ]
-                        env.cortx_all_image = buildCortxAllImage.buildVariables.cortx_all_image
+
                         env.cortx_rgw_image = buildCortxAllImage.buildVariables.cortx_rgw_image
                         env.cortx_data_image = buildCortxAllImage.buildVariables.cortx_data_image
                         env.cortx_control_image = buildCortxAllImage.buildVariables.cortx_control_image
