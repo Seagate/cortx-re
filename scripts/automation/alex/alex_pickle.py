@@ -29,14 +29,14 @@ alex_report_status = {}
 date = datetime.today().strftime('%Y-%m-%d')
 alex_report_status[date] = {}
 
-current_year = datetime.now().strftime('%Y')
-current_month = datetime.now().strftime('%B')
-current_day = datetime.now().strftime('%d')
+#current_year = datetime.now().strftime('%Y')
+#current_month = datetime.now().strftime('%B')
+#current_day = datetime.now().strftime('%d')
 
 #print (current_month, current_year, current_day)
 
-alex_path = os.environ['ALEX_PATH']
-directory = os.path.join(alex_path, current_year, current_month, current_day)
+directory = os.environ['ALEX_PATH']
+#directory = os.path.join(alex_path, current_year, current_month, current_day)
 
 if not os.path.exists(directory):
     os.makedirs(directory)
@@ -66,10 +66,11 @@ for file in html_files:
     alex_report_status[date][repo] = counts
 
 print ("Updating the pickle object..")
-with open('./cortx/metrics/pickles/alex.pickle', "wb") as f:
+file_name = os.environ['FILE_NAME']
+with open('file_name', "wb") as f:
     pickle.dump(alex_report_status, f)
 
-with open('./cortx/alex.pickle', "rb") as f:
+with open('file_name', "rb") as f:
     print ("Updated the pickle file successfully:\n %s" %pickle.load(f))
 
 
