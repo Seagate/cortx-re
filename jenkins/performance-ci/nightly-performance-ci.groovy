@@ -24,12 +24,8 @@ pipeline {
             description: 'Email Notification Recipients ',
             name: 'EMAIL_RECIPIENTS'
         )
-
-        text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used for CORTX cluster setup. First node will be used as Primary', name: 'hosts')
-
-
-        text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'Client Nodes', name: 'client_nodes')
-        // Please configure SNS and DIX parameter in Jenkins job configuration..
+        
+        // Please configure hosts, client_node, SNS and DIX parameter in Jenkins job configuration..
 
     }
     stages {
