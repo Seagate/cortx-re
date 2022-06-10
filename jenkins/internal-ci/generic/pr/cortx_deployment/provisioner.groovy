@@ -36,7 +36,7 @@ pipeline {
         PROVISIONER_PR_REFSPEC = "${ghprbPullId != null ? PROVISIONER_GPR_REFSPEC : PROVISIONER_BRANCH_REFSEPEC}"
         
         //////////////////////////////// BUILD VARS //////////////////////////////////////////////////
-        // OS_VERSION, host, COMPONENTS_BRANCH and CORTX_SCRIPTS_BRANCH are manually created parameters in jenkins job.
+        // OS_VERSION, host, COMPONENTS_BRANCH are manually created parameters in jenkins job.
 
         VERSION = "2.0.0"
         COMPONENT_NAME = "provisioner".trim()
@@ -182,7 +182,6 @@ pipeline {
                                 string(name: 'DOCKER_REGISTRY', value: "cortx-docker.colo.seagate.com"),
                                 string(name: 'EMAIL_RECIPIENTS', value: "DEBUG")
                             ]
-                        env.cortx_all_image = buildCortxAllImage.buildVariables.cortx_all_image
                         env.cortx_rgw_image = buildCortxAllImage.buildVariables.cortx_rgw_image
                         env.cortx_data_image = buildCortxAllImage.buildVariables.cortx_data_image
                         env.cortx_control_image = buildCortxAllImage.buildVariables.cortx_control_image
@@ -206,7 +205,6 @@ pipeline {
                         string(name: 'CORTX_DATA_IMAGE', value: "${env.cortx_data_image}"),
                         string(name: 'CORTX_CONTROL_IMAGE', value: "${env.cortx_control_image}"),
                         string(name: 'CORTX_SCRIPTS_REPO', value: "Seagate/cortx-k8s"),
-                        string(name: 'CORTX_SCRIPTS_BRANCH', value: "${CORTX_SCRIPTS_BRANCH}"),
                         string(name: 'hosts', value: "${host}"),
                         string(name: 'EMAIL_RECIPIENTS', value: "DEBUG")
                     ]
