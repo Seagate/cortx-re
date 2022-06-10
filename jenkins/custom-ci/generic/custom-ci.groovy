@@ -25,7 +25,7 @@ pipeline {
         timestamps()
         ansiColor('xterm')
         parallelsAlwaysFailFast()
-        buildDiscarder(logRotator(daysToKeepStr: '5', numToKeepStr: '10'))
+        buildDiscarder(logRotator(daysToKeepStr: '15', numToKeepStr: '30'))
     }
 
     parameters {
