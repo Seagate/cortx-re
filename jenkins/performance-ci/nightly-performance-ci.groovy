@@ -6,7 +6,7 @@ pipeline {
     }
 
     options {
-        timeout(time: 45, unit: 'MINUTES')
+        timeout(time: 180, unit: 'MINUTES')
         timestamps()
         buildDiscarder(logRotator(daysToKeepStr: '20', numToKeepStr: '20'))
         disableConcurrentBuilds()
@@ -87,7 +87,7 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
-                    def cortxCluster = build job: '/Cortx-Automation/job/Performance/job/run-performance-sanity/', wait: true,
+                    def cortxCluster = build job: '/Cortx-Automation/Performance/run-performance-sanity/', wait: true,
                     parameters: [
                         string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
                         string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
