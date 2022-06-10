@@ -21,12 +21,17 @@ pipeline {
         choice(
             name: 'POD_TYPE',
             choices: ['all', 'data', 'control', 'ha', 'server'],
-            description: 'Method to deploy required CORTX service. standard method will deploy all CORTX services'
+            description: 'Pods need to be upgraded. option all will upgrade all CORTX services pods'
         )
         choice(
             name: 'DEPLOYMENT_METHOD',
             choices: ['standard', 'data-only'],
             description: 'Method to deploy required CORTX service. standard method will deploy all CORTX services'
+        )
+        choice(
+            name: 'UPGRADE_TYPE',
+            choices: ['rolling-upgrade', 'cold-upgrade'],
+            description: 'Method to upgrade required CORTX cluster.'
         )
         // Please configure hosts, CORTX_SCRIPTS_BRANCH and CORTX_SCRIPTS_REPO parameter in Jenkins job configuration.
     }
@@ -69,7 +74,8 @@ pipeline {
                         export CORTX_CONTROL_IMAGE=${CORTX_CONTROL_IMAGE}
                         export POD_TYPE=${POD_TYPE}
                         export DEPLOYMENT_METHOD=${DEPLOYMENT_METHOD}
-                        ./cortx-upgrade.sh --rolling-upgrade
+                        export UPGRADE_TYPE=${UPGRADE_TYPE}
+                        ./cortx-upgrade.sh --upgrade
                     popd
                 '''
             }

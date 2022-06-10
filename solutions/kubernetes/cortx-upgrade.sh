@@ -30,10 +30,9 @@ SOLUTION_CONFIG_TYPE="automated"
 
 function usage() {
     cat << HEREDOC
-Usage : $0 [--rolling-upgrade, --cold-upgrade,  --suspend, --resume, --status]
+Usage : $0 [--upgrade,  --suspend, --resume, --status]
 where,
-    --rolling-upgrade - Perform rolling-upgrade on given CORTX cluster.
-    --cold-upgrade  - Perform cold-upgrade on given CORTX cluster.
+    --upgrade - Perform upgrade on given CORTX cluster. Options - [rolling-upgrade, cold-upgrade] 
     --suspend - Suspends current ongoing upgrade and saves the state of upgrade.
     --resume - Resumes the suspended upgrade and continues from the last pod which was being upgraded.
     --upgrade-status - Displays current state of upgrade.
@@ -49,7 +48,8 @@ function check_params() {
     if [ -z "$CORTX_CONTROL_IMAGE" ]; then echo "CORTX_CONTROL_IMAGE is not provided, Using default : ghcr.io/seagate/cortx-control:2.0.0-latest"; CORTX_CONTROL_IMAGE=ghcr.io/seagate/cortx-control:2.0.0-latest; fi
     if [ -z "$POD_TYPE" ]; then echo "POD_TYPE is not provided, Using default : all"; POD_TYPE="all"; fi
     if [ -z "$DEPLOYMENT_METHOD" ]; then echo "DEPLOYMENT_METHOD is not provided, Using default : standard"; DEPLOYMENT_METHOD="standard"; fi
-
+    if [ -z "$UPGRADE_TYPE" ]; then echo "UPGRADE_TYPE is not provided, Using default : rolling-upgrade"; UPGRADE_TYPE="rolling-upgrade"; fi
+    
     echo -e "\n\n########################################################################"
     echo -e "# CORTX_SCRIPTS_REPO           : $CORTX_SCRIPTS_REPO                   "
     echo -e "# CORTX_SCRIPTS_BRANCH         : $CORTX_SCRIPTS_BRANCH                 "
@@ -58,6 +58,7 @@ function check_params() {
     echo -e "# CORTX_CONTROL_IMAGE          : $CORTX_CONTROL_IMAGE                  "
     echo -e "# POD_TYPE                     : $POD_TYPE                             "
     echo -e "# DEPLOYMENT_METHOD            : $DEPLOYMENT_METHOD                    "
+    echo -e "# UPGRADE_TYPE                 : $UPGRADE_TYPE                         "
     echo -e "#########################################################################\n"
 }
 
@@ -68,7 +69,6 @@ function check_cluster_status() {
 }
 
 function upgrade_cluster() {
-    UPGRADE_TYPE=$1
     add_primary_separator "\tUpgrading CORTX Cluster"
     ssh_primary_node "source /var/tmp/functions.sh /var/tmp/cortx-deploy-functions.sh &&
     add_secondary_separator 'Download Upgrade Images' && 
@@ -83,7 +83,7 @@ function upgrade_cluster() {
     update_image client-pod $CORTX_DATA_IMAGE &&
     add_secondary_separator 'Begin CORTX Cluster Upgrade' &&
     pushd deploy-scripts/k8_cortx_cloud &&
-    ./upgrade-cortx-cloud.sh start -p $POD_TYPE &&
+    if [ $UPGRADE_TYPE == "rolling-upgrade" ]; then ./upgrade-cortx-cloud.sh start -p $POD_TYPE; else ./upgrade-cortx-cloud.sh -cold; fi &&
     popd"    
 }
 
@@ -99,13 +99,9 @@ generate_rsa_key
 nodes_setup
 
 case $ACTION in
-    --rolling-upgrade)
+    --upgrade)
         check_params
-        upgrade_cluster "rolling"
-    ;;
-    --cold-upgrade)
-        check_params
-        upgrade_cluster "cold"
+        upgrade_cluster
     ;;
     --suspend)
         suspend_cluster_upgrade
