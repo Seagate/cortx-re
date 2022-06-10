@@ -130,7 +130,7 @@ pipeline {
                         exit 1
                     fi 
                     pushd ${COMPONENTS_RPM}
-                        for component in `ls -1 | grep -v "cortx-rgw"`
+                        for component in `ls -1 | grep -v "cortx-rgw"$`
                         do
                             echo -e "Copying RPM's for $component"
                             if ls $component/last_successful/*.rpm 1> /dev/null 2>&1; then
