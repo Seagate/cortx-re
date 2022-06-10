@@ -48,6 +48,7 @@ pipeline {
    
     
         text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'Client Nodes', name: 'client_nodes')
+        // Please configure SNS and DIX parameter in Jenkins job configuration.
     }
 
 
