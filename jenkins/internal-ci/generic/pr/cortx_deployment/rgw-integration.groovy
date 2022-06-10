@@ -20,7 +20,7 @@ pipeline {
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch for cortx-re')
 
         choice (
-            choices: ['all', 'cortx-control', 'cortx-rgw', 'cortx-data'],
+            choices: ['all', 'cortx-all', 'cortx-control', 'cortx-rgw', 'cortx-data'],
             description: 'CORTX Image to be built. Defaults to all images ',
             name: 'CORTX_IMAGE'
         )
