@@ -128,17 +128,18 @@ function update_image() {
 }
 
 function copy_solution_config() {
+    local SOLUTION_CONFIG=$1
+    local SCRIPT_LOCATION=$2
 	if [ -z "$SOLUTION_CONFIG" ]; then echo "SOLUTION_CONFIG not provided.Exiting..."; exit 1; fi
 	echo "Copying $SOLUTION_CONFIG file" 
-	pushd $SCRIPT_LOCATION/k8_cortx_cloud
+	pushd $SCRIPT_LOCATION
         if [ -f '$SOLUTION_CONFIG' ]; then echo "file $SOLUTION_CONFIG not available..."; exit 1; fi	
         cp $SOLUTION_CONFIG .
-        yq eval -i 'del(.solution.nodes)' solution.yaml
-        NAMESPACE=$(yq e '.solution.namespace' solution.yaml)
     popd 
 }
 
 function setup_kubectl_context() {
+    local NAMESPACE=$1
     add_secondary_separator "Updated kubectl context to use $NAMESPACE"
     kubectl config set-context --current --namespace=$NAMESPACE
 }
