@@ -76,8 +76,6 @@ function check_io_operations() {
 
 function upgrade_cluster() {
     if [ "$SOLUTION_CONFIG_TYPE" == manual ]; then
-        SOLUTION_CONFIG="$PWD/solution.yaml"
-        if [ ! -f "$SOLUTION_CONFIG" ]; then echo -e "ERROR:$SOLUTION_CONFIG file is not available..."; exit 1; fi
         scp_primary_node $SOLUTION_CONFIG
     fi
     add_primary_separator "\tUpgrading CORTX Cluster"
@@ -104,6 +102,11 @@ if [ -z "$ACTION" ]; then
     echo "ERROR : No option provided"
     usage
     exit 1
+fi
+
+if [ "$SOLUTION_CONFIG_TYPE" == manual ]; then
+    SOLUTION_CONFIG="$PWD/solution.yaml"
+    if [ ! -f "$SOLUTION_CONFIG" ]; then echo -e "ERROR:$SOLUTION_CONFIG file is not available..."; exit 1; fi
 fi
 
 validation
