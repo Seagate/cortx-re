@@ -80,7 +80,7 @@ function upgrade_cluster() {
     fi
     add_primary_separator "\tUpgrading CORTX Cluster"
     ssh_primary_node "source /var/tmp/functions.sh /var/tmp/cortx-deploy-functions.sh &&
-    ./var/tmp/cortx-deploy-functions.sh --setup-primary &&
+    setup_primary_node &&
     add_secondary_separator 'Begin CORTX Cluster Upgrade' &&
     pushd deploy-scripts/k8_cortx_cloud &&
     if [ $UPGRADE_TYPE == "rolling-upgrade" ]; then ./upgrade-cortx-cloud.sh start -p $POD_TYPE; else ./upgrade-cortx-cloud.sh -cold; fi &&
