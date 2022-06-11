@@ -80,7 +80,7 @@ function upgrade_cluster() {
     fi
     add_primary_separator "\tUpgrading CORTX Cluster"
     ssh_primary_node "source /var/tmp/functions.sh /var/tmp/cortx-deploy-functions.sh &&
-    if [ "$SOLUTION_CONFIG_TYPE" == "manual" ]; then copy_solution_config; fi &&
+    if [ "$SOLUTION_CONFIG_TYPE" == "manual" ]; then copy_solution_config; setup_kubectl_context; fi &&
     add_secondary_separator 'Download Upgrade Images' && 
     pull_image $CORTX_SERVER_IMAGE &&
     pull_image $CORTX_DATA_IMAGE &&

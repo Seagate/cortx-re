@@ -240,7 +240,7 @@ echo "Updating node info in solution.yaml"
     popd
 }
 
-copy_solution_config() {
+function copy_solution_config() {
 	if [ -z "$SOLUTION_CONFIG" ]; then echo "SOLUTION_CONFIG not provided.Exiting..."; exit 1; fi
 	echo "Copying $SOLUTION_CONFIG file" 
 	pushd $SCRIPT_LOCATION/k8_cortx_cloud
@@ -251,7 +251,7 @@ copy_solution_config() {
     popd 
 }
 
-setup_kubectl_context() {
+function setup_kubectl_context() {
     add_secondary_separator "Updated kubectl context to use $NAMESPACE"
     kubectl config set-context --current --namespace=$NAMESPACE
 }
