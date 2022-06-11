@@ -70,6 +70,7 @@ pipeline {
                         export CORTX_SERVER_IMAGE=${CORTX_SERVER_IMAGE}
                         export CORTX_DATA_IMAGE=${CORTX_DATA_IMAGE}
                         export CORTX_CONTROL_IMAGE=${CORTX_CONTROL_IMAGE}
+                        export SOLUTION_CONFIG_TYPE="automated"
                         export POD_TYPE=${POD_TYPE}
                         export DEPLOYMENT_METHOD=${DEPLOYMENT_METHOD}
                         export UPGRADE_TYPE=${UPGRADE_TYPE}

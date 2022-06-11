@@ -25,7 +25,6 @@ source functions.sh cortx-deploy-functions.sh
 HOST_FILE="$PWD/hosts"
 PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
 SSH_KEY_FILE=/root/.ssh/id_rsa
-SOLUTION_CONFIG_TYPE="automated"
 
 
 function usage() {
@@ -47,6 +46,7 @@ function check_params() {
     if [ -z "$CORTX_SERVER_IMAGE" ]; then echo "CORTX_SERVER_IMAGE is not provided, Using default : ghcr.io/seagate/cortx-rgw:2.0.0-latest"; CORTX_SERVER_IMAGE=ghcr.io/seagate/cortx-rgw:2.0.0-latest; fi
     if [ -z "$CORTX_DATA_IMAGE" ]; then echo "CORTX_DATA_IMAGE is not provided, Using default : ghcr.io/seagate/cortx-data:2.0.0-latest"; CORTX_DATA_IMAGE=ghcr.io/seagate/cortx-data:2.0.0-latest; fi
     if [ -z "$CORTX_CONTROL_IMAGE" ]; then echo "CORTX_CONTROL_IMAGE is not provided, Using default : ghcr.io/seagate/cortx-control:2.0.0-latest"; CORTX_CONTROL_IMAGE=ghcr.io/seagate/cortx-control:2.0.0-latest; fi
+    if [ -z "$SOLUTION_CONFIG_TYPE" ]; then echo "SOLUTION_CONFIG_TYPE is not provided, Using default : manual"; SOLUTION_CONFIG_TYPE="manual"; fi
     if [ -z "$POD_TYPE" ]; then echo "POD_TYPE is not provided, Using default : all"; POD_TYPE="all"; fi
     if [ -z "$DEPLOYMENT_METHOD" ]; then echo "DEPLOYMENT_METHOD is not provided, Using default : standard"; DEPLOYMENT_METHOD="standard"; fi
     if [ -z "$UPGRADE_TYPE" ]; then echo "UPGRADE_TYPE is not provided, Using default : rolling-upgrade"; UPGRADE_TYPE="rolling-upgrade"; fi
@@ -57,6 +57,7 @@ function check_params() {
     echo -e "# CORTX_SERVER_IMAGE           : $CORTX_SERVER_IMAGE                   "
     echo -e "# CORTX_DATA_IMAGE             : $CORTX_DATA_IMAGE                     "
     echo -e "# CORTX_CONTROL_IMAGE          : $CORTX_CONTROL_IMAGE                  "
+    echo -e "# SOLUTION_CONFIG_TYPE         : $SOLUTION_CONFIG_TYPE                 "
     echo -e "# POD_TYPE                     : $POD_TYPE                             "
     echo -e "# DEPLOYMENT_METHOD            : $DEPLOYMENT_METHOD                    "
     echo -e "# UPGRADE_TYPE                 : $UPGRADE_TYPE                         "
@@ -74,8 +75,16 @@ function check_io_operations() {
 }
 
 function upgrade_cluster() {
+    if [ "$SOLUTION_CONFIG_TYPE" == manual ]; then
+        SOLUTION_CONFIG="$PWD/solution.yaml"
+        if [ ! -f "$SOLUTION_CONFIG" ]; then echo -e "ERROR:$SOLUTION_CONFIG file is not available..."; exit 1; fi
+        scp_primary_node $SOLUTION_CONFIG
+    fi
     add_primary_separator "\tUpgrading CORTX Cluster"
     ssh_primary_node "source /var/tmp/functions.sh /var/tmp/cortx-deploy-functions.sh &&
+    if [ "$SOLUTION_CONFIG_TYPE" == "manual" ]; then
+        copy_solution_config
+    fi
     add_secondary_separator 'Download Upgrade Images' && 
     pull_image $CORTX_SERVER_IMAGE &&
     pull_image $CORTX_DATA_IMAGE &&
@@ -89,7 +98,7 @@ function upgrade_cluster() {
     add_secondary_separator 'Begin CORTX Cluster Upgrade' &&
     pushd deploy-scripts/k8_cortx_cloud &&
     if [ $UPGRADE_TYPE == "rolling-upgrade" ]; then ./upgrade-cortx-cloud.sh start -p $POD_TYPE; else ./upgrade-cortx-cloud.sh -cold; fi &&
-    popd"    
+    popd" | tee /var/tmp/upgrade-logs.txt    
 }
 
 ACTION="$1"
