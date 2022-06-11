@@ -247,7 +247,7 @@ function copy_solution_config() {
         if [ -f '$SOLUTION_CONFIG' ]; then echo "file $SOLUTION_CONFIG not available..."; exit 1; fi	
         cp $SOLUTION_CONFIG .
         yq eval -i 'del(.solution.nodes)' solution.yaml
-        NAMESPACE=$(yq e '.solution.namespace' solution.yaml)
+        env.NAMESPACE=$(yq e '.solution.namespace' solution.yaml)
     popd 
 }
 
