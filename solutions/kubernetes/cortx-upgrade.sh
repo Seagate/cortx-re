@@ -79,7 +79,8 @@ function upgrade_cluster() {
         scp_primary_node $SOLUTION_CONFIG
     fi
     add_primary_separator "\tUpgrading CORTX Cluster"
-    ssh_primary_node "source /var/tmp/functions.sh /var/tmp/cortx-deploy-functions.sh &&
+    ssh_primary_node "#!/bin/bash &&
+    source /var/tmp/functions.sh /var/tmp/cortx-deploy-functions.sh &&
     setup_primary_node &&
     add_secondary_separator 'Begin CORTX Cluster Upgrade' &&
     pushd deploy-scripts/k8_cortx_cloud &&
