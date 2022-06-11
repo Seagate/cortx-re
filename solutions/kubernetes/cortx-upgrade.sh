@@ -80,18 +80,7 @@ function upgrade_cluster() {
     fi
     add_primary_separator "\tUpgrading CORTX Cluster"
     ssh_primary_node "source /var/tmp/functions.sh /var/tmp/cortx-deploy-functions.sh &&
-    /var/tmp/cortx-deploy-functions.sh --setup-primary &&
-    # if [ "$SOLUTION_CONFIG_TYPE" == "manual" ]; then copy_solution_config; setup_kubectl_context; fi &&
-    # add_secondary_separator 'Download Upgrade Images' && 
-    # pull_image $CORTX_SERVER_IMAGE &&
-    # pull_image $CORTX_DATA_IMAGE &&
-    # pull_image $CORTX_CONTROL_IMAGE &&
-    # add_secondary_separator 'Updating CORTX Images info in solution.yaml' &&   
-    # update_image control-pod $CORTX_CONTROL_IMAGE &&
-    # update_image data-pod $CORTX_DATA_IMAGE &&
-    # update_image server-pod $CORTX_SERVER_IMAGE &&
-    # update_image ha-pod $CORTX_CONTROL_IMAGE &&
-    # update_image client-pod $CORTX_DATA_IMAGE &&
+    ./var/tmp/cortx-deploy-functions.sh --setup-primary &&
     add_secondary_separator 'Begin CORTX Cluster Upgrade' &&
     pushd deploy-scripts/k8_cortx_cloud &&
     if [ $UPGRADE_TYPE == "rolling-upgrade" ]; then ./upgrade-cortx-cloud.sh start -p $POD_TYPE; else ./upgrade-cortx-cloud.sh -cold; fi &&
