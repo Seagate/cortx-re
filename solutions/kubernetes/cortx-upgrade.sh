@@ -102,11 +102,13 @@ function upgrade_cluster() {
     ssh_primary_node "source /var/tmp/functions.sh &&
     pushd deploy-scripts/k8_cortx_cloud &&
     if [ "$SOLUTION_CONFIG_TYPE" == "manual" ]; then copy_solution_config $SOLUTION_CONFIG $PWD; fi &&
+    pwd &&
     add_secondary_separator 'Download Upgrade Images' && 
     pull_image $CORTX_SERVER_IMAGE &&
     pull_image $CORTX_DATA_IMAGE &&
     pull_image $CORTX_CONTROL_IMAGE &&
-    add_secondary_separator 'Updating CORTX Images info in solution.yaml' &&   
+    add_secondary_separator 'Updating CORTX Images info in solution.yaml' &&
+    pwd &&   
     update_image control-pod $CORTX_CONTROL_IMAGE &&
     update_image data-pod $CORTX_DATA_IMAGE &&
     update_image server-pod $CORTX_SERVER_IMAGE &&
