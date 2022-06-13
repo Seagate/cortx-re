@@ -19,7 +19,8 @@
 #
 set -eo pipefail
 source /var/tmp/functions.sh
-ANIBLE_LOG_FILE="/var/tmp/sanity_run.log"
+ANIBLE_LOG_FILE="/var/tmp/perf_sanity_run.log"
+PERF_STATS_FILE="/var/tmp/perf_sanity_stats"
 
 function usage() {
     cat << HEREDOC
@@ -134,13 +135,11 @@ function execute-perf-sanity() {
 }
 
 function generate_perf_stats() {
-   add_secondary_separator "CORTX Image details" | tee performance_stats
-   ssh $PRIMARY_NODE "kubectl get pods -o jsonpath="{.items[*].spec.containers[*].image}" | tr ' ' '\n' | sort | uniq" | tee -a performance_stats
+   add_secondary_separator "CORTX Image details" | tee $PERF_STATS_FILE
+   ssh $PRIMARY_NODE "kubectl get pods -o jsonpath="{.items[*].spec.containers[*].image}" | tr ' ' '\n' | sort | uniq" | tee -a $PERF_STATS_FILE
    #Fetch info from Ansible logs
-   add_secondary_separator "Performance Stats" | tee -a performance_stats
-   grep -i '\[S3Bench\] Running' $ANIBLE_LOG_FILE | sed -e 's/-//g' -e 's/^ //g' | cut -d':' -f4 | sed 's/^ //g' | tee -a performance_stats
-   cat performance_stats
-
+   add_secondary_separator "Performance Stats" | tee -a $PERF_STATS_FILE
+   grep -i '\[S3Bench\] Running' $ANIBLE_LOG_FILE | sed -e 's/-//g' -e 's/^ //g' | cut -d':' -f4 | sed 's/^ //g' | tee -a $PERF_STATS_FILE
 }
 
 
