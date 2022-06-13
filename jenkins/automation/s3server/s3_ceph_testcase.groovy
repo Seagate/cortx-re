@@ -82,6 +82,8 @@ pipeline {
                                 sed -i "s/port =.*/port = $RGW_PORT/g" ${S3_TEST_CONF_FILE}
 
                                 echo "---------------------------------"
+                                cat ${S3_TEST_CONF_FILE}
+                                echo "---------------------------------"
                                 echo ""
                                 bash -x ./run_testcases.sh -c="${S3_TEST_CONF_FILE}" -i="${INTEGRATION_TYPE}" -tr="${S3_TEST_REPO}" -trr="${S3_TEST_REPO_REV}"
                                 echo ""
