@@ -65,16 +65,35 @@ function check_params() {
 }
 
 function check_cluster_status() {
+    if [ "$SOLUTION_CONFIG_TYPE" == manual ]; then
+        SOLUTION_CONFIG="$PWD/solution.yaml"
+        echo "inside validate: $SOLUTION_CONFIG"
+        if [ ! -f "$SOLUTION_CONFIG" ]; then echo -e "ERROR:$SOLUTION_CONFIG file is not available..."; exit 1; fi
+    fi
+    validation
+    generate_rsa_key
+    nodes_setup
+    scp_primary_node cortx-deploy-functions.sh functions.sh
     rm -rf /var/tmp/cortx-cluster-status.txt
     ssh_primary_node "export DEPLOYMENT_METHOD=$DEPLOYMENT_METHOD && /var/tmp/cortx-deploy-functions.sh --status" | tee /var/tmp/cortx-cluster-status.txt
 }
 
 function check_io_operations() {
+    scp_primary_node io-sanity.sh
     add_primary_separator "\tSetting up IO Sanity Testing"
     ssh_primary_node "export CEPH_DEPLOYMENT='false' && export DEPLOYMENT_METHOD=$DEPLOYMENT_METHOD && /var/tmp/cortx-deploy-functions.sh --io-sanity"
 }
 
 function upgrade_cluster() {
+    if [ "$SOLUTION_CONFIG_TYPE" == manual ]; then
+        SOLUTION_CONFIG="$PWD/solution.yaml"
+        echo "inside validate: $SOLUTION_CONFIG"
+        if [ ! -f "$SOLUTION_CONFIG" ]; then echo -e "ERROR:$SOLUTION_CONFIG file is not available..."; exit 1; fi
+    fi
+    validation
+    generate_rsa_key
+    nodes_setup
+    scp_primary_node cortx-deploy-functions.sh functions.sh
     if [ "$SOLUTION_CONFIG_TYPE" == manual ]; then
         scp_primary_node $SOLUTION_CONFIG
     fi
@@ -106,16 +125,6 @@ if [ -z "$ACTION" ]; then
     usage
     exit 1
 fi
-
-if [ "$SOLUTION_CONFIG_TYPE" == manual ]; then
-    SOLUTION_CONFIG="$PWD/solution.yaml"
-    if [ ! -f "$SOLUTION_CONFIG" ]; then echo -e "ERROR:$SOLUTION_CONFIG file is not available..."; exit 1; fi
-fi
-
-validation
-generate_rsa_key
-nodes_setup
-scp_primary_node cortx-deploy-functions.sh functions.sh io-sanity.sh
 
 case $ACTION in
     --upgrade)
