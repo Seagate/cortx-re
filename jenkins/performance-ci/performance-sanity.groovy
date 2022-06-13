@@ -52,8 +52,8 @@ pipeline {
     }
 
     post {
-        always {            
-            cleanup {
+
+        cleanup {
                 sh label: 'Collect Artifacts', script: '''
                 mkdir -p artifacts
                 pushd scripts/performance
@@ -67,7 +67,9 @@ pipeline {
                     // Archive Deployment artifacts in jenkins build
                     archiveArtifacts artifacts: "artifacts/*.*", onlyIfSuccessful: false, allowEmptyArchive: true 
                 }
-            }
+        }
+
+        always { 
             script {
                 // Jenkins Summary
                 clusterStatus = ""
