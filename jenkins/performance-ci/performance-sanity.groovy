@@ -52,7 +52,21 @@ pipeline {
     }
 
     post {
-        always {
+        always {            
+            cleanup {
+                sh label: 'Collect Artifacts', script: '''
+                mkdir -p artifacts
+                pushd scripts/performance
+                    CLIENT_NODES_FILE=$PWD/client_nodes
+                    CLIENT_NODE=$(head -1 "$CLIENT_NODES_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+                    scp -q "$CLIENT_NODE":/var/tmp/sanity_run.log $WORKSPACE/artifacts/
+                popd    
+                '''
+                script {
+                    // Archive Deployment artifacts in jenkins build
+                    archiveArtifacts artifacts: "artifacts/*.*", onlyIfSuccessful: false, allowEmptyArchive: true 
+                }
+            }
             script {
                 // Jenkins Summary
                 clusterStatus = ""
@@ -73,13 +87,13 @@ pipeline {
                     STATUS = "UNSTABLE"
                 }
                 
-                clusterStatusHTML = "<pre>${clusterStatus}</pre>"
+                PerformaceSanityStatusHTML = "<pre>${clusterStatus}</pre>"
 
-                manager.createSummary("${ICON}").appendText("<h3>CORTX Cluster Setup ${currentBuild.currentResult} </h3><p>Please check <a href=\"${BUILD_URL}/console\">cluster setup logs</a> for more info <h4>Cluster Status:</h4>${clusterStatusHTML}", false, false, false, "red")
+                manager.createSummary("${ICON}").appendText("<h3>CORTX Performance Sanity Execution ${currentBuild.currentResult} </h3><p>Please check <a href=\"${BUILD_URL}/console\">Performance Sanity Execution logs</a> for more info <h4>Cluster Status:</h4>${PerformaceSanityStatusHTML}", false, false, false, "red")
 
                 // Email Notification
                 env.build_stage = "${build_stage}"
-                env.cluster_status = "${clusterStatusHTML}"
+                env.cluster_status = "${PerformaceSanityStatusHTML}"
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
                 mailRecipients = "shailesh.vaidya@seagate.com"
                 emailext ( 
@@ -93,32 +107,5 @@ pipeline {
             }
         }
 
-        cleanup {
-            sh label: 'Collect Artifacts', script: '''
-            mkdir -p artifacts
-            pushd scripts/performance
-                CLIENT_NODES_FILE=$PWD/client_nodes
-                CLIENT_NODE=$(head -1 "$CLIENT_NODES_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
-                scp -q "$CLIENT_NODE":/var/tmp/sanity_run.log $WORKSPACE/artifacts/
-            popd    
-            '''
-            script {
-                // Archive Deployment artifacts in jenkins build
-                archiveArtifacts artifacts: "artifacts/*.*", onlyIfSuccessful: false, allowEmptyArchive: true 
-            }
-        }
-
-        failure {
-            sh label: 'Collect CORTX support bundle logs in artifacts', script: '''
-            mkdir -p artifacts
-            pushd solutions/kubernetes/
-                ./cortx-deploy.sh --support-bundle
-                HOST_FILE=$PWD/hosts
-                PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
-                LOG_FILE=$(ssh -o 'StrictHostKeyChecking=no' $PRIMARY_NODE 'ls -t /root/deploy-scripts/k8_cortx_cloud | grep logs-cortx-cloud | grep .tar | head -1')
-                scp -q "$PRIMARY_NODE":/root/deploy-scripts/k8_cortx_cloud/$LOG_FILE $WORKSPACE/artifacts/
-            popd
-            '''
-        }
     }
 }
