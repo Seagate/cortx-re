@@ -84,7 +84,7 @@ function upgrade_cluster() {
     ssh_primary_node "source /var/tmp/functions.sh &&
     if [ "$SOLUTION_CONFIG_TYPE" == "manual" ]; then copy_solution_config "$REMOTE_SOLUTION_CONFIG" "$SCRIPT_LOCATION"; fi &&
     add_secondary_separator 'Download Upgrade Images' && 
-    for IMAGE in "CORTX_SERVER_IMAGE" "CORTX_DATA_IMAGE" "CORTX_CONTROL_IMAGE"; do pull_image $IMAGE; done &&
+    for IMAGE in ${CORTX_SERVER_IMAGE CORTX_DATA_IMAGE CORTX_CONTROL_IMAGE}; do pull_image $IMAGE; done &&
     add_secondary_separator 'Updating CORTX Images info in solution.yaml' &&
     update_image control-pod $CORTX_CONTROL_IMAGE &&
     update_image data-pod $CORTX_DATA_IMAGE &&
