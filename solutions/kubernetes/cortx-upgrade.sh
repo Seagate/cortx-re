@@ -103,7 +103,7 @@ function upgrade_cluster() {
     pushd deploy-scripts/k8_cortx_cloud &&
     echo $SOLUTION_CONFIG
     NAMESPACE='cortx' &&
-    if [ "$SOLUTION_CONFIG_TYPE" == "manual" ]; then copy_solution_config $SOLUTION_CONFIG $PWD; setup_kubectl_context $NAMESPACE; fi &&
+    if [ "$SOLUTION_CONFIG_TYPE" == "manual" ]; then copy_solution_config $SOLUTION_CONFIG $PWD; fi &&
     add_secondary_separator 'Download Upgrade Images' && 
     pull_image $CORTX_SERVER_IMAGE &&
     pull_image $CORTX_DATA_IMAGE &&
