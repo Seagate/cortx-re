@@ -78,6 +78,7 @@ function clone_segate_tools_repo() {
 }
 
 function update_setup_confiuration() {
+
     CONFIG_FILE=$SCRIPT_LOCATION/performance/PerfPro/roles/benchmark/vars/config.yml
     S3_CONFIG_FILE=$SCRIPT_LOCATION/performance/PerfPro/roles/benchmark/vars/s3config.yml 
     sed -i -e '/CLUSTER_PASS/s/:/: '$PRIMARY_CRED'/g' -e '/END_POINTS/s/:/: '${ENDPOINT_URL//\//\\/}'/g' $CONFIG_FILE
@@ -93,7 +94,7 @@ function update_setup_confiuration() {
 function execute_perfpro() {
     yum install ansible -y
     pushd $SCRIPT_LOCATION/performance/PerfPro
-    ansible-playbook perfpro.yml -i inventories/hosts --extra-vars '{ "EXECUTION_TYPE" : "sanity" ,"REPOSITORY":{"motr":"cortx-motr","rgw":"cortx-rgw"} , "COMMIT_ID": { "main" : "d1234c" , "dev" : "a5678b"},"PR_ID" : "cortx-rgw/1234" , "USER":"Shailesh Vaidya","GID" : "729494" }' -v
+    ansible-playbook perfpro.yml -i inventories/hosts --extra-vars '{ "EXECUTION_TYPE" : "sanity" ,"REPOSITORY":{"motr":"cortx-motr","rgw":"cortx-rgw"} , "COMMIT_ID": { "main" : "d1234c" , "dev" : "a5678b"},"PR_ID" : "cortx-rgw/1234" , "USER":"Shailesh Vaidya","GID" : "729494" }' -vvv
     popd
 }
 
