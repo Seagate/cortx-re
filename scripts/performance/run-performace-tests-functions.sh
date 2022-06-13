@@ -123,6 +123,7 @@ function execute-perf-sanity() {
     if [ -z "$BUILD_URL" ]; then echo "ERROR:BUILD_URL not provided.Exiting..."; exit 1; fi
     
     passwordless_ssh "$PRIMARY_NODE" "root" "$PRIMARY_CRED"
+    passwordless_ssh "$CLIENT_NODE" "root" "$CLIENT_CRED"
     clone_segate_tools_repo
     update_setup_confiuration
     execute_perfpro

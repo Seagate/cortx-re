@@ -42,6 +42,7 @@ ALL_NODES=$(awk -F[,] '{print $1}' $HOST_FILE | cut -d'=' -f2) || (echo -e "\n##
 PRIMARY_NODE=$(head -1 "$PRIMARY_NODES_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2) || { echo -e "\n###### Could not fetch PRIMARY_NODE value. Please check provided hosts file ######"; exit; }
 PRIMARY_CRED=$(head -1 "$PRIMARY_NODES_FILE" | awk -F[,] '{print $3}' | cut -d'=' -f2) || { echo -e "\n###### Could not fetch PRIMARY_CRED value. Please check provided hosts file ######" ;exit; }
 CLIENT_NODE=$(head -1 "$CLIENT_NODES_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2) || { echo -e "\n###### Could not fetch CLIENT_NODE value. Please check provided hosts file ######";exit; }
+CLIENT_CRED=$(head -1 "$CLIENT_NODES_FILE" | awk -F[,] '{print $3}' | cut -d'=' -f2) || { echo -e "\n###### Could not fetch CLIENT_CRED value. Please check provided hosts file ######" ;exit; }
 
 if [ $(echo $PRIMARY_NODE | tr ' ' '\n' | wc -l) -gt 2 ]; then
 echo -e "\n###### There are multiple entries in hosts.Please check provided hosts file ######"
@@ -94,6 +95,7 @@ export CORTX_TOOLS_REPO=$CORTX_TOOLS_REPO &&
 export PRIMARY_NODE=$PRIMARY_NODE &&
 export CLIENT_NODE=$CLIENT_NODE &&
 export PRIMARY_CRED=$PRIMARY_CRED &&
+export CLIENT_CRED=$CLIENT_CRED &&
 export ENDPOINT_URL=$ENDPOINT_URL &&
 export BUILD_URL=$BUILD_URL &&
 export CLUSTER_TYPE=$CLUSTER_TYPE &&
