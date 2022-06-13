@@ -60,7 +60,9 @@ pipeline {
                     CLIENT_NODES_FILE=$PWD/client_nodes
                     CLIENT_NODE=$(head -1 "$CLIENT_NODES_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
                     scp -q "$CLIENT_NODE":/var/tmp/sanity_run.log $WORKSPACE/artifacts/
-                    grep -i \'\\[S3Bench\\] Running\' /var/tmp/sanity_run.log | sed \'s/-//g\' | cut -d\':\' -f4 >> $WORKSPACE/artifacts/perfromance_stats
+                    if [ -f $WORKSPACE/artifacts/sanity_run.log ]; then
+                        grep -i \'\\[S3Bench\\] Running\' $WORKSPACE/artifacts/sanity_run.log | sed \'s/-//g\' | cut -d\':\' -f4 >> $WORKSPACE/artifacts/perfromance_stats
+                    fi
                 popd    
                 '''
                 script {
