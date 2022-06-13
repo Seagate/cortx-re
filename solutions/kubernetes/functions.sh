@@ -133,7 +133,7 @@ function copy_solution_config() {
 	if [ -z "$SOLUTION_CONFIG" ]; then echo "SOLUTION_CONFIG not provided.Exiting..."; exit 1; fi
 	echo "Copying $SOLUTION_CONFIG file" 
 	pushd $SCRIPT_LOCATION
-        if [ -f '$SOLUTION_CONFIG' ]; then echo "file $SOLUTION_CONFIG not available..."; exit 1; fi	
+        if [ -f "$SOLUTION_CONFIG" ]; then echo "file $SOLUTION_CONFIG not available..."; exit 1; fi	
         cp $SOLUTION_CONFIG .
     popd 
 }
