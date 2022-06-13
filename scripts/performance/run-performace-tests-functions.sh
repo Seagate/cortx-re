@@ -19,6 +19,7 @@
 #
 set -eo pipefail
 source /var/tmp/functions.sh
+ANIBLE_LOG_FILE="/var/tmp/sanity_run.log"
 
 function usage() {
     cat << HEREDOC
@@ -95,8 +96,7 @@ function execute_perfpro() {
     yum install ansible -y
     pushd $SCRIPT_LOCATION/performance/PerfPro
     add_primary_separator "Executing Ansible CLI"
-    truncate -s 0 /var/tmp/sanity_run.log
-    ANSIBLE_LOG_PATH=/var/tmp/sanity_run.log ansible-playbook perfpro.yml -i inventories/hosts --extra-vars '{ "EXECUTION_TYPE" : "sanity" ,"REPOSITORY":{"motr":"cortx-motr","rgw":"cortx-rgw"} , "COMMIT_ID": { "main" : "d1234c" , "dev" : "a5678b"},"PR_ID" : "cortx-rgw/1234" , "USER":"Shailesh Vaidya","GID" : "729494" }' -v
+    ANSIBLE_LOG_PATH=$ANIBLE_LOG_FILE ansible-playbook perfpro.yml -i inventories/hosts --extra-vars '{ "EXECUTION_TYPE" : "sanity" ,"REPOSITORY":{"motr":"cortx-motr","rgw":"cortx-rgw"} , "COMMIT_ID": { "main" : "d1234c" , "dev" : "a5678b"},"PR_ID" : "cortx-rgw/1234" , "USER":"Shailesh Vaidya","GID" : "729494" }' -v
     popd
 }
 
@@ -110,6 +110,7 @@ function setup-client() {
     if [ -z "$ENDPOINT_URL" ]; then echo "S3 ENDPOINT_URL not provided.Exiting..."; exit 1; fi
     if [ -z "$ACCESS_KEY" ]; then echo "S3 ACCESS_KEY not provided.Exiting..."; exit 1; fi
     if [ -z "$SECRET_KEY" ]; then echo "S3 SECRET_KEY not provided.Exiting..."; exit 1; fi
+    truncate -s 0 $ANIBLE_LOG_FILE
     install_awscli
     setup_awscli
     run_io_sanity
