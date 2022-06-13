@@ -20,7 +20,7 @@ source "$WORKSPACE"/solutions/kubernetes/functions.sh
 
 HOST_FILE=$PWD/hosts
 SCRIPT_PATH=/root/cortx-k8s/k8_cortx_cloud
-YQ_VERSION=v4.13.3
+YQ_VERSION=v4.25.1
 YQ_BINARY=yq_linux_386
 
 cp "$WORKSPACE"/scripts/provisioner/hosts "$WORKSPACE"/solutions/kubernetes/hosts
@@ -34,6 +34,7 @@ function clone_script_repo() {
 }
 
 function install_yq_module() {
+    echo "Installing yq-$YQ_VERSION"
     pip3 show yq && pip3 uninstall yq -y
     wget https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${YQ_BINARY}.tar.gz -O - | tar xz && mv ${YQ_BINARY} /usr/bin/yq
     if [ -f /usr/local/bin/yq ]; then rm -rf /usr/local/bin/yq; fi
@@ -46,7 +47,7 @@ function add_image_solution_config() {
         image=$DATA_IMAGE yq e -i '.solution.images.cortxdata = env(image)' "$SCRIPT_PATH"/solution.example.yaml
         image=$SERVER_IMAGE yq e -i '.solution.images.cortxserver = env(image)' "$SCRIPT_PATH"/solution.example.yaml
         image=$HA_IMAGE yq e -i '.solution.images.cortxha = env(image)' "$SCRIPT_PATH"/solution.example.yaml
-        image=$CONTROL_IMAGE yq e -i '.solution.images.cortxclient = env(image)' "$SCRIPT_PATH"/solution.example.yaml
+        image=$CLIENT_IMAGE yq e -i '.solution.images.cortxclient = env(image)' "$SCRIPT_PATH"/solution.example.yaml
     popd
 }
 
@@ -65,20 +66,53 @@ function add_node_solution_config() {
 
 function update_secret() {
     pushd "$SCRIPT_PATH"
-        yq e -i '.solution.secrets.content.kafka_admin_secret = "Seagate@123"' "$SCRIPT_PATH"/solution.example.yaml
-        yq e -i '.solution.secrets.content.consul_admin_secret = "Seagate@123"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.secrets.content.csm_auth_admin_secret = "Seagate@123"' "$SCRIPT_PATH"/solution.example.yaml
         yq e -i '.solution.secrets.content.common_admin_secret = "Seagate@123"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.secrets.content.consul_admin_secret = "Seagate@123"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.secrets.content.kafka_admin_secret = "Seagate@123"' "$SCRIPT_PATH"/solution.example.yaml
         yq e -i '.solution.secrets.content.s3_auth_admin_secret = "ldapadmin"' "$SCRIPT_PATH"/solution.example.yaml
-        yq e -i '.solution.secrets.content.csm_auth_admin_secret = "seagate2"' "$SCRIPT_PATH"/solution.example.yaml
         yq e -i '.solution.secrets.content.csm_mgmt_admin_secret = "Cortxadmin@123"' "$SCRIPT_PATH"/solution.example.yaml
         yq e -i '.solution.images.consul = "cortx-docker.colo.seagate.com/consul/consul:1.12"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.namespace = "cortx"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.common.setup_size = "small"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.common.external_services.control.ports.https = "8081"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.common.external_services.control.nodePorts.https = 31169' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.common.external_services.s3.ports.http = "80"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.common.external_services.s3.ports.https = "443"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.common.external_services.s3.nodePorts.http = 30080' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.common.external_services.s3.nodePorts.https = 30443' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.common.resource_allocation.consul.server.resources.requests.memory = "200Mi"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.common.resource_allocation.consul.server.resources.requests.cpu = "200m"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.common.resource_allocation.consul.server.resources.limits.memory = "500Mi"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.common.resource_allocation.consul.server.resources.limits.cpu = "500m"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.common.resource_allocation.consul.client.resources.requests.memory = "200Mi"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.common.resource_allocation.consul.client.resources.requests.cpu = "200m"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.common.resource_allocation.consul.client.resources.limits.memory = "500Mi"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.common.resource_allocation.consul.client.resources.limits.cpu = "500m"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.common.resource_allocation.zookeeper.resources.limits.memory = "1Gi"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.common.resource_allocation.zookeeper.resources.limits.cpu = "1000m"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.common.resource_allocation.kafka.log_persistence_request_size = "8Gi"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.common.resource_allocation.kafka.resources.limits.memory = "3Gi"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.common.resource_allocation.kafka.resources.limits.cpu = "1000m"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.storage.cvg2.devices.data.d1.device = "/dev/sdg"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.storage.cvg2.devices.metadata.device = "/dev/sdf"' "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.storage.cvg2.devices.data.d2.device = "/dev/sdh"' "$SCRIPT_PATH"/solution.example.yaml
     popd
 }
 
 function add_storage_solution_config() {
     add_common_separator "Updating storage info in solution.yaml"
     pushd "$SCRIPT_PATH"
-        yq e -i "del(.solution.storage.cvg2)" "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i '.solution.storage.cvg2.devices.data.d1.device = "/dev/sdg"' solution.yaml
+        yq e -i "del(.solution.storage.cvg2.devices.data.d3)" "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i "del(.solution.storage.cvg2.devices.data.d4)" "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i "del(.solution.storage.cvg2.devices.data.d5)" "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i "del(.solution.storage.cvg2.devices.data.d6)" "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i "del(.solution.storage.cvg2.devices.data.d7)" "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i "del(.solution.storage.cvg1.devices.data.d3)" "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i "del(.solution.storage.cvg1.devices.data.d4)" "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i "del(.solution.storage.cvg1.devices.data.d5)" "$SCRIPT_PATH"/solution.example.yaml
+        yq e -i "del(.solution.storage.cvg1.devices.data.d6)" "$SCRIPT_PATH"/solution.example.yaml
         yq e -i "del(.solution.storage.cvg1.devices.data.d7)" "$SCRIPT_PATH"/solution.example.yaml
     popd
 }
