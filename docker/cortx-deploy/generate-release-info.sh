@@ -34,7 +34,7 @@ $(sed 's/^/    /g' "/opt/seagate/cortx/compatibility.info")
 COMPONENTS:
 $(for component in $(sed 's/#.*//g' /opt/seagate/cortx/cortx-component-rpms.txt /opt/seagate/cortx/ceph-component-rpms.txt); do echo "    - \"$(rpm -q $component).rpm\"" ; done)
 THIRD_PARTY_RPM_PACKAGES:
-$(for component in $(sed 's/#.*//g' /opt/seagate/cortx/third-party-rpms.txt); do echo "    - \"$(rpm -q $component).rpm\"" ; done)
+$(for component in $(while read -r component; do grep "$component" < /opt/seagate/cortx/third-party-rpms.txt; done </opt/seagate/cortx/cortx-component-rpms.txt | sed 's/#.*//g'); do echo "    - \"$(rpm -q $component).rpm\"" ; done)
 THIRD_PARTY_PYTHON_PACKAGES:
 $(pip3 freeze | sed 's/^/    - /g')
 EOF

@@ -88,11 +88,13 @@ echo -e "########################################################"
 
 function get_git_hash {
 sed -i '/KERNEL/d' RELEASE.INFO
-for component in cortx-py-utils cortx-s3server cortx-motr cortx-hare cortx-provisioner
+for component in cortx-py-utils cortx-motr cortx-hare cortx-provisioner cortx-ha cortx-rgw-integration
 do
     echo $component:"$(awk -F['_'] '/'$component'-'$VERSION'/ { print $2 }' RELEASE.INFO | cut -d. -f1 | sed 's/git//g')",
 done
 echo cortx-csm_agent:"$(awk -F['_'] '/cortx-csm_agent-'$VERSION'/ { print $3 }' RELEASE.INFO | cut -d. -f1)",
+echo cortx-rgw:"$(awk -F['-'] '/'ceph-base'/{ print $5  }' RELEASE.INFO | cut -d. -f2)",
+echo cortx-re:"$(git rev-parse --short HEAD)",
 }
 
 curl -s $BUILD_URL/RELEASE.INFO -o RELEASE.INFO
