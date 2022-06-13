@@ -58,18 +58,21 @@ pipeline {
                                 ./create_account.sh "${S3_MAIN_USER}" "${BUILD_NUMBER}" "${CORTX_USER_NAME}" "${CORTX_PASSWORD}"
                                 S3_MAIN_USER_NAME="${S3_MAIN_USER}"
                                 S3_MAIN_USER_ID="${S3_MAIN_USER}"
+                                cat ${S3_MAIN_USER}_${BUILD_NUMBER}.log
                                 S3_MAIN_ACCESS_KEY=$(cat ${S3_MAIN_USER}_${BUILD_NUMBER}.log |tail -2|awk '{print $19}'|head -1|cut -d '"' -f2|sed -e "s/\r//g")
                                 S3_MAIN_SECRET_KEY=$(cat ${S3_MAIN_USER}_${BUILD_NUMBER}.log |tail -2|awk '{print $21}'|head -1|cut -d '"' -f2|sed -e "s/\r//g")
                                 
                                 ./create_account.sh "${S3_EXT_USER}" "${BUILD_NUMBER}" "${CORTX_USER_NAME}" "${CORTX_PASSWORD}"
                                 S3_ALT_USER_NAME="${S3_EXT_USER}"
                                 S3_ALT_USER_ID="${S3_EXT_USER}"
+                                cat ${S3_ALT_USER_ID}_${BUILD_NUMBER}.log
                                 S3_ALT_ACCESS_KEY=$(cat ${S3_ALT_USER_ID}_${BUILD_NUMBER}.log |tail -2|awk '{print $19}'|head -1|cut -d '"' -f2|sed -e "s/\r//g")
                                 S3_ALT_SECRET_KEY=$(cat ${S3_ALT_USER_ID}_${BUILD_NUMBER}.log |tail -2|awk '{print $21}'|head -1|cut -d '"' -f2|sed -e "s/\r//g")
 
                                 ./create_account.sh "${S3_TNT_USER}" "${BUILD_NUMBER}" "${CORTX_USER_NAME}" "${CORTX_PASSWORD}"
                                 S3_TNT_USER_NAME="${S3_TNT_USER}"
                                 S3_TNT_USER_ID="${S3_TNT_USER}"
+                                cat ${S3_TNT_USER_ID}_${BUILD_NUMBER}.log
                                 S3_TNT_ACCESS_KEY=$(cat ${S3_TNT_USER_ID}_${BUILD_NUMBER}.log |tail -2|awk '{print $19}'|head -1|cut -d '"' -f2|sed -e "s/\r//g")
                                 S3_TNT_SECRET_KEY=$(cat ${S3_TNT_USER_ID}_${BUILD_NUMBER}.log |tail -2|awk '{print $21}'|head -1|cut -d '"' -f2|sed -e "s/\r//g")
 
