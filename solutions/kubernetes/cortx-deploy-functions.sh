@@ -275,9 +275,7 @@ function execute_deploy_script() {
 
 function execute_prereq() {
     add_secondary_separator "Pulling latest CORTX images"
-    pull_image $CORTX_SERVER_IMAGE
-    pull_image $CORTX_DATA_IMAGE
-    pull_image $CORTX_CONTROL_IMAGE
+    for IMAGE in $CORTX_SERVER_IMAGE $CORTX_DATA_IMAGE $CORTX_CONTROL_IMAGE; do pull_image $IMAGE; done &&
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         add_secondary_separator "Un-mounting $SYSTEM_DRIVE partition if already mounted"
         findmnt $SYSTEM_DRIVE && umount -l $SYSTEM_DRIVE
