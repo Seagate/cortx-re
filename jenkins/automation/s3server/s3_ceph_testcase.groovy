@@ -83,7 +83,7 @@ pipeline {
 
                                 echo "---------------------------------"
                                 echo ""
-                                sh ./run_testcases.sh -c="${S3_TEST_CONF_FILE}" -i="${INTEGRATION_TYPE}" -tr="${S3_TEST_REPO}" -trr="${S3_TEST_REPO_REV}"
+                                bash -x ./run_testcases.sh -c="${S3_TEST_CONF_FILE}" -i="${INTEGRATION_TYPE}" -tr="${S3_TEST_REPO}" -trr="${S3_TEST_REPO_REV}"
                                 echo ""
                                 echo "---------------------------------"
                                 rm -rf ${S3_TEST_CONF_FILE} ${S3_TNT_USER_ID}_${BUILD_NUMBER}.log ${S3_ALT_USER_ID}_${BUILD_NUMBER}.log ${S3_MAIN_USER}_${BUILD_NUMBER}.log
