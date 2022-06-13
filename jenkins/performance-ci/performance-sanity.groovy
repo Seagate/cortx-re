@@ -50,4 +50,75 @@ pipeline {
             }
         }
     }
+
+    post {
+        always {
+            script {
+                // Jenkins Summary
+                clusterStatus = ""
+                if ( currentBuild.currentResult == "SUCCESS" ) {
+                    MESSAGE = "CORTX Performance Sanity Execution Success for the build ${build_id}"
+                    ICON = "accept.gif"
+                    STATUS = "SUCCESS"
+                } else if ( currentBuild.currentResult == "FAILURE" ) {
+                    manager.buildFailure()
+                    MESSAGE = "CORTX Performance Sanity Execution Failed for the build ${build_id}"
+                    ICON = "error.gif"
+                    STATUS = "FAILURE"
+ 
+                } else {
+                    manager.buildUnstable()
+                    MESSAGE = "CORTX Performance Sanity Execution is Unstable for the build ${build_id}"
+                    ICON = "warning.gif"
+                    STATUS = "UNSTABLE"
+                }
+                
+                clusterStatusHTML = "<pre>${clusterStatus}</pre>"
+
+                manager.createSummary("${ICON}").appendText("<h3>CORTX Cluster Setup ${currentBuild.currentResult} </h3><p>Please check <a href=\"${BUILD_URL}/console\">cluster setup logs</a> for more info <h4>Cluster Status:</h4>${clusterStatusHTML}", false, false, false, "red")
+
+                // Email Notification
+                env.build_stage = "${build_stage}"
+                env.cluster_status = "${clusterStatusHTML}"
+                def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
+                mailRecipients = "shailesh.vaidya@seagate.com"
+                emailext ( 
+                    body: '''${SCRIPT, template="cluster-setup-email.template"}''',
+                    mimeType: 'text/html',
+                    subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
+                    attachLog: true,
+                    to: "${mailRecipients}",
+                    recipientProviders: recipientProvidersClass
+                )
+            }
+        }
+
+        cleanup {
+            sh label: 'Collect Artifacts', script: '''
+            mkdir -p artifacts
+            pushd scripts/performance
+                CLIENT_NODES_FILE=$PWD/client_nodes
+                CLIENT_NODE=$(head -1 "$CLIENT_NODES_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+                scp -q "$CLIENT_NODE":/var/tmp/sanity_run.log $WORKSPACE/artifacts/
+            popd    
+            '''
+            script {
+                // Archive Deployment artifacts in jenkins build
+                archiveArtifacts artifacts: "artifacts/*.*", onlyIfSuccessful: false, allowEmptyArchive: true 
+            }
+        }
+
+        failure {
+            sh label: 'Collect CORTX support bundle logs in artifacts', script: '''
+            mkdir -p artifacts
+            pushd solutions/kubernetes/
+                ./cortx-deploy.sh --support-bundle
+                HOST_FILE=$PWD/hosts
+                PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+                LOG_FILE=$(ssh -o 'StrictHostKeyChecking=no' $PRIMARY_NODE 'ls -t /root/deploy-scripts/k8_cortx_cloud | grep logs-cortx-cloud | grep .tar | head -1')
+                scp -q "$PRIMARY_NODE":/root/deploy-scripts/k8_cortx_cloud/$LOG_FILE $WORKSPACE/artifacts/
+            popd
+            '''
+        }
+    }
 }
