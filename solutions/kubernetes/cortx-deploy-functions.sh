@@ -284,6 +284,7 @@ function setup_primary_node() {
 
     if [ "$SOLUTION_CONFIG_TYPE" == "manual" ]; then
         copy_solution_config "$SOLUTION_CONFIG" "$SCRIPT_LOCATION/k8_cortx_cloud"
+        NAMESPACE=$(yq e '.solution.namespace' "$SCRIPT_LOCATION/k8_cortx_cloud/solution.yaml")
     else
         update_solution_config
     fi
