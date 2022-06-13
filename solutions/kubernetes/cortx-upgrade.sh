@@ -115,6 +115,8 @@ function upgrade_cluster() {
     update_image ha-pod $CORTX_CONTROL_IMAGE &&
     update_image client-pod $CORTX_DATA_IMAGE &&
     add_secondary_separator 'Begin CORTX Cluster Upgrade' &&
+    pwd &&
+    ls -la &&
     if [ $UPGRADE_TYPE == "rolling-upgrade" ]; then ./upgrade-cortx-cloud.sh start -p $POD_TYPE; else ./upgrade-cortx-cloud.sh -cold; fi &&
     popd" | tee /var/tmp/upgrade-logs.txt    
 }
