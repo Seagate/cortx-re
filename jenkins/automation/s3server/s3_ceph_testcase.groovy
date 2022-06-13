@@ -40,10 +40,7 @@ pipeline {
                         }
 
                         sh label: 'run compatibility test', script: '''
-                            #set +x
-                            echo "Removing host entry"
                             RGW_SERVICE_IP=$(ping ${RGW_MASTER_NODE} -c 1|grep PING|cut -d "(" -f2|cut -d ")" -f1)
-                            #sed -i '/s3test.seagate.com/d' /etc/hosts
                             echo "Adding host entry"
                             echo "$RGW_SERVICE_IP s3test.seagate.com" >> /etc/hosts
 
@@ -58,21 +55,18 @@ pipeline {
                                 ./create_account.sh "${S3_MAIN_USER}" "${BUILD_NUMBER}" "${CORTX_USER_NAME}" "${CORTX_PASSWORD}"
                                 S3_MAIN_USER_NAME="${S3_MAIN_USER}"
                                 S3_MAIN_USER_ID="${S3_MAIN_USER}"
-                                cat ${S3_MAIN_USER}_${BUILD_NUMBER}.log
                                 S3_MAIN_ACCESS_KEY=$(cat ${S3_MAIN_USER}_${BUILD_NUMBER}.log |tail -2|awk '{print $19}'|head -1|cut -d '"' -f2|sed -e "s/\r//g")
                                 S3_MAIN_SECRET_KEY=$(cat ${S3_MAIN_USER}_${BUILD_NUMBER}.log |tail -2|awk '{print $21}'|head -1|cut -d '"' -f2|sed -e "s/\r//g")
                                 
                                 ./create_account.sh "${S3_EXT_USER}" "${BUILD_NUMBER}" "${CORTX_USER_NAME}" "${CORTX_PASSWORD}"
                                 S3_ALT_USER_NAME="${S3_EXT_USER}"
                                 S3_ALT_USER_ID="${S3_EXT_USER}"
-                                cat ${S3_ALT_USER_ID}_${BUILD_NUMBER}.log
                                 S3_ALT_ACCESS_KEY=$(cat ${S3_ALT_USER_ID}_${BUILD_NUMBER}.log |tail -2|awk '{print $19}'|head -1|cut -d '"' -f2|sed -e "s/\r//g")
                                 S3_ALT_SECRET_KEY=$(cat ${S3_ALT_USER_ID}_${BUILD_NUMBER}.log |tail -2|awk '{print $21}'|head -1|cut -d '"' -f2|sed -e "s/\r//g")
 
                                 ./create_account.sh "${S3_TNT_USER}" "${BUILD_NUMBER}" "${CORTX_USER_NAME}" "${CORTX_PASSWORD}"
                                 S3_TNT_USER_NAME="${S3_TNT_USER}"
                                 S3_TNT_USER_ID="${S3_TNT_USER}"
-                                cat ${S3_TNT_USER_ID}_${BUILD_NUMBER}.log
                                 S3_TNT_ACCESS_KEY=$(cat ${S3_TNT_USER_ID}_${BUILD_NUMBER}.log |tail -2|awk '{print $19}'|head -1|cut -d '"' -f2|sed -e "s/\r//g")
                                 S3_TNT_SECRET_KEY=$(cat ${S3_TNT_USER_ID}_${BUILD_NUMBER}.log |tail -2|awk '{print $21}'|head -1|cut -d '"' -f2|sed -e "s/\r//g")
 
@@ -88,7 +82,7 @@ pipeline {
                                 cat "${S3_TEST_CONF_FILE}"
                                 echo "---------------------------------"
                                 echo ""
-                                bash -x ./run_testcases.sh -c="${S3_TEST_CONF_FILE}" -i="${INTEGRATION_TYPE}" -tr="${S3_TEST_REPO}" -trr="${S3_TEST_REPO_REV}"
+                                ./run_testcases.sh -c="${S3_TEST_CONF_FILE}" -i="${INTEGRATION_TYPE}" -tr="${S3_TEST_REPO}" -trr="${S3_TEST_REPO_REV}"
                                 echo ""
                                 echo "---------------------------------"
                                 rm -rf ${S3_TEST_CONF_FILE} ${S3_TNT_USER_ID}_${BUILD_NUMBER}.log ${S3_ALT_USER_ID}_${BUILD_NUMBER}.log ${S3_MAIN_USER}_${BUILD_NUMBER}.log
