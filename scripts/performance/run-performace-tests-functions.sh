@@ -130,6 +130,17 @@ function execute-perf-sanity() {
     clone_segate_tools_repo
     update_setup_confiuration
     execute_perfpro
+    generate_perf_stats
+}
+
+function generate_perf_stats() {
+   add_secondary_separator "CORTX Image details" | tee performance_stats
+   ssh $PRIMARY_NODE "kubectl get pods -o jsonpath="{.items[*].spec.containers[*].image}" | tr ' ' '\n' | sort | uniq" | tee -a performance_stats
+   #Fetch info from Ansible logs
+   add_secondary_separator "Performance Stats" | tee -a performance_stats
+   grep -i '\[S3Bench\] Running' $ANIBLE_LOG_FILE | sed -e 's/-//g' -e 's/^ //g' | cut -d':' -f4 | sed 's/^ //g' | tee -a performance_stats
+   cat performance_stats
+
 }
 
 
