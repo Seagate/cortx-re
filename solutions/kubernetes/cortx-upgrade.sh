@@ -65,48 +65,27 @@ function check_params() {
 }
 
 function check_cluster_status() {
-    if [ "$SOLUTION_CONFIG_TYPE" == manual ]; then
-        SOLUTION_CONFIG="$PWD/solution.yaml"
-        echo "inside validate: $SOLUTION_CONFIG"
-        if [ ! -f "$SOLUTION_CONFIG" ]; then echo -e "ERROR:$SOLUTION_CONFIG file is not available..."; exit 1; fi
-    fi
-    validation
-    generate_rsa_key
-    nodes_setup
-    scp_primary_node cortx-deploy-functions.sh functions.sh
     rm -rf /var/tmp/cortx-cluster-status.txt
     ssh_primary_node "export DEPLOYMENT_METHOD=$DEPLOYMENT_METHOD && /var/tmp/cortx-deploy-functions.sh --status" | tee /var/tmp/cortx-cluster-status.txt
 }
 
 function check_io_operations() {
-    scp_primary_node io-sanity.sh
     add_primary_separator "\tSetting up IO Sanity Testing"
     ssh_primary_node "export CEPH_DEPLOYMENT='false' && export DEPLOYMENT_METHOD=$DEPLOYMENT_METHOD && /var/tmp/cortx-deploy-functions.sh --io-sanity"
 }
 
 function upgrade_cluster() {
     if [ "$SOLUTION_CONFIG_TYPE" == manual ]; then
-        SOLUTION_CONFIG="$PWD/solution.yaml"
-        echo "inside validate: $SOLUTION_CONFIG"
-        if [ ! -f "$SOLUTION_CONFIG" ]; then echo -e "ERROR:$SOLUTION_CONFIG file is not available..."; exit 1; fi
-    fi
-    validation
-    generate_rsa_key
-    nodes_setup
-    scp_primary_node cortx-deploy-functions.sh functions.sh
-    if [ "$SOLUTION_CONFIG_TYPE" == manual ]; then
         scp_primary_node $SOLUTION_CONFIG
     fi
     add_primary_separator "\tUpgrading CORTX Cluster"
     ssh_primary_node "source /var/tmp/functions.sh &&
     if [ "$SOLUTION_CONFIG_TYPE" == "manual" ]; then copy_solution_config "/var/tmp/solution.yaml" "/root/deploy-scripts/k8_cortx_cloud"; fi &&
-    pwd &&
     add_secondary_separator 'Download Upgrade Images' && 
     pull_image $CORTX_SERVER_IMAGE &&
     pull_image $CORTX_DATA_IMAGE &&
     pull_image $CORTX_CONTROL_IMAGE &&
     add_secondary_separator 'Updating CORTX Images info in solution.yaml' &&
-    pwd &&   
     update_image control-pod $CORTX_CONTROL_IMAGE &&
     update_image data-pod $CORTX_DATA_IMAGE &&
     update_image server-pod $CORTX_SERVER_IMAGE &&
@@ -114,8 +93,6 @@ function upgrade_cluster() {
     update_image client-pod $CORTX_DATA_IMAGE &&
     add_secondary_separator 'Begin CORTX Cluster Upgrade' &&
     pushd deploy-scripts/k8_cortx_cloud &&
-    pwd &&
-    ls -la &&
     if [ $UPGRADE_TYPE == "rolling-upgrade" ]; then ./upgrade-cortx-cloud.sh start -p $POD_TYPE; else ./upgrade-cortx-cloud.sh -cold; fi &&
     popd" | tee /var/tmp/upgrade-logs.txt    
 }
@@ -126,6 +103,16 @@ if [ -z "$ACTION" ]; then
     usage
     exit 1
 fi
+
+if [ "$SOLUTION_CONFIG_TYPE" == manual ]; then
+    SOLUTION_CONFIG="$PWD/solution.yaml"
+    if [ ! -f "$SOLUTION_CONFIG" ]; then echo -e "ERROR:$SOLUTION_CONFIG file is not available..."; exit 1; fi
+fi
+validation
+generate_rsa_key
+nodes_setup
+scp_primary_node cortx-deploy-functions.sh functions.sh io-sanity.sh
+
 
 case $ACTION in
     --upgrade)
