@@ -240,17 +240,6 @@ echo "Updating node info in solution.yaml"
     popd
 }
 
-function copy_solution_config() {
-	if [ -z "$SOLUTION_CONFIG" ]; then echo "SOLUTION_CONFIG not provided.Exiting..."; exit 1; fi
-	echo "Copying $SOLUTION_CONFIG file" 
-	pushd $SCRIPT_LOCATION/k8_cortx_cloud
-        if [ -f '$SOLUTION_CONFIG' ]; then echo "file $SOLUTION_CONFIG not available..."; exit 1; fi	
-        cp $SOLUTION_CONFIG .
-        yq eval -i 'del(.solution.nodes)' solution.yaml
-        NAMESPACE=$(yq e '.solution.namespace' solution.yaml)
-    popd 
-}
-
 function setup_kubectl_context() {
     add_secondary_separator "Updated kubectl context to use $NAMESPACE"
     kubectl config set-context --current --namespace=$NAMESPACE
@@ -294,7 +283,7 @@ function setup_primary_node() {
     install_yq
 
     if [ "$SOLUTION_CONFIG_TYPE" == "manual" ]; then
-        copy_solution_config
+        copy_solution_config "$SOLUTION_CONFIG" "$SCRIPT_LOCATION/k8_cortx_cloud"
     else
         update_solution_config
     fi
