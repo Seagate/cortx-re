@@ -20,9 +20,6 @@
 
 source /etc/os-release
 
-YQ_VERSION=v4.25.1
-YQ_BINARY=yq_linux_386
-
 function add_primary_separator() {
     printf "\n################################################################################\n"
     printf "\t\t$*\n"
@@ -104,6 +101,8 @@ function nodes_setup() {
 }
 
 function install_yq() {
+    YQ_VERSION=v4.25.1
+    YQ_BINARY=yq_linux_386
     add_secondary_separator "Installing yq-$YQ_VERSION"
     pip3 show yq && pip3 uninstall yq -y
     wget https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${YQ_BINARY}.tar.gz -O - | tar xz && mv ${YQ_BINARY} /usr/bin/yq
