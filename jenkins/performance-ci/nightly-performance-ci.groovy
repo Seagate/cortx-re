@@ -100,53 +100,23 @@ pipeline {
     }
 
     post {
-        always {
+
+        cleanup {
+            sh label: 'Collect Artifacts', script: '''
+            mkdir -p artifacts
+            #pushd solutions/kubernetes/
+            #    HOST_FILE=$PWD/hosts
+            #    PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+            #    [ -f /var/tmp/cortx-cluster-status.txt ] && cp /var/tmp/cortx-cluster-status.txt $WORKSPACE/artifacts/
+            #    scp -q "$PRIMARY_NODE":/root/deploy-scripts/k8_cortx_cloud/solution.yaml $WORKSPACE/artifacts/
+            #    if [ -f /var/tmp/cortx-cluster-status.txt ]; then
+            #        cp /var/tmp/cortx-cluster-status.txt $WORKSPACE/artifacts/
+            #    fi
+            popd    
+            '''
             script {
-                echo "${env.cortxCluster_status}"
-                if ( "${env.cortxCluster_status}" == "SUCCESS") {
-                    MESSAGE = "Performance CI Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=Passed"
-                    ICON = "accept.gif"
-                    STATUS = "SUCCESS"
-                    env.deployment_result = "SUCCESS"
-                    currentBuild.result = "SUCCESS"
-                } else if ( "${env.cortxCluster_status}" == "FAILURE") {
-                    manager.buildFailure()
-                    MESSAGE = "Performance CI Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=failed"
-                    ICON = "error.gif"
-                    STATUS = "FAILURE"
-                    env.deployment_result = "FAILURE"
-                    currentBuild.result = "FAILURE"
-                } else {
-                    MESSAGE = "Performance CI Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=unstable"
-                    ICON = "unstable.gif"
-                    STATUS = "UNSTABLE"
-                    env.deployment_result = "UNSTABLE"
-                    currentBuild.result = "UNSTABLE"
-                }
-                env.build_setupcortx_url = sh( script: "echo ${env.cortxcluster_build_url}/artifact/artifacts/cortx-cluster-status.txt", returnStdout: true)
-                env.host = "${env.allhost}"
-                env.build_id = "${CORTX_SERVER_IMAGE}"
-                env.build_location = "${CORTX_SERVER_IMAGE},${CORTX_DATA_IMAGE},${CORTX_CONTROL_IMAGE}"
-                env.deployment_status = "${MESSAGE}"
-                env.cluster_status = "${env.build_setupcortx_url}"
-                env.CORTX_DOCKER_IMAGE = "${env.dockerimage_id}"
-                if ( params.EMAIL_RECIPIENTS == "ALL" ) {
-                    mailRecipients = "shailesh.vaidya@seagate.com"
-                } else if ( params.EMAIL_RECIPIENTS == "DEVOPS" ) {
-                    mailRecipients = "shailesh.vaidya@seagate.com"
-                } else if ( params.EMAIL_RECIPIENTS == "DEBUG" ) {
-                    mailRecipients = "shailesh.vaidya@seagate.com"
-                }
-                catchError(stageResult: 'FAILURE') {
-                    emailext (
-                        body: '''${SCRIPT, template="K8s-deployment-email_2.template"}''',
-                        mimeType: 'text/html',
-                        subject: "${MESSAGE}",
-                        to: "${mailRecipients}",
-                        recipientProviders: [[$class: 'RequesterRecipientProvider']]
-                    )
-                }
-                cleanWs()
+                // Archive Deployment artifacts in jenkins build
+                archiveArtifacts artifacts: "artifacts/*.*", onlyIfSuccessful: false, allowEmptyArchive: true 
             }
         }
     }
