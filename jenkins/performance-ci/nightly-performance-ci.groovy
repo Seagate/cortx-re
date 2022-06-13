@@ -104,15 +104,14 @@ pipeline {
         cleanup {
             sh label: 'Collect Artifacts', script: '''
             mkdir -p artifacts
-            #pushd solutions/kubernetes/
-            #    HOST_FILE=$PWD/hosts
-            #    PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
-            #    [ -f /var/tmp/cortx-cluster-status.txt ] && cp /var/tmp/cortx-cluster-status.txt $WORKSPACE/artifacts/
-            #    scp -q "$PRIMARY_NODE":/root/deploy-scripts/k8_cortx_cloud/solution.yaml $WORKSPACE/artifacts/
-            #    if [ -f /var/tmp/cortx-cluster-status.txt ]; then
-            #        cp /var/tmp/cortx-cluster-status.txt $WORKSPACE/artifacts/
-            #    fi
-            popd    
+            pushd scripts/performance
+                CLIENT_NODES_FILE=$PWD/client_nodes
+                CLIENT_NODE=$(head -1 "$CLIENT_NODES_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+                scp -q "$CLIENT_NODE":/var/tmp/sanity_run.log $WORKSPACE/artifacts/
+                if [ -f $WORKSPACE/artifacts/sanity_run.log ]; then
+                    grep -i \'\\[S3Bench\\] Running\' $WORKSPACE/artifacts/sanity_run.log | sed \'s/-//g\' | cut -d\':\' -f4 >> $WORKSPACE/artifacts/perfromance_stats
+                fi
+            popd 
             '''
             script {
                 // Archive Deployment artifacts in jenkins build

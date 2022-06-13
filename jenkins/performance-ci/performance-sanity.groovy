@@ -63,7 +63,7 @@ pipeline {
                     if [ -f $WORKSPACE/artifacts/sanity_run.log ]; then
                         grep -i \'\\[S3Bench\\] Running\' $WORKSPACE/artifacts/sanity_run.log | sed \'s/-//g\' | cut -d\':\' -f4 >> $WORKSPACE/artifacts/perfromance_stats
                     fi
-                popd    
+                popd
                 '''
                 script {
                     // Archive Deployment artifacts in jenkins build
