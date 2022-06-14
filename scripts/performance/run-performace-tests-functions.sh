@@ -127,6 +127,7 @@ function execute-perf-sanity() {
     if [ -z "$GITHUB_TOKEN" ]; then echo "ERROR:GITHUB_TOKEN not provided.Exiting..."; exit 1; fi
     if [ -z "$BUILD_URL" ]; then echo "ERROR:BUILD_URL not provided.Exiting..."; exit 1; fi
     
+    generate_rsa_key
     passwordless_ssh "$PRIMARY_NODE" "root" "$PRIMARY_CRED"
     passwordless_ssh "$CLIENT_NODE" "root" "$CLIENT_CRED"
     clone_segate_tools_repo
