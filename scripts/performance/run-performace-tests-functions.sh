@@ -20,7 +20,7 @@
 set -eo pipefail
 source /var/tmp/functions.sh
 ANIBLE_LOG_FILE="/var/tmp/perf_sanity_run.log"
-PERF_STATS_FILE="/var/tmp/perf_sanity_stats"
+PERF_STATS_FILE="/var/tmp/perf_sanity_stats.txt"
 
 function usage() {
     cat << HEREDOC
