@@ -76,7 +76,11 @@ pipeline {
         }
 
         stage('QA SAnity') {
-            echo "Running QA Sanity"
+            steps {
+                script {
+                    echo "Running QA Sanity"
+                }
+            }        
         }
     }
 }    
