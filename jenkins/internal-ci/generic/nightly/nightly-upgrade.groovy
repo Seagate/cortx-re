@@ -15,9 +15,9 @@ pipeline {
     parameters {
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repository for Cluster Setup scripts', trim: true)
-        string(name: 'CORTX_SERVER_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-rgw:2.0.0-latest', description: 'CORTX-SERVER image', trim: true)
-        string(name: 'CORTX_DATA_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-data:2.0.0-latest', description: 'CORTX-DATA image', trim: true)
-        string(name: 'CORTX_CONTROL_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-control:2.0.0-latest', description: 'CORTX-CONTROL image', trim: true)
+        string(name: 'CORTX_SERVER_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-rgw:2.0.0-latest', description: 'CORTX-SERVER image for cluster upgrade', trim: true)
+        string(name: 'CORTX_DATA_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-data:2.0.0-latest', description: 'CORTX-DATA image for cluster upgrade', trim: true)
+        string(name: 'CORTX_CONTROL_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-control:2.0.0-latest', description: 'CORTX-CONTROL image for cluster upgrade', trim: true)
         choice(
             name: 'POD_TYPE',
             choices: ['all', 'data', 'control', 'ha', 'server'],
@@ -26,7 +26,7 @@ pipeline {
         choice(
             name: 'DEPLOYMENT_METHOD',
             choices: ['standard', 'data-only'],
-            description: 'Method to deploy required CORTX service. standard method will deploy all CORTX services'
+            description: 'Method using which CORTX deployment is done. default is standard method'
         )
         choice(
             name: 'UPGRADE_TYPE',
@@ -78,7 +78,7 @@ pipeline {
         stage('QA SAnity') {
             steps {
                 script {
-                    echo "Running QA Sanity"
+                    echo "QA Sanity job to be added"
                 }
             }        
         }
