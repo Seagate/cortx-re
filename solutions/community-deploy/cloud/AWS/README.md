@@ -21,23 +21,25 @@ git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/comm
 
 - During tools installation, your are prompted to enter the AWS Access and Secret key. For more details, refer [AWS CLI Configuration](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-config).
 
+- Execute below command to check the connectivity with AWS
+```
+aws sts get-caller-identity
+```
+
 - Modify `user.tfvars` file with your AWS details.
 ```
-os_version          = "<OS VERSION>"
-region              = "<AWS REGION>"
-security_group_cidr = "<YOUR PUBLIC IP CIDR>"
-key_name            = "<AWK KEY NAME>"
+vi user.tfvars
 ```
-- Use `CentOS 7.8.2003 x86_64` or `CentOS 7.9.2009 x86_64` as os_version as required.
+- #### Note:  
 
-- If you do not know your Public IP, run the following command and it should show your public IP:
- ```
- curl ipinfo.io/ip   
-  
- 134.204.222.36
- ``` 
+Following parameter/s are passed when the cluster deployment command executes. If no parameter is passed, the default ones are chosen.
 
-- Calculate CIDR for IP using Subnet Calculator from https://mxtoolbox.com/subnetcalculator.aspx 
+| Parameter     | Example     | Description     |
+| :------------- | :----------- | :---------|
+| os_version      | CentOS 7.9.2009 x86_64  | This will help you to select the ami of EC2 machine. |
+| region | ap-south-1 | You can pick any region from this region code : https://awsregion.info/  |
+| security_group_cidr | 134.204.222.36/32  | You need to find the own Public IP using this command : `curl ipinfo.io/ip`. Also calculate CIDR for IP using Subnet Calculator from https://mxtoolbox.com/subnetcalculator.aspx |
+| key_name | devops-key | You can pass .pem key file name to login to aws EC2 instance in `key_name`. |
 
 - Contents of `user.tfvars` file should display as follows:
 ```
