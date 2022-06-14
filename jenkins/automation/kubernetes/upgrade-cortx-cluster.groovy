@@ -126,16 +126,16 @@ pipeline {
                     ICON = "warning.gif"
                     STATUS = "UNSTABLE"
                 }
-                
-                clusterStatusHTML = "<pre>${clusterStatus}</pre>"
-                upgradeStatusHTML = "<pre>${upgradeStatus}</pre>"
 
                 manager.createSummary("${ICON}").appendText("<h3>CORTX Cluster Setup ${currentBuild.currentResult} </h3><p>Please check <a href=\"${BUILD_URL}/console\">cluster setup logs</a> for more info <h4>Cluster Status:</h4>${clusterStatusHTML}", false, false, false, "red")
 
                 // Email Notification
                 env.build_stage = "${build_stage}"
-                env.cluster_status = "${clusterStatusHTML}"
-                env.upgrade_status = "${upgradeStatusHTML}"
+                env.cluster_status = sh( script: "echo ${build_url}/artifact/artifacts/cortx-cluster-status.txt", returnStdout: true)
+                env.upgrade_logs = sh( script: "echo ${build_url}/artifact/artifacts/upgrade-logs.txt", returnStdout: true)
+                env.cortx_script_branch = "${CORTX_SCRIPTS_BRANCH}"
+                env.hosts = "${hosts}"
+                env.images_info = "${CORTX_SERVER_IMAGE},${CORTX_DATA_IMAGE},${CORTX_CONTROL_IMAGE}"
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
                 mailRecipients = "gaurav.chaudhari@seagate.com"
                 emailext ( 
