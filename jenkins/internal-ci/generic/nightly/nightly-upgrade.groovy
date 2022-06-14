@@ -41,7 +41,7 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }            
                 script {
-                    def upgradeCluster = build job: 'Release_Engineering/re-workspace/gc-space/cortx-upgrade/', wait: true,
+                    def upgradeCluster = build job: 'Cortx-Automation/RGW/cortx-rgw-cluster-upgrade/', wait: true,
                     parameters: [
                         string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
                         string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
