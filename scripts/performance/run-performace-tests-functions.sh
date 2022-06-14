@@ -21,6 +21,7 @@ set -eo pipefail
 source /var/tmp/functions.sh
 ANIBLE_LOG_FILE="/var/tmp/perf_sanity_run.log"
 PERF_STATS_FILE="/var/tmp/perf_sanity_stats.txt"
+SSH_KEY_FILE=/root/.ssh/id_rsa
 
 function usage() {
     cat << HEREDOC
