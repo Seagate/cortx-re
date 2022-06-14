@@ -39,8 +39,8 @@ pipeline {
     stages {
         
         stage('Checkout Script') {
-            script { build_stage = env.STAGE_NAME }
-            steps { 
+            steps {
+                script { build_stage = env.STAGE_NAME }
                 cleanWs()            
                 script {
                     checkout([$class: 'GitSCM', branches: [[name: "${CORTX_RE_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${CORTX_RE_REPO}"]]])                
