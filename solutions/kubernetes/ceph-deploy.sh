@@ -30,7 +30,7 @@ DEPLOYMENT_METHOD="standard"
 
 function usage() {
     cat << HEREDOC
-Usage : $0 [--install-pereq, --install-ceph, --deploy-prereq, --deploy-mon, --deploy-mgr, --deploy-osd, --deploy-mds, --deploy-fs, --deploy-rgw, --io-operation]
+Usage : $0 [--install-pereq, --install-ceph, --deploy-prereq, --deploy-mon, --deploy-mgr, --deploy-osd, --deploy-mds, --deploy-fs, --deploy-rgw, --install-prereq-image, --deploy-ceph-image, --io-operation]
 where,
     --install-prereq - Install Ceph Dependencies before installing ceph packages.
     --install-ceph - Install Ceph Packages.
@@ -41,6 +41,8 @@ where,
     --deploy-mds - Deploy Ceph Metadata Service daemon on primary node.
     --deploy-fs - Deploy Ceph FS daemon on primary node.
     --deploy-rgw - Deploy Ceph Rados Gateway daemon on primary node.
+    --install-prereq-image - Setup prerequisites for Ceph docker deployment.
+    --deploy-ceph-image- Deploy Ceph in docker.
     --io-operation - Perform IO operation.
 HEREDOC
 }
@@ -174,10 +176,10 @@ case $ACTION in
     --deploy-rgw)
         deploy_rgw
     ;;
-    --install-prereq-image
+    --install-prereq-image)
         install_prereq_image
     ;;
-    --deploy-ceph-image
+    --deploy-ceph-image)
         deploy_ceph_image
     ;;
     --io-operation)
