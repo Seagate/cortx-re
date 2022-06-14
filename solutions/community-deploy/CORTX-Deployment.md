@@ -58,10 +58,11 @@ You can use following command for RedHat family OS to install the Git.
 # git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/kubernetes
 ```
 
--  Create the host file in below format.
+-  Create the hosts file in the current directory.
 ```
-hostname=<hostname>,user=root,pass=<root-password>
+echo "hostname=<hostname>,user=root,pass=rootuserpassword" > hosts && cat hosts
 ```
+
 -  Script supports N-node deployment. Add entries for all the nodes with same format in hosts file. Node from first entry will be configured as Primary node. Example `hosts` file for multi-node setup is as below,
 ```
 hostname=cortx-deploy-node1.cortx.com,user=root,pass=<root-password>
@@ -69,8 +70,8 @@ hostname=cortx-deploy-node2.cortx.com,user=root,pass=<root-password>
 hostname=cortx-deploy-node3.cortx.com,user=root,pass=<root-password>
 ```
 
--  Execute `cluster-setup.sh` to setup K8s cluster on your VM.  
--  To allow PODs creation on primary node pass the first input parameter for `cluster-setup.sh` script as true. Please note you must pass the input parameter as true for single node setup.
+-  Execute `cluster-setup.sh` to setup K8s cluster on your VM for N-node deployment.
+-  To allow PODs creation on primary node pass the first input parameter for `cluster-setup.sh` script as true. Please note you must pass the input parameter as true for Single Node Setup.
 
 ```
 # ./cluster-setup.sh true
