@@ -14,7 +14,7 @@ pipeline {
     }
 
     environment {
-        component="ceph"
+        component="${REPO_COMPONENT}"
         build_upload_dir="/mnt/bigstorage/releases/ceph/${component}"
         VM_BUILD=true
     }
@@ -24,6 +24,13 @@ pipeline {
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
         string(name: 'CEPH_REPO', defaultValue: 'https://github.com/ceph/ceph/', description: 'Repository for Cluster Setup scripts', trim: true)
         string(name: 'CEPH_BRANCH', defaultValue: 'quincy', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
+
+        choice(
+            name: 'REPO_COMPONENT',
+            choices: ['ceph', 'cortx-rgw'],
+            description: 'Ceph fork repo component.'
+        )
+
         choice(
             name: 'BUILD_OS',
             choices: ['rockylinux-8.4', 'ubuntu-20.04', 'centos-8'],
@@ -45,12 +52,13 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Build Binary Packages', script: '''
-                    pushd solutions/kubernetes/
-                        export CEPH_REPO=${CEPH_REPO}
-                        export CEPH_BRANCH=${CEPH_BRANCH}
-                        export BUILD_OS=${BUILD_OS}
-                        bash ceph-binary-build.sh --ceph-build /var/log/ceph-build
-                    popd
+                pushd solutions/kubernetes/
+                    export CEPH_REPO=${CEPH_REPO}
+                    export CEPH_BRANCH=${CEPH_BRANCH}
+                    export BUILD_OS=${BUILD_OS}
+                    export REPO_COMPONENT=${REPO_COMPONENT}
+                    bash ceph-binary-build.sh --ceph-build /var/log/ceph-build
+                popd
                 '''
             }
         }
@@ -62,6 +70,7 @@ pipeline {
                 pushd solutions/kubernetes/
                     export CEPH_BRANCH=${CEPH_BRANCH}
                     export BUILD_OS=${BUILD_OS}
+                    export REPO_COMPONENT=${REPO_COMPONENT}
                     bash ceph-binary-build.sh --upload-packages /var/log/ceph-build cortx-storage.colo.seagate.com:/mnt/data1/releases/ceph
                 popd
                 '''

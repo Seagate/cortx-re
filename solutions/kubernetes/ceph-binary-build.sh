@@ -128,7 +128,7 @@ function ceph_build() {
                 add_common_separator "Clone Repo"
                 git clone $CEPH_REPO -b $CEPH_BRANCH
 
-                pushd ceph
+                pushd $REPO_COMPONENT
                     add_common_separator "Checkout Submodules"
                     git submodule update --init --recursive
 
@@ -168,7 +168,7 @@ function ceph_build() {
                     add_common_separator "Clone Repo"
                     git clone $CEPH_REPO -b $CEPH_BRANCH
 
-                    pushd ceph
+                    pushd $REPO_COMPONENT
                         add_common_separator "Checkout Submodules"
                         git submodule update --init --recursive
 
@@ -204,7 +204,7 @@ function ceph_build() {
                     add_common_separator "Clone Repo"
                     git clone $CEPH_REPO -b $CEPH_BRANCH
 
-                    pushd ceph
+                    pushd $REPO_COMPONENT
                         add_common_separator "Checkout Submodules"
                         git submodule update --init --recursive
 
