@@ -138,12 +138,6 @@ function copy_solution_config() {
     popd 
 }
 
-function setup_kubectl_context() {
-    local NAMESPACE=$1
-    add_secondary_separator "Updated kubectl context to use $NAMESPACE"
-    kubectl config set-context --current --namespace=$NAMESPACE
-}
-
 function k8s_deployment_type() {
     if [ "$(wc -l < $HOST_FILE)" == "1" ]; then
         SINGLE_NODE_DEPLOYMENT="True"
