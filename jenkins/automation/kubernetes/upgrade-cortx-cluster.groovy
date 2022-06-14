@@ -135,7 +135,7 @@ pipeline {
                 // Email Notification
                 env.build_stage = "${build_stage}"
                 env.cluster_status = "${clusterStatusHTML}"
-                env.upgradeStatusHTML = "${upgradeStatusHTML}"
+                env.upgrade_status = "${upgradeStatusHTML}"
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
                 mailRecipients = "gaurav.chaudhari@seagate.com"
                 emailext ( 
