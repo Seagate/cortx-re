@@ -19,7 +19,8 @@
 #
 set -eo pipefail
 source /var/tmp/functions.sh
-ANIBLE_LOG_FILE="/var/tmp/sanity_run.log"
+ANIBLE_LOG_FILE="/var/tmp/perf_sanity_run.log"
+PERF_STATS_FILE="/var/tmp/perf_sanity_stats.txt"
 
 function usage() {
     cat << HEREDOC
@@ -27,6 +28,7 @@ Usage : $0 [--setup-client, --fetch-setup-info]
 where,
     --setup-client - Setup S3 Client.
     --fetch-setup-info - Fetch setup information for PerfPro.
+    --execute-perf-sanity - Execute Performance sanity script.
 HEREDOC
 }
 
@@ -49,10 +51,10 @@ function create_endpoint_url() {
     SECRET_KEY=$(yq e '.solution.secrets.content.s3_auth_admin_secret' $SOLUTION_FILE)
     HTTP_PORT=$(kubectl get svc cortx-io-svc-0 -o=jsonpath='{.spec.ports[?(@.port==80)].nodePort}')
     if [ $(systemd-detect-virt -v) == "none" ];then
-            CLUSTER_TYPE=HW 
+        CLUSTER_TYPE=HW 
 	    IP_ADDRESS=$(ifconfig eno5 | grep inet -w | awk '{print $2}')
     else
-            CLUSTER_TYPE=VM		
+        CLUSTER_TYPE=VM		
 	    IP_ADDRESS=$(ifconfig eth1 | grep inet -w | awk '{print $2}')
     fi 
     ENDPOINT_URL="http://$IP_ADDRESS:$HTTP_PORT"
@@ -110,7 +112,7 @@ function setup-client() {
     if [ -z "$ENDPOINT_URL" ]; then echo "S3 ENDPOINT_URL not provided.Exiting..."; exit 1; fi
     if [ -z "$ACCESS_KEY" ]; then echo "S3 ACCESS_KEY not provided.Exiting..."; exit 1; fi
     if [ -z "$SECRET_KEY" ]; then echo "S3 SECRET_KEY not provided.Exiting..."; exit 1; fi
-    truncate -s 0 $ANIBLE_LOG_FILE
+    rm -f $ANIBLE_LOG_FILE $PERF_STATS_FILE
     install_awscli
     setup_awscli
     run_io_sanity
@@ -125,11 +127,21 @@ function execute-perf-sanity() {
     if [ -z "$GITHUB_TOKEN" ]; then echo "ERROR:GITHUB_TOKEN not provided.Exiting..."; exit 1; fi
     if [ -z "$BUILD_URL" ]; then echo "ERROR:BUILD_URL not provided.Exiting..."; exit 1; fi
     
+    generate_rsa_key
     passwordless_ssh "$PRIMARY_NODE" "root" "$PRIMARY_CRED"
     passwordless_ssh "$CLIENT_NODE" "root" "$CLIENT_CRED"
     clone_segate_tools_repo
     update_setup_confiuration
     execute_perfpro
+    generate_perf_stats
+}
+
+function generate_perf_stats() {
+   add_secondary_separator "CORTX Image details" | tee $PERF_STATS_FILE
+   ssh $PRIMARY_NODE "kubectl get pods -o jsonpath="{.items[*].spec.containers[*].image}" | tr ' ' '\n' | sort | uniq" | tee -a $PERF_STATS_FILE
+   #Fetch info from Ansible logs
+   add_secondary_separator "Performance Stats" | tee -a $PERF_STATS_FILE
+   grep -i '\[S3Bench\] Running' $ANIBLE_LOG_FILE | sed -e 's/-//g' -e 's/^ //g' | cut -d':' -f4 | sed 's/^ //g' | tee -a $PERF_STATS_FILE
 }
 
 
