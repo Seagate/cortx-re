@@ -94,6 +94,7 @@ pipeline {
                         text(name: 'primary_nodes', value: "${env.primarynodes}"),
                         text(name: 'client_nodes', value: "${client_nodes}")
                     ]
+                    copyArtifacts filter: 'artifacts/perf*    ', fingerprintArtifacts: true, flatten: true, optional: true, projectName: '/Cortx-Automation/Performance/run-performance-sanity/', selector: lastCompleted(), target: ''
                 }
             }
         }
@@ -102,18 +103,9 @@ pipeline {
     post {
 
         cleanup {
-            sh label: 'Collect Artifacts', script: '''
-            mkdir -p artifacts
-            pushd scripts/performance
-                echo $client_nodes | tr ' ' '\n' > client_nodes
-                CLIENT_NODES_FILE=$PWD/client_nodes
-                CLIENT_NODE=$(head -1 "$CLIENT_NODES_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
-                scp -q "$CLIENT_NODE":/var/tmp/perf* $WORKSPACE/artifacts/
-            popd 
-            '''
             script {
                 // Archive Deployment artifacts in jenkins build
-                archiveArtifacts artifacts: "artifacts/*.*", onlyIfSuccessful: false, allowEmptyArchive: true 
+                archiveArtifacts artifacts: "*.*", onlyIfSuccessful: false, allowEmptyArchive: true 
             }
         }
     }
