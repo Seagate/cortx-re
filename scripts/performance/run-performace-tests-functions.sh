@@ -96,7 +96,7 @@ function execute_perfpro() {
     yum install ansible -y
     pushd $SCRIPT_LOCATION/performance/PerfPro
         add_primary_separator "Executing Ansible CLI"
-        ANSIBLE_LOG_PATH=$ANIBLE_LOG_FILE ansible-playbook perfpro.yml -i inventories/hosts -v
+        ANSIBLE_LOG_PATH=$ANIBLE_LOG_FILE ansible-playbook perfpro.yml -i inventories/hosts --extra-vars '{ "EXECUTION_TYPE" : "sanity" }' -v
     popd
 }
 
