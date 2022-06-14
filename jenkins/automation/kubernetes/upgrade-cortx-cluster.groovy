@@ -134,7 +134,9 @@ pipeline {
                 env.cluster_status = sh( script: "echo ${build_url}/artifact/artifacts/cortx-cluster-status.txt", returnStdout: true)
                 env.upgrade_logs = sh( script: "echo ${build_url}/artifact/artifacts/upgrade-logs.txt", returnStdout: true)
                 env.cortx_script_branch = "${CORTX_SCRIPTS_BRANCH}"
-                env.hosts = "${hosts}"
+                env.hosts = sh( script: '''
+                    echo $hosts | tr ' ' '\n' | awk -F["="] '{print $2}'|cut -d',' -f1
+                ''', returnStdout: true).trim()
                 env.images_info = "${CORTX_SERVER_IMAGE},${CORTX_DATA_IMAGE},${CORTX_CONTROL_IMAGE}"
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
                 mailRecipients = "gaurav.chaudhari@seagate.com"
@@ -168,7 +170,11 @@ pipeline {
 
         failure {
             // Remove upgrade track file
-            rm -rf "/tmp/upgrade.sh.pid"    
+            sh label: 'Remove metadata files', script: '''
+                HOST_FILE=$PWD/hosts
+                PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+                ssh -o 'StrictHostKeyChecking=no' $PRIMARY_NODE 'rm -rf /tmp/upgrade.sh.pid'
+            '''    
         }
     }        
 }        
