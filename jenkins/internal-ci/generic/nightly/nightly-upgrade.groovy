@@ -56,7 +56,7 @@ pipeline {
                     ]
                     env.upgradecluster_build_url = upgradeCluster.absoluteUrl
                     env.upgradeCluster_status = upgradeCluster.currentResult
-                    env.preupgrade_cortx_server_image = upgradeCluster.preupgrade_cortx_server_image
+                    env.preupgrade_cortx_server_image = upgradeCluster.buildVariables.preupgrade_cortx_server_image
                 }
             }
         }
