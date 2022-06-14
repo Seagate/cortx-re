@@ -165,5 +165,10 @@ pipeline {
                 archiveArtifacts artifacts: "artifacts/*.*", onlyIfSuccessful: false, allowEmptyArchive: true 
             }
         }
+
+        failure {
+            // Remove upgrade track file
+            rm -rf "/tmp/upgrade.sh.pid"    
+        }
     }        
 }        
