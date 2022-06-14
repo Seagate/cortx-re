@@ -118,6 +118,24 @@ function deploy_rgw() {
     ssh_primary_node "/var/tmp/ceph-deploy-functions.sh --deploy-rgw"
 }
 
+function install_prereq_image() {
+    add_primary_separator "Prerequisites for Ceph Docker Deployment"
+
+    validation
+    generate_rsa_key
+    nodes_setup
+
+    add_common_separator "Copy scripts to node"
+    scp_primary_node functions.sh ceph-deploy-functions.sh io-sanity.sh
+
+    ssh_primary_node "export CEPH_IMAGE=$CEPH_IMAGE && /var/tmp/ceph-deploy-functions.sh --install-prereq-image"
+}
+
+function deploy_ceph_image() {
+    add_primary_separator "Deploy Ceph in Docker"
+    ssh_primary_node "export CEPH_IMAGE=$CEPH_IMAGE && /var/tmp/ceph-deploy-functions.sh --deploy-ceph-image"
+}
+
 function io_operation() {
     add_primary_separator "\tPerform IO Operation"
 

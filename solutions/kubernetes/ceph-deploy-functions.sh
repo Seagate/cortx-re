@@ -21,6 +21,7 @@
 source /var/tmp/functions.sh
 source /etc/os-release
 
+SCRIPTS_LOCATION=/var/tmp
 HOST_FILE=/var/tmp/hosts
 ALL_NODES=$(cat "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
 PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
@@ -335,6 +336,42 @@ EOF
     ceph_status
 }
 
+function install_prereq_image() {
+    add_secondary_separator "Verify/Install Docker"
+    if ! which docker; then
+        if [[ "$ID" == "rocky"  ]]; then
+            dnf config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo
+            dnf install -y docker-ce docker-ce-cli containerd.io
+            check_status "$HOSTNAME: Docker installation failed"
+            systemctl enable docker && systemctl start docker
+        fi
+        
+        if [[ "$ID" == "ubuntu" || "$ID" == "centos" ]]; then
+            pushd $SCRIPTS_LOCATION
+                curl -fsSL https://get.docker.com -o get-docker.sh
+                chmod +x get-docker.sh
+                ./get-docker.sh
+                check_status "$HOSTNAME: Docker installation failed"
+            popd
+        fi
+    fi
+
+    add_secondary_separator "Install Cephadm"
+    pushd $SCRIPTS_LOCATION
+        curl --silent --remote-name --location https://github.com/ceph/ceph/raw/quincy/src/cephadm/cephadm && chmod +x cephadm
+        unlink /usr/local/bin/cephadm 
+        ln -s /usr/local/bin/cephadm $SCRIPTS_LOCATION/cephadm
+    popd
+
+    add_secondary_separator "Pull Ceph Docker image"
+    docker pull $CEPH_IMAGE
+}
+
+function deploy_ceph_image() {
+    add_secondary_separator "Deploy Ceph"
+    cephadm --image $CEPH_IMAGE --verbose bootstrap --mon-ip $(hostname -i) --initial-dashboard-user admin --initial-dashboard-password cephadmin --dashboard-password-noupdate --single-host-defaults --skip-pull --skip-monitoring-stack --allow-fqdn-hostname --allow-overwrite
+}
+
 function io_operation() {
     if [[ $CEPH_DOCKER_DEPLOYMENT = "false" ]]; then
         add_secondary_separator "Add RADOS-GW User"
@@ -377,6 +414,12 @@ case $ACTION in
     ;;
     --deploy-rgw)
         deploy_rgw
+    ;;
+    --install-prereq-image
+        install_prereq_image
+    ;;
+    --deploy-ceph-image
+        deploy_ceph_image
     ;;
     --io-operation)
         io_operation
