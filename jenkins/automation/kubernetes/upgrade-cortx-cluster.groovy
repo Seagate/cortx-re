@@ -39,6 +39,7 @@ pipeline {
     stages {
         
         stage('Checkout Script') {
+            script { build_stage = env.STAGE_NAME }
             steps { 
                 cleanWs()            
                 script {
@@ -101,6 +102,68 @@ pipeline {
                 '''
             }
         }
-
     }
+    post {
+        always {
+            script {
+                clusterStatus = ""
+                upgradeStatus = ""
+                if ( fileExists('/var/tmp/upgrade-logs.txt') && fileExists('/var/tmp/cortx-cluster-status.txt') && currentBuild.currentResult == "SUCCESS" ) {
+                    clusterStatus = readFile(file: '/var/tmp/cortx-cluster-status.txt')
+                    upgradeStatus = readFile(file: '/var/tmp/upgrade-logs.txt')
+                    MESSAGE = "CORTX Cluster Upgrade Success for the build ${build_id}"
+                    ICON = "accept.gif"
+                    STATUS = "SUCCESS"
+                } else if ( currentBuild.currentResult == "FAILURE" ) {
+                    manager.buildFailure()
+                    MESSAGE = "CORTX Cluster Upgrade Failed for the build ${build_id}"
+                    ICON = "error.gif"
+                    STATUS = "FAILURE"
+ 
+                } else {
+                    manager.buildUnstable()
+                    MESSAGE = "CORTX Cluster Upgrade is Unstable"
+                    ICON = "warning.gif"
+                    STATUS = "UNSTABLE"
+                }
+                
+                clusterStatusHTML = "<pre>${clusterStatus}</pre>"
+                upgradeStatusHTML = "<pre>${upgradeStatus}</pre>"
+
+                manager.createSummary("${ICON}").appendText("<h3>CORTX Cluster Setup ${currentBuild.currentResult} </h3><p>Please check <a href=\"${BUILD_URL}/console\">cluster setup logs</a> for more info <h4>Cluster Status:</h4>${clusterStatusHTML}", false, false, false, "red")
+
+                // Email Notification
+                env.build_stage = "${build_stage}"
+                env.cluster_status = "${clusterStatusHTML}"
+                env.upgradeStatusHTML = "${upgradeStatusHTML}"
+                def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
+                mailRecipients = "gaurav.chaudhari@seagate.com"
+                emailext ( 
+                    body: '''${SCRIPT, template="cluster-upgrade-email.template"}''',
+                    mimeType: 'text/html',
+                    subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
+                    attachLog: true,
+                    to: "${mailRecipients}",
+                    recipientProviders: recipientProvidersClass
+                )
+            }
+        }
+        
+        cleanup {
+            sh label: 'Collect Artifacts', script: '''
+            mkdir -p artifacts
+            pushd solutions/kubernetes/
+                HOST_FILE=$PWD/hosts
+                PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+                [ -f /var/tmp/cortx-cluster-status.txt ] && cp /var/tmp/cortx-cluster-status.txt $WORKSPACE/artifacts/
+                [ -f /var/tmp/upgrade-logs.txt ] && cp /var/tmp/upgrade-logs.txt $WORKSPACE/artifacts/
+                scp -q "$PRIMARY_NODE":/root/deploy-scripts/k8_cortx_cloud/solution.yaml $WORKSPACE/artifacts/
+            popd    
+            '''
+            script {
+                // Archive Deployment artifacts in jenkins build
+                archiveArtifacts artifacts: "artifacts/*.*", onlyIfSuccessful: false, allowEmptyArchive: true 
+            }
+        }
+    }        
 }        
