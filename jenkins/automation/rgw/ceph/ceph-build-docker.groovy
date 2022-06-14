@@ -16,8 +16,7 @@ pipeline {
     }
 
     environment {
-        component="${REPO_COMPONENT}"
-        build_upload_dir="/mnt/bigstorage/releases/ceph/${component}"
+        build_upload_dir="/mnt/bigstorage/releases/ceph"
         VM_BUILD=false
     }
 

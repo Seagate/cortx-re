@@ -48,6 +48,7 @@ function check_params() {
     if [ -z "$BUILD_LOCATION" ]; then echo "BUILD_LOCATION for container to mount not provided. Using default: /var/log/ceph-build";BUILD_LOCATION="/var/log/ceph-build"; fi
     if [ -z "$REPO_COMPONENT" ]; then echo "REPO_COMPONENT for ceph repo not provided. Using default: ceph";REPO_COMPONENT="ceph"; fi
     if [ -z "$MOUNT" ]; then echo "MOUNT for uploading packages is not provided. Using default: cortx-storage.colo.seagate.com:/mnt/data1/releases/ceph";MOUNT="cortx-storage.colo.seagate.com:/mnt/data1/releases/ceph"; fi
+    if [ -z "$build_upload_dir" ]; then echo "build_upload_dir for ceph packages not provided. Using default: /mnt/bigstorage/releases/ceph";build_upload_dir="/mnt/bigstorage/releases/ceph"; fi
 
    echo -e "\n\n########################################################################"
    echo -e "# CEPH_REPO         : $CEPH_REPO                  "
@@ -56,6 +57,7 @@ function check_params() {
    echo -e "# BUILD_LOCATION    : $BUILD_LOCATION             "
    echo -e "# REPO_COMPONENT    : $REPO_COMPONENT             "
    echo -e "# MOUNT             : $MOUNT                      "   
+   echo -e "# build_upload_dir  : $build_upload_dir           "   
    echo -e "#########################################################################"
 }
 
@@ -159,6 +161,7 @@ function ceph_build() {
                 add_common_separator "Update repolist cache and install prerequisites"
                 rpm -ivh http://mirror.centos.org/centos/8-stream/BaseOS/x86_64/os/Packages/centos-gpg-keys-8-3.el8.noarch.rpm
                 check_status
+                yum install dnf -y
                 dnf --disablerepo '*' --enablerepo=extras swap centos-linux-repos centos-stream-repos -y
                 check_status
                 yum makecache && yum install git -y
@@ -199,7 +202,7 @@ function ceph_build() {
                 add_common_separator "Update repolist cache and install prerequisites"
                 yum makecache && yum install git -y
                 check_status
-                yum install wget bzip2 rpm-build rpmdevtools dnf-plugins-core -y
+                yum install wget bzip2 rpm-build dnf rpmdevtools dnf-plugins-core -y
                 check_status
                 dnf config-manager --set-enabled powertools
                 pushd "$BUILD_LOCATION"
@@ -254,7 +257,7 @@ function upload_packages() {
 
     add_secondary_separator "Uploading Binary Packages to CORTX-Storage"
     pushd "$build_upload_dir"
-        mkdir -p "$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
+        mkdir -p "$REPO_COMPONENT/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
     popd
 
     if [[ "$VM_BUILD" = true ]]; then
