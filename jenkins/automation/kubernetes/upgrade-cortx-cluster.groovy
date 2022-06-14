@@ -59,7 +59,7 @@ pipeline {
                     popd
                 '''
                 script {
-                    env.preupgrade_cortx_rgw_image = sh( script: '''
+                    env.preupgrade_cortx_server_image = sh( script: '''
                         grep "seagate/cortx-rgw" < /var/tmp/cortx-cluster-status.txt | head -n 1
                     ''', returnStdout: true).trim()
 
@@ -150,7 +150,7 @@ pipeline {
                 env.hosts = sh( script: '''
                     echo $hosts | tr ' ' '\n' | awk -F["="] '{print $2}'|cut -d',' -f1
                 ''', returnStdout: true).trim()
-                env.preupgrade_images_info = "${env.preupgrade_cortx_rgw_image},${env.preupgrade_cortx_data_image},${env.preupgrade_cortx_control_image}"
+                env.preupgrade_images_info = "${env.preupgrade_cortx_server_image},${env.preupgrade_cortx_data_image},${env.preupgrade_cortx_control_image}"
                 env.images_info = "${CORTX_SERVER_IMAGE},${CORTX_DATA_IMAGE},${CORTX_CONTROL_IMAGE}"
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
                 mailRecipients = "gaurav.chaudhari@seagate.com"
