@@ -28,6 +28,7 @@ Usage : $0 [--setup-client, --fetch-setup-info]
 where,
     --setup-client - Setup S3 Client.
     --fetch-setup-info - Fetch setup information for PerfPro.
+    --execute-perf-sanity - Execute Performance sanity script.
 HEREDOC
 }
 
@@ -50,10 +51,10 @@ function create_endpoint_url() {
     SECRET_KEY=$(yq e '.solution.secrets.content.s3_auth_admin_secret' $SOLUTION_FILE)
     HTTP_PORT=$(kubectl get svc cortx-io-svc-0 -o=jsonpath='{.spec.ports[?(@.port==80)].nodePort}')
     if [ $(systemd-detect-virt -v) == "none" ];then
-            CLUSTER_TYPE=HW 
+        CLUSTER_TYPE=HW 
 	    IP_ADDRESS=$(ifconfig eno5 | grep inet -w | awk '{print $2}')
     else
-            CLUSTER_TYPE=VM		
+        CLUSTER_TYPE=VM		
 	    IP_ADDRESS=$(ifconfig eth1 | grep inet -w | awk '{print $2}')
     fi 
     ENDPOINT_URL="http://$IP_ADDRESS:$HTTP_PORT"
@@ -96,8 +97,8 @@ function update_setup_confiuration() {
 function execute_perfpro() {
     yum install ansible -y
     pushd $SCRIPT_LOCATION/performance/PerfPro
-    add_primary_separator "Executing Ansible CLI"
-    #ANSIBLE_LOG_PATH=$ANIBLE_LOG_FILE ansible-playbook perfpro.yml -i inventories/hosts --extra-vars '{ "EXECUTION_TYPE" : "sanity" ,"REPOSITORY":{"motr":"cortx-motr","rgw":"cortx-rgw"} , "COMMIT_ID": { "main" : "d1234c" , "dev" : "a5678b"},"PR_ID" : "cortx-rgw/1234" , "USER":"Shailesh Vaidya","GID" : "729494" }' -v
+        add_primary_separator "Executing Ansible CLI"
+        #ANSIBLE_LOG_PATH=$ANIBLE_LOG_FILE ansible-playbook perfpro.yml -i inventories/hosts --extra-vars '{ "EXECUTION_TYPE" : "sanity" ,"REPOSITORY":{"motr":"cortx-motr","rgw":"cortx-rgw"} , "COMMIT_ID": { "main" : "d1234c" , "dev" : "a5678b"},"PR_ID" : "cortx-rgw/1234" , "USER":"Shailesh Vaidya","GID" : "729494" }' -v
     popd
 }
 
@@ -111,7 +112,7 @@ function setup-client() {
     if [ -z "$ENDPOINT_URL" ]; then echo "S3 ENDPOINT_URL not provided.Exiting..."; exit 1; fi
     if [ -z "$ACCESS_KEY" ]; then echo "S3 ACCESS_KEY not provided.Exiting..."; exit 1; fi
     if [ -z "$SECRET_KEY" ]; then echo "S3 SECRET_KEY not provided.Exiting..."; exit 1; fi
-    truncate -s 0 $ANIBLE_LOG_FILE
+    rm -f $ANIBLE_LOG_FILE $PERF_STATS_FILE
     install_awscli
     setup_awscli
     run_io_sanity
