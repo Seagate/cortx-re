@@ -120,7 +120,12 @@ function deploy_rgw() {
 
 function io_operation() {
     add_primary_separator "\tPerform IO Operation"
-    ssh_primary_node "export CEPH_DEPLOYMENT=$CEPH_DEPLOYMENT && export DEPLOYMENT_METHOD=$DEPLOYMENT_METHOD && /var/tmp/ceph-deploy-functions.sh --io-operation"
+
+    if [[ $CEPH_DOCKER_DEPLOYMENT = "true" ]]; then
+        ssh_primary_node "export CEPH_DEPLOYMENT=$CEPH_DEPLOYMENT && export DEPLOYMENT_METHOD=$DEPLOYMENT_METHOD && export CEPH_DOCKER_DEPLOYMENT=$CEPH_DOCKER_DEPLOYMENT && /var/tmp/ceph-deploy-functions.sh --io-operation"
+    else
+        ssh_primary_node "export CEPH_DEPLOYMENT=$CEPH_DEPLOYMENT && export DEPLOYMENT_METHOD=$DEPLOYMENT_METHOD && /var/tmp/ceph-deploy-functions.sh --io-operation"
+    fi
 }
 
 case $ACTION in
@@ -150,6 +155,12 @@ case $ACTION in
     ;;
     --deploy-rgw)
         deploy_rgw
+    ;;
+    --install-prereq-image
+        install_prereq_image
+    ;;
+    --deploy-ceph-image
+        deploy_ceph_image
     ;;
     --io-operation)
         io_operation

@@ -13,6 +13,10 @@ pipeline {
         disableConcurrentBuilds()   
     }
 
+    environment {
+        CEPH_DOCKER_DEPLOYMENT=true
+    }
+
     parameters {
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
@@ -36,7 +40,7 @@ pipeline {
                     pushd solutions/kubernetes/
                         echo $hosts | tr ' ' '\n' > hosts
                         cat hosts
-                        bash ceph-deploy.sh --install-prereq
+                        bash ceph-deploy.sh --install-prereq-image
                     popd
                 '''
             }
@@ -47,7 +51,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Install Ceph Packages', script: '''
                     pushd solutions/kubernetes/
-                        bash ceph-deploy.sh --install-ceph
+                        bash ceph-deploy.sh --deploy-ceph-image
                     popd
                 '''
             }
@@ -58,6 +62,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'IO Operation', script: '''
                     pushd solutions/kubernetes/
+                        export CEPH_DOCKER_DEPLOYMENT=${CEPH_DOCKER_DEPLOYMENT}
                         bash ceph-deploy.sh --io-operation
                     popd
                 '''

@@ -336,11 +336,13 @@ EOF
 }
 
 function io_operation() {
-    add_secondary_separator "Add RADOS-GW User"
-    radosgw-admin user create --uid=io-test --display-name="io-ops"
+    if [[ $CEPH_DOCKER_DEPLOYMENT = "false" ]]; then
+        add_secondary_separator "Add RADOS-GW User"
+        radosgw-admin user create --uid=io-test --display-name="io-ops"
 
-    add_secondary_separator "Setup Dashboard RADOS User"
-    ceph dashboard set-rgw-credentials
+        add_secondary_separator "Setup Dashboard RADOS User"
+        ceph dashboard set-rgw-credentials
+    fi
 
     pushd /var/tmp/
         ./io-sanity.sh
