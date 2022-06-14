@@ -127,7 +127,7 @@ pipeline {
                     STATUS = "UNSTABLE"
                 }
 
-                // manager.createSummary("${ICON}").appendText("<h3>CORTX Cluster Setup ${currentBuild.currentResult} </h3><p>Please check <a href=\"${BUILD_URL}/console\">cluster setup logs</a> for more info <h4>Cluster Status:</h4>${clusterStatusHTML}", false, false, false, "red")
+                manager.createSummary("${ICON}").appendText("<h3>CORTX Cluster Upgrade ${currentBuild.currentResult} </h3><p>Please check <a href=\"${BUILD_URL}/console\">cluster setup logs</a>", false, false, false, "red")
 
                 // Email Notification
                 env.build_stage = "${build_stage}"
