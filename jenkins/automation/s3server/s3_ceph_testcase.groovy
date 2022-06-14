@@ -40,10 +40,7 @@ pipeline {
                         }
 
                         sh label: 'run compatibility test', script: '''
-                            #set +x
-                            echo "Removing host entry"
                             RGW_SERVICE_IP=$(ping ${RGW_MASTER_NODE} -c 1|grep PING|cut -d "(" -f2|cut -d ")" -f1)
-                            #sed -i '/s3test.seagate.com/d' /etc/hosts
                             echo "Adding host entry"
                             echo "$RGW_SERVICE_IP s3test.seagate.com" >> /etc/hosts
 
@@ -82,8 +79,10 @@ pipeline {
                                 sed -i "s/port =.*/port = $RGW_PORT/g" ${S3_TEST_CONF_FILE}
 
                                 echo "---------------------------------"
+                                cat "${S3_TEST_CONF_FILE}"
+                                echo "---------------------------------"
                                 echo ""
-                                sh ./run_testcases.sh -c="${S3_TEST_CONF_FILE}" -i="${INTEGRATION_TYPE}" -tr="${S3_TEST_REPO}" -trr="${S3_TEST_REPO_REV}"
+                                ./run_testcases.sh -c="${S3_TEST_CONF_FILE}" -i="${INTEGRATION_TYPE}" -tr="${S3_TEST_REPO}" -trr="${S3_TEST_REPO_REV}"
                                 echo ""
                                 echo "---------------------------------"
                                 rm -rf ${S3_TEST_CONF_FILE} ${S3_TNT_USER_ID}_${BUILD_NUMBER}.log ${S3_ALT_USER_ID}_${BUILD_NUMBER}.log ${S3_MAIN_USER}_${BUILD_NUMBER}.log
