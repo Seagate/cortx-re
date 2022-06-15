@@ -114,7 +114,7 @@ pipeline {
                 // Jenkins Summary
                 clusterStatus = ""
                 if ( currentBuild.currentResult == "SUCCESS" ) {
-                    clusterStatus = readFile(file: '$WORKSPACE/perf_sanity_stats.txt')
+                    clusterStatus = readFile(file: 'perf_sanity_stats.txt')
                     MESSAGE = "Build#${build_id} Nightly CORTX Performance CI Success"
                     ICON = "accept.gif"
                     STATUS = "SUCCESS"
