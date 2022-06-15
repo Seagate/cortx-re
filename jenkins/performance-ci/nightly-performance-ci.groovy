@@ -108,5 +108,46 @@ pipeline {
                 archiveArtifacts artifacts: "perf*", onlyIfSuccessful: false, allowEmptyArchive: true 
             }
         }
+
+        always { 
+            script {
+                // Jenkins Summary
+                clusterStatus = ""
+                if ( currentBuild.currentResult == "SUCCESS" ) {
+                    MESSAGE = "Build#${build_id} Nightly CORTX Performance CI Success"
+                    ICON = "accept.gif"
+                    STATUS = "SUCCESS"
+                } else if ( currentBuild.currentResult == "FAILURE" ) {
+                    manager.buildFailure()
+                    MESSAGE = "Build#${build_id} Nightly CORTX Performance CI Failed"
+                    ICON = "error.gif"
+                    STATUS = "FAILURE"
+ 
+                } else {
+                    manager.buildUnstable()
+                    MESSAGE = "Build#${build_id} Nightly CORTX Performance CI Unstable"
+                    ICON = "warning.gif"
+                    STATUS = "UNSTABLE"
+                }
+                
+                PerformaceSanityStatusHTML = "<pre>${clusterStatus}</pre>"
+
+                manager.createSummary("${ICON}").appendText("<h3>Nightly CORTX Performance CI ${currentBuild.currentResult} </h3><p>Please check <a href=\"${BUILD_URL}/console\">Performance Sanity Execution logs</a> for more info <h4>Sanity Execution Logs:</h4>${PerformaceSanityStatusHTML}", false, false, false, "red")
+
+                // Email Notification
+                env.build_stage = "${build_stage}"
+                env.cluster_status = "${PerformaceSanityStatusHTML}"
+                def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
+                mailRecipients = "shailesh.vaidya@seagate.com"
+                emailext ( 
+                    body: '''${SCRIPT, template="cluster-setup-email.template"}''',
+                    mimeType: 'text/html',
+                    subject: "[Build#${build_id} Nightly CORTX Performance CI ${currentBuild.currentResult}] : ${env.JOB_NAME}",
+                    attachLog: true,
+                    to: "${mailRecipients}",
+                    recipientProviders: recipientProvidersClass
+                )
+            }
+        }
     }
 }
