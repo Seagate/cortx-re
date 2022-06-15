@@ -375,18 +375,36 @@ function deploy_ceph_image() {
 }
 
 function io_operation() {
-    if [[ $CEPH_DOCKER_DEPLOYMENT = "false" ]]; then
+    if [[ $CEPH_DOCKER_DEPLOYMENT = "true" ]]; then
+        add_secondary_separator "Add RADOS-GW User"
+        cephadm shell -- radosgw-admin user create --uid=io-test --display-name="io-ops"
+
+    elif [[ $CEPH_DOCKER_DEPLOYMENT = "false" ]]; then
         add_secondary_separator "Add RADOS-GW User"
         radosgw-admin user create --uid=io-test --display-name="io-ops"
 
         add_secondary_separator "Setup Dashboard RADOS User"
         ceph dashboard set-rgw-credentials
+
+    else
+        echo "Not ceph deployment."
     fi
 
     pushd /var/tmp/
         ./io-sanity.sh
     popd
 
+    if [[ $CEPH_DOCKER_DEPLOYMENT = "true" ]]; then
+        add_secondary_separator "Remove RADOS-GW User"
+        cephadm shell -- radosgw-admin user rm --uid=io-test
+
+    elif [[ $CEPH_DOCKER_DEPLOYMENT = "false" ]]; then
+        add_secondary_separator "Remove RADOS-GW User"
+        radosgw-admin user rm --uid=io-test
+
+    else
+        echo "Not ceph deployment."
+    fi
 }
 
 case $ACTION in
