@@ -105,7 +105,7 @@ pipeline {
         cleanup {
             script {
                 // Archive Deployment artifacts in jenkins build
-                archiveArtifacts artifacts: "*.*/perf*", onlyIfSuccessful: false, allowEmptyArchive: true 
+                archiveArtifacts artifacts: "perf*", onlyIfSuccessful: false, allowEmptyArchive: true 
             }
         }
     }
