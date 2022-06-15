@@ -114,6 +114,7 @@ pipeline {
                 // Jenkins Summary
                 clusterStatus = ""
                 if ( currentBuild.currentResult == "SUCCESS" ) {
+                    clusterStatus = readFile(file: '$WORKSPACE/perf_sanity_stats.txt')
                     MESSAGE = "Build#${build_id} Nightly CORTX Performance CI Success"
                     ICON = "accept.gif"
                     STATUS = "SUCCESS"
@@ -130,19 +131,19 @@ pipeline {
                     STATUS = "UNSTABLE"
                 }
                 
-                PerformaceSanityStatusHTML = "<pre>${clusterStatus}</pre>"
+                clusterStatusHTML = "<pre>${clusterStatus}</pre>"
 
-                manager.createSummary("${ICON}").appendText("<h3>Nightly CORTX Performance CI ${currentBuild.currentResult} </h3><p>Please check <a href=\"${BUILD_URL}/console\">Performance Sanity Execution logs</a> for more info <h4>Sanity Execution Logs:</h4>${PerformaceSanityStatusHTML}", false, false, false, "red")
+                manager.createSummary("${ICON}").appendText("<h3>Nightly CORTX Performance CI ${currentBuild.currentResult} </h3><p>Please check <a href=\"${BUILD_URL}/console\">Performance Sanity Execution logs</a> for more info <h4>Sanity Execution Logs:</h4>${clusterStatusHTML}", false, false, false, "red")
 
                 // Email Notification
                 env.build_stage = "${build_stage}"
-                env.cluster_status = "${PerformaceSanityStatusHTML}"
+                env.cluster_status = "${clusterStatusHTML}"
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
                 mailRecipients = "shailesh.vaidya@seagate.com"
                 emailext ( 
                     body: '''${SCRIPT, template="cluster-setup-email.template"}''',
                     mimeType: 'text/html',
-                    subject: "[Build#${build_id} Nightly CORTX Performance CI ${currentBuild.currentResult}] : ${env.JOB_NAME}",
+                    subject: "Build#${build_id} Nightly CORTX Performance CI ${currentBuild.currentResult}",
                     attachLog: true,
                     to: "${mailRecipients}",
                     recipientProviders: recipientProvidersClass
