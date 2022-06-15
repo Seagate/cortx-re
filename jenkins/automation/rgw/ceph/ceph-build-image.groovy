@@ -15,9 +15,16 @@ pipeline {
         disableConcurrentBuilds()   
     }
 
+    environment {
+        ARCH="x86_64"
+    }
+
     parameters {
-        string(name: 'CEPH_CONTAINER_REPO', defaultValue: 'https://github.com/nitisdev/ceph-container/', description: 'Repository for ceph container image scripts', trim: true)
-        string(name: 'CEPH_CONTAINER_BRANCH', defaultValue: 'centos-custom', description: 'Branch or GitHash for ceph container image scripts', trim: true)
+        string(name: 'CEPH_CONTAINER_REPO', defaultValue: 'https://github.com/nitisdev/ceph-container/', description: 'Repository for ceph container image scripts.', trim: true)
+        string(name: 'CEPH_CONTAINER_BRANCH', defaultValue: 'centos-custom', description: 'Branch or GitHash for ceph container image scripts.', trim: true)
+        string(name: 'CEPH_RELEASE', defaultValue: 'quincy', description: 'Ceph release to build image from.', trim: true)
+        string(name: 'OS_IMAGE', defaultValue: 'centos', description: 'Base OS docker image to build from.', trim: true)
+        string(name: 'OS_IMAGE_TAG', defaultValue: '8', description: 'OS docker image tag.', trim: true)
     }    
 
     stages {
@@ -35,13 +42,13 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Build Ceph Container Image', script: '''
                     echo "Starting Build"
-                    make FLAVORS=quincy,centos,8 build
+                    make FLAVORS=${CEPH_RELEASE},${OS_IMAGE},${OS_IMAGE_TAG} build
 
                     echo -e "==============================\n"
 
                     echo "List created images:"
-                    docker images --format "{{.Repository}}:{{.Tag}}" --filter reference=ceph/daemon-base:HEAD-quincy-centos-8-x86_64
-                    docker images --format "{{.Repository}}:{{.Tag}}" --filter reference=ceph/daemon:HEAD-quincy-centos-8-x86_64
+                    docker images --format "{{.Repository}}:{{.Tag}}" --filter reference=ceph/daemon-base:HEAD-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
+                    docker images --format "{{.Repository}}:{{.Tag}}" --filter reference=ceph/daemon:HEAD-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
                 '''
             }
         }
@@ -52,8 +59,8 @@ pipeline {
                 sh label: 'Push Image to Registry', script: '''
 
                     echo "Tag container images"
-                    docker tag ceph/daemon:HEAD-quincy-centos-8-x86_64 nitisdev/ceph:daemon-centos-custom-quincy-centos-8-x86_64
-                    docker tag ceph/daemon-base:HEAD-quincy-centos-8-x86_64 nitisdev/ceph:daemon-base-centos-custom-quincy-centos-8-x86_64
+                    docker tag ceph/daemon:HEAD-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH} nitisdev/ceph:daemon-centos-custom-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
+                    docker tag ceph/daemon-base:HEAD-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH} nitisdev/ceph:daemon-base-centos-custom-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
 
                     echo -e "==============================\n"
 
@@ -64,13 +71,13 @@ pipeline {
                     echo -e "==============================\n"
 
                     echo "To pull image from docker:"
-                    echo "docker pull nitisdev/ceph:daemon-centos-custom-quincy-centos-8-x86_64"
+                    echo "docker pull nitisdev/ceph:daemon-centos-custom-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}"
 
                     echo "Untag & remove local images"
-                    docker rmi ceph/daemon-base:HEAD-quincy-centos-8-x86_64
-                    docker rmi ceph/daemon:HEAD-quincy-centos-8-x86_64
-                    docker rmi nitisdev/ceph:daemon-centos-custom-quincy-centos-8-x86_64
-                    docker rmi nitisdev/ceph:daemon-base-centos-custom-quincy-centos-8-x86_64
+                    docker rmi ceph/daemon-base:HEAD-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
+                    docker rmi ceph/daemon:HEAD-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
+                    docker rmi nitisdev/ceph:daemon-centos-custom-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
+                    docker rmi nitisdev/ceph:daemon-base-centos-custom-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
 
                 '''
             }
