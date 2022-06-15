@@ -250,9 +250,9 @@ function upload_packages() {
     if grep -qs "$MOUNT" /proc/mounts; then
         echo "cortx-storage.colo.seagate.com:/mnt/data1/releases/ceph is mounted."
     else
-        echo "cortx-storage.colo.seagate.com:/mnt/data1/releases/ceph is not mounted."
+        echo "cortx-storage.colo.seagate.com:/mnt/data1/releases/ceph is not mounted. Mounting..."
         sudo mount -t nfs4 "$MOUNT" "$build_upload_dir"
-        check_status
+        check_status "Mounting $MOUNT to $build_upload_dir has failed."
     fi
 
     add_secondary_separator "Uploading Binary Packages to CORTX-Storage"
