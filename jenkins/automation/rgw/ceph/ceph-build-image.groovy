@@ -65,7 +65,7 @@ pipeline {
                     echo -e "==============================\n"
 
                     echo "Pushing images"
-                    echo "Currently pushing to test DockerHub repository will migrate to internal Harbor pending versioning process."
+                    #Currently pushing to test DockerHub repository will migrate to internal Harbor pending versioning process.
                     docker push -a nitisdev/ceph
 
                     echo -e "==============================\n"

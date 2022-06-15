@@ -13,6 +13,10 @@ pipeline {
         disableConcurrentBuilds()   
     }
 
+    environment {
+        CEPH_DOCKER_DEPLOYMENT=false
+    }
+
     parameters {
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for Cluster Setup scripts.', trim: true)
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Cluster Setup scripts.', trim: true)
@@ -138,6 +142,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'IO Operation', script: '''
                     pushd solutions/kubernetes/
+                        export CEPH_DOCKER_DEPLOYMENT=${CEPH_DOCKER_DEPLOYMENT}
                         bash ceph-deploy.sh --io-operation
                     popd
                 '''

@@ -30,7 +30,7 @@ DEPLOYMENT_METHOD="standard"
 
 function usage() {
     cat << HEREDOC
-Usage : $0 [--install-pereq, --install-ceph, --deploy-prereq, --deploy-mon, --deploy-mgr, --deploy-osd, --deploy-mds, --deploy-fs, --deploy-rgw, --install-prereq-image, --deploy-ceph-image, --io-operation]
+Usage : $0 [--install-pereq, --install-ceph, --deploy-prereq, --deploy-mon, --deploy-mgr, --deploy-osd, --deploy-mds, --deploy-fs, --deploy-rgw, --prereq-ceph-docker, --deploy-ceph-docker, --io-operation]
 where,
     --install-prereq - Install Ceph Dependencies before installing ceph packages.
     --install-ceph - Install Ceph Packages.
@@ -41,8 +41,8 @@ where,
     --deploy-mds - Deploy Ceph Metadata Service daemon on primary node.
     --deploy-fs - Deploy Ceph FS daemon on primary node.
     --deploy-rgw - Deploy Ceph Rados Gateway daemon on primary node.
-    --install-prereq-image - Setup prerequisites for Ceph docker deployment.
-    --deploy-ceph-image- Deploy Ceph in docker.
+    --prereq-ceph-docker - Setup prerequisites for Ceph docker deployment.
+    --deploy-ceph-docker - Deploy Ceph in docker.
     --io-operation - Perform IO operation.
 HEREDOC
 }
@@ -120,7 +120,7 @@ function deploy_rgw() {
     ssh_primary_node "/var/tmp/ceph-deploy-functions.sh --deploy-rgw"
 }
 
-function install_prereq_image() {
+function prereq_ceph_docker() {
     add_primary_separator "Prerequisites for Ceph Docker Deployment"
 
     validation
@@ -133,7 +133,7 @@ function install_prereq_image() {
     ssh_primary_node "export CEPH_IMAGE=$CEPH_IMAGE && /var/tmp/ceph-deploy-functions.sh --install-prereq-image"
 }
 
-function deploy_ceph_image() {
+function deploy_ceph_docker() {
     add_primary_separator "\tDeploy Ceph in Docker"
     ssh_primary_node "export CEPH_IMAGE=$CEPH_IMAGE && /var/tmp/ceph-deploy-functions.sh --deploy-ceph-image"
 }
@@ -176,11 +176,11 @@ case $ACTION in
     --deploy-rgw)
         deploy_rgw
     ;;
-    --install-prereq-image)
-        install_prereq_image
+    --prereq-ceph-docker)
+        prereq_ceph_docker
     ;;
-    --deploy-ceph-image)
-        deploy_ceph_image
+    --deploy-ceph-docker)
+        deploy_ceph_docker
     ;;
     --io-operation)
         io_operation
