@@ -264,46 +264,46 @@ function upload_packages() {
         case "$BUILD_OS" in
             ubuntu-20.04)
                 pushd "$BUILD_LOCATION"
-                    cp *.deb "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
+                    cp *.deb "$build_upload_dir/$REPO_COMPONENT/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
                     check_status
                 popd
 
                 add_secondary_separator "List files after upload"
-                pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
+                pushd "$build_upload_dir/$REPO_COMPONENT/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
                     ls -la *.deb
                 popd
 
                 add_secondary_separator "Create Repo"
-                pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
+                pushd "$build_upload_dir/$REPO_COMPONENT/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
                     apt-get install -y dpkg-dev
                     dpkg-scanpackages . /dev/null | gzip -9c > Packages.gz
                 popd
 
                 add_secondary_separator "Tag Last Successful"
-                pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH"
+                pushd "$build_upload_dir/$REPO_COMPONENT/$BUILD_OS/$CEPH_BRANCH"
                     test -d last_successful && unlink last_successful
                     ln -s "$BUILD_NUMBER" last_successful
                 popd
             ;;
             centos-8)
                 pushd "$BUILD_LOCATION/rpmbuild"
-                    cp RPMS/*/*.rpm "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
+                    cp RPMS/*/*.rpm "$build_upload_dir/$REPO_COMPONENT/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
                     check_status
                 popd
 
                 add_secondary_separator "List files after upload"
-                pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
+                pushd "$build_upload_dir/$REPO_COMPONENT/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
                     ls -la *
                 popd
 
                 add_secondary_separator "Create Repo"
-                pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
+                pushd "$build_upload_dir/$REPO_COMPONENT/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
                     rpm -qi createrepo || yum install -y createrepo
                     createrepo .
                 popd
 
                 add_secondary_separator "Tag Last Successful"
-                pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH"
+                pushd "$build_upload_dir/$REPO_COMPONENT/$BUILD_OS/$CEPH_BRANCH"
                     test -d last_successful && unlink last_successful
                     ln -s "$BUILD_NUMBER" last_successful
                 popd
@@ -311,23 +311,23 @@ function upload_packages() {
             ;;
             rockylinux-8.4)
                 pushd "$BUILD_LOCATION/rpmbuild"
-                    cp RPMS/*/*.rpm "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
+                    cp RPMS/*/*.rpm "$build_upload_dir/$REPO_COMPONENT/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
                     check_status
                 popd
 
                 add_secondary_separator "List files after upload"
-                pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
+                pushd "$build_upload_dir/$REPO_COMPONENT/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
                     ls -la *
                 popd
                 
                 add_secondary_separator "Create Repo"
-                pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
+                pushd "$build_upload_dir/$REPO_COMPONENT/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
                     rpm -qi createrepo || yum install -y createrepo
                     createrepo .
                 popd
 
                 add_secondary_separator "Tag Last Successful"
-                pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH"
+                pushd "$build_upload_dir/$REPO_COMPONENT/$BUILD_OS/$CEPH_BRANCH"
                     test -d last_successful && unlink last_successful
                     ln -s "$BUILD_NUMBER" last_successful
                 popd
@@ -338,46 +338,46 @@ function upload_packages() {
         case "$BUILD_OS" in
             ubuntu-20.04)
                 pushd "$BUILD_LOCATION/$BUILD_OS"
-                    cp *.deb "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
+                    cp *.deb "$build_upload_dir/$REPO_COMPONENT/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
                     check_status
                 popd
 
                 add_secondary_separator "List files after upload"
-                pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
+                pushd "$build_upload_dir/$REPO_COMPONENT/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
                     ls -la *.deb
                 popd
 
                 add_secondary_separator "Create Repo"
-                pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
+                pushd "$build_upload_dir/$REPO_COMPONENT/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
                     apt-get install -y dpkg-dev
                     dpkg-scanpackages . /dev/null | gzip -9c > Packages.gz
                 popd
 
                 add_secondary_separator "Tag Last Successful"
-                pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH"
+                pushd "$build_upload_dir/$REPO_COMPONENT/$BUILD_OS/$CEPH_BRANCH"
                     test -d last_successful && unlink last_successful
                     ln -s "$BUILD_NUMBER" last_successful
                 popd
             ;;
             centos-8)
                 pushd "$BUILD_LOCATION/$BUILD_OS/rpmbuild"
-                    cp RPMS/*/*.rpm "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
+                    cp RPMS/*/*.rpm "$build_upload_dir/$REPO_COMPONENT/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
                     check_status
                 popd
 
                 add_secondary_separator "List files after upload"
-                pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
+                pushd "$build_upload_dir/$REPO_COMPONENT/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
                     ls -la *
                 popd
 
                 add_secondary_separator "Create Repo"
-                pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
+                pushd "$build_upload_dir/$REPO_COMPONENT/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
                     rpm -qi createrepo || yum install -y createrepo
                     createrepo .
                 popd
 
                 add_secondary_separator "Tag Last Successful"
-                pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH"
+                pushd "$build_upload_dir/$REPO_COMPONENT/$BUILD_OS/$CEPH_BRANCH"
                     test -d last_successful && unlink last_successful
                     ln -s "$BUILD_NUMBER" last_successful
                 popd
@@ -385,23 +385,23 @@ function upload_packages() {
             ;;
             rockylinux-8.4)
                 pushd "$BUILD_LOCATION/$BUILD_OS/rpmbuild"
-                    cp RPMS/*/*.rpm "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
+                    cp RPMS/*/*.rpm "$build_upload_dir/$REPO_COMPONENT/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
                     check_status
                 popd
 
                 add_secondary_separator "List files after upload"
-                pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
+                pushd "$build_upload_dir/$REPO_COMPONENT/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
                     ls -la *
                 popd
                 
                 add_secondary_separator "Create Repo"
-                pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
+                pushd "$build_upload_dir/$REPO_COMPONENT/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
                     rpm -qi createrepo || yum install -y createrepo
                     createrepo .
                 popd
 
                 add_secondary_separator "Tag Last Successful"
-                pushd "$build_upload_dir/$BUILD_OS/$CEPH_BRANCH"
+                pushd "$build_upload_dir/$REPO_COMPONENT/$BUILD_OS/$CEPH_BRANCH"
                     test -d last_successful && unlink last_successful
                     ln -s "$BUILD_NUMBER" last_successful
                 popd
