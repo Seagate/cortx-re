@@ -100,6 +100,44 @@ function nodes_setup() {
     done
 }
 
+function pull_image() {
+    local image=$1
+    add_secondary_separator "Pulling $image image"
+    docker pull $image || { echo "Failed to pull $image"; exit 1; }
+}
+
+function update_image() {
+    local POD_TYPE=$1
+    local IMAGE=$2
+    local SCRIPT_LOCATION="${3:-"/root/deploy-scripts/k8_cortx_cloud/"}"
+    pushd $SCRIPT_LOCATION
+        if [ $POD_TYPE == 'control-pod' ]; then 
+            image=$IMAGE yq e -i '.solution.images.cortxcontrol = env(image)' solution.yaml
+        elif [ $POD_TYPE == 'data-pod' ]; then
+            image=$IMAGE yq e -i '.solution.images.cortxdata = env(image)' solution.yaml
+        elif [ $POD_TYPE == 'server-pod' ]; then
+            image=$IMAGE yq e -i '.solution.images.cortxserver = env(image)' solution.yaml
+        elif [ $POD_TYPE == 'ha-pod' ]; then
+            image=$IMAGE yq e -i '.solution.images.cortxha = env(image)' solution.yaml
+        elif [ $POD_TYPE == 'client-pod' ]; then
+            image=$IMAGE yq e -i '.solution.images.cortxclient = env(image)' solution.yaml
+        else
+            echo "Wrong POD_TYPE $POD_TYPE is provided. Please provide any one of the following options. [ control-pod, data-pod, server-pod, ha-pod, client-pod ]" && exit 1;
+        fi         
+    popd 
+}
+
+function copy_solution_config() {
+    local SOLUTION_CONFIG=$1
+    local SCRIPT_LOCATION=$2
+	if [ -z "$SOLUTION_CONFIG" ]; then echo "SOLUTION_CONFIG not provided.Exiting..."; exit 1; fi
+	echo "Copying $SOLUTION_CONFIG file" 
+	pushd $SCRIPT_LOCATION
+        if [ ! -f "$SOLUTION_CONFIG" ]; then echo "file $SOLUTION_CONFIG not available..."; exit 1; fi	
+        cp $SOLUTION_CONFIG .
+    popd 
+}
+
 function k8s_deployment_type() {
     if [ "$(wc -l < $HOST_FILE)" == "1" ]; then
         SINGLE_NODE_DEPLOYMENT="True"

@@ -215,14 +215,12 @@ function update_solution_config(){
 }        
 
 function add_image_info() {
-echo "Updating cortx images info in solution.yaml"   
-pushd $SCRIPT_LOCATION/k8_cortx_cloud
-    image=$CORTX_CONTROL_IMAGE yq e -i '.solution.images.cortxcontrol = env(image)' solution.yaml	
-    image=$CORTX_DATA_IMAGE yq e -i '.solution.images.cortxdata = env(image)' solution.yaml
-    image=$CORTX_SERVER_IMAGE yq e -i '.solution.images.cortxserver = env(image)' solution.yaml
-    image=$CORTX_CONTROL_IMAGE yq e -i '.solution.images.cortxha = env(image)' solution.yaml
-    image=$CORTX_DATA_IMAGE yq e -i '.solution.images.cortxclient = env(image)' solution.yaml
-popd 
+    add_secondary_separator "Updating cortx images info in solution.yaml"   
+    update_image control-pod $CORTX_CONTROL_IMAGE
+    update_image data-pod $CORTX_DATA_IMAGE
+    update_image server-pod $CORTX_SERVER_IMAGE
+    update_image ha-pod $CORTX_CONTROL_IMAGE
+    update_image client-pod $CORTX_DATA_IMAGE
 }
 
 function add_node_info_solution_config() {
@@ -239,18 +237,7 @@ echo "Updating node info in solution.yaml"
     popd
 }
 
-copy_solution_config() {
-	if [ -z "$SOLUTION_CONFIG" ]; then echo "SOLUTION_CONFIG not provided.Exiting..."; exit 1; fi
-	echo "Copying $SOLUTION_CONFIG file" 
-	pushd $SCRIPT_LOCATION/k8_cortx_cloud
-            if [ -f '$SOLUTION_CONFIG' ]; then echo "file $SOLUTION_CONFIG not available..."; exit 1; fi	
-            cp $SOLUTION_CONFIG .
-            yq eval -i 'del(.solution.nodes)' solution.yaml
-            NAMESPACE=$(yq e '.solution.namespace' solution.yaml)
-        popd 
-}
-
-setup_kubectl_context() {
+function setup_kubectl_context() {
     add_secondary_separator "Updated kubectl context to use $NAMESPACE"
     kubectl config set-context --current --namespace=$NAMESPACE
 }
@@ -274,9 +261,9 @@ function execute_deploy_script() {
 
 function execute_prereq() {
     add_secondary_separator "Pulling latest CORTX images"
-    docker pull $CORTX_SERVER_IMAGE || { echo "Failed to pull $CORTX_SERVER_IMAGE"; exit 1; }
-    docker pull $CORTX_DATA_IMAGE || { echo "Failed to pull $CORTX_DATA_IMAGE"; exit 1; }
-    docker pull $CORTX_CONTROL_IMAGE || { echo "Failed to pull $CORTX_CONTROL_IMAGE"; exit 1; }
+    pull_image $CORTX_SERVER_IMAGE
+    pull_image $CORTX_DATA_IMAGE
+    pull_image $CORTX_CONTROL_IMAGE
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         add_secondary_separator "Un-mounting $SYSTEM_DRIVE partition if already mounted"
         findmnt $SYSTEM_DRIVE && umount -l $SYSTEM_DRIVE
@@ -293,7 +280,8 @@ function setup_primary_node() {
     install_yq
 
     if [ "$SOLUTION_CONFIG_TYPE" == "manual" ]; then
-        copy_solution_config
+        copy_solution_config "$SOLUTION_CONFIG" "$SCRIPT_LOCATION/k8_cortx_cloud"
+        NAMESPACE=$(yq e '.solution.namespace' "$SCRIPT_LOCATION/k8_cortx_cloud/solution.yaml")
     else
         update_solution_config
     fi
