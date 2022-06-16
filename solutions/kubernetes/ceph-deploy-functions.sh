@@ -366,12 +366,12 @@ function prereq_ceph_docker() {
     popd
 
     add_secondary_separator "Pull Ceph Docker image"
-    docker pull $CEPH_IMAGE
+    docker pull "$CEPH_IMAGE"
 }
 
 function deploy_ceph_docker() {
     add_secondary_separator "Deploy Ceph"
-    cephadm --image $CEPH_IMAGE --verbose bootstrap --mon-ip $(hostname -i) --initial-dashboard-user admin --initial-dashboard-password cephadmin --dashboard-password-noupdate --single-host-defaults --skip-pull --skip-monitoring-stack --allow-fqdn-hostname --allow-overwrite
+    cephadm --image "$CEPH_IMAGE" --verbose bootstrap --mon-ip $(hostname -i) --initial-dashboard-user admin --initial-dashboard-password cephadmin --dashboard-password-noupdate --single-host-defaults --skip-pull --skip-monitoring-stack --allow-fqdn-hostname --allow-overwrite
 }
 
 function io_operation() {
