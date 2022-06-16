@@ -55,13 +55,15 @@ function check_params() {
     
     if [[ "$CORTX_SERVER_IMAGE" =~ "latest" ]]; then
         CORTX_SERVER_IMAGE=$( get_actual_image_version $CORTX_SERVER_IMAGE )
+    fi
 
     if [[ "$CORTX_DATA_IMAGE" =~ "latest" ]]; then
         CORTX_DATA_IMAGE=$( get_actual_image_version $CORTX_DATA_IMAGE )
+    fi
 
     if [[ "$CORTX_CONTROL_IMAGE" =~ "latest" ]]; then
         CORTX_CONTROL_IMAGE=$( get_actual_image_version $CORTX_CONTROL_IMAGE )        
-
+    fi
 
     echo -e "\n\n########################################################################"
     echo -e "# CORTX_SCRIPTS_REPO           : $CORTX_SCRIPTS_REPO                   "
