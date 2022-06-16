@@ -219,7 +219,7 @@ pipeline {
                     env.sanity_result = "UNSTABLE"
                     env.deployment_result = "UNSTABLE"
                     currentBuild.result = "UNSTABLE"
-                }
+                }   
                 env.build_setupcortx_url = sh( script: "echo ${env.cortxcluster_build_url}/artifact/artifacts/cortx-cluster-status.txt", returnStdout: true)
                 env.host = "${env.allhost}"
                 env.build_id = "ghcr.io/seagate/cortx-rgw:${VERSION}-${BUILD_NUMBER}"
