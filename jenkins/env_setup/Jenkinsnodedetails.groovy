@@ -8,7 +8,7 @@ for (hudson.plugins.jobConfigHistory.ComputerConfigHistoryAction m : n.getComput
 println('Host:'+ n.launcher.host + ' Label:' + n.getLabelString() + ' Computer.isOffline:' + n.getComputer().isOffline()) ;
 println "--------------------------------"
 }
-//Have to make changes accordingly to Jenkins Production
+//Have to make changes accordingly as Jenkins Production
 /*
 pipeline{
     agent { label 'master'}
@@ -18,9 +18,7 @@ pipeline{
            steps
            {
                 sh 'curl -u user2:user2@123 -o $WORKSPACE/console.log "http://ssc-vm-g4-rhev4-1690.colo.seagate.com:8080/job/Finduserdetails/lastBuild/consoleText"'
-           }
-          
-        }
-        
+           } 
+        }        
     }
 } */
