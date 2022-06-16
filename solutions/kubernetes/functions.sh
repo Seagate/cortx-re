@@ -106,9 +106,9 @@ function pull_image() {
         docker pull $image || { echo "Failed to pull $image"; exit 1; }
         actual_image_tag=$(docker inspect $image | grep "VERSION" | grep -o "2.0.0-[0-9][0-9][0-9]*" | head -n 1)
         actual_image=$(echo $image | sed -e "s/2.0.0-latest/${actual_image_tag}/g")
+        docker image rm -f $image || { echo "Failed to remove $image"; exit 1; }
         add_secondary_separator "Pulling $actual_image image"
         docker pull $actual_image || { echo "Failed to pull $actual_image"; exit 1; }
-        docker image rm -f $image || { echo "Failed to remove $image"; exit 1; }
     else     
         add_secondary_separator "Pulling $image image"
         docker pull $image || { echo "Failed to pull $image"; exit 1; }
