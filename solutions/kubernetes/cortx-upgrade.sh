@@ -53,6 +53,16 @@ function check_params() {
     if [ -z "$DEPLOYMENT_METHOD" ]; then echo "DEPLOYMENT_METHOD is not provided, Using default : standard"; DEPLOYMENT_METHOD="standard"; fi
     if [ -z "$UPGRADE_TYPE" ]; then echo "UPGRADE_TYPE is not provided, Using default : rolling-upgrade"; UPGRADE_TYPE="rolling-upgrade"; fi
     
+    if [[ "$CORTX_SERVER_IMAGE" =~ "latest" ]]; then
+        CORTX_SERVER_IMAGE=$( get_actual_image_version $CORTX_SERVER_IMAGE )
+
+    if [[ "$CORTX_DATA_IMAGE" =~ "latest" ]]; then
+        CORTX_DATA_IMAGE=$( get_actual_image_version $CORTX_DATA_IMAGE )
+
+    if [[ "$CORTX_CONTROL_IMAGE" =~ "latest" ]]; then
+        CORTX_CONTROL_IMAGE=$( get_actual_image_version $CORTX_CONTROL_IMAGE )        
+
+
     echo -e "\n\n########################################################################"
     echo -e "# CORTX_SCRIPTS_REPO           : $CORTX_SCRIPTS_REPO                   "
     echo -e "# CORTX_SCRIPTS_BRANCH         : $CORTX_SCRIPTS_BRANCH                 "
@@ -119,7 +129,7 @@ scp_primary_node cortx-deploy-functions.sh functions.sh io-sanity.sh
 case $ACTION in
     --upgrade)
         check_params
-        upgrade_cluster
+        # upgrade_cluster
     ;;
     --suspend)
         suspend_cluster_upgrade
