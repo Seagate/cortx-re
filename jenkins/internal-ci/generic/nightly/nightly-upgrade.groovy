@@ -63,6 +63,7 @@ pipeline {
 
         stage('Chnagelog Generation') {
             steps {
+                script { build_stage = env.STAGE_NAME }
                 script {
                     def changelog = build job: '/Release_Engineering/Cortx-Automation/changelog-generation', wait: true, propagate: false,
                     parameters: [
@@ -77,10 +78,38 @@ pipeline {
 
         stage('QA SAnity') {
             steps {
+                script { build_stage = env.STAGE_NAME }
                 script {
                     echo "QA Sanity job to be added"
                 }
             }        
         }
     }
+
+    // post {
+    //     always {
+    //         script {
+    //             // Email Notification
+    //             env.build_stage = "${build_stage}"
+    //             env.cluster_status = sh( script: "echo ${upgradecluster_build_url}/artifact/artifacts/cortx-cluster-status.txt", returnStdout: true)
+    //             env.upgrade_logs = sh( script: "echo ${upgradecluster_build_url}/artifact/artifacts/upgrade-logs.txt", returnStdout: true)
+    //             env.cortx_script_branch = "${CORTX_SCRIPTS_BRANCH}"
+    //             env.hosts = sh( script: '''
+    //                 echo $hosts | tr ' ' '\n' | awk -F["="] '{print $2}'|cut -d',' -f1
+    //             ''', returnStdout: true).trim()
+    //             env.preupgrade_images_info = "${env.preupgrade_cortx_server_image},${env.preupgrade_cortx_data_image},${env.preupgrade_cortx_control_image}"
+    //             env.images_info = "${CORTX_SERVER_IMAGE},${CORTX_DATA_IMAGE},${CORTX_CONTROL_IMAGE}"
+    //             def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
+    //             mailRecipients = "gaurav.chaudhari@seagate.com"
+    //             emailext ( 
+    //                 body: '''${SCRIPT, template="nightly-upgrade-email.template"}''',
+    //                 mimeType: 'text/html',
+    //                 subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
+    //                 attachLog: true,
+    //                 to: "${mailRecipients}",
+    //                 recipientProviders: recipientProvidersClass
+    //             )
+    //         }
+    //     }
+    // }
 }    
