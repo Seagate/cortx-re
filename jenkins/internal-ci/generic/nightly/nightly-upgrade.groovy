@@ -82,75 +82,75 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 script {
                     echo "QA Sanity job to be added"
-                    // env.qaSanity_status = "SUCCESS"
+                    env.qaSanity_status = "SUCCESS"
                 }
             }        
         }
     }
 
-    // post {
-    //     always {
-    //         script {
-                    // if ( "${env.upgradeCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "SUCCESS" ) {
-                    //     MESSAGE = "Build#${build_id} CORTX Cluster Upgrade Upgrade=Passed, SanityTest=Passed, Regression=Passed"
-                    //     ICON = "accept.gif"
-                    //     STATUS = "SUCCESS"
-                    //     env.deployment_result = "SUCCESS"
-                    //     env.sanity_result = "SUCCESS"
-                    //     currentBuild.result = "SUCCESS"
-                    // } else if ( "${env.upgradeCluster_status}" == "FAILURE" || "${env.upgradeCluster_status}" == "UNSTABLE" || "${env.upgradeCluster_status}" == "null" ) {
-                    //     manager.buildFailure()
-                    //     MESSAGE = "Build#${build_id} CORTX Cluster Upgrade Upgrade=failed, SanityTest=${env.Sanity_status}, Regression=${env.Regression_overall_status}"
-                    //     ICON = "error.gif"
-                    //     STATUS = "FAILURE"
-                    //     env.sanity_result = "SKIPPED"
-                    //     env.deployment_result = "FAILURE"
-                    //     currentBuild.result = "FAILURE"
-                    // } else if ( "${env.upgradeCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "FAILURE" || "${env.qaSanity_status}" == "null" ) {
-                    //     manager.buildFailure()
-                    //     MESSAGE = "Build#${build_id} CORTX Cluster Upgrade Upgrade=Passed, SanityTest=${env.Sanity_status}, Regression=${env.Regression_overall_status}"
-                    //     ICON = "error.gif"
-                    //     STATUS = "FAILURE"
-                    //     env.sanity_result = "FAILURE"
-                    //     env.deployment_result = "SUCCESS"
-                    //     currentBuild.result = "FAILURE"
-                    // } else if ( "${env.upgradeCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "UNSTABLE" ) {
-                    //     MESSAGE = "Build#${build_id} CORTX Cluster Upgrade Upgrade=Passed, SanityTest=${env.Sanity_status}, Regression=${env.Regression_overall_status}"
-                    //     ICON = "unstable.gif"
-                    //     STATUS = "UNSTABLE"
-                    //     env.deployment_result = "SUCCESS"
-                    //     env.sanity_result = "UNSTABLE"
-                    //     currentBuild.result = "UNSTABLE"
-                    // } else {
-                    //     MESSAGE = "Build#${build_id} CORTX Cluster Upgrade Upgrade=unstable, SanityTest=unstable, Regression=unstable"
-                    //     ICON = "unstable.gif"
-                    //     STATUS = "UNSTABLE"
-                    //     env.sanity_result = "UNSTABLE"
-                    //     env.deployment_result = "UNSTABLE"
-                    //     currentBuild.result = "UNSTABLE"
-                    // }
+    post {
+        always {
+            script {
+                if ( "${env.upgradeCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "SUCCESS" ) {
+                    MESSAGE = "Build#${build_id} CORTX Cluster Upgrade Upgrade=Passed, SanityTest=Passed, Regression=Passed"
+                    ICON = "accept.gif"
+                    STATUS = "SUCCESS"
+                    env.deployment_result = "SUCCESS"
+                    env.sanity_result = "SUCCESS"
+                    currentBuild.result = "SUCCESS"
+                } else if ( "${env.upgradeCluster_status}" == "FAILURE" || "${env.upgradeCluster_status}" == "UNSTABLE" || "${env.upgradeCluster_status}" == "null" ) {
+                    manager.buildFailure()
+                    MESSAGE = "Build#${build_id} CORTX Cluster Upgrade Upgrade=failed, SanityTest=${env.Sanity_status}, Regression=${env.Regression_overall_status}"
+                    ICON = "error.gif"
+                    STATUS = "FAILURE"
+                    env.sanity_result = "SKIPPED"
+                    env.deployment_result = "FAILURE"
+                    currentBuild.result = "FAILURE"
+                } else if ( "${env.upgradeCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "FAILURE" || "${env.qaSanity_status}" == "null" ) {
+                    manager.buildFailure()
+                    MESSAGE = "Build#${build_id} CORTX Cluster Upgrade Upgrade=Passed, SanityTest=${env.Sanity_status}, Regression=${env.Regression_overall_status}"
+                    ICON = "error.gif"
+                    STATUS = "FAILURE"
+                    env.sanity_result = "FAILURE"
+                    env.deployment_result = "SUCCESS"
+                    currentBuild.result = "FAILURE"
+                } else if ( "${env.upgradeCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "UNSTABLE" ) {
+                    MESSAGE = "Build#${build_id} CORTX Cluster Upgrade Upgrade=Passed, SanityTest=${env.Sanity_status}, Regression=${env.Regression_overall_status}"
+                    ICON = "unstable.gif"
+                    STATUS = "UNSTABLE"
+                    env.deployment_result = "SUCCESS"
+                    env.sanity_result = "UNSTABLE"
+                    currentBuild.result = "UNSTABLE"
+                } else {
+                    MESSAGE = "Build#${build_id} CORTX Cluster Upgrade Upgrade=unstable, SanityTest=unstable, Regression=unstable"
+                    ICON = "unstable.gif"
+                    STATUS = "UNSTABLE"
+                    env.sanity_result = "UNSTABLE"
+                    env.deployment_result = "UNSTABLE"
+                    currentBuild.result = "UNSTABLE"
+                }
 
-    //             // Email Notification
-    //             env.build_stage = "${build_stage}"
-    //             env.cluster_status = sh( script: "echo ${upgradecluster_build_url}/artifact/artifacts/cortx-cluster-status.txt", returnStdout: true)
-    //             env.upgrade_logs = sh( script: "echo ${upgradecluster_build_url}/artifact/artifacts/upgrade-logs.txt", returnStdout: true)
-    //             env.changeset_log_url = sh( script: "echo ${env.changeset_log_url}artifact/CHANGESET.txt", returnStdout: true)
-    //             env.cortx_script_branch = "${CORTX_SCRIPTS_BRANCH}"
-    //             env.hosts = sh( script: '''
-    //                 echo $hosts | tr ' ' '\n' | awk -F["="] '{print $2}'|cut -d',' -f1
-    //             ''', returnStdout: true).trim()
-    //             env.images_info = "${CORTX_SERVER_IMAGE},${CORTX_DATA_IMAGE},${CORTX_CONTROL_IMAGE}"
-    //             def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
-    //             mailRecipients = "gaurav.chaudhari@seagate.com"
-    //             emailext ( 
-    //                 body: '''${SCRIPT, template="nightly-upgrade-email.template"}''',
-    //                 mimeType: 'text/html',
-    //                 subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
-    //                 attachLog: true,
-    //                 to: "${mailRecipients}",
-    //                 recipientProviders: recipientProvidersClass
-    //             )
-    //         }
-    //     }
-    // }
+                // Email Notification
+                env.build_stage = "${build_stage}"
+                env.cluster_status = sh( script: "echo ${upgradecluster_build_url}/artifact/artifacts/cortx-cluster-status.txt", returnStdout: true)
+                env.upgrade_logs = sh( script: "echo ${upgradecluster_build_url}/artifact/artifacts/upgrade-logs.txt", returnStdout: true)
+                env.changeset_log_url = sh( script: "echo ${env.changeset_log_url}artifact/CHANGESET.txt", returnStdout: true)
+                env.cortx_script_branch = "${CORTX_SCRIPTS_BRANCH}"
+                env.hosts = sh( script: '''
+                    echo $hosts | tr ' ' '\n' | awk -F["="] '{print $2}'|cut -d',' -f1
+                ''', returnStdout: true).trim()
+                env.images_info = "${CORTX_SERVER_IMAGE},${CORTX_DATA_IMAGE},${CORTX_CONTROL_IMAGE}"
+                def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
+                mailRecipients = "gaurav.chaudhari@seagate.com"
+                emailext ( 
+                    body: '''${SCRIPT, template="nightly-upgrade-email.template"}''',
+                    mimeType: 'text/html',
+                    subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
+                    attachLog: true,
+                    to: "${mailRecipients}",
+                    recipientProviders: recipientProvidersClass
+                )
+            }
+        }
+    }
 }    
