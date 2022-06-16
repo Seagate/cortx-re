@@ -8,7 +8,7 @@ for (hudson.plugins.jobConfigHistory.ComputerConfigHistoryAction m : n.getComput
 println('Host:'+ n.launcher.host + ' Label:' + n.getLabelString() + ' Computer.isOffline:' + n.getComputer().isOffline()) ;
 println "--------------------------------"
 }
-//Have to make changes accordingly to Jenkins Production
+//Have to make changes accordingly as Jenkins Production
 /*
 pipeline{
     agent { label 'master'}
