@@ -132,8 +132,8 @@ pipeline {
 
                 // Email Notification
                 env.build_stage = "${build_stage}"
-                env.cluster_status = sh( script: "echo ${upgradecluster_build_url}/artifact/artifacts/cortx-cluster-status.txt", returnStdout: true)
-                env.upgrade_logs = sh( script: "echo ${upgradecluster_build_url}/artifact/artifacts/upgrade-logs.txt", returnStdout: true)
+                env.cluster_status = sh( script: "echo ${env.upgradecluster_build_url}/artifact/artifacts/cortx-cluster-status.txt", returnStdout: true)
+                env.upgrade_logs = sh( script: "echo ${env.upgradecluster_build_url}/artifact/artifacts/upgrade-logs.txt", returnStdout: true)
                 env.changeset_log_url = sh( script: "echo ${env.changeset_log_url}artifact/CHANGESET.txt", returnStdout: true)
                 env.cortx_script_branch = "${CORTX_SCRIPTS_BRANCH}"
                 env.hosts = sh( script: '''
