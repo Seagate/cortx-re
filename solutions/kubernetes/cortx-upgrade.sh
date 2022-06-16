@@ -52,18 +52,6 @@ function check_params() {
     if [ -z "$POD_TYPE" ]; then echo "POD_TYPE is not provided, Using default : all"; POD_TYPE="all"; fi
     if [ -z "$DEPLOYMENT_METHOD" ]; then echo "DEPLOYMENT_METHOD is not provided, Using default : standard"; DEPLOYMENT_METHOD="standard"; fi
     if [ -z "$UPGRADE_TYPE" ]; then echo "UPGRADE_TYPE is not provided, Using default : rolling-upgrade"; UPGRADE_TYPE="rolling-upgrade"; fi
-    
-    if [[ "$CORTX_SERVER_IMAGE" =~ "latest" ]]; then
-        CORTX_SERVER_IMAGE=$( get_actual_image_version $CORTX_SERVER_IMAGE )
-    fi
-
-    if [[ "$CORTX_DATA_IMAGE" =~ "latest" ]]; then
-        CORTX_DATA_IMAGE=$( get_actual_image_version $CORTX_DATA_IMAGE )
-    fi
-
-    if [[ "$CORTX_CONTROL_IMAGE" =~ "latest" ]]; then
-        CORTX_CONTROL_IMAGE=$( get_actual_image_version $CORTX_CONTROL_IMAGE )        
-    fi
 
     echo -e "\n\n########################################################################"
     echo -e "# CORTX_SCRIPTS_REPO           : $CORTX_SCRIPTS_REPO                   "
@@ -95,10 +83,13 @@ function upgrade_cluster() {
     add_primary_separator "\tUpgrading CORTX Cluster"
     ssh_primary_node "source /var/tmp/functions.sh &&
     if [ "$SOLUTION_CONFIG_TYPE" == "manual" ]; then copy_solution_config "$REMOTE_SOLUTION_CONFIG" "$SCRIPT_LOCATION"; fi &&
-    add_secondary_separator 'Download Upgrade Images' && 
-    pull_image $CORTX_SERVER_IMAGE
-    pull_image $CORTX_DATA_IMAGE
-    pull_image $CORTX_CONTROL_IMAGE
+    add_secondary_separator 'Download Upgrade Images' &&
+    if [[ "$CORTX_SERVER_IMAGE" =~ "latest" ]]; then CORTX_SERVER_IMAGE=$( get_actual_image_version $CORTX_SERVER_IMAGE ); fi &&
+    if [[ "$CORTX_DATA_IMAGE" =~ "latest" ]]; then CORTX_DATA_IMAGE=$( get_actual_image_version $CORTX_DATA_IMAGE ); fi &&
+    if [[ "$CORTX_CONTROL_IMAGE" =~ "latest" ]]; then CORTX_CONTROL_IMAGE=$( get_actual_image_version $CORTX_CONTROL_IMAGE ); fi &&
+    pull_image $CORTX_SERVER_IMAGE &&
+    pull_image $CORTX_DATA_IMAGE &&
+    pull_image $CORTX_CONTROL_IMAGE &&
     add_secondary_separator 'Updating CORTX Images info in solution.yaml' &&
     update_image control-pod $CORTX_CONTROL_IMAGE &&
     update_image data-pod $CORTX_DATA_IMAGE &&
