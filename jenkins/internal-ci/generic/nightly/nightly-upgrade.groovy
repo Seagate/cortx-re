@@ -141,11 +141,17 @@ pipeline {
                 ''', returnStdout: true).trim()
                 env.images_info = "${CORTX_SERVER_IMAGE},${CORTX_DATA_IMAGE},${CORTX_CONTROL_IMAGE}"
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
-                mailRecipients = "gaurav.chaudhari@seagate.com"
+                if ( currentBuild.result == "SUCCESS" ) {
+                    mailRecipients = "CORTX.DevOps.RE@seagate.com"
+                }
+                else {
+                    mailRecipients = "gaurav.chaudhari@seagate.com"        
+                }
+                
                 emailext ( 
                     body: '''${SCRIPT, template="nightly-upgrade-email.template"}''',
                     mimeType: 'text/html',
-                    subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
+                    subject: "${MESSAGE}",
                     attachLog: true,
                     to: "${mailRecipients}",
                     recipientProviders: recipientProvidersClass
