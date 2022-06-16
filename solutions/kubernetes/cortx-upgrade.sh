@@ -122,7 +122,7 @@ scp_primary_node cortx-deploy-functions.sh functions.sh io-sanity.sh
 case $ACTION in
     --upgrade)
         check_params
-        # upgrade_cluster
+        upgrade_cluster
     ;;
     --suspend)
         suspend_cluster_upgrade
