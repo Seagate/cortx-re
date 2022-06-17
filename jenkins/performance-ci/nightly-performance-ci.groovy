@@ -94,6 +94,7 @@ pipeline {
                         text(name: 'primary_nodes', value: "${env.primarynodes}"),
                         text(name: 'client_nodes', value: "${client_nodes}")
                     ]
+                    copyArtifacts filter: 'artifacts/perf*    ', fingerprintArtifacts: true, flatten: true, optional: true, projectName: '/Cortx-Automation/Performance/run-performance-sanity/', selector: lastCompleted(), target: ''
                 }
             }
         }
@@ -102,18 +103,57 @@ pipeline {
     post {
 
         cleanup {
-            sh label: 'Collect Artifacts', script: '''
-            mkdir -p artifacts
-            pushd scripts/performance
-                echo $client_nodes | tr ' ' '\n' > client_nodes
-                CLIENT_NODES_FILE=$PWD/client_nodes
-                CLIENT_NODE=$(head -1 "$CLIENT_NODES_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
-                scp -q "$CLIENT_NODE":/var/tmp/perf* $WORKSPACE/artifacts/
-            popd 
-            '''
             script {
                 // Archive Deployment artifacts in jenkins build
-                archiveArtifacts artifacts: "artifacts/*.*", onlyIfSuccessful: false, allowEmptyArchive: true 
+                archiveArtifacts artifacts: "perf*", onlyIfSuccessful: false, allowEmptyArchive: true 
+            }
+        }
+
+        always { 
+            script {
+                // Jenkins Summary
+                clusterStatus = ""
+                if ( currentBuild.currentResult == "SUCCESS" ) {
+                    clusterStatus = readFile(file: 'perf_sanity_stats.txt')
+                    MESSAGE = "Build#${build_id} Nightly CORTX Performance CI Success"
+                    ICON = "accept.gif"
+                    STATUS = "SUCCESS"
+                } else if ( currentBuild.currentResult == "FAILURE" ) {
+                    manager.buildFailure()
+                    MESSAGE = "Build#${build_id} Nightly CORTX Performance CI Failed"
+                    ICON = "error.gif"
+                    STATUS = "FAILURE"
+ 
+                } else {
+                    manager.buildUnstable()
+                    MESSAGE = "Build#${build_id} Nightly CORTX Performance CI Unstable"
+                    ICON = "warning.gif"
+                    STATUS = "UNSTABLE"
+                }
+                
+                clusterStatusHTML = "<pre>${clusterStatus}</pre>"
+
+                manager.createSummary("${ICON}").appendText("<h3>Nightly CORTX Performance CI ${currentBuild.currentResult} </h3><p>Please check <a href=\"${BUILD_URL}/console\">Performance Sanity Execution logs</a> for more info <h4>Sanity Execution Logs:</h4>${clusterStatusHTML}", false, false, false, "red")
+
+                // Email Notification
+                if ( params.EMAIL_RECIPIENTS == "DEVOPS" && currentBuild.result == "SUCCESS" ) {
+                    mailRecipients = "CORTX.DevOps.RE@seagate.com, CORTX.Perf@seagate.com"
+                }
+                else if ( params.EMAIL_RECIPIENTS == "DEBUG" ) {
+                    mailRecipients = "shailesh.vaidya@seagate.com"
+                }
+
+                env.build_stage = "${build_stage}"
+                env.cluster_status = "${clusterStatusHTML}"
+                def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
+                emailext ( 
+                    body: '''${SCRIPT, template="cluster-setup-email.template"}''',
+                    mimeType: 'text/html',
+                    subject: "Build#${build_id} Nightly CORTX Performance CI ${currentBuild.currentResult}",
+                    attachLog: true,
+                    to: "${mailRecipients}",
+                    recipientProviders: recipientProvidersClass
+                )
             }
         }
     }
