@@ -60,7 +60,6 @@ pipeline {
                     CLIENT_NODES_FILE=$PWD/client_nodes
                     CLIENT_NODE=$(head -1 "$CLIENT_NODES_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
                     scp -q "$CLIENT_NODE":/var/tmp/perf* $WORKSPACE/artifacts/
-                    ls /tmp/workspace/Cortx-Automation/Performance/run-performance-sanity/artifacts/
                 popd 
                 '''
                 script {
