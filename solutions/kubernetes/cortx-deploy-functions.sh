@@ -311,7 +311,6 @@ function destroy() {
             chmod +x *.sh
             ./destroy-cortx-cloud.sh -f
         popd || exit
-        add_secondary_separator "Un-mounting $SYSTEM_DRIVE partition if already mounted"
         findmnt $SYSTEM_DRIVE && umount -l $SYSTEM_DRIVE
         files_to_remove=(
             "/mnt/fs-local-volume/"
