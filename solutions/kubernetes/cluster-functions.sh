@@ -77,6 +77,11 @@ function print_cluster_status() {
 		sleep 5
     done
     kubectl get nodes -o wide
+    while kubectl get pods -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}' | grep -qi  false  
+    do 
+        sleep 5
+    done
+    kubectl get pods -A -o wide
 }
 
 function cleanup_node() {
