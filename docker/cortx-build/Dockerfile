@@ -209,7 +209,7 @@ RUN if [[ $OS_TYPE == "centos" ]]; then yum install -y https://downloads.whamclo
 		 && yum clean all \
 		 && rm -rf /var/cache/yum ; fi
 		 
-RUN if [[ $OS_TYPE == "centos" ]]; then curl -k https://raw.githubusercontent.com/Seagate/cortx-motr/stable/cortx-motr.spec.in -o cortx-motr.spec \
+RUN if [[ $OS_TYPE == "centos" ]]; then curl -k https://raw.githubusercontent.com/Seagate/cortx-motr/main/cortx-motr.spec.in -o cortx-motr.spec \
 	&& sed -i 's/@.*@/111/g' cortx-motr.spec \
 	&& kernel_src=$(ls -1rd /lib/modules/*/build | head -n1) \
         && yum-builddep -y cortx-motr.spec \
