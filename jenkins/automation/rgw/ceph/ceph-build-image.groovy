@@ -16,7 +16,7 @@ pipeline {
     }
 
     environment {
-        ARCH="x86_64"
+        ARCH = "x86_64"
     }
 
     parameters {

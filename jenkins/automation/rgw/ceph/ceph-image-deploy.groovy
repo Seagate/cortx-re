@@ -14,7 +14,7 @@ pipeline {
     }
 
     environment {
-        CEPH_DOCKER_DEPLOYMENT=true
+        CEPH_DOCKER_DEPLOYMENT = "true"
     }
 
     parameters {
