@@ -6,14 +6,14 @@ println('Host_node:'+ n.launcher.host + ' Label:' + n.getLabelString() + ' Compu
         for (hudson.plugins.jobConfigHistory.ComputerConfigHistoryAction m : n.getComputer().actions) {
                 for(hudson.plugins.jobConfigHistory.ConfigInfo config : m.getSlaveConfigs()) {
                         println('Slave_name:' + n.name + ' User:'+ config.getUser() + ' UserId:'+ config.getUserID());
-                println(inside2count);
+                println('inside2count:' + inside2count);
                 inside2count ++;
                  }
-        println(insidecount);
+        println('insidecount:' + insidecount);
         insidecount ++;
         }
 println "--------------------------------"
-println(count);
+println('count:' + count);
 count ++;
 }
 //Have to make changes accordingly as Jenkins Production
