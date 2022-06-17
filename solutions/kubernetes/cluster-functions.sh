@@ -72,11 +72,13 @@ function verify_os() {
 }
 
 function print_cluster_status() {
+    add_secondary_separator "Node Status"
     while kubectl get nodes --no-headers | awk '{print $2}' | tr '\n' ' ' | grep -q NotReady
     do
 		sleep 5
     done
     kubectl get nodes -o wide
+    add_secondary_separator "POD Status"
     while kubectl get pods -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}' -A | grep -qi  false  
     do 
         sleep 5
