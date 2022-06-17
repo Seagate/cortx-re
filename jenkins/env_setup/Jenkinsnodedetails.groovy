@@ -1,11 +1,20 @@
+def count =0;
+def insidecount =0;
+def inside2count =0;
 for (Node n : Jenkins.get().getNodes()) {
 println('Host_node:'+ n.launcher.host + ' Label:' + n.getLabelString() + ' Computer.isOffline:' + n.getComputer().isOffline()) ;
         for (hudson.plugins.jobConfigHistory.ComputerConfigHistoryAction m : n.getComputer().actions) {
-                for(hudson.plugins.jobConfigHistory.ConfigInfo config : m.getAgentConfigs()) {
+                for(hudson.plugins.jobConfigHistory.ConfigInfo config : m.getSlaveConfigs()) {
                         println('Slave_name:' + n.name + ' User:'+ config.getUser() + ' UserId:'+ config.getUserID());
+                println(inside2count);
+                inside2count ++;
                  }
+        println(insidecount);
+        insidecount ++;
         }
 println "--------------------------------"
+println(count);
+count ++;
 }
 //Have to make changes accordingly as Jenkins Production
 /*
