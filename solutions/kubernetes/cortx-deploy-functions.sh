@@ -267,9 +267,7 @@ function execute_prereq() {
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         add_secondary_separator "Un-mounting $SYSTEM_DRIVE partition if already mounted"
         findmnt $SYSTEM_DRIVE && umount -l $SYSTEM_DRIVE
-        add_secondary_separator "Un-mounting $SYSTEM_DRIVE_MOUNT mount point if already mounted"
-        findmnt $SYSTEM_DRIVE_MOUNT && umount -l $SYSTEM_DRIVE_MOUNT
-        add_secondary_separator "Executing ./prereq-deploy-cortx-cloud.sh"
+        add_secondary_separator "Executing ./prereq-deploy-cortx-cloud.sh -d $SYSTEM_DRIVE"
         ./prereq-deploy-cortx-cloud.sh -d $SYSTEM_DRIVE
     popd    
 }
@@ -315,9 +313,6 @@ function destroy() {
         popd || exit
         add_secondary_separator "Un-mounting $SYSTEM_DRIVE partition if already mounted"
         findmnt $SYSTEM_DRIVE && umount -l $SYSTEM_DRIVE
-        add_secondary_separator "Un-mounting $SYSTEM_DRIVE_MOUNT mount point if already mounted"
-        findmnt $SYSTEM_DRIVE_MOUNT && umount -l $SYSTEM_DRIVE_MOUNT
-
         files_to_remove=(
             "/mnt/fs-local-volume/"
             "/root/deploy-scripts/"
