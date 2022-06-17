@@ -2,10 +2,10 @@ Jenkins h = Jenkins.getInstance();
 for (Node n : h.getNodes()) {
 for (hudson.plugins.jobConfigHistory.ComputerConfigHistoryAction m : n.getComputer().actions) {
     for(hudson.plugins.jobConfigHistory.ConfigInfo config : m.getAgentConfigs() ){
-        println('Slave:' + n.name + ' User:'+ config.getUser() + ' UserId:'+ config.getUserID());
+        println('SlaveMain:' + n.name + ' User:'+ config.getUser() + ' UserId:'+ config.getUserID());
     }
 }
-println('Host:'+ n.launcher.host + ' Label:' + n.getLabelString() + ' Computer.isOffline:' + n.getComputer().isOffline()) ;
+println('HostMain:'+ n.launcher.host + ' Label:' + n.getLabelString() + ' Computer.isOffline:' + n.getComputer().isOffline()) ;
 println "--------------------------------"
 }
 //Have to make changes accordingly to Jenkins Production
