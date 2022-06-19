@@ -81,22 +81,25 @@ function upgrade_cluster() {
         scp_primary_node $SOLUTION_CONFIG
     fi
     add_primary_separator "\tUpgrading CORTX Cluster"
-    ssh_primary_node "source /var/tmp/functions.sh &&
-    if [ "$SOLUTION_CONFIG_TYPE" == "manual" ]; then copy_solution_config "$REMOTE_SOLUTION_CONFIG" "$SCRIPT_LOCATION"; fi &&
-    add_secondary_separator 'Download Upgrade Images' &&
-    CORTX_SERVER_IMAGE=$(pull_image $CORTX_SERVER_IMAGE) &&
-    CORTX_DATA_IMAGE=$(pull_image  $CORTX_DATA_IMAGE) &&
-    CORTX_CONTROL_IMAGE=$(pull_image  $CORTX_CONTROL_IMAGE) &&
-    add_secondary_separator 'Updating CORTX Images info in solution.yaml' &&
-    update_image control-pod $CORTX_CONTROL_IMAGE &&
-    update_image data-pod $CORTX_DATA_IMAGE &&
-    update_image server-pod $CORTX_SERVER_IMAGE &&
-    update_image ha-pod $CORTX_CONTROL_IMAGE &&
-    update_image client-pod $CORTX_DATA_IMAGE &&
-    add_secondary_separator 'Begin CORTX Cluster Upgrade' &&
-    pushd $SCRIPT_LOCATION &&
-    if [ $UPGRADE_TYPE == "rolling-upgrade" ]; then ./upgrade-cortx-cloud.sh start -p $POD_TYPE; else ./upgrade-cortx-cloud.sh -cold; fi &&
-    popd" | tee /var/tmp/upgrade-logs.txt    
+    ssh_primary_node 'source /var/tmp/functions.sh &&
+    if [ '"$SOLUTION_CONFIG_TYPE"' == "manual" ]; then copy_solution_config '"$REMOTE_SOLUTION_CONFIG"' '"$SCRIPT_LOCATION"'; fi &&
+    add_secondary_separator "Download Upgrade Images" && 
+    CORTX_ACTUAL_SERVER_IMAGE=`pull_image '"$CORTX_SERVER_IMAGE"'` &&
+    echo '"CORTX_ACTUAL_SERVER_IMAGE : \$CORTX_ACTUAL_SERVER_IMAGE"' &&
+    CORTX_ACTUAL_DATA_IMAGE=`pull_image '"$CORTX_DATA_IMAGE"'` &&
+    echo '"CORTX_ACTUAL_DATA_IMAGE : \$CORTX_ACTUAL_DATA_IMAGE"' &&
+    CORTX_ACTUAL_CONTROL_IMAGE=`pull_image '"$CORTX_CONTROL_IMAGE"'` &&
+    echo '"CORTX_ACTUAL_CONTROL_IMAGE : \$CORTX_ACTUAL_CONTROL_IMAGE"' &&
+    add_secondary_separator "Updating CORTX Images info in solution.yaml" &&
+    update_image control-pod '"\$CORTX_ACTUAL_CONTROL_IMAGE"' &&
+    update_image data-pod '"\$CORTX_ACTUAL_DATA_IMAGE"' &&
+    update_image server-pod '"\$CORTX_ACTUAL_SERVER_IMAGE"' &&
+    update_image ha-pod '"\$CORTX_ACTUAL_CONTROL_IMAGE"' &&
+    update_image client-pod '"\$CORTX_ACTUAL_DATA_IMAGE"' &&
+    add_secondary_separator "Begin CORTX Cluster Upgrade" &&
+    pushd '"$SCRIPT_LOCATION"' &&
+    if [ '"$UPGRADE_TYPE"' == "rolling-upgrade" ]; then ./upgrade-cortx-cloud.sh start -p '"$POD_TYPE"'; else ./upgrade-cortx-cloud.sh -cold; fi &&
+    popd' | tee /var/tmp/upgrade-logs.txt    
 }
 
 ACTION="$1"
