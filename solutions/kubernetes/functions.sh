@@ -115,15 +115,6 @@ function pull_image() {
     fi    
 }
 
-# function get_actual_image_version() {
-#     local image=$1
-#     docker pull $image || { echo "Failed to pull $image"; exit 1; }
-#     actual_image_tag=$(docker inspect $image | grep "VERSION" | grep -o "2.0.0-[0-9][0-9][0-9]*" | head -n 1)
-#     actual_image=$(echo $image | sed -e "s/2.0.0-latest/${actual_image_tag}/g")
-#     docker rmi -f $image || { echo "Failed to remove $image"; exit 1; }
-#     echo $actual_image
-# }
-
 function update_image() {
     local POD_TYPE=$1
     local IMAGE=$2
