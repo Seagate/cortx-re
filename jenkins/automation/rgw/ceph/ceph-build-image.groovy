@@ -40,7 +40,7 @@ pipeline {
         stage ('Build Ceph Container Image') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Build Ceph Container Image', script: '''
+                sh label: 'Build Ceph Container Image', script: """
                     echo "Starting Build"
                     make FLAVORS=${CEPH_RELEASE},${OS_IMAGE},${OS_IMAGE_TAG} build
 
@@ -49,14 +49,14 @@ pipeline {
                     echo "List created images:"
                     docker images --format "{{.Repository}}:{{.Tag}}" --filter reference=ceph/daemon-base:HEAD-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
                     docker images --format "{{.Repository}}:{{.Tag}}" --filter reference=ceph/daemon:HEAD-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
-                '''
+                """
             }
         }
 
         stage ('Push Image to Registry') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Push Image to Registry', script: '''
+                sh label: 'Push Image to Registry', script: """
 
                     echo "Tag container images"
                     docker tag ceph/daemon:HEAD-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH} nitisdev/ceph:daemon-centos-custom-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
@@ -78,8 +78,7 @@ pipeline {
                     docker rmi ceph/daemon:HEAD-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
                     docker rmi nitisdev/ceph:daemon-centos-custom-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
                     docker rmi nitisdev/ceph:daemon-base-centos-custom-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
-
-                '''
+                """
             }
         }
     }
