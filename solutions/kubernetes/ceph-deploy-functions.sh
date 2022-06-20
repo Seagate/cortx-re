@@ -392,6 +392,7 @@ function io_operation() {
 
     pushd /var/tmp/
         ./io-sanity.sh
+        check_status
     popd
 
     if [[ $CEPH_DOCKER_DEPLOYMENT = "true" ]]; then
