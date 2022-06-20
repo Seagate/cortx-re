@@ -12,11 +12,11 @@ pipeline {
         ansiColor('xterm')
     }
 
-    environment {
-        last_successful_server_image = getLastSuccessfulImage("cortx-rgw", JOB_URL)
-        last_successful_data_image = getLastSuccessfulImage("cortx-data", JOB_URL)
-        last_successful_control_image = getLastSuccessfulImage("cortx-control", JOB_URL)
-    }
+    // environment {
+    //     last_successful_server_image = getLastSuccessfulImage("cortx-rgw", JOB_URL)
+    //     last_successful_data_image = getLastSuccessfulImage("cortx-data", JOB_URL)
+    //     last_successful_control_image = getLastSuccessfulImage("cortx-control", JOB_URL)
+    // }
 
     parameters {
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
@@ -64,8 +64,10 @@ pipeline {
                     env.upgradeCluster_status = upgradeCluster.currentResult
                     env.images_info = upgradeCluster.buildVariables.images_info
                     env.actual_server_image = upgradeCluster.buildVariables.postupgrade_cortx_server_image
-                    // env.preupgrade_cortx_server_image = upgradeCluster.buildVariables.preupgrade_cortx_server_image
-                    // env.preupgrade_images_info = upgradeCluster.buildVariables.preupgrade_images_info
+                    copyArtifacts filter: 'cortx-cluster-status.txt', fingerprintArtifacts: true, flatten: true, optional: true, projectName: '/Cortx-Automation/RGW/cortx-rgw-cluster-upgrade/', selector: lastCompleted(), target: ''
+                    copyArtifacts filter: 'upgrade-logs.txt', fingerprintArtifacts: true, flatten: true, optional: true, projectName: '/Cortx-Automation/RGW/cortx-rgw-cluster-upgrade/', selector: lastCompleted(), target: ''
+                    env.preupgrade_cortx_server_image = upgradeCluster.buildVariables.preupgrade_cortx_server_image
+                    env.preupgrade_images_info = upgradeCluster.buildVariables.preupgrade_images_info
                 }
             }
         }
@@ -76,7 +78,7 @@ pipeline {
                 script {
                     def changelog = build job: '/Release_Engineering/Cortx-Automation/changelog-generation', wait: true, propagate: false,
                     parameters: [
-                        string(name: 'BUILD_FROM', value: "${last_successful_server_image}"),
+                        string(name: 'BUILD_FROM', value: "${env.preupgrade_cortx_server_image}"),
                         string(name: 'BUILD_TO', value: "${env.actual_server_image}"),
                     ]
                     env.changeset_log_url = changelog.absoluteUrl
@@ -143,7 +145,7 @@ pipeline {
                 env.cluster_status = sh( script: "echo ${env.upgradecluster_build_url}/artifact/artifacts/cortx-cluster-status.txt", returnStdout: true)
                 env.upgrade_logs = sh( script: "echo ${env.upgradecluster_build_url}/artifact/artifacts/upgrade-logs.txt", returnStdout: true)
                 env.changeset_log_url = sh( script: "echo ${env.changeset_log_url}artifact/CHANGESET.txt", returnStdout: true)
-                env.preupgrade_images_info = "${last_successful_server_image},${last_successful_data_image},${last_successful_control_image}" 
+                // env.preupgrade_images_info = "${last_successful_server_image},${last_successful_data_image},${last_successful_control_image}" 
                 env.cortx_script_branch = "${CORTX_SCRIPTS_BRANCH}"
                 env.hosts = sh( script: '''
                     echo $hosts | tr ' ' '\n' | awk -F["="] '{print $2}'|cut -d',' -f1
@@ -155,6 +157,8 @@ pipeline {
                 else {
                     mailRecipients = "gaurav.chaudhari@seagate.com"        
                 }
+
+                archiveArtifacts allowEmptyArchive: true, artifacts: '*.txt', followSymlinks: false
                 
                 emailext ( 
                     body: '''${SCRIPT, template="nightly-upgrade-email.template"}''',
