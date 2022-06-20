@@ -12,6 +12,12 @@ pipeline {
         ansiColor('xterm')
     }
 
+    environment {
+        last_successful_server_image = getLastSuccessfulImage("cortx-rgw")
+        last_successful_data_image = getLastSuccessfulImage("cortx-data")
+        last_successful_control_image = getLastSuccessfulImage("cortx-control")
+    }
+
     parameters {
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repository for Cluster Setup scripts', trim: true)
@@ -56,8 +62,10 @@ pipeline {
                     ]
                     env.upgradecluster_build_url = upgradeCluster.absoluteUrl
                     env.upgradeCluster_status = upgradeCluster.currentResult
-                    env.preupgrade_cortx_server_image = upgradeCluster.buildVariables.preupgrade_cortx_server_image
-                    env.preupgrade_images_info = upgradeCluster.buildVariables.preupgrade_images_info
+                    env.images_info = upgradeCluster.buildVariables.images_info
+                    env.actual_server_image = upgradeCluster.buildVariables.postupgrade_cortx_server_image
+                    // env.preupgrade_cortx_server_image = upgradeCluster.buildVariables.preupgrade_cortx_server_image
+                    // env.preupgrade_images_info = upgradeCluster.buildVariables.preupgrade_images_info
                 }
             }
         }
@@ -68,8 +76,8 @@ pipeline {
                 script {
                     def changelog = build job: '/Release_Engineering/Cortx-Automation/changelog-generation', wait: true, propagate: false,
                     parameters: [
-                        string(name: 'BUILD_FROM', value: "${env.preupgrade_cortx_server_image}"),
-                        string(name: 'BUILD_TO', value: "${CORTX_SERVER_IMAGE}"),
+                        string(name: 'BUILD_FROM', value: "${last_successful_server_image}"),
+                        string(name: 'BUILD_TO', value: "${env.actual_server_image}"),
                     ]
                     env.changeset_log_url = changelog.absoluteUrl
                     copyArtifacts filter: 'CHANGESET.txt', fingerprintArtifacts: true, flatten: true, optional: true, projectName: '/Release_Engineering/Cortx-Automation/changelog-generation', selector: lastCompleted(), target: ''
@@ -135,11 +143,11 @@ pipeline {
                 env.cluster_status = sh( script: "echo ${env.upgradecluster_build_url}/artifact/artifacts/cortx-cluster-status.txt", returnStdout: true)
                 env.upgrade_logs = sh( script: "echo ${env.upgradecluster_build_url}/artifact/artifacts/upgrade-logs.txt", returnStdout: true)
                 env.changeset_log_url = sh( script: "echo ${env.changeset_log_url}artifact/CHANGESET.txt", returnStdout: true)
+                env.preupgrade_images_info = "${last_successful_server_image},${last_successful_data_image},${last_successful_control_image}" 
                 env.cortx_script_branch = "${CORTX_SCRIPTS_BRANCH}"
                 env.hosts = sh( script: '''
                     echo $hosts | tr ' ' '\n' | awk -F["="] '{print $2}'|cut -d',' -f1
                 ''', returnStdout: true).trim()
-                env.images_info = "${CORTX_SERVER_IMAGE},${CORTX_DATA_IMAGE},${CORTX_CONTROL_IMAGE}"
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
                 if ( currentBuild.result == "SUCCESS" ) {
                     mailRecipients = "CORTX.DevOps.RE@seagate.com"
@@ -159,4 +167,12 @@ pipeline {
             }
         }
     }
-}    
+}
+
+def getLastSuccessfulImage(String service, String job_url) {
+    IMAGE = sh( script: """
+        wget --no-check-certificate ${job_url}/lastSuccessfulBuild/artifact/artifacts/cortx-cluster-status.txt &> /dev/null
+        grep -i "seagate/$service" < cortx-cluster-status.txt | head -n 1
+    """, returnStdout: true).trim()
+    return "$IMAGE"
+}
