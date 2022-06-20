@@ -13,9 +13,9 @@ pipeline {
     }
 
     environment {
-        last_successful_server_image = getLastSuccessfulImage("cortx-rgw")
-        last_successful_data_image = getLastSuccessfulImage("cortx-data")
-        last_successful_control_image = getLastSuccessfulImage("cortx-control")
+        last_successful_server_image = getLastSuccessfulImage("cortx-rgw", JOB_URL)
+        last_successful_data_image = getLastSuccessfulImage("cortx-data", JOB_URL)
+        last_successful_control_image = getLastSuccessfulImage("cortx-control", JOB_URL)
     }
 
     parameters {
