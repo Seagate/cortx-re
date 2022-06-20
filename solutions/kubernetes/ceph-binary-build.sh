@@ -123,42 +123,47 @@ function ceph_build() {
 
     case "$BUILD_OS" in
         ubuntu-20.04)
-            add_primary_separator "Building Ubuntu ceph binary packages"
-            add_common_separator "Update repolist cache and install prerequisites"
-            apt update && apt install git -y
-            check_status
-            DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata
-            check_status
-            pushd "$BUILD_LOCATION"
-                add_common_separator "Clone Repo"
-                git clone https://github.com/$CEPH_REPO -b $CEPH_BRANCH
+                add_primary_separator "Building Ubuntu ceph binary packages"
+                add_common_separator "Update repolist cache and install prerequisites"
+                apt update && apt install git -y
+                check_status
+                DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata
+                check_status
+                pushd "$BUILD_LOCATION"
+                    add_common_separator "Clone Repo"
+                    git clone https://github.com/$CEPH_REPO -b $CEPH_BRANCH
 
-                pushd $REPO_COMPONENT
-                    add_common_separator "Checkout Submodules"
-                    git submodule update --init --recursive
+                    if [[ $REPO_COMPONENT == "cortx-rgw" ]]; then
+                        add_common_separator "cortx-motr dependencies no yet sorted on ubuntu"
+                        exit 1
+                    fi
 
-                    add_common_separator "Install Dependencies"
-                    ./install-deps.sh
-                    check_status
+                    pushd $REPO_COMPONENT
+                        add_common_separator "Checkout Submodules"
+                        git submodule update --init --recursive
 
-                    add_common_separator "Make Source Tarball"
-                    ./make-dist
-                    check_status
-                    
-                    mv ceph-*tar.bz2 ../
-                    version=$(git describe --long --match 'v*' | sed 's/^v//')
+                        add_common_separator "Install Dependencies"
+                        ./install-deps.sh
+                        check_status
+
+                        add_common_separator "Make Source Tarball"
+                        ./make-dist
+                        check_status
+                        
+                        mv ceph-*tar.bz2 ../
+                        version=$(git describe --long --match 'v*' | sed 's/^v//')
+                    popd
+
+                    tar -xf ceph-*tar.bz2
+                    pushd ceph-"$version"
+                        add_common_separator "Start Build"
+                        dpkg-buildpackage -us -uc
+                        check_status
+                    popd
+
+                    add_common_separator "List generated binary packages (*.deb)"
+                    ls *.deb
                 popd
-
-                tar -xf ceph-*tar.bz2
-                pushd ceph-"$version"
-                    add_common_separator "Start Build"
-                    dpkg-buildpackage -us -uc
-                    check_status
-                popd
-
-                add_common_separator "List generated binary packages (*.deb)"
-                ls *.deb
-            popd
         ;;
         centos-8)
                 add_primary_separator "Building centos binary packages"
@@ -170,12 +175,21 @@ function ceph_build() {
                 check_status
                 yum makecache && yum install git -y
                 check_status
-                yum install wget bzip2 rpm-build rpmdevtools dnf-plugins-core -y
+                yum install yum-utils epel-release wget bzip2 rpm-build rpmdevtools dnf-plugins-core -y
                 check_status
                 dnf config-manager --set-enabled powertools
                 pushd "$BUILD_LOCATION"
                     add_common_separator "Clone Repo"
                     git clone https://github.com/$CEPH_REPO -b $CEPH_BRANCH
+
+                    if [[ $REPO_COMPONENT == "cortx-rgw" ]]; then
+                        add_common_separator "Installing cortx-motr dependencies"
+                        yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/rgw-build/release/last_successful/cortx_iso/
+                        echo "gpgcheck=0" >> /etc/yum.repos.d/cortx-storage.colo.seagate.com_releases_cortx_rgw-build_release_last_successful_cortx_iso_.repo
+                        yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rockylinux/rockylinux-8.4-2.0.0-latest/
+                        echo "gpgcheck=0" >> /etc/yum.repos.d/cortx-storage.colo.seagate.com_releases_cortx_third-party-deps_rockylinux_rockylinux-8.4-2.0.0-latest_.repo
+                        yum install cortx-motr{,-devel} -y
+                    fi
 
                     pushd $REPO_COMPONENT
                         add_common_separator "Checkout Submodules"
@@ -209,12 +223,21 @@ function ceph_build() {
                 add_common_separator "Update repolist cache and install prerequisites"
                 yum makecache && yum install git -y
                 check_status
-                yum install wget bzip2 rpm-build dnf rpmdevtools dnf-plugins-core -y
+                yum install yum-utils epel-release wget bzip2 rpm-build dnf rpmdevtools dnf-plugins-core -y
                 check_status
                 dnf config-manager --set-enabled powertools
                 pushd "$BUILD_LOCATION"
                     add_common_separator "Clone Repo"
                     git clone https://github.com/$CEPH_REPO -b $CEPH_BRANCH
+
+                    if [[ $REPO_COMPONENT == "cortx-rgw" ]]; then
+                        add_common_separator "Installing cortx-motr dependencies"
+                        yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/rgw-build/release/last_successful/cortx_iso/
+                        echo "gpgcheck=0" >> /etc/yum.repos.d/cortx-storage.colo.seagate.com_releases_cortx_rgw-build_release_last_successful_cortx_iso_.repo
+                        yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rockylinux/rockylinux-8.4-2.0.0-latest/
+                        echo "gpgcheck=0" >> /etc/yum.repos.d/cortx-storage.colo.seagate.com_releases_cortx_third-party-deps_rockylinux_rockylinux-8.4-2.0.0-latest_.repo
+                        yum install cortx-motr{,-devel} -y
+                    fi
 
                     pushd $REPO_COMPONENT
                         add_common_separator "Checkout Submodules"
