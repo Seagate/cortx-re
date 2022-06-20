@@ -172,7 +172,7 @@ pipeline {
 def getLastSuccessfulImage(String service, String job_url) {
     IMAGE = sh( script: """
         wget --no-check-certificate ${job_url}/lastSuccessfulBuild/artifact/artifacts/cortx-cluster-status.txt &> /dev/null
-        grep -i "seagate/$service" < cortx-cluster-status.txt | head -n 1
+        grep -i "seagate/${service}" < cortx-cluster-status.txt | head -n 1
     """, returnStdout: true).trim()
     return "$IMAGE"
 }
