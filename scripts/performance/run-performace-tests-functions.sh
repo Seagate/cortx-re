@@ -49,7 +49,7 @@ function fetch_build_url() {
 function create_endpoint_url() {
     echo SOLUTION_FILE=$SOLUTION_FILE
     ACCESS_KEY=$(yq e '.solution.common.s3.default_iam_users.auth_admin' $SOLUTION_FILE)
-    SECRET_KEY=$(yq e '.solution.secrets.content.s3_auth_admin_secret' $SOLUTION_FILE)
+    SECRET_KEY=$(kubectl get secrets/cortx-secret  --template={{.data.s3_auth_admin_secret}} | base64 -d)
     HTTP_PORT=$(kubectl get svc cortx-io-svc-0 -o=jsonpath='{.spec.ports[?(@.port==80)].nodePort}')
     if [ $(systemd-detect-virt -v) == "none" ];then
         CLUSTER_TYPE=HW 
