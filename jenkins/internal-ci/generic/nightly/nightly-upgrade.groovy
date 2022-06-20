@@ -64,8 +64,8 @@ pipeline {
                     env.upgradeCluster_status = upgradeCluster.currentResult
                     env.images_info = upgradeCluster.buildVariables.images_info
                     env.actual_server_image = upgradeCluster.buildVariables.postupgrade_cortx_server_image
-                    copyArtifacts filter: 'cortx-cluster-status.txt', fingerprintArtifacts: true, flatten: true, optional: true, projectName: '/Cortx-Automation/RGW/cortx-rgw-cluster-upgrade/', selector: lastCompleted(), target: ''
-                    copyArtifacts filter: 'upgrade-logs.txt', fingerprintArtifacts: true, flatten: true, optional: true, projectName: '/Cortx-Automation/RGW/cortx-rgw-cluster-upgrade/', selector: lastCompleted(), target: ''
+                    copyArtifacts filter: 'artifacts/cortx-cluster-status.txt', fingerprintArtifacts: true, flatten: true, optional: true, projectName: '/Cortx-Automation/RGW/cortx-rgw-cluster-upgrade/', selector: lastCompleted(), target: ''
+                    copyArtifacts filter: 'artifacts/upgrade-logs.txt', fingerprintArtifacts: true, flatten: true, optional: true, projectName: '/Cortx-Automation/RGW/cortx-rgw-cluster-upgrade/', selector: lastCompleted(), target: ''
                     env.preupgrade_cortx_server_image = upgradeCluster.buildVariables.preupgrade_cortx_server_image
                     env.preupgrade_images_info = upgradeCluster.buildVariables.preupgrade_images_info
                 }
