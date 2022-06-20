@@ -23,6 +23,7 @@ source functions.sh
 ACTION="$1"
 BUILD_LOCATION="$2"
 MOUNT="$3"
+REPO_COMPONENT=${CEPH_REPO#*/}
 
 function usage() {
     cat << HEREDOC
@@ -41,7 +42,7 @@ if [ -z "$ACTION" ]; then
 fi
 
 function check_params() {
-    add_primary_separator "Checking parameters"
+    add_primary_separator "\t\tChecking parameters"
     if [ -z "$CEPH_REPO" ]; then echo "CEPH_REPO not provided. Using default: ceph/ceph ";CEPH_REPO="ceph/ceph"; fi
     if [ -z "$CEPH_BRANCH" ]; then echo "CEPH_BRANCH not provided. Using default: quincy";CEPH_BRANCH="quincy"; fi
     if [ -z "$BUILD_OS" ]; then echo "BUILD_OS not provided. Using default: centos";BUILD_OS="centos"; fi
@@ -56,8 +57,8 @@ function check_params() {
    echo -e "# BUILD_OS          : $BUILD_OS                   "
    echo -e "# BUILD_LOCATION    : $BUILD_LOCATION             "
    echo -e "# REPO_COMPONENT    : $REPO_COMPONENT             "
-   echo -e "# MOUNT             : $MOUNT                      "   
-   echo -e "# build_upload_dir  : $build_upload_dir           "   
+   echo -e "# MOUNT             : $MOUNT                      "
+   echo -e "# build_upload_dir  : $build_upload_dir           "
    echo -e "#########################################################################"
 }
 
@@ -130,7 +131,7 @@ function ceph_build() {
             check_status
             pushd "$BUILD_LOCATION"
                 add_common_separator "Clone Repo"
-                git clone $CEPH_REPO -b $CEPH_BRANCH
+                git clone https://github.com/$CEPH_REPO -b $CEPH_BRANCH
 
                 pushd $REPO_COMPONENT
                     add_common_separator "Checkout Submodules"
@@ -171,7 +172,7 @@ function ceph_build() {
                 dnf config-manager --set-enabled powertools
                 pushd "$BUILD_LOCATION"
                     add_common_separator "Clone Repo"
-                    git clone $CEPH_REPO -b $CEPH_BRANCH
+                    git clone https://github.com/$CEPH_REPO -b $CEPH_BRANCH
 
                     pushd $REPO_COMPONENT
                         add_common_separator "Checkout Submodules"
@@ -207,7 +208,7 @@ function ceph_build() {
                 dnf config-manager --set-enabled powertools
                 pushd "$BUILD_LOCATION"
                     add_common_separator "Clone Repo"
-                    git clone $CEPH_REPO -b $CEPH_BRANCH
+                    git clone https://github.com/$CEPH_REPO -b $CEPH_BRANCH
 
                     pushd $REPO_COMPONENT
                         add_common_separator "Checkout Submodules"

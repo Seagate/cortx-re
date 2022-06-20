@@ -23,14 +23,8 @@ pipeline {
     parameters {
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for Cluster Setup scripts.', trim: true)
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Cluster Setup scripts.', trim: true)
-        string(name: 'CEPH_REPO', defaultValue: 'https://github.com/ceph/ceph/', description: 'Repository for Cluster Setup scripts.', trim: true)
+        string(name: 'CEPH_REPO', defaultValue: 'ceph/ceph', description: 'Repository for Cluster Setup scripts.', trim: true)
         string(name: 'CEPH_BRANCH', defaultValue: 'quincy', description: 'Branch or GitHash for Cluster Setup scripts.', trim: true)
-
-        choice(
-            name: 'REPO_COMPONENT',
-            choices: ['ceph', 'cortx-rgw'],
-            description: 'Ceph fork repo component.'
-        )
 
         choice(
             name: 'BUILD_OS',
@@ -57,7 +51,6 @@ pipeline {
                     export CEPH_REPO=${CEPH_REPO}
                     export CEPH_BRANCH=${CEPH_BRANCH}
                     export BUILD_OS=${BUILD_OS}
-                    export REPO_COMPONENT=${REPO_COMPONENT}
                     bash ceph-binary-build.sh --ceph-build-env /var/log/ceph-build
                 popd
                 '''
@@ -71,7 +64,6 @@ pipeline {
                 pushd solutions/kubernetes/
                     export CEPH_BRANCH=${CEPH_BRANCH}
                     export BUILD_OS=${BUILD_OS}
-                    export REPO_COMPONENT=${REPO_COMPONENT}
                     bash ceph-binary-build.sh --upload-packages /var/log/ceph-build cortx-storage.colo.seagate.com:/mnt/data1/releases/ceph
                 popd
                 '''
