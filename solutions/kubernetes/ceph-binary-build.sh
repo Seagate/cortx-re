@@ -139,9 +139,11 @@ function ceph_build() {
 
                     add_common_separator "Install Dependencies"
                     ./install-deps.sh
+                    check_status
 
                     add_common_separator "Make Source Tarball"
                     ./make-dist
+                    check_status
                     
                     mv ceph-*tar.bz2 ../
                     version=$(git describe --long --match 'v*' | sed 's/^v//')
@@ -151,6 +153,7 @@ function ceph_build() {
                 pushd ceph-"$version"
                     add_common_separator "Start Build"
                     dpkg-buildpackage -us -uc
+                    check_status
                 popd
 
                 add_common_separator "List generated binary packages (*.deb)"
@@ -180,9 +183,11 @@ function ceph_build() {
 
                         add_common_separator "Install Dependencies"
                         ./install-deps.sh
+                        check_status
 
                         add_common_separator "Make Source Tarball"
                         ./make-dist
+                        check_status
                         
                         mkdir -p ../rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
                         tar --strip-components=1 -C ../rpmbuild/SPECS --no-anchored -xvjf ceph-*tar.bz2 "ceph.spec"
@@ -192,6 +197,7 @@ function ceph_build() {
                     pushd rpmbuild
                         add_common_separator "Start Build"
                         rpmbuild --define "_topdir `pwd`" -ba SPECS/ceph.spec
+                        check_status
                     popd
 
                     add_common_separator "List generated binary packages (*.rpm)"
@@ -221,9 +227,11 @@ function ceph_build() {
 
                         add_common_separator "Install Dependencies"
                         ./install-deps.sh
+                        check_status
 
                         add_common_separator "Make Source Tarball"
                         ./make-dist
+                        check_status
                         
                         mkdir -p ../rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
                         tar --strip-components=1 -C ../rpmbuild/SPECS --no-anchored -xvjf ceph-*tar.bz2 "ceph.spec"
@@ -233,6 +241,7 @@ function ceph_build() {
                     pushd rpmbuild
                         add_common_separator "Start Build"
                         rpmbuild --define "_topdir `pwd`" -ba SPECS/ceph.spec
+                        check_status
                     popd
 
                     add_common_separator "List generated binary packages (*.rpm)"
