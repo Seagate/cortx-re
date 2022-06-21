@@ -83,7 +83,7 @@ pipeline {
         always {
             cleanWs()
             sh label: 'Cleanup Build Location', script: """
-            rm -rvf ${BUILD_LOCATION}
+            rm -rf ${BUILD_LOCATION}
             """
         }
     }

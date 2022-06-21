@@ -100,7 +100,7 @@ function prvsn_env() {
 
     elif [[ "$BUILD_OS" == "centos-8" ]]; then
         if [[ $(docker images --format "{{.Repository}}:{{.Tag}}" --filter reference=centos:8) != "centos:8" ]]; then
-            # docker pull centos:8
+            docker pull centos:8
         fi
         docker pull quay.io/centos/centos:stream8
         add_secondary_separator "Run CentOS 8 container and run build script"
