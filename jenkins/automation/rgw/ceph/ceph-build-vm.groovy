@@ -14,6 +14,8 @@ pipeline {
     }
 
     environment {
+        BUILD_LOCATION="/var/log/ceph-build/${BUILD_NUMBER}"
+        MOUNT="cortx-storage.colo.seagate.com:/mnt/data1/releases/ceph"
         build_upload_dir="/mnt/bigstorage/releases/ceph"
         VM_BUILD=true
     }
@@ -56,7 +58,7 @@ pipeline {
                     export CEPH_BRANCH=${CEPH_BRANCH}
                     export BUILD_OS=${BUILD_OS}
                     export REPO_COMPONENT=${REPO_COMPONENT}
-                    bash ceph-binary-build.sh --ceph-build /var/log/ceph-build
+                    bash ceph-binary-build.sh --ceph-build ${BUILD_LOCATION}
                 popd
                 '''
             }
@@ -70,7 +72,7 @@ pipeline {
                     export CEPH_BRANCH=${CEPH_BRANCH}
                     export BUILD_OS=${BUILD_OS}
                     export REPO_COMPONENT=${REPO_COMPONENT}
-                    bash ceph-binary-build.sh --upload-packages /var/log/ceph-build cortx-storage.colo.seagate.com:/mnt/data1/releases/ceph
+                    bash ceph-binary-build.sh --upload-packages ${BUILD_LOCATION} ${MOUNT}
                 popd
                 '''
             }
