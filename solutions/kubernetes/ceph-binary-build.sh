@@ -146,11 +146,11 @@ function ceph_build() {
 
                         add_common_separator "Install Dependencies"
                         ./install-deps.sh
-                        check_status
+                        check_status "install-deps.sh script execution failed."
 
                         add_common_separator "Make Source Tarball"
                         ./make-dist
-                        check_status
+                        check_status "make-dist script execution failed."
                         
                         mv ceph-*tar.bz2 ../
                         version=$(git describe --long --match 'v*' | sed 's/^v//')
@@ -160,7 +160,7 @@ function ceph_build() {
                     pushd ceph-"$version"
                         add_common_separator "Start Build"
                         dpkg-buildpackage -us -uc
-                        check_status
+                        check_status "Build failed"
                     popd
 
                     add_common_separator "List generated binary packages (*.deb)"
@@ -199,11 +199,11 @@ function ceph_build() {
 
                         add_common_separator "Install Dependencies"
                         ./install-deps.sh
-                        check_status
+                        check_status "install-deps.sh script execution failed."
 
                         add_common_separator "Make Source Tarball"
                         ./make-dist
-                        check_status
+                        check_status "make-dist script execution failed."
                         
                         mkdir -p ../rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
                         tar --strip-components=1 -C ../rpmbuild/SPECS --no-anchored -xvjf ceph-*tar.bz2 "ceph.spec"
@@ -213,7 +213,7 @@ function ceph_build() {
                     pushd rpmbuild
                         add_common_separator "Start Build"
                         rpmbuild --define "_topdir `pwd`" -ba SPECS/ceph.spec
-                        check_status
+                        check_status "Build failed"
                     popd
 
                     add_common_separator "List generated binary packages (*.rpm)"
@@ -252,11 +252,11 @@ function ceph_build() {
 
                         add_common_separator "Install Dependencies"
                         ./install-deps.sh
-                        check_status
+                        check_status "install-deps.sh script execution failed."
 
                         add_common_separator "Make Source Tarball"
                         ./make-dist
-                        check_status
+                        check_status "make-dist script execution failed."
                         
                         mkdir -p ../rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
                         tar --strip-components=1 -C ../rpmbuild/SPECS --no-anchored -xvjf ceph-*tar.bz2 "ceph.spec"
@@ -266,7 +266,7 @@ function ceph_build() {
                     pushd rpmbuild
                         add_common_separator "Start Build"
                         rpmbuild --define "_topdir `pwd`" -ba SPECS/ceph.spec
-                        check_status
+                        check_status "Build failed"
                     popd
 
                     add_common_separator "List generated binary packages (*.rpm)"
