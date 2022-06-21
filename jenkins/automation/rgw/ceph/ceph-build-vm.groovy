@@ -52,7 +52,7 @@ pipeline {
         stage ('Build Ceph Binary Packages') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Build Binary Packages', script: '''
+                sh label: 'Build Binary Packages', script: """
                 pushd solutions/kubernetes/
                     export CEPH_REPO=${CEPH_REPO}
                     export CEPH_BRANCH=${CEPH_BRANCH}
@@ -60,21 +60,21 @@ pipeline {
                     export REPO_COMPONENT=${REPO_COMPONENT}
                     bash ceph-binary-build.sh --ceph-build ${BUILD_LOCATION}
                 popd
-                '''
+                """
             }
         }
 
         stage ('Upload RPMS') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Upload RPMS', script: '''
+                sh label: 'Upload RPMS', script: """
                 pushd solutions/kubernetes/
                     export CEPH_BRANCH=${CEPH_BRANCH}
                     export BUILD_OS=${BUILD_OS}
                     export REPO_COMPONENT=${REPO_COMPONENT}
                     bash ceph-binary-build.sh --upload-packages ${BUILD_LOCATION} ${MOUNT}
                 popd
-                '''
+                """
             }
         }
     }
@@ -82,6 +82,9 @@ pipeline {
     post {
         always {
             cleanWs()
+            sh label: 'Cleanup Build Location', script: """
+            rm -rvf ${BUILD_LOCATION}
+            """
         }
     }
 }
