@@ -2,7 +2,7 @@
 # depdendencies of cryptography 
 cffi==1.14.5                #cortx-py-utils
 # depdendencies of python==3.6
-numpy==1.19.5               #cortx-py-utils
+numpy==1.22.0               #cortx-py-utils
 # dependency of cifi
 pycparser==2.20             #cortx-py-utils
 # dependency of aiohttp
