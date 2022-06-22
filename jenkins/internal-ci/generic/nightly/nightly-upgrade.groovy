@@ -101,8 +101,8 @@ pipeline {
     post {
         always {
             script {
-                if ( "${env.upgradeCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "SUCCESS" ) {
-                    MESSAGE = "Build#${build_id} CORTX Cluster Upgrade Upgrade=Passed, SanityTest=Passed, Regression=Passed"
+                if ( "${env.upgradeCluster_status}" == "SUCCESS" ) {
+                    MESSAGE = "Build#${build_id} CORTX Cluster Upgrade Upgrade=Passed"
                     ICON = "accept.gif"
                     STATUS = "SUCCESS"
                     env.deployment_result = "SUCCESS"
@@ -110,32 +110,15 @@ pipeline {
                     currentBuild.result = "SUCCESS"
                 } else if ( "${env.upgradeCluster_status}" == "FAILURE" || "${env.upgradeCluster_status}" == "UNSTABLE" || "${env.upgradeCluster_status}" == "null" ) {
                     manager.buildFailure()
-                    MESSAGE = "Build#${build_id} CORTX Cluster Upgrade Upgrade=failed, SanityTest=${env.Sanity_status}, Regression=${env.Regression_overall_status}"
+                    MESSAGE = "Build#${build_id} CORTX Cluster Upgrade Upgrade=failed"
                     ICON = "error.gif"
                     STATUS = "FAILURE"
-                    env.sanity_result = "SKIPPED"
                     env.deployment_result = "FAILURE"
                     currentBuild.result = "FAILURE"
-                } else if ( "${env.upgradeCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "FAILURE" || "${env.qaSanity_status}" == "null" ) {
-                    manager.buildFailure()
-                    MESSAGE = "Build#${build_id} CORTX Cluster Upgrade Upgrade=Passed, SanityTest=${env.Sanity_status}, Regression=${env.Regression_overall_status}"
-                    ICON = "error.gif"
-                    STATUS = "FAILURE"
-                    env.sanity_result = "FAILURE"
-                    env.deployment_result = "SUCCESS"
-                    currentBuild.result = "FAILURE"
-                } else if ( "${env.upgradeCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "UNSTABLE" ) {
-                    MESSAGE = "Build#${build_id} CORTX Cluster Upgrade Upgrade=Passed, SanityTest=${env.Sanity_status}, Regression=${env.Regression_overall_status}"
-                    ICON = "unstable.gif"
-                    STATUS = "UNSTABLE"
-                    env.deployment_result = "SUCCESS"
-                    env.sanity_result = "UNSTABLE"
-                    currentBuild.result = "UNSTABLE"
                 } else {
-                    MESSAGE = "Build#${build_id} CORTX Cluster Upgrade Upgrade=unstable, SanityTest=unstable, Regression=unstable"
+                    MESSAGE = "Build#${build_id} CORTX Cluster Upgrade Upgrade=unstable"
                     ICON = "unstable.gif"
                     STATUS = "UNSTABLE"
-                    env.sanity_result = "UNSTABLE"
                     env.deployment_result = "UNSTABLE"
                     currentBuild.result = "UNSTABLE"
                 }
