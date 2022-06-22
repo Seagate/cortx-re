@@ -14,10 +14,10 @@ pipeline {
     }
 
     environment {
-        BUILD_LOCATION="/var/log/ceph-build/${BUILD_NUMBER}"
-        MOUNT="cortx-storage.colo.seagate.com:/mnt/data1/releases/ceph"
-        build_upload_dir="/mnt/bigstorage/releases/ceph"
-        VM_BUILD=true
+        BUILD_LOCATION = "/var/log/ceph-build/${BUILD_NUMBER}"
+        MOUNT = "cortx-storage.colo.seagate.com:/mnt/data1/releases/ceph"
+        build_upload_dir = "/mnt/bigstorage/releases/ceph"
+        VM_BUILD = true
     }
 
     parameters {
