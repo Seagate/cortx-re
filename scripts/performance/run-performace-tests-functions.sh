@@ -123,7 +123,7 @@ function setup-client() {
     rm -f $ANIBLE_LOG_FILE $PERF_STATS_FILE
     install_awscli
     setup_awscli
-    run_io_sanity
+    #run_io_sanity
 }
 
 function execute-perf-sanity() {
