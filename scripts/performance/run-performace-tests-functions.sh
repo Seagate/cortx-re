@@ -104,7 +104,7 @@ function execute_perfpro() {
         echo CLIENT_NODE:$CLIENT_NODE
         echo PRIMARY_CRED:$PRIMARY_CRED
         echo END_POINTS:$ENDPOINT_URL
-        ansible-playbook perfpro.yml -i inventories/hosts --extra-vars "{ \"EXECUTION_TYPE\" : \"sanity\" ,\"USER\":\"cortx-re\",\"GID\" : \"0000\", \"NODES\":{\"1\": \"$PRIMARY_NODE\"} , \"CLIENTS\":{\"1\": \"$CLIENT_NODE\"} , \"main\":{\"db_server\": \"10.237.65.111\", \"db_port\": \"27017\", \"db_name\": \"sanity_db\", \"db_user\": \"perfpro\", \"db_passwd\": \"PerfPro\", \"db_database\": \"performance_database\", \"db_url\": \"mongodb://perfpro:PerfPro@10.237.65.111:27017\"},  \"config\":{\"CLUSTER_PASS\": \"$PRIMARY_CRED\", \"END_POINTS\": \"$ENDPOINT_URL\" }}" -v
+        ansible-playbook perfpro.yml -i inventories/hosts --extra-vars "{ \"EXECUTION_TYPE\" : \"sanity\" , \"REPOSITORY\":{\"motr\":\"cortx-motr\",\"rgw\":\"cortx-rgw\"} , \"COMMIT_ID\": { \"main\" : \"d1234c\"},\"PR_ID\" : \"cortx-rgw/314\" , \"USER\":\"cortx-re\",\"GID\" : \"0000\", \"NODES\":{\"1\": \"$PRIMARY_NODE\"} , \"CLIENTS\":{\"1\": \"$CLIENT_NODE\"} , \"main\":{\"db_server\": \"10.237.65.111\", \"db_port\": \"27017\", \"db_name\": \"sanity_db\", \"db_user\": \"perfpro\", \"db_passwd\": \"PerfPro\", \"db_database\": \"performance_database\", \"db_url\": \"mongodb://perfpro:PerfPro@10.237.65.111:27017\"},  \"config\":{\"CLUSTER_PASS\": \"$PRIMARY_CRED\", \"END_POINTS\": \"$ENDPOINT_URL\" }}" -v
     popd
 }
 
