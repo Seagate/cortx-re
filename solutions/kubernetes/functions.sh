@@ -101,17 +101,17 @@ function nodes_setup() {
 }
 
 function pull_image() {
-    local image=$1
+    local image="$1"
     if [[ "$image" =~ "latest" ]]; then
-        docker pull $image &>/dev/null
-        actual_image_tag=$(docker inspect $image | grep "VERSION" | grep -o "2.0.0-[0-9][0-9][0-9]*" | head -n 1)
-        actual_image=$(echo $image | sed -e "s/2.0.0-latest/${actual_image_tag}/g")
-        docker rmi -f $image &>/dev/null
-        docker pull $actual_image &>/dev/null
-        echo $actual_image
+        docker pull "$image" &>/dev/null
+        actual_image_tag=$(docker inspect "$image" | grep "VERSION" | grep -o "2.0.0-[0-9][0-9][0-9]*" | head -n 1)
+        actual_image=$(echo "$image" | sed -e "s/2.0.0-latest/${actual_image_tag}/g")
+        docker rmi -f "$image" &>/dev/null
+        docker pull "$actual_image" &>/dev/null
+        echo "$actual_image"
     else
-        docker pull $image &>/dev/null
-        echo $image
+        docker pull "$image" &>/dev/null
+        echo "$image"
     fi    
 }
 

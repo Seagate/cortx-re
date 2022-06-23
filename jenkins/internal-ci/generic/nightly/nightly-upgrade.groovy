@@ -156,9 +156,9 @@ pipeline {
     }
 }
 
-def getLastSuccessfulImage(String service, String job_url) {
+def getLastSuccessfulImage(String service, String jobUrl) {
     IMAGE = sh( script: """
-        wget --no-check-certificate ${job_url}/lastSuccessfulBuild/artifact/cortx-cluster-status.txt &> /dev/null
+        wget --no-check-certificate ${jobUrl}/lastSuccessfulBuild/artifact/cortx-cluster-status.txt &> /dev/null
         grep -i 'seagate/${service}' < cortx-cluster-status.txt | head -n 1
     """, returnStdout: true).trim()
     return "$IMAGE"
