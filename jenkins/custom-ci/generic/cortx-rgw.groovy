@@ -8,9 +8,9 @@ pipeline {
     
     environment {
         BUILD_LOCATION = "/root/custom-ci-jenkins/cortx-rgw-build/${BUILD_NUMBER}"
-        MOUNT = "cortx-storage.colo.seagate.com:/mnt/data1/releases/cortx"
         BUILD_OS = "rockylinux-8.4"
         VM_BUILD = false
+        CORTX_RGW_OPTIMIZED_BUILD = true
 
         component = "cortx-rgw"
         branch = "custom-ci"
@@ -32,7 +32,6 @@ pipeline {
         string(name: 'CORTX_RGW_URL', defaultValue: 'https://github.com/Seagate/cortx-rgw', description: 'Repository URL for cortx-rgw build')
         string(name: 'CORTX_RGW_BRANCH', defaultValue: 'main', description: 'Branch for cortx-rgw build')
         string(name: 'CUSTOM_CI_BUILD_ID', defaultValue: '0', description: 'Custom CI Build Number')
-        booleanParam(name: 'CORTX_RGW_OPTIMIZED_BUILD', defaultValue: true, description: 'Selecting this option will enable cortx-rgw build optimization.')
         // Add os_version parameter in jenkins configuration
 
         choice(
@@ -46,10 +45,10 @@ pipeline {
 
         stage('Checkout Script') {
             when { expression { params.BUILD_LATEST_CORTX_RGW == 'yes' } }
-            steps { 
-                cleanWs()            
+            steps {
+                cleanWs()
                 script {
-                    checkout([$class: 'GitSCM', branches: [[name: "${CORTX_RE_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${CORTX_RE_REPO}"]]])                
+                    checkout([$class: 'GitSCM', branches: [[name: "${CORTX_RE_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${CORTX_RE_REPO}"]]])
                 }
             }
         }
@@ -75,10 +74,7 @@ pipeline {
                 sh label: 'Copy RPMS', script: '''
                     mkdir -p $build_upload_dir
                     if [ "$BUILD_LATEST_CORTX_RGW" == "yes" ]; then
-                        pushd solutions/kubernetes/
-                            export CEPH_BRANCH=${CORTX_RGW_BRANCH}
-                            bash ceph-binary-build.sh --upload-packages ${BUILD_LOCATION} ${MOUNT}
-                        popd
+                        cp $BUILD_LOCATION/rpmbuild/$BUILD_NUMBER/RPMS/*/*.rpm $build_upload_dir
                     else
                         echo "Copy packages form last_successful"
                         cp /mnt/bigstorage/releases/cortx/components/github/main/rockylinux-8.4/dev/cortx-rgw/last_successful/*.rpm $build_upload_dir
