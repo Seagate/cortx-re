@@ -19,6 +19,11 @@ pipeline {
         MOUNT = "cortx-storage.colo.seagate.com:/mnt/data1/releases/ceph"
         build_upload_dir = "/mnt/bigstorage/releases/ceph"
         VM_BUILD = false
+
+        // Motr dependencies environment variables
+        release_tag = "last_successful_prod"
+        os_version = "rockylinux-8.4"
+        branch = "main"
     }
 
     parameters {
