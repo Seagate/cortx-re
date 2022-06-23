@@ -25,12 +25,7 @@ pipeline {
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Cluster Setup scripts.', trim: true)
         string(name: 'CEPH_REPO', defaultValue: 'ceph/ceph', description: 'Repository for Cluster Setup scripts.', trim: true)
         string(name: 'CEPH_BRANCH', defaultValue: 'quincy', description: 'Branch or GitHash for Cluster Setup scripts.', trim: true)
-
-        choice(
-            name: 'REPO_COMPONENT',
-            choices: ['ceph', 'cortx-rgw'],
-            description: 'Ceph fork repo component.'
-        )
+        booleanParam(name: 'CORTX_RGW_OPTIMIZED_BUILD', defaultValue: false, description: 'Selecting this option will enable cortx-rgw build optimization.')
 
         choice(
             name: 'BUILD_OS',
@@ -57,7 +52,7 @@ pipeline {
                     export CEPH_REPO=${CEPH_REPO}
                     export CEPH_BRANCH=${CEPH_BRANCH}
                     export BUILD_OS=${BUILD_OS}
-                    export REPO_COMPONENT=${REPO_COMPONENT}
+                    export CORTX_RGW_OPTIMIZED_BUILD=${CORTX_RGW_OPTIMIZED_BUILD}
                     bash ceph-binary-build.sh --ceph-build ${BUILD_LOCATION}
                 popd
                 """
@@ -71,7 +66,6 @@ pipeline {
                 pushd solutions/kubernetes/
                     export CEPH_BRANCH=${CEPH_BRANCH}
                     export BUILD_OS=${BUILD_OS}
-                    export REPO_COMPONENT=${REPO_COMPONENT}
                     bash ceph-binary-build.sh --upload-packages ${BUILD_LOCATION} ${MOUNT}
                 popd
                 """
