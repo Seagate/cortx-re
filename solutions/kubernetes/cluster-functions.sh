@@ -74,12 +74,12 @@ function verify_os() {
 function print_cluster_status() {
     add_secondary_separator "Node Status"
     SECONDS=0
-    while [[ SECONDS -lt 100 ]] ; do
+    while [[ SECONDS -lt 600 ]] ; do
     if ! kubectl get nodes --no-headers | awk '{print $2}' | tr '\n' ' ' | grep -q NotReady ;then
        kubectl get nodes -o wide
        add_secondary_separator "POD Status"
        SECONDS=0
-	    while [[ SECONDS -lt 100 ]] ; do
+	    while [[ SECONDS -lt 600 ]] ; do
 	    if ! kubectl get pods -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}' -A | grep -qi false ; then
 	    	kubectl get pods -A -o wide
         	exit 0
@@ -88,14 +88,14 @@ function print_cluster_status() {
 	       sleep 10
 	    fi
 	    done
-            add_common_separator "PODs are not online within 20mins. Existing"
+            add_common_separator "PODs are not online within 10mins. Existing"
             exit 1
     else
        add_common_separator "Waiting for Nodes to become online. Sleeping for 10 sec...."
        sleep 10
     fi
     done
-    add_common_separator "Nodes are not online witing 20mins. Existing"
+    add_common_separator "Nodes are not online witing 10mins. Existing"
     exit 1
 }
 
