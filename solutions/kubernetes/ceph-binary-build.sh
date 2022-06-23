@@ -213,7 +213,7 @@ function ceph_build() {
                     pushd rpmbuild
                         add_common_separator "Start Build"
                         if [[ $REPO_COMPONENT == "cortx-rgw" ]]; then
-                            rpmbuild --clean --rmsource --define "_unpackaged_files_terminate_build 0" --define "debug_package %{nil}" --define "_binary_payload w2T16.xzdio" --define "_topdir `pwd`" --without seastar --without cephfs_java --without ceph_test_package --without selinux --without lttng  --without cephfs_shell  --without amqp_endpoint --without kafka_endpoint --without lua_packages --without zbd --without cmake_verbose_logging --without rbd_rwl_cache --without rbd_ssd_cache  --without system_pmdk --without jaeger --without ocf --without make_check -vv -ba SPECS/ceph.spec
+                            rpmbuild --clean --rmsource --define "_unpackaged_files_terminate_build 0" --define "debug_package %{nil}" --define "_binary_payload w2T16.xzdio" --define "_topdir $(pwd)" --without seastar --without cephfs_java --without ceph_test_package --without selinux --without lttng  --without cephfs_shell  --without amqp_endpoint --without kafka_endpoint --without lua_packages --without zbd --without cmake_verbose_logging --without rbd_rwl_cache --without rbd_ssd_cache  --without system_pmdk --without jaeger --without ocf --without make_check -vv -ba SPECS/ceph.spec
                             check_status "Build failed"
                         else
                             rpmbuild --define "_topdir `pwd`" -ba SPECS/ceph.spec
@@ -271,7 +271,7 @@ function ceph_build() {
                     pushd rpmbuild
                         add_common_separator "Start Build"
                         if [[ $REPO_COMPONENT == "cortx-rgw" ]]; then
-                            rpmbuild --clean --rmsource --define "_unpackaged_files_terminate_build 0" --define "debug_package %{nil}" --define "_binary_payload w2T16.xzdio" --define "_topdir `pwd`" --without seastar --without cephfs_java --without ceph_test_package --without selinux --without lttng  --without cephfs_shell  --without amqp_endpoint --without kafka_endpoint --without lua_packages --without zbd --without cmake_verbose_logging --without rbd_rwl_cache --without rbd_ssd_cache  --without system_pmdk --without jaeger --without ocf --without make_check -vv -ba SPECS/ceph.spec
+                            rpmbuild --clean --rmsource --define "_unpackaged_files_terminate_build 0" --define "debug_package %{nil}" --define "_binary_payload w2T16.xzdio" --define "_topdir $(pwd)" --without seastar --without cephfs_java --without ceph_test_package --without selinux --without lttng  --without cephfs_shell  --without amqp_endpoint --without kafka_endpoint --without lua_packages --without zbd --without cmake_verbose_logging --without rbd_rwl_cache --without rbd_ssd_cache  --without system_pmdk --without jaeger --without ocf --without make_check -vv -ba SPECS/ceph.spec
                             check_status "Build failed"
                         else
                             rpmbuild --define "_topdir `pwd`" -ba SPECS/ceph.spec
