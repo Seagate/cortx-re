@@ -42,7 +42,7 @@ pipeline {
                         echo $hosts | tr ' ' '\n' > hosts
                         cat hosts
                         export CEPH_IMAGE=${CEPH_IMAGE}
-                        bash ceph-deploy.sh --install-prereq-image
+                        bash ceph-deploy.sh --prereq-ceph-docker
                     popd
                 """
             }
@@ -54,7 +54,7 @@ pipeline {
                 sh label: 'Install Ceph Packages', script: """
                     pushd solutions/kubernetes/
                         export CEPH_IMAGE=${CEPH_IMAGE}
-                        bash ceph-deploy.sh --deploy-ceph-image
+                        bash ceph-deploy.sh --deploy-ceph-docker
                     popd
                 """
             }
