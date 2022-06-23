@@ -96,7 +96,7 @@ function prvsn_env() {
             docker pull ubuntu:20.04
         fi
         add_secondary_separator "Run Ubuntu 20.04 container and run build script"
-        docker run --rm -t -e CEPH_REPO=$CEPH_REPO -e CEPH_BRANCH=$CEPH_BRANCH -e BUILD_OS=$BUILD_OS -e REPO_COMPONENT=$REPO_COMPONENT -e BUILD_LOCATION="/home" -e CORTX_RGW_OPTIMIZED_BUILD=$CORTX_RGW_OPTIMIZED_BUILD -e branch=$branch -e os_version=$os_version -e release_tag=$release_tag -v "$BUILD_LOCATION/$BUILD_OS":/home --name "$REPO_COMPONENT-$BUILD_NUMBER" --entrypoint /bin/bash ubuntu:20.04 -c "pushd /home && ./build.sh --env-build && popd"
+        docker run --rm -t -e CEPH_REPO="$CEPH_REPO" -e CEPH_BRANCH="$CEPH_BRANCH" -e BUILD_OS="$BUILD_OS" -e REPO_COMPONENT="$REPO_COMPONENT" -e BUILD_LOCATION="/home" -e CORTX_RGW_OPTIMIZED_BUILD="$CORTX_RGW_OPTIMIZED_BUILD" -e branch="$branch" -e os_version="$os_version" -e release_tag="$release_tag" -v "$BUILD_LOCATION/$BUILD_OS":/home --name "$REPO_COMPONENT-$BUILD_NUMBER" --entrypoint /bin/bash ubuntu:20.04 -c "pushd /home && ./build.sh --env-build && popd"
 
     elif [[ "$BUILD_OS" == "centos-8" ]]; then
         if [[ $(docker images --format "{{.Repository}}:{{.Tag}}" --filter reference=centos:8) != "centos:8" ]]; then
@@ -105,14 +105,14 @@ function prvsn_env() {
         docker pull quay.io/centos/centos:stream8
         add_secondary_separator "Run CentOS 8 container and run build script"
         # docker run --rm -t -e CEPH_REPO=$CEPH_REPO -e CEPH_BRANCH=$CEPH_BRANCH -e BUILD_OS=$BUILD_OS -e REPO_COMPONENT=$REPO_COMPONENT -e BUILD_LOCATION="/home" -v "$BUILD_LOCATION/$BUILD_OS":/home --name "$REPO_COMPONENT-$BUILD_NUMBER" --entrypoint /bin/bash centos:8 -c "pushd /home && ./build.sh --env-build && popd"
-        docker run --rm -t -e CEPH_REPO=$CEPH_REPO -e CEPH_BRANCH=$CEPH_BRANCH -e BUILD_OS=$BUILD_OS -e REPO_COMPONENT=$REPO_COMPONENT -e BUILD_LOCATION="/home" -e CORTX_RGW_OPTIMIZED_BUILD=$CORTX_RGW_OPTIMIZED_BUILD -e branch=$branch -e os_version=$os_version -e release_tag=$release_tag -v "$BUILD_LOCATION/$BUILD_OS":/home --name "$REPO_COMPONENT-$BUILD_NUMBER" --entrypoint /bin/bash quay.io/centos/centos:stream8 -c "pushd /home && ./build.sh --env-build && popd"
+        docker run --rm -t -e CEPH_REPO="$CEPH_REPO" -e CEPH_BRANCH="$CEPH_BRANCH" -e BUILD_OS="$BUILD_OS" -e REPO_COMPONENT="$REPO_COMPONENT" -e BUILD_LOCATION="/home" -e CORTX_RGW_OPTIMIZED_BUILD="$CORTX_RGW_OPTIMIZED_BUILD" -e branch="$branch" -e os_version="$os_version" -e release_tag="$release_tag" -v "$BUILD_LOCATION/$BUILD_OS":/home --name "$REPO_COMPONENT-$BUILD_NUMBER" --entrypoint /bin/bash quay.io/centos/centos:stream8 -c "pushd /home && ./build.sh --env-build && popd"
 
     elif [[ "$BUILD_OS" == "rockylinux-8.4" ]]; then
         if [[ $(docker images --format "{{.Repository}}:{{.Tag}}" --filter reference=rockylinux:8) != "rockylinux:8" ]]; then
             docker pull rockylinux:8
         fi
         add_secondary_separator "Run Rocky Linux 8 container and run build script"
-        docker run --rm -t -e CEPH_REPO=$CEPH_REPO -e CEPH_BRANCH=$CEPH_BRANCH -e BUILD_OS=$BUILD_OS -e REPO_COMPONENT=$REPO_COMPONENT -e BUILD_LOCATION="/home" -e CORTX_RGW_OPTIMIZED_BUILD=$CORTX_RGW_OPTIMIZED_BUILD -e branch=$branch -e os_version=$os_version -e release_tag=$release_tag -v "$BUILD_LOCATION/$BUILD_OS":/home --name "$REPO_COMPONENT-$BUILD_NUMBER" --entrypoint /bin/bash rockylinux:8 -c "pushd /home && ./build.sh --env-build && popd"
+        docker run --rm -t -e CEPH_REPO="$CEPH_REPO" -e CEPH_BRANCH="$CEPH_BRANCH" -e BUILD_OS="$BUILD_OS" -e REPO_COMPONENT="$REPO_COMPONENT" -e BUILD_LOCATION="/home" -e CORTX_RGW_OPTIMIZED_BUILD="$CORTX_RGW_OPTIMIZED_BUILD" -e branch="$branch" -e os_version="$os_version" -e release_tag="$release_tag" -v "$BUILD_LOCATION/$BUILD_OS":/home --name "$REPO_COMPONENT-$BUILD_NUMBER" --entrypoint /bin/bash rockylinux:8 -c "pushd /home && ./build.sh --env-build && popd"
 
     else
         add_secondary_separator "Failed to build ceph, container image not present."
@@ -186,8 +186,8 @@ function ceph_build() {
 
                     if [[ $REPO_COMPONENT == "cortx-rgw" ]]; then
                         add_common_separator "Installing cortx-motr dependencies"
-                        yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/$release_tag/cortx_iso/
-                        yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rockylinux/rockylinux-8.4-2.0.0-latest/
+                        yum-config-manager --add-repo="http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/$release_tag/cortx_iso/"
+                        yum-config-manager --add-repo="http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rockylinux/rockylinux-8.4-2.0.0-latest/"
                         yum install cortx-motr{,-devel} -y --nogpgcheck
                     fi
 
@@ -237,8 +237,8 @@ function ceph_build() {
 
                     if [[ $REPO_COMPONENT == "cortx-rgw" ]]; then
                         add_common_separator "Installing cortx-motr dependencies"
-                        yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/$release_tag/cortx_iso/
-                        yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rockylinux/rockylinux-8.4-2.0.0-latest/
+                        yum-config-manager --add-repo="http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/$release_tag/cortx_iso/"
+                        yum-config-manager --add-repo="http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rockylinux/rockylinux-8.4-2.0.0-latest/"
                         yum install cortx-motr{,-devel} -y --nogpgcheck
                     fi
 
