@@ -308,7 +308,6 @@ s3tests_boto3.functional.test_s3:test_versioning_bucket_create_suspend
 s3tests_boto3.functional.test_s3:test_bucketv2_policy_different_tenant 
 s3tests_boto3.functional.test_s3:test_bucket_policy_another_bucket 
 s3tests_boto3.functional.test_s3:test_bucketv2_policy_another_bucket 
-s3tests_boto3.functional.test_s3:test_get_obj_tagging
 s3tests_boto3.functional.test_s3:test_put_max_tags 
 s3tests_boto3.functional.test_s3:test_put_excess_tags 
 s3tests_boto3.functional.test_s3:test_put_max_kvsize_tags 
