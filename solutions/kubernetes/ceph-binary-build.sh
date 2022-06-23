@@ -309,7 +309,7 @@ function upload_packages() {
         case "$BUILD_OS" in
             ubuntu-20.04)
                 pushd "$BUILD_LOCATION"
-                    cp *.deb "$build_upload_dir/$REPO_COMPONENT/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
+                    cp ./*.deb "$build_upload_dir/$REPO_COMPONENT/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
                     check_status
                 popd
 
@@ -383,7 +383,7 @@ function upload_packages() {
         case "$BUILD_OS" in
             ubuntu-20.04)
                 pushd "$BUILD_LOCATION/$BUILD_OS"
-                    cp *.deb "$build_upload_dir/$REPO_COMPONENT/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
+                    cp ./*.deb "$build_upload_dir/$REPO_COMPONENT/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
                     check_status
                 popd
 
