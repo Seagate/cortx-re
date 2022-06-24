@@ -7,8 +7,8 @@ pipeline {
     }
     
     environment {
-        BUILD_LOCATION = "/root/custom-ci-jenkins/cortx-rgw-build/${BUILD_NUMBER}"
-        BUILD_OS = "rockylinux-8.4"
+        BUILD_LOCATION = "/var/log/custom-ci-jenkins/cortx-rgw-build/${BUILD_NUMBER}"
+        BUILD_OS = "${os_version}"
         VM_BUILD = false
         CORTX_RGW_OPTIMIZED_BUILD = true
 
@@ -74,7 +74,7 @@ pipeline {
                 sh label: 'Copy RPMS', script: '''
                     mkdir -p $build_upload_dir
                     if [ "$BUILD_LATEST_CORTX_RGW" == "yes" ]; then
-                        cp $BUILD_LOCATION/rpmbuild/$BUILD_NUMBER/RPMS/*/*.rpm $build_upload_dir
+                        cp $BUILD_LOCATION/$BUILD_OS/rpmbuild/RPMS/*/*.rpm $build_upload_dir
                     else
                         echo "Copy packages form last_successful"
                         cp /mnt/bigstorage/releases/cortx/components/github/main/rockylinux-8.4/dev/cortx-rgw/last_successful/*.rpm $build_upload_dir
