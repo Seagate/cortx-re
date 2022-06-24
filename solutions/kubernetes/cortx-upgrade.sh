@@ -24,7 +24,7 @@ source functions.sh cortx-deploy-functions.sh
 
 HOST_FILE="$PWD/hosts"
 PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
-WORKER_NODES=$(cat "$HOST_FILE" | grep -v "$PRIMARY_NODE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+WORKER_NODES=$(grep -v "$PRIMARY_NODE" < "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
 # Using this variable to SSH into all worker nodes
 ALL_NODES=${WORKER_NODES}
 REMOTE_SOLUTION_CONFIG="/var/tmp/solution.yaml"

@@ -105,7 +105,8 @@ function pull_image() {
     if [[ "$image" =~ "latest" ]]; then
         docker pull "$image" &>/dev/null
         actual_image_tag=$(docker inspect "$image" | grep "VERSION" | grep -o "2.0.0-[0-9][0-9][0-9]*" | head -n 1)
-        actual_image=$(echo "$image" | sed -e "s/2.0.0-latest/${actual_image_tag}/g")
+        # actual_image=$(echo "$image" | sed -e "s/2.0.0-latest/${actual_image_tag}/g")
+        actual_image=$(echo "${image//2.0.0-latest/${actual_image_tag}}")
         docker rmi -f "$image" &>/dev/null
         docker pull "$actual_image" &>/dev/null
         echo "$actual_image"
