@@ -13,7 +13,7 @@ pipeline {
         CORTX_RGW_OPTIMIZED_BUILD = true
 
         component = "cortx-rgw"
-        branch = "custom-ci"
+        branch = "integration-custom-ci"
         release_dir = "/mnt/bigstorage/releases/cortx"
         release_tag = "custom-build-$CUSTOM_CI_BUILD_ID"
         build_upload_dir = "$release_dir/github/integration-custom-ci/$os_version/$release_tag/cortx_iso"
