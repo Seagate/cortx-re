@@ -13,11 +13,15 @@ pipeline {
         disableConcurrentBuilds()   
     }
 
+    environment {
+        CEPH_DOCKER_DEPLOYMENT = "false"
+    }
+
     parameters {
-        string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for Cluster Setup scripts', trim: true)
-        string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
-        text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used. First node will be used as Primary node. Please provide a minimum of 3 nodes', name: 'hosts')
-        text(defaultValue: '''/dev/sdX''', description: 'Disks for OSD on VMs. This assumes the disk name and no. of disk is same on all nodes', name: 'OSD_Disks')
+        string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for Cluster Setup scripts.', trim: true)
+        string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Cluster Setup scripts.', trim: true)
+        text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used. First node will be used as Primary node. Recommended minimum of 3 nodes with same OS, host OS is automatically detected.', name: 'hosts')
+        text(defaultValue: '''/dev/sdX''', description: 'Disks for OSD on VMs. This assumes the disk name and no. of disk is same on all nodes.', name: 'OSD_Disks')
     }    
 
     stages {
@@ -138,6 +142,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'IO Operation', script: '''
                     pushd solutions/kubernetes/
+                        export CEPH_DOCKER_DEPLOYMENT=${CEPH_DOCKER_DEPLOYMENT}
                         bash ceph-deploy.sh --io-operation
                     popd
                 '''

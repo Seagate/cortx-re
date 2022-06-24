@@ -53,29 +53,47 @@ function setup_awscli() {
    add_secondary_separator "Setup awscli"
 
    if [[ $CEPH_DEPLOYMENT = "true" ]]; then
-      case "$ID" in
-         rocky)
-            yum install http://mirror.centos.org/centos/8-stream/AppStream/x86_64/os/Packages/jq-1.6-3.el8.x86_64.rpm -y 
-         ;;
-         centos)
-            yum install jq -y
-         ;;
-         ubuntu)
-            apt install -y jq
-        ;;
-      esac
 
-      # Get credentials.
-      access_key=$(radosgw-admin user info --uid=io-test | jq .keys[].access_key | tr -d '"')
-      secret_key=$(radosgw-admin user info --uid=io-test | jq .keys[].secret_key | tr -d '"')
+      if ! which jq; then
+         case "$ID" in
+            rocky)
+               yum install http://mirror.centos.org/centos/8-stream/AppStream/x86_64/os/Packages/jq-1.6-3.el8.x86_64.rpm -y 
+            ;;
+            centos)
+               yum install jq -y
+            ;;
+            ubuntu)
+               apt install -y jq
+         ;;
+         esac
+      fi
+
+      if [[ $CEPH_DOCKER_DEPLOYMENT = "true" ]]; then
+         # Get credentials.
+         access_key=$(cephadm shell -- radosgw-admin user info --uid=io-test | jq .keys[].access_key | tr -d '"')
+         secret_key=$(cephadm shell -- radosgw-admin user info --uid=io-test | jq .keys[].secret_key | tr -d '"')      
+
+      else
+         # Get credentials.
+         access_key=$(radosgw-admin user info --uid=io-test | jq .keys[].access_key | tr -d '"')
+         secret_key=$(radosgw-admin user info --uid=io-test | jq .keys[].secret_key | tr -d '"')
+      fi
+
+      # Set endpoint url.
       endpoint_url="http://""$(hostname -i)"":9999"
 
    else
       # Get credentials.
       access_key=$(yq e '.solution.common.s3.default_iam_users.auth_admin' $SOLUTION_FILE)
       secret_key=$(yq e '.solution.secrets.content.s3_auth_admin_secret' $SOLUTION_FILE)
+
+      # Set endpoint url.
       endpoint_url="http://""$(kubectl get svc | grep cortx-io | awk '{ print $3 }')"":80"
    fi
+
+   add_common_separator "AWS keys-:"
+   echo "Access Key: $access_key"
+   echo "Secret Key: $secret_key"
 
    mkdir -p /root/.aws/
 
