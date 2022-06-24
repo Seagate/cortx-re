@@ -6,7 +6,7 @@ try {
             if (n.getComputer().isOffline() == true) {
                 count ++
                 hudson.plugins.jobConfigHistory.ConfigInfo config = n.getComputer().actions[0].getSlaveConfigs()[0]
-                println(' ' + count + ' ,' + n.name + ' ,' + n.launcher.host + ' ,' + n.getLabelString() + ' ,' + config.getUser() + ' ,' + config.getUserID())
+                println('' + count + ',' + n.name + ',' + n.launcher.host + ',' + n.getLabelString() + ',' + config.getUser() + ',' + config.getUserID())
             }
         }
         catch (Exception e) {
@@ -15,7 +15,7 @@ try {
     }
 }
 catch (Exception e) {
-    println('Inside catch 2. ' + e)
+    this.println('Inside catch 2. ' + e)
 }
 pipeline {
     agent any
