@@ -16,6 +16,7 @@ pipeline {
         branch = "integration-custom-ci"
         release_dir = "/mnt/bigstorage/releases/cortx"
         release_tag = "custom-build-$CUSTOM_CI_BUILD_ID"
+        // NFS mount is done manually on agent
         build_upload_dir = "$release_dir/github/integration-custom-ci/$os_version/$release_tag/cortx_iso"
     }
 
@@ -74,7 +75,9 @@ pipeline {
                 sh label: 'Copy RPMS', script: '''
                     mkdir -p $build_upload_dir
                     if [ "$BUILD_LATEST_CORTX_RGW" == "yes" ]; then
-                        cp $BUILD_LOCATION/$BUILD_OS/rpmbuild/RPMS/*/*.rpm $build_upload_dir
+                        pushd $BUILD_LOCATION/$BUILD_OS/rpmbuild
+                            cp RPMS/*/*.rpm $build_upload_dir
+                        popd
                     else
                         echo "Copy packages form last_successful"
                         cp /mnt/bigstorage/releases/cortx/components/github/main/rockylinux-8.4/dev/cortx-rgw/last_successful/*.rpm $build_upload_dir
