@@ -8,45 +8,39 @@ pipeline {
     options {
         timeout(time: 240, unit: 'MINUTES')
         timestamps()
-        buildDiscarder(logRotator(daysToKeepStr: '50', numToKeepStr: '30'))
+        buildDiscarder(logRotator(daysToKeepStr: '30', numToKeepStr: '30'))
         ansiColor('xterm')
     }
 
-    environment {
-        GITHUB_CRED = credentials('shailesh-github-token')
-    }
-
     parameters {
-
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repository for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_SERVER_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-rgw:2.0.0-latest', description: 'CORTX-SERVER image', trim: true)
         string(name: 'CORTX_DATA_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-data:2.0.0-latest', description: 'CORTX-DATA image', trim: true)
         string(name: 'CORTX_CONTROL_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-control:2.0.0-latest', description: 'CORTX-CONTROL image', trim: true)
         choice(
+            name: 'POD_TYPE',
+            choices: ['all', 'data', 'control', 'ha', 'server'],
+            description: 'Pods need to be upgraded. option all will upgrade all CORTX services pods'
+        )
+        choice(
             name: 'DEPLOYMENT_METHOD',
             choices: ['standard', 'data-only'],
             description: 'Method to deploy required CORTX service. standard method will deploy all CORTX services'
         )
-        string(name: 'SNS_CONFIG', defaultValue: '1+0+0', description: 'sns configuration for deployment. Please select value based on disks available on nodes.', trim: true)
-        string(name: 'DIX_CONFIG', defaultValue: '1+0+0', description: 'dix configuration for deployment. Please select value based on disks available on nodes.', trim: true)
-        string(name: 'CONTROL_EXTERNAL_NODEPORT', defaultValue: '31169', description: 'Port to be used for control service.', trim: true)
-        string(name: 'S3_EXTERNAL_HTTP_NODEPORT', defaultValue: '30080', description: 'HTTP Port to be used for IO service.', trim: true)
-        string(name: 'S3_EXTERNAL_HTTPS_NODEPORT', defaultValue: '30443', description: 'HTTPS to be used for IO service.', trim: true)
-        string(name: 'NAMESPACE', defaultValue: 'cortx', description: 'kubernetes namespace to be used for CORTX deployment.', trim: true)
-        text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used for CORTX cluster setup. First node will be used as Primary node', name: 'hosts')
         choice(
-            name: 'EXTERNAL_EXPOSURE_SERVICE',
-            choices: ['NodePort', 'LoadBalancer'],
-            description: 'K8s Service to be used to expose RGW Service to outside cluster.'
+            name: 'UPGRADE_TYPE',
+            choices: ['rolling-upgrade', 'cold-upgrade'],
+            description: 'Method to upgrade required CORTX cluster.'
         )
-        // Please configure CORTX_SCRIPTS_BRANCH and CORTX_SCRIPTS_REPO parameter in Jenkins job configuration.
-    }    
+        // Please configure hosts, CORTX_SCRIPTS_BRANCH and CORTX_SCRIPTS_REPO parameter in Jenkins job configuration.
+    }
 
     stages {
-
+        
         stage('Checkout Script') {
-            steps { 
+            steps {
+                script { build_stage = env.STAGE_NAME }
                 cleanWs()            
                 script {
                     checkout([$class: 'GitSCM', branches: [[name: "${CORTX_RE_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${CORTX_RE_REPO}"]]])                
@@ -54,101 +48,114 @@ pipeline {
             }
         }
 
-        stage ('Destory Pre-existing Cluster') {
+        stage('Pre-Upgrade Cluster Status') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Destroy existing Cluster', script: '''
+                sh label: 'fetch cluster status', script: '''
                     pushd solutions/kubernetes/
-                        echo $hosts | tr ' ' '\n' > hosts
+                        echo $hosts | tr ' ' '\n' | head -n 1 > hosts
                         cat hosts
-                        ./cortx-deploy.sh --destroy-cluster
+                        ./cortx-upgrade.sh --cluster-status
                     popd
                 '''
+                script {
+                    env.preupgrade_cortx_server_image = sh( script: '''
+                        grep "seagate/cortx-rgw" < /var/tmp/cortx-cluster-status.txt | head -n 1
+                    ''', returnStdout: true).trim()
+
+                    env.preupgrade_cortx_data_image = sh( script: '''
+                        grep "seagate/cortx-data" < /var/tmp/cortx-cluster-status.txt | head -n 1
+                    ''', returnStdout: true).trim()
+
+                    env.preupgrade_cortx_control_image = sh( script: '''
+                        grep "seagate/cortx-control" < /var/tmp/cortx-cluster-status.txt | head -n 1
+                    ''', returnStdout: true).trim()
+                }
             }
         }
 
-
-        stage ('Deploy CORTX Components') {
+        stage('Upgrade Cluster') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Deploy CORTX Components', script: '''
+                sh label: 'Upgrade cluster', script: '''
                     pushd solutions/kubernetes/
-                        echo $hosts | tr ' ' '\n' > hosts
-                        cat hosts
-                        if [ "$(cat hosts | wc -l)" -eq 2 ]
-                        then
-                           echo "Current configuration does not support 2 node CORTX cluster deployment. Please try with 1 or more than two nodes."
-                           echo "Exiting Jenkins job."
-                           exit 1
-                        fi
-                        export SOLUTION_CONFIG_TYPE=automated
                         export CORTX_SCRIPTS_BRANCH=${CORTX_SCRIPTS_BRANCH}
                         export CORTX_SCRIPTS_REPO=${CORTX_SCRIPTS_REPO}
                         export CORTX_SERVER_IMAGE=${CORTX_SERVER_IMAGE}
                         export CORTX_DATA_IMAGE=${CORTX_DATA_IMAGE}
                         export CORTX_CONTROL_IMAGE=${CORTX_CONTROL_IMAGE}
+                        export SOLUTION_CONFIG_TYPE="automated"
+                        export POD_TYPE=${POD_TYPE}
                         export DEPLOYMENT_METHOD=${DEPLOYMENT_METHOD}
-                        export SNS_CONFIG=${SNS_CONFIG}
-                        export DIX_CONFIG=${DIX_CONFIG}
-                        export EXTERNAL_EXPOSURE_SERVICE=${EXTERNAL_EXPOSURE_SERVICE}
-                        export CONTROL_EXTERNAL_NODEPORT=${CONTROL_EXTERNAL_NODEPORT}
-                        export S3_EXTERNAL_HTTP_NODEPORT=${S3_EXTERNAL_HTTP_NODEPORT}
-                        export S3_EXTERNAL_HTTPS_NODEPORT=${S3_EXTERNAL_HTTPS_NODEPORT}
-                        export NAMESPACE=${NAMESPACE}
-                        ./cortx-deploy.sh --cortx-cluster
+                        export UPGRADE_TYPE=${UPGRADE_TYPE}
+                        ./cortx-upgrade.sh --upgrade
                     popd
                 '''
             }
         }
 
-        stage ('IO Sanity Test') {
+        stage('Post-Upgrade Cluster Status') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Perform IO Sanity Test', script: '''
+                sh label: 'fetch cluster status', script: '''
                     pushd solutions/kubernetes/
-                        ./cortx-deploy.sh --io-sanity
+                        ./cortx-upgrade.sh --cluster-status
+                    popd
+                '''
+            }
+        }
+
+        stage('Post-Upgrade IO Sanity') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'execute IO operations', script: '''
+                    pushd solutions/kubernetes/
+                        ./cortx-upgrade.sh --io-sanity
                     popd
                 '''
             }
         }
     }
-
     post {
         always {
-
             script {
-
-                // Jenkins Summary
                 clusterStatus = ""
-                if ( fileExists('/var/tmp/cortx-cluster-status.txt') && currentBuild.currentResult == "SUCCESS" ) {
+                upgradeStatus = ""
+                if ( fileExists('/var/tmp/upgrade-logs.txt') && fileExists('/var/tmp/cortx-cluster-status.txt') && currentBuild.currentResult == "SUCCESS" ) {
                     clusterStatus = readFile(file: '/var/tmp/cortx-cluster-status.txt')
-                    MESSAGE = "CORTX Cluster Setup Success for the build ${build_id}"
+                    upgradeStatus = readFile(file: '/var/tmp/upgrade-logs.txt')
+                    MESSAGE = "CORTX Cluster Upgrade Success for the build ${build_id}"
                     ICON = "accept.gif"
                     STATUS = "SUCCESS"
                 } else if ( currentBuild.currentResult == "FAILURE" ) {
                     manager.buildFailure()
-                    MESSAGE = "CORTX Cluster Setup Failed for the build ${build_id}"
+                    MESSAGE = "CORTX Cluster Upgrade Failed for the build ${build_id}"
                     ICON = "error.gif"
                     STATUS = "FAILURE"
  
                 } else {
                     manager.buildUnstable()
-                    MESSAGE = "CORTX Cluster Setup is Unstable"
+                    MESSAGE = "CORTX Cluster Upgrade is Unstable"
                     ICON = "warning.gif"
                     STATUS = "UNSTABLE"
                 }
-                
-                clusterStatusHTML = "<pre>${clusterStatus}</pre>"
 
-                manager.createSummary("${ICON}").appendText("<h3>CORTX Cluster Setup ${currentBuild.currentResult} </h3><p>Please check <a href=\"${BUILD_URL}/console\">cluster setup logs</a> for more info <h4>Cluster Status:</h4>${clusterStatusHTML}", false, false, false, "red")
+                manager.createSummary("${ICON}").appendText("<h3>CORTX Cluster Upgrade ${currentBuild.currentResult} </h3><p>Please check <a href=\"${BUILD_URL}/console\">cluster setup logs</a>", false, false, false, "red")
 
                 // Email Notification
                 env.build_stage = "${build_stage}"
-                env.cluster_status = "${clusterStatusHTML}"
+                env.cluster_status = sh( script: "echo ${build_url}/artifact/artifacts/cortx-cluster-status.txt", returnStdout: true)
+                env.upgrade_logs = sh( script: "echo ${build_url}/artifact/artifacts/upgrade-logs.txt", returnStdout: true)
+                env.cortx_script_branch = "${CORTX_SCRIPTS_BRANCH}"
+                env.hosts = sh( script: '''
+                    echo $hosts | tr ' ' '\n' | awk -F["="] '{print $2}'|cut -d',' -f1
+                ''', returnStdout: true).trim()
+                env.preupgrade_images_info = "${env.preupgrade_cortx_server_image},${env.preupgrade_cortx_data_image},${env.preupgrade_cortx_control_image}"
+                env.images_info = "${CORTX_SERVER_IMAGE},${CORTX_DATA_IMAGE},${CORTX_CONTROL_IMAGE}"
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
-                mailRecipients = "shailesh.vaidya@seagate.com"
+                mailRecipients = "gaurav.chaudhari@seagate.com"
                 emailext ( 
-                    body: '''${SCRIPT, template="cluster-setup-email.template"}''',
+                    body: '''${SCRIPT, template="cluster-upgrade-email.template"}''',
                     mimeType: 'text/html',
                     subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
                     attachLog: true,
@@ -157,7 +164,7 @@ pipeline {
                 )
             }
         }
-
+        
         cleanup {
             sh label: 'Collect Artifacts', script: '''
             mkdir -p artifacts
@@ -165,10 +172,8 @@ pipeline {
                 HOST_FILE=$PWD/hosts
                 PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
                 [ -f /var/tmp/cortx-cluster-status.txt ] && cp /var/tmp/cortx-cluster-status.txt $WORKSPACE/artifacts/
+                [ -f /var/tmp/upgrade-logs.txt ] && cp /var/tmp/upgrade-logs.txt $WORKSPACE/artifacts/
                 scp -q "$PRIMARY_NODE":/root/deploy-scripts/k8_cortx_cloud/solution.yaml $WORKSPACE/artifacts/
-                if [ -f /var/tmp/cortx-cluster-status.txt ]; then
-                    cp /var/tmp/cortx-cluster-status.txt $WORKSPACE/artifacts/
-                fi
             popd    
             '''
             script {
@@ -178,16 +183,14 @@ pipeline {
         }
 
         failure {
-            sh label: 'Collect CORTX support bundle logs in artifacts', script: '''
-            mkdir -p artifacts
+            // Remove upgrade track file
+            sh label: 'Remove metadata files', script: '''
             pushd solutions/kubernetes/
-                ./cortx-deploy.sh --support-bundle
                 HOST_FILE=$PWD/hosts
                 PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
-                LOG_FILE=$(ssh -o 'StrictHostKeyChecking=no' $PRIMARY_NODE 'ls -t /root/deploy-scripts/k8_cortx_cloud | grep logs-cortx-cloud | grep .tar | head -1')
-                scp -q "$PRIMARY_NODE":/root/deploy-scripts/k8_cortx_cloud/$LOG_FILE $WORKSPACE/artifacts/
+                ssh -o 'StrictHostKeyChecking=no' $PRIMARY_NODE 'rm -rf /tmp/upgrade.sh.pid'
             popd
-            '''
+            '''    
         }
-    }
-}
+    }        
+}        
