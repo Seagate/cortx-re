@@ -124,13 +124,15 @@ pipeline {
                 stage ("build CORTX-RGW") {
                     steps {
                         script { build_stage = env.STAGE_NAME }
-                        build job: 'cortx-rgw-custom-build', wait: true,
+                        build job: '/Release_Engineering/re-workspace/nitisdev/custom-ci-generic/cortx-rgw-custom-build', wait: true,
                         parameters: [
                                     string(name: 'CORTX_RGW_BRANCH', value: "${CORTX_RGW_BRANCH}"),
                                     string(name: 'MOTR_BRANCH', value: "custom-ci"),
                                     string(name: 'CORTX_RGW_URL', value: "${CORTX_RGW_URL}"),
                                     string(name: 'CUSTOM_CI_BUILD_ID', value: "${CUSTOM_CI_BUILD_ID}"),
-                                    string(name: 'BUILD_LATEST_CORTX_RGW', value: "${BUILD_LATEST_CORTX_RGW}")
+                                    string(name: 'BUILD_LATEST_CORTX_RGW', value: "${BUILD_LATEST_CORTX_RGW}"),
+                                    string(name: 'CORTX_RE_REPO', value: "https://github.com/nitisdev/cortx-re"),
+                                    string(name: 'CORTX_RE_BRANCH', value: "CORTX-3221")
                                 ]
                     }
                 }
