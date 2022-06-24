@@ -1,16 +1,16 @@
 def count = 0
 try {
-    println('Sr.no,Node_name,Host,Label,User,UserId')
+    this.println('Sr.no,Node_name,Host,Label,User,UserId')
     for (Node n : Jenkins.get().getNodes()) {
         try {
             if (n.getComputer().isOffline() == true) {
                 count ++
                 hudson.plugins.jobConfigHistory.ConfigInfo config = n.getComputer().actions[0].getSlaveConfigs()[0]
-                println('' + count + ',' + n.name + ',' + n.launcher.host + ',' + n.getLabelString() + ',' + config.getUser() + ',' + config.getUserID())
+                this.println('' + count + ',' + n.name + ',' + n.launcher.host + ',' + n.getLabelString() + ',' + config.getUser() + ',' + config.getUserID())
             }
         }
         catch (Exception e) {
-            println('Inside catch of Sr.no: ' + count + ' ' + e)
+            this.println('Inside catch of Sr.no: ' + count + ' ' + e)
         }
     }
 }
