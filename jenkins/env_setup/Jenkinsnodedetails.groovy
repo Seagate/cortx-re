@@ -6,7 +6,7 @@ try {
             if (n.getComputer().isOffline() == true) {
                 count ++
                 hudson.plugins.jobConfigHistory.ConfigInfo config = n.getComputer().actions[0].getSlaveConfigs()[0]
-                println(' ,' + count + ' ,' + n.name + ' ,' + n.launcher.host + ' ,' + n.getLabelString() + ' ,' + config.getUser() + ' ,' + config.getUserID())
+                println(' ' + count + ' ,' + n.name + ' ,' + n.launcher.host + ' ,' + n.getLabelString() + ' ,' + config.getUser() + ' ,' + config.getUserID())
             }
         }
         catch (Exception e) {
