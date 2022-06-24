@@ -23,7 +23,7 @@ source functions.sh
 ACTION="$1"
 BUILD_LOCATION="$2"
 MOUNT="$3"
-REPO_COMPONENT=${CEPH_REPO#*/}
+REPO_COMPONENT=${CEPH_REPO##*/}
 
 function usage() {
     cat << HEREDOC
@@ -43,7 +43,7 @@ fi
 
 function check_params() {
     add_primary_separator "\t\tChecking parameters"
-    if [ -z "$CEPH_REPO" ]; then echo "CEPH_REPO not provided. Using default: ceph/ceph ";CEPH_REPO="ceph/ceph"; fi
+    if [ -z "$CEPH_REPO" ]; then echo "CEPH_REPO not provided. Using default: ceph/ceph ";CEPH_REPO="https://github.com/ceph/ceph"; fi
     if [ -z "$CEPH_BRANCH" ]; then echo "CEPH_BRANCH not provided. Using default: quincy";CEPH_BRANCH="quincy"; fi
     if [ -z "$BUILD_OS" ]; then echo "BUILD_OS not provided. Using default: centos";BUILD_OS="centos"; fi
     if [ -z "$BUILD_LOCATION" ]; then echo "BUILD_LOCATION for container to mount not provided. Using default: /var/log/ceph-build/${BUILD_NUMBER}";BUILD_LOCATION="/var/log/ceph-build/${BUILD_NUMBER}"; fi
@@ -133,7 +133,7 @@ function ceph_build() {
                 check_status
                 pushd "$BUILD_LOCATION"
                     add_common_separator "Clone Repo"
-                    git clone https://github.com/$CEPH_REPO -b $CEPH_BRANCH
+                    git clone $CEPH_REPO -b $CEPH_BRANCH
 
                     if [[ $REPO_COMPONENT == "cortx-rgw" ]]; then
                         add_common_separator "cortx-motr dependencies no yet sorted on ubuntu"
@@ -182,7 +182,7 @@ function ceph_build() {
                 dnf config-manager --set-enabled powertools
                 pushd "$BUILD_LOCATION"
                     add_common_separator "Clone Repo"
-                    git clone https://github.com/$CEPH_REPO -b $CEPH_BRANCH
+                    git clone $CEPH_REPO -b $CEPH_BRANCH
 
                     if [[ $REPO_COMPONENT == "cortx-rgw" ]]; then
                         add_common_separator "Installing cortx-motr dependencies"
@@ -233,7 +233,7 @@ function ceph_build() {
                 dnf config-manager --set-enabled powertools
                 pushd "$BUILD_LOCATION"
                     add_common_separator "Clone Repo"
-                    git clone https://github.com/$CEPH_REPO -b $CEPH_BRANCH
+                    git clone $CEPH_REPO -b $CEPH_BRANCH
 
                     if [[ $REPO_COMPONENT == "cortx-rgw" ]]; then
                         add_common_separator "Installing cortx-motr dependencies"
