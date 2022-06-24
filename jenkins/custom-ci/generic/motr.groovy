@@ -132,7 +132,7 @@ pipeline {
                                     string(name: 'CUSTOM_CI_BUILD_ID', value: "${CUSTOM_CI_BUILD_ID}"),
                                     string(name: 'BUILD_LATEST_CORTX_RGW', value: "${BUILD_LATEST_CORTX_RGW}"),
                                     string(name: 'CORTX_RE_REPO', value: "https://github.com/nitisdev/cortx-re"),
-                                    string(name: 'CORTX_RE_BRANCH', value: "CORTX-3221")
+                                    string(name: 'CORTX_RE_BRANCH', value: "CORTX-32121")
                                 ]
                     }
                 }
