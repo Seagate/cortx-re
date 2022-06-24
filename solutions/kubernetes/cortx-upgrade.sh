@@ -23,8 +23,10 @@ set -eo pipefail
 source functions.sh cortx-deploy-functions.sh
 
 HOST_FILE="$PWD/hosts"
-ALL_NODES=$(cat "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
 PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+WORKER_NODES=$(cat "$HOST_FILE" | grep -v "$PRIMARY_NODE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+# Using this variable to SSH into all worker nodes
+ALL_NODES=${WORKER_NODES}
 REMOTE_SOLUTION_CONFIG="/var/tmp/solution.yaml"
 SCRIPT_LOCATION="/root/deploy-scripts/k8_cortx_cloud"
 SSH_KEY_FILE=/root/.ssh/id_rsa
@@ -77,9 +79,9 @@ function check_io_operations() {
     ssh_primary_node "export CEPH_DEPLOYMENT='false' && export DEPLOYMENT_METHOD=$DEPLOYMENT_METHOD && /var/tmp/cortx-deploy-functions.sh --io-sanity"
 }
 
-function execute_prereq() {
-    ssh_all_nodes "source /var/tmp/functions.sh &&
-    add_secondary_separator 'Download Upgrade Images' && 
+function setup_worker_nodes() {
+    add_secondary_separator "Download Upgrade Images on Worker Nodes"
+    ssh_all_nodes "source /var/tmp/functions.sh && 
     pull_image $CORTX_SERVER_IMAGE &&
     pull_image $CORTX_DATA_IMAGE &&
     pull_image $CORTX_CONTROL_IMAGE
@@ -91,9 +93,10 @@ function upgrade_cluster() {
         scp_primary_node $SOLUTION_CONFIG
     fi
     add_primary_separator "\tUpgrading CORTX Cluster"
+    setup_worker_nodes 
     ssh_primary_node 'source /var/tmp/functions.sh &&
     if [ '"$SOLUTION_CONFIG_TYPE"' == "manual" ]; then copy_solution_config '"$REMOTE_SOLUTION_CONFIG"' '"$SCRIPT_LOCATION"'; fi &&
-    add_secondary_separator "Download Upgrade Images" && 
+    add_secondary_separator "Download Upgrade Images on Primary Node" && 
     CORTX_ACTUAL_SERVER_IMAGE=`pull_image '"$CORTX_SERVER_IMAGE"'` &&
     echo '"CORTX_ACTUAL_SERVER_IMAGE : \$CORTX_ACTUAL_SERVER_IMAGE"' &&
     CORTX_ACTUAL_DATA_IMAGE=`pull_image '"$CORTX_DATA_IMAGE"'` &&
@@ -133,7 +136,6 @@ scp_primary_node cortx-deploy-functions.sh io-sanity.sh
 case $ACTION in
     --upgrade)
         check_params
-        execute_prereq
         upgrade_cluster
     ;;
     --suspend)
