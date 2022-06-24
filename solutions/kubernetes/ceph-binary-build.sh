@@ -238,8 +238,11 @@ function ceph_build() {
                     if [[ $REPO_COMPONENT == "cortx-rgw" ]]; then
                         add_common_separator "Installing cortx-motr dependencies"
                         yum-config-manager --add-repo="http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/$release_tag/cortx_iso/"
+                        check_status "Failed to add motr repo"
                         yum-config-manager --add-repo="http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rockylinux/rockylinux-8.4-2.0.0-latest/"
+                        check_status "Failed to add motr repo"
                         yum install cortx-motr{,-devel} -y --nogpgcheck
+                        check_status "Failed to install cortx-motr"
                     fi
 
                     pushd $REPO_COMPONENT
