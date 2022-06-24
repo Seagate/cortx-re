@@ -81,11 +81,10 @@ function check_io_operations() {
 
 function setup_worker_nodes() {
     add_secondary_separator "Download Upgrade Images on Worker Nodes"
-    ssh_all_nodes "source /var/tmp/functions.sh && 
-    pull_image $CORTX_SERVER_IMAGE &&
-    pull_image $CORTX_DATA_IMAGE &&
-    pull_image $CORTX_CONTROL_IMAGE
-    "
+    ssh_all_nodes 'source /var/tmp/functions.sh && 
+    pull_image '"$CORTX_SERVER_IMAGE"' &&
+    pull_image '"$CORTX_DATA_IMAGE"' &&
+    pull_image '"$CORTX_CONTROL_IMAGE"''
 }
 
 function upgrade_cluster() {
@@ -130,7 +129,7 @@ validation
 generate_rsa_key
 nodes_setup
 scp_all_nodes functions.sh
-scp_primary_node cortx-deploy-functions.sh io-sanity.sh
+scp_primary_node cortx-deploy-functions.sh functions.sh io-sanity.sh
 
 
 case $ACTION in
