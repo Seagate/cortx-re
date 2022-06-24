@@ -23,6 +23,7 @@ set -eo pipefail
 source functions.sh cortx-deploy-functions.sh
 
 HOST_FILE="$PWD/hosts"
+ALL_NODES=$(cat "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
 PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
 REMOTE_SOLUTION_CONFIG="/var/tmp/solution.yaml"
 SCRIPT_LOCATION="/root/deploy-scripts/k8_cortx_cloud"
@@ -76,6 +77,15 @@ function check_io_operations() {
     ssh_primary_node "export CEPH_DEPLOYMENT='false' && export DEPLOYMENT_METHOD=$DEPLOYMENT_METHOD && /var/tmp/cortx-deploy-functions.sh --io-sanity"
 }
 
+function execute_prereq() {
+    ssh_all_nodes 'source /var/tmp/functions.sh &&
+    add_secondary_separator "Download Upgrade Images" && 
+    pull_image '"$CORTX_SERVER_IMAGE"' &&
+    pull_image '"$CORTX_DATA_IMAGE"' &&
+    pull_image '"$CORTX_CONTROL_IMAGE"'
+    '
+}
+
 function upgrade_cluster() {
     if [ "$SOLUTION_CONFIG_TYPE" == manual ]; then
         scp_primary_node $SOLUTION_CONFIG
@@ -122,6 +132,7 @@ scp_primary_node cortx-deploy-functions.sh functions.sh io-sanity.sh
 case $ACTION in
     --upgrade)
         check_params
+        execute_prereq
         upgrade_cluster
     ;;
     --suspend)

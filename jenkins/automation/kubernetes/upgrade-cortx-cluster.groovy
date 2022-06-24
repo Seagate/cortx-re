@@ -53,7 +53,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'fetch cluster status', script: '''
                     pushd solutions/kubernetes/
-                        echo $hosts | tr ' ' '\n' | head -n 1 > hosts
+                        echo $hosts | tr ' ' '\n' > hosts
                         cat hosts
                         ./cortx-upgrade.sh --cluster-status
                     popd

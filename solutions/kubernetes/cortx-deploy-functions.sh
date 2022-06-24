@@ -291,7 +291,7 @@ function setup_primary_node() {
     fi
     
     add_image_info
-    add_node_info_solution_config
+    add_node_info_snolution_config
     setup_kubectl_context
 }
 
