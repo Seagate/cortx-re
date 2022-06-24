@@ -1,17 +1,16 @@
 def count = 0
 try {
+    println('Sr.no,Node_name,Host,Label,User,UserId')
     for (Node n : Jenkins.get().getNodes()) {
         try {
             if (n.getComputer().isOffline() == true) {
                 count ++
                 hudson.plugins.jobConfigHistory.ConfigInfo config = n.getComputer().actions[0].getSlaveConfigs()[0]
-                println('Sr.no:' + count + ' Node_name:' + n.name + ' Host:' + n.launcher.host + ' Label:' + n.getLabelString() + ' User:' + config.getUser() + ' UserId:' + config.getUserID())
-                println('-------------')
+                println(' ,' + count + ' ,' + n.name + ' ,' + n.launcher.host + ' ,' + n.getLabelString() + ' ,' + config.getUser() + ' ,' + config.getUserID())
             }
         }
         catch (Exception e) {
             println('Inside catch of Sr.no: ' + count + ' ' + e)
-            println('-------------')
         }
     }
 }
@@ -29,13 +28,13 @@ pipeline {
         {
                 steps
            {
-                sh 'curl -k -u $USER:$PASS -o $WORKSPACE/console.log "https://eos-jenkins.colo.seagate.com/job/Cortx-Automation/job/Reports/job/offline-node-report/lastBuild/consoleText"'
+                sh 'curl -k -u $USER:$PASS -o $WORKSPACE/offline-nodes.txt "https://eos-jenkins.colo.seagate.com/job/Cortx-Automation/job/Reports/job/offline-node-report/lastBuild/consoleText"'
            }
         }
     }
     post {
         always {
-            archiveArtifacts artifacts: 'console.log', followSymlinks: false, fingerprint: true, onlyIfSuccessful: true
+            archiveArtifacts artifacts: 'offline-nodes.txt', followSymlinks: false, fingerprint: true, onlyIfSuccessful: true
         }
     }
 }
