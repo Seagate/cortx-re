@@ -87,6 +87,9 @@ pipeline {
     post {
         always {
             cleanWs()
+            sh label: 'Cleanup Build Location', script: """
+            rm -rf ${BUILD_LOCATION}
+            """
         }
     }
 }
