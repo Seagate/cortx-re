@@ -78,12 +78,12 @@ function check_io_operations() {
 }
 
 function execute_prereq() {
-    ssh_all_nodes 'source /var/tmp/functions.sh &&
-    add_secondary_separator "Download Upgrade Images" && 
-    pull_image '"$CORTX_SERVER_IMAGE"' &&
-    pull_image '"$CORTX_DATA_IMAGE"' &&
-    pull_image '"$CORTX_CONTROL_IMAGE"'
-    '
+    ssh_all_nodes "source /var/tmp/functions.sh &&
+    add_secondary_separator 'Download Upgrade Images' && 
+    pull_image $CORTX_SERVER_IMAGE &&
+    pull_image $CORTX_DATA_IMAGE &&
+    pull_image $CORTX_CONTROL_IMAGE
+    "
 }
 
 function upgrade_cluster() {
