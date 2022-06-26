@@ -1,7 +1,8 @@
 pipeline {
     agent {
         node {
-            label 'docker-image-builder-centos-7.9.2009'
+            // label 'docker-image-builder-centos-7.9.2009'
+            label 'ceph-image-build'
         }
     }
 
