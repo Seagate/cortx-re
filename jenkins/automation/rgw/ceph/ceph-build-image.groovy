@@ -17,13 +17,15 @@ pipeline {
 
     environment {
         ARCH = "x86_64"
+        CEPH_PROJECT = "ceph"
+        REGISTRY = "cortx-docker.colo.seagate.com"
     }
 
     parameters {
         string(name: 'CEPH_CONTAINER_REPO', defaultValue: 'https://github.com/nitisdev/ceph-container/', description: 'Repository for ceph container image scripts.', trim: true)
-        string(name: 'CEPH_CONTAINER_BRANCH', defaultValue: 'centos-custom', description: 'Branch or GitHash for ceph container image scripts.', trim: true)
+        string(name: 'CEPH_CONTAINER_BRANCH', defaultValue: 'rockylinux-custom', description: 'Branch or GitHash for ceph container image scripts.', trim: true)
         string(name: 'CEPH_RELEASE', defaultValue: 'quincy', description: 'Ceph release to build image from.', trim: true)
-        string(name: 'OS_IMAGE', defaultValue: 'centos', description: 'Base OS docker image to build from.', trim: true)
+        string(name: 'OS_IMAGE', defaultValue: 'rockylinux', description: 'Base OS docker image to build from.', trim: true)
         string(name: 'OS_IMAGE_TAG', defaultValue: '8', description: 'OS docker image tag.', trim: true)
     }    
 
@@ -47,8 +49,8 @@ pipeline {
                     echo -e "==============================\n"
 
                     echo "List created images:"
-                    docker images --format "{{.Repository}}:{{.Tag}}" --filter reference=ceph/daemon-base:${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
-                    docker images --format "{{.Repository}}:{{.Tag}}" --filter reference=ceph/daemon:${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
+                    docker images --format "{{.Repository}}:{{.Tag}}" --filter reference=${CEPH_PROJECT}/daemon-base:${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
+                    docker images --format "{{.Repository}}:{{.Tag}}" --filter reference=${CEPH_PROJECT}/daemon:${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
                 """
             }
         }
@@ -59,25 +61,26 @@ pipeline {
                 sh label: 'Push Image to Registry', script: """
 
                     echo "Tag container images"
-                    docker tag ceph/daemon:${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH} nitisdev/ceph:daemon-${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
-                    docker tag ceph/daemon-base:${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH} nitisdev/ceph:daemon-base-${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
+                    docker tag ${CEPH_PROJECT}/daemon:${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH} ${REGISTRY}/${CEPH_PROJECT}/${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}:daemon-${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
+                    docker tag ${CEPH_PROJECT}/daemon-base:${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH} ${REGISTRY}/${CEPH_PROJECT}/${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}:daemon-base-${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
 
                     echo -e "==============================\n"
 
                     echo "Pushing images"
-                    #Currently pushing to test DockerHub repository will migrate to internal Harbor pending versioning process.
-                    docker push -a nitisdev/ceph
+                    #Currently pushing to dev Harbor registry.
+                    docker push ${REGISTRY}/${CEPH_PROJECT}/${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}:daemon-${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
+                    docker push ${REGISTRY}/${CEPH_PROJECT}/${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}:daemon-base-${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
 
                     echo -e "==============================\n"
 
                     echo "To pull image from docker:"
-                    echo "docker pull nitisdev/ceph:daemon-centos-custom-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}"
+                    echo "docker pull ${REGISTRY}/${CEPH_PROJECT}/${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}:daemon-${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}"
 
                     echo "Untag & remove local images"
-                    docker rmi ceph/daemon-base:${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
-                    docker rmi ceph/daemon:${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
-                    docker rmi nitisdev/ceph:daemon-${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
-                    docker rmi nitisdev/ceph:daemon-base-${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
+                    docker rmi ${CEPH_PROJECT}/daemon-base:${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
+                    docker rmi ${CEPH_PROJECT}/daemon:${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
+                    docker rmi ${REGISTRY}/${CEPH_PROJECT}/${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}:daemon-${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
+                    docker rmi ${REGISTRY}/${CEPH_PROJECT}/${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}:daemon-base-${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
                 """
             }
         }
