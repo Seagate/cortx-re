@@ -56,6 +56,7 @@ function download_deploy_script() {
     if [ -z "$SCRIPT_LOCATION" ]; then echo "SCRIPT_LOCATION not provided.Exiting..."; exit 1; fi
     if [ -z "$CORTX_SCRIPTS_REPO" ]; then echo "CORTX_SCRIPTS_REPO not provided.Exiting..."; exit 1; fi
     if [ -z "$CORTX_SCRIPTS_BRANCH" ]; then echo "CORTX_SCRIPTS_BRANCH not provided.Exiting..."; exit 1; fi
+    if [ -z "$IMAGE_CLEANUP" ]; then echo "IMAGE_CLEANUP option not provided.Exiting..."; exit 1; fi
 
     rm -rf $SCRIPT_LOCATION
     yum install git -y
@@ -274,7 +275,12 @@ function execute_prereq() {
 
 function setup_primary_node() {
     #Clean up untagged docker images and stopped docker containers.
-    cleanup
+    if [ "${IMAGE_CLEANUP}" == "yes" ]; then
+        cleanup
+    else
+        echo -e "\nExecuting community deploy script.No cleaning required."
+    fi
+
     #Third-party images are downloaded from GitHub container registry. 
     download_deploy_script
     install_yq
@@ -298,7 +304,12 @@ function setup_primary_node() {
 function setup_worker_node() {
     add_secondary_separator "Setting up Worker Node on $HOSTNAME"
     #Clean up untagged docker images and stopped docker containers.
-    cleanup
+    if [ "${IMAGE_CLEANUP}" == "yes" ]; then
+        cleanup
+    else
+        echo -e "\nExecuting community deploy script.No cleaning required."
+    fi
+    
     #Third-party images are downloaded from GitHub container registry.
     download_deploy_script
     install_yq
