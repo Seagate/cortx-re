@@ -63,8 +63,8 @@ pipeline {
                 sh label: 'Push Image to Registry', script: """
 
                     echo "Tag container images"
-                    docker tag ${CEPH_PROJECT}/daemon:${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH} ${REGISTRY}/${CEPH_PROJECT}/${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}:daemon-${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
-                    docker tag ${CEPH_PROJECT}/daemon-base:${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH} ${REGISTRY}/${CEPH_PROJECT}/${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}:daemon-base-${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
+                    docker tag ${CEPH_PROJECT}/daemon:${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH} ${REGISTRY}/${CEPH_PROJECT}/${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}:daemon-${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}-${ARCH}-build_${BUILD_NUMBER}
+                    docker tag ${CEPH_PROJECT}/daemon-base:${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH} ${REGISTRY}/${CEPH_PROJECT}/${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}:daemon-base-${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}-${ARCH}-build_${BUILD_NUMBER}
 
                     echo -e "==============================\n"
 
@@ -73,19 +73,19 @@ pipeline {
 
                     echo "Pushing images"
                     #Currently pushing to dev Harbor registry.
-                    docker push ${REGISTRY}/${CEPH_PROJECT}/${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}:daemon-${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
-                    docker push ${REGISTRY}/${CEPH_PROJECT}/${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}:daemon-base-${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
+                    docker push ${REGISTRY}/${CEPH_PROJECT}/${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}:daemon-${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}-${ARCH}-build_${BUILD_NUMBER}
+                    docker push ${REGISTRY}/${CEPH_PROJECT}/${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}:daemon-base-${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}-${ARCH}-build_${BUILD_NUMBER}
 
                     echo -e "==============================\n"
 
                     echo "To pull image from docker:"
-                    echo "docker pull ${REGISTRY}/${CEPH_PROJECT}/${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}:daemon-${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}"
+                    echo "docker pull ${REGISTRY}/${CEPH_PROJECT}/${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}:daemon-${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}-${ARCH}-build_${BUILD_NUMBER}"
 
                     echo "Untag & remove local images"
                     docker rmi ${CEPH_PROJECT}/daemon-base:${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
                     docker rmi ${CEPH_PROJECT}/daemon:${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
-                    docker rmi ${REGISTRY}/${CEPH_PROJECT}/${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}:daemon-${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
-                    docker rmi ${REGISTRY}/${CEPH_PROJECT}/${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}:daemon-base-${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
+                    docker rmi ${REGISTRY}/${CEPH_PROJECT}/${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}:daemon-${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}-${ARCH}-build_${BUILD_NUMBER}"
+                    docker rmi ${REGISTRY}/${CEPH_PROJECT}/${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}:daemon-base-${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}-${ARCH}-build_${BUILD_NUMBER}
                 """
             }
         }
