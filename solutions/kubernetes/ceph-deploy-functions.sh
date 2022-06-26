@@ -21,6 +21,7 @@
 source /var/tmp/functions.sh
 source /etc/os-release
 
+SCRIPTS_LOCATION=/var/tmp
 HOST_FILE=/var/tmp/hosts
 ALL_NODES=$(cat "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
 PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
@@ -28,7 +29,7 @@ CEPH_NODES=$(cat "$HOST_FILE" | grep -v "$PRIMARY_NODE" | awk -F[,] '{print $1}'
 
 function usage() {
     cat << HEREDOC
-Usage : $0 [--install-pereq, --install-ceph, --deploy-prereq, --deploy-mon, --deploy-mgr, --deploy-osd, --deploy-mds, --deploy-fs, --deploy-rgw, --io-operation, --status]
+Usage : $0 [--install-pereq, --install-ceph, --deploy-prereq, --deploy-mon, --deploy-mgr, --deploy-osd, --deploy-mds, --deploy-fs, --deploy-rgw, --prereq-ceph-docker, --deploy-ceph-docker, --io-operation, --status]
 where,
     --install-prereq - Install Ceph Dependencies before installing ceph packages.
     --install-ceph - Install Ceph Packages.
@@ -39,6 +40,8 @@ where,
     --deploy-mds - Deploy Ceph Metadata Service daemon on primary node.
     --deploy-fs - Deploy Ceph FS daemon on primary node.
     --deploy-rgw - Deploy Ceph Rados Gateway daemon on primary node.
+    --prereq-ceph-docker - Setup prerequisites for Ceph docker deployment.
+    --deploy-ceph-docker - Deploy Ceph in docker.
     --io-operation - Perform IO operation.
     --status - Show Ceph Cluster Status.
 HEREDOC
@@ -335,17 +338,74 @@ EOF
     ceph_status
 }
 
-function io_operation() {
-    add_secondary_separator "Add RADOS-GW User"
-    radosgw-admin user create --uid=io-test --display-name="io-ops"
+function prereq_ceph_docker() {
+    add_secondary_separator "Verify/Install Docker"
+    if ! which docker; then
+        if [[ "$ID" == "rocky"  ]]; then
+            dnf config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo
+            dnf install -y docker-ce docker-ce-cli containerd.io
+            check_status "$HOSTNAME: Docker installation failed"
+            systemctl enable docker && systemctl start docker
+        fi
+        
+        if [[ "$ID" == "ubuntu" || "$ID" == "centos" ]]; then
+            pushd $SCRIPTS_LOCATION
+                curl -fsSL https://get.docker.com -o get-docker.sh
+                chmod +x get-docker.sh
+                ./get-docker.sh
+                check_status "$HOSTNAME: Docker installation failed"
+            popd
+        fi
+    fi
 
-    add_secondary_separator "Setup Dashboard RADOS User"
-    ceph dashboard set-rgw-credentials
+    add_secondary_separator "Install Cephadm"
+    pushd $SCRIPTS_LOCATION
+        curl --silent --remote-name --location https://github.com/ceph/ceph/raw/quincy/src/cephadm/cephadm && chmod +x cephadm
+        unlink /usr/local/bin/cephadm 
+        ln -s $SCRIPTS_LOCATION/cephadm /usr/local/bin/cephadm
+    popd
+
+    add_secondary_separator "Pull Ceph Docker image"
+    docker pull "$CEPH_IMAGE"
+}
+
+function deploy_ceph_docker() {
+    add_secondary_separator "Deploy Ceph"
+    cephadm --image "$CEPH_IMAGE" --verbose bootstrap --mon-ip $(hostname -i) --initial-dashboard-user admin --initial-dashboard-password cephadmin --dashboard-password-noupdate --single-host-defaults --skip-pull --skip-monitoring-stack --allow-fqdn-hostname --allow-overwrite
+}
+
+function io_operation() {
+    if [[ $CEPH_DOCKER_DEPLOYMENT = "true" ]]; then
+        add_secondary_separator "Add RADOS-GW User"
+        cephadm shell -- radosgw-admin user create --uid=io-test --display-name="io-ops"
+
+    elif [[ $CEPH_DOCKER_DEPLOYMENT = "false" ]]; then
+        add_secondary_separator "Add RADOS-GW User"
+        radosgw-admin user create --uid=io-test --display-name="io-ops"
+
+        add_secondary_separator "Setup Dashboard RADOS User"
+        ceph dashboard set-rgw-credentials
+
+    else
+        echo "Not ceph deployment."
+    fi
 
     pushd /var/tmp/
         ./io-sanity.sh
+        check_status
     popd
 
+    if [[ $CEPH_DOCKER_DEPLOYMENT = "true" ]]; then
+        add_secondary_separator "Remove RADOS-GW User"
+        cephadm shell -- radosgw-admin user rm --uid=io-test
+
+    elif [[ $CEPH_DOCKER_DEPLOYMENT = "false" ]]; then
+        add_secondary_separator "Remove RADOS-GW User"
+        radosgw-admin user rm --uid=io-test
+
+    else
+        echo "Not ceph deployment."
+    fi
 }
 
 case $ACTION in
@@ -375,6 +435,12 @@ case $ACTION in
     ;;
     --deploy-rgw)
         deploy_rgw
+    ;;
+    --prereq-ceph-docker)
+        prereq_ceph_docker
+    ;;
+    --deploy-ceph-docker)
+        deploy_ceph_docker
     ;;
     --io-operation)
         io_operation
