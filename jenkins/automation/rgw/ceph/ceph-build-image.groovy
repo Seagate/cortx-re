@@ -1,7 +1,7 @@
 pipeline {
     agent {
         node {
-            label 'ceph-image-build'
+            label 'docker-image-builder-centos-7.9.2009'
         }
     }
 
@@ -18,7 +18,7 @@ pipeline {
     environment {
         ARCH = "x86_64"
         CEPH_PROJECT = "ceph"
-        REGISTRY = "cortx-docker.colo.seagate.com"
+        REGISTRY = "ssc-vm-g4-rhev4-1774.colo.seagate.com"
     }
 
     parameters {
@@ -65,6 +65,9 @@ pipeline {
                     docker tag ${CEPH_PROJECT}/daemon-base:${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH} ${REGISTRY}/${CEPH_PROJECT}/${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}:daemon-base-${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
 
                     echo -e "==============================\n"
+
+                    echo "Docker login"
+                    docker login ${REGISTRY} -u ${DEV_HARBOR_USER} -p ${DEV_HARBOR_PASSWD}
 
                     echo "Pushing images"
                     #Currently pushing to dev Harbor registry.
