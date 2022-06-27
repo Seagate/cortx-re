@@ -33,17 +33,16 @@ pipeline {
         string(name: 'CORTX_RGW_URL', defaultValue: 'https://github.com/Seagate/cortx-rgw', description: 'Repository URL for cortx-rgw build')
         string(name: 'CORTX_RGW_BRANCH', defaultValue: 'main', description: 'Branch for cortx-rgw build')
         string(name: 'CUSTOM_CI_BUILD_ID', defaultValue: '0', description: 'Custom CI Build Number')
-        // Add os_version parameter in jenkins configuration
+        // Add os_version as string parameter in jenkins configuration manually.
 
         choice(
             name: 'BUILD_LATEST_CORTX_RGW',
             choices: ['yes', 'no'],
             description: 'Build cortx-rgw from latest code or use last-successful build.'
         )
-    }    
+    }
 
     stages {
-
         stage('Checkout Script') {
             when { expression { params.BUILD_LATEST_CORTX_RGW == 'yes' } }
             steps {
@@ -62,7 +61,6 @@ pipeline {
                 pushd solutions/kubernetes/
                     export CEPH_REPO=${CORTX_RGW_URL}
                     export CEPH_BRANCH=${CORTX_RGW_BRANCH}
-                    export CORTX_RGW_OPTIMIZED_BUILD=${CORTX_RGW_OPTIMIZED_BUILD}
                     bash ceph-binary-build.sh --ceph-build-env ${BUILD_LOCATION}
                 popd
                 """
