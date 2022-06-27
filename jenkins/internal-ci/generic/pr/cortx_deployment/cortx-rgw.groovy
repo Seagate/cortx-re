@@ -33,6 +33,7 @@ pipeline {
         //////////////////////////////// BUILD VARS //////////////////////////////////////////////////
         // OS_VERSION, singlenode_host, threenode_hosts, COMPONENTS_BRANCH and CORTX_SCRIPTS_BRANCH are manually created parameters in jenkins job.
         BUILD_LOCATION = "/var/log/pr-build/cortx-rgw-build/${BUILD_NUMBER}"
+        BUILD_OS = "${OS_VERSION}"
         COMPONENT_NAME = "cortx-rgw".trim()
         BRANCH = "${ghprbTargetBranch != null ? ghprbTargetBranch : COMPONENTS_BRANCH}"
         os_version = "${OS_VERSION}"
