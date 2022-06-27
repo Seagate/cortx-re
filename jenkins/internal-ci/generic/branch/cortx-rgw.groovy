@@ -168,7 +168,7 @@ pipeline {
                         toEmail = "shailesh.vaidya@seagate.com"
                     }
                     emailext (
-                        body: """${SCRIPT, template="component-email-dev.template"}""",
+                        body: '''${SCRIPT, template="component-email-dev.template"}''',
                         mimeType: 'text/html',
                         subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
                         attachLog: true,
