@@ -5,7 +5,6 @@ pipeline {
         }
     }
 
-    triggers { cron('30 20 * * *') }
 
     options {
         timeout(time: 180, unit: 'MINUTES')
@@ -21,16 +20,24 @@ pipeline {
         string(name: 'CORTX_CONTROL_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-control:2.0.0-latest', description: 'CORTX-CONTROL image', trim: true)
         string(name: 'CORTX_TOOLS_BRANCH', defaultValue: 'sanity-fix', description: 'Repository for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_TOOLS_REPO', defaultValue: 'shailesh-vaidya/seagate-tools', description: 'Repository for Cluster Setup scripts', trim: true)
+        string(name: 'SYSTEM_DRIVE', defaultValue: '/dev/sdb', description: 'Partition to be used for local provisioner', trim: true)
         choice (
-            choices: ['DEVOPS', 'ALL', 'DEBUG'],
+            choices: ['DEBUG', 'ALL', 'DEVOPS'],
             description: 'Email Notification Recipients ',
             name: 'EMAIL_RECIPIENTS'
         )
 
-        // Please configure hosts, client_node, SNS and DIX parameter in Jenkins job configuration..
+        choice (
+            choices: ['HW', 'VM'],
+            description: 'Target infrasture for CORTX cluster ',
+            name: 'infrastructure'
+        )
+
+        // Please configure hosts, client_node, SNS and DIX parameter in Jenkins job configuration manually.
 
     }
     stages {
+    
         stage ("Define Build Variables") {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -57,8 +64,49 @@ pipeline {
                 }
             }
         }
+        
+        stage ("Deploy CORTX Cluster on HW") {
+             when {
+                expression { params.infrastructure == 'HW' }
+            }
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                
+                checkout([$class: 'GitSCM', branches: [[name: '$CORTX_RE_BRANCH']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: '$CORTX_RE_REPO']]])
+                
+                sh label: 'Copy RPMS', script:'''
+                pushd solutions/kubernetes/
+                      curl -l https://raw.githubusercontent.com/shailesh-vaidya/cortx-re/hw-performance-ci/jenkins/performance-ci/nightly-performance-ci.yml -o solution.yaml
+                      export GITHUB_TOKEN=$GITHUB_TOKEN
+                      export CORTX_SCRIPTS_BRANCH=${CORTX_SCRIPTS_BRANCH}
+                      export CORTX_SCRIPTS_REPO=${CORTX_SCRIPTS_REPO}
+                      export CORTX_CONTROL_IMAGE=${CORTX_CONTROL_IMAGE}
+                      export CORTX_SERVER_IMAGE=${CORTX_SERVER_IMAGE}
+                      export CORTX_DATA_IMAGE=${CORTX_DATA_IMAGE}
+                      export SOLUTION_CONFIG_TYPE=manual
+                      export DEPLOYMENT_METHOD=${DEPLOYMENT_METHOD}
+                      export SYSTEM_DRIVE=${SYSTEM_DRIVE}
+                      
+                      #Print Host details.
+                      echo $hosts | tr ' ' '\n' > hosts
+                      cat hosts
+                      
+                      #Destroy CORTX Cluster
+                      ls -ltr
+                      ./cortx-deploy.sh --destroy-cluster
 
-        stage ("Deploy CORTX Cluster") {
+                      #Deploy CORTX Cluster
+                      ./cortx-deploy.sh --cortx-cluster
+
+                '''    
+
+            }
+        }
+
+        stage ("Deploy CORTX Cluster on VM") {
+             when {
+                expression { params.infrastructure == 'VM' }
+            }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
@@ -91,15 +139,16 @@ pipeline {
                         string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
                         string(name: 'CORTX_TOOLS_BRANCH', value: "${CORTX_TOOLS_BRANCH}"),
                         string(name: 'CORTX_TOOLS_REPO', value: "${CORTX_TOOLS_REPO}"),
+                        string(name: 'infrastructure', value: "${infrastructure}"),
                         text(name: 'primary_nodes', value: "${env.primarynodes}"),
                         text(name: 'client_nodes', value: "${client_nodes}")
                     ]
-                    copyArtifacts filter: 'artifacts/perf*    ', fingerprintArtifacts: true, flatten: true, optional: true, projectName: '/Cortx-Automation/Performance/run-performance-sanity/', selector: lastCompleted(), target: ''
+                    copyArtifacts filter: 'artifacts/perf*', fingerprintArtifacts: true, flatten: true, optional: true, projectName: '/Cortx-Automation/Performance/run-performance-sanity/', selector: lastCompleted(), target: ''
                 }
             }
         }
     }
-
+    
     post {
 
         cleanup {
