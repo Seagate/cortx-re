@@ -196,7 +196,18 @@ pipeline {
                 }
             }
         }
-
+        stage('Setup Upgrade') {
+            steps {
+                script {
+                    catchError(stageResult: 'FAILURE') {
+                        build job: '/Cortx-Automation/RGW/cortx-rgw-cluster-upgrade', wait: true,
+                        parameters: [
+                            string(name: 'hosts', value: "${NODE_HOST_LIST}")
+                        ]
+                    }
+                }
+            }
+        }
     }
 
     post {
