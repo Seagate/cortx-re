@@ -32,8 +32,10 @@ pipeline {
         CORTX_RGW_PR_REFSEPEC = "${ghprbPullId != null ? CORTX_RGW_GPR_REFSEPEC : CORTX_RGW_BRANCH_REFSEPEC}"
         //////////////////////////////// BUILD VARS //////////////////////////////////////////////////
         // OS_VERSION, singlenode_host, threenode_hosts, COMPONENTS_BRANCH and CORTX_SCRIPTS_BRANCH are manually created parameters in jenkins job.
+        BUILD_LOCATION = "/var/log/pr-build/cortx-rgw-build/${BUILD_NUMBER}"
         COMPONENT_NAME = "cortx-rgw".trim()
         BRANCH = "${ghprbTargetBranch != null ? ghprbTargetBranch : COMPONENTS_BRANCH}"
+        os_version=${OS_VERSION}
         THIRD_PARTY_VERSION = "${OS_VERSION}-2.0.0-k8"
         VERSION = "2.0.0"
         RELEASE_TAG = "last_successful_prod"
@@ -81,26 +83,24 @@ pipeline {
                         bash ceph-binary-build.sh --ceph-build-env ${BUILD_LOCATION}
                     popd
                 """
-                sh label: 'Configure yum repositories', script: """
-                    set +x
-                    yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/$BRANCH/$OS_VERSION/$RELEASE_TAG/cortx_iso/
-                    yum clean all;rm -rf /var/cache/yum
-                    yum install cortx-motr{,-devel} -y --nogpgcheck
-                """
-                sh label: 'Build cortx-rgw packages', script: '''
-                    pushd $RELEASE_DIR/$COMPONENT_NAME/$BRANCH/rpmbuild/$BUILD_NUMBER
-                        rpmbuild --clean --rmsource --define "_unpackaged_files_terminate_build 0" --define "debug_package %{nil}" --without cmake_verbose_logging --without jaeger --without lttng --without seastar --without kafka_endpoint --without zbd --without cephfs_java --without cephfs_shell --without ocf --without selinux --without ceph_test_package --without make_check --define "_binary_payload w2T16.xzdio" --define "_topdir `pwd`" -ba ./SPECS/ceph.spec
-                    popd    
-                '''
+
                 sh label: 'Copy RPMS', script: '''
-                    rm -rvf /root/build_rpms     
+                    rm -rvf /root/build_rpms
                     mkdir -p "/root/build_rpms"
-                    cp $RELEASE_DIR/$COMPONENT_NAME/$BRANCH/rpmbuild/$BUILD_NUMBER/RPMS/*/*.rpm /root/build_rpms
-                '''
-                sh label: 'Repo Creation', script: '''pushd /root/build_rpms
-                    rpm -qi createrepo || yum install -y createrepo
-                    createrepo .
+                    pushd $BUILD_LOCATION/$OS_VERSION/rpmbuild
+                        cp RPMS/*/*.rpm /root/build_rpms
                     popd
+                '''
+
+                sh label: 'Repo Creation', script: '''
+                    pushd /root/build_rpms
+                        rpm -qi createrepo || yum install -y createrepo
+                        createrepo .
+                    popd
+                '''
+
+                sh label: 'Remove Build Location', script: '''
+                    rm -rf $BUILD_LOCATION
                 '''
             }
         }
