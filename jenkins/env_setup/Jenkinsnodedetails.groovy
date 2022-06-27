@@ -35,7 +35,7 @@ pipeline {
             {
                 steps
                 {
-                    sh 'awk "BEGIN{printf "Sr  Node_name   Host    Label   User    UserId\n"} /^[1-9]/{print}" $WORKSPACE/inbetween-offline-nodes.txt > $WORKSPACE/offline-nodes.txt'
+                    sh 'awk "/^[1-9]/{print}" $WORKSPACE/inbetween-offline-nodes.txt > $WORKSPACE/offline-nodes.txt'
                 }
             }
     }
