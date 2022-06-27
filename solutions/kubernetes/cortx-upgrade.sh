@@ -102,7 +102,7 @@ function upgrade_cluster() {
     CORTX_ACTUAL_CONTROL_IMAGE=`pull_image '"$CORTX_CONTROL_IMAGE"'` &&
     echo '"CORTX_ACTUAL_CONTROL_IMAGE : \$CORTX_ACTUAL_CONTROL_IMAGE"' &&
     add_secondary_separator "Updating CORTX Images info in solution.yaml" &&
-    imageArray=( "CORTX_ACTUAL_CONTROL_IMAGE" "CORTX_ACTUAL_DATA_IMAGE" "CORTX_ACTUAL_SERVER_IMAGE" "CORTX_ACTUAL_CONTROL_IMAGE" "CORTX_ACTUAL_DATA_IMAGE" ) &&
+    imageArray=( '"\$CORTX_ACTUAL_CONTROL_IMAGE"' '"\$CORTX_ACTUAL_DATA_IMAGE"' '"\$CORTX_ACTUAL_SERVER_IMAGE"' '"\$CORTX_ACTUAL_CONTROL_IMAGE"' '"\$CORTX_ACTUAL_DATA_IMAGE"' ) &&
     servicesArray=( "control-pod" "data-pod" "server-pod" "ha-pod" "client-pod" ) &&
     for i in "${!imageArray[@]}"; do update_image "${servicesArray[i]}" "${imageArray[i]}"; done &&
     add_secondary_separator "Begin CORTX Cluster Upgrade" &&
