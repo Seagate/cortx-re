@@ -21,6 +21,7 @@ set -eo pipefail
 source /var/tmp/functions.sh
 ANIBLE_LOG_FILE="/var/tmp/perf_sanity_run.log"
 PERF_STATS_FILE="/var/tmp/perf_sanity_stats.txt"
+DB_SERVER="10.237.65.111"
 SSH_KEY_FILE=/root/.ssh/id_rsa
 
 function usage() {
@@ -83,11 +84,11 @@ function clone_segate_tools_repo() {
 
 function update_setup_confiuration() {
 
-    CONFIG_FILE=$SCRIPT_LOCATION/performance/PerfPro/roles/benchmark/vars/config.yml
-    S3_CONFIG_FILE=$SCRIPT_LOCATION/performance/PerfPro/roles/benchmark/vars/s3config.yml 
-    sed -i -e '/CLUSTER_PASS/s/:/: '$PRIMARY_CRED'/g' -e '/END_POINTS/s/:/: '${ENDPOINT_URL//\//\\/}'/g' $CONFIG_FILE
-    sed -i -e '/node_number_srvnode-*/d' -e '/#client_number/d' -e '/NODES/{n;s/.*/  - 1: '$PRIMARY_NODE'/}' -e '/CLIENTS/{n;s/.*/  - 1: '$CLIENT_NODE'/}' $CONFIG_FILE
-    sed -i -e '/BUILD_URL/s/\:/: '${BUILD_URL//\//\\/}'/g' $CONFIG_FILE
+    #CONFIG_FILE=$SCRIPT_LOCATION/performance/PerfPro/roles/benchmark/vars/config.yml
+    #S3_CONFIG_FILE=$SCRIPT_LOCATION/performance/PerfPro/roles/benchmark/vars/s3config.yml 
+    #sed -i -e '/CLUSTER_PASS/s/:/: '$PRIMARY_CRED'/g' -e '/END_POINTS/s/:/: '${ENDPOINT_URL//\//\\/}'/g' $CONFIG_FILE
+    #sed -i -e '/node_number_srvnode-*/d' -e '/#client_number/d' -e '/NODES/{n;s/.*/  - 1: '$PRIMARY_NODE'/}' -e '/CLIENTS/{n;s/.*/  - 1: '$CLIENT_NODE'/}' $CONFIG_FILE
+    #sed -i -e '/BUILD_URL/s/\:/: '${BUILD_URL//\//\\/}'/g' $CONFIG_FILE
     #-e 's/https\:\/\/s3.seagate.com/'${ENDPOINT_URL//\//\\/}'/g' $CONFIG_FILE
 
     if [ $CLUSTER_TYPE == VM ]; then
@@ -99,7 +100,12 @@ function execute_perfpro() {
     yum install ansible -y
     pushd $SCRIPT_LOCATION/performance/PerfPro
         add_primary_separator "Executing Ansible CLI"
-        ANSIBLE_LOG_PATH=$ANIBLE_LOG_FILE ansible-playbook perfpro.yml -i inventories/hosts --extra-vars '{ "EXECUTION_TYPE" : "sanity" }' -v
+        #ANSIBLE_LOG_PATH=$ANIBLE_LOG_FILE ansible-playbook perfpro.yml -i inventories/hosts --extra-vars '{ "EXECUTION_TYPE" : "sanity" }' -v
+        echo PRIMARY_NODE:$PRIMARY_NODE
+        echo CLIENT_NODE:$CLIENT_NODE
+        echo PRIMARY_CRED:$PRIMARY_CRED
+        echo END_POINTS:$ENDPOINT_URL
+        ANSIBLE_LOG_PATH=$ANIBLE_LOG_FILE ansible-playbook perfpro.yml -i inventories/hosts --extra-vars "{ \"EXECUTION_TYPE\" : \"sanity\" ,\"REPOSITORY\":[{ \"category\": \"motr\", \"repo\": \"cortx-motr\", \"branch\": \"k8s\", \"commit\": \"a1234b\" }, { \"category\": \"rgw\", \"repo\": \"cortx-rgw\", \"branch\": \"dev\", \"commit\": \"c5678d\" }, { \"category\": \"hare\", \"repo\": \"cortx-hare\", \"branch\": \"main\", \"commit\": \"e9876f\" }],\"PR_ID\" : \"cortx-rgw/1234\" , \"USER\":\"Username\",\"GID\" : \"1234\", \"NODES\":{\"1\": \"$PRIMARY_NODE\"} , \"CLIENTS\":{\"1\": \"$CLIENT_NODE\"} , \"main\":{\"db_server\": \"$DB_SERVER\", \"db_port\": \"27017\", \"db_name\": \"sanity_db\", \"db_user\": \"db_username\", \"db_passwd\": \"db_password\", \"db_database\": \"performance_database\", \"db_url\": \"mongodb://perfpro:PerfPro@$DB_SERVER:27017/\"}, \"config\":{\"CLUSTER_PASS\": \"$PRIMARY_CRED\", \"END_POINTS\": \"$ENDPOINT_URL\" }}" -v
     popd
 }
 
