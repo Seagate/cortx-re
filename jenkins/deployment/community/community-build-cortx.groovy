@@ -1,7 +1,7 @@
 pipeline {
     agent {
         node {
-            label 'ssc-vm-g4-rhev4-0465.colo.seagate.com'
+            label 'community-build-executor'
         }
     }
     
