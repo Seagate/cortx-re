@@ -138,7 +138,7 @@ pipeline {
                     mailRecipients = "CORTX.DevOps.RE@seagate.com"
                 }
                 else {
-                    mailRecipients = "gaurav.chaudhari@seagate.com"        
+                    mailRecipients = "CORTX.DevOps.RE@seagate.com"        
                 }
 
                 archiveArtifacts allowEmptyArchive: true, artifacts: '*.txt', followSymlinks: false
