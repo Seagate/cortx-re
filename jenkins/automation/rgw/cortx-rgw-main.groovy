@@ -124,12 +124,12 @@ pipeline {
                                 comment: "{panel:bgColor=#c1c7d0}" +
                                     "h2. ${component} - ${branch} branch build pipeline SUCCESS\n" +
                                     "h3. Build Info:  \n" +
-                                            author+
+                                            author +
                                                 "* Component Build  :  ${BUILD_NUMBER} \n" +
                                             "* Release Build    :  ${release_build}  \n\n  " +
                                     "h3. Artifact Location  :  \n" +
-                                        "*  " + "${release_build_location} " + "\n\n"+
-                                    "h3. Image Location  :  \n"+
+                                        "*  " + "${release_build_location} " + "\n\n" +
+                                    "h3. Image Location  :  \n" +
                                         "*  " + "${cortx_images} " + "\n" +
                                     "{panel}",
                                 failOnError: false,
@@ -168,7 +168,7 @@ pipeline {
                         toEmail = "shailesh.vaidya@seagate.com"
                     }
                     emailext (
-                        body: '''${SCRIPT, template="component-email-dev.template"}''',
+                        body: """${SCRIPT, template="component-email-dev.template"}""",
                         mimeType: 'text/html',
                         subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
                         attachLog: true,
@@ -194,7 +194,7 @@ def getAuthor(issue) {
         def entries = changeLogSets[i].items
         for (int j = 0; j < entries.length; j++) {
             def entry = entries[j]
-            if((entry.msg).contains(issue)) {
+            if ((entry.msg).contains(issue)) {
                 author = entry.author
             }
         }
