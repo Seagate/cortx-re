@@ -19,7 +19,7 @@ pipeline {
         ARCH = "x86_64"
         CEPH_PROJECT = "ceph"
         REGISTRY = "cortx-docker.colo.seagate.com"
-        LOCAL_REG_CRED = credentials('dev-harbor')
+        LOCAL_REG_CRED = credentials('local-registry-access')
     }
 
     parameters {
