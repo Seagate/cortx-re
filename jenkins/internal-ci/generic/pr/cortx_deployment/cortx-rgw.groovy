@@ -1,7 +1,7 @@
 pipeline { 
     agent {
         node {
-            label "ceph-build-node"
+            label "ceph-build-hw"
         }
     }
     options { 
