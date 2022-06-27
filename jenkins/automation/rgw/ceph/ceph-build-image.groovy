@@ -73,7 +73,6 @@ pipeline {
                     docker login ${REGISTRY} -u ${LOCAL_REG_CRED_USR} -p ${LOCAL_REG_CRED_PSW}
 
                     echo "Pushing images"
-                    #Currently pushing to dev Harbor registry.
                     docker push ${REGISTRY}/${CEPH_PROJECT}/${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}:daemon-${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}-${ARCH}-build_${BUILD_NUMBER}
                     docker push ${REGISTRY}/${CEPH_PROJECT}/${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}:daemon-base-${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}-${ARCH}-build_${BUILD_NUMBER}
                     docker push ${REGISTRY}/${CEPH_PROJECT}/${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}:daemon-${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}-${ARCH}-latest
