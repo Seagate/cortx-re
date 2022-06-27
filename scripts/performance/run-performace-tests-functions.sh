@@ -21,6 +21,7 @@ set -eo pipefail
 source /var/tmp/functions.sh
 ANIBLE_LOG_FILE="/var/tmp/perf_sanity_run.log"
 PERF_STATS_FILE="/var/tmp/perf_sanity_stats.txt"
+DB_SERVER="10.237.65.111"
 SSH_KEY_FILE=/root/.ssh/id_rsa
 
 function usage() {
@@ -104,7 +105,7 @@ function execute_perfpro() {
         echo CLIENT_NODE:$CLIENT_NODE
         echo PRIMARY_CRED:$PRIMARY_CRED
         echo END_POINTS:$ENDPOINT_URL
-        ansible-playbook perfpro.yml -i inventories/hosts --extra-vars "{ \"EXECUTION_TYPE\" : \"sanity\" ,\"REPOSITORY\":[{ \"category\": \"motr\", \"repo\": \"cortx-motr\", \"branch\": \"k8s\", \"commit\": \"a1234b\" }, { \"category\": \"rgw\", \"repo\": \"cortx-rgw\", \"branch\": \"dev\", \"commit\": \"c5678d\" }, { \"category\": \"hare\", \"repo\": \"cortx-hare\", \"branch\": \"main\", \"commit\": \"e9876f\" }],\"PR_ID\" : \"cortx-rgw/1234\" , \"USER\":\"Username\",\"GID\" : \"1234\", \"NODES\":{\"1\": \"$PRIMARY_NODE\"} , \"CLIENTS\":{\"1\": \"$CLIENT_NODE\"} , \"main\":{\"db_server\": \"db.server.seagate.com\", \"db_port\": \"27017\", \"db_name\": \"sanity_db\", \"db_user\": \"db_username\", \"db_passwd\": \"db_password\", \"db_database\": \"performance_database\", \"db_url\": \"mongodb://db.hostname.seagate.com:27017/\"}, \"config\":{\"CLUSTER_PASS\": \"$PRIMARY_CRED\", \"END_POINTS\": \"$ENDPOINT_URL\" }}" -v
+        ansible-playbook perfpro.yml -i inventories/hosts --extra-vars "{ \"EXECUTION_TYPE\" : \"sanity\" ,\"REPOSITORY\":[{ \"category\": \"motr\", \"repo\": \"cortx-motr\", \"branch\": \"k8s\", \"commit\": \"a1234b\" }, { \"category\": \"rgw\", \"repo\": \"cortx-rgw\", \"branch\": \"dev\", \"commit\": \"c5678d\" }, { \"category\": \"hare\", \"repo\": \"cortx-hare\", \"branch\": \"main\", \"commit\": \"e9876f\" }],\"PR_ID\" : \"cortx-rgw/1234\" , \"USER\":\"Username\",\"GID\" : \"1234\", \"NODES\":{\"1\": \"$PRIMARY_NODE\"} , \"CLIENTS\":{\"1\": \"$CLIENT_NODE\"} , \"main\":{\"db_server\": \"$DB_SERVER\", \"db_port\": \"27017\", \"db_name\": \"sanity_db\", \"db_user\": \"db_username\", \"db_passwd\": \"db_password\", \"db_database\": \"performance_database\", \"db_url\": \"mongodb://perfpro:PerfPro@$DB_SERVER:27017/\"}, \"config\":{\"CLUSTER_PASS\": \"$PRIMARY_CRED\", \"END_POINTS\": \"$ENDPOINT_URL\" }}" -v
     popd
 }
 
