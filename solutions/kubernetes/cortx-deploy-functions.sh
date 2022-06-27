@@ -309,7 +309,7 @@ function destroy() {
    if [ "$(/usr/bin/kubectl get pods --no-headers | wc -l)" -gt 0 ]; then 
         pushd "$SCRIPT_LOCATION"/k8_cortx_cloud || echo "CORTX Deploy Scripts are not available on system"
             chmod +x *.sh
-            ./destroy-cortx-cloud.sh -f
+            ./destroy-cortx-cloud.sh
         popd || exit
         findmnt $SYSTEM_DRIVE && umount -l $SYSTEM_DRIVE
         files_to_remove=(
