@@ -10,7 +10,7 @@ try {
             }
         }
         catch (Exception e) {
-            this.println('Inside catch of Sr.no: ' + count + ' ' + e)
+            this.println(':' + count + ' ' + e)
         }
     }
 }
@@ -28,7 +28,7 @@ pipeline {
         {
                 steps
            {
-                sh 'curl -k -u $USER:$PASS -o $WORKSPACE/offline-nodes.txt "https://eos-jenkins.colo.seagate.com/job/Cortx-Automation/job/Reports/job/offline-node-report/lastBuild/consoleText"'
+                sh 'curl -k -u $USER:$PASS -o $WORKSPACE/inbetween-offline-nodes.txt "https://eos-jenkins.colo.seagate.com/job/Cortx-Automation/job/Reports/job/offline-node-report/lastBuild/consoleText"'
            }
         }
     }
