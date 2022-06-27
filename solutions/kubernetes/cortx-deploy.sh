@@ -63,7 +63,7 @@ function check_params() {
     if [ -z "$S3_EXTERNAL_HTTPS_NODEPORT" ]; then S3_EXTERNAL_HTTPS_NODEPORT="30443"; fi
     if [ -z "$SYSTEM_DRIVE" ]; then echo "SYSTEM_DRIVE not provided. Using default: /dev/sdb";SYSTEM_DRIVE="/dev/sdb"; fi
     if [ -z "$NAMESPACE" ]; then echo "NAMESPACE not provided. Using default: default";NAMESPACE="default"; fi
-    if [ -z "$IMAGE_CLEANUP" ]; then IMAGE_CLEANUP="yes"; fi
+    if [ -z "$COMMUNITY_USE" ]; then COMMUNITY_USE="no"; fi
 
    echo -e "\n\n########################################################################"
    echo -e "# CORTX_SCRIPTS_REPO         : $CORTX_SCRIPTS_REPO                  "
@@ -81,7 +81,7 @@ function check_params() {
    echo -e "# S3_EXTERNAL_HTTPS_NODEPORT : $S3_EXTERNAL_HTTPS_NODEPORT          "
    echo -e "# SYSTEM_DRIVE               : $SYSTEM_DRIVE                        "
    echo -e "# NAMESPACE                  : $NAMESPACE                           "
-   echo -e "# IMAGE_CLEANUP              : $IMAGE_CLEANUP                       "
+   echo -e "# COMMUNITY_USE              : $COMMUNITY_USE                       "
    echo -e "#########################################################################"
 }
 
@@ -94,7 +94,7 @@ function pdsh_worker_exec() {
         export CORTX_SCRIPTS_REPO=$CORTX_SCRIPTS_REPO && 
         export CORTX_SCRIPTS_BRANCH=$CORTX_SCRIPTS_BRANCH &&
         export SYSTEM_DRIVE=$SYSTEM_DRIVE &&
-        export IMAGE_CLEANUP=$IMAGE_CLEANUP && /var/tmp/cortx-deploy-functions.sh --setup-worker"
+        export COMMUNITY_USE=$COMMUNITY_USE && /var/tmp/cortx-deploy-functions.sh --setup-worker"
     )
     for cmds in "${commands[@]}"; do
        pdsh -S -w ^$1 $cmds
@@ -137,7 +137,7 @@ function setup_cluster() {
     export S3_EXTERNAL_HTTPS_NODEPORT=$S3_EXTERNAL_HTTPS_NODEPORT &&
     export NAMESPACE=$NAMESPACE &&
     export EXTERNAL_EXPOSURE_SERVICE=$EXTERNAL_EXPOSURE_SERVICE &&
-    export IMAGE_CLEANUP=$IMAGE_CLEANUP && /var/tmp/cortx-deploy-functions.sh --setup-primary"
+    export COMMUNITY_USE=$COMMUNITY_USE && /var/tmp/cortx-deploy-functions.sh --setup-primary"
 
     if [ "$SINGLE_NODE_DEPLOYMENT" == "False" ]; then
         # pdsh hosts to run parallel implementations on worker nodes.
