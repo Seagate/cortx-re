@@ -1,7 +1,7 @@
 pipeline {
     agent {
         node {
-            label 'performance-sanity-pune-client'
+            label "performance-sanity-${infrastructure}-client"
         }
     }
     
