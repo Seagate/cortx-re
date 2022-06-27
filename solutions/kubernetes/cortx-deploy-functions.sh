@@ -391,6 +391,7 @@ function io_exec() {
         export DEPLOYMENT_METHOD=$DEPLOYMENT_METHOD
         export CEPH_DEPLOYMENT=$CEPH_DEPLOYMENT
         ./io-sanity.sh
+        check_status
     popd
 }
 
