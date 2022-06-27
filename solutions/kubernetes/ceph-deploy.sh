@@ -30,7 +30,7 @@ DEPLOYMENT_METHOD="standard"
 
 function usage() {
     cat << HEREDOC
-Usage : $0 [--install-pereq, --install-ceph, --deploy-prereq, --deploy-mon, --deploy-mgr, --deploy-osd, --deploy-mds, --deploy-fs, --deploy-rgw, --io-operation]
+Usage : $0 [--install-pereq, --install-ceph, --deploy-prereq, --deploy-mon, --deploy-mgr, --deploy-osd, --deploy-mds, --deploy-fs, --deploy-rgw, --prereq-ceph-docker, --deploy-ceph-docker, --io-operation]
 where,
     --install-prereq - Install Ceph Dependencies before installing ceph packages.
     --install-ceph - Install Ceph Packages.
@@ -41,6 +41,8 @@ where,
     --deploy-mds - Deploy Ceph Metadata Service daemon on primary node.
     --deploy-fs - Deploy Ceph FS daemon on primary node.
     --deploy-rgw - Deploy Ceph Rados Gateway daemon on primary node.
+    --prereq-ceph-docker - Setup prerequisites for Ceph docker deployment.
+    --deploy-ceph-docker - Deploy Ceph in docker.
     --io-operation - Perform IO operation.
 HEREDOC
 }
@@ -118,9 +120,27 @@ function deploy_rgw() {
     ssh_primary_node "/var/tmp/ceph-deploy-functions.sh --deploy-rgw"
 }
 
+function prereq_ceph_docker() {
+    add_primary_separator "Prerequisites for Ceph Docker Deployment"
+
+    validation
+    generate_rsa_key
+    nodes_setup
+
+    add_common_separator "Copy scripts to node"
+    scp_primary_node functions.sh ceph-deploy-functions.sh io-sanity.sh hosts
+
+    ssh_primary_node "export CEPH_IMAGE=$CEPH_IMAGE && /var/tmp/ceph-deploy-functions.sh --install-prereq-image"
+}
+
+function deploy_ceph_docker() {
+    add_primary_separator "\tDeploy Ceph in Docker"
+    ssh_primary_node "export CEPH_IMAGE=$CEPH_IMAGE && /var/tmp/ceph-deploy-functions.sh --deploy-ceph-image"
+}
+
 function io_operation() {
     add_primary_separator "\tPerform IO Operation"
-    ssh_primary_node "export CEPH_DEPLOYMENT=$CEPH_DEPLOYMENT && export DEPLOYMENT_METHOD=$DEPLOYMENT_METHOD && /var/tmp/ceph-deploy-functions.sh --io-operation"
+    ssh_primary_node "export CEPH_DEPLOYMENT=$CEPH_DEPLOYMENT && export DEPLOYMENT_METHOD=$DEPLOYMENT_METHOD && export CEPH_DOCKER_DEPLOYMENT=$CEPH_DOCKER_DEPLOYMENT && /var/tmp/ceph-deploy-functions.sh --io-operation"
 }
 
 case $ACTION in
@@ -150,6 +170,12 @@ case $ACTION in
     ;;
     --deploy-rgw)
         deploy_rgw
+    ;;
+    --prereq-ceph-docker)
+        prereq_ceph_docker
+    ;;
+    --deploy-ceph-docker)
+        deploy_ceph_docker
     ;;
     --io-operation)
         io_operation
