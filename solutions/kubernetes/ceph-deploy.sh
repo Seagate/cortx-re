@@ -130,12 +130,12 @@ function prereq_ceph_docker() {
     add_common_separator "Copy scripts to node"
     scp_primary_node functions.sh ceph-deploy-functions.sh io-sanity.sh hosts
 
-    ssh_primary_node "export CEPH_IMAGE=$CEPH_IMAGE && /var/tmp/ceph-deploy-functions.sh --install-prereq-image"
+    ssh_primary_node "export CEPH_IMAGE=$CEPH_IMAGE && /var/tmp/ceph-deploy-functions.sh --prereq-ceph-docker"
 }
 
 function deploy_ceph_docker() {
     add_primary_separator "\tDeploy Ceph in Docker"
-    ssh_primary_node "export CEPH_IMAGE=$CEPH_IMAGE && /var/tmp/ceph-deploy-functions.sh --deploy-ceph-image"
+    ssh_primary_node "export CEPH_IMAGE=$CEPH_IMAGE && /var/tmp/ceph-deploy-functions.sh --deploy-ceph-docker"
 }
 
 function io_operation() {
