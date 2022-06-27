@@ -10,7 +10,7 @@ try {
             }
         }
         catch (Exception e) {
-            this.println(':' + count + ' ' + e)
+            this.println('' + count + ' ' + e)
         }
     }
 }
