@@ -56,7 +56,8 @@ function download_deploy_script() {
     if [ -z "$SCRIPT_LOCATION" ]; then echo "SCRIPT_LOCATION not provided.Exiting..."; exit 1; fi
     if [ -z "$CORTX_SCRIPTS_REPO" ]; then echo "CORTX_SCRIPTS_REPO not provided.Exiting..."; exit 1; fi
     if [ -z "$CORTX_SCRIPTS_BRANCH" ]; then echo "CORTX_SCRIPTS_BRANCH not provided.Exiting..."; exit 1; fi
-
+    if [ -z "$COMMUNITY_USE" ]; then echo "COMMUNITY_USE option not provided.Exiting..."; exit 1; fi
+    
     rm -rf $SCRIPT_LOCATION
     yum install git -y
     git clone https://github.com/$CORTX_SCRIPTS_REPO $SCRIPT_LOCATION
@@ -261,9 +262,13 @@ function execute_deploy_script() {
 
 function execute_prereq() {
     add_secondary_separator "Pulling latest CORTX images"
-    pull_image $CORTX_SERVER_IMAGE
-    pull_image $CORTX_DATA_IMAGE
-    pull_image $CORTX_CONTROL_IMAGE
+    if [ "${COMMUNITY_USE}" == "no" ]; then
+        pull_image $CORTX_SERVER_IMAGE
+        pull_image $CORTX_DATA_IMAGE
+        pull_image $CORTX_CONTROL_IMAGE
+    else
+        echo -e "\nExecuting community deploy script.Ignoring image pull."
+    fi
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         add_secondary_separator "Un-mounting $SYSTEM_DRIVE partition if already mounted"
         findmnt $SYSTEM_DRIVE && umount -l $SYSTEM_DRIVE
@@ -274,7 +279,11 @@ function execute_prereq() {
 
 function setup_primary_node() {
     #Clean up untagged docker images and stopped docker containers.
-    cleanup
+    if [ "${COMMUNITY_USE}" == "no" ]; then
+        cleanup
+    else
+        echo -e "\nExecuting community deploy script.No cleaning required."
+    fi
     #Third-party images are downloaded from GitHub container registry. 
     download_deploy_script
     install_yq
@@ -298,7 +307,11 @@ function setup_primary_node() {
 function setup_worker_node() {
     add_secondary_separator "Setting up Worker Node on $HOSTNAME"
     #Clean up untagged docker images and stopped docker containers.
-    cleanup
+    if [ "${COMMUNITY_USE}" == "no" ]; then
+        cleanup
+    else
+        echo -e "\nExecuting community deploy script.No cleaning required."
+    fi
     #Third-party images are downloaded from GitHub container registry.
     download_deploy_script
     install_yq
