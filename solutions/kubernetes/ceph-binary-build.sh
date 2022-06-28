@@ -24,6 +24,7 @@ ACTION="$1"
 BUILD_LOCATION="$2"
 MOUNT="$3"
 REPO_COMPONENT=${CEPH_REPO##*/}
+REPO_COMPONENT="${REPO_COMPONENT%.*}"
 
 function usage() {
     cat << HEREDOC
