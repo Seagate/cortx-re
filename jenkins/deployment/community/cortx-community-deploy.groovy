@@ -98,10 +98,10 @@ pipeline {
             '''
             }
         }
-        stage ('Change root password') {
+        stage ('EC2 connection prerequisites') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Change root password and creating hosts file', script: '''
+                sh label: 'Changing root password and creating hosts file', script: '''
                 pushd solutions/community-deploy/cloud/AWS
                     export ROOT_PASSWORD=${ROOT_PASSWORD}
                     AWS_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.cortx_deploy_ip_addr.value 2>&1 | tee ip.txt)
