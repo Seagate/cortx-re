@@ -37,9 +37,10 @@ pipeline {
         COMPONENT_NAME = "cortx-rgw".trim()
         BRANCH = "${ghprbTargetBranch != null ? ghprbTargetBranch : COMPONENTS_BRANCH}"
         os_version = "${OS_VERSION}"
+        branch = "${BRANCH}"
         THIRD_PARTY_VERSION = "${OS_VERSION}-2.0.0-k8"
         VERSION = "2.0.0"
-        RELEASE_TAG = "last_successful_prod"
+        release_tag = "last_successful_prod"
         PASSPHARASE = credentials('rpm-sign-passphrase')
         RELEASE_DIR = "/mnt/bigstorage/releases/cortx"
         OS_FAMILY=sh(script: "echo '${OS_VERSION}' | cut -d '-' -f1", returnStdout: true).trim()
