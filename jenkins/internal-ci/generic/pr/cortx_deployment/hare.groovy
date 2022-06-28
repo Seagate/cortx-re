@@ -51,7 +51,7 @@ pipeline {
         RELEASE_TAG = "last_successful_prod"
         PASSPHARASE = credentials('rpm-sign-passphrase')
 
-        OS_FAMILY=sh(script: "echo '${OS_VERSION}' | cut -d '-' -f1", returnStdout: true).trim()
+        OS_FAMILY = sh(script: "echo '${OS_VERSION}' | cut -d '-' -f1", returnStdout: true).trim()
 
         // Artifacts root location
 

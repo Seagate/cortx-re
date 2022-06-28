@@ -53,7 +53,7 @@ pipeline {
 
         VERSION = "2.0.0" 
 
-        OS_FAMILY=sh(script: "echo '${OS_VERSION}' | cut -d '-' -f1", returnStdout: true).trim()
+        OS_FAMILY = sh(script: "echo '${OS_VERSION}' | cut -d '-' -f1", returnStdout: true).trim()
         BUILD_TRIGGER_BY = "${currentBuild.getBuildCauses()[0].shortDescription}"
 		
 	    // Artifacts root location
