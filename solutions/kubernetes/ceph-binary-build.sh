@@ -66,7 +66,7 @@ function check_params() {
 }
 
 function prereq() {
-    add_primary_separator "\t\tRunning Preequisites"
+    add_primary_separator "\t\tRunning Prerequisites"
 
     mkdir -p "$BUILD_LOCATION"
 
