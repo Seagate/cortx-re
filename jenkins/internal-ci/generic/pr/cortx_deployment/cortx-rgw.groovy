@@ -113,7 +113,7 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 dir('cortx-re') {
-                    checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 1, honorRefspec: true, noTags: true, reference: '', shallow: true], [$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
+                    checkout([$class: 'GitSCM', branches: [[name: '*/CORTX_32121_pr']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 1, honorRefspec: true, noTags: true, reference: '', shallow: true], [$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/nitisdev/cortx-re']]])
                 }
                 //Install tools required for release process
                 sh label: 'Installed Dependecies', script: '''
