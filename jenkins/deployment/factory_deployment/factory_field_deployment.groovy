@@ -330,7 +330,7 @@ def getHostName(configPath, hostSearch) {
 // Method returns host Name from config
 def getBuildArtifcatName(path, artifcat) {
 
-    return sh(script: '''set +x ; echo $(curl -s '''+path+''' | sed -n 's/.*href="\\([^"]*\\).*/\\1/p' | grep '''+artifcat+''')''', returnStdout: true).trim()
+    return sh(script: '''set +x ; echo $(curl -s ''' +path +''' | sed -n 's/.*href="\\([^"]*\\).*/\\1/p' | grep ''' +artifcat +''')''', returnStdout: true).trim()
 }
 
 // Method returns VM Host Information ( host, ssh cred)
