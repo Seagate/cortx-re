@@ -130,7 +130,9 @@ pipeline {
                                     string(name: 'MOTR_BRANCH', value: "custom-ci"),
                                     string(name: 'CORTX_RGW_URL', value: "${CORTX_RGW_URL}"),
                                     string(name: 'CUSTOM_CI_BUILD_ID', value: "${CUSTOM_CI_BUILD_ID}"),
-                                    string(name: 'BUILD_LATEST_CORTX_RGW', value: "${BUILD_LATEST_CORTX_RGW}")
+                                    string(name: 'BUILD_LATEST_CORTX_RGW', value: "${BUILD_LATEST_CORTX_RGW}"),
+                                    string(name: 'CORTX_RE_REPO', value: "https://github.com/Seagate/cortx-re"),
+                                    string(name: 'CORTX_RE_BRANCH', value: "main")
                                 ]
                     }
                 }
