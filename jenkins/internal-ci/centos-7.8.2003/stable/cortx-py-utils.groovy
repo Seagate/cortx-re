@@ -88,7 +88,7 @@ pipeline {
 				script {
                 	def releaseBuild = build job: 'Release', propagate: true
 				 	env.release_build = releaseBuild.number
-                    env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/"+releaseBuild.number
+                    env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/" +releaseBuild.number
 				}
             }
         }

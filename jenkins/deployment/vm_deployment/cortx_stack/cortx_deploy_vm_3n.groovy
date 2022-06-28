@@ -312,7 +312,7 @@ pipeline {
 
                     manager.addHtmlBadge(" <br /><b>Jira Issue :</b> <a href='https://jts.seagate.com/browse/${jiraIssue}'><b>${jiraIssue}</b></a>")
 
-                    env.jira_issue="https://jts.seagate.com/browse/${jiraIssue}"
+                    env.jira_issue = "https://jts.seagate.com/browse/${jiraIssue}"
                 }
 
                 // 5. Create Jenkins Summary page with deployment info
@@ -405,7 +405,7 @@ def getActualBuild(buildURL) {
 // Get failed component name
 def getComponentInfo(String stage) {
     
-    stage = stage.count(".") > 1 ? stage.tokenize(".")[0]+"."+stage.tokenize(".")[1] : stage
+    stage = stage.count(".") > 1 ? stage.tokenize(".")[0] +"."+ stage.tokenize(".")[1] : stage
     
     def defaultComponentMap = [ name : "RE", email : "CORTX.DevOps.RE@seagate.com"]
     def componentInfoMap = [
@@ -495,15 +495,15 @@ def createJiraIssue(String failedStage, String failedComponent, String failureLo
                         labels: ["PI-2"],
                         components: [[name: "${failedComponent}"]],
                         summary: "3N VM-Deployment Failed in ${failedComponent} for the build ${build_id}",
-                        description: "{panel}VM Deployment is failed in ${failedStage} for the build [${build_id}|${CORTX_BUILD}]. Please check Jenkins console log and deployment log for more info.\n"+
-                                    "\n h4. Deployment Info \n"+
-                                    "|Cortx build|[${build_id}|${CORTX_BUILD}]|\n"+
-                                    "|Jenkins build|[${JOB_BASE_NAME}#${BUILD_NUMBER} |${BUILD_URL}]|\n"+
-                                    "|Failed Component |*${failedComponent}*|\n"+
-                                    "|Deployment Host|${NODE1_HOST}|\n"+
-                                    "|Deployment Log|[${JOB_BASE_NAME}/${BUILD_NUMBER}/artifact|${BUILD_URL}artifact]|\n"+
-                                    "\n\n"+
-                                    "h4. Failure Log\n"+
+                        description: "{panel}VM Deployment is failed in ${failedStage} for the build [${build_id}|${CORTX_BUILD}]. Please check Jenkins console log and deployment log for more info.\n" +
+                                    "\n h4. Deployment Info \n" +
+                                    "|Cortx build|[${build_id}|${CORTX_BUILD}]|\n" +
+                                    "|Jenkins build|[${JOB_BASE_NAME}#${BUILD_NUMBER} |${BUILD_URL}]|\n" +
+                                    "|Failed Component |*${failedComponent}*|\n" +
+                                    "|Deployment Host|${NODE1_HOST}|\n" +
+                                    "|Deployment Log|[${JOB_BASE_NAME}/${BUILD_NUMBER}/artifact|${BUILD_URL}artifact]|\n" +
+                                    "\n\n" +
+                                    "h4. Failure Log\n" +
                                     "{code:java}${failureLog}{code} \n {panel}"
                     ]
                 ]

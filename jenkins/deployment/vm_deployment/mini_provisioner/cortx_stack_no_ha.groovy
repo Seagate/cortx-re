@@ -218,7 +218,7 @@ def getTestMachine(host, user, pass) {
 // Mark node for cleanup (cleanup job will use this node label to identify cleanup node)
 def addNodeLabel(nodeLabel) {
     node = getCurrentNode(env.NODE_NAME)
-	node.setLabelString(node.getLabelString()+" "+nodeLabel)
+	node.setLabelString(node.getLabelString() +" "+ nodeLabel)
 	node.save()
     node = null
 }

@@ -83,14 +83,13 @@ pipeline {
 						  cp ../alexignore .alexignore
 						  #cp /root/alexrc .alexrc
 						  #echo 'CORVault, lyve cloud.' >foo.txt
-						  repo_list=`echo '''+ words +'''`
-						  scan_words=`echo '''+ scan_list +'''`
-						  
+						  repo_list=`echo ''' + words +'''`
+						  scan_words=`echo ''' + scan_list +'''`						  
 						  repo_list=${repo_list//,/\\\\|}
 						  scan_words=${scan_words//,/\\\\|}
-						  grep -rnwo '.' -e \"$repo_list\" >> '''+ file_custom +'''
-						  grep -rnwo '.' -e \"$scan_words\" >> '''+ file_custom +'''
-						  alex . >> ''' + file +''' 2>&1
+						  grep -rnwo '.' -e \"$repo_list\" >> ''' + file_custom + '''
+						  grep -rnwo '.' -e \"$scan_words\" >> ''' + file_custom + '''
+						  alex . >> ''' + file + ''' 2>&1
 						  cat ''' + file_custom + '''
 						  set -e
 						'''
@@ -130,7 +129,7 @@ pipeline {
                   env.ForEmailPlugin = env.WORKSPACE
                   emailext mimeType: 'text/html',
                    body: '${FILE, path="cortx-motr.html"}',
-                   subject: 'Alex Scan Report - [ Date :' +new Date().format("dd-MMM-yyyy") + ' ]',
+                   subject: 'Alex Scan Report - [ Date :' + new Date().format("dd-MMM-yyyy") + ' ]',
                    recipientProviders: [[$class: 'RequesterRecipientProvider']],
                    to: useEmailList
 

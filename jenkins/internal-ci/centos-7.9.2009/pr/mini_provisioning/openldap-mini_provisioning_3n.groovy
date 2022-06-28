@@ -270,7 +270,7 @@ def runAnsible(tags) {
 def markNodeforCleanup() {
 	nodeLabel = "cleanup_req"
     node = getCurrentNode(env.NODE_NAME)
-	node.setLabelString(node.getLabelString()+" "+nodeLabel)
+	node.setLabelString(node.getLabelString() +" "+ nodeLabel)
 	node.save()
     node = null
 }
