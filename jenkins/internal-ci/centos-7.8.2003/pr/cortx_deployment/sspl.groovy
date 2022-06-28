@@ -364,11 +364,11 @@ def getBuild(buildURL) {
     buildID = sh(script: "curl -s  $buildURL/RELEASE.INFO  | grep BUILD | cut -d':' -f2 | tr -d '\"' | xargs", returnStdout: true).trim()
     buildbranch = "Build"
     if ( buildURL.contains("/cortx/github/main/") ) { 
-        buildbranch="Main"
+        buildbranch = "Main"
     } else if ( buildURL.contains("/cortx/github/stable/") ) { 
-        buildbranch="Stable"
+        buildbranch = "Stable"
     } else if ( buildURL.contains("/cortx/github/integration-custom-ci/")) { 
-        buildbranch="Custom-CI"
+        buildbranch = "Custom-CI"
     } 
 
  return "$buildbranch#$buildID"   
