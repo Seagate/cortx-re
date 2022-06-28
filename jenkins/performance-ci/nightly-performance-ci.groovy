@@ -70,8 +70,6 @@ pipeline {
 
                 script {
                     if (params.infrastructure == 'HW') {
-                        steps {
-                            script { build_stage = env.STAGE_NAME }
 
                             sh label: 'Copy RPMS', script:'''
                             echo "Deploying CORTX on Hardware"
@@ -106,13 +104,11 @@ pipeline {
                             '''
                         }
             } else {
-                        steps {
-                            script { build_stage = env.STAGE_NAME }
-
-                            sh label: 'Copy RPMS', script:'''
-                            echo "Deploying CORTX on Virtual Machine"
-                            '''
-                            script {
+                        sh label: 'Copy RPMS', script:'''
+                        echo "Deploying CORTX on Virtual Machine"
+                        '''
+                        
+                        script {
                                 def cortxCluster = build job: '/Cortx-Automation/RGW/setup-cortx-rgw-cluster', wait: true,
                                 parameters: [
                                     string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
@@ -128,13 +124,11 @@ pipeline {
                                 ]
                                 env.cortxcluster_build_url = cortxCluster.absoluteUrl
                                 env.cortxCluster_status = cortxCluster.currentResult
-                            }
                         }
-                    }   
-                }
+                    }
+                }   
             }
-        }
-
+   
         stage ('Execute performace sanity') {
             steps {
                 script { build_stage = env.STAGE_NAME }
