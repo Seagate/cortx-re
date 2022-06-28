@@ -36,11 +36,9 @@ pipeline {
         BUILD_OS = "${OS_VERSION}"
         COMPONENT_NAME = "cortx-rgw".trim()
         BRANCH = "${ghprbTargetBranch != null ? ghprbTargetBranch : COMPONENTS_BRANCH}"
-        os_version = "${OS_VERSION}"
-        branch = "${BRANCH}"
         THIRD_PARTY_VERSION = "${OS_VERSION}-2.0.0-k8"
         VERSION = "2.0.0"
-        release_tag = "last_successful_prod"
+        RELEASE_TAG = "last_successful_prod"
         PASSPHARASE = credentials('rpm-sign-passphrase')
         RELEASE_DIR = "/mnt/bigstorage/releases/cortx"
         OS_FAMILY=sh(script: "echo '${OS_VERSION}' | cut -d '-' -f1", returnStdout: true).trim()
@@ -82,6 +80,9 @@ pipeline {
                     pushd cortx-re/solutions/kubernetes/
                         export CEPH_REPO=${CORTX_RGW_URL}
                         export CEPH_BRANCH=${CORTX_RGW_BRANCH}
+                        export os_version=${OS_VERSION}
+                        export branch=${branch}
+                        export release_tag=${RELEASE_TAG}
                         bash ceph-binary-build.sh --ceph-build-env ${BUILD_LOCATION}
                     popd
                 """
