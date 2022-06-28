@@ -49,7 +49,7 @@ pipeline {
         VERSION = "2.0.0"
         RELEASE_TAG = "last_successful_prod"
         PASSPHARASE = credentials('rpm-sign-passphrase')
-        OS_FAMILY=sh(script: "echo '${OS_VERSION}' | cut -d '-' -f1", returnStdout: true).trim()
+        OS_FAMILY = sh(script: "echo '${OS_VERSION}' | cut -d '-' -f1", returnStdout: true).trim()
         // Artifacts root location
 
         // 'WARNING' - rm -rf command used on this path please careful when updating this value

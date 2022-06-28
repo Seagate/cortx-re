@@ -56,7 +56,7 @@ pipeline {
 
                     Thanks,<br/>
                     DevOps Team.<br/>''',
-                    subject: 'Repository Report - [ Date :' +new Date().format("dd-MMM-yyyy") + ' ]',
+                    subject: 'Repository Report - [ Date :' + new Date().format("dd-MMM-yyyy") + ' ]',
                     recipientProviders: [[$class: 'RequesterRecipientProvider']]
                 }
             }
