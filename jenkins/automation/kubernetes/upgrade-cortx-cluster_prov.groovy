@@ -187,7 +187,7 @@ pipeline {
                 PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
                 [ -f /var/tmp/cortx-cluster-status.txt ] && cp /var/tmp/cortx-cluster-status.txt $WORKSPACE/artifacts/
                 [ -f /var/tmp/upgrade-logs.txt ] && cp /var/tmp/upgrade-logs.txt $WORKSPACE/artifacts/
-                scp -q "$PRIMARY_NODE":/root/deploy-scripts/k8_cortx_cloud/solution.yaml $WORKSPACE/artifacts/
+                scp -q "$PRIMARY_NODE":/root/cortx-k8s/k8_cortx_cloud/solution.yaml $WORKSPACE/artifacts/
             popd    
             '''
             script {
