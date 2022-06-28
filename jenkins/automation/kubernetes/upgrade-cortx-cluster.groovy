@@ -53,7 +53,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'fetch cluster status', script: '''
                     pushd solutions/kubernetes/
-                        echo $hosts | tr ' ' '\n' | head -n 1 > hosts
+                        echo $hosts | tr ' ' '\n' > hosts
                         cat hosts
                         ./cortx-upgrade.sh --cluster-status
                     popd
@@ -102,6 +102,20 @@ pipeline {
                         ./cortx-upgrade.sh --cluster-status
                     popd
                 '''
+                // extract actual image tags if input image has latest tag.
+                script {
+                    env.postupgrade_cortx_server_image = sh( script: '''
+                        grep "seagate/cortx-rgw" < /var/tmp/cortx-cluster-status.txt | head -n 1
+                    ''', returnStdout: true).trim()
+
+                    env.postupgrade_cortx_data_image = sh( script: '''
+                        grep "seagate/cortx-data" < /var/tmp/cortx-cluster-status.txt | head -n 1
+                    ''', returnStdout: true).trim()
+
+                    env.postupgrade_cortx_control_image = sh( script: '''
+                        grep "seagate/cortx-control" < /var/tmp/cortx-cluster-status.txt | head -n 1
+                    ''', returnStdout: true).trim()
+                }
             }
         }
 
@@ -151,11 +165,11 @@ pipeline {
                     echo $hosts | tr ' ' '\n' | awk -F["="] '{print $2}'|cut -d',' -f1
                 ''', returnStdout: true).trim()
                 env.preupgrade_images_info = "${env.preupgrade_cortx_server_image},${env.preupgrade_cortx_data_image},${env.preupgrade_cortx_control_image}"
-                env.images_info = "${CORTX_SERVER_IMAGE},${CORTX_DATA_IMAGE},${CORTX_CONTROL_IMAGE}"
+                env.images_info = "${env.postupgrade_cortx_server_image},${env.postupgrade_cortx_data_image},${env.postupgrade_cortx_control_image}"
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
                 mailRecipients = "gaurav.chaudhari@seagate.com"
                 emailext ( 
-                    body: '''${SCRIPT, template="cluster-upgrade-email.template"}''',
+                    body: '${SCRIPT, template="cluster-upgrade-email.template"}',
                     mimeType: 'text/html',
                     subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
                     attachLog: true,
