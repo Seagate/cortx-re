@@ -19,7 +19,7 @@ pipeline {
         string(name: 'CORTX_CONTROL_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-control:2.0.0-latest', description: 'CORTX-CONTROL image', trim: true)
         string(name: 'CORTX_TOOLS_BRANCH', defaultValue: 'main', description: 'Repository for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_TOOLS_REPO', defaultValue: 'Seagate/seagate-tools', description: 'Repository for Cluster Setup scripts', trim: true)
-        string(name: 'SYSTEM_DRIVE', defaultValue: '/dev/sdb', description: 'Partition to be used for local provisioner', trim: true)
+        string(name: 'SYSTEM_DRIVE', defaultValue: '/dev/mapper/mpathp', description: 'Partition to be used for local provisioner', trim: true)
         choice (
             choices: ['DEBUG', 'ALL', 'DEVOPS'],
             description: 'Email Notification Recipients ',
