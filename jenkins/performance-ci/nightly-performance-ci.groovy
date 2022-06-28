@@ -36,7 +36,7 @@ pipeline {
 
     }
     stages {
-    
+
         stage ("Define Build Variables") {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -63,69 +63,74 @@ pipeline {
                 }
             }
         }
-        
+
         stage ("Deploy CORTX Cluster") {
-            if (params.infrastructure == 'HW') {
-                steps {
-                    script { build_stage = env.STAGE_NAME }
+            steps {
+                script { build_stage = env.STAGE_NAME }
 
-                    sh label: 'Copy RPMS', script:'''
-                     echo "Deploying CORTX on Hardware"
-                    '''
-                    
-                    checkout([$class: 'GitSCM', branches: [[name: '$CORTX_RE_BRANCH']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: '$CORTX_RE_REPO']]])
-                    
-                    sh label: 'Copy RPMS', script:'''
-                    pushd solutions/kubernetes/
-                        curl -l https://raw.githubusercontent.com/shailesh-vaidya/cortx-re/hw-performance-ci/jenkins/performance-ci/nightly-performance-ci.yml -o solution.yaml
-                        export GITHUB_TOKEN=$GITHUB_TOKEN
-                        export CORTX_SCRIPTS_BRANCH=${CORTX_SCRIPTS_BRANCH}
-                        export CORTX_SCRIPTS_REPO=${CORTX_SCRIPTS_REPO}
-                        export CORTX_CONTROL_IMAGE=${CORTX_CONTROL_IMAGE}
-                        export CORTX_SERVER_IMAGE=${CORTX_SERVER_IMAGE}
-                        export CORTX_DATA_IMAGE=${CORTX_DATA_IMAGE}
-                        export SOLUTION_CONFIG_TYPE=manual
-                        export DEPLOYMENT_METHOD=${DEPLOYMENT_METHOD}
-                        export SYSTEM_DRIVE=${SYSTEM_DRIVE}
-                        
-                        #Print Host details.
-                        echo $hosts | tr ' ' '\n' > hosts
-                        cat hosts
-                        
-                        #Destroy CORTX Cluster
-                        ls -ltr
-                        ./cortx-deploy.sh --destroy-cluster
+                script {
+                    if (params.infrastructure == 'HW') {
+                        steps {
+                            script { build_stage = env.STAGE_NAME }
 
-                        #Deploy CORTX Cluster
-                        ./cortx-deploy.sh --cortx-cluster
+                            sh label: 'Copy RPMS', script:'''
+                            echo "Deploying CORTX on Hardware"
+                            '''
 
-                    '''    
+                            checkout([$class: 'GitSCM', branches: [[name: '$CORTX_RE_BRANCH']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: '$CORTX_RE_REPO']]])
 
-                }
+                            sh label: 'Copy RPMS', script:'''
+                            pushd solutions/kubernetes/
+                                curl -l https://raw.githubusercontent.com/shailesh-vaidya/cortx-re/hw-performance-ci/jenkins/performance-ci/nightly-performance-ci.yml -o solution.yaml
+                                export GITHUB_TOKEN=$GITHUB_TOKEN
+                                export CORTX_SCRIPTS_BRANCH=${CORTX_SCRIPTS_BRANCH}
+                                export CORTX_SCRIPTS_REPO=${CORTX_SCRIPTS_REPO}
+                                export CORTX_CONTROL_IMAGE=${CORTX_CONTROL_IMAGE}
+                                export CORTX_SERVER_IMAGE=${CORTX_SERVER_IMAGE}
+                                export CORTX_DATA_IMAGE=${CORTX_DATA_IMAGE}
+                                export SOLUTION_CONFIG_TYPE=manual
+                                export DEPLOYMENT_METHOD=${DEPLOYMENT_METHOD}
+                                export SYSTEM_DRIVE=${SYSTEM_DRIVE}
+
+                                #Print Host details.
+                                echo $hosts | tr ' ' '\n' > hosts
+                                cat hosts
+
+                                #Destroy CORTX Cluster
+                                ls -ltr
+                                ./cortx-deploy.sh --destroy-cluster
+
+                                #Deploy CORTX Cluster
+                                ./cortx-deploy.sh --cortx-cluster
+
+                            '''
+                        }
             } else {
-                steps {
-                    script { build_stage = env.STAGE_NAME }
-                                        
-                    sh label: 'Copy RPMS', script:'''
-                     echo "Deploying CORTX on Virtual Machine"
-                    '''
-                    script {
-                        def cortxCluster = build job: '/Cortx-Automation/RGW/setup-cortx-rgw-cluster', wait: true,
-                        parameters: [
-                            string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
-                            string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
-                            string(name: 'CORTX_SERVER_IMAGE', value: "${CORTX_SERVER_IMAGE}"),
-                            string(name: 'CORTX_DATA_IMAGE', value: "${CORTX_DATA_IMAGE}"),
-                            string(name: 'CORTX_CONTROL_IMAGE', value: "${CORTX_CONTROL_IMAGE}"),
-                            string(name: 'DEPLOYMENT_METHOD', value: "standard"),
-                            text(name: 'hosts', value: "${hosts}"),
-                            string(name: 'EXTERNAL_EXPOSURE_SERVICE', value: "NodePort"),
-                            string(name: 'SNS_CONFIG', value: "${SNS_CONFIG}"),
-                            string(name: 'DIX_CONFIG', value: "${DIX_CONFIG}")
-                        ]
-                        env.cortxcluster_build_url = cortxCluster.absoluteUrl
-                        env.cortxCluster_status = cortxCluster.currentResult
-                    }
+                        steps {
+                            script { build_stage = env.STAGE_NAME }
+
+                            sh label: 'Copy RPMS', script:'''
+                            echo "Deploying CORTX on Virtual Machine"
+                            '''
+                            script {
+                                def cortxCluster = build job: '/Cortx-Automation/RGW/setup-cortx-rgw-cluster', wait: true,
+                                parameters: [
+                                    string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
+                                    string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
+                                    string(name: 'CORTX_SERVER_IMAGE', value: "${CORTX_SERVER_IMAGE}"),
+                                    string(name: 'CORTX_DATA_IMAGE', value: "${CORTX_DATA_IMAGE}"),
+                                    string(name: 'CORTX_CONTROL_IMAGE', value: "${CORTX_CONTROL_IMAGE}"),
+                                    string(name: 'DEPLOYMENT_METHOD', value: "standard"),
+                                    text(name: 'hosts', value: "${hosts}"),
+                                    string(name: 'EXTERNAL_EXPOSURE_SERVICE', value: "NodePort"),
+                                    string(name: 'SNS_CONFIG', value: "${SNS_CONFIG}"),
+                                    string(name: 'DIX_CONFIG', value: "${DIX_CONFIG}")
+                                ]
+                                env.cortxcluster_build_url = cortxCluster.absoluteUrl
+                                env.cortxCluster_status = cortxCluster.currentResult
+                            }
+                        }
+                    }   
                 }
             }
         }
@@ -149,17 +154,17 @@ pipeline {
             }
         }
     }
-    
+
     post {
 
         cleanup {
             script {
                 // Archive Deployment artifacts in jenkins build
-                archiveArtifacts artifacts: "perf*", onlyIfSuccessful: false, allowEmptyArchive: true 
+                archiveArtifacts artifacts: "perf*", onlyIfSuccessful: false, allowEmptyArchive: true
             }
         }
 
-        always { 
+        always {
             script {
                 // Jenkins Summary
                 clusterStatus = ""
@@ -173,14 +178,14 @@ pipeline {
                     MESSAGE = "Build#${build_id} Nightly CORTX Performance CI Failed"
                     ICON = "error.gif"
                     STATUS = "FAILURE"
- 
+
                 } else {
                     manager.buildUnstable()
                     MESSAGE = "Build#${build_id} Nightly CORTX Performance CI Unstable"
                     ICON = "warning.gif"
                     STATUS = "UNSTABLE"
                 }
-                
+
                 clusterStatusHTML = "<pre>${clusterStatus}</pre>"
 
                 manager.createSummary("${ICON}").appendText("<h3>Nightly CORTX Performance CI ${currentBuild.currentResult} </h3><p>Please check <a href=\"${BUILD_URL}/console\">Performance Sanity Execution logs</a> for more info <h4>Sanity Execution Logs:</h4>${clusterStatusHTML}", false, false, false, "red")
@@ -196,7 +201,7 @@ pipeline {
                 env.build_stage = "${build_stage}"
                 env.cluster_status = "${clusterStatusHTML}"
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
-                emailext ( 
+                emailext (
                     body: '''${SCRIPT, template="cluster-setup-email.template"}''',
                     mimeType: 'text/html',
                     subject: "Build#${build_id} Nightly CORTX Performance CI ${currentBuild.currentResult}",
