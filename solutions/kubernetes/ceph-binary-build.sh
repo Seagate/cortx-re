@@ -50,6 +50,7 @@ function check_params() {
     if [ -z "$BUILD_LOCATION" ]; then echo "BUILD_LOCATION for container to mount not provided. Using default: /var/log/ceph-build/${BUILD_NUMBER}";BUILD_LOCATION="/var/log/ceph-build/${BUILD_NUMBER}"; fi
     if [ -z "$REPO_COMPONENT" ]; then echo "REPO_COMPONENT for ceph repo not provided. Using default: ceph";REPO_COMPONENT="ceph"; fi
     if [ -z "$CORTX_RGW_OPTIMIZED_BUILD" ]; then echo "CORTX_RGW_OPTIMIZED_BUILD for ceph packages not provided. Using default: false";CORTX_RGW_OPTIMIZED_BUILD="false"; fi
+    if [ -z "$INSTALL_MOTR" ]; then echo "INSTALL_MOTR for ceph build not provided. Using default: false";INSTALL_MOTR="false"; fi
     if [ -z "$MOUNT" ]; then echo "MOUNT for uploading packages is not provided. Using default: cortx-storage.colo.seagate.com:/mnt/data1/releases/ceph";MOUNT="cortx-storage.colo.seagate.com:/mnt/data1/releases/ceph"; fi
     if [ -z "$build_upload_dir" ]; then echo "build_upload_dir for ceph packages not provided. Using default: /mnt/bigstorage/releases/ceph";build_upload_dir="/mnt/bigstorage/releases/ceph"; fi
 
@@ -60,6 +61,7 @@ function check_params() {
    echo -e "# BUILD_LOCATION            : $BUILD_LOCATION             "
    echo -e "# REPO_COMPONENT            : $REPO_COMPONENT             "
    echo -e "# CORTX_RGW_OPTIMIZED_BUILD : $CORTX_RGW_OPTIMIZED_BUILD  "
+   echo -e "# INSTALL_MOTR              : $INSTALL_MOTR               "
    echo -e "# MOUNT                     : $MOUNT                      "
    echo -e "# build_upload_dir          : $build_upload_dir           "
    echo -e "#########################################################################"
@@ -138,7 +140,7 @@ function ceph_build() {
                     add_common_separator "Clone Repo"
                     git clone $CEPH_REPO && git checkout $CEPH_BRANCH
 
-                    if [[ $REPO_COMPONENT == "cortx-rgw" ]]; then
+                    if [[ $REPO_COMPONENT == "cortx-rgw" || $INSTALL_MOTR == true ]]; then
                         add_common_separator "cortx-motr dependencies no yet sorted on ubuntu"
                         exit 1
                     fi
@@ -187,7 +189,7 @@ function ceph_build() {
                     add_common_separator "Clone Repo"
                     git clone $CEPH_REPO && git checkout $CEPH_BRANCH
 
-                    if [[ $REPO_COMPONENT == "cortx-rgw" ]]; then
+                    if [[ $REPO_COMPONENT == "cortx-rgw" || $INSTALL_MOTR == true ]]; then
                         add_common_separator "Installing cortx-motr dependencies"
                         yum-config-manager --add-repo="http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/$release_tag/cortx_iso/"
                         yum-config-manager --add-repo="http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rockylinux/rockylinux-8.4-2.0.0-latest/"
@@ -238,7 +240,7 @@ function ceph_build() {
                     add_common_separator "Clone Repo"
                     git clone $CEPH_REPO && git checkout $CEPH_BRANCH
 
-                    if [[ $REPO_COMPONENT == "cortx-rgw" ]]; then
+                    if [[ $REPO_COMPONENT == "cortx-rgw" || $INSTALL_MOTR == true ]]; then
                         add_common_separator "Installing cortx-motr dependencies"
                         yum-config-manager --add-repo="http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/$release_tag/cortx_iso/"
                         check_status "Failed to add motr repo"
