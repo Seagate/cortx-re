@@ -52,7 +52,7 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'fetch cluster status', script: '''
-                    pushd scripts/provisioner
+                    pushd scripts/provisioner/
                         echo $hosts | tr ' ' '\n' > hosts
                         cat hosts
                         ./cortx-upgrade.sh --cluster-status
@@ -78,7 +78,7 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Upgrade cluster', script: '''
-                    pushd solutions/kubernetes/
+                    pushd scripts/provisioner/
                         export CORTX_SCRIPTS_BRANCH=${CORTX_SCRIPTS_BRANCH}
                         export CORTX_SCRIPTS_REPO=${CORTX_SCRIPTS_REPO}
                         export CORTX_SERVER_IMAGE=${CORTX_SERVER_IMAGE}
@@ -98,7 +98,7 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'fetch cluster status', script: '''
-                    pushd solutions/kubernetes/
+                    pushd scripts/provisioner/
                         ./cortx-upgrade.sh --cluster-status
                     popd
                 '''
@@ -123,7 +123,7 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'execute IO operations', script: '''
-                    pushd solutions/kubernetes/
+                    pushd scripts/provisioner/
                         ./cortx-upgrade.sh --io-sanity
                     popd
                 '''
@@ -182,7 +182,7 @@ pipeline {
         cleanup {
             sh label: 'Collect Artifacts', script: '''
             mkdir -p artifacts
-            pushd solutions/kubernetes/
+            pushd scripts/provisioner/
                 HOST_FILE=$PWD/hosts
                 PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
                 [ -f /var/tmp/cortx-cluster-status.txt ] && cp /var/tmp/cortx-cluster-status.txt $WORKSPACE/artifacts/
@@ -199,7 +199,7 @@ pipeline {
         failure {
             // Remove upgrade track file
             sh label: 'Remove metadata files', script: '''
-            pushd solutions/kubernetes/
+            pushd scripts/provisioner/
                 HOST_FILE=$PWD/hosts
                 PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
                 ssh -o 'StrictHostKeyChecking=no' $PRIMARY_NODE 'rm -rf /tmp/upgrade.sh.pid'
