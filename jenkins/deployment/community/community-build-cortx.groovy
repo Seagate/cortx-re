@@ -152,15 +152,15 @@ pipeline {
             '''
             }
         }
-        stage ('Destroy AWS infrastructure') {
-            steps {
-                script { build_stage = env.STAGE_NAME }
-                sh label: 'destroying EC2 instance', script: '''
-                pushd solutions/community-deploy/cloud/AWS
-                    terraform validate && terraform destroy -var-file user.tfvars --auto-approve
-                popd
-            '''
-            }
+    }
+    post {
+        always {
+            script { build_stage = env.STAGE_NAME }
+            sh label: 'destroying EC2 instance', script: '''
+            pushd solutions/community-deploy/cloud/AWS
+                terraform validate && terraform destroy -var-file user.tfvars --auto-approve
+            popd
+        '''
         }
     }
 }
