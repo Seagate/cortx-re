@@ -15,7 +15,7 @@ try {
     }
 }
 catch (Exception e) {
-    this.println('Inside catch 2. ' + e)
+    this.println('' + e)
 }
 pipeline {
     agent any
@@ -28,14 +28,14 @@ pipeline {
         {
                 steps
            {
-                sh 'curl -k -u $USER:$PASS -o $WORKSPACE/inbetween-offline-nodes.txt "https://eos-jenkins.colo.seagate.com/job/Cortx-Automation/job/Reports/job/offline-node-report/lastBuild/consoleText"'
+                sh 'curl -k -u $USER:$PASS -o $WORKSPACE/rawdata-offline-nodes.txt "https://eos-jenkins.colo.seagate.com/job/Cortx-Automation/job/Reports/job/offline-node-report/lastBuild/consoleText"'
            }
         }
             stage('Parsing log file')
             {
                 steps
                 {
-                    sh 'awk "/^[1-9]/{print}" $WORKSPACE/inbetween-offline-nodes.txt > $WORKSPACE/offline-nodes.txt'
+                    sh 'awk "/^[1-9]/{print}" $WORKSPACE/rawdata-offline-nodes.txt > $WORKSPACE/offline-nodes.txt'
                 }
             }
     }
