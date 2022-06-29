@@ -56,7 +56,8 @@ function download_deploy_script() {
     if [ -z "$SCRIPT_LOCATION" ]; then echo "SCRIPT_LOCATION not provided.Exiting..."; exit 1; fi
     if [ -z "$CORTX_SCRIPTS_REPO" ]; then echo "CORTX_SCRIPTS_REPO not provided.Exiting..."; exit 1; fi
     if [ -z "$CORTX_SCRIPTS_BRANCH" ]; then echo "CORTX_SCRIPTS_BRANCH not provided.Exiting..."; exit 1; fi
-
+    if [ -z "$COMMUNITY_USE" ]; then echo "COMMUNITY_USE option not provided.Exiting..."; exit 1; fi
+    
     rm -rf $SCRIPT_LOCATION
     yum install git -y
     git clone https://github.com/$CORTX_SCRIPTS_REPO $SCRIPT_LOCATION
@@ -261,9 +262,13 @@ function execute_deploy_script() {
 
 function execute_prereq() {
     add_secondary_separator "Pulling latest CORTX images"
-    pull_image $CORTX_SERVER_IMAGE
-    pull_image $CORTX_DATA_IMAGE
-    pull_image $CORTX_CONTROL_IMAGE
+    if [ "${COMMUNITY_USE}" == "no" ]; then
+        pull_image $CORTX_SERVER_IMAGE
+        pull_image $CORTX_DATA_IMAGE
+        pull_image $CORTX_CONTROL_IMAGE
+    else
+        echo -e "\nExecuting community deploy script.Ignoring image pull."
+    fi
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         add_secondary_separator "Un-mounting $SYSTEM_DRIVE partition if already mounted"
         findmnt $SYSTEM_DRIVE && umount -l $SYSTEM_DRIVE
@@ -274,7 +279,11 @@ function execute_prereq() {
 
 function setup_primary_node() {
     #Clean up untagged docker images and stopped docker containers.
-    cleanup
+    if [ "${COMMUNITY_USE}" == "no" ]; then
+        cleanup
+    else
+        echo -e "\nExecuting community deploy script.No cleaning required."
+    fi
     #Third-party images are downloaded from GitHub container registry. 
     download_deploy_script
     install_yq
@@ -298,7 +307,11 @@ function setup_primary_node() {
 function setup_worker_node() {
     add_secondary_separator "Setting up Worker Node on $HOSTNAME"
     #Clean up untagged docker images and stopped docker containers.
-    cleanup
+    if [ "${COMMUNITY_USE}" == "no" ]; then
+        cleanup
+    else
+        echo -e "\nExecuting community deploy script.No cleaning required."
+    fi
     #Third-party images are downloaded from GitHub container registry.
     download_deploy_script
     install_yq
@@ -336,54 +349,54 @@ function destroy() {
 
 function print_pod_status() {
     add_secondary_separator "Image Details"
-        kubectl get pods -o jsonpath="{.items[*].spec.containers[*].image}" | tr ' ' '\n' | uniq 
+    kubectl get pods -o jsonpath="{.items[*].spec.containers[*].image}" | tr ' ' '\n' | uniq 
     add_secondary_separator "POD Status"
-        if ! kubectl get pods | grep -v STATUS | awk '{ print $3}' |  grep -v -q -i running; then
+    if ! kubectl get pods | grep -v STATUS | awk '{ print $3}' |  grep -v -q -i running; then
         kubectl get pods -o wide
-        else
-    add_common_separator "All PODs are not in running state. Marking deployment as failed. Please check problematic pod events using kubectl describe pod <pod name>"
+    else
+        add_common_separator "All PODs are not in running state. Marking deployment as failed. Please check problematic pod events using kubectl describe pod <pod name>"
         exit 1
-        fi
+    fi
     add_common_separator "Sleeping for 1min before checking hctl status...."
-        sleep 60  
+    sleep 60  
     add_common_separator "hctl status"
     #    echo "Disabled htcl status check for now. Checking RGW service"
     #    kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-rgw -- ps -elf | grep rgw
-        SECONDS=0
-        date
-        while [[ SECONDS -lt 1200 ]] ; do
-            if [ "$DEPLOYMENT_METHOD" == "data-only" ]; then
-                if kubectl exec -it $(kubectl get pods | awk '/cortx-data/{print $1; exit}') -c cortx-hax -- hctl status > /dev/null ; then
-                    if ! kubectl exec -it $(kubectl get pods | awk '/cortx-data/{print $1; exit}') -c cortx-hax -- hctl status| grep -v motr_client | grep -q -E 'unknown|offline|failed'; then
-                        kubectl exec -it $(kubectl get pods | awk '/cortx-data/{print $1; exit}') -c cortx-hax -- hctl status
-                        add_secondary_separator "Time taken for service to start $((SECONDS/60)) mins"
-                        exit 0
-                    else
-                        add_common_separator "Waiting for services to become online. Sleeping for 1min...."
-                        sleep 60
-                    fi
+    SECONDS=0
+    date
+    while [[ SECONDS -lt 1200 ]] ; do
+        if [ "$DEPLOYMENT_METHOD" == "data-only" ]; then
+            if kubectl exec -it $(kubectl get pods | awk '/cortx-data/{print $1; exit}') -c cortx-hax -- hctl status > /dev/null ; then
+                if ! kubectl exec -it $(kubectl get pods | awk '/cortx-data/{print $1; exit}') -c cortx-hax -- hctl status| grep -v motr_client | grep -q -E 'unknown|offline|failed'; then
+                    kubectl exec -it $(kubectl get pods | awk '/cortx-data/{print $1; exit}') -c cortx-hax -- hctl status
+                    add_secondary_separator "Time taken for service to start $((SECONDS/60)) mins"
+                    exit 0
                 else
-                    add_common_separator "hctl status not working yet. Sleeping for 1min...."
+                    add_common_separator "Waiting for services to become online. Sleeping for 1min...."
                     sleep 60
                 fi
             else
-                if kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-hax -- hctl status > /dev/null ; then
-                    if ! kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-hax -- hctl status| grep -q -E 'unknown|offline|failed'; then
-                        kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-hax -- hctl status
-                        add_secondary_separator "Time taken for service to start $((SECONDS/60)) mins"
-                        exit 0
-                    else
-                        add_common_separator "Waiting for services to become online. Sleeping for 1min...."
-                        sleep 60
-                    fi
+                add_common_separator "hctl status not working yet. Sleeping for 1min...."
+                sleep 60
+            fi
+        else
+            if kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-hax -- hctl status > /dev/null ; then
+                if ! kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-hax -- hctl status| grep -q -E 'unknown|offline|failed'; then
+                    kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-hax -- hctl status
+                    add_secondary_separator "Time taken for service to start $((SECONDS/60)) mins"
+                    exit 0
                 else
-                    add_common_separator "hctl status not working yet. Sleeping for 1min...."
+                    add_common_separator "Waiting for services to become online. Sleeping for 1min...."
                     sleep 60
                 fi
-            fi    
-        done
-            add_secondary_separator "Failed to to start services within 20mins. Exiting...."
-            exit 1
+            else
+                add_common_separator "hctl status not working yet. Sleeping for 1min...."
+                sleep 60
+            fi
+        fi    
+    done
+    add_secondary_separator "Failed to to start services within 20mins. Exiting...."
+    exit 1
 }
 
 function io_exec() {
@@ -391,6 +404,7 @@ function io_exec() {
         export DEPLOYMENT_METHOD=$DEPLOYMENT_METHOD
         export CEPH_DEPLOYMENT=$CEPH_DEPLOYMENT
         ./io-sanity.sh
+        check_status
     popd
 }
 

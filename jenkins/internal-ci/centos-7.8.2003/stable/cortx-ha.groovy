@@ -11,13 +11,13 @@ pipeline {
     }
 
     environment {
-		version="2.0.0"
-        env="dev"
-		component="cortx-ha"
-        branch="stable"
-        os_version="centos-7.8.2003"
-        release_dir="/mnt/bigstorage/releases/cortx"
-        build_upload_dir="$release_dir/components/github/$branch/$os_version/$env/$component"
+		version = "2.0.0"
+        env = "dev"
+		component = "cortx-ha"
+        branch = "stable"
+        os_version = "centos-7.8.2003"
+        release_dir = "/mnt/bigstorage/releases/cortx"
+        build_upload_dir = "$release_dir/components/github/$branch/$os_version/$env/$component"
     }
 	
 	options {
@@ -30,7 +30,7 @@ pipeline {
 	stages {
 		stage('Checkout') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				dir ('cortx-ha') {
 					checkout([$class: 'GitSCM', branches: [[name: '*/stable']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 0, noTags: false, reference: '', shallow: false], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-ha']]])
 				}
@@ -130,7 +130,7 @@ EOF
 				script {
                 	def releaseBuild = build job: 'Release', propagate: true
 				 	env.release_build = releaseBuild.number
-                    env.release_build_location="http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/"+releaseBuild.number
+                    env.release_build_location="http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/" +releaseBuild.number
 				}
             }
         }
@@ -138,7 +138,7 @@ EOF
 		stage('Update Jira') {
 		    when { expression { return env.release_build != null } }
             steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
                 script {
                     def jiraIssues = jiraIssueSelector(issueSelector: [$class: 'DefaultIssueSelector'])
                     jiraIssues.each { issue -> 
@@ -146,14 +146,14 @@ EOF
                         jiraAddComment( 
                             idOrKey: issue,
                             site: "SEAGATE_JIRA",
-                            comment: "{panel:bgColor=#c1c7d0}"+
-                                    "h2. ${component} - ${branch} branch build pipeline SUCCESS\n"+
-                                    "h3. Build Info:  \n"+
-                                       author+
-                                        "* Component Build  :  ${BUILD_NUMBER} \n"+
-                                        "* Release Build    :  ${release_build}  \n\n  "+      
-                                    "h3. Artifact Location  :  \n"+
-                                     "*  "+"${release_build_location} "+"\n"+
+                            comment: "{panel:bgColor=#c1c7d0}" +
+                                    "h2. ${component} - ${branch} branch build pipeline SUCCESS\n" +
+                                    "h3. Build Info:  \n" +
+                                       author +
+                                        "* Component Build  :  ${BUILD_NUMBER} \n" +
+                                        "* Release Build    :  ${release_build}  \n\n  " +
+                                    "h3. Artifact Location  :  \n" +
+                                     "*  "+"${release_build_location} "+"\n" +
                                     "{panel}",
                             failOnError: false,
                             auditLog: false
@@ -209,7 +209,7 @@ EOF
 def getAuthor(issue) {
    
     def changeLogSets = currentBuild.rawBuild.changeSets
-    def author= ""
+    def author = ""
     def response = ""
     // Grab build information
     for (int i = 0; i < changeLogSets.size(); i++) {
@@ -221,6 +221,6 @@ def getAuthor(issue) {
             }
         }
     } 
-    response = "* Author: "+author+"\n"
+    response = "* Author: " +author+ "\n"
     return response
 }
