@@ -172,7 +172,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 script {
                     try {
-                        def buildCortxAllImage = build job: 'cortx-docker-images-for-PR', wait: true,
+                        def buildCortxAllImage = build job: '/Cortx-PR-Build/Cortx-Deployment/Generic/cortx-docker-images-for-PR', wait: true,
                             parameters: [
                                 string(name: 'CORTX_RE_URL', value: "${CORTX_RE_URL}"),
                                 string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
@@ -199,7 +199,7 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
-                    build job: "K8s-1N-deployment", wait: true,
+                    build job: "/Cortx-PR-Build/Cortx-Deployment/Generic/K8s-1N-deployment", wait: true,
                     parameters: [
                         string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_URL}"),
                         string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
