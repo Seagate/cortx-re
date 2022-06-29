@@ -139,6 +139,7 @@ function ceph_build() {
                 pushd "$BUILD_LOCATION"
                     add_common_separator "Clone Repo"
                     git clone $CEPH_REPO && git checkout $CEPH_BRANCH
+                    check_status
 
                     if [[ $REPO_COMPONENT == "cortx-rgw" || $INSTALL_MOTR == true ]]; then
                         add_common_separator "cortx-motr dependencies no yet sorted on ubuntu"
@@ -188,6 +189,7 @@ function ceph_build() {
                 pushd "$BUILD_LOCATION"
                     add_common_separator "Clone Repo"
                     git clone $CEPH_REPO && git checkout $CEPH_BRANCH
+                    check_status
 
                     if [[ $REPO_COMPONENT == "cortx-rgw" || $INSTALL_MOTR == true ]]; then
                         add_common_separator "Installing cortx-motr dependencies"
@@ -239,6 +241,7 @@ function ceph_build() {
                 pushd "$BUILD_LOCATION"
                     add_common_separator "Clone Repo"
                     git clone $CEPH_REPO && git checkout $CEPH_BRANCH
+                    check_status
 
                     if [[ $REPO_COMPONENT == "cortx-rgw" || $INSTALL_MOTR == true ]]; then
                         add_common_separator "Installing cortx-motr dependencies"
