@@ -138,7 +138,7 @@ function ceph_build() {
                 check_status
                 pushd "$BUILD_LOCATION"
                     add_common_separator "Clone Repo"
-                    git clone $CEPH_REPO && git checkout $CEPH_BRANCH
+                    git clone $CEPH_REPO
                     check_status
 
                     if [[ $REPO_COMPONENT == "cortx-rgw" || $INSTALL_MOTR == true ]]; then
@@ -147,6 +147,9 @@ function ceph_build() {
                     fi
 
                     pushd $REPO_COMPONENT
+                        git checkout $CEPH_BRANCH
+                        check_status
+
                         add_common_separator "Checkout Submodules"
                         git submodule update --init --recursive
 
@@ -188,7 +191,7 @@ function ceph_build() {
                 dnf config-manager --set-enabled powertools
                 pushd "$BUILD_LOCATION"
                     add_common_separator "Clone Repo"
-                    git clone $CEPH_REPO && git checkout $CEPH_BRANCH
+                    git clone $CEPH_REPO
                     check_status
 
                     if [[ $REPO_COMPONENT == "cortx-rgw" || $INSTALL_MOTR == true ]]; then
@@ -199,6 +202,9 @@ function ceph_build() {
                     fi
 
                     pushd $REPO_COMPONENT
+                        git checkout $CEPH_BRANCH
+                        check_status
+
                         add_common_separator "Checkout Submodules"
                         git submodule update --init --recursive
 
@@ -240,7 +246,7 @@ function ceph_build() {
                 dnf config-manager --set-enabled powertools
                 pushd "$BUILD_LOCATION"
                     add_common_separator "Clone Repo"
-                    git clone $CEPH_REPO && git checkout $CEPH_BRANCH
+                    git clone $CEPH_REPO
                     check_status
 
                     if [[ $REPO_COMPONENT == "cortx-rgw" || $INSTALL_MOTR == true ]]; then
@@ -254,6 +260,9 @@ function ceph_build() {
                     fi
 
                     pushd $REPO_COMPONENT
+                        git checkout $CEPH_BRANCH
+                        check_status
+
                         add_common_separator "Checkout Submodules"
                         git submodule update --init --recursive
 
