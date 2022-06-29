@@ -125,8 +125,8 @@ fi
 validation
 generate_rsa_key
 nodes_setup
-scp_all_nodes functions.sh
-scp_primary_node cortx-deploy-functions.sh functions.sh io-sanity.sh
+scp_all_nodes "$WORKSPACE"/solutions/kubernetes/functions.sh
+scp_primary_node cortx-deploy-functions.sh "$WORKSPACE"/solutions/kubernetes/functions.sh io-sanity.sh
 
 
 case $ACTION in
