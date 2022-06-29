@@ -25,12 +25,12 @@ pipeline {
     }
     stages {
             stage('Get log file')
-        {
+            {
                 steps
-           {
-                sh 'curl -k -u $USER:$PASS -o $WORKSPACE/rawdata-offline-nodes.txt "https://eos-jenkins.colo.seagate.com/job/Cortx-Automation/job/Reports/job/offline-node-report/lastBuild/consoleText"'
-           }
-        }
+                {
+                    sh 'curl -k -u $USER:$PASS -o $WORKSPACE/rawdata-offline-nodes.txt "https://eos-jenkins.colo.seagate.com/job/Cortx-Automation/job/Reports/job/offline-node-report/lastBuild/consoleText"'
+                }
+            }
             stage('Parse log file')
             {
                 steps
@@ -40,7 +40,8 @@ pipeline {
             }
     }
     post {
-        always {
+        always
+        {
             archiveArtifacts artifacts: 'offline-nodes.txt', followSymlinks: false, fingerprint: true, onlyIfSuccessful: true
         }
     }
