@@ -104,7 +104,7 @@ function upgrade_cluster() {
     add_secondary_separator "Updating CORTX Images info in solution.yaml" &&
     imageArray=( '"\$CORTX_ACTUAL_CONTROL_IMAGE"' '"\$CORTX_ACTUAL_DATA_IMAGE"' '"\$CORTX_ACTUAL_SERVER_IMAGE"' '"\$CORTX_ACTUAL_CONTROL_IMAGE"' '"\$CORTX_ACTUAL_DATA_IMAGE"' ) &&
     servicesArray=( "control-pod" "data-pod" "server-pod" "ha-pod" "client-pod" ) &&
-    for i in "${!imageArray[@]}"; do update_image "${servicesArray[i]}" "${imageArray[i]}"; done &&
+    for i in "${!imageArray[@]}"; do update_image "${servicesArray[i]}" "${imageArray[i]}" "/root/cortx-k8s/k8_cortx_cloud"; done &&
     add_secondary_separator "Begin CORTX Cluster Upgrade" &&
     pushd '"$SCRIPT_LOCATION"' &&
     if [ '"$UPGRADE_TYPE"' == "rolling-upgrade" ]; then ./upgrade-cortx-cloud.sh start -p '"$POD_TYPE"'; else ./upgrade-cortx-cloud.sh -cold; fi &&
