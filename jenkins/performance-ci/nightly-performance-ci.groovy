@@ -21,7 +21,7 @@ pipeline {
         string(name: 'CORTX_TOOLS_REPO', defaultValue: 'Seagate/seagate-tools', description: 'Repository for Cluster Setup scripts', trim: true)
         string(name: 'SYSTEM_DRIVE', defaultValue: '/dev/sdb', description: 'Partition to be used for local provisioner', trim: true)
         choice (
-            choices: ['ALL', 'DEVOPS', 'DEBUG'],
+            choices: ['DEVOPS', 'ALL', 'DEBUG'],
             description: 'Email Notification Recipients ',
             name: 'EMAIL_RECIPIENTS'
         )
