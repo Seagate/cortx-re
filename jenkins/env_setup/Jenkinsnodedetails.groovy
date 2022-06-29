@@ -24,14 +24,14 @@ pipeline {
         PASS = credentials('offline-node-report-pass')
     }
     stages {
-            stage('Gettinglogfile')
+            stage('Get log file')
         {
                 steps
            {
                 sh 'curl -k -u $USER:$PASS -o $WORKSPACE/rawdata-offline-nodes.txt "https://eos-jenkins.colo.seagate.com/job/Cortx-Automation/job/Reports/job/offline-node-report/lastBuild/consoleText"'
            }
         }
-            stage('Parsing log file')
+            stage('Parse log file')
             {
                 steps
                 {
