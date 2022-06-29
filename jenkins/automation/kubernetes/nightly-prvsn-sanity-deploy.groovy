@@ -204,7 +204,9 @@ pipeline {
                     catchError(stageResult: 'FAILURE') {
                         build job: '/Cortx-Automation/RGW/cortx-rgw-cluster-upgrade', wait: true,
                         parameters: [
-                            string(name: 'hosts', value: "${NODE_HOST_LIST}")
+                            string(name: 'hosts', value: "${NODE_HOST_LIST}"),
+                            string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
+                            string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}")
                         ]
                     }
                 }
