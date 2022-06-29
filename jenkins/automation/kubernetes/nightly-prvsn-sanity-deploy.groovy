@@ -52,6 +52,8 @@ pipeline {
 
         string(name: 'CORTX_SCRIPTS_REPO', defaultValue: 'https://github.com/Seagate/cortx-k8s', description: 'Repository for cortx-k8s scripts (Services Team)', trim: true)
         string(name: 'CORTX_SCRIPTS_BRANCH', defaultValue: 'cortx-test', description: 'cortx-k8s scripts (Provisioner Team)', trim: true)
+        string(name: 'CORTX_RE_BRANCH', defaultValue: 'https://github.com/aayushisharma88/cortx-re', description: 'Repository for cortx-re scripts (Services Team)', trim: true)
+        string(name: 'CORTX_RE_REPO', defaultValue: 'UPGRADE_SANITY', description: 'Repository for cortx-re scripts (Services Team)', trim: true)
         booleanParam(name: 'SETUP_K8s_CLUSTER', defaultValue: false, description: 'Selecting this option will setup K8s Cluster before running Deployment.')
         choice (
             choices: ['yes' , 'no'],
