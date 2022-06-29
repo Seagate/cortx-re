@@ -35,6 +35,7 @@ pipeline {
         BUILD_LOCATION = "/var/log/pr-build/cortx-rgw-build/${BUILD_NUMBER}"
         BUILD_OS = "${OS_VERSION}"
         CORTX_RGW_OPTIMIZED_BUILD = true
+        INSTALL_MOTR = true
         COMPONENT_NAME = "cortx-rgw".trim()
         BRANCH = "${ghprbTargetBranch != null ? ghprbTargetBranch : COMPONENTS_BRANCH}"
         THIRD_PARTY_VERSION = "${OS_VERSION}-2.0.0-k8"
