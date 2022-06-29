@@ -11,6 +11,7 @@ pipeline {
         BUILD_OS = "${os_version}"
         VM_BUILD = false
         CORTX_RGW_OPTIMIZED_BUILD = true
+        INSTALL_MOTR = true
 
         component = "cortx-rgw"
         branch = "integration-custom-ci"
