@@ -202,7 +202,7 @@ pipeline {
             steps {
                 script {
                     catchError(stageResult: 'FAILURE') {
-                        build job: '/Cortx-Automation/RGW/cortx-rgw-cluster-upgrade', wait: true,
+                        build job: '/Provisioner/cortx-rgw-cluster-upgrade_prov', wait: true,
                         parameters: [
                             string(name: 'hosts', value: "${NODE_HOST_LIST}"),
                             string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
