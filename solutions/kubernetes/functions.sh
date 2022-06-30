@@ -104,7 +104,7 @@ function pull_image() {
     local image="$1"
     if [[ "$image" =~ "latest" ]]; then
         docker pull "$image" &>/dev/null
-        actual_image_tag=$(docker inspect --format='{{ index .Config.Cmd}}' "$image" | grep -o "2.0.0-[0-9][0-9][0-9]*")
+        actual_image_tag=$(docker run --rm -t "$image" cat /opt/seagate/cortx/RELEASE.INFO | grep VERSION | awk -F'"' '{print $2}')        
         actual_image=$(echo "${image//2.0.0-latest/${actual_image_tag}}")
         docker rmi -f "$image" &>/dev/null
         docker pull "$actual_image" &>/dev/null
