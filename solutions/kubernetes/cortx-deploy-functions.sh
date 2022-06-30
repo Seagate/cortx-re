@@ -27,9 +27,6 @@ SCRIPT_LOCATION="/root/deploy-scripts"
 YQ_VERSION=v4.25.1
 YQ_BINARY=yq_linux_386
 SOLUTION_CONFIG="/var/tmp/solution.yaml"
-CORTX_ACTUAL_SERVER_IMAGE="${CORTX_SERVER_IMAGE}"
-CORTX_ACTUAL_DATA_IMAGE="${CORTX_DATA_IMAGE}"
-CORTX_ACTUAL_CONTROL_IMAGE="${CORTX_CONTROL_IMAGE}"
 
 function usage() {
     cat << HEREDOC
@@ -220,11 +217,11 @@ function update_solution_config(){
 
 function add_image_info() {
     add_secondary_separator "Updating cortx images info in solution.yaml"   
-    update_image control-pod "$CORTX_ACTUAL_CONTROL_IMAGE"
-    update_image data-pod "$CORTX_ACTUAL_DATA_IMAGE"
-    update_image server-pod "$CORTX_ACTUAL_SERVER_IMAGE"
-    update_image ha-pod "$CORTX_ACTUAL_CONTROL_IMAGE"
-    update_image client-pod "$CORTX_ACTUAL_DATA_IMAGE"
+    update_image control-pod "$CORTX_CONTROL_IMAGE"
+    update_image data-pod "$CORTX_DATA_IMAGE"
+    update_image server-pod "$CORTX_SERVER_IMAGE"
+    update_image ha-pod "$CORTX_CONTROL_IMAGE"
+    update_image client-pod "$CORTX_DATA_IMAGE"
 }
 
 function add_node_info_solution_config() {
@@ -266,9 +263,9 @@ function execute_deploy_script() {
 function execute_prereq() {
     add_secondary_separator "Pulling latest CORTX images"
     if [ "${COMMUNITY_USE}" == "no" ]; then
-        CORTX_ACTUAL_SERVER_IMAGE=$(pull_image "$CORTX_SERVER_IMAGE")
-        CORTX_ACTUAL_DATA_IMAGE=$(pull_image "$CORTX_DATA_IMAGE")
-        CORTX_ACTUAL_CONTROL_IMAGE=$(pull_image "$CORTX_CONTROL_IMAGE")
+        CORTX_SERVER_IMAGE=$(pull_image "$CORTX_SERVER_IMAGE")
+        CORTX_DATA_IMAGE=$(pull_image "$CORTX_DATA_IMAGE")
+        CORTX_CONTROL_IMAGE=$(pull_image "$CORTX_CONTROL_IMAGE")
     else
         echo -e "\nExecuting community deploy script.Ignoring image pull."
     fi
