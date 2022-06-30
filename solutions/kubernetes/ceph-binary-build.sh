@@ -151,7 +151,7 @@ function ceph_build() {
                     pushd $REPO_COMPONENT
                         if [[ "$PR_BUILD" == true ]]; then
                             PR_ID=$(echo $CEPH_BRANCH | tr -dc '0-9')
-                            git fetch origin pull/$PR_ID/head:"pr-$PR_ID"
+                            git fetch origin pull/"$PR_ID"/head:"pr-$PR_ID"
                             check_status
                             git checkout "pr-$PR_ID"
                             check_status
@@ -217,7 +217,7 @@ function ceph_build() {
                     pushd $REPO_COMPONENT
                         if [[ "$PR_BUILD" == true ]]; then
                             PR_ID=$(echo $CEPH_BRANCH | tr -dc '0-9')
-                            git fetch origin pull/$PR_ID/head:"pr-$PR_ID"
+                            git fetch origin pull/"$PR_ID"/head:"pr-$PR_ID"
                             check_status
                             git checkout "pr-$PR_ID"
                             check_status
@@ -286,7 +286,7 @@ function ceph_build() {
                     pushd $REPO_COMPONENT
                         if [[ "$PR_BUILD" == true ]]; then
                             PR_ID=$(echo $CEPH_BRANCH | tr -dc '0-9')
-                            git fetch origin pull/$PR_ID/head:"pr-$PR_ID"
+                            git fetch origin pull/"$PR_ID"/head:"pr-$PR_ID"
                             check_status
                             git checkout "pr-$PR_ID"
                             check_status
