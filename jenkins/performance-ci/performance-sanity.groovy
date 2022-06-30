@@ -44,6 +44,12 @@ pipeline {
                         export GITHUB_TOKEN=${GITHUB_CRED}
                         export CORTX_TOOLS_REPO=${CORTX_TOOLS_REPO}
                         export CORTX_TOOLS_BRANCH=${CORTX_TOOLS_BRANCH}
+                        export DB_SERVER=10.237.65.111
+                        export DB_PORT=27017
+                        export DB_USER=perfpro
+                        export DB_PASSWD=PerfPro
+                        export DB_NAME=sanity_db
+                        export DB_DATABASE=performance_database
                         ./run-performace-tests.sh
                     popd
                 '''
