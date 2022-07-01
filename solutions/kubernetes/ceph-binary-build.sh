@@ -166,7 +166,7 @@ function ceph_build() {
                             check_status
                         fi
 
-                        echo "Checked out: $(git branch)"
+                        echo "Checked out: $(git branch --show-current)"
 
                         add_common_separator "Checkout Submodules"
                         git submodule update --init --recursive
@@ -235,7 +235,7 @@ function ceph_build() {
                             check_status
                         fi
 
-                        echo "Checked out: $(git branch)"
+                        echo "Checked out: $(git branch --show-current)"
 
                         add_common_separator "Checkout Submodules"
                         git submodule update --init --recursive
@@ -307,7 +307,7 @@ function ceph_build() {
                             check_status
                         fi
 
-                        echo "Checked out: $(git branch)"
+                        echo "Checked out: $(git branch --show-current)"
 
                         add_common_separator "Checkout Submodules"
                         git submodule update --init --recursive
