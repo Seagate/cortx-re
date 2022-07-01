@@ -156,9 +156,13 @@ function ceph_build() {
                             check_status
                             git checkout "pr-$PR_ID"
                             check_status
+                            git log -1 --oneline
+                            check_status
 
                         else
                             git checkout $CEPH_BRANCH
+                            check_status
+                            git log -1 --oneline
                             check_status
                         fi
 
@@ -221,9 +225,13 @@ function ceph_build() {
                             check_status
                             git checkout "pr-$PR_ID"
                             check_status
+                            git log -1 --oneline
+                            check_status
 
                         else
                             git checkout $CEPH_BRANCH
+                            check_status
+                            git log -1 --oneline
                             check_status
                         fi
 
@@ -289,9 +297,13 @@ function ceph_build() {
                             check_status
                             git checkout "pr-$PR_ID"
                             check_status
+                            git log -1 --oneline
+                            check_status
 
                         else
                             git checkout $CEPH_BRANCH
+                            check_status
+                            git log -1 --oneline
                             check_status
                         fi
 
