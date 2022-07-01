@@ -130,7 +130,7 @@ pipeline {
 
 
                 env.build_stage = "${build_stage}"
-                
+                def toEmail = ""
                 if ( params.DOCKER_REGISTRY == "ghcr.io" ) {
                     env.docker_image_location = "https://github.com/orgs/Seagate/packages?repo_name=cortx"
                 } else if ( params.DOCKER_REGISTRY == "cortx-docker.colo.seagate.com" ) {
@@ -149,7 +149,7 @@ pipeline {
                     mimeType: 'text/html',
                     subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
                     attachLog: true,
-                    to: "${mailRecipients}",
+                    to: toEmail,
                     recipientProviders: recipientProvidersClass
                 )
             }
