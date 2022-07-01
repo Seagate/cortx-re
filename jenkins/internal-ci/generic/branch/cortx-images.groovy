@@ -54,7 +54,7 @@ pipeline {
         )
 
         choice (
-            choices: ['DEVOPS', 'ALL', 'DEBUG'],
+            choices: ['DEBUG', 'ALL'],
             description: 'Email Notification Recipients ',
             name: 'EMAIL_RECIPIENTS'
         )
@@ -137,10 +137,8 @@ pipeline {
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
                 if ( params.EMAIL_RECIPIENTS == "ALL" ) {
                     mailRecipients = "cortx.sme@seagate.com, manoj.management.team@seagate.com, CORTX.SW.Architecture.Team@seagate.com, CORTX.DevOps.RE@seagate.com"
-                } else if ( params.EMAIL_RECIPIENTS == "DEVOPS" ) {
+                } else if ( params.EMAIL_RECIPIENTS == "DEBUG" && currentBuild.result == "FAILURE" ) {
                     mailRecipients = "CORTX.DevOps.RE@seagate.com"
-                } else if ( params.EMAIL_RECIPIENTS == "DEBUG" ) {
-                    mailRecipients = "shailesh.vaidya@seagate.com"
                 }
 
                 emailext ( 
