@@ -75,7 +75,7 @@ pipeline {
                 env.cluster_status = "${clusterStatusHTML}"
 
                 def toEmail = ""
-                def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
+                def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
                 if ( manager.build.result.toString() == "FAILURE" ) {
                     toEmail = "CORTX.DevOps.RE@seagate.com"
                     recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
