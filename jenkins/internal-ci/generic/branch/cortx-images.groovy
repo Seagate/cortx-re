@@ -24,7 +24,7 @@ pipeline {
         string(name: 'BUILD', defaultValue: 'last_successful_prod', description: 'Build for cortx docker images')
         
         choice (
-            choices: ['centos-7.9.2009' , 'rockylinux-8.4'],
+            choices: ['rockylinux-8.4' , 'centos-7.9.2009'],
             description: 'Base Operating System ',
             name: 'OS'
         )
