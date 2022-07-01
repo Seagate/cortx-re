@@ -137,7 +137,7 @@ pipeline {
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
                 if ( params.EMAIL_RECIPIENTS == "ALL" ) {
                     mailRecipients = "cortx.sme@seagate.com, manoj.management.team@seagate.com, CORTX.SW.Architecture.Team@seagate.com, CORTX.DevOps.RE@seagate.com"
-                } else if ( params.EMAIL_RECIPIENTS == "DEBUG" && manager.build.result.toString() == "FAILURE" ) {
+                } else if ( params.EMAIL_RECIPIENTS == "DEBUG" ) {
                     mailRecipients = "CORTX.DevOps.RE@seagate.com"
                 }
 
