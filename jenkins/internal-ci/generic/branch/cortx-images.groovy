@@ -141,7 +141,7 @@ pipeline {
                 if ( params.EMAIL_RECIPIENTS == "ALL" ) {
                     mailRecipients = "cortx.sme@seagate.com, manoj.management.team@seagate.com, CORTX.SW.Architecture.Team@seagate.com, CORTX.DevOps.RE@seagate.com"
                 } else if ( params.EMAIL_RECIPIENTS == "DEBUG" && manager.build.result.toString() == "FAILURE") {
-                    mailRecipients = "shailesh.vaidya@seagate.com"
+                    mailRecipients = "CORTX.DevOps.RE@seagate.com"
                 }
 
                 emailext ( 
