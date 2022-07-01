@@ -118,6 +118,7 @@ pipeline {
             cleanWs()
             script {
 
+                if ( params.GITHUB_PUSH == "yes" ) {
                 env.image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' --filter=reference='*/*/cortx*:[0-9]*' | grep -v 2.0.0-latest | head -4", returnStdout: true).trim()
                 println "${env.image}"
 
@@ -125,6 +126,8 @@ pipeline {
                 env.cortx_rgw_image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' --filter=reference='*/*/cortx-rgw:[0-9]*' | grep -v 2.0.0-latest", returnStdout: true).trim()
                 env.cortx_data_image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' --filter=reference='*/*/cortx-data:[0-9]*' | grep -v 2.0.0-latest", returnStdout: true).trim()
                 env.cortx_control_image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' --filter=reference='*/*/cortx-control:[0-9]*' | grep -v 2.0.0-latest", returnStdout: true).trim()
+                }
+
 
                 env.build_stage = "${build_stage}"
                 
@@ -138,7 +141,7 @@ pipeline {
                 if ( params.EMAIL_RECIPIENTS == "ALL" ) {
                     mailRecipients = "cortx.sme@seagate.com, manoj.management.team@seagate.com, CORTX.SW.Architecture.Team@seagate.com, CORTX.DevOps.RE@seagate.com"
                 } else if ( params.EMAIL_RECIPIENTS == "DEBUG" ) {
-                    mailRecipients = "CORTX.DevOps.RE@seagate.com"
+                    mailRecipients = "shailesh.vaidya@seagate.com"
                 }
 
                 emailext ( 
