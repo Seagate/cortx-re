@@ -92,7 +92,7 @@ pipeline {
                     mimeType: 'text/html',
                     subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
                     attachLog: true,
-                    to: "${mailRecipients}",
+                    to: toEmail,
                     recipientProviders: recipientProvidersClass
                 )
             }
