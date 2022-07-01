@@ -37,6 +37,7 @@ pipeline {
         CORTX_RGW_OPTIMIZED_BUILD = true
         INSTALL_MOTR = true
         PR_BUILD = true
+        PR_ID = "${ghprbPullId}"
         COMPONENT_NAME = "cortx-rgw".trim()
         BRANCH = "${ghprbTargetBranch != null ? ghprbTargetBranch : COMPONENTS_BRANCH}"
         THIRD_PARTY_VERSION = "${OS_VERSION}-2.0.0-k8"
@@ -76,7 +77,7 @@ pipeline {
                 """
 
                 dir('cortx-re') {
-                    checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 1, honorRefspec: true, noTags: true, reference: '', shallow: true], [$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
+                    checkout([$class: 'GitSCM', branches: [[name: '*/pr-sha']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 1, honorRefspec: true, noTags: true, reference: '', shallow: true], [$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/nitisdev/cortx-re']]])
                 }
 
                 sh label: 'Build', script: """
