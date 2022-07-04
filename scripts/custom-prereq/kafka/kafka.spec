@@ -12,7 +12,6 @@ URL:            https://kafka.apache.org/
 Source0:	kafka_%{_kafka_version}-%{_kafka_release}.tgz
 Source1:	kafka.service
 Source2:	kafka-zookeeper.service
-Requires:	java-1.8.0-openjdk-headless
 
 %description
 Kafka is designed to allow a single cluster to serve as the central data backbone for a large organization. It can be elastically and transparently expanded without downtime. Data streams are partitioned and spread over a cluster of machines to allow data streams larger than the capability of any single machine and to allow clusters of co-ordinated consumers. Messages are persisted on disk and replicated within the cluster to prevent data loss.
