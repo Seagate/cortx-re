@@ -22,6 +22,8 @@ set -eo pipefail
 
 if [ -z "$GH_OATH" ]; then echo "GH_OATH is not set. Existing..."; exit 1; fi
 if [ -z "$CODACY_OATH" ]; then echo "CODACY_OATH is not set. Existing..."; exit 1; fi
+if [ -z "$CORTX_REPO" ]; then echo "CORTX_REPO is not set. Existing..."; exit 1; fi
+if [ -z "$CORTX_BRANCH" ]; then echo "CORTX_BRANCH is not set. Existing..."; exit 1; fi
 
 #Install reuired packages
 curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.rpm.sh | sudo bash
@@ -30,7 +32,7 @@ pip3 install seaborn matplotlib pandas xlrd requests python-dateutil pyGithub ju
 git lfs install
 
 #Clone Repo
-git clone https://github.com/Seagate/cortx --depth=1
+git clone $CORTX_REPO -b $CORTX_BRANCH --depth=1
 pushd cortx && git lfs pull && popd
 
 #Execute notebook

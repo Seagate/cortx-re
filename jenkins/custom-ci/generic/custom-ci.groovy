@@ -25,7 +25,7 @@ pipeline {
         timestamps()
         ansiColor('xterm')
         parallelsAlwaysFailFast()
-        buildDiscarder(logRotator(daysToKeepStr: '5', numToKeepStr: '10'))
+        buildDiscarder(logRotator(daysToKeepStr: '15', numToKeepStr: '30'))
     }
 
     parameters {
@@ -78,6 +78,12 @@ pipeline {
             name: 'ENABLE_MOTR_DTM',
                 choices: ['no', 'yes'],
                 description: 'Build motr rpm using dtm mode.'
+        )
+
+        choice(
+            name: 'ENABLE_ADDB_PLUGIN',
+                choices: ['no', 'yes'],
+                description: 'Generates addb plugin as part of cortx-rgw-integration.'
         )
 
         choice(
@@ -189,7 +195,12 @@ pipeline {
                                           parameters: [
                                               string(name: 'CORTX_RGW_INTEGRATION_URL', value: "${CORTX_RGW_INTEGRATION_URL}"),
                                               string(name: 'CORTX_RGW_INTEGRATION_BRANCH', value: "${CORTX_RGW_INTEGRATION_BRANCH}"),
-                                              string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}")
+                                              string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}"),
+                                              string(name: 'MOTR_URL', value: "${MOTR_URL}"),
+                                              string(name: 'MOTR_BRANCH', value: "${MOTR_BRANCH}"),
+                                              string(name: 'CORTX_RGW_URL', value: "${CORTX_RGW_URL}"),
+                                              string(name: 'CORTX_RGW_BRANCH', value: "${CORTX_RGW_BRANCH}"),                                             
+                                              string(name: 'ENABLE_ADDB_PLUGIN', value: "${ENABLE_ADDB_PLUGIN}")
                                           ]
                             } catch (err) {
                                 build_stage = env.STAGE_NAME
