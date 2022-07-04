@@ -1,13 +1,12 @@
 #!/usr/bin/env groovy
 // Please configure branch and os_version as string parameters in Jenkins configuration manually.
 pipeline {
-          
     agent {
         node {
             label "docker-${os_version}-node"
         }
     }
-    
+
     environment {
         version = "2.0.0"
         third_party_version = "2.0.0-k8"
@@ -20,26 +19,25 @@ pipeline {
         ARTIFACT_LOCATION = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version"
         third_party_dir = "$release_dir/third-party-deps/rockylinux/$os_version-$third_party_version/"
         python_deps = "$release_dir/third-party-deps/python-deps/python-packages-2.0.0-latest"
-        // WARNING : 'rm' command where used in this dir path, be conscious while changing the value  
-        cortx_build_dir = "$release_dir/github/$branch/$os_version/cortx_builds" 
+        // WARNING : 'rm' command where used in this dir path, be conscious while changing the value
+        cortx_build_dir = "$release_dir/github/$branch/$os_version/cortx_builds"
     }
-    
+
     options {
         timeout(time: 120, unit: 'MINUTES')
         timestamps()
         ansiColor('xterm')
-        disableConcurrentBuilds()  
+        disableConcurrentBuilds()
     }
-        
-    stages {    
-    
+
+    stages {
         stage('Install Dependecies') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Installed Dependecies', script: '''
                     yum install -y expect rpm-sign rng-tools genisoimage python3-pip
                     #systemctl start rngd
-                '''    
+                '''
             }
         }
 
@@ -49,7 +47,7 @@ pipeline {
                 checkout([$class: 'GitSCM', branches: [[name: "main"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
             }
         }
-            
+
         stage ('Collect Component RPMS') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -114,7 +112,7 @@ pipeline {
                             if [ "$motr_dep" = "$motr_rpm_release_version" ]; then
                                 echo "\033[1;32m $component Motr version matches with integration Motr rpm ($motr_rpm_release_version) Good to Go - Validation Success \033[0m "
                             else
-                                echo "\033[1;31m $component Motr version ( $motr_dep ) mismatchs with integration Motr rpm ( $motr_rpm_release_version ) - Validation Failed \033[0m"        
+                                echo "\033[1;31m $component Motr version ( $motr_dep ) mismatchs with integration Motr rpm ( $motr_rpm_release_version ) - Validation Failed \033[0m"
                                 exit 1
                             fi
                         fi
@@ -123,11 +121,11 @@ pipeline {
                 '''
             }
         }
-        
+
         stage ('Sign rpm') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                                
+
                 sh label: 'Generate Key', script: '''
                     set +x
                     pushd scripts/rpm-signing
@@ -169,14 +167,14 @@ pipeline {
                                 fi
                             done
                         popd
-                    done    
+                    done
                 '''
             }
-        }                
+        }
         stage ('Repo Creation') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-        
+
                 sh label: 'Repo Creation', script: '''
 
                     for env in "dev" "prod";
@@ -186,10 +184,10 @@ pipeline {
                             createrepo .
                         popd
                     done
-                    
+
                 '''
             }
-        }    
+        }
 
         stage('Release cortx_build') {
             steps {
@@ -206,7 +204,7 @@ pipeline {
                 '''
             }
         }
-        
+
         stage ('Build Release Info') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -216,32 +214,31 @@ pipeline {
                         sh build_release_info.sh -b $branch -v $version -l $integration_dir/$release_tag/prod -t $cortx_build_dir/$release_tag/3rd_party
                         sh build_readme.sh $integration_dir/$release_tag
                     popd
-                    
+
                     cp $integration_dir/$release_tag/README.txt .
                     cp $integration_dir/$release_tag/dev/RELEASE.INFO .
-                    
+
                 """
                 sh label: 'Generate Changelog', script: """
                     pushd scripts/release_support
                         sh +x changelog.sh ${currentBuild.previousBuild.getNumber()} ${currentBuild.number} ${ARTIFACT_LOCATION}
                     popd
-                    cp /root/git_build_checkin_stats/clone/git-build-checkin-report.txt CHANGESET.txt 
+                    cp /root/git_build_checkin_stats/clone/git-build-checkin-report.txt CHANGESET.txt
                     cp CHANGESET.txt $integration_dir/$release_tag/dev
                     cp CHANGESET.txt $integration_dir/$release_tag/prod
                 """
             }
         }
-        
+
         stage ('Additional Files') {
             steps {
-
                 sh label: 'Additional Files', script:'''
                 mkdir -p $cortx_build_dir/$release_tag/cortx_iso
                 mv $integration_dir/$release_tag/prod/* $cortx_build_dir/$release_tag/cortx_iso
                 mkdir -p $integration_dir/$release_tag/prod/iso
                 mv $cortx_build_dir/$release_tag/* $integration_dir/$release_tag/prod
                 cp $integration_dir/$release_tag/prod/*/*.INFO $integration_dir/$release_tag/prod
-                        
+
                 rm -rf "$cortx_build_dir/$release_tag"
                 '''
             }
@@ -256,7 +253,7 @@ pipeline {
                     test -L last_successful_prod && rm -f last_successful_prod
                     ln -s $integration_dir/$release_tag/dev last_successful
                     ln -s $integration_dir/$release_tag/prod last_successful_prod
-                    
+
                     #symlinks for RGW branch builds
                     test -L last_successful && rm -f /mnt/bigstorage/releases/cortx/github/rgw/rockylinux-8.4/last_successful
                     test -L last_successful_prod && rm -f /mnt/bigstorage/releases/cortx/github/rgw/rockylinux-8.4/last_successful_prod
@@ -294,28 +291,36 @@ pipeline {
                     }
                 }
             }
-       } 
+       }
 
-        stage ("Deploy") {
-            steps {
-                script { build_stage = env.STAGE_NAME }
-                script {
-                    build job: "K8s-1N-deployment", wait: true,
-                    parameters: [
+        stage ("Deployment") {
+            parallel {
+                stage ("1 Node Deployment") {
+                    steps {
+                        script { build_stage = env.STAGE_NAME }
+                        build job: "K8s-1N-deployment", wait: true,
+                        parameters: [
                         string(name: 'CORTX_RE_BRANCH', value: "main"),
                         string(name: 'CORTX_RE_REPO', value: "https://github.com/Seagate/cortx-re"),
                         string(name: 'CORTX_SERVER_IMAGE', value: "${env.cortx_rgw_image}"),
                         string(name: 'CORTX_DATA_IMAGE', value: "${env.cortx_data_image}"),
                         string(name: 'CORTX_CONTROL_IMAGE', value: "${env.cortx_control_image}")
-                    ]
-                    build job: "K8s-3N-deployment", wait: true,
-                    parameters: [
+                        ]
+                    }
+                }
+
+                stage ("3 Node Deployment") {
+                    steps {
+                        script { build_stage = env.STAGE_NAME }
+                        build job: "K8s-3N-deployment", wait: true,
+                        parameters: [
                         string(name: 'CORTX_RE_BRANCH', value: "main"),
                         string(name: 'CORTX_RE_REPO', value: "https://github.com/Seagate/cortx-re"),
                         string(name: 'CORTX_SERVER_IMAGE', value: "${env.cortx_rgw_image}"),
                         string(name: 'CORTX_DATA_IMAGE', value: "${env.cortx_data_image}"),
                         string(name: 'CORTX_CONTROL_IMAGE', value: "${env.cortx_control_image}")
-                    ]
+                        ]
+                    }
                 }
             }
         }
@@ -338,22 +343,20 @@ pipeline {
                     }
                 }
             }
-       } 
+       }
     }
-    
+
     post {
-    
         always {
             script {
-                    
                 currentBuild.upstreamBuilds?.each { b -> env.upstream_project = "${b.getProjectName()}";env.upstream_build = "${b.getId()}" }
                 env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/${branch}/${os_version}/${env.release_tag}"
                 env.release_build = "${env.release_tag}"
                 env.build_stage = "${build_stage}"
 
                 def toEmail = "shailesh.vaidya@seagate.com"
-                
-                emailext ( 
+
+                emailext (
                         body: '''${SCRIPT, template="K8s-release-email.template"}''',
                         mimeType: 'text/html',
                         subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
