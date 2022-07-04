@@ -52,6 +52,7 @@ function check_params() {
     if [ -z "$CORTX_RGW_OPTIMIZED_BUILD" ]; then echo "CORTX_RGW_OPTIMIZED_BUILD for ceph packages not provided. Using default: false";CORTX_RGW_OPTIMIZED_BUILD="false"; fi
     if [ -z "$INSTALL_MOTR" ]; then echo "INSTALL_MOTR for ceph build not provided. Using default: false";INSTALL_MOTR="false"; fi
     if [ -z "$PR_BUILD" ]; then echo "PR_BUILD for ceph build not provided. Using default: false";PR_BUILD="false"; fi
+    if [ -z "$PR_ID" ]; then echo "PR_ID for ceph build not provided. Using default: false";PR_ID="0"; fi
     if [ -z "$MOUNT" ]; then echo "MOUNT for uploading packages is not provided. Using default: cortx-storage.colo.seagate.com:/mnt/data1/releases/ceph";MOUNT="cortx-storage.colo.seagate.com:/mnt/data1/releases/ceph"; fi
     if [ -z "$build_upload_dir" ]; then echo "build_upload_dir for ceph packages not provided. Using default: /mnt/bigstorage/releases/ceph";build_upload_dir="/mnt/bigstorage/releases/ceph"; fi
 
@@ -64,6 +65,7 @@ function check_params() {
    echo -e "# CORTX_RGW_OPTIMIZED_BUILD : $CORTX_RGW_OPTIMIZED_BUILD  "
    echo -e "# INSTALL_MOTR              : $INSTALL_MOTR               "
    echo -e "# PR_BUILD                  : $PR_BUILD                   "
+   echo -e "# PR_ID                     : $PR_ID                      "
    echo -e "# MOUNT                     : $MOUNT                      "
    echo -e "# build_upload_dir          : $build_upload_dir           "
    echo -e "#########################################################################"
@@ -103,7 +105,7 @@ function prvsn_env() {
             docker pull ubuntu:20.04
         fi
         add_secondary_separator "Run Ubuntu 20.04 container and run build script"
-        docker run --rm -t -e CEPH_REPO="$CEPH_REPO" -e CEPH_BRANCH="$CEPH_BRANCH" -e BUILD_OS="$BUILD_OS" -e REPO_COMPONENT="$REPO_COMPONENT" -e BUILD_LOCATION="/home" -e CORTX_RGW_OPTIMIZED_BUILD="$CORTX_RGW_OPTIMIZED_BUILD" -e branch="$branch" -e os_version="$os_version" -e release_tag="$release_tag" -e INSTALL_MOTR=$INSTALL_MOTR -e PR_BUILD="$PR_BUILD" -v "$BUILD_LOCATION/$BUILD_OS":/home --name "$REPO_COMPONENT-$BUILD_NUMBER" --entrypoint /bin/bash ubuntu:20.04 -c "pushd /home && ./build.sh --env-build && popd"
+        docker run --rm -t -e CEPH_REPO="$CEPH_REPO" -e CEPH_BRANCH="$CEPH_BRANCH" -e BUILD_OS="$BUILD_OS" -e REPO_COMPONENT="$REPO_COMPONENT" -e BUILD_LOCATION="/home" -e CORTX_RGW_OPTIMIZED_BUILD="$CORTX_RGW_OPTIMIZED_BUILD" -e branch="$branch" -e os_version="$os_version" -e release_tag="$release_tag" -e INSTALL_MOTR=$INSTALL_MOTR -e PR_BUILD="$PR_BUILD" -e PR_ID="$PR_ID" -v "$BUILD_LOCATION/$BUILD_OS":/home --name "$REPO_COMPONENT-$BUILD_NUMBER" --entrypoint /bin/bash ubuntu:20.04 -c "pushd /home && ./build.sh --env-build && popd"
 
     elif [[ "$BUILD_OS" == "centos-8" ]]; then
         if [[ $(docker images --format "{{.Repository}}:{{.Tag}}" --filter reference=centos:8) != "centos:8" ]]; then
@@ -112,14 +114,14 @@ function prvsn_env() {
         docker pull quay.io/centos/centos:stream8
         add_secondary_separator "Run CentOS 8 container and run build script"
         # docker run --rm -t -e CEPH_REPO=$CEPH_REPO -e CEPH_BRANCH=$CEPH_BRANCH -e BUILD_OS=$BUILD_OS -e REPO_COMPONENT=$REPO_COMPONENT -e BUILD_LOCATION="/home" -v "$BUILD_LOCATION/$BUILD_OS":/home --name "$REPO_COMPONENT-$BUILD_NUMBER" --entrypoint /bin/bash centos:8 -c "pushd /home && ./build.sh --env-build && popd"
-        docker run --rm -t -e CEPH_REPO="$CEPH_REPO" -e CEPH_BRANCH="$CEPH_BRANCH" -e BUILD_OS="$BUILD_OS" -e REPO_COMPONENT="$REPO_COMPONENT" -e BUILD_LOCATION="/home" -e CORTX_RGW_OPTIMIZED_BUILD="$CORTX_RGW_OPTIMIZED_BUILD" -e branch="$branch" -e os_version="$os_version" -e release_tag="$release_tag" -e INSTALL_MOTR=$INSTALL_MOTR -e PR_BUILD="$PR_BUILD" -v "$BUILD_LOCATION/$BUILD_OS":/home --name "$REPO_COMPONENT-$BUILD_NUMBER" --entrypoint /bin/bash quay.io/centos/centos:stream8 -c "pushd /home && ./build.sh --env-build && popd"
+        docker run --rm -t -e CEPH_REPO="$CEPH_REPO" -e CEPH_BRANCH="$CEPH_BRANCH" -e BUILD_OS="$BUILD_OS" -e REPO_COMPONENT="$REPO_COMPONENT" -e BUILD_LOCATION="/home" -e CORTX_RGW_OPTIMIZED_BUILD="$CORTX_RGW_OPTIMIZED_BUILD" -e branch="$branch" -e os_version="$os_version" -e release_tag="$release_tag" -e INSTALL_MOTR=$INSTALL_MOTR -e PR_BUILD="$PR_BUILD" -e PR_ID="$PR_ID" -v "$BUILD_LOCATION/$BUILD_OS":/home --name "$REPO_COMPONENT-$BUILD_NUMBER" --entrypoint /bin/bash quay.io/centos/centos:stream8 -c "pushd /home && ./build.sh --env-build && popd"
 
     elif [[ "$BUILD_OS" == "rockylinux-8.4" ]]; then
         if [[ $(docker images --format "{{.Repository}}:{{.Tag}}" --filter reference=rockylinux:8) != "rockylinux:8" ]]; then
             docker pull rockylinux:8
         fi
         add_secondary_separator "Run Rocky Linux 8 container and run build script"
-        docker run --rm -t -e CEPH_REPO="$CEPH_REPO" -e CEPH_BRANCH="$CEPH_BRANCH" -e BUILD_OS="$BUILD_OS" -e REPO_COMPONENT="$REPO_COMPONENT" -e BUILD_LOCATION="/home" -e CORTX_RGW_OPTIMIZED_BUILD="$CORTX_RGW_OPTIMIZED_BUILD" -e branch="$branch" -e os_version="$os_version" -e release_tag="$release_tag" -e INSTALL_MOTR=$INSTALL_MOTR -e PR_BUILD="$PR_BUILD" -v "$BUILD_LOCATION/$BUILD_OS":/home --name "$REPO_COMPONENT-$BUILD_NUMBER" --entrypoint /bin/bash rockylinux:8 -c "pushd /home && ./build.sh --env-build && popd"
+        docker run --rm -t -e CEPH_REPO="$CEPH_REPO" -e CEPH_BRANCH="$CEPH_BRANCH" -e BUILD_OS="$BUILD_OS" -e REPO_COMPONENT="$REPO_COMPONENT" -e BUILD_LOCATION="/home" -e CORTX_RGW_OPTIMIZED_BUILD="$CORTX_RGW_OPTIMIZED_BUILD" -e branch="$branch" -e os_version="$os_version" -e release_tag="$release_tag" -e INSTALL_MOTR=$INSTALL_MOTR -e PR_BUILD="$PR_BUILD" -e PR_ID="$PR_ID" -v "$BUILD_LOCATION/$BUILD_OS":/home --name "$REPO_COMPONENT-$BUILD_NUMBER" --entrypoint /bin/bash rockylinux:8 -c "pushd /home && ./build.sh --env-build && popd"
 
     else
         add_secondary_separator "Failed to build ceph, container image not present."
@@ -150,18 +152,21 @@ function ceph_build() {
 
                     pushd $REPO_COMPONENT
                         if [[ "$PR_BUILD" == true ]]; then
-                            PR_ID=$(echo $CEPH_BRANCH | tr -dc '0-9')
                             git fetch origin pull/"$PR_ID"/head:"pr-$PR_ID"
                             check_status
                             git checkout "pr-$PR_ID"
+                            check_status
+                            git log -1 --oneline
                             check_status
 
                         else
                             git checkout $CEPH_BRANCH
                             check_status
+                            git log -1 --oneline
+                            check_status
                         fi
 
-                        echo "Checked out: $(git branch)"
+                        echo "Checked out: $(git branch --show-current)"
 
                         add_common_separator "Checkout Submodules"
                         git submodule update --init --recursive
@@ -216,18 +221,21 @@ function ceph_build() {
 
                     pushd $REPO_COMPONENT
                         if [[ "$PR_BUILD" == true ]]; then
-                            PR_ID=$(echo $CEPH_BRANCH | tr -dc '0-9')
                             git fetch origin pull/"$PR_ID"/head:"pr-$PR_ID"
                             check_status
                             git checkout "pr-$PR_ID"
+                            check_status
+                            git log -1 --oneline
                             check_status
 
                         else
                             git checkout $CEPH_BRANCH
                             check_status
+                            git log -1 --oneline
+                            check_status
                         fi
 
-                        echo "Checked out: $(git branch)"
+                        echo "Checked out: $(git branch --show-current)"
 
                         add_common_separator "Checkout Submodules"
                         git submodule update --init --recursive
@@ -285,18 +293,21 @@ function ceph_build() {
 
                     pushd $REPO_COMPONENT
                         if [[ "$PR_BUILD" == true ]]; then
-                            PR_ID=$(echo $CEPH_BRANCH | tr -dc '0-9')
                             git fetch origin pull/"$PR_ID"/head:"pr-$PR_ID"
                             check_status
                             git checkout "pr-$PR_ID"
+                            check_status
+                            git log -1 --oneline
                             check_status
 
                         else
                             git checkout $CEPH_BRANCH
                             check_status
+                            git log -1 --oneline
+                            check_status
                         fi
 
-                        echo "Checked out: $(git branch)"
+                        echo "Checked out: $(git branch --show-current)"
 
                         add_common_separator "Checkout Submodules"
                         git submodule update --init --recursive
