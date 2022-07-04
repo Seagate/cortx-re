@@ -61,6 +61,7 @@ RUN yum install yum-utils -y \
 COPY ./*.txt ./${CORTX_IMAGE}/*.txt ./compatibility.info ./generate-release-info.sh /opt/seagate/cortx/
 
 RUN yum install --nogpgcheck -y python3-pip \
+    && yum erase tar -y \
     && pip3 install yq==2.14.0 \
     && while read component; do grep "$component" < /opt/seagate/cortx/python_requirements.txt; done </opt/seagate/cortx/cortx-component-rpms.txt | sed 's/#.*//g' > /opt/seagate/cortx/requirements.txt \
     && while read component; do grep "$component" < /opt/seagate/cortx/python_requirements.ext.txt; done </opt/seagate/cortx/cortx-component-rpms.txt | sed 's/#.*//g' > /opt/seagate/cortx/requirements.ext.txt \
