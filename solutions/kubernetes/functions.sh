@@ -101,9 +101,18 @@ function nodes_setup() {
 }
 
 function pull_image() {
-    local image=$1
-    add_secondary_separator "Pulling $image image"
-    docker pull $image || { echo "Failed to pull $image"; exit 1; }
+    local image="$1"
+    if [[ "$image" =~ "latest" ]]; then
+        docker pull "$image" &>/dev/null
+        actual_image_tag=$(docker run --rm -t "$image" cat /opt/seagate/cortx/RELEASE.INFO | grep VERSION | awk -F'"' '{print $2}')        
+        actual_image=$(echo "${image//2.0.0-latest/${actual_image_tag}}")
+        docker rmi -f "$image" &>/dev/null
+        docker pull "$actual_image" &>/dev/null
+        echo "$actual_image"
+    else
+        docker pull "$image" &>/dev/null
+        echo "$image"
+    fi    
 }
 
 function update_image() {
