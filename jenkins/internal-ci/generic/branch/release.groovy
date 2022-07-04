@@ -325,11 +325,10 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 script {
                     try {
-                        def build_cortx_images = build job: '/Release_Engineering/re-workspace/sv_space/sv-image-tag-test/', wait: true,
+                        def build_tag_cortx_images = build job: '/Cortx-Automation/Release-Process/Image-Tagging/', wait: true,
                                     parameters: [
-                                        string(name: 'BASE_TAG', value: "${$version}-${release_tag}"),
-                                        string(name: 'TARGET_TAG', value: "main"),
-                                        string(name: 'BUILD', value: "${ARTIFACT_LOCATION}/${release_tag}/prod"),
+                                        string(name: 'BASE_TAG', value: "${version}-${release_tag}"),
+                                        string(name: 'TARGET_TAG', value: "${version}-latest"),
                                         string(name: 'EMAIL_RECIPIENTS', value: "DEBUG"),
                                         string(name: 'DOCKER_REGISTRY', value: "cortx-docker.colo.seagate.com")
                                         ]
@@ -340,8 +339,6 @@ pipeline {
                 }
             }
        } 
-
-
     }
     
     post {
