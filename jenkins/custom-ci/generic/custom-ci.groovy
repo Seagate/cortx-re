@@ -517,13 +517,17 @@ pipeline {
                 env.build_stage = "${build_stage}"
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
 
-                def mailRecipients = "shailesh.vaidya@seagate.com"
+                def toEmail = ""
+                if ( manager.build.result.toString() == "FAILURE") {
+                    toEmail = "CORTX.DevOps.RE@seagate.com"
+                }
+                
                 emailext (
                     body: '''${SCRIPT, template="K8s-release-email.template"}''',
                     mimeType: 'text/html',
                     subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
                     attachLog: true,
-                    to: "${mailRecipients}",
+                    to: toEmail,
                     recipientProviders: recipientProvidersClass
                 )
             }

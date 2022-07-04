@@ -98,18 +98,18 @@ pipeline {
                 }
             }
 
-			stage ('Release') {
-				when { triggeredBy 'SCMTrigger' }
-				steps {
-					script { build_stage = env.STAGE_NAME }
-					script {
-						def releaseBuild = build job: 'Release', propagate: true
-						env.release_build = releaseBuild.number
-						env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/" + releaseBuild.number
-						env.cortx_images = releaseBuild.buildVariables.cortx_all_image + "\n" + releaseBuild.buildVariables.cortx_rgw_image + "\n" + releaseBuild.buildVariables.cortx_data_image + "\n" + releaseBuild.buildVariables.cortx_control_image
-					}
-				}
-			}
+            stage ('Release') {
+                when { triggeredBy 'SCMTrigger' }
+                steps {
+                    script { build_stage = env.STAGE_NAME }
+                    script {
+                        def releaseBuild = build job: 'Release', propagate: true
+                        env.release_build = releaseBuild.number
+                        env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/" + releaseBuild.number
+                        env.cortx_images = releaseBuild.buildVariables.cortx_all_image + "\n" + releaseBuild.buildVariables.cortx_rgw_image + "\n" + releaseBuild.buildVariables.cortx_data_image + "\n" + releaseBuild.buildVariables.cortx_control_image
+                    }
+                }
+            }
 
             stage('Update Jira') {
                 when { expression { return env.release_build != null } }
@@ -163,10 +163,10 @@ pipeline {
                 }
 
                 if ( currentBuild.rawBuild.getCause(hudson.triggers.SCMTrigger$SCMTriggerCause) ) {
-                    def toEmail = "shailesh.vaidya@seagate.com"
+                    def toEmail = ""
                     def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
                     if ( manager.build.result.toString() == "FAILURE") {
-                        toEmail = "shailesh.vaidya@seagate.com"
+                        toEmail = "CORTX.DevOps.RE@seagate.com"
                     }
                     emailext (
                         body: '''${SCRIPT, template="component-email-dev.template"}''',

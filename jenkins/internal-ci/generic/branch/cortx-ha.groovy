@@ -5,7 +5,7 @@ pipeline {
             label "docker-${os_version}-node"
         }
     }
-    
+
     triggers {
         pollSCM '*/5 * * * *'
     }
@@ -18,12 +18,12 @@ pipeline {
         release_tag = "last_successful_prod"
         build_upload_dir = "$release_dir/components/github/$branch/$os_version/$env/$component"
     }
-    
+
     options {
         timeout(time: 120, unit: 'MINUTES')
         timestamps()
         ansiColor('xterm')
-        disableConcurrentBuilds()  
+        disableConcurrentBuilds()
     }
 
     stages {
@@ -36,12 +36,12 @@ pipeline {
             }
         }
 
-        
+
         stage('Install Dependencies') {
             steps {
                 script { build_stage = env.STAGE_NAME }
 
-                // Install third-party dependencies. This needs to be removed once components move away from self-contained binaries 
+                // Install third-party dependencies. This needs to be removed once components move away from self-contained binaries
                 sh label: '', script: '''
                     cat <<EOF >>/etc/pip.conf
 [global]
@@ -52,7 +52,7 @@ EOF
                     pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/$branch/py-utils/python_requirements.txt
                     pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/$branch/py-utils/python_requirements.ext.txt
                     rm -rf /etc/pip.conf
-            ''' 
+            '''
 
                 sh label: 'Configure yum repositories', script: """
                     yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/$release_tag/cortx_iso/
@@ -78,7 +78,7 @@ EOF
                     echo "Executing build script"
                       ./jenkins/build.sh -v ${version:0:1} -m ${version:2:1} -r ${version:4:1} -b $BUILD_NUMBER
                     popd
-                '''    
+                '''
             }
         }
 
@@ -91,7 +91,7 @@ EOF
                     yum localinstall $WORKSPACE/$component/dist/rpmbuild/RPMS/*/cortx-ha-*.rpm -y
                     bash jenkins/cicd/cortx-ha-cicd.sh
                     popd
-                '''    
+                '''
             }
         }
 
@@ -143,7 +143,7 @@ EOF
                     def jiraIssues = jiraIssueSelector(issueSelector: [$class: 'DefaultIssueSelector'])
                     jiraIssues.each { issue ->
                         def author =  getAuthor(issue)
-                        jiraAddComment(    
+                        jiraAddComment(
                             idOrKey: issue,
                             site: "SEAGATE_JIRA",
                             comment: "{panel:bgColor=#c1c7d0}" +
@@ -166,28 +166,27 @@ EOF
         }
 
     }
-    
+
     post {
         always {
             script {
                 echo 'Cleanup Workspace.'
                 deleteDir() /* clean up our workspace */
 
-                env.release_build = (env.release_build != null) ? env.release_build : "" 
+                env.release_build = (env.release_build != null) ? env.release_build : ""
                 env.release_build_location = (env.release_build_location != null) ? env.release_build_location : ""
                 env.component = (env.component).toUpperCase()
                 env.build_stage = "${build_stage}"
 
-                env.vm_deployment = (env.deployVMURL != null) ? env.deployVMURL : "" 
+                env.vm_deployment = (env.deployVMURL != null) ? env.deployVMURL : ""
                 if (env.deployVMStatus != null && env.deployVMStatus != "SUCCESS" && manager.build.result.toString() == "SUCCESS") {
                     manager.buildUnstable()
                 }
-                
+
                 def toEmail = ""
                 def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
                 if ( manager.build.result.toString() == "FAILURE") {
-                    toEmail = "shailesh.vaidya@seagate.com"
-                    
+                    toEmail = "CORTX.DevOps.RE@seagate.com"
                 }
                 emailext (
                     body: '''${SCRIPT, template="component-email-dev.template"}''',
@@ -198,7 +197,7 @@ EOF
                     recipientProviders: recipientProvidersClass
                 )
             }
-        }    
+        }
     }
 }
 

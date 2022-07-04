@@ -331,7 +331,12 @@ pipeline {
                 env.release_build = "${env.release_tag}"
                 env.build_stage = "${build_stage}"
 
-                def toEmail = "shailesh.vaidya@seagate.com"
+                def toEmail = ""
+                def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
+                if ( manager.build.result.toString() == "FAILURE" ) {
+                    toEmail = "CORTX.DevOps.RE@seagate.com"
+                    recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
+                }
                 
                 emailext ( 
                         body: '''${SCRIPT, template="K8s-release-email.template"}''',
@@ -339,6 +344,7 @@ pipeline {
                         subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
                         attachLog: true,
                         to: toEmail,
+                        recipientProviders: recipientProvidersClass,
                         attachmentsPattern: 'CHANGESET.txt'
                     )
 
