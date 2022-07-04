@@ -19,7 +19,7 @@ pipeline {
                 description: 'Branch name to pick-up other components rpms'
             )
         choice(
-            name: 'RECREATE_HARE_RPM',
+            name: 'BUILD_LATEST_HARE',
                 choices: ['yes', 'no'],
                 description: 'Build cortx-Hare from latest code or use last-successful build.'
             )
@@ -47,7 +47,7 @@ pipeline {
     stages {
     
         stage('Checkout hare') {
-            when { expression { params.RECREATE_HARE_RPM == 'yes' } }
+            when { expression { params.BUILD_LATEST_HARE == 'yes' } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh 'mkdir -p hare'
@@ -58,7 +58,7 @@ pipeline {
         }
     
         stage('Install Dependencies') {
-            when { expression { params.RECREATE_HARE_RPM == 'yes' } }
+            when { expression { params.BUILD_LATEST_HARE == 'yes' } }
             steps {
                 script { build_stage = env.STAGE_NAME }
 
@@ -87,7 +87,7 @@ EOF
         }
 
         stage('Build') {
-            when { expression { params.RECREATE_HARE_RPM == 'yes' } }
+            when { expression { params.BUILD_LATEST_HARE == 'yes' } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Build', returnStatus: true, script: '''
@@ -106,7 +106,7 @@ EOF
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Copy RPMS', script: '''
                     mkdir -p $build_upload_dir
-                    if [ "$RECREATE_HARE_RPM" == "yes" ]; then
+                    if [ "$BUILD_LATEST_HARE" == "yes" ]; then
                             cp /root/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir
                     else
                         echo "Copy packages form last_successful"

@@ -87,7 +87,7 @@ pipeline {
         )
 
         choice(
-            name: 'RECREATE_HARE_RPM',
+            name: 'BUILD_LATEST_HARE',
                 choices: ['yes', 'no'],
                 description: 'Build cortx-Hare from latest code or use last-successful build.'
         )
@@ -183,7 +183,7 @@ pipeline {
                                                         string(name: 'CORTX_UTILS_URL', value: "${CORTX_UTILS_URL}"),
                                                         string(name: 'THIRD_PARTY_PYTHON_VERSION', value: "${THIRD_PARTY_PYTHON_VERSION}"),
                                                         string(name: 'BUILD_LATEST_CORTX_RGW', value: "${BUILD_LATEST_CORTX_RGW}"),
-                                                        string(name: 'RECREATE_HARE_RPM', value: "${RECREATE_HARE_RPM}")
+                                                        string(name: 'BUILD_LATEST_HARE', value: "${BUILD_LATEST_HARE}")
                                                     ]
                             } catch (err) {
                                 build_stage = env.STAGE_NAME
