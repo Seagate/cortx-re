@@ -84,9 +84,21 @@ pipeline {
         always {
             cleanWs()
             script {
-                env.docker_image_location = "https://github.com/orgs/Seagate/packages?repo_name=cortx"
-                env.image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' | head -1", returnStdout: true).trim()
+                if ( params.DOCKER_REGISTRY == "ghcr.io" ) {
+                    env.docker_image_location = "https://github.com/orgs/Seagate/packages?repo_name=cortx"
+                } else if ( params.DOCKER_REGISTRY == "cortx-docker.colo.seagate.com" ) {
+                    env.docker_image_location = "http://cortx-docker.colo.seagate.com/harbor/projects/2/repositories"
+                }  
+
+                 env.image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' --filter=reference='*/*/cortx*:[0-9]*' | grep -v 2.0.0-latest | head -4", returnStdout: true).trim()
+
+                env.cortx_all_image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' --filter=reference='*/*/cortx-all:[0-9]*' | grep -v 2.0.0-latest", returnStdout: true).trim()
+                env.cortx_rgw_image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' --filter=reference='*/*/cortx-rgw:[0-9]*' | grep -v 2.0.0-latest", returnStdout: true).trim()
+                env.cortx_data_image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' --filter=reference='*/*/cortx-data:[0-9]*' | grep -v 2.0.0-latest", returnStdout: true).trim()
+                env.cortx_control_image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' --filter=reference='*/*/cortx-control:[0-9]*' | grep -v 2.0.0-latest", returnStdout: true).trim()
+
                 env.build_stage = "${build_stage}"
+
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
                 if ( params.EMAIL_RECIPIENTS == "DEVOPS" ) {
                     mailRecipients = "CORTX.DevOps.RE@seagate.com"
