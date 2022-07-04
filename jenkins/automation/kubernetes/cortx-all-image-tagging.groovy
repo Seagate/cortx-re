@@ -1,17 +1,17 @@
 #!/usr/bin/env groovy
-pipeline { 
+pipeline {
     agent {
         node {
            label 'docker-image-builder-centos-7.9.2009'
         }
     }
-    
+
     options {
         timeout(time: 120, unit: 'MINUTES')
         timestamps()
-        ansiColor('xterm') 
+        ansiColor('xterm')
         disableConcurrentBuilds()
-        buildDiscarder(logRotator(daysToKeepStr: '5', numToKeepStr: '20'))  
+        buildDiscarder(logRotator(daysToKeepStr: '5', numToKeepStr: '20'))
     }
 
     environment {
@@ -19,10 +19,10 @@ pipeline {
         LOCAL_REG_CRED = credentials('local-registry-access')
     }
 
-    parameters {  
+    parameters {
         string(name: 'BASE_TAG', defaultValue: '2.0.0-latest', description: 'Release version to be tagged.')
         string(name: 'TARGET_TAG', defaultValue: '2.0.0-latest', description: 'Tag to be used.')
-    
+
         choice (
             choices: ['DEVOPS', 'DEBUG'],
             description: 'Email Notification Recipients ',
@@ -34,10 +34,10 @@ pipeline {
             description: 'Docker Registry to be used',
             name: 'DOCKER_REGISTRY'
         )
-    }    
-    
+    }
+
     stages {
-    
+
         stage('Prerequisite') {
             steps {
                 sh encoding: 'utf-8', label: 'Validate Docker pre-requisite', script: """
@@ -64,17 +64,17 @@ pipeline {
         stage('Tag and Push Image') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh encoding: 'utf-8', label: 'Tag and push docker image', script: """
+                sh label: '', script: '''
                 for image in cortx-rgw cortx-control cortx-data
                 do
-                    echo -e "\n Pulling $DOCKER_REGISTRY/seagate/$image:$BASE_TAG \n"
+                    echo -e "\\n Pulling $DOCKER_REGISTRY/seagate/$image:$BASE_TAG \\n"
                     docker pull $DOCKER_REGISTRY/seagate/$image:$BASE_TAG
-                    echo -e "\n Tagging $DOCKER_REGISTRY/seagate/$image:$BASE_TAG as $DOCKER_REGISTRY/seagate/$image:$TARGET_TAG"
+                    echo -e "\\n Tagging $DOCKER_REGISTRY/seagate/$image:$BASE_TAG as $DOCKER_REGISTRY/seagate/$image:$TARGET_TAG"
                     docker tag $DOCKER_REGISTRY/seagate/$image:$BASE_TAG $DOCKER_REGISTRY/seagate/$image:$TARGET_TAG
                     docker push $DOCKER_REGISTRY/seagate/$image:$TARGET_TAG
                 done
-                    docker logout  
-                """
+                    docker logout 
+                '''
             }
         }
     }
@@ -94,7 +94,7 @@ pipeline {
                     mailRecipients = "shailesh.vaidya@seagate.com"
                 }
 
-                emailext ( 
+                emailext (
                     body: '''${SCRIPT, template="docker-image-email.template"}''',
                     mimeType: 'text/html',
                     subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
