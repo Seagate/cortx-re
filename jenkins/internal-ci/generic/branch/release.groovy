@@ -278,7 +278,7 @@ pipeline {
                                         string(name: 'CORTX_RE_BRANCH', value: "main"),
                                         string(name: 'BUILD', value: "${ARTIFACT_LOCATION}/${release_tag}/prod"),
                                         string(name: 'GITHUB_PUSH', value: "yes"),
-                                        string(name: 'TAG_LATEST', value: "yes"),
+                                        string(name: 'TAG_LATEST', value: "no"),
                                         string(name: 'DOCKER_REGISTRY', value: "cortx-docker.colo.seagate.com"),
                                         string(name: 'EMAIL_RECIPIENTS', value: "DEBUG"),
                                         string(name: 'OS', value: "${os_version}"),
@@ -300,7 +300,7 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
-                    build job: "K8s-1N-deployment", propagate: false, wait: false,
+                    build job: "K8s-1N-deployment", wait: true,
                     parameters: [
                         string(name: 'CORTX_RE_BRANCH', value: "main"),
                         string(name: 'CORTX_RE_REPO', value: "https://github.com/Seagate/cortx-re"),
@@ -308,7 +308,7 @@ pipeline {
                         string(name: 'CORTX_DATA_IMAGE', value: "${env.cortx_data_image}"),
                         string(name: 'CORTX_CONTROL_IMAGE', value: "${env.cortx_control_image}")
                     ]
-                    build job: "K8s-3N-deployment", propagate: false, wait: false,
+                    build job: "K8s-3N-deployment", wait: true,
                     parameters: [
                         string(name: 'CORTX_RE_BRANCH', value: "main"),
                         string(name: 'CORTX_RE_REPO', value: "https://github.com/Seagate/cortx-re"),
@@ -319,6 +319,29 @@ pipeline {
                 }
             }
         }
+
+        stage ("Tag Latest Images") {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                script {
+                    try {
+                        def build_cortx_images = build job: '/Release_Engineering/re-workspace/sv_space/sv-image-tag-test/', wait: true,
+                                    parameters: [
+                                        string(name: 'BASE_TAG', value: "${$version}-${release_tag}"),
+                                        string(name: 'TARGET_TAG', value: "main"),
+                                        string(name: 'BUILD', value: "${ARTIFACT_LOCATION}/${release_tag}/prod"),
+                                        string(name: 'EMAIL_RECIPIENTS', value: "DEBUG"),
+                                        string(name: 'DOCKER_REGISTRY', value: "cortx-docker.colo.seagate.com")
+                                        ]
+                    } catch (err) {
+                        build_stage = env.STAGE_NAME
+                        error "Tag Latest Images"
+                    }
+                }
+            }
+       } 
+
+
     }
     
     post {
