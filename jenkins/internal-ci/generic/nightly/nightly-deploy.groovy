@@ -165,6 +165,35 @@ pipeline {
                         env.skipcount = qaSanity.buildVariables.skipcount
                         env.todocount = qaSanity.buildVariables.todocount
                         env.abortcount = qaSanity.buildVariables.abortcount
+                        env.santotalcount = qaSanity.buildVariables.santotalcount
+                        env.sanpasscount = qaSanity.buildVariables.sanpasscount
+                        env.sanfailcount = qaSanity.buildVariables.sanfailcount
+                        env.sanskipcount = qaSanity.buildVariables.sanskipcount
+                        env.santodocount = qaSanity.buildVariables.santodocount
+                        env.sanabortcount = qaSanity.buildVariables.sanabortcount
+                        env.itotalcount = qaSanity.buildVariables.itotalcount
+                        env.ipasscount = qaSanity.buildVariables.ipasscount
+                        env.ifailcount = qaSanity.buildVariables.ifailcount
+                        env.iskipcount = qaSanity.buildVariables.iskipcount
+                        env.itodocount = qaSanity.buildVariables.itodocount
+                        env.iabortcount = qaSanity.buildVariables.iabortcount
+                        env.ftotalcount = qaSanity.buildVariables.ftotalcount
+                        env.fpasscount = qaSanity.buildVariables.fpasscount
+                        env.ffailcount = qaSanity.buildVariables.ffailcount
+                        env.fskipcount = qaSanity.buildVariables.fskipcount
+                        env.ftodocount = qaSanity.buildVariables.ftodocount
+                        env.fabortcount = qaSanity.buildVariables.fabortcount
+                        env.rtotalcount = qaSanity.buildVariables.rtotalcount
+                        env.rpasscount = qaSanity.buildVariables.rpasscount
+                        env.rfailcount = qaSanity.buildVariables.rfailcount
+                        env.rskipcount = qaSanity.buildVariables.rskipcount
+                        env.rtodocount = qaSanity.buildVariables.rtodocount
+                        env.rabortcount = qaSanity.buildVariables.rabortcount
+                        env.sanitytime = qaSanity.buildVariables.sanitytime
+                        env.regrtime = qaSanity.buildVariables.regrtime
+                        env.iotime = qaSanity.buildVariables.iotime
+                        env.fdtime = qaSanity.buildVariables.fdtime
+                        env.totaltime = qaSanity.buildVariables.totaltime
                     }
                     copyArtifacts filter: 'log/*report.xml', fingerprintArtifacts: true, flatten: true, optional: true, projectName: 'QA-Sanity-Multinode-RGW', selector: lastCompleted(), target: 'log/'
                     copyArtifacts filter: 'log/*report.html', fingerprintArtifacts: true, flatten: true, optional: true, projectName: 'QA-Sanity-Multinode-RGW', selector: lastCompleted(), target: 'log/'
