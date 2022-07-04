@@ -19,13 +19,19 @@ pipeline {
     }
 
     parameters {  
-        string(name: 'BASE_IMAGE_NAME', defaultValue: 'ghcr.io/seagate/cortx-<component>:2.0.0-latest', description: 'Docker Image to be tagged.')
-        string(name: 'TAGGED_IMAGE_NAME', defaultValue: 'ghcr.io/seagate/cortx-<component>:TAG', description: 'Tag to be used.')
+        string(name: 'BASE_TAG', defaultValue: '2.0.0-latest', description: 'Release version to be tagged.')
+        string(name: 'TARGET_TAG', defaultValue: '2.0.0-latest', description: 'Tag to be used.')
     
         choice (
             choices: ['DEVOPS', 'DEBUG'],
             description: 'Email Notification Recipients ',
             name: 'EMAIL_RECIPIENTS'
+        )
+
+        choice (
+            choices: ['cortx-docker.colo.seagate.com' , 'ghcr.io'],
+            description: 'Docker Registry to be used',
+            name: 'DOCKER_REGISTRY'
         )
     }    
     
@@ -41,11 +47,15 @@ pipeline {
             }
         }
 
-        stage ('GHCR Login') {
+        stage ('Docker Registry Login') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'GHCR Login', script: '''
-                docker login ghcr.io -u ${GITHUB_CRED_USR} -p ${GITHUB_CRED_PSW}
+                sh label: 'Docker Registry Login', script: '''
+                if [ "$DOCKER_REGISTRY" == "ghcr.io" ]; then
+                    docker login ghcr.io -u ${GITHUB_CRED_USR} -p ${GITHUB_CRED_PSW}
+                elif [ "$DOCKER_REGISTRY" == "cortx-docker.colo.seagate.com" ]; then
+                    docker login cortx-docker.colo.seagate.com -u ${LOCAL_REG_CRED_USR} -p ${LOCAL_REG_CRED_PSW}
+                fi
                 '''
             }
         }
@@ -54,10 +64,14 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh encoding: 'utf-8', label: 'Tag and push docker image', script: """
-                    docker pull $BASE_IMAGE_NAME
-                    docker tag $BASE_IMAGE_NAME $TAGGED_IMAGE_NAME
-                    docker push $TAGGED_IMAGE_NAME
-                    
+                for image in cortx-rgw cortx-control cortx-data
+                do
+                    echo -e "\n Pulling $DOCKER_REGISTRY/seagate/$image:$BASE_TAG \n"
+                    docker pull $DOCKER_REGISTRY/seagate/$image:$BASE_TAG
+                    echo -e "\n Tagging $DOCKER_REGISTRY/seagate/$image:$BASE_TAG as $DOCKER_REGISTRY/seagate/$image:$TARGET_TAG"
+                    docker tag $DOCKER_REGISTRY/seagate/$image:$BASE_TAG $DOCKER_REGISTRY/seagate/$image:$TARGET_TAG
+                    docker push $DOCKER_REGISTRY/seagate/$image:$TARGET_TAG
+                done
                     docker logout  
                 """
             }
