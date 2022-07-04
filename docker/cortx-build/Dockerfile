@@ -67,7 +67,6 @@ jq \
 wget \
 which \
 openssh-server \
-java-1.8.0-openjdk \
 make \
 gcc \
 cmake \
