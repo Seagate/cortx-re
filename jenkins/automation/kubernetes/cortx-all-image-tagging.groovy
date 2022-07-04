@@ -16,6 +16,7 @@ pipeline {
 
     environment {
         GITHUB_CRED = credentials('shailesh-github')
+        LOCAL_REG_CRED = credentials('local-registry-access')
     }
 
     parameters {  
