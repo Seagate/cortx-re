@@ -75,7 +75,7 @@ function check_cluster_status() {
 
 function check_io_operations() {
     add_primary_separator "\tSetting up IO Sanity Testing"
-    ssh_primary_node "export CEPH_DEPLOYMENT='false' && export DEPLOYMENT_METHOD=$DEPLOYMENT_METHOD && /var/tmp/cortx-deploy-functions.sh --io-sanity"
+    ssh_primary_node "source /var/tmp/functions.sh && install_awscli && setup_awscli && run_io_sanity"
 }
 
 function setup_worker_nodes() {
