@@ -37,9 +37,9 @@ EOF
 
 yum clean all && rm -rf /var/cache/yum
 if [ "$RPM_LOCATION" == "remote" ]; then
-    yum install java-1.8.0-openjdk-headless -y && yum install cortx-prereq -y
+    yum install cortx-prereq -y
 else
-    yum install java-1.8.0-openjdk-headless -y && yum install /root/rpmbuild/RPMS/x86_64/*.rpm -y
+    yum install /root/rpmbuild/RPMS/x86_64/*.rpm -y
 fi
 
 #Cleanup

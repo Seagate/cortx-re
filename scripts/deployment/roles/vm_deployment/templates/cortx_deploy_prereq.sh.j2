@@ -31,7 +31,6 @@ trusted-host: $(echo $CORTX_RELEASE_REPO | awk -F '/' '{print $3}')
 EOF
 
 # Cortx Pre-requisites
-yum install --nogpgcheck -y java-1.8.0-openjdk-headless
 yum install --nogpgcheck -y python3 cortx-prereq sshpass
 # Pre-reqs for Provisioner
 yum install --nogpgcheck -y python36-m2crypto salt salt-master salt-minion
