@@ -1,6 +1,0 @@
----
-- include: dynamic-host-setup.yml
-
-- include: pre-tasks.yml
-
-- include: onboarding-checks.yml
