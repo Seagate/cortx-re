@@ -6,7 +6,7 @@ pipeline {
     }
     
     options {
-        timeout(time: 240, unit: 'MINUTES')
+        timeout(time: 360, unit: 'MINUTES')
         timestamps()
         buildDiscarder(logRotator(daysToKeepStr: '30', numToKeepStr: '30'))
         ansiColor('xterm')
@@ -79,7 +79,7 @@ pipeline {
                         AWS_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.cortx_deploy_ip_addr.value 2>&1 | tee ip.txt)
                         IP=$(cat ip.txt | tr -d '""')                        
                         ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${IP} sudo bash /home/centos/setup.sh
-                        sleep 120
+                        sleep 240
                     popd
             '''
             }
@@ -155,12 +155,14 @@ pipeline {
     }
     post {
         always {
+            retry(count: 3) {
             script { build_stage = env.STAGE_NAME }
             sh label: 'destroying EC2 instance', script: '''
             pushd solutions/community-deploy/cloud/AWS
                 terraform validate && terraform destroy -var-file user.tfvars --auto-approve
             popd
         '''
+            }
         }
     }
 }
