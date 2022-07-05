@@ -1,42 +1,30 @@
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/f20f5b6fe8aa4efabb629cf8f62a5d73)](https://www.codacy.com/gh/Seagate/cortx-re/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Seagate/cortx-re&amp;utm_campaign=Badge_Grade)
-[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://github.com/Seagate/cortx-re/blob/main/LICENSE)
-[![YouTube Badge](https://img.shields.io/badge/Video-YouTube-red)](https://cortx.link/videos )
-[![Slack](https://img.shields.io/badge/chat-on%20Slack-blue")](https://cortx.link/join-slack)
-[![GitHub contributors](https://img.shields.io/github/contributors/Seagate/cortx-re)](https://github.com/Seagate/cortx-re/graphs/contributors/)
+# OVA file generation
 
-# CORTX DevOps and Release Engineering
-The purpose of this repository is to keep the scripts, tools, and other configuration used in the CORTX DevOps and Release Engineering. 
+## Disclaimer: This code is not maintained anymore
 
-DevOps and Release Engineering team is responsible for the followings
 
--   CORTX Project CI/CD Build Process.
--   Automation to support CORTX project.
--   Manage DevOps Tools.
+## Description
+Generate OVA (Open Virtual Appliance) file from user mentioned CORTX build using ansible playbook.
+This playbook consists variety of roles required to generate and test OVA as follow,
 
-## Repo Structure
+### Roles
 
-An overview of folder structure in cortx-re repo
-```console
-├───docker
-├───jenkins
-└───scripts
-└───solutions
+  - vm-snapshot-revert : Revert single node cluster VM to base snapshot (undo all previous installations) 
 
-```
-### Docker
--   We have containerized Release engineering infrastructure to eliminate host and OS dependency. The dockerfiles, docker-compose files used to build this containers are available under this folder.
+  - vm-ssh-setup : Setup SSH connection between ansible deployment server and single node cluster VM 
 
-### Jenkins
--   Jenkins job configurations, groovy scripts and template used in the Jenkins are available under this folder.
+  - vm-provisioner : Setup/Install cortx cluster on single node cluster VM 
 
-### Scripts
--   Shell, python scripts used in the RE process automation are available under this folder.
--   Scripts like changelog generation, build manifest generation, rpm validation..etc  are available under this folder
+  - vm-ovabuild : Create OVA file from single node cluster VM
 
-### Solutions
--   Solution specific scripts, configuration files. 
+  - vm-create : Create a new test VM from generated OVA
 
-## Documents 
+  - ova-tester : Run basic testcases on new test VM to ensure CORTX cluster availability
+  
+## How to generate OVA
 
-All RE related documents are available in the below locations
--   [RE GitHub Wiki](https://github.com/Seagate/cortx-re/wiki)
+Refer below jenkins job to create OVA
+
+https://ssc-vm-0013.colo.seagate.com/job/EOS%20Open%20Source/job/ova-builder-testing/
+  
+:warning: Job is running on development jenkins instance. need to be updated for production

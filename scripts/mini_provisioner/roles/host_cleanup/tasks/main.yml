@@ -1,3 +1,0 @@
----
-- include: 01_cleanup_cortx_stack.yml
-  tags: ['01_CLEANUP']
