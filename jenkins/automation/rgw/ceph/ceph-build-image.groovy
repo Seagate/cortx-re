@@ -18,10 +18,10 @@ pipeline {
 
     environment {
         ARCH = "x86_64"
-        // CEPH_PROJECT = "ceph"
+        CEPH_PROJECT = "ceph"
         // REGISTRY = "cortx-docker.colo.seagate.com"
         // LOCAL_REG_CRED = credentials('local-registry-access')
-        CEPH_PROJECT = "cortx-rgw"
+        // CEPH_PROJECT = "cortx-rgw"
         REGISTRY = "ssc-vm-g4-rhev4-1774.colo.seagate.com"
         LOCAL_REG_CRED = credentials('dev-harbor')
     }
