@@ -18,10 +18,10 @@ pipeline {
 
     environment {
         ARCH = "x86_64"
-        CEPH_PROJECT = "ceph"
+        // CEPH_PROJECT = "ceph"
         // REGISTRY = "cortx-docker.colo.seagate.com"
         // LOCAL_REG_CRED = credentials('local-registry-access')
-        // CEPH_PROJECT = "cortx-rgw"
+        CEPH_PROJECT = "cortx-rgw"
         REGISTRY = "ssc-vm-g4-rhev4-1774.colo.seagate.com"
         LOCAL_REG_CRED = credentials('dev-harbor')
     }
@@ -54,8 +54,11 @@ pipeline {
                     echo -e "==============================\n"
 
                     echo "List created images:"
-                    docker images --format "{{.Repository}}:{{.Tag}}" --filter reference=${CEPH_PROJECT}/daemon-base:${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
-                    docker images --format "{{.Repository}}:{{.Tag}}" --filter reference=${CEPH_PROJECT}/daemon:${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
+                    # docker images --format "{{.Repository}}:{{.Tag}}" --filter reference=${CEPH_PROJECT}/daemon-base:${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
+                    # docker images --format "{{.Repository}}:{{.Tag}}" --filter reference=${CEPH_PROJECT}/daemon:${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
+                    docker images --format "{{.Repository}}:{{.Tag}}" --filter reference=ceph/daemon-base:${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
+                    docker images --format "{{.Repository}}:{{.Tag}}" --filter reference=ceph/daemon:${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH}
+
                 """
             }
         }
@@ -66,8 +69,10 @@ pipeline {
                 sh label: 'Push Image to Registry', script: """
 
                     echo "Tag container images"
-                    docker tag ${CEPH_PROJECT}/daemon:${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH} ${REGISTRY}/${CEPH_PROJECT}/${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}:daemon-${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}-${ARCH}-build_${BUILD_NUMBER}
-                    docker tag ${CEPH_PROJECT}/daemon-base:${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH} ${REGISTRY}/${CEPH_PROJECT}/${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}:daemon-base-${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}-${ARCH}-build_${BUILD_NUMBER}
+                    # docker tag ${CEPH_PROJECT}/daemon:${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH} ${REGISTRY}/${CEPH_PROJECT}/${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}:daemon-${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}-${ARCH}-build_${BUILD_NUMBER}
+                    # docker tag ${CEPH_PROJECT}/daemon-base:${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH} ${REGISTRY}/${CEPH_PROJECT}/${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}:daemon-base-${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}-${ARCH}-build_${BUILD_NUMBER}
+                    docker tag ceph/daemon:${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH} ${REGISTRY}/${CEPH_PROJECT}/${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}:daemon-${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}-${ARCH}-build_${BUILD_NUMBER}
+                    docker tag ceph/daemon-base:${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}-${OS_IMAGE_TAG}-${ARCH} ${REGISTRY}/${CEPH_PROJECT}/${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}:daemon-base-${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}-${ARCH}-build_${BUILD_NUMBER}
                     docker tag ${REGISTRY}/${CEPH_PROJECT}/${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}:daemon-${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}-${ARCH}-build_${BUILD_NUMBER} ${REGISTRY}/${CEPH_PROJECT}/${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}:daemon-${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}-${ARCH}-latest
                     docker tag ${REGISTRY}/${CEPH_PROJECT}/${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}:daemon-base-${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}-${ARCH}-build_${BUILD_NUMBER} ${REGISTRY}/${CEPH_PROJECT}/${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}:daemon-base-${CEPH_CONTAINER_BRANCH}-${CEPH_RELEASE}-${OS_IMAGE}_${OS_IMAGE_TAG}-${ARCH}-latest
 
