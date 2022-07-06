@@ -60,6 +60,7 @@ pipeline {
             }
         }
 
+/*
         stage ('IO Operation') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -68,6 +69,18 @@ pipeline {
                         export CEPH_DOCKER_DEPLOYMENT=${CEPH_DOCKER_DEPLOYMENT}
                         bash ceph-deploy.sh --io-operation
                     popd
+                """
+            }
+        }
+*/
+
+        stage ('Post Deployment') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'Post Deployment', script: """
+                    echo -e "########################################################"
+                    echo -e "For IO Sanity please follow steps on the following page:"
+                    echo -e "IO Sanity: "
                 """
             }
         }
