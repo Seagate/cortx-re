@@ -24,7 +24,7 @@ pipeline {
         string(name: 'BUILD', defaultValue: 'last_successful_prod', description: 'Build for cortx docker images')
         
         choice (
-            choices: ['centos-7.9.2009' , 'rockylinux-8.4'],
+            choices: ['rockylinux-8.4' , 'centos-7.9.2009'],
             description: 'Base Operating System ',
             name: 'OS'
         )
@@ -54,7 +54,7 @@ pipeline {
         )
 
         choice (
-            choices: ['DEVOPS', 'ALL', 'DEBUG'],
+            choices: ['DEBUG', 'ALL'],
             description: 'Email Notification Recipients ',
             name: 'EMAIL_RECIPIENTS'
         )
@@ -118,6 +118,7 @@ pipeline {
             cleanWs()
             script {
 
+                if ( params.GITHUB_PUSH == "yes" ) {
                 env.image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' --filter=reference='*/*/cortx*:[0-9]*' | grep -v 2.0.0-latest | head -4", returnStdout: true).trim()
                 println "${env.image}"
 
@@ -125,9 +126,11 @@ pipeline {
                 env.cortx_rgw_image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' --filter=reference='*/*/cortx-rgw:[0-9]*' | grep -v 2.0.0-latest", returnStdout: true).trim()
                 env.cortx_data_image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' --filter=reference='*/*/cortx-data:[0-9]*' | grep -v 2.0.0-latest", returnStdout: true).trim()
                 env.cortx_control_image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' --filter=reference='*/*/cortx-control:[0-9]*' | grep -v 2.0.0-latest", returnStdout: true).trim()
+                }
+
 
                 env.build_stage = "${build_stage}"
-                
+                def toEmail = ""
                 if ( params.DOCKER_REGISTRY == "ghcr.io" ) {
                     env.docker_image_location = "https://github.com/orgs/Seagate/packages?repo_name=cortx"
                 } else if ( params.DOCKER_REGISTRY == "cortx-docker.colo.seagate.com" ) {
@@ -137,10 +140,8 @@ pipeline {
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
                 if ( params.EMAIL_RECIPIENTS == "ALL" ) {
                     mailRecipients = "cortx.sme@seagate.com, manoj.management.team@seagate.com, CORTX.SW.Architecture.Team@seagate.com, CORTX.DevOps.RE@seagate.com"
-                } else if ( params.EMAIL_RECIPIENTS == "DEVOPS" ) {
+                } else if ( params.EMAIL_RECIPIENTS == "DEBUG" && manager.build.result.toString() == "FAILURE") {
                     mailRecipients = "CORTX.DevOps.RE@seagate.com"
-                } else if ( params.EMAIL_RECIPIENTS == "DEBUG" ) {
-                    mailRecipients = "shailesh.vaidya@seagate.com"
                 }
 
                 emailext ( 
@@ -148,7 +149,7 @@ pipeline {
                     mimeType: 'text/html',
                     subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
                     attachLog: true,
-                    to: "${mailRecipients}",
+                    to: toEmail,
                     recipientProviders: recipientProvidersClass
                 )
             }
