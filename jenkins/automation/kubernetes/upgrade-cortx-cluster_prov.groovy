@@ -118,17 +118,6 @@ pipeline {
                 }
             }
         }
-
-        stage('Post-Upgrade IO Sanity') {
-            steps {
-                script { build_stage = env.STAGE_NAME }
-                sh label: 'execute IO operations', script: '''
-                    pushd scripts/provisioner/
-                        ./cortx-upgrade.sh --io-sanity
-                    popd
-                '''
-            }
-        }
     }
     post {
         always {
