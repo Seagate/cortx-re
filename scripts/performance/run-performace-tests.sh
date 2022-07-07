@@ -49,14 +49,6 @@ echo -e "\n###### There are multiple entries in hosts.Please check provided host
 exit
 fi
 
-echo "DEBUG:start"
-echo $PRIMARY_NODE
-cat /root/.ssh/known_hosts
-sed -i '/'$PRIMARY_NODE'/d' /root/.ssh/known_hosts
-cat /root/.ssh/known_hosts
-exit
-echo "DEBUG:end"
-
 validation
 generate_rsa_key
 nodes_setup
