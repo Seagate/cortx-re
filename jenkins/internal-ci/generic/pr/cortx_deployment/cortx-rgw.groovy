@@ -37,6 +37,7 @@ pipeline {
         CORTX_RGW_OPTIMIZED_BUILD = true
         INSTALL_MOTR = true
         PR_BUILD = true
+        PR_ID = "${ghprbPullId}"
         COMPONENT_NAME = "cortx-rgw".trim()
         BRANCH = "${ghprbTargetBranch != null ? ghprbTargetBranch : COMPONENTS_BRANCH}"
         THIRD_PARTY_VERSION = "${OS_VERSION}-2.0.0-k8"
