@@ -53,7 +53,13 @@ fi
 validation
 generate_rsa_key
 nodes_setup
+echo "DEBUG:start"
+echo $PRIMARY_NODE
+cat /root/.ssh/known_hosts
 sed -i '/'$PRIMARY_NODE'/d' /root/.ssh/known_hosts
+cat /root/.ssh/known_hosts
+exit
+echo "DEBUG:end"
 scp_all_nodes _run-performace-tests-functions.sh ../../solutions/kubernetes/*
 
 add_primary_separator "Fetch Endpoint URL,Access Key and Secret Key from CORTX Cluster"
