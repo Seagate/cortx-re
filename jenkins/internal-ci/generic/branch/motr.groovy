@@ -269,7 +269,7 @@ pipeline {
                     subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
                     attachLog: true,
                     to: toEmail,
-                    //recipientProviders: recipientProvidersClass
+                    recipientProviders: recipientProvidersClass
                 )
             }
         }    
