@@ -101,25 +101,19 @@ function update_solution_config(){
         yq e -i '.solution.images.busybox = "ghcr.io/seagate/busybox:latest"' solution.yaml
 
         drive=$SYSTEM_DRIVE_MOUNT yq e -i '.solution.common.storage_provisioner_path = env(drive)' solution.yaml
-        yq e -i '.solution.common.container_path.local = "/etc/cortx"' solution.yaml
-        yq e -i '.solution.common.container_path.log = "/etc/cortx/log"' solution.yaml
         yq e -i '.solution.common.s3.default_iam_users.auth_admin = "sgiamadmin"' solution.yaml
         yq e -i '.solution.common.s3.default_iam_users.auth_user = "user_name"' solution.yaml
         yq e -i '.solution.common.s3.max_start_timeout = 240' solution.yaml
+        yq e -i '.solution.common.s3.instances_per_node = 3' solution.yaml
         yq e -i '.solution.common.s3.extra_configuration = ""' solution.yaml
         if [ "$DEPLOYMENT_METHOD" == "data-only" ]; then
             yq e -i '.solution.common.motr.num_client_inst = 1' solution.yaml
         else
             yq e -i '.solution.common.motr.num_client_inst = 0' solution.yaml
         fi       
-        yq e -i '.solution.common.motr.start_port_num = 29000' solution.yaml
         yq e -i '.solution.common.motr.extra_configuration = ""' solution.yaml
         yq e -i '.solution.common.hax.protocol = "https"' solution.yaml
         yq e -i '.solution.common.hax.port_num = 22003' solution.yaml
-        yq e -i '.solution.common.storage_sets.name = "storage-set-1"' solution.yaml
-
-        sns=$SNS_CONFIG yq e -i '.solution.common.storage_sets.durability.sns = env(sns)' solution.yaml
-        dix=$DIX_CONFIG yq e -i '.solution.common.storage_sets.durability.dix = env(dix)' solution.yaml
         
         external_exposure_service=$EXTERNAL_EXPOSURE_SERVICE yq e -i '.solution.common.external_services.s3.type = env(external_exposure_service)' solution.yaml
         yq e -i '.solution.common.external_services.s3.count = 1' solution.yaml
@@ -195,23 +189,28 @@ function update_solution_config(){
         yq e -i '.solution.common.resource_allocation.ha.k8s_monitor.resources.limits.memory = "1Gi"' solution.yaml
         yq e -i '.solution.common.resource_allocation.ha.k8s_monitor.resources.limits.cpu = "500m"' solution.yaml
 
-        yq e -i '.solution.storage.cvg1.name = "cvg-01"' solution.yaml
-        yq e -i '.solution.storage.cvg1.type = "ios"' solution.yaml
-        yq e -i '.solution.storage.cvg1.devices.metadata.device = "/dev/sdc"' solution.yaml
-        yq e -i '.solution.storage.cvg1.devices.metadata.size = "5Gi"' solution.yaml
-        yq e -i '.solution.storage.cvg1.devices.data.d1.device = "/dev/sdd"' solution.yaml
-        yq e -i '.solution.storage.cvg1.devices.data.d1.size = "5Gi"' solution.yaml
-        yq e -i '.solution.storage.cvg1.devices.data.d2.device = "/dev/sde"' solution.yaml
-        yq e -i '.solution.storage.cvg1.devices.data.d2.size = "5Gi"' solution.yaml
+        yq e -i '.solution.storage_sets.name = "storage-set-1"' solution.yaml
+        yq e -i '.solution.storage_sets.durability.sns = "1+0+0"' solution.yaml
+        yq e -i '.solution.storage_sets.durability.dix = "1+0+0"' solution.yaml
+        yq e -i '.solution.storage_sets.container_group_size = "1"' solution.yaml
+
+        yq e -i '.solution.storage_sets.storage.cvg1.name = "cvg-01"' solution.yaml
+        yq e -i '.solution.storage_sets.storage.cvg1.type = "ios"' solution.yaml
+        yq e -i '.solution.storage_sets.storage.cvg1.devices.metadata.device = "/dev/sdc"' solution.yaml
+        yq e -i '.solution.storage_sets.storage.cvg1.devices.metadata.size = "5Gi"' solution.yaml
+        yq e -i '.solution.storage_sets.storage.cvg1.devices.data.d1.device = "/dev/sdd"' solution.yaml
+        yq e -i '.solution.storage_sets.storage.cvg1.devices.data.d1.size = "5Gi"' solution.yaml
+        yq e -i '.solution.storage_sets.storage.cvg1.devices.data.d2.device = "/dev/sde"' solution.yaml
+        yq e -i '.solution.storage_sets.storage.cvg1.devices.data.d2.size = "5Gi"' solution.yaml
        
-        yq e -i '.solution.storage.cvg2.name = "cvg-02"' solution.yaml
-        yq e -i '.solution.storage.cvg2.type = "ios"' solution.yaml
-        yq e -i '.solution.storage.cvg2.devices.metadata.device = "/dev/sdf"' solution.yaml
-        yq e -i '.solution.storage.cvg2.devices.metadata.size = "5Gi"' solution.yaml
-        yq e -i '.solution.storage.cvg2.devices.data.d1.device = "/dev/sdg"' solution.yaml
-        yq e -i '.solution.storage.cvg2.devices.data.d1.size = "5Gi"' solution.yaml
-        yq e -i '.solution.storage.cvg2.devices.data.d2.device = "/dev/sdh"' solution.yaml
-        yq e -i '.solution.storage.cvg2.devices.data.d2.size = "5Gi"' solution.yaml
+        yq e -i '.solution.storage_sets.storage.cvg2.name = "cvg-02"' solution.yaml
+        yq e -i '.solution.storage_sets.storage.cvg2.type = "ios"' solution.yaml
+        yq e -i '.solution.storage_sets.storage.cvg2.devices.metadata.device = "/dev/sdf"' solution.yaml
+        yq e -i '.solution.storage_sets.storage.cvg2.devices.metadata.size = "5Gi"' solution.yaml
+        yq e -i '.solution.storage_sets.storage.cvg2.devices.data.d1.device = "/dev/sdg"' solution.yaml
+        yq e -i '.solution.storage_sets.storage.cvg2.devices.data.d1.size = "5Gi"' solution.yaml
+        yq e -i '.solution.storage_sets.storage.cvg2.devices.data.d2.device = "/dev/sdh"' solution.yaml
+        yq e -i '.solution.storage_sets.storage.cvg2.devices.data.d2.size = "5Gi"' solution.yaml
     popd
 }        
 
@@ -231,7 +230,7 @@ echo "Updating node info in solution.yaml"
         count=1
         for node in $(kubectl get nodes -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints[?(@.effect=='NoSchedule')].effect}{\"\n\"}{end}" | grep -v NoSchedule)
             do
-            i=$node yq e -i '.solution.nodes['$count'].node'$count'.name = env(i)' solution.yaml
+            i=$node yq e -i '.solution.storage_sets.nodes['$count'].node'$count'.name = env(i)' solution.yaml
             count=$((count+1))
         done
         sed -i -e 's/- //g' -e '/null/d' solution.yaml
