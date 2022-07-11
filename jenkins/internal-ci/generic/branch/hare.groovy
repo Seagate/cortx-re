@@ -192,9 +192,9 @@ EOF
                 }
 
                 def toEmail = ""
-                def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
+                def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
                 if ( manager.build.result.toString() == "FAILURE" ) {
-                    toEmail = "shailesh.vaidya@seagate.com"
+                    toEmail = "CORTX.DevOps.RE@seagate.com"
                     recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'],[$class: 'RequesterRecipientProvider']]
                 }
 
@@ -204,7 +204,7 @@ EOF
                     subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
                     attachLog: true,
                     to: toEmail,
-                    //recipientProviders: recipientProvidersClass
+                    recipientProviders: recipientProvidersClass
                 )
             }
         }    
