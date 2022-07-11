@@ -136,7 +136,7 @@ function generate_perf_stats() {
    ssh $PRIMARY_NODE "kubectl get pods -o jsonpath="{.items[*].spec.containers[*].image}" | tr ' ' '\n' | sort | uniq" | tee -a $PERF_STATS_FILE
    #Fetch info from Ansible logs
    add_secondary_separator "Performance Stats" | tee -a $PERF_STATS_FILE
-   grep -i '\[S3Bench\] Running' $ANIBLE_LOG_FILE | sed -e 's/-//g' -e 's/^ //g' | cut -d':' -f4 | sed 's/^ //g' | tee -a $PERF_STATS_FILE
+   grep -i '\[S3Bench\] Running' $ANIBLE_LOG_FILE | grep -vi TASK | sed -e 's/-//g' -e 's/^ //g' -e 's/*//g' | cut -d':' -f4 | sed 's/^ //g' | sort -n | tee -a $PERF_STATS_FILE
 }
 
 
