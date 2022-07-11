@@ -84,7 +84,7 @@ function passwordless_ssh() {
         check_status "$NODE: Package installation failed"
     fi
 
-    test -f /root/.ssh/known_hosts && sed -i '/'$NODE'/d' /root/.ssh/known_hosts
+    test -f /root/.ssh/known_hosts && sed -i '/"$NODE"/d' /root/.ssh/known_hosts
     
     sshpass -p "$PASS" ssh-copy-id -f -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa.pub "$USER"@"$NODE"
     check_status "$NODE: Passwordless ssh setup failed. Please validate provided credentails"
