@@ -72,12 +72,12 @@ pipeline {
 
                 script {
                     if (params.infrastructure == "HW") {
-                        sh label: 'Copy RPMS', script:'''
+                        sh label: 'Print Stage details', script:'''
                         echo "Deploying CORTX on Hardware"
                         '''
                         checkout([$class: 'GitSCM', branches: [[name: '$CORTX_RE_BRANCH']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: '$CORTX_RE_REPO']]])
 
-                        sh label: 'Copy RPMS', script:'''
+                        sh label: 'Execute deploy scripts', script:'''
                         pushd solutions/kubernetes/
                             curl -l https://raw.githubusercontent.com/shailesh-vaidya/cortx-re/hw-performance-ci/jenkins/performance-ci/nightly-performance-ci.yml -o solution.yaml
                             export GITHUB_TOKEN=$GITHUB_TOKEN
@@ -103,7 +103,7 @@ pipeline {
 
                         '''
                     } else {
-                        sh label: 'Copy RPMS', script:'''
+                        sh label: 'Print Stage details', script:'''
                         echo "Deploying CORTX on Virtual Machine"
                         '''
                         script {
