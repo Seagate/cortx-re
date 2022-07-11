@@ -224,9 +224,10 @@ function add_image_info() {
 }
 
 function add_node_info_solution_config() {
-echo "Updating node info in solution.yaml"    
+    add_secondary_separator "Updating node info in solution.yaml"    
 
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
+        if ! grep -q nodes solution.yaml; then
         count=1
         for node in $(kubectl get nodes -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints[?(@.effect=='NoSchedule')].effect}{\"\n\"}{end}" | grep -v NoSchedule)
             do
@@ -234,6 +235,9 @@ echo "Updating node info in solution.yaml"
             count=$((count+1))
         done
         sed -i -e 's/- //g' -e '/null/d' solution.yaml
+        else
+        add_secondary_separator "Nodes entries already present in solution.yaml. Skipping update"
+        fi
     popd
 }
 
