@@ -132,10 +132,10 @@ function execute-perf-sanity() {
 }
 
 function generate_perf_stats() {
-   add_secondary_separator "CORTX Cluster details" | tee $PERF_STATS_FILE
-   echo "CLUSTER INFRASTRUCTURE: $CLUSTER_TYPE" | tee $PERF_STATS_FILE
-   ssh $PRIMARY_NODE "kubectl get nodes" | tee -a $PERF_STATS_FILE
-   add_secondary_separator "CORTX Image details" | tee $PERF_STATS_FILE
+   add_secondary_separator "CORTX Cluster details" | tee -a $PERF_STATS_FILE
+   echo "CLUSTER INFRASTRUCTURE: $CLUSTER_TYPE" | tee -a $PERF_STATS_FILE
+   ssh $PRIMARY_NODE "kubectl get nodes --no-headers | awk '{print $1}'" | tee -a $PERF_STATS_FILE
+   add_secondary_separator "CORTX Image details" | tee -a $PERF_STATS_FILE
    ssh $PRIMARY_NODE "kubectl get pods -o jsonpath="{.items[*].spec.containers[*].image}" | tr ' ' '\n' | sort | uniq" | tee -a $PERF_STATS_FILE
    #Fetch info from Ansible logs
    add_secondary_separator "Performance Stats" | tee -a $PERF_STATS_FILE
