@@ -16,9 +16,9 @@ pipeline {
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_TOOLS_BRANCH', defaultValue: 'main', description: 'Repository for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_TOOLS_REPO', defaultValue: 'Seagate/seagate-tools', description: 'Repository for Cluster Setup scripts', trim: true)
-        string(name: 'DB_SERVER', defaultValue: '10.237.65.111', description: 'Database Server to store Performance results', trim: true)
         text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'CORTX Cluster Primary node details', name: 'primary_nodes')
         text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'Client node details', name: 'client_nodes')
+        // Please configure DB_SERVER and DB_PORT parameters in Jenkins configuration manually
     }
 
     environment {
@@ -47,7 +47,7 @@ pipeline {
                         export CORTX_TOOLS_REPO=${CORTX_TOOLS_REPO}
                         export CORTX_TOOLS_BRANCH=${CORTX_TOOLS_BRANCH}
                         export DB_SERVER=${DB_SERVER}
-                        export DB_PORT=27017
+                        export DB_PORT=${DB_PORT}
                         export DB_USER=${DB_CRED_USR}
                         export DB_PASSWD=${DB_CRED_PSW}
                         export DB_NAME=sanity_db
