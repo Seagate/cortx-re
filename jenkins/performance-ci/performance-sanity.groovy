@@ -4,7 +4,7 @@ pipeline {
             label "performance-sanity-${infrastructure}-client"
         }
     }
-    
+
     options {
         timestamps()
         buildDiscarder(logRotator(daysToKeepStr: '30', numToKeepStr: '30'))
@@ -16,20 +16,22 @@ pipeline {
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_TOOLS_BRANCH', defaultValue: 'main', description: 'Repository for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_TOOLS_REPO', defaultValue: 'Seagate/seagate-tools', description: 'Repository for Cluster Setup scripts', trim: true)
+        string(name: 'DB_SERVER', defaultValue: '10.237.65.111', description: 'Database Server to store Performance results', trim: true)
         text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'CORTX Cluster Primary node details', name: 'primary_nodes')
         text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'Client node details', name: 'client_nodes')
     }
 
     environment {
         GITHUB_CRED = credentials('shailesh-github-token')
+        DB_CRED = credentials('performance_db')
     }
 
     stages {
         stage('Checkout Script') {
-            steps { 
+            steps {
                 cleanWs()
                 script {
-                    checkout([$class: 'GitSCM', branches: [[name: "${CORTX_RE_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${CORTX_RE_REPO}"]]])                
+                    checkout([$class: 'GitSCM', branches: [[name: "${CORTX_RE_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${CORTX_RE_REPO}"]]])
                 }
             }
         }
@@ -44,10 +46,10 @@ pipeline {
                         export GITHUB_TOKEN=${GITHUB_CRED}
                         export CORTX_TOOLS_REPO=${CORTX_TOOLS_REPO}
                         export CORTX_TOOLS_BRANCH=${CORTX_TOOLS_BRANCH}
-                        export DB_SERVER=10.237.65.111
+                        export DB_SERVER=${DB_SERVER}
                         export DB_PORT=27017
-                        export DB_USER=perfpro
-                        export DB_PASSWD=PerfPro
+                        export DB_USER=${DB_CRED_USR}
+                        export DB_PASSWD=${DB_CRED_PSW}
                         export DB_NAME=sanity_db
                         export DB_DATABASE=performance_database
                         ./run-performace-tests.sh
@@ -66,15 +68,15 @@ pipeline {
                     CLIENT_NODES_FILE=$PWD/client_nodes
                     CLIENT_NODE=$(head -1 "$CLIENT_NODES_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
                     scp -q "$CLIENT_NODE":/var/tmp/perf* $WORKSPACE/artifacts/
-                popd 
+                popd
                 '''
                 script {
                     // Archive Deployment artifacts in jenkins build
-                    archiveArtifacts artifacts: "artifacts/*.*", onlyIfSuccessful: false, allowEmptyArchive: true 
+                    archiveArtifacts artifacts: "artifacts/*.*", onlyIfSuccessful: false, allowEmptyArchive: true
                 }
         }
 
-        always { 
+        always {
             script {
                 // Jenkins Summary
                 clusterStatus = ""
@@ -87,14 +89,14 @@ pipeline {
                     MESSAGE = "CORTX Performance Sanity Execution Failed for the build ${build_id}"
                     ICON = "error.gif"
                     STATUS = "FAILURE"
- 
+
                 } else {
                     manager.buildUnstable()
                     MESSAGE = "CORTX Performance Sanity Execution is Unstable for the build ${build_id}"
                     ICON = "warning.gif"
                     STATUS = "UNSTABLE"
                 }
-                
+
                 PerformaceSanityStatusHTML = "<pre>${clusterStatus}</pre>"
 
                 manager.createSummary("${ICON}").appendText("<h3>CORTX Performance Sanity Execution ${currentBuild.currentResult} </h3><p>Please check <a href=\"${BUILD_URL}/console\">Performance Sanity Execution logs</a> for more info <h4>Cluster Status:</h4>${PerformaceSanityStatusHTML}", false, false, false, "red")
@@ -104,7 +106,7 @@ pipeline {
                 env.cluster_status = "${PerformaceSanityStatusHTML}"
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
                 mailRecipients = "shailesh.vaidya@seagate.com"
-                emailext ( 
+                emailext (
                     body: '''${SCRIPT, template="cluster-setup-email.template"}''',
                     mimeType: 'text/html',
                     subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
