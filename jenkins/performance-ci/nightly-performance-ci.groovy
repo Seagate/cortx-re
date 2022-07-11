@@ -79,7 +79,7 @@ pipeline {
 
                         sh label: 'Execute deploy scripts', script:'''
                         pushd solutions/kubernetes/
-                            curl -l https://raw.githubusercontent.com/shailesh-vaidya/cortx-re/hw-performance-ci/jenkins/performance-ci/nightly-performance-ci.yml -o solution.yaml
+                            curl -l https://raw.githubusercontent.com/seagate/cortx-re/main/jenkins/performance-ci/nightly-performance-ci.yml -o solution.yaml
                             export GITHUB_TOKEN=$GITHUB_TOKEN
                             export CORTX_SCRIPTS_BRANCH=${CORTX_SCRIPTS_BRANCH}
                             export CORTX_SCRIPTS_REPO=${CORTX_SCRIPTS_REPO}
