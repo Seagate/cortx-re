@@ -85,7 +85,7 @@ function setup_awscli() {
    else
       # Get credentials.
       access_key=$(yq e '.solution.common.s3.default_iam_users.auth_admin' $SOLUTION_FILE)
-      secret_key=$(yq e '.solution.secrets.content.s3_auth_admin_secret' $SOLUTION_FILE)
+      secret_key=$(kubectl get secrets/cortx-secret  --template={{.data.s3_auth_admin_secret}} | base64 -d)
 
       # Set endpoint url.
       endpoint_url="http://""$(kubectl get svc | grep cortx-io | awk '{ print $3 }')"":80"
