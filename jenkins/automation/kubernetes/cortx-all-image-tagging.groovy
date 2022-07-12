@@ -90,11 +90,11 @@ pipeline {
                     env.docker_image_location = "http://cortx-docker.colo.seagate.com/harbor/projects/2/repositories"
                 }  
 
-                 env.image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' --filter=reference='*/*/cortx*:[0-9]*' | grep -v -E '2.0.0-latest|pr|custom-ci | head -4'", returnStdout: true).trim()
+                env.image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' --filter=reference='*/*/cortx*:[0-9]*' | grep -E '${TARGET_TAG}'", returnStdout: true).trim()
 
-                env.cortx_rgw_image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' --filter=reference='*/*/cortx-rgw:[0-9]*' | grep -v -E '2.0.0-latest|pr|custom-ci'", returnStdout: true).trim()
-                env.cortx_data_image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' --filter=reference='*/*/cortx-data:[0-9]*' | grep -v -E '2.0.0-latest|pr|custom-ci'", returnStdout: true).trim()
-                env.cortx_control_image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' --filter=reference='*/*/cortx-control:[0-9]*' | grep -v -E '2.0.0-latest|pr|custom-ci'", returnStdout: true).trim()
+                env.cortx_rgw_image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' --filter=reference='*/*/cortx-rgw:[0-9]*' | grep -E '${TARGET_TAG}'", returnStdout: true).trim()
+                env.cortx_data_image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' --filter=reference='*/*/cortx-data:[0-9]*' | grep -E '${TARGET_TAG}' | head -n 1", returnStdout: true).trim()
+                env.cortx_control_image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' --filter=reference='*/*/cortx-control:[0-9]*' | grep -E '${TARGET_TAG}' | head -n 1", returnStdout: true).trim()
 
                 env.build_stage = "${build_stage}"
 
