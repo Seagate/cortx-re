@@ -140,9 +140,9 @@ pipeline {
 
                 checkout([$class: 'GitSCM', branches: [[name: '$CORTX_RE_BRANCH']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: '$CORTX_RE_REPO']]])
 
-                sh label: 'Copy RPMS', script:'''
+                sh label: 'Deploy CORTX', script:'''
                 pushd solutions/kubernetes/
-                      curl -l https://raw.githubusercontent.com/shailesh-vaidya/cortx-re/hw-performance-ci/jenkins/performance-ci/nightly-performance-ci.yml -o solution.yaml
+                      curl -l http://cortx-storage.colo.seagate.com/releases/cortx/solution_template/nightly-performance-ci.yml -o solution.yaml
                       export GITHUB_TOKEN=$GITHUB_TOKEN
                       export CORTX_SCRIPTS_BRANCH=${CORTX_SCRIPTS_BRANCH}
                       export CORTX_SCRIPTS_REPO=${CORTX_SCRIPTS_REPO}
