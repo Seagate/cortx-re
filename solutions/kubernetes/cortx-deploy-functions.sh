@@ -194,23 +194,23 @@ function update_solution_config(){
         yq e -i '.solution.storage_sets[0].durability.dix = "1+0+0"' solution.yaml
         yq e -i '.solution.storage_sets[0].container_group_size = "1"' solution.yaml
 
-        yq e -i '.solution.storage_sets[0].storage.name = "cvg-01"' solution.yaml
-        yq e -i '.solution.storage_sets[0].storage.type = "ios"' solution.yaml
-        yq e -i '.solution.storage_sets[0].storage.devices.metadata.device = "/dev/sdc"' solution.yaml
-        yq e -i '.solution.storage_sets[0].storage.devices.metadata.size = "5Gi"' solution.yaml
-        yq e -i '.solution.storage_sets[0].storage.devices.data.d1.device = "/dev/sdd"' solution.yaml
-        yq e -i '.solution.storage_sets[0].storage.devices.data.d1.size = "5Gi"' solution.yaml
-        yq e -i '.solution.storage_sets[0].storage.devices.data.d2.device = "/dev/sde"' solution.yaml
-        yq e -i '.solution.storage_sets[0].storage.devices.data.d2.size = "5Gi"' solution.yaml
+        yq e -i '.solution.storage_sets[0].storage[0].name = "cvg-01"' solution.yaml
+        yq e -i '.solution.storage_sets[0].storage[0].type = "ios"' solution.yaml
+        yq e -i '.solution.storage_sets[0].storage[0].devices.metadata.device = "/dev/sdc"' solution.yaml
+        yq e -i '.solution.storage_sets[0].storage[0].devices.metadata.size = "5Gi"' solution.yaml
+        yq e -i '.solution.storage_sets[0].storage[0].devices.data.d1.device = "/dev/sdd"' solution.yaml
+        yq e -i '.solution.storage_sets[0].storage[0].devices.data.d1.size = "5Gi"' solution.yaml
+        yq e -i '.solution.storage_sets[0].storage[0].devices.data.d2.device = "/dev/sde"' solution.yaml
+        yq e -i '.solution.storage_sets[0].storage[0].devices.data.d2.size = "5Gi"' solution.yaml
        
-        yq e -i '.solution.storage_sets[0].storage.name = "cvg-02"' solution.yaml
-        yq e -i '.solution.storage_sets[0].storage.type = "ios"' solution.yaml
-        yq e -i '.solution.storage_sets[0].storage.devices.metadata.device = "/dev/sdf"' solution.yaml
-        yq e -i '.solution.storage_sets[0].storage.devices.metadata.size = "5Gi"' solution.yaml
-        yq e -i '.solution.storage_sets[0].storage.devices.data.d1.device = "/dev/sdg"' solution.yaml
-        yq e -i '.solution.storage_sets[0].storage.devices.data.d1.size = "5Gi"' solution.yaml
-        yq e -i '.solution.storage_sets[0].storage.devices.data.d2.device = "/dev/sdh"' solution.yaml
-        yq e -i '.solution.storage_sets[0].storage.devices.data.d2.size = "5Gi"' solution.yaml
+        yq e -i '.solution.storage_sets[0].storage[1].name = "cvg-02"' solution.yaml
+        yq e -i '.solution.storage_sets[0].storage[1].type = "ios"' solution.yaml
+        yq e -i '.solution.storage_sets[0].storage[1].devices.metadata.device = "/dev/sdf"' solution.yaml
+        yq e -i '.solution.storage_sets[0].storage[1].devices.metadata.size = "5Gi"' solution.yaml
+        yq e -i '.solution.storage_sets[0].storage[1].devices.data.d1.device = "/dev/sdg"' solution.yaml
+        yq e -i '.solution.storage_sets[0].storage[1].devices.data.d1.size = "5Gi"' solution.yaml
+        yq e -i '.solution.storage_sets[0].storage[1].devices.data.d2.device = "/dev/sdh"' solution.yaml
+        yq e -i '.solution.storage_sets[0].storage[1].devices.data.d2.size = "5Gi"' solution.yaml
     popd
 }        
 
