@@ -251,7 +251,7 @@ function deploy_dashboard() {
 }
 
 function deploy_mgr() {
-    add_secondary_separator "Setup Ceph Monitor"
+    add_secondary_separator "Setup Ceph Manager"
     mkdir -p /var/lib/ceph/mgr/ceph-foo
     ceph auth get-or-create mgr.foo mon 'allow profile mgr' osd 'allow *' mds 'allow *' > /var/lib/ceph/mgr/ceph-foo/keyring
     ceph-mgr -i foo
@@ -311,6 +311,7 @@ EOF
 }
 
 function deploy_fs() {
+    # Not required for RADOS GW.
     ceph osd pool create cephfs_data 1
     ceph osd pool create cephfs_metadata 1
     ceph fs new cephfs cephfs_metadata cephfs_data
