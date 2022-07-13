@@ -190,8 +190,8 @@ function update_solution_config(){
         yq e -i '.solution.common.resource_allocation.ha.k8s_monitor.resources.limits.cpu = "500m"' solution.yaml
 
         yq e -i '.solution.storage_sets[0].name = "storage-set-1"' solution.yaml
-        yq e -i '.solution.storage_sets[0].durability.sns = "1+0+0"' solution.yaml
-        yq e -i '.solution.storage_sets[0].durability.dix = "1+0+0"' solution.yaml
+        sns=$SNS_CONFIG yq e -i '.solution.storage_sets[0].durability.sns = env(sns)' solution.yaml
+        dix=$DIX_CONFIG yq e -i '.solution.storage_sets[0].durability.dix = env(dix)' solution.yaml
         yq e -i '.solution.storage_sets[0].container_group_size = "1"' solution.yaml
 
         yq e -i '.solution.storage_sets[0].storage[0].name = "cvg-01"' solution.yaml
