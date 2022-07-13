@@ -6,8 +6,6 @@ pipeline {
         }
     }
 
-    triggers { cron('30 19 * * *') }
-
     options {
         timeout(time: 240, unit: 'MINUTES')
         timestamps()
