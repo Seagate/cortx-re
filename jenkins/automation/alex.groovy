@@ -1,7 +1,7 @@
 pipeline {
     agent {
           node {
-             label "ceph-build-node"
+             label "RE-Automated-Node"
           }
       }
       parameters {
@@ -11,6 +11,8 @@ pipeline {
               description: 'Environment',
               trim: true
           )
+     string(name: 'CORTX_RE_URL', defaultValue: 'https://github.com/Seagate/cortx-re.git', description: 'Repository URL for Alex scan.')
+     string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch for Alex scan.')
       }
       
       triggers { 
@@ -21,7 +23,7 @@ pipeline {
       stage('Checkout source code') {
               steps {
                   script {
-                      checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/seagate/cortx-re/']]])
+                      checkout([$class: 'GitSCM', branches: [[name: "${CORTX_RE_BRANCH}"]], doGenerateSubmoduleConfigurations: false, userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${CORTX_RE_URL}"]]])
                       sh 'cp ./scripts/automation/alex/* .'
                   }
               }
@@ -30,7 +32,7 @@ pipeline {
           steps {
               sh label: 'Installed Dependencies', script: '''
                   yum install epel-release -y
-                  curl -sL https://rpm.nodesource.com/setup_12.x | bash -
+				  curl -fsSL https://rpm.nodesource.com/setup_16.x | sudo -E bash -
                   yum install nodejs -y
                   npm install alex --global -y
                   yum install python3 -y
@@ -70,7 +72,6 @@ pipeline {
       stage('Run Alex') {
           steps {
               script {
-                
                 def projects = readJSON file: "/root/config.json"
 				def scan_list = projects.global_scope
                 projects.repository.each { entry ->
@@ -78,6 +79,23 @@ pipeline {
 						def file = '../' + entry.name + '.alex'
 						def file_custom = '../' + entry.name + '.custom'
 						def words = entry.local_scope
+						if ( entry.name == "cortx-motr" ) {
+						   word_list = scan_list.replaceAll("garbage,","")
+						   sh '''
+						     set +e
+						     cp ../alexignore .alexignore
+						     repo_list=`echo '''+ words +'''`
+						     scan_words=`echo ''' + word_list + '''`
+						     repo_list=${repo_list//,/\\\\|}
+						     scan_words=${scan_words//,/\\\\|}
+						     grep -rnwo '.' -e \"$repo_list\" >> ''' + file_custom + '''
+						     grep -rnwo '.' -e \"$scan_words\" >> ''' + file_custom + '''
+						     alex . >> ''' + file + ''' 2>&1
+						     cat ''' + file_custom + '''
+						     set -e
+						   '''
+                           }
+                        else {
 						sh ''' 
 						  set +e
 						  cp ../alexignore .alexignore
@@ -93,6 +111,7 @@ pipeline {
 						  cat ''' + file_custom + '''
 						  set -e
 						'''
+					}
 					}
                   }
               }
@@ -114,7 +133,7 @@ pipeline {
 	  stage('Upload HTML') {
 	      steps {
 		      script {
-		        sh ''' mkdir /mnt/bigstorage/releases/opensource_builds/alex_report/$(date '+%Y/%B/%d') '''
+		        sh ''' mkdir -p /mnt/bigstorage/releases/opensource_builds/alex_report/$(date '+%Y/%B/%d') '''
 			    sh ''' cp $WORKSPACE/cortx-*.html /mnt/bigstorage/releases/opensource_builds/alex_report/$(date '+%Y/%B/%d') '''
 				}
 			}
