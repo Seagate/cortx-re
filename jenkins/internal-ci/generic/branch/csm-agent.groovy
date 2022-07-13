@@ -116,7 +116,7 @@ pipeline {
     
         stage('Update Jira') {
             steps {
-                script { build_stage=env.STAGE_NAME }    
+                script { build_stage = env.STAGE_NAME }
                 script {
                     def jiraIssues = jiraIssueSelector(issueSelector: [$class: 'DefaultIssueSelector'])
                     jiraIssues.each { issue ->
@@ -124,16 +124,16 @@ pipeline {
                         jiraAddComment(    
                             idOrKey: issue,
                             site: "SEAGATE_JIRA",
-                            comment: "{panel:bgColor=#c1c7d0}"+
-                                "h2. ${component} - ${branch} branch build pipeline SUCCESS\n"+
-                                "h3. Build Info:  \n"+
-                                        author+
-                                        "* Component Build  :  ${BUILD_NUMBER} \n"+
-                                        "* Release Build    :  ${release_build}  \n\n  "+
-                                "h3. Artifact Location  :  \n"+
-                                    "*  "+"${release_build_location} "+"\n\n"+
-                                "h3. Image Location  :  \n"+
-                                    "*  "+"${cortx_images} "+"\n"+    
+                            comment: "{panel:bgColor=#c1c7d0}" +
+                                "h2. ${component} - ${branch} branch build pipeline SUCCESS\n" +
+                                "h3. Build Info:  \n" +
+                                        author +
+                                        "* Component Build  :  ${BUILD_NUMBER} \n" +
+                                        "* Release Build    :  ${release_build}  \n\n  " +
+                                "h3. Artifact Location  :  \n" +
+                                    "*  " +"${release_build_location} " +"\n\n" +
+                                "h3. Image Location  :  \n" +
+                                    "*  " +"${cortx_images} " +"\n" +
                                 "{panel}",
                             failOnError: false,
                             auditLog: false
@@ -163,8 +163,8 @@ pipeline {
 
                 def toEmail = ""
                 def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
-                if( manager.build.result.toString() == "FAILURE" ) {
-                    toEmail = "shailesh.vaidya@seagate.com"
+                if ( manager.build.result.toString() == "FAILURE" ) {
+                    toEmail = "CORTX.DevOps.RE@seagate.com"
                     recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'],[$class: 'RequesterRecipientProvider']]
                 }
 
@@ -185,18 +185,18 @@ pipeline {
 def getAuthor(issue) {
 
     def changeLogSets = currentBuild.rawBuild.changeSets
-    def author= ""
+    def author = ""
     def response = ""
     // Grab build information
-    for (int i = 0; i < changeLogSets.size(); i++){
+    for (int i = 0; i < changeLogSets.size(); i++) {
         def entries = changeLogSets[i].items
         for (int j = 0; j < entries.length; j++) {
             def entry = entries[j]
-            if((entry.msg).contains(issue)){
+            if ((entry.msg).contains(issue)) {
                 author = entry.author
             }
         }
     }
-    response = "* Author: "+author+"\n"
+    response = "* Author: " +author+ "\n"
     return response
 }

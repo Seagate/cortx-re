@@ -54,7 +54,7 @@ pipeline {
                     env.ForEmailPlugin = env.WORKSPACE
                     emailext mimeType: 'text/html',
                     body: '${FILE, path="rpm_validation.html"}',
-                    subject: 'RPM Validation Result - [ Date :' +new Date().format("dd-MMM-yyyy") + ' ]',
+                    subject: 'RPM Validation Result - [ Date :' + new Date().format("dd-MMM-yyyy") + ' ]',
                     to: "${mailRecipients}",
                     recipientProviders: [[$class: 'RequesterRecipientProvider']]
                 }

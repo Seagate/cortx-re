@@ -12,14 +12,14 @@ pipeline {
         disableConcurrentBuilds()
     }
     environment {
-        CORTX_RE_BRANCH = "main"
-        CORTX_RE_REPO = "https://github.com/Seagate/cortx-re"
         LOCAL_REG_CRED = credentials('local-registry-access')
         GITHUB_CRED = credentials('shailesh-github')
         VERSION = "2.0.0"
         last_success_build_number = getBuild(JOB_URL)
     }
     parameters {
+        string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
+        string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repository for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_SERVER_IMAGE', defaultValue: 'cortx-docker.colo.seagate.com/seagate/cortx-rgw:2.0.0-latest', description: 'CORTX-SERVER image', trim: true)
         string(name: 'CORTX_DATA_IMAGE', defaultValue: 'cortx-docker.colo.seagate.com/seagate/cortx-data:2.0.0-latest', description: 'CORTX-DATA image', trim: true)
         string(name: 'CORTX_CONTROL_IMAGE', defaultValue: 'cortx-docker.colo.seagate.com/seagate/cortx-control:2.0.0-latest', description: 'CORTX-CONTROL image', trim: true)
@@ -165,6 +165,35 @@ pipeline {
                         env.skipcount = qaSanity.buildVariables.skipcount
                         env.todocount = qaSanity.buildVariables.todocount
                         env.abortcount = qaSanity.buildVariables.abortcount
+                        env.santotalcount = qaSanity.buildVariables.santotalcount
+                        env.sanpasscount = qaSanity.buildVariables.sanpasscount
+                        env.sanfailcount = qaSanity.buildVariables.sanfailcount
+                        env.sanskipcount = qaSanity.buildVariables.sanskipcount
+                        env.santodocount = qaSanity.buildVariables.santodocount
+                        env.sanabortcount = qaSanity.buildVariables.sanabortcount
+                        env.itotalcount = qaSanity.buildVariables.itotalcount
+                        env.ipasscount = qaSanity.buildVariables.ipasscount
+                        env.ifailcount = qaSanity.buildVariables.ifailcount
+                        env.iskipcount = qaSanity.buildVariables.iskipcount
+                        env.itodocount = qaSanity.buildVariables.itodocount
+                        env.iabortcount = qaSanity.buildVariables.iabortcount
+                        env.ftotalcount = qaSanity.buildVariables.ftotalcount
+                        env.fpasscount = qaSanity.buildVariables.fpasscount
+                        env.ffailcount = qaSanity.buildVariables.ffailcount
+                        env.fskipcount = qaSanity.buildVariables.fskipcount
+                        env.ftodocount = qaSanity.buildVariables.ftodocount
+                        env.fabortcount = qaSanity.buildVariables.fabortcount
+                        env.rtotalcount = qaSanity.buildVariables.rtotalcount
+                        env.rpasscount = qaSanity.buildVariables.rpasscount
+                        env.rfailcount = qaSanity.buildVariables.rfailcount
+                        env.rskipcount = qaSanity.buildVariables.rskipcount
+                        env.rtodocount = qaSanity.buildVariables.rtodocount
+                        env.rabortcount = qaSanity.buildVariables.rabortcount
+                        env.sanitytime = qaSanity.buildVariables.sanitytime
+                        env.regrtime = qaSanity.buildVariables.regrtime
+                        env.iotime = qaSanity.buildVariables.iotime
+                        env.fdtime = qaSanity.buildVariables.fdtime
+                        env.totaltime = qaSanity.buildVariables.totaltime
                     }
                     copyArtifacts filter: 'log/*report.xml', fingerprintArtifacts: true, flatten: true, optional: true, projectName: 'QA-Sanity-Multinode-RGW', selector: lastCompleted(), target: 'log/'
                     copyArtifacts filter: 'log/*report.html', fingerprintArtifacts: true, flatten: true, optional: true, projectName: 'QA-Sanity-Multinode-RGW', selector: lastCompleted(), target: 'log/'
@@ -234,10 +263,10 @@ pipeline {
                     //mailRecipients = "cortx.sme@seagate.com, manoj.management.team@seagate.com, CORTX.SW.Architecture.Team@seagate.com, CORTX.DevOps.RE@seagate.com"
                 }
                 else if ( params.EMAIL_RECIPIENTS == "ALL" && currentBuild.result == "UNSTABLE" ) {
-                    mailRecipients = "Cortx.Perf@seagate.com, sarang.sawant@seagate.com, amit.kapil@seagate.com, amol.j.kongre@seagate.com, deepak.choudhary@seagate.com, jaikumar.gidwani@seagate.com, mandar.joshi@seagate.com, neerav.choudhari@seagate.com, pranay.kumar@seagate.com, swarajya.pendharkar@seagate.com, taizun.a.kachwala@seagate.com, trupti.patil@seagate.com, ujjwal.lanjewar@seagate.com, shailesh.vaidya@seagate.com, abhijit.patil@seagate.com, sonal.kalbende@seagate.com, gaurav.chaudhari@seagate.com, mukul.malhotra@seagate.com, swanand.s.gadre@seagate.com, don.r.bloyer@seagate.com, chandradhar.raval@seagate.com, pankaj.g.borole@seagate.com "
+                    mailRecipients = "Cortx.Perf@seagate.com, cortx-cicd@seagate.com"
                 }
                 else if ( params.EMAIL_RECIPIENTS == "ALL" && currentBuild.result == "FAILURE" ) {
-                    mailRecipients = "sarang.sawant@seagate.com, amit.kapil@seagate.com, amol.j.kongre@seagate.com, deepak.choudhary@seagate.com, jaikumar.gidwani@seagate.com, mandar.joshi@seagate.com, neerav.choudhari@seagate.com, pranay.kumar@seagate.com, swarajya.pendharkar@seagate.com, taizun.a.kachwala@seagate.com, trupti.patil@seagate.com, ujjwal.lanjewar@seagate.com, shailesh.vaidya@seagate.com, abhijit.patil@seagate.com, sonal.kalbende@seagate.com, gaurav.chaudhari@seagate.com, mukul.malhotra@seagate.com, swanand.s.gadre@seagate.com, don.r.bloyer@seagate.com, chandradhar.raval@seagate.com, pankaj.g.borole@seagate.com "
+                    mailRecipients = "cortx-cicd@seagate.com"
                 }
                 else if ( params.EMAIL_RECIPIENTS == "DEVOPS" && currentBuild.result == "SUCCESS" ) {
                     mailRecipients = "CORTX.All@seagate.com, CORTX.DevOps.RE@seagate.com"

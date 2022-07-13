@@ -76,7 +76,7 @@ pipeline {
                     env.ForEmailPlugin = env.WORKSPACE
                     emailext mimeType: 'text/html',
                     body: '${FILE, path="git_diff.html"}',
-                    subject: 'Third Party Depdenency scan - [ Date :' +new Date().format("dd-MMM-yyyy") + ' ]',
+                    subject: 'Third Party Depdenency scan - [ Date :' + new Date().format("dd-MMM-yyyy") + ' ]',
                     recipientProviders: [[$class: 'RequesterRecipientProvider']],
 					to: useEmailList
                 }
