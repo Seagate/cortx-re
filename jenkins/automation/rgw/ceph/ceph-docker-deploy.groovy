@@ -19,7 +19,7 @@ pipeline {
     parameters {
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for Cluster Setup scripts.', trim: true)
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Cluster Setup scripts.', trim: true)
-        text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used. Currently only single node is supported for image deployment, but from ceph dashboard cluster can be expanded to multinode configuration.', name: 'hosts')
+        text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used. Currently only single node is supported for image deployment.', name: 'hosts')
         string(name: 'CEPH_IMAGE', defaultValue: 'cortx-docker.colo.seagate.com/ceph/quincy-rockylinux_8:daemon-rockylinux-custom-quincy-rockylinux_8-x86_64-latest', description: 'Ceph docker image to deploy cluster from.', trim: true)
     }
 
