@@ -300,6 +300,7 @@ pipeline {
         }
 
         stage('RPM Validation') {
+            when { expression { params.BUILD_LATEST_HARE == 'yes' } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Validate RPMS for Motr Dependency', script:'''
