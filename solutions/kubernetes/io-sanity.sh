@@ -17,7 +17,7 @@
 # For any questions about this software or licensing,
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
-exit 1 # manual fail
+
 set -euo pipefail
 
 source /var/tmp/functions.sh
