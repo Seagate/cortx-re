@@ -117,13 +117,13 @@ function update_solution_config(){
         
         external_exposure_service=$EXTERNAL_EXPOSURE_SERVICE yq e -i '.solution.common.external_services.s3.type = env(external_exposure_service)' solution.yaml
         yq e -i '.solution.common.external_services.s3.count = 1' solution.yaml
-        yq e -i '.solution.common.external_services.s3.ports.http = "80"' solution.yaml
-        yq e -i '.solution.common.external_services.s3.ports.https = "443"' solution.yaml
+        yq e -i '.solution.common.external_services.s3.ports.http = 80' solution.yaml
+        yq e -i '.solution.common.external_services.s3.ports.https = 443' solution.yaml
         s3_external_http_nodeport=$S3_EXTERNAL_HTTP_NODEPORT yq e -i '.solution.common.external_services.s3.nodePorts.http = env(s3_external_http_nodeport)' solution.yaml
         s3_external_https_nodeport=$S3_EXTERNAL_HTTPS_NODEPORT yq e -i '.solution.common.external_services.s3.nodePorts.https = env(s3_external_https_nodeport)' solution.yaml
         
         external_exposure_service=$EXTERNAL_EXPOSURE_SERVICE yq e -i '.solution.common.external_services.control.type = env(external_exposure_service)' solution.yaml    
-        yq e -i '.solution.common.external_services.control.ports.https = "8081"' solution.yaml    
+        yq e -i '.solution.common.external_services.control.ports.https = 8081' solution.yaml    
         control_external_nodeport=$CONTROL_EXTERNAL_NODEPORT yq e -i '.solution.common.external_services.control.nodePorts.https = env(control_external_nodeport)' solution.yaml
 
         yq e -i '.solution.common.resource_allocation.consul.server.storage = "10Gi"' solution.yaml
