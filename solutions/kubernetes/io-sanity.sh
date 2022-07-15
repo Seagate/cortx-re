@@ -160,7 +160,7 @@ function run_io_sanity() {
    check_status "Failed to list files in '$BUCKET'"
 
    add_common_separator "Uploading object from '$BUCKET' to '$BUCKET2' bucket"
-   aws s3 cp s3://$BUCKET/$FILE1 s3://$BUCKET2
+   aws s3 cp s3://$BUCKET/file10MB s3://$BUCKET2
    check_status "Failed to copy '$BUCKET' object to '$BUCKET2'"
 
    add_common_separator "List files in '$BUCKET2' bucket"
