@@ -115,7 +115,6 @@ do
         fi
         
         pushd "$dir" || exit
-                echo -e "\t--[ Check-ins for $dir from $START_BUILD ($start_hash) to $TARGET_BUILD ($target_hash) ]--" >> $report_file
                 commit_sha="$(git log "$start_hash..$target_hash" --oneline --pretty=format:"%h")";
                 if [ "$commit_sha" ]; then
                         for commit in $commit_sha; do
@@ -125,9 +124,9 @@ do
                                 pr_number=$(curl -s -H "Accept: application/json" -H "Authorization: token $ACCESS_TOKEN" https://api.github.com/repos/seagate/"$repo_name"/commits/"$commit"/pulls | jq '.[].number')
                                 pr_url=$(curl -s -H "Accept: application/json" -H "Authorization: token $ACCESS_TOKEN" https://api.github.com/repos/seagate/"$repo_name"/commits/"$commit"/pulls | jq '.[].html_url' | sed "s/\"//g")
                                 if [ "$pr_number" ] && [ "$pr_url" ]; then
-                                        echo "$filtered_commit_message [$pr_number]($pr_url)" >> $report_file
+                                        echo -e "$filtered_commit_message [$pr_number]($pr_url)\n" >> $report_file
                                 else
-                                        echo "$filtered_commit_message" >> $report_file
+                                        echo -e "$filtered_commit_message\n" >> $report_file
                                 fi
                         done
                 else
