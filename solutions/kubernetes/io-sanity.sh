@@ -124,14 +124,21 @@ function setup_awscli() {
 
 function run_io_sanity() {
    add_primary_separator "\tStarting IO Sanity Testing"
-
+   
    BUCKET="test-bucket"
+   BUCKET2="test-bucket2"
    FILE1="file10mb"
    FILE2="test-obj.bin"
 
    add_common_separator "Creating S3 bucket:- '$BUCKET'"
    aws s3 mb s3://$BUCKET
    check_status "Failed to create bucket"
+   aws s3 ls
+   check_status "Failed to list buckets"
+
+   add_common_separator "Creating S3 bucket2:- '$BUCKET2'"
+   aws s3 mb s3://$BUCKET2
+   check_status "Failed to create bucket2"
    aws s3 ls
    check_status "Failed to list buckets"
 
@@ -151,6 +158,25 @@ function run_io_sanity() {
    add_common_separator "List files in '$BUCKET' bucket"
    aws s3 ls s3://$BUCKET
    check_status "Failed to list files in '$BUCKET'"
+
+   add_common_separator "Uploading '$FILE1' file to '$BUCKET2' bucket"
+   aws s3 cp s3://$BUCKET/file10MB s3://$BUCKET2/file10MB
+   check_status "Failed to copy '$BUCKET' to '$BUCKET2'"
+
+   add_common_separator "List files in '$BUCKET2' bucket"
+   aws s3 ls s3://$BUCKET2
+   check_status "Failed to list files in '$BUCKET2'"
+
+   add_common_separator "Download '$FILE1' as 'file10mbD' and check diff"
+   aws s3 cp s3://$BUCKET2/file10MB file10mbD
+   check_status "Failed to download '$FILE1' as 'file10mbD' from '$BUCKET'"
+   FILE_DIFF=$(diff $FILE1 file10mbD)
+
+   if [[ $FILE_DIFF ]]; then
+      echo -e "\nDIFF Status: $FILE_DIFF"
+   else
+      echo -e "\nDIFF Status: The files $FILE1 and file10mbD are similar."
+   fi
 
    add_common_separator "Download '$FILE1' as 'file10mbDn' and check diff"
    aws s3 cp s3://$BUCKET/file10MB file10mbDn
