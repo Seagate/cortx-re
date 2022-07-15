@@ -40,7 +40,7 @@ declare -A COMPONENT_LIST=(
 [cortx-motr]="https://github.com/Seagate/cortx-motr.git"
 [cortx-hare]="https://github.com/Seagate/cortx-hare.git"
 [cortx-ha]="https://github.com/Seagate/cortx-ha.git"
-[cortx-prvsnr]="https://github.com/Seagate/cortx-prvsnr.git"
+[cortx-provisioner]="https://github.com/Seagate/cortx-prvsnr.git"
 [cortx-csm_agent]="https://github.com/Seagate/cortx-manager.git"
 [cortx-py-utils]="https://github.com/Seagate/cortx-utils.git"
 [cortx-rgw-integration]="https://github.com/Seagate/cortx-rgw-integration.git"
@@ -103,7 +103,7 @@ do
         elif [ "$component" == "cortx-csm_agent" ] || [ "$component" == "cortx-csm_web" ]; then
                 start_hash=$(grep "$component-" start_build_manifest.txt | head -1 | awk -F['_'] '{print $3}' |  cut -d. -f1); echo "$start_hash"
                 target_hash=$(grep "$component-" target_build_manifest.txt | head -1 | awk -F['_'] '{print $3}' |  cut -d. -f1); echo "$target_hash"
-        elif [ "$component" == "cortx-prvsnr" ] || [ "$component" == "cortx-rgw-integration" ] ; then
+        elif [ "$component" == "cortx-provisioner" ] || [ "$component" == "cortx-rgw-integration" ] ; then
                 start_hash=$(grep "$component-" start_build_manifest.txt | tail -1 | awk -F['_'] '{print $2}' | sed 's/git//g' | cut -d. -f1); echo "$start_hash"
                 target_hash=$(grep "$component-" target_build_manifest.txt | tail -1 | awk -F['_'] '{print $2}' | sed 's/git//g' | cut -d. -f1); echo "$target_hash"
         elif [ "$component" == "ceph-base" ]; then
