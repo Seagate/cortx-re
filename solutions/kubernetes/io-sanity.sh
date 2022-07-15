@@ -167,6 +167,10 @@ function run_io_sanity() {
    aws s3 rm s3://$BUCKET --recursive
    check_status "Failed to delete all files from '$BUCKET'"
 
+   add_common_separator "Remove specific file in '$BUCKET' bucket"
+   aws s3 rm s3://$BUCKET/file10mb --recursive
+   check_status "Failed to delete specific file from '$BUCKET'"
+
    add_common_separator "Remove '$BUCKET' bucket"
    aws s3 rb s3://$BUCKET
    check_status "Failed to delete '$BUCKET'"
