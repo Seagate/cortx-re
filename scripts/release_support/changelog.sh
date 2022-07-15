@@ -41,10 +41,10 @@ declare -A COMPONENT_LIST=(
 [cortx-hare]="https://github.com/Seagate/cortx-hare.git"
 [cortx-ha]="https://github.com/Seagate/cortx-ha.git"
 [cortx-prvsnr]="https://github.com/Seagate/cortx-prvsnr.git"
-[cortx-manager]="https://github.com/Seagate/cortx-manager.git"
-[cortx-utils]="https://github.com/Seagate/cortx-utils.git"
+[cortx-csm_agent]="https://github.com/Seagate/cortx-manager.git"
+[cortx-py-utils]="https://github.com/Seagate/cortx-utils.git"
 [cortx-rgw-integration]="https://github.com/Seagate/cortx-rgw-integration.git"
-[cortx-rgw]="https://github.com/Seagate/cortx-rgw"
+[ceph-base]="https://github.com/Seagate/cortx-rgw"
 )
 
 clone_dir="/root/git_build_checkin_stats"
@@ -97,16 +97,16 @@ do
                 exit 1
         fi
 
-        if [ "$component" == "cortx-hare" ] || [ "$component" == "cortx-sspl" ] || [ "$component" == "cortx-ha" ] || [ "$component" == "cortx-utils" ]; then
+        if [ "$component" == "cortx-hare" ] || [ "$component" == "cortx-sspl" ] || [ "$component" == "cortx-ha" ] || [ "$component" == "cortx-py-utils" ]; then
                 start_hash=$(grep "$component-" start_build_manifest.txt | head -1 | awk -F['_'] '{print $2}' | cut -d. -f1 |  sed 's/git//g'); echo "$start_hash"
                 target_hash=$(grep "$component-" target_build_manifest.txt | head -1 | awk -F['_'] '{print $2}' | cut -d. -f1 |  sed 's/git//g'); echo "$target_hash"
-        elif [ "$component" == "cortx-manager" ] || [ "$component" == "cortx-csm_web" ]; then
+        elif [ "$component" == "cortx-csm_agent" ] || [ "$component" == "cortx-csm_web" ]; then
                 start_hash=$(grep "$component-" start_build_manifest.txt | head -1 | awk -F['_'] '{print $3}' |  cut -d. -f1); echo "$start_hash"
                 target_hash=$(grep "$component-" target_build_manifest.txt | head -1 | awk -F['_'] '{print $3}' |  cut -d. -f1); echo "$target_hash"
-        elif [ "$component" == "cortx-prvsnr" ] || [ "$component" == "cortx-rgw-integration" ] ; then
+        elif [ "$component" == "cortx-provisioner" ] || [ "$component" == "cortx-rgw-integration" ] ; then
                 start_hash=$(grep "$component-" start_build_manifest.txt | tail -1 | awk -F['_'] '{print $2}' | sed 's/git//g' | cut -d. -f1); echo "$start_hash"
                 target_hash=$(grep "$component-" target_build_manifest.txt | tail -1 | awk -F['_'] '{print $2}' | sed 's/git//g' | cut -d. -f1); echo "$target_hash"
-        elif [ "$component" == "cortx-rgw" ]; then
+        elif [ "$component" == "ceph-base" ]; then
                 start_hash=$(grep "$component-" start_build_manifest.txt | awk -F['-'] '{print $5}'  | cut -d. -f2 | sed s/g//g); echo "$start_hash"
                 target_hash=$(grep "$component-" target_build_manifest.txt | awk -F['-'] '{print $5}'  | cut -d. -f2 | sed s/g//g); echo "$target_hash"
         else
@@ -121,8 +121,9 @@ do
                         for commit in $commit_sha; do
                                 original_commit_message=$(git log --oneline -n 1 "$commit" --pretty=format:"%s")
                                 filtered_commit_message=$(sed -e 's/([^()]*)//g' <<< $original_commit_message)
-                                pr_number=$(curl -s -H "Accept: application/json" -H "Authorization: token $ACCESS_TOKEN" https://api.github.com/repos/seagate/"$component"/commits/"$commit"/pulls | jq '.[].number')
-                                pr_url=$(curl -s -H "Accept: application/json" -H "Authorization: token $ACCESS_TOKEN" https://api.github.com/repos/seagate/"$component"/commits/"$commit"/pulls | jq '.[].html_url' | sed "s/\"//g")
+                                repo_name=$(awk -F"[/.]" '{print $6}' <<< ${COMPONENT_LIST[$component]})
+                                pr_number=$(curl -s -H "Accept: application/json" -H "Authorization: token $ACCESS_TOKEN" https://api.github.com/repos/seagate/"$repo_name"/commits/"$commit"/pulls | jq '.[].number')
+                                pr_url=$(curl -s -H "Accept: application/json" -H "Authorization: token $ACCESS_TOKEN" https://api.github.com/repos/seagate/"$repo_name"/commits/"$commit"/pulls | jq '.[].html_url' | sed "s/\"//g")
                                 if [ "$pr_number" ] && [ "$pr_url" ]; then
                                         echo "$filtered_commit_message [$pr_number]($pr_url)" >> $report_file
                                 else
