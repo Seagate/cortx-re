@@ -160,7 +160,7 @@ function run_io_sanity() {
    check_status "Failed to list files in '$BUCKET'"
 
    add_common_separator "Uploading '$FILE1' file to '$BUCKET2' bucket"
-   aws s3 cp s3://$BUCKET/file10MB s3://$BUCKET2/file10MB
+   aws s3 cp s3://$BUCKET/file10MB s3://$BUCKET2/
    check_status "Failed to copy '$BUCKET' to '$BUCKET2'"
 
    add_common_separator "List files in '$BUCKET2' bucket"
@@ -169,7 +169,7 @@ function run_io_sanity() {
 
    add_common_separator "Download '$FILE1' as 'file10mbD' and check diff"
    aws s3 cp s3://$BUCKET2/file10MB file10mbD
-   check_status "Failed to download '$FILE1' as 'file10mbD' from '$BUCKET'"
+   check_status "Failed to download '$FILE1' as 'file10mbD' from '$BUCKET2'"
    FILE_DIFF=$(diff $FILE1 file10mbD)
 
    if [[ $FILE_DIFF ]]; then
