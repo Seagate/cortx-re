@@ -127,7 +127,7 @@ do
                                         echo "$filtered_commit_message [$pr_number]($pr_url)" >> $report_file
                                 else
                                         echo "$filtered_commit_message" >> $report_file
-                                fi               
+                                fi
                         done
                 else
                         echo "No changes"
