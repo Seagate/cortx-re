@@ -228,14 +228,14 @@ function add_node_info_solution_config() {
 
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         if ! grep -q nodes solution.yaml; then
-        count=0
-        for node in $(kubectl get nodes -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints[?(@.effect=='NoSchedule')].effect}{\"\n\"}{end}" | grep -v NoSchedule)
+            count=0
+            for node in $(kubectl get nodes -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints[?(@.effect=='NoSchedule')].effect}{\"\n\"}{end}" | grep -v NoSchedule)
             do
-            i=$node yq e -i '.solution.storage_sets[0].nodes['$count'] = env(i) ' solution.yaml
-            count=$((count+1))
+                i=$node yq e -i '.solution.storage_sets[0].nodes['$count'] = env(i)' solution.yaml
+                count=$((count+1))
             done
         else
-        add_secondary_separator "Nodes entries already present in solution.yaml. Skipping update"
+            add_secondary_separator "Nodes entries already present in solution.yaml. Skipping update"
         fi
     popd
 }
