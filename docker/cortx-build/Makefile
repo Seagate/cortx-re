@@ -15,10 +15,17 @@ help : Makefile
 	@echo
 	@echo targets:
 	@sed -n 's/^##/   /p' $<
+
+validation:
+	@echo "*************** Validate build node *********************"
+    if [[ "$(df -BG  / | awk '{ print $4 }' | tail -n 1 | sed 's/G//')" -lt "30" ]]; then
+        @echo "Root partition doesn't have sufficient disk space"
+        exit 1
+    fi
 	
 ## checkout: checkout specified branch/tag code
 checkout:
-	@echo "*************** checkout code *********************"
+	@echo "*************** Checkout code *********************"
 	pushd cortx-workspace && \
         for component in cortx-motr cortx-hare cortx-rgw-integration cortx-manager cortx-utils cortx-ha; do pushd $$component; git clean -fdx; git checkout .; git pull -p --all; git checkout $$BRANCH || exit 1; popd ; done  && \
 		rm -rf cortx-rgw && \
