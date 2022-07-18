@@ -31,6 +31,15 @@ yum install gcc python3-devel git-lfs pango-devel -y
 pip3 install seaborn matplotlib pandas xlrd requests python-dateutil pyGithub jupyterlab django-weasyprint weasyprint==52.5
 git lfs install
 
+#Install alex
+yum install epel-release -y; curl https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash
+source ~/.bashrc
+nvm --version
+nvm install 14.20.0
+npm install alex --global -y
+alex_version=$(alex -v 2>&1); printf "Alex Version: "; echo $alex_version | grep -o '[0-9.]*'
+node_version=$(node -v 2>&1); printf "Node Version: "; echo $node_version | grep -o '[0-9.]*'
+
 #Clone Repo
 git clone $CORTX_REPO -b $CORTX_BRANCH --depth=1
 pushd cortx && git lfs pull && popd
