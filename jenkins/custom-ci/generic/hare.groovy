@@ -18,6 +18,11 @@ pipeline {
                 choices: ['custom-ci', 'stable', 'Cortx-v1.0.0_Beta'],
                 description: 'Branch name to pick-up other components rpms'
             )
+        choice(
+            name: 'BUILD_LATEST_HARE',
+                choices: ['yes', 'no'],
+                description: 'Build cortx-Hare from latest code or use last-successful build.'
+            )
         // Add os_version parameter in jenkins configuration    
     }
     
@@ -42,6 +47,7 @@ pipeline {
     stages {
     
         stage('Checkout hare') {
+            when { expression { params.BUILD_LATEST_HARE == 'yes' } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh 'mkdir -p hare'
@@ -52,6 +58,7 @@ pipeline {
         }
     
         stage('Install Dependencies') {
+            when { expression { params.BUILD_LATEST_HARE == 'yes' } }
             steps {
                 script { build_stage = env.STAGE_NAME }
 
@@ -80,6 +87,7 @@ EOF
         }
 
         stage('Build') {
+            when { expression { params.BUILD_LATEST_HARE == 'yes' } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Build', returnStatus: true, script: '''
@@ -98,7 +106,12 @@ EOF
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Copy RPMS', script: '''
                     mkdir -p $build_upload_dir
-                    cp /root/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir
+                    if [ "$BUILD_LATEST_HARE" == "yes" ]; then
+                            cp /root/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir
+                    else
+                        echo "Copy packages form last_successful"
+                        cp /mnt/bigstorage/releases/cortx/components/github/main/rockylinux-8.4/dev/hare/last_successful/*.rpm $build_upload_dir
+                    fi
                 '''
             }
         }
