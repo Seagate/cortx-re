@@ -496,7 +496,7 @@ case $ACTION in
     --destroy-cluster-vm)
         destroy_cluster_vm
     ;;
-    --destroy-cluster-docker
+    --destroy-cluster-docker)
         destroy_cluster_docker
     ;;
     *)
