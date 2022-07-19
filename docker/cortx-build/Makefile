@@ -18,10 +18,7 @@ help : Makefile
 
 validation:
 	@echo "*************** Validate build node *********************"
-    if [[ "$(df -BG  / | awk '{ print $4 }' | tail -n 1 | sed 's/G//')" -lt "100" ]]; then
-        @echo "Root partition doesn't have sufficient disk space"
-        exit 1
-    fi
+    if [[ "$(df -BG  / | awk '{ print $4 }' | tail -n 1 | sed 's/G//')" -lt "95" ]]; then echo "Root partition doesn't have sufficient disk space" && exit 1; fi
 	
 ## checkout: checkout specified branch/tag code
 checkout:
