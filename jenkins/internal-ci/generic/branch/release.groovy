@@ -368,10 +368,10 @@ pipeline {
                         attachLog: true,
                         to: toEmail,
                         recipientProviders: recipientProvidersClass,
-                        attachmentsPattern: 'CHANGESET.txt'
+                        attachmentsPattern: 'CHANGESET.md'
                     )
 
-                archiveArtifacts artifacts: "README.txt, RELEASE.INFO, CHANGESET.txt", onlyIfSuccessful: false, allowEmptyArchive: true
+                archiveArtifacts artifacts: "README.txt, RELEASE.INFO, CHANGESET.md", onlyIfSuccessful: false, allowEmptyArchive: true
             }
         }
     }
