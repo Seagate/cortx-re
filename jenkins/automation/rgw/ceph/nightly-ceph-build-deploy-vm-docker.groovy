@@ -17,7 +17,7 @@ pipeline {
     parameters {
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for Cluster Setup scripts.', trim: true)
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Cluster Setup scripts.', trim: true)
-    // Please configure docker_host, vm_hosts and OSD_Disks parameter in Jenkins job configuration.
+    // Please configure docker_hosts, vm_hosts and OSD_Disks parameter in Jenkins job configuration.
     }
 
     stages {
@@ -88,7 +88,7 @@ pipeline {
                             string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
                             string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
                             text(name: 'hosts', value: "${vm_hosts}"),
-                            text(name: 'hosts', value: "${OSD_Disks}")
+                            text(name: 'OSD_Disks', value: "${OSD_Disks}")
                         ]
                     }
                 }
