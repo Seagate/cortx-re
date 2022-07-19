@@ -151,7 +151,8 @@ function destroy_cluster_vm() {
     nodes_setup
 
     add_primary_separator "\tDestroy Ceph Cluster"
-    scp_all_nodes ceph-deploy-functions.sh functions.sh
+    add_secondary_separator "Copy scripts"
+    scp_all_nodes functions.sh ceph-deploy-functions.sh
     ssh_all_nodes "/var/tmp/ceph-deploy-functions.sh --destroy-cluster-vm"
 }
 
@@ -161,7 +162,8 @@ function destroy_cluster_docker() {
     nodes_setup
 
     add_primary_separator "\tDestroy Ceph Cluster"
-    scp_all_nodes ceph-deploy-functions.sh functions.sh
+    add_secondary_separator "Copy scripts"
+    scp_all_nodes functions.sh ceph-deploy-functions.sh
     ssh_all_nodes "/var/tmp/ceph-deploy-functions.sh --destroy-cluster-docker"
 }
 case $ACTION in
