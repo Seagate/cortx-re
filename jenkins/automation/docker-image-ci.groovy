@@ -6,7 +6,7 @@ pipeline {
     }
     
        environment {
-        GITHUB_CRED = credentials('shailesh-github')
+        // GITHUB_CRED = credentials('shailesh-github')
         SERVICE_NAME = "${ENVIRONMENT == 'internal-ci' ? "cortx-build-internal-$OS_VERSION" : "cortx-build-$OS_VERSION"}"
         REPO_NAME = "${ENVIRONMENT == 'internal-ci' ? "ghcr.io/seagate/cortx-re" : "ghcr.io/seagate"}"
     }
@@ -65,7 +65,7 @@ pipeline {
                         if [ ! -z \$(docker ps -a -q) ]; then docker rm -f \$(docker ps -a -q); fi
                         mkdir -p /mnt/docker/tmp
                         docker-compose -f docker/cortx-build/docker-compose.yml build --force-rm --no-cache --compress --build-arg GIT_HASH="$(git rev-parse --short HEAD)" $SERVICE_NAME
-                        echo 'y' | docker image prune
+                        # echo 'y' | docker image prune
                         '''
                }
             }
