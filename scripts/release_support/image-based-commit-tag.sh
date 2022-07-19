@@ -70,17 +70,17 @@ do
     echo "Component: "$component" , Repo:  "${COMPONENT_LIST[$component]}", Commit Hash: "$COMMIT_HASH""
     pushd "$dir"
         if [ "$GIT_TAG" != "" ]; then
-            #git tag -a "$GIT_TAG" "$COMMIT_HASH" -m "$TAG_MESSAGE";
-            #git push origin "$GIT_TAG";
+            git tag -a "$GIT_TAG" "$COMMIT_HASH" -m "$TAG_MESSAGE";
+            git push origin "$GIT_TAG";
             echo "$component commit $COMMIT_HASH has tagged successfully with tag $GIT_TAG";
-            #git tag -l "$GIT_TAG";
+            git tag -l "$GIT_TAG";
         else
             echo "Tag is not successful. Please pass value to GIT_TAG";
         fi
 
         if [ "$DEBUG" = true ]; then
             echo "DEBUG Mode"
-            # git push origin --delete "$GIT_TAG";
+            git push origin --delete "$GIT_TAG";
         else
             echo "Run in Debug mode if Git tag needs to be deleted";
         fi
