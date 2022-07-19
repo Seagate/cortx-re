@@ -9,6 +9,8 @@ pipeline {
         // GITHUB_CRED = credentials('shailesh-github')
         SERVICE_NAME = "${ENVIRONMENT == 'internal-ci' ? "cortx-build-internal-$OS_VERSION" : "cortx-build-$OS_VERSION"}"
         REPO_NAME = "${ENVIRONMENT == 'internal-ci' ? "ghcr.io/seagate/cortx-re" : "ghcr.io/seagate"}"
+        REGISTRY = "ssc-vm-g4-rhev4-1774.colo.seagate.com"
+        LOCAL_REG_CRED = credentials('dev-harbor')
     }
 
 
@@ -65,7 +67,7 @@ pipeline {
                         if [ ! -z \$(docker ps -a -q) ]; then docker rm -f \$(docker ps -a -q); fi
                         mkdir -p /mnt/docker/tmp
                         docker-compose -f docker/cortx-build/docker-compose.yml build --force-rm --no-cache --compress --build-arg GIT_HASH="$(git rev-parse --short HEAD)" $SERVICE_NAME
-                        # echo 'y' | docker image prune
+                        echo 'y' | docker image prune
                         '''
                }
             }
@@ -90,7 +92,7 @@ pipeline {
             }
         }
 
-        stage ('Push  Docker image') {
+        stage ('Push Docker image') {
             when {
                 expression { params.GITHUB_PUSH == 'yes' }
             }
@@ -104,6 +106,23 @@ pipeline {
                     docker-compose -f docker/cortx-build/docker-compose.yml push cortx-build-$OS_VERSION
                 fi    
                 '''
+            }
+        }
+
+        stage ('Push to dev harbor') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'Push to dev harbor', script """
+                docker tag cortx-docker.colo.seagate.com/seagate/cortx-build-internal:rockylinux-8.4 ssc-vm-g4-rhev4-1774.colo.seagate.com/cortx-build-ci/cortx-build-internal_rockylinux-8.4:build_${BUILD_NUMBER}
+                docker tag cortx-docker.colo.seagate.com/seagate/cortx-build-internal:rockylinux-8.4 ssc-vm-g4-rhev4-1774.colo.seagate.com/cortx-build-ci/cortx-build-internal_rockylinux-8.4:latest
+                docker push ssc-vm-g4-rhev4-1774.colo.seagate.com/cortx-build-ci/cortx-build-internal_rockylinux-8.4:build_${BUILD_NUMBER}
+                docker push ssc-vm-g4-rhev4-1774.colo.seagate.com/cortx-build-ci/cortx-build-internal_rockylinux-8.4:latest
+
+                echo "--------------Delete images--------------"
+                docker rmi cortx-docker.colo.seagate.com/seagate/cortx-build-internal:rockylinux-8.4
+                docker rmi ssc-vm-g4-rhev4-1774.colo.seagate.com/cortx-build-ci/cortx-build-internal_rockylinux-8.4:build_${BUILD_NUMBER}
+                docker rmi ssc-vm-g4-rhev4-1774.colo.seagate.com/cortx-build-ci/cortx-build-internal_rockylinux-8.4:latest
+                """
             }
         }
     }
