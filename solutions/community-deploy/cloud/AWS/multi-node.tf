@@ -34,7 +34,7 @@ resource "aws_security_group" "cortx_deploy" {
   description = "Allow standard ssh, CORTX mangement ports inbound and everything else outbound."
 
   ingress {
-    description = "SSH Acces"
+    description = "SSH Access"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
@@ -118,7 +118,7 @@ resource "aws_instance" "cortx_deploy" {
 
 
   tags = {
-    Name = "deployment-poc-${count.index +1}"
+    Name = "Community-deployment-${count.index +1}"
   }
 
   provisioner "file" {
