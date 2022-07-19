@@ -58,6 +58,7 @@ echo -e "\t--[ Check-ins from $(awk -F":" '{print $2}' <<< $START_BUILD) to $(aw
 pushd $clone_dir/clone || exit
 
 if [ -z "$BUILD_LOCATION" ]; then
+        echo -e "\t--[ Check-ins from $(awk -F":" '{print $2}' <<< $START_BUILD) to $(awk -F":" '{print $2}' <<< $TARGET_BUILD) ]--" >> $report_file
         CHECK_INPUT_VARIABLE_STATUS=$(echo "$START_BUILD"|grep -c RELEASE.INFO)
         if [ "$CHECK_INPUT_VARIABLE_STATUS" == "0" ]; then
                 docker pull "$START_BUILD" || { echo "Failed to pull $START_BUILD"; exit 1; }
@@ -81,6 +82,7 @@ if [ -z "$BUILD_LOCATION" ]; then
                 TARGET_BUILD=$(echo "$TARGET_BUILD"|awk -F "/" '{print $9}')
         fi
 else
+        echo -e "\t--[ Check-ins from $START_BUILD to $TARGET_BUILD ]--" >> $report_file
         wget -q "$BUILD_LOCATION"/"$START_BUILD"/dev/RELEASE.INFO -O start_build_manifest.txt
         wget -q "$BUILD_LOCATION"/"$TARGET_BUILD"/dev/RELEASE.INFO -O target_build_manifest.txt
 fi
