@@ -38,6 +38,7 @@ pipeline {
         }
 
         stage ('Build Ceph Image') {
+            when { expression { params.CORTX_RE_BRANCH == 'VM_DEPLOYMENT' } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
