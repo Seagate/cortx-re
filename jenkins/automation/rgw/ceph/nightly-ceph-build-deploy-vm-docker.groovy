@@ -27,7 +27,7 @@ pipeline {
                 script {
 
                     try {
-                        def buildCeph = build job: 'ceph-build-container', wait: true,
+                        def buildCeph = build job: 'Ceph Build in Docker', wait: true,
                         parameters: [
                             string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
                             string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}")
@@ -42,13 +42,30 @@ pipeline {
             }
         }
 
+        stage ('Build Ceph Image') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                script {
+
+                    try {
+                        def buildCephImage = build job: 'Ceph Build Container Image', wait: true
+                    }
+
+                    catch(err) {
+                        build_stage = env.STAGE_NAME
+                        error "Failed to Build Ceph Image."
+                    }
+                }
+            }
+        }
+
         stage ('Deploy Ceph on hosts') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
 
                     try {
-                        def deployCephVM = build job: 'ceph-deploy', wait: true,
+                        def deployCephVM = build job: 'Ceph VM Deploy', wait: true,
                         parameters: [
                             string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
                             string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
@@ -65,30 +82,13 @@ pipeline {
             }
         }
 
-        stage ('Build Ceph Image') {
-            steps {
-                script { build_stage = env.STAGE_NAME }
-                script {
-
-                    try {
-                        def buildCephImage = build job: 'ceph-image-build', wait: true
-                    }
-
-                    catch(err) {
-                        build_stage = env.STAGE_NAME
-                        error "Failed to Build Ceph Image."
-                    }
-                }
-            }
-        }
-
         stage ('Deploy Ceph in Docker') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
 
                     try {
-                        def deployCephinDocker = build job: 'ceph-deploy', wait: true,
+                        def deployCephinDocker = build job: 'Ceph Docker Deploy', wait: true,
                         parameters: [
                             string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
                             string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
