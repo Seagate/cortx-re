@@ -1,7 +1,7 @@
 pipeline {
     agent {
         node {
-           label "docker-image-builder-${OS_VERSION}"
+           label "build-retention"
         }
     }
     
@@ -27,7 +27,7 @@ pipeline {
 
         choice (
             name: 'OS_VERSION', 
-            choices: ['centos-7.9.2009', 'centos-7.8.2003'],
+            choices: ['rockylinux-8.4', 'centos-7.9.2009', 'centos-7.8.2003'],
             description: 'OS Version'
         )
 
@@ -71,10 +71,13 @@ pipeline {
             }
 
         stage ('Validation') {
+            when {
+                expression { params.GITHUB_PUSH == 'yes' }
+            }
             steps {
                 script { build_stage = env.STAGE_NAME }
                                
-                checkout changelog: false, poll: false, scm: [$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: '/mnt/workspace/'], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: false, recursiveSubmodules: true, reference: '', shallow: true, trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/Seagate/cortx']]]
+                checkout changelog: false, poll: false, scm: [$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: '/mnt/workspace/'], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: false, recursiveSubmodules: true, reference: '', shallow: true, trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/Seagate/cortx', credentialsId: 'nitisdev-github-token']]]
 
                 sh label: 'Validate Docker image', script: '''
                 IMAGE_NAME=$(echo $SERVICE_NAME | sed 's/-c/:c/g')
@@ -112,7 +115,7 @@ pipeline {
 
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
                 
-                def mailRecipients = "CORTX.DevOps.RE@seagate.com"
+                def mailRecipients = "nitish.singh@seagate.com"
                 emailext ( 
                     body: '''${SCRIPT, template="release-email.template"}''',
                     mimeType: 'text/html',
