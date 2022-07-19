@@ -35,6 +35,7 @@ pipeline {
         }
 
         stage ('Destroy Ceph VM Deployment') {
+            when { expression { params.DESTROY_TYPE == 'VM_DEPLOYMENT' } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Destroy Ceph VM Cluster', script: """
@@ -48,6 +49,7 @@ pipeline {
         }
 
         stage ('Destroy Ceph Docker Deployment') {
+            when { expression { params.DESTROY_TYPE == 'DOCKER_DEPLOYMENT' } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Destroy Ceph Docker Cluster', script: """

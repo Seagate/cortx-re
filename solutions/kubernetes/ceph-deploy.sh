@@ -147,11 +147,13 @@ function io_operation() {
 
 function destroy_cluster_vm() {
     add_primary_separator "\tDestroy Ceph Cluster"
+    scp_all_nodes ceph-deploy-functions.sh functions.sh
     ssh_all_nodes "/var/tmp/ceph-deploy-functions.sh --destroy-cluster-vm"
 }
 
 function destroy_cluster_docker() {
     add_primary_separator "\tDestroy Ceph Cluster"
+    scp_all_nodes ceph-deploy-functions.sh functions.sh
     ssh_all_nodes "/var/tmp/ceph-deploy-functions.sh --destroy-cluster-docker"
 }
 case $ACTION in
