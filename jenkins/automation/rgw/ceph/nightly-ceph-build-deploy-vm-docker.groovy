@@ -34,7 +34,7 @@ pipeline {
                         ]
                     }
 
-                    catch(err) {
+                    catch (err) {
                         build_stage = env.STAGE_NAME
                         error "Failed to Build Ceph Packages."
                     }
@@ -51,9 +51,29 @@ pipeline {
                         def buildCephImage = build job: 'Ceph Build Container Image', wait: true
                     }
 
-                    catch(err) {
+                    catch (err) {
                         build_stage = env.STAGE_NAME
                         error "Failed to Build Ceph Image."
+                    }
+                }
+            }
+        }
+
+        stage ('Destroy Ceph on VM') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                script {
+                    try {
+                        def destroyCephVM = build job: 'Ceph Destroy', wait: true,
+                        parameters: [
+                            choice(name: 'DEPLOYMENT_TYPE', value: "VM_DEPLOYMENT"),
+                            text(name: 'hosts', value: "${vm_hosts}")
+                        ]
+                    }
+                    
+                    catch (err) {
+                        build_stage = env.STAGE_NAME
+                        error "Failed to Deploy Ceph on VM."
                     }
                 }
             }
@@ -74,7 +94,27 @@ pipeline {
                         ]
                     }
 
-                    catch(err) {
+                    catch (err) {
+                        build_stage = env.STAGE_NAME
+                        error "Failed to Deploy Ceph on VM."
+                    }
+                }
+            }
+        }
+
+        stage ('Destroy Ceph on Docker') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                script {
+                    try {
+                        def destroyCephVM = build job: 'Ceph Destroy', wait: true,
+                        parameters: [
+                            choice(name: 'DEPLOYMENT_TYPE', value: "DOCKER_DEPLOYMENT"),
+                            text(name: 'hosts', value: "${docker_hosts}")
+                        ]
+                    }
+                    
+                    catch (err) {
                         build_stage = env.STAGE_NAME
                         error "Failed to Deploy Ceph on VM."
                     }
@@ -97,7 +137,7 @@ pipeline {
                         ]
                     }
 
-                    catch(err) {
+                    catch (err) {
                         build_stage = env.STAGE_NAME
                         error "Failed to Deploy Ceph in Docker."
                     }
