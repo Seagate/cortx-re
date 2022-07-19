@@ -71,8 +71,7 @@ pipeline {
                     pushd solutions/community-deploy/cloud/AWS
                         terraform init
                         terraform plan -var-file user.tfvars
-                        terraform validate
-                        # terraform validate && terraform apply -var-file user.tfvars --auto-approve
+                        terraform validate && terraform apply -var-file user.tfvars --auto-approve
                     popd
                 '''
             }
