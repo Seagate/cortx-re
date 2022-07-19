@@ -112,7 +112,7 @@ pipeline {
         stage ('Push to dev harbor') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Push to dev harbor', script """
+                sh label: 'Push to dev harbor', script: """
                 docker tag cortx-docker.colo.seagate.com/seagate/cortx-build-internal:rockylinux-8.4 ssc-vm-g4-rhev4-1774.colo.seagate.com/cortx-build-ci/cortx-build-internal_rockylinux-8.4:build_${BUILD_NUMBER}
                 docker tag cortx-docker.colo.seagate.com/seagate/cortx-build-internal:rockylinux-8.4 ssc-vm-g4-rhev4-1774.colo.seagate.com/cortx-build-ci/cortx-build-internal_rockylinux-8.4:latest
                 docker push ssc-vm-g4-rhev4-1774.colo.seagate.com/cortx-build-ci/cortx-build-internal_rockylinux-8.4:build_${BUILD_NUMBER}
