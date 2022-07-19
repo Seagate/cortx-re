@@ -79,7 +79,7 @@ pipeline {
                 sh label: 'Post Deployment', script: """
                     echo -e "########################################################"
                     echo -e "For IO Sanity please follow steps on the following page:"
-                    echo -e "IO Sanity: "
+                    echo -e "IO Sanity: https://seagate-systems.atlassian.net/wiki/spaces/PRIVATECOR/pages/1097859073/Ceph+Docker+Deployment+IO+Sanity"
                 """
             }
         }
