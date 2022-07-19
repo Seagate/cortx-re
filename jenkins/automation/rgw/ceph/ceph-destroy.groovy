@@ -29,7 +29,40 @@ pipeline {
     }    
 
     stages {
-        
+        stage ('Checkout Script') {
+            steps { 
+                cleanWs()            
+                script {
+                    checkout([$class: 'GitSCM', branches: [[name: "${CORTX_RE_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${CORTX_RE_REPO}"]]])                
+                }
+            }
+        }
+
+        stage ('Destroy Ceph VM Deployment') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'Destroy Ceph VM Cluster', script: """
+                    pushd solutions/kubernetes/
+                        echo $hosts | tr ' ' '\n' > hosts
+                        cat hosts
+                        bash ceph-deploy.sh --destroy-cluster-vm
+                    popd
+                """
+            }
+        }
+
+        stage ('Destroy Ceph Docker Deployment') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'Destroy Ceph Docker Cluster', script: """
+                    pushd solutions/kubernetes/
+                        echo $hosts | tr ' ' '\n' > hosts
+                        cat hosts
+                        bash ceph-deploy.sh --destroy-cluster-docker
+                    popd
+                """
+            }
+        }
 
     }
 

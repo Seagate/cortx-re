@@ -30,7 +30,7 @@ pipeline {
     }    
 
     stages {
-        stage('Checkout ceph-container repo') {
+        stage ('Checkout ceph-container repo') {
             steps { 
                 cleanWs()            
                 script {

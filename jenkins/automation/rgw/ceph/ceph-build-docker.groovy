@@ -40,7 +40,7 @@ pipeline {
     }    
 
     stages {
-        stage('Checkout Script') {
+        stage ('Checkout Script') {
             steps { 
                 cleanWs()            
                 script {
