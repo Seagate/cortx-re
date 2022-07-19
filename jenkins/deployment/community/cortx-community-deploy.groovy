@@ -1,7 +1,7 @@
 pipeline {
     agent {
         node {
-            label 'build-retention'
+            label 'community-build-executor'
         }
     }
     
@@ -29,7 +29,7 @@ pipeline {
 
         stages {
 
-            stage('Checkout Script') {
+            stage ('Checkout Script') {
                 steps { 
                     cleanWs()            
                     script {
@@ -50,20 +50,21 @@ pipeline {
                 export ACCESS_KEY=${ACCESS_KEY}
                 export KEY_NAME=${KEY_NAME}
 
-                # rm -rvf /usr/local/bin/aws /usr/local/bin/aws_completer /usr/local/aws-cli >/dev/null 2>&1
-                # curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && yum install unzip -y && unzip awscliv2.zip
-                # ./aws/install
-                # aws configure set default.region $REGION; aws configure set aws_access_key_id $ACCESS_KEY; aws configure set aws_secret_access_key $SECRET_KEY
+                rm -rvf /usr/local/bin/aws /usr/local/bin/aws_completer /usr/local/aws-cli >/dev/null 2>&1
+                curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && yum install unzip -y && unzip awscliv2.zip
+                ./aws/install
+                aws configure set default.region $REGION; aws configure set aws_access_key_id $ACCESS_KEY; aws configure set aws_secret_access_key $SECRET_KEY
                 aws configure set default.region $REGION
                 pushd solutions/community-deploy/cloud/AWS
-                    # ./tool_setup.sh
+                    ./tool_setup.sh
                     sed -i 's,os_version =.*,os_version = "'"$OS_VERSION"'",g' user.tfvars && sed -i 's,region =.*,region = "'"$REGION"'",g' user.tfvars && sed -i 's,security_group_cidr =.*,security_group_cidr = "'"$VM_IP/32"'",g' user.tfvars && sed -i 's,ebs_count =.*,ebs_count = "'"$EBS_VOLUME_COUNT"'",g' user.tfvars
                     echo key_name = '"'$KEY_NAME'"' | cat >>user.tfvars
                     cat user.tfvars | tail -5
                 popd
                 '''
             }
-        }            
+        }
+
         stage ('Create EC2 instance') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -76,6 +77,7 @@ pipeline {
                 '''
             }
         }
+
         stage ('Network and storage configuration') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -92,7 +94,6 @@ pipeline {
         }
     }
 
-/*
         stage ('Execute cortx build script') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -106,6 +107,7 @@ pipeline {
             '''
             }
         }
+
         stage ('EC2 connection prerequisites') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -119,6 +121,7 @@ pipeline {
             '''
             }
         }
+
         stage ('Setup K8s cluster on EC2') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -131,6 +134,7 @@ pipeline {
             '''
             }
         }
+
         stage ('Deploy 1N cortx cluster') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -148,6 +152,7 @@ pipeline {
             '''
             }
         }
+
         stage ('IO Sanity') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -160,9 +165,6 @@ pipeline {
             '''
             }
         }
-
-*/
-
     }
 
     post {
