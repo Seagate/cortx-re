@@ -15,10 +15,10 @@ pipeline {
     parameters {
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for Cluster Setup scripts.', trim: true)
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Cluster Setup scripts.', trim: true)
-        text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used. Currently only single node is supported for image deployment.', name: 'hosts')
+        text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VMs to destroy Ceph deployment.', name: 'hosts')
 
         choice(
-            name: 'DESTROY_TYPE',
+            name: 'DEPLOYMENT_TYPE',
             choices: ['VM_DEPLOYMENT', 'DOCKER_DEPLOYMENT'],
             description: 'Type of Ceph deployment to destroy.'
         )
@@ -35,30 +35,30 @@ pipeline {
         }
 
         stage ('Destroy Ceph VM Deployment') {
-            when { expression { params.DESTROY_TYPE == 'VM_DEPLOYMENT' } }
+            when { expression { params.DEPLOYMENT_TYPE == 'VM_DEPLOYMENT' } }
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Destroy Ceph VM Cluster', script: """
+                sh label: 'Destroy Ceph VM Cluster', script: '''
                     pushd solutions/kubernetes/
                         echo $hosts | tr ' ' '\n' > hosts
                         cat hosts
                         bash ceph-deploy.sh --destroy-cluster-vm
                     popd
-                """
+                '''
             }
         }
 
         stage ('Destroy Ceph Docker Deployment') {
-            when { expression { params.DESTROY_TYPE == 'DOCKER_DEPLOYMENT' } }
+            when { expression { params.DEPLOYMENT_TYPE == 'DOCKER_DEPLOYMENT' } }
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Destroy Ceph Docker Cluster', script: """
+                sh label: 'Destroy Ceph Docker Cluster', script: '''
                     pushd solutions/kubernetes/
                         echo $hosts | tr ' ' '\n' > hosts
                         cat hosts
                         bash ceph-deploy.sh --destroy-cluster-docker
                     popd
-                """
+                '''
             }
         }
 
