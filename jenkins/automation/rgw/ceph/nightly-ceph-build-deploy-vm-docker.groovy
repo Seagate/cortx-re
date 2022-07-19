@@ -17,12 +17,19 @@ pipeline {
     parameters {
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for Cluster Setup scripts.', trim: true)
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Cluster Setup scripts.', trim: true)
+        string(name: 'CEPH_REPO', defaultValue: 'https://github.com/ceph/ceph', description: 'Repository for Cluster Setup scripts.', trim: true)
+        string(name: 'CEPH_BRANCH', defaultValue: 'quincy', description: 'Branch or GitHash for Cluster Setup scripts.', trim: true)
+        string(name: 'CEPH_IMAGE', defaultValue: 'cortx-docker.colo.seagate.com/ceph/quincy-rockylinux_8:daemon-rockylinux-custom-quincy-rockylinux_8-x86_64-latest', description: 'Ceph docker image to deploy cluster from.', trim: true)
+        string(name: 'CEPH_CONTAINER_REPO', defaultValue: 'https://github.com/nitisdev/ceph-container/', description: 'Repository for ceph container image scripts.', trim: true)
+        string(name: 'CEPH_CONTAINER_BRANCH', defaultValue: 'rockylinux-custom', description: 'Branch or GitHash for ceph container image scripts.', trim: true)
+        string(name: 'CEPH_RELEASE', defaultValue: 'quincy', description: 'Ceph release to build image from.', trim: true)
+        string(name: 'OS_IMAGE', defaultValue: 'rockylinux', description: 'Base OS docker image to build from.', trim: true)
+        string(name: 'OS_IMAGE_TAG', defaultValue: '8', description: 'OS docker image tag.', trim: true)
     // Please configure docker_hosts, vm_hosts and OSD_Disks parameter in Jenkins job configuration.
     }
 
     stages {
         stage ('Build Ceph Packages') {
-            when { expression { params.CORTX_RE_BRANCH == 'VM_DEPLOYMENT' } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
@@ -30,7 +37,9 @@ pipeline {
                         build job: 'Ceph Build in Docker', wait: true,
                         parameters: [
                             string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
-                            string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}")
+                            string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
+                            string(name: 'CEPH_BRANCH', value: "${CEPH_BRANCH}"),
+                            string(name: 'CEPH_REPO', value: "${CEPH_REPO}")
                         ]
                     }
                 }
@@ -38,12 +47,18 @@ pipeline {
         }
 
         stage ('Build Ceph Image') {
-            when { expression { params.CORTX_RE_BRANCH == 'VM_DEPLOYMENT' } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
                     catchError(stageResult: 'FAILURE') {
-                        build job: 'Ceph Build Container Image', wait: true
+                        build job: 'Ceph Build Container Image', wait: true,
+                        parameters: [
+                            string(name: 'CEPH_CONTAINER_REPO', value: "${CEPH_CONTAINER_REPO}"),
+                            string(name: 'CEPH_CONTAINER_BRANCH', value: "${CEPH_CONTAINER_BRANCH}"),
+                            string(name: 'CEPH_RELEASE', value: "${CEPH_RELEASE}"),
+                            string(name: 'OS_IMAGE', value: "${OS_IMAGE}"),
+                            string(name: 'OS_IMAGE_TAG', value: "${OS_IMAGE_TAG}")
+                        ]
                     }
                 }
             }
@@ -56,6 +71,8 @@ pipeline {
                     catchError(stageResult: 'FAILURE') {
                         build job: 'Ceph Destroy', wait: true,
                         parameters: [
+                            string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
+                            string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
                             string(name: 'DEPLOYMENT_TYPE', value: "VM_DEPLOYMENT"),
                             text(name: 'hosts', value: "${vm_hosts}")
                         ]
@@ -71,6 +88,8 @@ pipeline {
                     catchError(stageResult: 'FAILURE') {
                         build job: 'Ceph Destroy', wait: true,
                         parameters: [
+                            string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
+                            string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
                             string(name: 'DEPLOYMENT_TYPE', value: "DOCKER_DEPLOYMENT"),
                             text(name: 'hosts', value: "${docker_hosts}")
                         ]
