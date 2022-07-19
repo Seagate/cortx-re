@@ -54,7 +54,6 @@ report_file="$clone_dir/clone/git-build-checkin-report.md"
 test -d $clone_dir/clone && $(rm -rf $clone_dir/clone;mkdir -p $clone_dir/clone) || mkdir -p $clone_dir/clone
 export TZ=$time_zone;ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-echo -e "\t--[ Check-ins from $(awk -F":" '{print $2}' <<< $START_BUILD) to $(awk -F":" '{print $2}' <<< $TARGET_BUILD) ]--" >> $report_file
 pushd $clone_dir/clone || exit
 
 if [ -z "$BUILD_LOCATION" ]; then
