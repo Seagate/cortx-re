@@ -1,7 +1,7 @@
 pipeline {
     agent {
         node {
-            label 'community-build-executor'
+            label 'build-retention'
         }
     }
     
@@ -41,7 +41,7 @@ pipeline {
         stage ('Install tools') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'install tools', script: '''
+                sh label: 'Install tools', script: '''
                 VM_IP=$(curl ipinfo.io/ip)
                 export OS_VERSION=${OS_VERSION}
                 export REGION=${REGION}
@@ -56,10 +56,10 @@ pipeline {
                 # aws configure set default.region $REGION; aws configure set aws_access_key_id $ACCESS_KEY; aws configure set aws_secret_access_key $SECRET_KEY
                 aws configure set default.region $REGION
                 pushd solutions/community-deploy/cloud/AWS
-                    ./tool_setup.sh
-                    sed -i 's,os_version          =.*,os_version          = "'"$OS_VERSION"'",g' user.tfvars && sed -i 's,region              =.*,region              = "'"$REGION"'",g' user.tfvars && sed -i 's,security_group_cidr =.*,security_group_cidr = "'"$VM_IP/32"'",g' user.tfvars && sed -i 's,ebs_count =.*,ebs_count = "'"$EBS_VOLUME_COUNT"'",g' user.tfvars
-                    echo key_name            = '"'$KEY_NAME'"' | cat >>user.tfvars
-                    cat user.tfvars | tail -4
+                    # ./tool_setup.sh
+                    sed -i 's,os_version =.*,os_version = "'"$OS_VERSION"'",g' user.tfvars && sed -i 's,region =.*,region = "'"$REGION"'",g' user.tfvars && sed -i 's,security_group_cidr =.*,security_group_cidr = "'"$VM_IP/32"'",g' user.tfvars && sed -i 's,ebs_count =.*,ebs_count = "'"$EBS_VOLUME_COUNT"'",g' user.tfvars
+                    echo key_name = '"'$KEY_NAME'"' | cat >>user.tfvars
+                    cat user.tfvars | tail -5
                 popd
                 '''
             }
@@ -70,11 +70,11 @@ pipeline {
                 sh label: 'Setting up EC2 instance', script: '''
                     pushd solutions/community-deploy/cloud/AWS
                         terraform init
-                        terraform plan
+                        terraform plan -var-file user.tfvars
                         terraform validate
                         # terraform validate && terraform apply -var-file user.tfvars --auto-approve
                     popd
-            '''
+                '''
             }
         }
         stage ('Network and storage configuration') {

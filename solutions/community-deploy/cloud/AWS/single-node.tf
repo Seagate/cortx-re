@@ -159,9 +159,6 @@ resource "aws_ebs_volume" "data_vol" {
   size              = 10
 
   tags = local.common_tags
-  tags = {
-    Name = "deployment-poc"
-  }
 }
 
 variable "ec2_device_names" {

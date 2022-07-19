@@ -38,7 +38,7 @@ variable "key_name" {
   default     = "cortx-key"
 }
 
-varable "ebs_count" {
+variable "ebs_count" {
   description = "EBS volumes to attach onto nodes."
   type        = number
   default     = 9
