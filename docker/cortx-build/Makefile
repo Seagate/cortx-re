@@ -61,7 +61,7 @@ cortx-s3server: cortx-motr _s3_prereq _s3_build
 cortx-hare: cortx-motr _cortx-py-utils_build _cortx-py-utils_install _cortx-hare_prereq _cortx-hare_build
 
 ## cortx-rgw: generate cortx-rgw packages.
-cortx-rgw: _cortx-rgw-integration_build cortx-motr _cortx-rgw_prereq _cortx-rgw_build 
+cortx-rgw: validation _cortx-rgw-integration_build cortx-motr _cortx-rgw_prereq _cortx-rgw_build 
 
 ## cortx-ha: generate cortx-ha packages.
 cortx-ha: _cortx-py-utils_build _cortx-py-utils_install _ha_prereq _ha_build
