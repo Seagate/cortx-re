@@ -126,13 +126,27 @@ function run_io_sanity() {
    add_primary_separator "\tStarting IO Sanity Testing"
 
    BUCKET="test-bucket"
+   BUCKET2="test-bucket2"
    FILE1="file10mb"
    FILE2="test-obj.bin"
+   FILE3="file15mb"
+   FILE4="file18mb"
 
    add_common_separator "Creating S3 bucket:- '$BUCKET'"
    aws s3 mb s3://$BUCKET
    check_status "Failed to create bucket"
+   add_common_separator "Creating S3 bucket:- '$BUCKET2'"
+   aws s3api create-bucket --bucket $BUCKET2
+   check_status "Failed to create bucket"
    aws s3 ls
+   check_status "Failed to list buckets"
+
+   add_common_separator "Head bucket operation for '$BUCKET2' bucket"
+   aws s3api head-bucket --bucket $BUCKET2
+   check_status "Failed in head-bucket operation for '$BUCKET2'"
+
+   add_common_separator "List bucket operation"
+   aws s3api list-buckets --query "Buckets[].Name"
    check_status "Failed to list buckets"
 
    add_common_separator "Create files to upload to '$BUCKET' bucket"
@@ -140,6 +154,11 @@ function run_io_sanity() {
    dd if=/dev/zero of=$FILE1 bs=1M count=10
    echo -e "\nCreating '$FILE2'"
    date > $FILE2
+   add_common_separator "Create files to upload to '$BUCKET2' bucket"
+   echo -e "\nCreating '$FILE3'"
+   dd if=/dev/zero of=$FILE3 bs=1M count=15
+   echo -e "\nCreating '$FILE4'"
+   dd if=/dev/zero of=$FILE4 bs=1M count=18
 
    add_common_separator "Uploading '$FILE1' file to '$BUCKET' bucket"
    aws s3 cp $FILE1 s3://$BUCKET/file10MB
@@ -147,29 +166,71 @@ function run_io_sanity() {
    add_common_separator "Uploading '$FILE2' file to '$BUCKET' bucket"
    aws s3 cp $FILE2 s3://$BUCKET
    check_status "Failed to upload '$FILE2' to '$BUCKET'"
+   add_common_separator "Uploading '$FILE3' file to '$BUCKET2' bucket"
+   aws s3api put-object --bucket $BUCKET2 --key $FILE3 --body $FILE3
+   check_status "Failed to upload '$FILE3' to '$BUCKET2'"
+   add_common_separator "Uploading '$FILE4' file to '$BUCKET2' bucket"
+   aws s3api put-object --bucket $BUCKET2 --key $FILE4 --body $FILE4
+   check_status "Failed to upload '$FILE4' to '$BUCKET2'"
+
+   add_common_separator "Overwrite simple object '$FILE4' in '$BUCKET2' bucket"
+   aws s3api put-object --bucket $BUCKET2 --key $FILE4 --body $FILE4
+   check_status "Simple object overwrite operation failed"
+
+   add_common_separator "Head object operation for '$FILE3' object"
+   aws s3api head-object --bucket $BUCKET2 --key $FILE3
+   check_status "Failed in head-object operation for object '$FILE3' in bucket '$BUCKET2'"
 
    add_common_separator "List files in '$BUCKET' bucket"
    aws s3 ls s3://$BUCKET
    check_status "Failed to list files in '$BUCKET'"
+   add_common_separator "List files in '$BUCKET2' bucket"
+   aws s3api list-objects --bucket $BUCKET2
+   check_status "Failed to list files in '$BUCKET2'"
 
    add_common_separator "Download '$FILE1' as 'file10mbDn' and check diff"
    aws s3 cp s3://$BUCKET/file10MB file10mbDn
    check_status "Failed to download '$FILE1' as 'file10mbDn' from '$BUCKET'"
    FILE_DIFF=$(diff $FILE1 file10mbDn)
-
    if [[ $FILE_DIFF ]]; then
       echo -e "\nDIFF Status: $FILE_DIFF"
    else
       echo -e "\nDIFF Status: The files $FILE1 and file10mbDn are similar."
    fi
 
+   add_common_separator "Download '$FILE3' as 'file15mbDn' and check diff"
+   aws s3api get-object --bucket $BUCKET2 --key $FILE3 file15mbDn
+   check_status "Failed to download '$FILE3' as 'file15mbDn' from '$BUCKET2'"
+   FILE_DIFF2=$(diff $FILE3 file15mbDn)
+   if [[ $FILE_DIFF2 ]]; then
+      echo -e "\nDIFF Status: $FILE_DIFF2"
+   else
+      echo -e "\nDIFF Status: The files $FILE3 and file15mbDn are similar."
+   fi
+
+   add_common_separator "Copy object 'file10MB' from '$BUCKET' bucket to '$BUCKET2' bucket"
+   aws s3api copy-object --copy-source $BUCKET/file10MB --key file10MB --bucket $BUCKET2
+   check_status "Failed to copy object '$FILE1' from '$BUCKET' bucket to '$BUCKET2' bucket"
+
    add_common_separator "Remove all files in '$BUCKET' bucket"
    aws s3 rm s3://$BUCKET --recursive
    check_status "Failed to delete all files from '$BUCKET'"
+   
+   add_common_separator "Delete single object 'file10MB' from '$BUCKET2' bucket"
+   aws s3api delete-object --bucket $BUCKET2 --key file10MB
+   check_status "Failed to delete object 'file10MB' from '$BUCKET2'"
+
+   add_common_separator "Delete multiple objects from '$BUCKET2' bucket"
+   aws s3api delete-objects --bucket $BUCKET2 --delete Objects=[{Key=$FILE3},{Key=$FILE4}]
+   check_status "Failed to delete multiple objects from '$BUCKET2'"
 
    add_common_separator "Remove '$BUCKET' bucket"
    aws s3 rb s3://$BUCKET
    check_status "Failed to delete '$BUCKET'"
+
+   add_common_separator "Remove '$BUCKET2' bucket"
+   aws s3api delete-bucket --bucket $BUCKET2
+   check_status "Failed to delete '$BUCKET2'"
 
    add_common_separator "Cleanup awscli files"
    rm -rf ~/.aws/credentials
