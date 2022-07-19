@@ -37,3 +37,8 @@ variable "key_name" {
   type        = string
   default     = "cortx-key"
 }
+
+variable "instance_count" {
+  description = "number of EC2 instnaces"
+  type        = number
+}
