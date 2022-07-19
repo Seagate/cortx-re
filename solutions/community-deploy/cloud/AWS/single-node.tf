@@ -53,7 +53,7 @@ resource "aws_security_group" "cortx_deploy" {
   description = "Allow standard ssh, CORTX mangement ports inbound and everything else outbound."
 
   ingress {
-    description = "SSH Acces"
+    description = "SSH Access"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
@@ -176,7 +176,7 @@ variable "ec2_device_names" {
 }
 
 resource "aws_volume_attachment" "deploy_server_data" {
-  count       = 9
+  count       = var.ebs_count
   volume_id   = aws_ebs_volume.data_vol.*.id[count.index]
   device_name = element(var.ec2_device_names, count.index)
   instance_id = aws_instance.cortx_deploy.id
