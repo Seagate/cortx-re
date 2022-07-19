@@ -1,16 +1,14 @@
 pipeline {
     agent {
         node {
-           label "build-retention"
+           label "docker-image-builder-${OS_VERSION}"
         }
     }
     
        environment {
-        // GITHUB_CRED = credentials('shailesh-github')
+        GITHUB_CRED = credentials('shailesh-github')
         SERVICE_NAME = "${ENVIRONMENT == 'internal-ci' ? "cortx-build-internal-$OS_VERSION" : "cortx-build-$OS_VERSION"}"
         REPO_NAME = "${ENVIRONMENT == 'internal-ci' ? "ghcr.io/seagate/cortx-re" : "ghcr.io/seagate"}"
-        REGISTRY = "ssc-vm-g4-rhev4-1774.colo.seagate.com"
-        LOCAL_REG_CRED = credentials('dev-harbor')
     }
 
 
@@ -29,7 +27,7 @@ pipeline {
 
         choice (
             name: 'OS_VERSION', 
-            choices: ['rockylinux-8.4', 'centos-7.9.2009', 'centos-7.8.2003'],
+            choices: ['centos-7.9.2009', 'centos-7.8.2003'],
             description: 'OS Version'
         )
 
@@ -73,13 +71,10 @@ pipeline {
             }
 
         stage ('Validation') {
-            when {
-                expression { params.GITHUB_PUSH == 'yes' }
-            }
             steps {
                 script { build_stage = env.STAGE_NAME }
                                
-                checkout changelog: false, poll: false, scm: [$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: '/mnt/workspace/'], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: false, recursiveSubmodules: true, reference: '', shallow: true, trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/Seagate/cortx', credentialsId: 'nitisdev-github-token']]]
+                checkout changelog: false, poll: false, scm: [$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: '/mnt/workspace/'], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: false, recursiveSubmodules: true, reference: '', shallow: true, trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/Seagate/cortx']]]
 
                 sh label: 'Validate Docker image', script: '''
                 IMAGE_NAME=$(echo $SERVICE_NAME | sed 's/-c/:c/g')
@@ -92,7 +87,7 @@ pipeline {
             }
         }
 
-        stage ('Push Docker image') {
+        stage ('Push  Docker image') {
             when {
                 expression { params.GITHUB_PUSH == 'yes' }
             }
@@ -108,23 +103,6 @@ pipeline {
                 '''
             }
         }
-
-        stage ('Push to dev harbor') {
-            steps {
-                script { build_stage = env.STAGE_NAME }
-                sh label: 'Push to dev harbor', script: """
-                docker tag cortx-docker.colo.seagate.com/seagate/cortx-build-internal:rockylinux-8.4 ssc-vm-g4-rhev4-1774.colo.seagate.com/cortx-build-ci/cortx-build-internal_rockylinux-8.4:build_${BUILD_NUMBER}
-                docker tag cortx-docker.colo.seagate.com/seagate/cortx-build-internal:rockylinux-8.4 ssc-vm-g4-rhev4-1774.colo.seagate.com/cortx-build-ci/cortx-build-internal_rockylinux-8.4:latest
-                docker push ssc-vm-g4-rhev4-1774.colo.seagate.com/cortx-build-ci/cortx-build-internal_rockylinux-8.4:build_${BUILD_NUMBER}
-                docker push ssc-vm-g4-rhev4-1774.colo.seagate.com/cortx-build-ci/cortx-build-internal_rockylinux-8.4:latest
-
-                echo "--------------Delete images--------------"
-                docker rmi cortx-docker.colo.seagate.com/seagate/cortx-build-internal:rockylinux-8.4
-                docker rmi ssc-vm-g4-rhev4-1774.colo.seagate.com/cortx-build-ci/cortx-build-internal_rockylinux-8.4:build_${BUILD_NUMBER}
-                docker rmi ssc-vm-g4-rhev4-1774.colo.seagate.com/cortx-build-ci/cortx-build-internal_rockylinux-8.4:latest
-                """
-            }
-        }
     }
 
     post {
@@ -134,7 +112,7 @@ pipeline {
 
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
                 
-                def mailRecipients = "nitish.singh@seagate.com"
+                def mailRecipients = "CORTX.DevOps.RE@seagate.com"
                 emailext ( 
                     body: '''${SCRIPT, template="release-email.template"}''',
                     mimeType: 'text/html',
