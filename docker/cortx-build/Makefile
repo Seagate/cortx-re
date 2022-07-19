@@ -16,10 +16,10 @@ help : Makefile
 	@echo targets:
 	@sed -n 's/^##/   /p' $<
 
-## validation: validate disk space on root partition before build
+## validation: validate disk space on cortx-workspace before build
 validation:
 	@echo "*************** Validate build node *********************"
-	if [[ $$(df -BG /cortx-workspace | awk '{ print $$4 }' | tail -n 1 | sed 's/G//') -lt "95" ]]; then echo "Root partition doesn't have sufficient disk space" && exit 1; fi
+	if [[ $$(df -BG /cortx-workspace | awk '{ print $$4 }' | tail -n 1 | sed 's/G//') -lt "95" ]]; then echo "cortx-workspace doesn't have sufficient disk space" && exit 1; fi
 	
 ## checkout: checkout specified branch/tag code
 checkout:
