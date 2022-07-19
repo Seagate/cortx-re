@@ -64,7 +64,7 @@ pipeline {
                 '''
             }
         }            
-        stage ('Create EC2 instace') {
+        stage ('Create EC2 instance') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Setting up EC2 instance', script: '''
@@ -83,7 +83,7 @@ pipeline {
                 sh label: 'Setting up Network and Storage devices for CORTX. Script will reboot the instance on completion', script: '''
                     pushd solutions/community-deploy/cloud/AWS
                         AWS_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.cortx_deploy_ip_addr.value 2>&1 | tee ip.txt)
-                        IP=$(cat ip.txt | tr -d '""')                        
+                        IP=$(cat ip.txt | tr -d '""')        
                         ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${IP} sudo bash /home/centos/setup.sh
                         sleep 240
                     popd
