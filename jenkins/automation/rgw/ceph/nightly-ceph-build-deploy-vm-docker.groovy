@@ -62,6 +62,21 @@ pipeline {
             }
         }
 
+        stage ('Destroy Ceph on Docker') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                script {
+                    catchError(stageResult: 'FAILURE') {
+                        build job: 'Ceph Destroy', wait: true,
+                        parameters: [
+                            choice(name: 'DEPLOYMENT_TYPE', value: "DOCKER_DEPLOYMENT"),
+                            text(name: 'hosts', value: "${docker_hosts}")
+                        ]
+                    }
+                }
+            }
+        }
+
         stage ('Deploy Ceph on hosts') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -73,21 +88,6 @@ pipeline {
                             string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}"),
                             text(name: 'hosts', value: "${vm_hosts}"),
                             text(name: 'hosts', value: "${OSD_Disks}")
-                        ]
-                    }
-                }
-            }
-        }
-
-        stage ('Destroy Ceph on Docker') {
-            steps {
-                script { build_stage = env.STAGE_NAME }
-                script {
-                    catchError(stageResult: 'FAILURE') {
-                        build job: 'Ceph Destroy', wait: true,
-                        parameters: [
-                            choice(name: 'DEPLOYMENT_TYPE', value: "DOCKER_DEPLOYMENT"),
-                            text(name: 'hosts', value: "${docker_hosts}")
                         ]
                     }
                 }
