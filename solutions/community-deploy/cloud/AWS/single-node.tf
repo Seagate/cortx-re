@@ -154,11 +154,14 @@ resource "aws_instance" "cortx_deploy" {
 }
 
 resource "aws_ebs_volume" "data_vol" {
-  count             = 9
+  count             = var.ebs_count
   availability_zone = data.aws_availability_zones.available.names[0]
   size              = 10
 
   tags = local.common_tags
+  tags = {
+    Name = "deployment-poc"
+  }
 }
 
 variable "ec2_device_names" {

@@ -22,7 +22,7 @@ variable "security_group_cidr" {
 
 
 variable "os_version" {
-  description = "OS Version"
+  description = "OS version"
   type        = string
 }
 
@@ -33,7 +33,13 @@ variable "region" {
 }
 
 variable "key_name" {
-  description = "SSH Key name"
+  description = "SSH key name"
   type        = string
   default     = "cortx-key"
+}
+
+varable "ebs_count" {
+  description = "EBS volumes to attach onto nodes."
+  type        = number
+  default     = 9
 }
