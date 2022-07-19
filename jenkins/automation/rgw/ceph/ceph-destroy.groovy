@@ -17,9 +17,19 @@ pipeline {
     }
 
     parameters {
+        string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for Cluster Setup scripts.', trim: true)
+        string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Cluster Setup scripts.', trim: true)
+        text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used. Currently only single node is supported for image deployment.', name: 'hosts')
+
+        choice(
+            name: 'DESTROY_TYPE',
+            choices: ['VM_DEPLOYMENT', 'DOCKER_DEPLOYMENT'],
+            description: 'Type of Ceph deployment to destroy.'
+        )
     }    
 
     stages {
+        
 
     }
 
