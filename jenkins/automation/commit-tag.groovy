@@ -11,7 +11,6 @@ pipeline {
         string(name: 'CORTX_IMAGE', defaultValue: '', description: 'CORTX component image')
         string(name: 'GIT_TAG', defaultValue: '', description: 'Tag Name')
         string(name: 'TAG_MESSAGE', defaultValue: '', description: 'Tag Message')
-        booleanParam(name: 'DEBUG', defaultValue: false, description: 'Select this if you want to Delete the provided Tag')
     }
 
     stages {
@@ -28,7 +27,12 @@ pipeline {
             steps {
                 script { build_stage=env.STAGE_NAME }
                 script {
-                    sh """ bash scripts/release_support/image-based-commit-tag.sh """			
+                    sh """ 
+                        export CORTX_IMAGE=${CORTX_IMAGE}
+                        export GIT_TAG=${GIT_TAG}
+                        export TAG_MESSAGE=${TAG_MESSAGE}
+                        bash scripts/release_support/image-based-commit-tag.sh
+                    """			
                 }
             }
 	    }

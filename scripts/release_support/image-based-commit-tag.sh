@@ -18,9 +18,10 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
-# export CORTX_IMAGE and GIT_TAG variables with appropriate values
+# export CORTX_IMAGE, GIT_TAG and TAG_MESSAGE variables with appropriate values
 # CORTX_IMAGE - Any CORTX service image as input. Reference: https://github.com/Seagate/cortx-re/pkgs/container/cortx-rgw
 # GIT_TAG - Tag to be tagged to commits
+# TAG_MESSAGE - Tag message with tag
 
 function get_commit_hash() {
     component="$1"
@@ -76,13 +77,6 @@ do
             git tag -l "$GIT_TAG";
         else
             echo "Tag is not successful. Please pass value to GIT_TAG";
-        fi
-
-        if [ "$DEBUG" = true ]; then
-            echo "DEBUG Mode"
-            git push origin --delete "$GIT_TAG";
-        else
-            echo "Run in Debug mode if Git tag needs to be deleted";
         fi
     popd
 done
