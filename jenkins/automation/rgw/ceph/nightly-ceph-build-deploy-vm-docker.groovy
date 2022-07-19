@@ -55,7 +55,7 @@ pipeline {
                     catchError(stageResult: 'FAILURE') {
                         build job: 'Ceph Destroy', wait: true,
                         parameters: [
-                            choice(name: 'DEPLOYMENT_TYPE', value: "VM_DEPLOYMENT"),
+                            string(name: 'DEPLOYMENT_TYPE', value: "VM_DEPLOYMENT"),
                             text(name: 'hosts', value: "${vm_hosts}")
                         ]
                     }                    
@@ -70,7 +70,7 @@ pipeline {
                     catchError(stageResult: 'FAILURE') {
                         build job: 'Ceph Destroy', wait: true,
                         parameters: [
-                            choice(name: 'DEPLOYMENT_TYPE', value: "DOCKER_DEPLOYMENT"),
+                            string(name: 'DEPLOYMENT_TYPE', value: "DOCKER_DEPLOYMENT"),
                             text(name: 'hosts', value: "${docker_hosts}")
                         ]
                     }
