@@ -132,7 +132,7 @@ pipeline {
                         string(name: 'BUILD_TO', value: "ghcr.io/seagate/cortx-rgw:${VERSION}-${BUILD_NUMBER}"),
                     ]
                     env.changeset_log_url = changelog.absoluteUrl
-                    copyArtifacts filter: 'CHANGESET.txt', fingerprintArtifacts: true, flatten: true, optional: true, projectName: '/Release_Engineering/Cortx-Automation/changelog-generation', selector: lastCompleted(), target: ''
+                    copyArtifacts filter: 'CHANGESET.md', fingerprintArtifacts: true, flatten: true, optional: true, projectName: '/Release_Engineering/Cortx-Automation/changelog-generation', selector: lastCompleted(), target: ''
                 }
             }
         }
@@ -210,7 +210,7 @@ pipeline {
                 junit allowEmptyResults: true, testResults: '*report.xml'
                 echo "${env.cortxCluster_status}"
                 echo "${env.qaSanity_status}"
-                env.changeset_log_url = sh( script: "echo ${env.changeset_log_url}artifact/CHANGESET.txt", returnStdout: true)
+                env.changeset_log_url = sh( script: "echo ${env.changeset_log_url}artifact/CHANGESET.md", returnStdout: true)
                 if ( "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "SUCCESS" ) {
                     MESSAGE = "K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=Passed, SanityTest=Passed, Regression=Passed"
                     ICON = "accept.gif"
@@ -282,7 +282,7 @@ pipeline {
                 }               
 
                 catchError(stageResult: 'FAILURE') {
-                    archiveArtifacts allowEmptyArchive: true, artifacts: 'log/*report.xml, log/*report.html, support_bundle/*.tar, crash_files/*.gz, CHANGESET.txt', followSymlinks: false
+                    archiveArtifacts allowEmptyArchive: true, artifacts: 'log/*report.xml, log/*report.html, support_bundle/*.tar, crash_files/*.gz, CHANGESET.md', followSymlinks: false
                     emailext (
                         body: '''${SCRIPT, template="K8s-deployment-email_3.template"}${SCRIPT, template="REL_QA_SANITY_CUS_EMAIL_7.template"}''',
                         mimeType: 'text/html',

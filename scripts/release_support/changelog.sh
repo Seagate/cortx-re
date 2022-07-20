@@ -23,10 +23,10 @@ TARGET_BUILD=$2
 BUILD_LOCATION=$3
 
 function usage() {
-echo "No inputs provided exiting..."
-echo "Please provide start and target build numbers.Script should be executed as.."
-echo "$0 START_BUILD TARGET_BUILD"
-exit 1
+        echo "No inputs provided exiting..."
+        echo "Please provide start and target build numbers.Script should be executed as.."
+        echo "$0 START_BUILD TARGET_BUILD"
+        exit 1
 }
 
 if [ $# -eq 0 ]; then
@@ -49,7 +49,7 @@ declare -A COMPONENT_LIST=(
 
 clone_dir="/root/git_build_checkin_stats"
 time_zone="Asia/Calcutta"
-report_file="../git-build-checkin-report.txt"
+report_file="$clone_dir/clone/git-build-checkin-report.md"
 
 test -d $clone_dir/clone && $(rm -rf $clone_dir/clone;mkdir -p $clone_dir/clone) || mkdir -p $clone_dir/clone
 export TZ=$time_zone;ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
@@ -57,6 +57,7 @@ export TZ=$time_zone;ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ 
 pushd $clone_dir/clone || exit
 
 if [ -z "$BUILD_LOCATION" ]; then
+        echo -e "\t--[ Check-ins from $(awk -F":" '{print $2}' <<< $START_BUILD) to $(awk -F":" '{print $2}' <<< $TARGET_BUILD) ]--" >> $report_file
         CHECK_INPUT_VARIABLE_STATUS=$(echo "$START_BUILD"|grep -c RELEASE.INFO)
         if [ "$CHECK_INPUT_VARIABLE_STATUS" == "0" ]; then
                 docker pull "$START_BUILD" || { echo "Failed to pull $START_BUILD"; exit 1; }
@@ -80,6 +81,7 @@ if [ -z "$BUILD_LOCATION" ]; then
                 TARGET_BUILD=$(echo "$TARGET_BUILD"|awk -F "/" '{print $9}')
         fi
 else
+        echo -e "\t--[ Check-ins from $START_BUILD to $TARGET_BUILD ]--" >> $report_file
         wget -q "$BUILD_LOCATION"/"$START_BUILD"/dev/RELEASE.INFO -O start_build_manifest.txt
         wget -q "$BUILD_LOCATION"/"$TARGET_BUILD"/dev/RELEASE.INFO -O target_build_manifest.txt
 fi
@@ -88,47 +90,52 @@ for component in "${!COMPONENT_LIST[@]}"
 do
         echo "Component:$component"
         echo "Repo:${COMPONENT_LIST[$component]}"
-         dir=$(echo "${COMPONENT_LIST[$component]}" |  awk -F'/' '{print $NF}')
-         git clone -q --branch main "${COMPONENT_LIST[$component]}" "$dir"
-         rc=$?
-          if [ $rc -ne 0 ]; then
-          echo "ERROR:git clone failed for $component"
-          exit 1
-          fi
+        dir=$(echo "${COMPONENT_LIST[$component]}" |  awk -F'/' '{print $NF}')
+        git clone -q --branch main "${COMPONENT_LIST[$component]}" "$dir"
+        rc=$?
+        if [ $rc -ne 0 ]; then
+                echo "ERROR:git clone failed for $component"
+                exit 1
+        fi
 
-                if [ "$component" == "cortx-hare" ] || [ "$component" == "cortx-sspl" ] || [ "$component" == "cortx-ha" ] || [ "$component" == "cortx-py-utils" ]; then
-                        start_hash=$(grep "$component-" start_build_manifest.txt | head -1 | awk -F['_'] '{print $2}' | cut -d. -f1 |  sed 's/git//g'); echo "$start_hash"
-                        target_hash=$(grep "$component-" target_build_manifest.txt | head -1 | awk -F['_'] '{print $2}' | cut -d. -f1 |  sed 's/git//g'); echo "$target_hash"
-                elif [ "$component" == "cortx-csm_agent" ] || [ "$component" == "cortx-csm_web" ]; then
-                        start_hash=$(grep "$component-" start_build_manifest.txt | head -1 | awk -F['_'] '{print $3}' |  cut -d. -f1); echo "$start_hash"
-                        target_hash=$(grep "$component-" target_build_manifest.txt | head -1 | awk -F['_'] '{print $3}' |  cut -d. -f1); echo "$target_hash"
-                elif [ "$component" == "cortx-provisioner" ] || [ "$component" == "cortx-rgw-integration" ] ; then
-                        start_hash=$(grep "$component-" start_build_manifest.txt | tail -1 | awk -F['_'] '{print $2}' | sed 's/git//g' | cut -d. -f1); echo "$start_hash"
-                        target_hash=$(grep "$component-" target_build_manifest.txt | tail -1 | awk -F['_'] '{print $2}' | sed 's/git//g' | cut -d. -f1); echo "$target_hash"
-                elif [ "$component" == "ceph-base" ]; then
-                        start_hash=$(grep "$component-" start_build_manifest.txt | awk -F['-'] '{print $5}'  | cut -d. -f2 | sed s/g//g); echo "$start_hash"
-                        target_hash=$(grep "$component-" target_build_manifest.txt | awk -F['-'] '{print $5}'  | cut -d. -f2 | sed s/g//g); echo "$target_hash"
+        if [ "$component" == "cortx-hare" ] || [ "$component" == "cortx-sspl" ] || [ "$component" == "cortx-ha" ] || [ "$component" == "cortx-py-utils" ]; then
+                start_hash=$(grep "$component-" start_build_manifest.txt | head -1 | awk -F['_'] '{print $2}' | cut -d. -f1 |  sed 's/git//g'); echo "$start_hash"
+                target_hash=$(grep "$component-" target_build_manifest.txt | head -1 | awk -F['_'] '{print $2}' | cut -d. -f1 |  sed 's/git//g'); echo "$target_hash"
+        elif [ "$component" == "cortx-csm_agent" ] || [ "$component" == "cortx-csm_web" ]; then
+                start_hash=$(grep "$component-" start_build_manifest.txt | head -1 | awk -F['_'] '{print $3}' |  cut -d. -f1); echo "$start_hash"
+                target_hash=$(grep "$component-" target_build_manifest.txt | head -1 | awk -F['_'] '{print $3}' |  cut -d. -f1); echo "$target_hash"
+        elif [ "$component" == "cortx-provisioner" ] || [ "$component" == "cortx-rgw-integration" ] ; then
+                start_hash=$(grep "$component-" start_build_manifest.txt | tail -1 | awk -F['_'] '{print $2}' | sed 's/git//g' | cut -d. -f1); echo "$start_hash"
+                target_hash=$(grep "$component-" target_build_manifest.txt | tail -1 | awk -F['_'] '{print $2}' | sed 's/git//g' | cut -d. -f1); echo "$target_hash"
+        elif [ "$component" == "ceph-base" ]; then
+                start_hash=$(grep "$component-" start_build_manifest.txt | awk -F['-'] '{print $5}'  | cut -d. -f2 | sed s/g//g); echo "$start_hash"
+                target_hash=$(grep "$component-" target_build_manifest.txt | awk -F['-'] '{print $5}'  | cut -d. -f2 | sed s/g//g); echo "$target_hash"
+        else
+                start_hash=$(grep "$component-" start_build_manifest.txt | head -1 | awk -F['_'] '{print $2}' | sed 's/git//g'|cut -d. -f1); echo "$start_hash"
+                target_hash=$(grep "$component-" target_build_manifest.txt | head -1 | awk -F['_'] '{print $2}' | sed 's/git//g'|cut -d. -f1); echo "$target_hash"
+        fi
+        
+        pushd "$dir" || exit
+                commit_sha="$(git log "$start_hash..$target_hash" --oneline --pretty=format:"%h")";
+                if [ "$commit_sha" ]; then
+                        for commit in $commit_sha; do
+                                original_commit_message=$(git log --oneline -n 1 "$commit" --pretty=format:"%s")
+                                filtered_commit_message=$(sed -e 's/([^()]*)//g' <<< $original_commit_message)
+                                repo_name=$(awk -F"[/.]" '{print $6}' <<< ${COMPONENT_LIST[$component]})
+                                pr_url=$(curl -s -H "Accept: application/json" -H "Authorization: token $ACCESS_TOKEN" https://api.github.com/repos/seagate/"$repo_name"/commits/"$commit"/pulls | jq '.[].html_url' | sed "s/\"//g")
+                                pr_number=$(echo "$pr_url" | awk -F[/] '{print $NF}')
+                                if [ "$pr_number" ] && [ "$pr_url" ]; then
+                                        echo -e "$filtered_commit_message [$pr_number]($pr_url)\n" >> $report_file
+                                else
+                                        echo -e "$filtered_commit_message\n" >> $report_file
+                                fi
+                        done
                 else
-                        start_hash=$(grep "$component-" start_build_manifest.txt | head -1 | awk -F['_'] '{print $2}' | sed 's/git//g'|cut -d. -f1); echo "$start_hash"
-                        target_hash=$(grep "$component-" target_build_manifest.txt | head -1 | awk -F['_'] '{print $2}' | sed 's/git//g'|cut -d. -f1); echo "$target_hash"
+                        echo "No changes"
                 fi
-
-                 pushd "$dir" || exit
-
-                        echo -e "\t--[ Check-ins for $dir from $START_BUILD ($start_hash) to $TARGET_BUILD ($target_hash) ]--" >> $report_file
-                        echo -e "Githash|Description|Author|" >> $report_file
-                        change="$(git log "$start_hash..$target_hash" --oneline --pretty=format:"%h|%cd|%s|%an|")";
-                if [ "$change" ]; then
-                        echo "$change" >> $report_file
-                        else
-                        echo -e "No Changes" >> $report_file
-                        echo -e "---------------------------------------------------------------------------------------------" >> $report_file
-                fi
-         popd || exit
-
+        popd || exit
 done
 popd || exit
 
-echo -e "---------------------------------------------------------------------------------------------"
 echo -e "----------------------------------[ Printing report ]----------------------------------------"
-cat $clone_dir/clone/git-build-checkin-report.txt
+cat $report_file
