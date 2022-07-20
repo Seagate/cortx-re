@@ -356,7 +356,7 @@ function prereq_ceph_docker() {
             jq -n '{"insecure-registries": $ARGS.positional}' --args "cortx-docker.colo.seagate.com" > /etc/docker/daemon.json
             echo "Configured /etc/docker/daemon.json for local Harbor docker registry"
 
-            (systemctl start docker && systemctl daemon-reload && systemctl enable docker)
+            systemctl start docker && systemctl daemon-reload && systemctl enable docker
             echo "Docker Runtime Configured Successfully"
 
         fi
@@ -374,7 +374,7 @@ function prereq_ceph_docker() {
                 jq -n '{"insecure-registries": $ARGS.positional}' --args "cortx-docker.colo.seagate.com" > /etc/docker/daemon.json
                 echo "Configured /etc/docker/daemon.json for local Harbor docker registry"
 
-                (systemctl start docker && systemctl daemon-reload && systemctl enable docker)
+                systemctl start docker && systemctl daemon-reload && systemctl enable docker
                 echo "Docker Runtime Configured Successfully"
             popd
         fi
@@ -432,7 +432,7 @@ function io_operation() {
 
 function umount_osd() {
     echo "OSD mounts to unmount: $osd_mount"
-    for mount in osd_mount;	do
+    for mount in $osd_mount;	do
         umount mount
     done
 }
@@ -460,6 +460,7 @@ else
 
     # umounting 3 times as sometimes osd requires multiple umount even after zapping (possible bug or process improvement required for removing osds cleanup)
     umount_osd
+    sleep 3
     umount_osd
     umount_osd
 
