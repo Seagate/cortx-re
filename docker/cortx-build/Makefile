@@ -15,10 +15,15 @@ help : Makefile
 	@echo
 	@echo targets:
 	@sed -n 's/^##/   /p' $<
+
+## validation: validate disk space on cortx-workspace before build
+validation:
+	@echo "*************** Validate build node *********************"
+	if [[ $$(df -BG /cortx-workspace | awk '{ print $$4 }' | tail -n 1 | sed 's/G//') -lt "95" ]]; then echo "cortx-workspace doesn't have sufficient disk space" && exit 1; fi
 	
 ## checkout: checkout specified branch/tag code
 checkout:
-	@echo "*************** checkout code *********************"
+	@echo "*************** Checkout code *********************"
 	pushd cortx-workspace && \
         for component in cortx-motr cortx-hare cortx-rgw-integration cortx-manager cortx-utils cortx-ha; do pushd $$component; git clean -fdx; git checkout .; git pull -p --all; git checkout $$BRANCH || exit 1; popd ; done  && \
 		rm -rf cortx-rgw && \
@@ -38,7 +43,7 @@ build: io-path control-path cortx-prereq release_build
 cortx-all-image: cortx-motr cortx-s3server cortx-hare cortx-prvsnr cortx-manager release_build
 
 ## cortx-all-image: generate packages required for cortx-all image including third-party-deps at "/var/artifacts/0"
-cortx-all-rockylinux-image: cortx-motr cortx-hare cortx-prvsnr cortx-manager cortx-rgw cortx-ha release_build
+cortx-all-rockylinux-image: validation cortx-motr cortx-hare cortx-prvsnr cortx-manager cortx-rgw cortx-ha release_build
 
 ## control-path: generate control-path packages. cortx-provisioner, cortx-monitor, cortx-manager, cortx-management-portal and cortx-ha.
 control-path: cortx-prvsnr cortx-monitor cortx-manager cortx-management-portal cortx-ha
@@ -56,7 +61,7 @@ cortx-s3server: cortx-motr _s3_prereq _s3_build
 cortx-hare: cortx-motr _cortx-py-utils_build _cortx-py-utils_install _cortx-hare_prereq _cortx-hare_build
 
 ## cortx-rgw: generate cortx-rgw packages.
-cortx-rgw: _cortx-rgw-integration_build cortx-motr _cortx-rgw_prereq _cortx-rgw_build 
+cortx-rgw: validation _cortx-rgw-integration_build cortx-motr _cortx-rgw_prereq _cortx-rgw_build 
 
 ## cortx-ha: generate cortx-ha packages.
 cortx-ha: _cortx-py-utils_build _cortx-py-utils_install _ha_prereq _ha_build
