@@ -255,7 +255,7 @@ pipeline {
                     to: toEmail,
                 )
 
-				archiveArtifacts artifacts: "README.txt, RELEASE.INFO, CHANGESET.txt", onlyIfSuccessful: false, allowEmptyArchive: true
+				archiveArtifacts artifacts: "README.txt, RELEASE.INFO, CHANGESET.md", onlyIfSuccessful: false, allowEmptyArchive: true
             }
         }
     }
