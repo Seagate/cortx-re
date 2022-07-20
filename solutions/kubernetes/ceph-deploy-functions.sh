@@ -349,6 +349,16 @@ function prereq_ceph_docker() {
             dnf install -y docker-ce docker-ce-cli containerd.io
             check_status "$HOSTNAME: Docker installation failed"
             systemctl enable docker && systemctl start docker
+
+            add_common_separator "Enable local docker harbor registry"
+            wget https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 && mv jq-linux64 jq && chmod +x jq && mv jq /usr/local/bin/ 
+            mkdir -p /etc/docker/
+            jq -n '{"insecure-registries": $ARGS.positional}' --args "cortx-docker.colo.seagate.com" > /etc/docker/daemon.json
+            echo "Configured /etc/docker/daemon.json for local Harbor docker registry"
+
+            (systemctl start docker && systemctl daemon-reload && systemctl enable docker)
+            echo "Docker Runtime Configured Successfully"
+
         fi
         
         if [[ "$ID" == "ubuntu" || "$ID" == "centos" ]]; then
@@ -357,6 +367,15 @@ function prereq_ceph_docker() {
                 chmod +x get-docker.sh
                 ./get-docker.sh
                 check_status "$HOSTNAME: Docker installation failed"
+
+                add_common_separator "Enable local docker harbor registry"
+                wget https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 && mv jq-linux64 jq && chmod +x jq && mv jq /usr/local/bin/
+                mkdir -p /etc/docker/
+                jq -n '{"insecure-registries": $ARGS.positional}' --args "cortx-docker.colo.seagate.com" > /etc/docker/daemon.json
+                echo "Configured /etc/docker/daemon.json for local Harbor docker registry"
+
+                (systemctl start docker && systemctl daemon-reload && systemctl enable docker)
+                echo "Docker Runtime Configured Successfully"
             popd
         fi
     fi
