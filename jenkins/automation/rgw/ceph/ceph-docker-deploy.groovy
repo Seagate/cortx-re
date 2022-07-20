@@ -36,26 +36,26 @@ pipeline {
         stage ('Deploy Ceph Prerequisites') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Install Ceph Prerequisites', script: """
+                sh label: 'Install Ceph Prerequisites', script: '''
                     pushd solutions/kubernetes/
                         echo $hosts | tr ' ' '\n' > hosts
                         cat hosts
                         export CEPH_IMAGE=${CEPH_IMAGE}
                         bash ceph-deploy.sh --prereq-ceph-docker
                     popd
-                """
+                '''
             }
         }
 
         stage ('Deploy Ceph') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Install Ceph Packages', script: """
+                sh label: 'Install Ceph Packages', script: '''
                     pushd solutions/kubernetes/
                         export CEPH_IMAGE=${CEPH_IMAGE}
                         bash ceph-deploy.sh --deploy-ceph-docker
                     popd
-                """
+                '''
             }
         }
 
