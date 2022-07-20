@@ -49,7 +49,7 @@ locals {
 }
 
 resource "aws_security_group" "cortx_deploy" {
-  name        = "cortx_deploy"
+  name        = "shailesh-multinode-poc-cortx_deploy"
   description = "Allow standard ssh, CORTX mangement ports inbound and everything else outbound."
 
   ingress {
@@ -75,7 +75,10 @@ resource "aws_security_group" "cortx_deploy" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = local.common_tags
+  tags = {
+    Name = "shailesh-multinode-poc"
+  }
+
 }
 
 data "aws_ami" "centos" {
@@ -137,7 +140,7 @@ resource "aws_instance" "cortx_deploy" {
   }
 
   tags = {
-    Name = "deployment-poc-${count.index + 1}"
+    Name = "shailesh-multinode-poc-${count.index + 1}"
   }
 
   provisioner "file" {
@@ -158,7 +161,11 @@ resource "aws_ebs_volume" "data_vol" {
   count             = var.ebs_volume_count * var.instance_count
   availability_zone = data.aws_availability_zones.available.names[0]
   size              = 10
-  tags = local.common_tags
+  tags = {
+    Name = "shailesh-multinode-poc-${count.index + 1}"
+  }
+
+
 }
 
 variable "ec2_device_names" {
