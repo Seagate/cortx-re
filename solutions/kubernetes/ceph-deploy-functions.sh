@@ -526,6 +526,7 @@ else
         "/var/lib/ceph"
         "/lib/systemd/system/ceph*"
         "/etc/yum.repos.d/_copr\:copr.fedorainfracloud.org\:tchaikov\:python*"
+        "/usr/local/bin/cephadm"
     )
     for file in ${files_to_remove[@]}; do
         if [ -f "$file" ] || [ -d "$file" ]; then
