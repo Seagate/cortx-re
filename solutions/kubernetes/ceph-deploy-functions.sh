@@ -356,7 +356,7 @@ function prereq_ceph_docker() {
             jq -n '{"insecure-registries": $ARGS.positional}' --args "cortx-docker.colo.seagate.com" > /etc/docker/daemon.json
             echo "Configured /etc/docker/daemon.json for local Harbor docker registry"
 
-            systemctl start docker && systemctl daemon-reload && systemctl enable docker
+            systemctl restart docker && systemctl daemon-reload && systemctl enable docker
             echo "Docker Runtime Configured Successfully"
 
         fi
@@ -444,9 +444,10 @@ else
     add_secondary_separator "Stop all ceph daemon"
     systemctl stop ceph.target
 
-    add_secondary_separator "Remove cluster"
     fsid=$(cat /etc/ceph/ceph.conf | grep fsid | awk '{ print $3 }')
     echo "$fsid"
+
+    add_secondary_separator "Remove cluster"
     cephadm rm-cluster --fsid $fsid --force
 
     add_secondary_separator "Zap OSDs"
@@ -490,21 +491,18 @@ else
     add_secondary_separator "Stop all ceph daemon"
     systemctl stop ceph.target
 
-    add_secondary_separator "Remove cluster"
     fsid=$(cat /etc/ceph/ceph.conf | grep fsid | awk '{ print $3 }')
     echo "$fsid"
+
+    add_secondary_separator "Remove cluster"
     cephadm rm-cluster --fsid $fsid --force
 
-    add_secondary_separator "Zap OSDs"
+    add_secondary_separator "Restore OSD disks"
+    lvremove /dev/ceph-* -y
+    vgdisplay | grep ceph | awk '{ print $3 }' | xargs -I {} vgremove {}
 
-    add_secondary_separator "Unmount osd tmpfs"
-    osd_mount=$(df -hT | grep osd | awk '{ print $7}')
-
-    # umounting 3 times as sometimes osd requires multiple umount even after zapping (possible bug or process improvement required for removing osds cleanup)
-    umount_osd
-    sleep 3
-    umount_osd
-    umount_osd
+    add_secondary_separator "Remove docker images"
+    docker system prune -a -f --filter "label!=vendor=Project Calico"
 
     add_secondary_separator "Remove files"
     files_to_remove=(
