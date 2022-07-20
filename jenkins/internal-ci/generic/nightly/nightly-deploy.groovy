@@ -28,6 +28,11 @@ pipeline {
             description: 'Email Notification Recipients ',
             name: 'EMAIL_RECIPIENTS'
         )
+        choice (
+            choices: ['yes' , 'no'],
+            description: 'Push newly built Docker image to GitHub ',
+            name: 'GITHUB_PUSH'
+        )
     }
     // Please configure hosts,SNS, CORTX_SCRIPTS_REPO, CORTX_SCRIPTS_BRANCH and DIX parameter in Jenkins job configuration.
     stages {
@@ -81,9 +86,8 @@ pipeline {
         }
 
         stage('Push Image to GitHub') {
-            agent {
-                node { label 'docker-image-builder-centos-7.9.2009' }
-            }
+        when { expression { params.GITHUB_PUSH == 'yes' } }
+        agent { node { label 'docker-image-builder-centos-7.9.2009' } }
            steps {
                 sh label: 'Push Image to GitHub', script: '''                   
                    systemctl status docker
@@ -210,7 +214,7 @@ pipeline {
                 junit allowEmptyResults: true, testResults: '*report.xml'
                 echo "${env.cortxCluster_status}"
                 echo "${env.qaSanity_status}"
-                env.changeset_log_url = sh( script: "echo ${env.changeset_log_url}artifact/CHANGESET.md", returnStdout: true)
+                env.changeset_log_url = sh( script: "echo ${env.changeset_log_url}artifact/CHANGESET.md/*view*/", returnStdout: true)
                 if ( "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "SUCCESS" ) {
                     MESSAGE = "K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=Passed, SanityTest=Passed, Regression=Passed"
                     ICON = "accept.gif"
@@ -251,8 +255,15 @@ pipeline {
                 }
                 env.build_setupcortx_url = sh( script: "echo ${env.cortxcluster_build_url}/artifact/artifacts/cortx-cluster-status.txt", returnStdout: true)
                 env.host = "${env.allhost}"
-                env.build_id = "ghcr.io/seagate/cortx-rgw:${VERSION}-${BUILD_NUMBER}"
-                env.build_location = "ghcr.io/seagate/cortx-rgw:${VERSION}-${BUILD_NUMBER},ghcr.io/seagate/cortx-data:${VERSION}-${BUILD_NUMBER},ghcr.io/seagate/cortx-control:${VERSION}-${BUILD_NUMBER}"
+
+                env.cortx_rgw_id = "ghcr.io/seagate/cortx-rgw:${VERSION}-${BUILD_NUMBER}"
+                env.cortx_data_id = "ghcr.io/seagate/cortx-data:${VERSION}-${BUILD_NUMBER}"
+                env.cortx_control_id = "ghcr.io/seagate/cortx-control:${VERSION}-${BUILD_NUMBER}"
+
+                env.cortx_rgw_location = "ghcr.io/seagate/cortx-rgw:${VERSION}-${BUILD_NUMBER}"
+                env.cortx_data_location = "ghcr.io/seagate/cortx-data:${VERSION}-${BUILD_NUMBER}"
+                env.cortx_control_location = "ghcr.io/seagate/cortx-control:${VERSION}-${BUILD_NUMBER}"
+
                 env.deployment_status = "${MESSAGE}"
                 env.cluster_status = "${env.build_setupcortx_url}"
                 env.cortx_script_branch = "${CORTX_SCRIPTS_BRANCH}"
@@ -284,7 +295,7 @@ pipeline {
                 catchError(stageResult: 'FAILURE') {
                     archiveArtifacts allowEmptyArchive: true, artifacts: 'log/*report.xml, log/*report.html, support_bundle/*.tar, crash_files/*.gz, CHANGESET.md', followSymlinks: false
                     emailext (
-                        body: '''${SCRIPT, template="K8s-deployment-email_3.template"}${SCRIPT, template="REL_QA_SANITY_CUS_EMAIL_7.template"}''',
+                        body: '''${SCRIPT, template="K8s-deployment-email_4.template"}${SCRIPT, template="REL_QA_SANITY_CUS_EMAIL_7.template"}''',
                         mimeType: 'text/html',
                         subject: "${MESSAGE}",
                         to: "${mailRecipients}",
