@@ -433,7 +433,7 @@ function io_operation() {
 function umount_osd() {
     echo "OSD mounts to unmount: $osd_mount"
     for mount in $osd_mount;	do
-        umount mount
+        umount $mount
     done
 }
 
@@ -466,6 +466,8 @@ else
 
     add_secondary_separator "Remove files"
     files_to_remove=(
+        "/etc/ceph"
+        "/tmp/etc/ceph"
         "/tmp/monmap"
         "/etc/yum.repos.d/ceph.repo"
         "/var/lib/ceph"
@@ -482,7 +484,45 @@ fi
 }
 
 function destroy_cluster_docker() {
-    echo "TO-DO"
+if ! which cephadm; then
+    add_secondary_separator "Ceph is not deployed"
+else
+    add_secondary_separator "Stop all ceph daemon"
+    systemctl stop ceph.target
+
+    add_secondary_separator "Remove cluster"
+    fsid=$(cat /etc/ceph/ceph.conf | grep fsid | awk '{ print $3 }')
+    echo "$fsid"
+    cephadm rm-cluster --fsid $fsid --force
+
+    add_secondary_separator "Zap OSDs"
+
+    add_secondary_separator "Unmount osd tmpfs"
+    osd_mount=$(df -hT | grep osd | awk '{ print $7}')
+
+    # umounting 3 times as sometimes osd requires multiple umount even after zapping (possible bug or process improvement required for removing osds cleanup)
+    umount_osd
+    sleep 3
+    umount_osd
+    umount_osd
+
+    add_secondary_separator "Remove files"
+    files_to_remove=(
+        "/etc/ceph"
+        "/tmp/etc/ceph"
+        "/tmp/monmap"
+        "/etc/yum.repos.d/ceph.repo"
+        "/var/lib/ceph"
+        "/lib/systemd/system/ceph*"
+        "/etc/yum.repos.d/_copr\:copr.fedorainfracloud.org\:tchaikov\:python*"
+    )
+    for file in ${files_to_remove[@]}; do
+        if [ -f "$file" ] || [ -d "$file" ]; then
+            echo "Removing file/folder $file"
+            rm -rf $file
+        fi
+    done
+fi
 }
 
 case $ACTION in
