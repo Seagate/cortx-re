@@ -70,13 +70,14 @@ do
     COMMIT_HASH=$(get_commit_hash "$component")
     echo "Component: "$component" , Repo:  "${COMPONENT_LIST[$component]}", Commit Hash: "$COMMIT_HASH""
     pushd "$dir"
-        if [ "$GIT_TAG" != "" ]; then
-            git tag -a "$GIT_TAG" "$COMMIT_HASH" -m "$TAG_MESSAGE";
-            git push origin "$GIT_TAG";
+        if [ ! -z "$GIT_TAG" ]; then
+            git tag -a "$GIT_TAG" "$COMMIT_HASH" -m "$TAG_MESSAGE" || { echo "Failed to tag commit $COMMIT_HASH with tag $GIT_TAG"; exit 1; }
+            git push origin "$GIT_TAG" || { echo "Failed to push tag $GIT_TAG for commit $COMMIT_HASH"; exit 1; }
             echo "$component commit $COMMIT_HASH has tagged successfully with tag $GIT_TAG";
             git tag -l "$GIT_TAG";
         else
-            echo "Tag is not successful. Please pass value to GIT_TAG";
+            echo "GIT_TAG value is not provided"
+            exit 1
         fi
     popd
 done
