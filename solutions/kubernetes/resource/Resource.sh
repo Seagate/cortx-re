@@ -1,0 +1,51 @@
+#!/bin/bash 
+# Copyright (c) 2021 Seagate Technology LLC and/or its Affiliates
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# For any questions about this software or licensing,
+# please email opensource@seagate.com or cortx-questions@seagate.com.
+#
+
+source /var/tmp/functions.sh
+
+function Install_metricsserver() {
+    add_primary_separator "Installing Metrics Server"
+    # For Testing purpose: Fetching file from test repo, raised same file with the PR.
+    # wget https://raw.githubusercontent.com/seagate/cortx-re/main/solutions/kubernetes/resource/components.yaml
+    wget -P /root https://raw.githubusercontent.com/vijwani-seagate/kubernetes/master/components.yaml
+    kubectl create -f components.yaml
+    kubectl get pods --namespace=kube-system
+    sleep 45
+    kubectl top node
+    check_status "Getting error in Metrics server, Please check!"
+    add_secondary_separator "Deployed Metrics Server successfully"
+}
+function Install_k8dashboard() {
+    add_primary_separator "Installing K8s Dashboard"
+    kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.5.0/aio/deploy/recommended.yaml
+    kubectl -n kubernetes-dashboard get pods
+    check_status "Getting error in K8s dashboard, Please check!"
+
+    DOMAIN=$(kubectl -n kubernetes-dashboard get pods -o wide | awk '$1 ~/kubernetes-dashboard/ {print $7}')
+    kubectl -n kubernetes-dashboard patch svc kubernetes-dashboard -p '{"spec": {"ports": [{"port": 443,"targetPort": 8443,"nodePort": 32323}],"type": "NodePort"}}'
+    # For Testing purpose: Fetching file from test repo, raised same file with the PR.
+    # wget https://raw.githubusercontent.com/seagate/cortx-re/main/solutions/kubernetes/resource/sa_cluster_admin.yaml
+    wget https://raw.githubusercontent.com/vijwani-seagate/kubernetes/master/dashboard/sa_cluster_admin.yaml && kubectl create -f sa_cluster_admin.yaml
+    TOKEN=$(kubectl -n kube-system describe sa dashboard-admin | awk '/Tokens/ {print $2}')
+    SECRET=$(kubectl -n kube-system describe secret "$TOKEN" | grep token | tail -n +3 | awk '{print $2}')
+    add_primary_separator "Your k8s Dashboard is ready, Access it via https://$DOMAIN:32323"
+    add_secondary_separator "Token is $SECRET"
+}
+Install_metricsserver
+Install_k8dashboard
