@@ -1,4 +1,0 @@
-cortx-csm_agent
-cortx-py-utils
-cortx-provisioner
-cortx-ha

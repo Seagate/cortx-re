@@ -8,7 +8,7 @@ pipeline {
     options {
         timeout(time: 240, unit: 'MINUTES')
         timestamps()
-        buildDiscarder(logRotator(daysToKeepStr: '30', numToKeepStr: '30'))
+        buildDiscarder(logRotator(daysToKeepStr: '50', numToKeepStr: '30'))
         ansiColor('xterm')
     }
 
@@ -20,9 +20,9 @@ pipeline {
 
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repository for Cluster Setup scripts', trim: true)
-        string(name: 'CORTX_ALL_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-all:2.0.0-latest', description: 'CORTX-ALL image', trim: true)
         string(name: 'CORTX_SERVER_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-rgw:2.0.0-latest', description: 'CORTX-SERVER image', trim: true)
         string(name: 'CORTX_DATA_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-data:2.0.0-latest', description: 'CORTX-DATA image', trim: true)
+        string(name: 'CORTX_CONTROL_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-control:2.0.0-latest', description: 'CORTX-CONTROL image', trim: true)
         choice(
             name: 'DEPLOYMENT_METHOD',
             choices: ['standard', 'data-only'],
@@ -37,7 +37,7 @@ pipeline {
         text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used for CORTX cluster setup. First node will be used as Primary node', name: 'hosts')
         choice(
             name: 'EXTERNAL_EXPOSURE_SERVICE',
-            choices: ['LoadBalancer', 'NodePort'],
+            choices: ['NodePort', 'LoadBalancer'],
             description: 'K8s Service to be used to expose RGW Service to outside cluster.'
         )
         // Please configure CORTX_SCRIPTS_BRANCH and CORTX_SCRIPTS_REPO parameter in Jenkins job configuration.
@@ -84,9 +84,9 @@ pipeline {
                         export SOLUTION_CONFIG_TYPE=automated
                         export CORTX_SCRIPTS_BRANCH=${CORTX_SCRIPTS_BRANCH}
                         export CORTX_SCRIPTS_REPO=${CORTX_SCRIPTS_REPO}
-                        export CORTX_ALL_IMAGE=${CORTX_ALL_IMAGE}
                         export CORTX_SERVER_IMAGE=${CORTX_SERVER_IMAGE}
                         export CORTX_DATA_IMAGE=${CORTX_DATA_IMAGE}
+                        export CORTX_CONTROL_IMAGE=${CORTX_CONTROL_IMAGE}
                         export DEPLOYMENT_METHOD=${DEPLOYMENT_METHOD}
                         export SNS_CONFIG=${SNS_CONFIG}
                         export DIX_CONFIG=${DIX_CONFIG}
@@ -102,7 +102,6 @@ pipeline {
         }
 
         stage ('IO Sanity Test') {
-            when { expression { params.DEPLOYMENT_METHOD == "standard" } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Perform IO Sanity Test', script: '''
@@ -146,14 +145,20 @@ pipeline {
                 // Email Notification
                 env.build_stage = "${build_stage}"
                 env.cluster_status = "${clusterStatusHTML}"
-                def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
-                mailRecipients = "shailesh.vaidya@seagate.com"
+
+                def toEmail = ""
+                def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
+                if ( manager.build.result.toString() == "FAILURE" ) {
+                    toEmail = "CORTX.DevOps.RE@seagate.com"
+                    recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
+                }
+               
                 emailext ( 
                     body: '''${SCRIPT, template="cluster-setup-email.template"}''',
                     mimeType: 'text/html',
                     subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
                     attachLog: true,
-                    to: "${mailRecipients}",
+                    to: toEmail,
                     recipientProviders: recipientProvidersClass
                 )
             }
@@ -185,8 +190,7 @@ pipeline {
                 ./cortx-deploy.sh --support-bundle
                 HOST_FILE=$PWD/hosts
                 PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
-                LOG_FILE=$(ssh -o 'StrictHostKeyChecking=no' $PRIMARY_NODE 'ls -t /root/deploy-scripts/k8_cortx_cloud | grep logs-cortx-cloud | grep .tar | head -1')
-                scp -q "$PRIMARY_NODE":/root/deploy-scripts/k8_cortx_cloud/$LOG_FILE $WORKSPACE/artifacts/
+                scp -q "$PRIMARY_NODE":/root/deploy-scripts/k8_cortx_cloud/logs-cortx-cloud*.tgz $WORKSPACE/artifacts/
             popd
             '''
         }

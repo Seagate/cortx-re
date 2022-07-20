@@ -24,16 +24,9 @@ source /var/tmp/functions.sh
 
 SYSTEM_DRIVE_MOUNT="/mnt/fs-local-volume"
 SCRIPT_LOCATION="/root/deploy-scripts"
-YQ_VERSION=v4.13.3
+YQ_VERSION=v4.25.1
 YQ_BINARY=yq_linux_386
 SOLUTION_CONFIG="/var/tmp/solution.yaml"
-
-ACTION="$1"
-if [ -z "$ACTION" ]; then
-    echo "ERROR : No option provided"
-    usage
-    exit 1
-fi
 
 function usage() {
     cat << HEREDOC
@@ -49,6 +42,13 @@ where,
 HEREDOC
 }
 
+ACTION="$1"
+if [ -z "$ACTION" ]; then
+    echo "ERROR : No option provided"
+    usage
+    exit 1
+fi
+
 # On primary
 # Download CORTX k8 deployment scripts
 
@@ -56,7 +56,8 @@ function download_deploy_script() {
     if [ -z "$SCRIPT_LOCATION" ]; then echo "SCRIPT_LOCATION not provided.Exiting..."; exit 1; fi
     if [ -z "$CORTX_SCRIPTS_REPO" ]; then echo "CORTX_SCRIPTS_REPO not provided.Exiting..."; exit 1; fi
     if [ -z "$CORTX_SCRIPTS_BRANCH" ]; then echo "CORTX_SCRIPTS_BRANCH not provided.Exiting..."; exit 1; fi
-
+    if [ -z "$COMMUNITY_USE" ]; then echo "COMMUNITY_USE option not provided.Exiting..."; exit 1; fi
+    
     rm -rf $SCRIPT_LOCATION
     yum install git -y
     git clone https://github.com/$CORTX_SCRIPTS_REPO $SCRIPT_LOCATION
@@ -70,6 +71,7 @@ function download_deploy_script() {
 # Install yq 4.13.3
 
 function install_yq() {
+    add_secondary_separator "Installing yq-$YQ_VERSION"
     pip3 show yq && pip3 uninstall yq -y
     wget https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${YQ_BINARY}.tar.gz -O - | tar xz && mv ${YQ_BINARY} /usr/bin/yq
     if [ -f /usr/local/bin/yq ]; then rm -rf /usr/local/bin/yq; fi    
@@ -99,18 +101,20 @@ function update_solution_config(){
         yq e -i '.solution.images.busybox = "ghcr.io/seagate/busybox:latest"' solution.yaml
 
         drive=$SYSTEM_DRIVE_MOUNT yq e -i '.solution.common.storage_provisioner_path = env(drive)' solution.yaml
-        yq e -i '.solution.common.setup_size = "small"' solution.yaml
         yq e -i '.solution.common.container_path.local = "/etc/cortx"' solution.yaml
         yq e -i '.solution.common.container_path.log = "/etc/cortx/log"' solution.yaml
         yq e -i '.solution.common.s3.default_iam_users.auth_admin = "sgiamadmin"' solution.yaml
         yq e -i '.solution.common.s3.default_iam_users.auth_user = "user_name"' solution.yaml
         yq e -i '.solution.common.s3.max_start_timeout = 240' solution.yaml
         yq e -i '.solution.common.s3.extra_configuration = ""' solution.yaml
-        yq e -i '.solution.common.motr.num_client_inst = 0' solution.yaml
+        if [ "$DEPLOYMENT_METHOD" == "data-only" ]; then
+            yq e -i '.solution.common.motr.num_client_inst = 1' solution.yaml
+        else
+            yq e -i '.solution.common.motr.num_client_inst = 0' solution.yaml
+        fi       
         yq e -i '.solution.common.motr.start_port_num = 29000' solution.yaml
         yq e -i '.solution.common.motr.extra_configuration = ""' solution.yaml
         yq e -i '.solution.common.hax.protocol = "https"' solution.yaml
-        yq e -i '.solution.common.hax.service_name = "cortx-hax-svc"' solution.yaml
         yq e -i '.solution.common.hax.port_num = 22003' solution.yaml
         yq e -i '.solution.common.storage_sets.name = "storage-set-1"' solution.yaml
 
@@ -129,28 +133,67 @@ function update_solution_config(){
         control_external_nodeport=$CONTROL_EXTERNAL_NODEPORT yq e -i '.solution.common.external_services.control.nodePorts.https = env(control_external_nodeport)' solution.yaml
 
         yq e -i '.solution.common.resource_allocation.consul.server.storage = "10Gi"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.consul.server.resources.requests.memory = "100Mi"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.consul.server.resources.requests.cpu = "100m"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.consul.server.resources.limits.memory = "300Mi"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.consul.server.resources.limits.cpu = "100m"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.consul.client.resources.requests.memory = "100Mi"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.consul.client.resources.requests.cpu = "100m"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.consul.client.resources.limits.memory = "300Mi"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.consul.client.resources.limits.cpu = "100m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.consul.server.resources.requests.memory = "200Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.consul.server.resources.requests.cpu = "200m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.consul.server.resources.limits.memory = "500Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.consul.server.resources.limits.cpu = "500m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.consul.client.resources.requests.memory = "200Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.consul.client.resources.requests.cpu = "200m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.consul.client.resources.limits.memory = "500Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.consul.client.resources.limits.cpu = "500m"' solution.yaml
 
         yq e -i '.solution.common.resource_allocation.zookeeper.storage_request_size = "8Gi"' solution.yaml
         yq e -i '.solution.common.resource_allocation.zookeeper.data_log_dir_request_size = "8Gi"' solution.yaml
         yq e -i '.solution.common.resource_allocation.zookeeper.resources.requests.memory = "256Mi"' solution.yaml
         yq e -i '.solution.common.resource_allocation.zookeeper.resources.requests.cpu = "250m"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.zookeeper.resources.limits.memory = "512Mi"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.zookeeper.resources.limits.cpu = "500m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.zookeeper.resources.limits.memory = "1Gi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.zookeeper.resources.limits.cpu = "1000m"' solution.yaml
 
         yq e -i '.solution.common.resource_allocation.kafka.storage_request_size = "8Gi"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.kafka.log_persistence_request_size = "8Gi"' solution.yaml
         yq e -i '.solution.common.resource_allocation.kafka.resources.requests.memory = "1Gi"' solution.yaml
         yq e -i '.solution.common.resource_allocation.kafka.resources.requests.cpu = "250m"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.kafka.resources.limits.memory = "2Gi"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.kafka.resources.limits.cpu = 1' solution.yaml
+        yq e -i '.solution.common.resource_allocation.kafka.resources.limits.memory = "3Gi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.kafka.resources.limits.cpu = "1000m"' solution.yaml
+
+        yq e -i '.solution.common.resource_allocation.hare.hax.resources.requests.memory = "128Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.hare.hax.resources.requests.cpu = "250m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.hare.hax.resources.limits.memory = "2Gi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.hare.hax.resources.limits.cpu = "1000m"' solution.yaml
+
+        yq e -i '.solution.common.resource_allocation.data.motr.resources.requests.memory = "1Gi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.data.motr.resources.requests.cpu = "250m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.data.motr.resources.limits.memory = "2Gi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.data.motr.resources.limits.cpu = "1000m"' solution.yaml
+
+        yq e -i '.solution.common.resource_allocation.data.confd.resources.requests.memory = "128Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.data.confd.resources.requests.cpu = "250m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.data.confd.resources.limits.memory = "512Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.data.confd.resources.limits.cpu = "500m"' solution.yaml
+
+        yq e -i '.solution.common.resource_allocation.server.rgw.resources.requests.memory = "128Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.server.rgw.resources.requests.cpu = "250m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.server.rgw.resources.limits.memory = "2Gi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.server.rgw.resources.limits.cpu = "2000m"' solution.yaml
+
+        yq e -i '.solution.common.resource_allocation.control.agent.resources.requests.memory = "128Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.control.agent.resources.requests.cpu = "250m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.control.agent.resources.limits.memory = "256Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.control.agent.resources.limits.cpu = "500m"' solution.yaml
+
+        yq e -i '.solution.common.resource_allocation.ha.fault_tolerance.resources.requests.memory = "128Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.ha.fault_tolerance.resources.requests.cpu = "250m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.ha.fault_tolerance.resources.limits.memory = "1Gi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.ha.fault_tolerance.resources.limits.cpu = "500m"' solution.yaml
+
+        yq e -i '.solution.common.resource_allocation.ha.health_monitor.resources.requests.memory = "128Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.ha.health_monitor.resources.requests.cpu = "250m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.ha.health_monitor.resources.limits.memory = "1Gi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.ha.health_monitor.resources.limits.cpu = "500m"' solution.yaml
+
+        yq e -i '.solution.common.resource_allocation.ha.k8s_monitor.resources.requests.memory = "128Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.ha.k8s_monitor.resources.requests.cpu = "250m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.ha.k8s_monitor.resources.limits.memory = "1Gi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.ha.k8s_monitor.resources.limits.cpu = "500m"' solution.yaml
 
         yq e -i '.solution.storage.cvg1.name = "cvg-01"' solution.yaml
         yq e -i '.solution.storage.cvg1.type = "ios"' solution.yaml
@@ -173,14 +216,12 @@ function update_solution_config(){
 }        
 
 function add_image_info() {
-echo "Updating cortx-all image info in solution.yaml"   
-pushd $SCRIPT_LOCATION/k8_cortx_cloud
-    image=$CORTX_ALL_IMAGE yq e -i '.solution.images.cortxcontrol = env(image)' solution.yaml	
-    image=$CORTX_DATA_IMAGE yq e -i '.solution.images.cortxdata = env(image)' solution.yaml
-    image=$CORTX_SERVER_IMAGE yq e -i '.solution.images.cortxserver = env(image)' solution.yaml
-    image=$CORTX_ALL_IMAGE yq e -i '.solution.images.cortxha = env(image)' solution.yaml
-    image=$CORTX_ALL_IMAGE yq e -i '.solution.images.cortxclient = env(image)' solution.yaml
-popd 
+    add_secondary_separator "Updating cortx images info in solution.yaml"   
+    update_image control-pod "$CORTX_CONTROL_IMAGE"
+    update_image data-pod "$CORTX_DATA_IMAGE"
+    update_image server-pod "$CORTX_SERVER_IMAGE"
+    update_image ha-pod "$CORTX_CONTROL_IMAGE"
+    update_image client-pod "$CORTX_DATA_IMAGE"
 }
 
 function add_node_info_solution_config() {
@@ -197,18 +238,8 @@ echo "Updating node info in solution.yaml"
     popd
 }
 
-copy_solution_config() {
-	if [ -z "$SOLUTION_CONFIG" ]; then echo "SOLUTION_CONFIG not provided.Exiting..."; exit 1; fi
-	echo "Copying $SOLUTION_CONFIG file" 
-	pushd $SCRIPT_LOCATION/k8_cortx_cloud
-            if [ -f '$SOLUTION_CONFIG' ]; then echo "file $SOLUTION_CONFIG not available..."; exit 1; fi	
-            cp $SOLUTION_CONFIG .
-            yq eval -i 'del(.solution.nodes)' solution.yaml
-        popd 
-}
-
-setup_kubectl_context() {
-    add_secondary_separator "Updated kubectl contex to use $NAMESPACE"
+function setup_kubectl_context() {
+    add_secondary_separator "Updated kubectl context to use $NAMESPACE"
     kubectl config set-context --current --namespace=$NAMESPACE
 }
 
@@ -231,26 +262,35 @@ function execute_deploy_script() {
 
 function execute_prereq() {
     add_secondary_separator "Pulling latest CORTX images"
-    docker pull $CORTX_ALL_IMAGE || { echo "Failed to pull $CORTX_ALL_IMAGE"; exit 1; }
-    docker pull $CORTX_SERVER_IMAGE || { echo "Failed to pull $CORTX_SERVER_IMAGE"; exit 1; }
-    docker pull $CORTX_DATA_IMAGE || { echo "Failed to pull $CORTX_DATA_IMAGE"; exit 1; }
+    if [ "${COMMUNITY_USE}" == "no" ]; then
+        CORTX_SERVER_IMAGE=$(pull_image "$CORTX_SERVER_IMAGE")
+        CORTX_DATA_IMAGE=$(pull_image "$CORTX_DATA_IMAGE")
+        CORTX_CONTROL_IMAGE=$(pull_image "$CORTX_CONTROL_IMAGE")
+    else
+        echo -e "\nExecuting community deploy script.Ignoring image pull."
+    fi
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         add_secondary_separator "Un-mounting $SYSTEM_DRIVE partition if already mounted"
         findmnt $SYSTEM_DRIVE && umount -l $SYSTEM_DRIVE
-        add_secondary_separator "Executing ./prereq-deploy-cortx-cloud.sh"
+        add_secondary_separator "Executing ./prereq-deploy-cortx-cloud.sh -d $SYSTEM_DRIVE"
         ./prereq-deploy-cortx-cloud.sh -d $SYSTEM_DRIVE
     popd    
 }
 
 function setup_primary_node() {
     #Clean up untagged docker images and stopped docker containers.
-    cleanup
+    if [ "${COMMUNITY_USE}" == "no" ]; then
+        cleanup
+    else
+        echo -e "\nExecuting community deploy script.No cleaning required."
+    fi
     #Third-party images are downloaded from GitHub container registry. 
     download_deploy_script
     install_yq
 
     if [ "$SOLUTION_CONFIG_TYPE" == "manual" ]; then
-        copy_solution_config
+        copy_solution_config "$SOLUTION_CONFIG" "$SCRIPT_LOCATION/k8_cortx_cloud"
+        NAMESPACE=$(yq e '.solution.namespace' "$SCRIPT_LOCATION/k8_cortx_cloud/solution.yaml")
     else
         update_solution_config
     fi
@@ -267,9 +307,14 @@ function setup_primary_node() {
 function setup_worker_node() {
     add_secondary_separator "Setting up Worker Node on $HOSTNAME"
     #Clean up untagged docker images and stopped docker containers.
-    cleanup
+    if [ "${COMMUNITY_USE}" == "no" ]; then
+        cleanup
+    else
+        echo -e "\nExecuting community deploy script.No cleaning required."
+    fi
     #Third-party images are downloaded from GitHub container registry.
     download_deploy_script
+    install_yq
     execute_prereq
 }
 
@@ -279,7 +324,7 @@ function destroy() {
             chmod +x *.sh
             ./destroy-cortx-cloud.sh
         popd || exit
-        findmnt "$SYSTEM_DRIVE" && umount -l "$SYSTEM_DRIVE"
+        findmnt $SYSTEM_DRIVE && umount -l $SYSTEM_DRIVE
         files_to_remove=(
             "/mnt/fs-local-volume/"
             "/root/deploy-scripts/"
@@ -304,59 +349,62 @@ function destroy() {
 
 function print_pod_status() {
     add_secondary_separator "Image Details"
-        kubectl get pods -o jsonpath="{.items[*].spec.containers[*].image}" | tr ' ' '\n' | uniq 
+    kubectl get pods -o jsonpath="{.items[*].spec.containers[*].image}" | tr ' ' '\n' | uniq 
     add_secondary_separator "POD Status"
-        if ! kubectl get pods | grep -v STATUS | awk '{ print $3}' |  grep -v -q -i running; then
+    if ! kubectl get pods | grep -v STATUS | awk '{ print $3}' |  grep -v -q -i running; then
         kubectl get pods -o wide
-        else
-    add_common_separator "All PODs are not in running state. Marking deployment as failed. Please check problematic pod events using kubectl describe pod <pod name>"
+    else
+        add_common_separator "All PODs are not in running state. Marking deployment as failed. Please check problematic pod events using kubectl describe pod <pod name>"
         exit 1
-        fi
+    fi
     add_common_separator "Sleeping for 1min before checking hctl status...."
-        sleep 60  
+    sleep 60  
     add_common_separator "hctl status"
     #    echo "Disabled htcl status check for now. Checking RGW service"
     #    kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-rgw -- ps -elf | grep rgw
-        SECONDS=0
-        date
-        while [[ SECONDS -lt 1200 ]] ; do
-            if [ "$DEPLOYMENT_METHOD" == "data-only" ]; then
-                if kubectl exec -it $(kubectl get pods | awk '/cortx-data/{print $1; exit}') -c cortx-hax -- hctl status > /dev/null ; then
-                    if ! kubectl exec -it $(kubectl get pods | awk '/cortx-data/{print $1; exit}') -c cortx-hax -- hctl status| grep -q -E 'unknown|offline|failed'; then
-                        kubectl exec -it $(kubectl get pods | awk '/cortx-data/{print $1; exit}') -c cortx-hax -- hctl status
-                        add_secondary_separator "Time taken for service to start $((SECONDS/60)) mins"
-                        exit 0
-                    else
-                        add_common_separator "Waiting for services to become online. Sleeping for 1min...."
-                        sleep 60
-                    fi
+    SECONDS=0
+    date
+    while [[ SECONDS -lt 1200 ]] ; do
+        if [ "$DEPLOYMENT_METHOD" == "data-only" ]; then
+            if kubectl exec -it $(kubectl get pods | awk '/cortx-data/{print $1; exit}') -c cortx-hax -- hctl status > /dev/null ; then
+                if ! kubectl exec -it $(kubectl get pods | awk '/cortx-data/{print $1; exit}') -c cortx-hax -- hctl status| grep -v motr_client | grep -q -E 'unknown|offline|failed'; then
+                    kubectl exec -it $(kubectl get pods | awk '/cortx-data/{print $1; exit}') -c cortx-hax -- hctl status
+                    add_secondary_separator "Time taken for service to start $((SECONDS/60)) mins"
+                    exit 0
                 else
-                    add_common_separator "hctl status not working yet. Sleeping for 1min...."
+                    add_common_separator "Waiting for services to become online. Sleeping for 1min...."
                     sleep 60
                 fi
             else
-                if kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-hax -- hctl status > /dev/null ; then
-                    if ! kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-hax -- hctl status| grep -q -E 'unknown|offline|failed'; then
-                        kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-hax -- hctl status
-                        add_secondary_separator "Time taken for service to start $((SECONDS/60)) mins"
-                        exit 0
-                    else
-                        add_common_separator "Waiting for services to become online. Sleeping for 1min...."
-                        sleep 60
-                    fi
+                add_common_separator "hctl status not working yet. Sleeping for 1min...."
+                sleep 60
+            fi
+        else
+            if kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-hax -- hctl status > /dev/null ; then
+                if ! kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-hax -- hctl status| grep -q -E 'unknown|offline|failed'; then
+                    kubectl exec -it $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -c cortx-hax -- hctl status
+                    add_secondary_separator "Time taken for service to start $((SECONDS/60)) mins"
+                    exit 0
                 else
-                    add_common_separator "hctl status not working yet. Sleeping for 1min...."
+                    add_common_separator "Waiting for services to become online. Sleeping for 1min...."
                     sleep 60
                 fi
-            fi    
-        done
-            add_secondary_separator "Failed to to start services within 20mins. Exiting...."
-            exit 1
+            else
+                add_common_separator "hctl status not working yet. Sleeping for 1min...."
+                sleep 60
+            fi
+        fi    
+    done
+    add_secondary_separator "Failed to to start services within 20mins. Exiting...."
+    exit 1
 }
 
 function io_exec() {
     pushd /var/tmp/
+        export DEPLOYMENT_METHOD=$DEPLOYMENT_METHOD
+        export CEPH_DEPLOYMENT=$CEPH_DEPLOYMENT
         ./io-sanity.sh
+        check_status
     popd
 }
 
@@ -370,6 +418,7 @@ function logs_generation() {
 function cleanup() {
     add_secondary_separator "Clean up untagged/unused images and stopped containers..."
     docker system prune -a -f --filter "label!=vendor=Project Calico"
+    check_status
 }
 
 case $ACTION in

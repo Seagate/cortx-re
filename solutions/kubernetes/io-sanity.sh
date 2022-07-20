@@ -21,6 +21,7 @@
 set -euo pipefail
 
 source /var/tmp/functions.sh
+source /etc/os-release
 
 SOLUTION_FILE="/root/deploy-scripts/k8_cortx_cloud/solution.yaml"
 
@@ -29,7 +30,13 @@ function install_awscli() {
 
    add_secondary_separator "Check and install pip3 if not present:"
    if ! which pip3; then
-      yum install python3-pip
+      if [[ "$ID" == "rocky" || "$ID" == "centos" ]]; then
+         yum install -y python3-pip
+      fi
+
+      if [[ "$ID" == "ubuntu" ]]; then
+         apt install -y python3-pip
+      fi
    fi
 
    add_secondary_separator "Installing awscli"
@@ -44,11 +51,50 @@ function install_awscli() {
 
 function setup_awscli() {
    add_secondary_separator "Setup awscli"
-   
-   # Get credentials and create dir. 
-   access_key=$(yq e '.solution.common.s3.default_iam_users.auth_admin' $SOLUTION_FILE)
-   secret_key=$(yq e '.solution.secrets.content.s3_auth_admin_secret' $SOLUTION_FILE)
-   endpoint_url="http://""$(kubectl get svc | grep cortx-io | awk '{ print $3 }')"":80"
+
+   if [[ $CEPH_DEPLOYMENT = "true" ]]; then
+
+      if ! which jq; then
+         case "$ID" in
+            rocky)
+               yum install http://mirror.centos.org/centos/8-stream/AppStream/x86_64/os/Packages/jq-1.6-3.el8.x86_64.rpm -y 
+            ;;
+            centos)
+               yum install jq -y
+            ;;
+            ubuntu)
+               apt install -y jq
+         ;;
+         esac
+      fi
+
+      if [[ $CEPH_DOCKER_DEPLOYMENT = "true" ]]; then
+         # Get credentials.
+         access_key=$(cephadm shell -- radosgw-admin user info --uid=io-test | jq .keys[].access_key | tr -d '"')
+         secret_key=$(cephadm shell -- radosgw-admin user info --uid=io-test | jq .keys[].secret_key | tr -d '"')      
+
+      else
+         # Get credentials.
+         access_key=$(radosgw-admin user info --uid=io-test | jq .keys[].access_key | tr -d '"')
+         secret_key=$(radosgw-admin user info --uid=io-test | jq .keys[].secret_key | tr -d '"')
+      fi
+
+      # Set endpoint url.
+      endpoint_url="http://""$(hostname -i)"":9999"
+
+   else
+      # Get credentials.
+      access_key=$(yq e '.solution.common.s3.default_iam_users.auth_admin' $SOLUTION_FILE)
+      secret_key=$(kubectl get secrets/cortx-secret  --template={{.data.s3_auth_admin_secret}} | base64 -d)
+
+      # Set endpoint url.
+      endpoint_url="http://""$(kubectl get svc | grep cortx-io | awk '{ print $3 }')"":80"
+   fi
+
+   add_common_separator "AWS keys-:"
+   echo "Access Key: $access_key"
+   echo "Secret Key: $secret_key"
+
    mkdir -p /root/.aws/
 
    # Configure plugin, api and endpoints.
@@ -80,13 +126,27 @@ function run_io_sanity() {
    add_primary_separator "\tStarting IO Sanity Testing"
 
    BUCKET="test-bucket"
+   BUCKET2="test-bucket2"
    FILE1="file10mb"
    FILE2="test-obj.bin"
+   FILE3="file15mb"
+   FILE4="file18mb"
 
    add_common_separator "Creating S3 bucket:- '$BUCKET'"
    aws s3 mb s3://$BUCKET
    check_status "Failed to create bucket"
+   add_common_separator "Creating S3 bucket:- '$BUCKET2'"
+   aws s3api create-bucket --bucket $BUCKET2
+   check_status "Failed to create bucket"
    aws s3 ls
+   check_status "Failed to list buckets"
+
+   add_common_separator "Head bucket operation for '$BUCKET2' bucket"
+   aws s3api head-bucket --bucket $BUCKET2
+   check_status "Failed in head-bucket operation for '$BUCKET2'"
+
+   add_common_separator "List bucket operation"
+   aws s3api list-buckets --query "Buckets[].Name"
    check_status "Failed to list buckets"
 
    add_common_separator "Create files to upload to '$BUCKET' bucket"
@@ -94,6 +154,11 @@ function run_io_sanity() {
    dd if=/dev/zero of=$FILE1 bs=1M count=10
    echo -e "\nCreating '$FILE2'"
    date > $FILE2
+   add_common_separator "Create files to upload to '$BUCKET2' bucket"
+   echo -e "\nCreating '$FILE3'"
+   dd if=/dev/zero of=$FILE3 bs=1M count=15
+   echo -e "\nCreating '$FILE4'"
+   dd if=/dev/zero of=$FILE4 bs=1M count=18
 
    add_common_separator "Uploading '$FILE1' file to '$BUCKET' bucket"
    aws s3 cp $FILE1 s3://$BUCKET/file10MB
@@ -101,29 +166,71 @@ function run_io_sanity() {
    add_common_separator "Uploading '$FILE2' file to '$BUCKET' bucket"
    aws s3 cp $FILE2 s3://$BUCKET
    check_status "Failed to upload '$FILE2' to '$BUCKET'"
+   add_common_separator "Uploading '$FILE3' file to '$BUCKET2' bucket"
+   aws s3api put-object --bucket $BUCKET2 --key $FILE3 --body $FILE3
+   check_status "Failed to upload '$FILE3' to '$BUCKET2'"
+   add_common_separator "Uploading '$FILE4' file to '$BUCKET2' bucket"
+   aws s3api put-object --bucket $BUCKET2 --key $FILE4 --body $FILE4
+   check_status "Failed to upload '$FILE4' to '$BUCKET2'"
+
+   add_common_separator "Overwrite simple object '$FILE4' in '$BUCKET2' bucket"
+   aws s3api put-object --bucket $BUCKET2 --key $FILE4 --body $FILE4
+   check_status "Simple object overwrite operation failed"
+
+   add_common_separator "Head object operation for '$FILE3' object"
+   aws s3api head-object --bucket $BUCKET2 --key $FILE3
+   check_status "Failed in head-object operation for object '$FILE3' in bucket '$BUCKET2'"
 
    add_common_separator "List files in '$BUCKET' bucket"
    aws s3 ls s3://$BUCKET
    check_status "Failed to list files in '$BUCKET'"
+   add_common_separator "List files in '$BUCKET2' bucket"
+   aws s3api list-objects --bucket $BUCKET2
+   check_status "Failed to list files in '$BUCKET2'"
 
    add_common_separator "Download '$FILE1' as 'file10mbDn' and check diff"
    aws s3 cp s3://$BUCKET/file10MB file10mbDn
    check_status "Failed to download '$FILE1' as 'file10mbDn' from '$BUCKET'"
    FILE_DIFF=$(diff $FILE1 file10mbDn)
-
    if [[ $FILE_DIFF ]]; then
       echo -e "\nDIFF Status: $FILE_DIFF"
    else
       echo -e "\nDIFF Status: The files $FILE1 and file10mbDn are similar."
    fi
 
+   add_common_separator "Download '$FILE3' as 'file15mbDn' and check diff"
+   aws s3api get-object --bucket $BUCKET2 --key $FILE3 file15mbDn
+   check_status "Failed to download '$FILE3' as 'file15mbDn' from '$BUCKET2'"
+   FILE_DIFF2=$(diff $FILE3 file15mbDn)
+   if [[ $FILE_DIFF2 ]]; then
+      echo -e "\nDIFF Status: $FILE_DIFF2"
+   else
+      echo -e "\nDIFF Status: The files $FILE3 and file15mbDn are similar."
+   fi
+
+   add_common_separator "Copy object 'file10MB' from '$BUCKET' bucket to '$BUCKET2' bucket"
+   aws s3api copy-object --copy-source $BUCKET/file10MB --key file10MB --bucket $BUCKET2
+   check_status "Failed to copy object '$FILE1' from '$BUCKET' bucket to '$BUCKET2' bucket"
+
    add_common_separator "Remove all files in '$BUCKET' bucket"
    aws s3 rm s3://$BUCKET --recursive
    check_status "Failed to delete all files from '$BUCKET'"
+   
+   add_common_separator "Delete single object 'file10MB' from '$BUCKET2' bucket"
+   aws s3api delete-object --bucket $BUCKET2 --key file10MB
+   check_status "Failed to delete object 'file10MB' from '$BUCKET2'"
+
+   add_common_separator "Delete multiple objects from '$BUCKET2' bucket"
+   aws s3api delete-objects --bucket $BUCKET2 --delete Objects=[{Key=$FILE3},{Key=$FILE4}]
+   check_status "Failed to delete multiple objects from '$BUCKET2'"
 
    add_common_separator "Remove '$BUCKET' bucket"
    aws s3 rb s3://$BUCKET
    check_status "Failed to delete '$BUCKET'"
+
+   add_common_separator "Remove '$BUCKET2' bucket"
+   aws s3api delete-bucket --bucket $BUCKET2
+   check_status "Failed to delete '$BUCKET2'"
 
    add_common_separator "Cleanup awscli files"
    rm -rf ~/.aws/credentials
@@ -132,7 +239,21 @@ function run_io_sanity() {
    add_primary_separator "\tSuccessfully Passed IO Sanity Testing"
 }
 
+function run_data_io_sanity() {
+   kubectl exec -it $(kubectl get pods | awk '/cortx-client/{print $1; exit}') -c cortx-hax -- bash -c "pip3 install pandas xlrd \
+   && yum install -y diffutils \
+   && pushd /opt/seagate/cortx/motr/workload/ \
+   && ./create_workload_from_excel -t /opt/seagate/cortx/motr/workload/sample_workload_excel_test.xls \
+   && ./m0workload -t /opt/seagate/cortx/motr/workload/out*/workload_output.yaml \
+   && if [ ! -z $(cat /tmp/sandbox/temp-*/report.txt | grep 'Return Value' | awk -F'=' '{if($2>0)print $2}' | wc -l) ]; then echo 'ERROR : IO Operation Failed' && exit 1; else echo 'SUCCESS : IO Operation Successful'; fi \
+   && popd"   
+}
+
 # Execution
-install_awscli
-setup_awscli
-run_io_sanity
+if [[ "$DEPLOYMENT_METHOD" == "data-only" ]]; then
+   run_data_io_sanity
+else   
+   install_awscli
+   setup_awscli
+   run_io_sanity
+fi   

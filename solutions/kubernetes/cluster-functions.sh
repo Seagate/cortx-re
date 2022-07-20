@@ -20,19 +20,12 @@
 
 source /var/tmp/functions.sh
 
-CALICO_PLUGIN_VERSION=v3.20.1
+CALICO_PLUGIN_VERSION=v3.23.0
 K8_VERSION=1.22.6
-DOCKER_VERSION=latest
+DOCKER_VERSION=20.10.8
 OS_VERSION=( "CentOS 7.9.2009" "Rocky 8.4" )
 export Exception=100
 export ConfigException=101
-
-ACTION="$1"
-if [ -z "$ACTION" ]; then
-    echo "ERROR : No option provided"
-    usage
-    exit 1
-fi
 
 function usage() {
     cat << HEREDOC
@@ -45,6 +38,13 @@ where,
     --join-worker-nodes Join worker nodes to kubernetes cluster.
 HEREDOC
 }
+
+ACTION="$1"
+if [ -z "$ACTION" ]; then
+    echo "ERROR : No option provided"
+    usage
+    exit 1
+fi
 
 # try-catch functions
 function try() {
@@ -72,11 +72,31 @@ function verify_os() {
 }
 
 function print_cluster_status() {
-    while kubectl get nodes --no-headers | awk '{print $2}' | tr '\n' ' ' | grep -q NotReady
-    do
-		sleep 5
+    add_secondary_separator "Node Status"
+    SECONDS=0
+    while [[ SECONDS -lt 600 ]] ; do
+    if ! kubectl get nodes --no-headers | awk '{print $2}' | tr '\n' ' ' | grep -q NotReady ;then
+       kubectl get nodes -o wide
+       add_secondary_separator "POD Status"
+       SECONDS=0
+	    while [[ SECONDS -lt 600 ]] ; do
+	    if ! kubectl get pods -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}' -A | grep -qi false ; then
+	    	kubectl get pods -A -o wide
+        	exit 0
+	    else
+	       add_common_separator "Waiting for pods to become online. Sleeping for 10 sec...."
+	       sleep 10
+	    fi
+	    done
+            add_common_separator "PODs are not online within 10mins. Existing"
+            exit 1
+    else
+       add_common_separator "Waiting for Nodes to become online. Sleeping for 10 sec...."
+       sleep 10
+    fi
     done
-    kubectl get nodes -o wide
+    add_common_separator "Nodes are not online witing 10mins. Existing"
+    exit 1
 }
 
 function cleanup_node() {
@@ -107,6 +127,8 @@ function cleanup_node() {
         "/etc/kubernetes"
         "/var/lib/kubelet"
         "/var/lib/etcd"
+        "/var/tmp/cortx-*"
+        "/var/tmp/solution.yaml"
     )
     services_to_stop=(
         kubelet
@@ -182,7 +204,7 @@ function install_prerequisites() {
         rm -rf /etc/yum.repos.d/download.docker.com_linux_centos_7_x86_64_stable_.repo /etc/yum.repos.d/packages.cloud.google.com_yum_repos_kubernetes-el7-x86_64.repo docker-ce.repo
         yum-config-manager --add https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64 || throw $ConfigException
         yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo || throw $ConfigException     
-        yum install kubeadm-$K8_VERSION kubectl-$K8_VERSION kubelet-$K8_VERSION docker-ce --nogpgcheck -y || throw $ConfigException 
+        yum install kubeadm-$K8_VERSION kubectl-$K8_VERSION kubelet-$K8_VERSION docker-ce-$DOCKER_VERSION --nogpgcheck -y || throw $ConfigException 
 
         # Setup kernel parameters
         modprobe br_netfilter || throw $ConfigException
@@ -211,10 +233,10 @@ function install_prerequisites() {
         pushd /var/tmp/
             rm -rf calico*.yaml 
             if [ "$CALICO_PLUGIN_VERSION" == "latest" ]; then 
-                curl  https://docs.projectcalico.org/manifests/calico.yaml -o calico-$CALICO_PLUGIN_VERSION.yaml || throw $Exception
+                curl  https://projectcalico.docs.tigera.io/manifests/calico.yaml -o calico-$CALICO_PLUGIN_VERSION.yaml || throw $Exception
             else
                 CALICO_PLUGIN_MAJOR_VERSION=$(echo $CALICO_PLUGIN_VERSION | awk -F[.] '{print $1"."$2}')
-                curl https://docs.projectcalico.org/archive/$CALICO_PLUGIN_MAJOR_VERSION/manifests/calico.yaml -o calico-$CALICO_PLUGIN_VERSION.yaml || throw $Exception
+                curl https://projectcalico.docs.tigera.io/archive/$CALICO_PLUGIN_MAJOR_VERSION/manifests/calico.yaml -o calico-$CALICO_PLUGIN_VERSION.yaml || throw $Exception
             fi
             CALICO_IMAGE_VERSION=$(grep 'docker.io/calico/cni' calico-$CALICO_PLUGIN_VERSION.yaml | uniq | awk -F':' '{ print $3}')	
             wget -c https://github.com/projectcalico/calico/releases/download/$CALICO_IMAGE_VERSION/release-$CALICO_IMAGE_VERSION.tgz -O - | tar -xz || throw $Exception
@@ -269,10 +291,10 @@ function setup_primary_node() {
 
         # Apply calcio plugin 	
         if [ "$CALICO_PLUGIN_VERSION" == "latest" ]; then
-            curl https://docs.projectcalico.org/manifests/calico.yaml -o calico-$CALICO_PLUGIN_VERSION.yaml || throw $Exception
+            curl https://projectcalico.docs.tigera.io/manifests/calico.yaml -o calico-$CALICO_PLUGIN_VERSION.yaml || throw $Exception
         else
             CALICO_PLUGIN_MAJOR_VERSION=$(echo $CALICO_PLUGIN_VERSION | awk -F[.] '{print $1"."$2}')
-            curl https://docs.projectcalico.org/archive/$CALICO_PLUGIN_MAJOR_VERSION/manifests/calico.yaml -o calico-$CALICO_PLUGIN_VERSION.yaml || throw $Exception    
+            curl https://projectcalico.docs.tigera.io/archive/$CALICO_PLUGIN_MAJOR_VERSION/manifests/calico.yaml -o calico-$CALICO_PLUGIN_VERSION.yaml || throw $Exception    
         fi
 
         IS_VM=$(systemd-detect-virt -v)

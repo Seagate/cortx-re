@@ -166,7 +166,7 @@ pipeline {
 			}
 		}
 
-        stage('Release cortx_build'){
+        stage('Release cortx_build') {
             steps {
                 script { build_stage=env.STAGE_NAME }
                 sh label: 'Release cortx_build', script: '''
@@ -196,8 +196,8 @@ pipeline {
 					    pushd scripts/release_support
                             sh +x changelog.sh ${currentBuild.previousBuild.getNumber()} ${currentBuild.number} ${ARTIFACT_LOCATION} ${ACCESS_TOKEN}
 						popd
-						cp /root/git_build_checkin_stats/clone/git-build-checkin-report.txt CHANGESET.txt 
-                        cp CHANGESET.txt $integration_dir/$release_tag/cortx_iso
+						cp /root/git_build_checkin_stats/clone/git-build-checkin-report.md CHANGESET.md 
+                        cp CHANGESET.md $integration_dir/$release_tag/cortx_iso
                     """
                 } 
 			}
@@ -255,7 +255,7 @@ pipeline {
                     to: toEmail,
                 )
 
-				archiveArtifacts artifacts: "README.txt, RELEASE.INFO, CHANGESET.txt", onlyIfSuccessful: false, allowEmptyArchive: true
+				archiveArtifacts artifacts: "README.txt, RELEASE.INFO, CHANGESET.md", onlyIfSuccessful: false, allowEmptyArchive: true
             }
         }
     }
