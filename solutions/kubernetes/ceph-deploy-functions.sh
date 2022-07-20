@@ -498,8 +498,21 @@ else
     cephadm rm-cluster --fsid $fsid --force
 
     add_secondary_separator "Restore OSD disks"
+    osd_disks=$(lvs -o +devices | grep ceph | awk '{ print $5 }')
+
+    pv_volumes=()
+    for device in $osd_disks; do
+        block_device="${device%(*}"
+        echo $block_device
+        pv_volumes+=($block_device)
+    done
+
     lvremove /dev/ceph-* -y
     vgdisplay | grep ceph | awk '{ print $3 }' | xargs -I {} vgremove {}
+
+    for disk in ${!pv_volumes[@]}; do
+        pvremove ${pv_volumes[$disk]}
+    done
 
     add_secondary_separator "Remove docker images"
     docker system prune -a -f --filter "label!=vendor=Project Calico"
