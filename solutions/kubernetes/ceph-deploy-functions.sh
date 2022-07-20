@@ -430,6 +430,13 @@ function io_operation() {
     fi
 }
 
+function umount_osd() {
+    echo "OSD mounts to unmount: $osd_mount"
+    for mount in osd_mount;	do
+        umount mount
+    done
+}
+
 function destroy_cluster_vm() {
 if ! which ceph; then
     add_secondary_separator "Ceph is not installed"
@@ -450,10 +457,11 @@ else
 
     add_secondary_separator "Unmount osd tmpfs"
     osd_mount=$(df -hT | grep osd | awk '{ print $7}')
-    echo "OSD mounts to unmount: $osd_mount"
-    for mount in osd_mount;	do
-        umount mount
-    done
+
+    # umounting 3 times as sometimes osd requires multiple umount even after zapping (possible bug or process improvement required for removing osds cleanup)
+    umount_osd
+    umount_osd
+    umount_osd
 
     add_secondary_separator "Remove files"
     files_to_remove=(
