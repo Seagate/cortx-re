@@ -214,7 +214,7 @@ pipeline {
                 junit allowEmptyResults: true, testResults: '*report.xml'
                 echo "${env.cortxCluster_status}"
                 echo "${env.qaSanity_status}"
-                env.changeset_log_url = sh( script: "echo ${env.changeset_log_url}artifact/CHANGESET.md", returnStdout: true)
+                env.changeset_log_url = sh( script: "echo ${env.changeset_log_url}artifact/CHANGESET.md/*view*/", returnStdout: true)
                 if ( "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "SUCCESS" ) {
                     MESSAGE = "K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=Passed, SanityTest=Passed, Regression=Passed"
                     ICON = "accept.gif"
