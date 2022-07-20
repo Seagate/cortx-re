@@ -20,7 +20,7 @@ pipeline {
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for Cluster Setup scripts.', trim: true)
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Cluster Setup scripts.', trim: true)
         text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used. First node will be used as Primary node. Recommended all nodes with same OS, host OS is automatically detected. Single node deployment is not supported.', name: 'hosts')
-        text(defaultValue: '''/dev/sdX''', description: 'Disks for OSD on VMs. This assumes the disk name and no. of disk is same on all nodes.', name: 'OSD_Disks')
+        text(defaultValue: '''/dev/sdX''', description: 'Disks for OSD on VMs. This assumes the disk name and no. of disk is same on all nodes. Provide minimum of 3 disks.', name: 'OSD_Disks')
     }    
 
     stages {
