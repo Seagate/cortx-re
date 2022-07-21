@@ -1,5 +1,3 @@
-#!/usr/bin/env groovy
-// CLEANUP REQUIRED
 pipeline { 
     agent {
         node {
@@ -56,7 +54,7 @@ pipeline {
                  
                 dir("motr") {
 
-                    checkout([$class: 'GitSCM', branches: [[name: "${MOTR_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog'], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${MOTR_REPO}",  name: 'origin', refspec: "${MOTR_PR_REFSEPEC}"]]])
+                    checkout([$class: 'GitSCM', branches: [[name: "${MOTR_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog'], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${MOTR_REPO}",  name: 'origin', refspec: "${MOTR_PR_REFSEPEC}"]]])
 
                 }
                 dir ('hare') {
