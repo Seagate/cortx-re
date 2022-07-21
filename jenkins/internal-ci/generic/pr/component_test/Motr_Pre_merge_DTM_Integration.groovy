@@ -18,14 +18,14 @@ pipeline {
     parameters {  
 	    string(name: 'MOTR_REPO', defaultValue: 'https://github.com/Seagate/cortx-motr', description: 'Repo for Motr')
         string(name: 'MOTR_BRANCH', defaultValue: 'main', description: 'Branch for Motr')
-        }
+    }
 
     environment {
 
         // Motr Repo Info
 
         GPR_REPO = "https://github.com/${ghprbGhRepository}"
-        MOTR_URL = "${ghprbGhRepository != null ? GPR_REPO : MOTR_URL}"
+        MOTR_REPO = "${ghprbGhRepository != null ? GPR_REPO : MOTR_REPO}"
         MOTR_BRANCH = "${sha1 != null ? sha1 : MOTR_BRANCH}"
 
         MOTR_GPR_REFSEPEC = "+refs/pull/${ghprbPullId}/*:refs/remotes/origin/pr/${ghprbPullId}/*"
@@ -36,18 +36,15 @@ pipeline {
         // OS_VERSION and COMPONENTS_BRANCH are manually created parameters in jenkins job.
         
         COMPONENT_NAME = "motr".trim()
-        BRANCH = "${ghprbTargetBranch != null ? ghprbTargetBranch : COMPONENTS_BRANCH}"
         HARE_BRANCH = "main"
         HARE_REPO = "https://github.com/Seagate/cortx-hare"
     }
     stages {
 
         // Build motr fromm PR source code
-        stage('Chekout') {
+        stage('Build Variables Info') {
             steps {
 				script { build_stage = env.STAGE_NAME }
-                script { manager.addHtmlBadge("&emsp;<b>Target Branch : ${BRANCH}</b>&emsp;<br />") }
-
                  sh """
                     set +x
                     echo "--------------BUILD PARAMETERS -------------------"
@@ -76,7 +73,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 script {
                     try {
-                        def buildCortxAllImage = build job: '/Motr/DTM-Integration-Test', wait: true,
+                        def dtmTest = build job: '/Motr/DTM-Integration-Test', wait: true,
                             parameters: [
                                 string(name: 'MOTR_REPO', value: "${MOTR_REPO}"),
                                 string(name: 'MOTR_BRANCH', value: "${MOTR_BRANCH}"),
