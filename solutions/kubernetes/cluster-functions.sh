@@ -191,7 +191,7 @@ function install_prerequisites() {
         # Stop and disable firewalld
         (systemctl stop firewalld && systemctl disable firewalld && sudo systemctl mask --now firewalld) || throw $Exception
         # Install python packages
-        (yum install python3-pip yum-utils wget -y && pip3 install --upgrade pip && pip3 install jq yq) || throw $Exception
+        (yum install python3-pip yum-utils wget jq -y && pip3 install --upgrade pip && pip3 install jq yq) || throw $Exception
 
         CURRENT_OS=$(cut -d ' ' -f 1,4 < /etc/redhat-release)
         if [ "$CURRENT_OS" == "Rocky 8.4" ]; then
