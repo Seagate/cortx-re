@@ -219,3 +219,114 @@ function ssh_all_nodes() {
 function ssh_primary_node() {
     ssh -o 'StrictHostKeyChecking=no' "$PRIMARY_NODE" $*
 }
+
+function setup_awscli() {
+   add_secondary_separator "Setup awscli"
+   
+   # Configure plugin, api and endpoints.
+   add_common_separator "Setup aws s3 plugin endpoints"
+   aws configure set plugins.endpoint awscli_plugin_endpoint
+   check_status "Failed to set awscli s3 plugin endpoint"
+   add_common_separator "Setup aws s3 endpoint url"
+   aws configure set s3.endpoint_url $ENDPOINT_URL
+   check_status "Failed to set awscli s3 endpoint url"
+   add_common_separator "Setup default aws region"
+   aws configure set default.region us-east-1
+   check_status "Failed to set default aws region"
+   add_common_separator "Setup awscli s3api endpoint url"
+   aws configure set s3api.endpoint_url $ENDPOINT_URL
+   check_status "Failed to set awscli s3 api endpoint url"
+
+   # Setup awscli authentication.
+   add_common_separator "Setup aws access key"
+   aws configure set aws_access_key_id $ACCESS_KEY
+   check_status "Failed to set awscli access key"
+   add_common_separator "Setup aws secret key"
+   aws configure set aws_secret_access_key $SECRET_KEY
+   check_status "Failed to set awscli secret key"
+   cat /root/.aws/config
+   add_primary_separator "Successfully installed and configured awscli"
+}
+
+function install_awscli() {
+   add_primary_separator "\tInstall and setup awscli"
+
+   add_secondary_separator "Check and install pip3 if not present:"
+   if ! which pip3; then
+      yum install python3-pip
+   fi
+
+   add_secondary_separator "Installing awscli"
+   pip3 install awscli
+   pip3 install awscli-plugin-endpoint
+
+   if ! which aws; then
+      add_common_separator "AWS CLI installation failed"
+      exit 1
+   fi
+}
+
+# Install yq 4.13.3
+
+function install_yq() {
+    YQ_VERSION=v4.13.3
+    YQ_BINARY=yq_linux_386
+    pip3 show yq && pip3 uninstall yq -y
+    wget https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${YQ_BINARY}.tar.gz -O - | tar xz && mv ${YQ_BINARY} /usr/bin/yq
+    if [ -f /usr/local/bin/yq ]; then rm -rf /usr/local/bin/yq; fi    
+    ln -s /usr/bin/yq /usr/local/bin/yq
+}
+
+function run_io_sanity() {
+   add_primary_separator "\tStarting IO Sanity Testing"
+
+#   add_primary_separator "\tClean up existing buckets"
+#   for bucket in $(aws s3 ls | awk '{ print $NF}'); do add_common_separator "Deleteing $bucket"; aws s3 rm s3://$bucket --recursive && aws s3 rb s3://$bucket; done
+
+   BUCKET="test-bucket"
+   FILE1="file10mb"
+   FILE2="test-obj.bin"
+
+   add_common_separator "Creating S3 bucket:- '$BUCKET'"
+   aws s3 mb s3://$BUCKET
+   check_status "Failed to create bucket"
+   aws s3 ls
+   check_status "Failed to list buckets"
+
+   add_common_separator "Create files to upload to '$BUCKET' bucket"
+   echo -e "\nCreating '$FILE1'"
+   dd if=/dev/zero of=$FILE1 bs=1M count=10
+   echo -e "\nCreating '$FILE2'"
+   date > $FILE2
+
+   add_common_separator "Uploading '$FILE1' file to '$BUCKET' bucket"
+   aws s3 cp $FILE1 s3://$BUCKET/file10MB
+   check_status "Failed to upload '$FILE1' to '$BUCKET'"
+   add_common_separator "Uploading '$FILE2' file to '$BUCKET' bucket"
+   aws s3 cp $FILE2 s3://$BUCKET
+   check_status "Failed to upload '$FILE2' to '$BUCKET'"
+
+   add_common_separator "List files in '$BUCKET' bucket"
+   aws s3 ls s3://$BUCKET
+   check_status "Failed to list files in '$BUCKET'"
+
+   add_common_separator "Download '$FILE1' as 'file10mbDn' and check diff"
+   aws s3 cp s3://$BUCKET/file10MB file10mbDn
+   check_status "Failed to download '$FILE1' as 'file10mbDn' from '$BUCKET'"
+   FILE_DIFF=$(diff $FILE1 file10mbDn)
+
+   if [[ $FILE_DIFF ]]; then
+      echo -e "\nDIFF Status: $FILE_DIFF"
+   else
+      echo -e "\nDIFF Status: The files $FILE1 and file10mbDn are similar."
+   fi
+
+   add_common_separator "Remove all files in '$BUCKET' bucket"
+   aws s3 rm s3://$BUCKET --recursive
+   check_status "Failed to delete all files from '$BUCKET'"
+
+   add_common_separator "Remove '$BUCKET' bucket"
+   aws s3 rb s3://$BUCKET
+   check_status "Failed to delete '$BUCKET'"
+   add_primary_separator "\tSuccessfully Passed IO Sanity Testing"
+}
