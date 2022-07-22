@@ -12,8 +12,8 @@ pipeline {
         ansiColor('xterm')  
     }
     parameters {  
-	    string(name: 'MOTR_REPO', defaultValue: 'https://github.com/Seagate/cortx-motr', description: 'Repo for Motr')
-            string(name: 'MOTR_BRANCH', defaultValue: 'main', description: 'Branch for Motr')
+	string(name: 'MOTR_REPO', defaultValue: 'https://github.com/Seagate/cortx-motr', description: 'Repo for Motr')
+    string(name: 'MOTR_BRANCH', defaultValue: 'main', description: 'Branch for Motr')
     }
     environment {
         // Motr Repo Info
