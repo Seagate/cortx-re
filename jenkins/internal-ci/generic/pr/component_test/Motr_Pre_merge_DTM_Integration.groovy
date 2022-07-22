@@ -4,7 +4,6 @@ pipeline {
             label "docker-${OS_VERSION}-node"
         }
     }
-
     options { 
         skipDefaultCheckout()
         timeout(time: 180, unit: 'MINUTES')
@@ -12,20 +11,15 @@ pipeline {
         disableConcurrentBuilds()
         ansiColor('xterm')  
     }
-
     parameters {  
 	    string(name: 'MOTR_REPO', defaultValue: 'https://github.com/Seagate/cortx-motr', description: 'Repo for Motr')
         string(name: 'MOTR_BRANCH', defaultValue: 'main', description: 'Branch for Motr')
     }
-
     environment {
-
         // Motr Repo Info
-
         GPR_REPO = "https://github.com/${ghprbGhRepository}"
         MOTR_REPO = "${ghprbGhRepository != null ? GPR_REPO : MOTR_REPO}"
         MOTR_BRANCH = "${sha1 != null ? sha1 : MOTR_BRANCH}"
-
         MOTR_GPR_REFSEPEC = "+refs/pull/${ghprbPullId}/*:refs/remotes/origin/pr/${ghprbPullId}/*"
         MOTR_BRANCH_REFSEPEC = "+refs/heads/*:refs/remotes/origin/*"
         MOTR_PR_REFSEPEC = "${ghprbPullId != null ? MOTR_GPR_REFSEPEC : MOTR_BRANCH_REFSEPEC}"
@@ -38,11 +32,10 @@ pipeline {
         HARE_REPO = "https://github.com/Seagate/cortx-hare"
     }
     stages {
-
         // Build motr fromm PR source code
         stage('Build Variables Info') {
             steps {
-				script { build_stage = env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
                  sh """
                     set +x
                     echo "--------------BUILD PARAMETERS -------------------"
@@ -50,21 +43,17 @@ pipeline {
                     echo "MOTR_BRANCH           = ${MOTR_BRANCH}"
                     echo "MOTR_PR_REFSEPEC       = ${MOTR_PR_REFSEPEC}"
                     echo "-----------------------------------------------------------"
-                """
-                 
+                """ 
                 dir("motr") {
 
                     checkout([$class: 'GitSCM', branches: [[name: "${MOTR_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog'], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${MOTR_REPO}",  name: 'origin', refspec: "${MOTR_PR_REFSEPEC}"]]])
-
                 }
                 dir ('hare') {
 
-                    checkout([$class: 'GitSCM', branches: [[name: "*/${HARE_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 0, noTags: false, reference: '', shallow: false,  timeout: 5], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${HARE_REPO}"]]])
-
+                    checkout([$class: 'GitSCM', branches: [[name: "*/${HARE_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 0, noTags: false, reference: '', shallow: false,  timeout: 5], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${HARE_REPO}"]]])
                 }
             }
         }
-
         // Run DTM-Integration-Test
         stage ("DTM-Integration Test") {
             steps {
