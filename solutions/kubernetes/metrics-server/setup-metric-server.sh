@@ -30,6 +30,8 @@ function install_metricsserver() {
     until kubectl top node 2>/dev/null || ((COUNT++ >= 5)); do
         sleep 5
     done
+    kubectl -n kubernetes-dashboard get pods &>/dev/null
+    check_status "Getting error in Metrics Server, Please check!"
     add_secondary_separator "Deployed Metrics Server successfully"
 }
 function install_k8dashboard() {
