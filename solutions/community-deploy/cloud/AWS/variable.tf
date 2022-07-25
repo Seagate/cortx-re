@@ -37,3 +37,16 @@ variable "key_name" {
   type        = string
   default     = "cortx-key"
 }
+
+variable "instance_count" {
+  description = "EC2 instance count"
+  type        = number
+  default     = "1"
+}
+
+variable "ebs_volume_count" {
+  description = "EBS volume count"
+  type        = number
+  default     = "9"
+}
+
