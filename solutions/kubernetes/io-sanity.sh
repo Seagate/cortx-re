@@ -283,10 +283,6 @@ function run_data_io_sanity() {
    && if [ ! -z $(cat /tmp/sandbox/temp-*/report.txt | grep 'Return Value' | awk -F'=' '{if($2>0)print $2}' | wc -l) ]; then echo 'ERROR : IO Operation Failed' && exit 1; else echo 'SUCCESS : IO Operation Successful'; fi \
    && popd"   
 }
-
-DEPLOYMENT_METHOD="All"
-CEPH_DEPLOYMENT="false"
-CEPH_DOCKER_DEPLOYMENT="true"
 # Execution
 if [[ "$DEPLOYMENT_METHOD" == "data-only" ]]; then
    run_data_io_sanity
