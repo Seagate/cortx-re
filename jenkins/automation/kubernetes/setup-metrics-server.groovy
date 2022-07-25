@@ -36,7 +36,7 @@ pipeline {
                     pushd solutions/kubernetes/metrics-server/
                         echo $hosts | tr ' ' '\n' > hosts
                         cat hosts
-                        ./setup-metrics-server.sh
+                        bash setup-metrics-server.sh
                     popd
                 '''
             }
