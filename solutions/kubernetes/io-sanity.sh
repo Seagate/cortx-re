@@ -160,8 +160,6 @@ function run_io_sanity() {
    dd if=/dev/zero of=$FILE3 bs=1M count=15
    echo -e "\nCreating '$FILE4'"
    dd if=/dev/zero of=$FILE4 bs=1M count=18
-   echo -e "\nCreating '$FILE5"
-   dd if=/dev/zero of=$FILE4 bs=1M count=18
 
    add_common_separator "Uploading '$FILE1' file to '$BUCKET' bucket"
    aws s3 cp $FILE1 s3://$BUCKET/file10MB
@@ -226,7 +224,7 @@ function run_io_sanity() {
    add_common_separator "Delete multiple objects from '$BUCKET2' bucket"
    aws s3api delete-objects --bucket $BUCKET2 --delete Objects=[{Key=$FILE3},{Key=$FILE4}]
    check_status "Failed to delete multiple objects from '$BUCKET2'"
-   
+
    add_common_separator "Multipart opearation on '$BUCKET2' bucket"
    rm -rf /tmp/upload.log
    aws s3api create-multipart-upload --bucket $BUCKET2 --key multipart >> /tmp/upload.log
@@ -264,7 +262,7 @@ function run_io_sanity() {
    check_status "Failed to delete '$BUCKET'"
 
    add_common_separator "Remove '$BUCKET2' bucket"
-   aws s3 rb s3://$BUCKET2
+   aws s3api delete-bucket --bucket $BUCKET2
    check_status "Failed to delete '$BUCKET2'"
 
    add_common_separator "Cleanup awscli files"
@@ -283,6 +281,7 @@ function run_data_io_sanity() {
    && if [ ! -z $(cat /tmp/sandbox/temp-*/report.txt | grep 'Return Value' | awk -F'=' '{if($2>0)print $2}' | wc -l) ]; then echo 'ERROR : IO Operation Failed' && exit 1; else echo 'SUCCESS : IO Operation Successful'; fi \
    && popd"   
 }
+
 # Execution
 if [[ "$DEPLOYMENT_METHOD" == "data-only" ]]; then
    run_data_io_sanity
@@ -290,4 +289,4 @@ else
    install_awscli
    setup_awscli
    run_io_sanity
-fi
+fi   
