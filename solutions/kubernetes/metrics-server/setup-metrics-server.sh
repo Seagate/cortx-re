@@ -32,7 +32,7 @@ function setup_metrics_server() {
     echo PRIMARY NODE="$PRIMARY_NODE"
 
     # Copy scripts to all nodes:
-    scp_all_nodes setup-metrics-server-functions.sh functions.sh cluster-functions.sh
+    scp_all_nodes setup-metrics-server-functions.sh cluster-functions.sh
     ssh_primary_node "/var/tmp/setup-metrics-server-functions.sh"
     check_status
 }
