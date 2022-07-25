@@ -34,6 +34,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Tag last_successful', script: '''
                     pushd solutions/kubernetes/metrics-server/
+                        chmod u+x setup-metrics-server.sh
                         echo $hosts | tr ' ' '\n' > hosts
                         cat hosts
                         ./setup-metrics-server.sh
