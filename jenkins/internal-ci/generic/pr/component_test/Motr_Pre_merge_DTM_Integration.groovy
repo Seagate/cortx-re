@@ -9,11 +9,11 @@ pipeline {
         timeout(time: 180, unit: 'MINUTES')
         timestamps()
         disableConcurrentBuilds()
-        ansiColor('xterm')  
+        ansiColor('xterm')
     }
     parameters {  
-	string(name: 'MOTR_REPO', defaultValue: 'https://github.com/Seagate/cortx-motr', description: 'Repo for Motr')
-    string(name: 'MOTR_BRANCH', defaultValue: 'main', description: 'Branch for Motr')
+        string(name: 'MOTR_REPO', defaultValue: 'https://github.com/Seagate/cortx-motr', description: 'Repo for Motr')
+        string(name: 'MOTR_BRANCH', defaultValue: 'main', description: 'Branch for Motr')
     }
     environment {
         // Motr Repo Info
@@ -44,14 +44,6 @@ pipeline {
                     echo "MOTR_PR_REFSEPEC       = ${MOTR_PR_REFSEPEC}"
                     echo "-----------------------------------------------------------"
                 """ 
-                dir("motr") {
-
-                    checkout([$class: 'GitSCM', branches: [[name: "${MOTR_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog'], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${MOTR_REPO}",  name: 'origin', refspec: "${MOTR_PR_REFSEPEC}"]]])
-                }
-                dir ('hare') {
-
-                    checkout([$class: 'GitSCM', branches: [[name: "*/${HARE_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 0, noTags: false, reference: '', shallow: false,  timeout: 5], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${HARE_REPO}"]]])
-                }
             }
         }
         // Run DTM-Integration-Test
