@@ -49,7 +49,7 @@ locals {
 }
 
 resource "aws_security_group" "cortx_deploy" {
-  name        = "cortx_deploy"
+  name        = "shailesh-multinode-poc-cortx_deploy"
   description = "Allow standard ssh, CORTX mangement ports inbound and everything else outbound."
 
   ingress {
@@ -61,11 +61,11 @@ resource "aws_security_group" "cortx_deploy" {
   }
 
   ingress {
-    description = "CORTX UI Access"
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = [var.security_group_cidr]
+    description = "Allow access within security group"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    self        = true
   }
 
   egress {
@@ -75,7 +75,10 @@ resource "aws_security_group" "cortx_deploy" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = local.common_tags
+  tags = {
+    Name = "shailesh-multinode-poc"
+  }
+
 }
 
 data "aws_ami" "centos" {
@@ -118,6 +121,7 @@ resource "local_sensitive_file" "pem_file" {
 
 resource "aws_instance" "cortx_deploy" {
   # https://wiki.centos.org/Cloud/AWS
+  count 		 = var.instance_count		
   ami                    = data.aws_ami.centos.id
   instance_type          = "t3a.2xlarge"
   availability_zone      = data.aws_availability_zones.available.names[0]
@@ -136,7 +140,7 @@ resource "aws_instance" "cortx_deploy" {
   }
 
   tags = {
-    Name = "deployment-poc"
+    Name = "shailesh-multinode-poc-${count.index + 1}"
   }
 
   provisioner "file" {
@@ -154,11 +158,14 @@ resource "aws_instance" "cortx_deploy" {
 }
 
 resource "aws_ebs_volume" "data_vol" {
-  count             = 9
+  count             = var.ebs_volume_count * var.instance_count
   availability_zone = data.aws_availability_zones.available.names[0]
   size              = 10
+  tags = {
+    Name = "shailesh-multinode-poc-${count.index + 1}"
+  }
 
-  tags = local.common_tags
+
 }
 
 variable "ec2_device_names" {
@@ -176,43 +183,25 @@ variable "ec2_device_names" {
 }
 
 resource "aws_volume_attachment" "deploy_server_data" {
-  count       = 9
+  count       = var.ebs_volume_count * var.instance_count
   volume_id   = aws_ebs_volume.data_vol.*.id[count.index]
   device_name = element(var.ec2_device_names, count.index)
-  instance_id = aws_instance.cortx_deploy.id
+  instance_id = element(aws_instance.cortx_deploy.*.id, floor(count.index/var.ebs_volume_count))
 }
 
-resource "aws_network_interface" "network_interface_1" {
-  security_groups = [aws_security_group.cortx_deploy.id]
-  subnet_id       = aws_default_subnet.default.id
-
-  attachment {
-    instance     = aws_instance.cortx_deploy.id
-    device_index = 1
-  }
-}
-
-resource "aws_network_interface" "network_interface_2" {
-  security_groups = [aws_security_group.cortx_deploy.id]
-  subnet_id       = aws_default_subnet.default.id
-
-  attachment {
-    instance     = aws_instance.cortx_deploy.id
-    device_index = 2
-  }
-}
-
+/*
 resource "aws_eip" "elastic_ip" {
   vpc = true
 }
 
 resource "aws_eip_association" "eip_assoc" {
-  instance_id   = aws_instance.cortx_deploy.id
+  count         = var.instance_count
+  instance_id   = element(aws_instance.cortx_deploy.*.id, floor(count.index/var.ebs_volume_count))
   allocation_id = aws_eip.elastic_ip.id
 }
 
 output "cortx_deploy_ip_addr" {
-  value       = aws_eip_association.eip_assoc.public_ip
+  value       = aws_eip_association.eip_assoc.*.public_ip
   description = "Public IP to connect CORTX server"
 }
-
+*/
