@@ -33,7 +33,7 @@ function setup_metrics_server() {
 
     # Copy scripts to all nodes:
     scp_primary_node setup-metrics-server-functions.sh  ../functions.sh ../cluster-functions.sh
-    ssh_primary_node "/var/tmp/setup-metrics-server-functions.sh"
+    ssh_primary_node "bash /var/tmp/setup-metrics-server-functions.sh"
     check_status
 }
 function print_status() {
