@@ -16,7 +16,7 @@ This section enlists the commands to deploy the CORTX Stack on K8s cluster.
 ### Make sure your VM(virtual machine) has following drives available on it:
 
 ```
-# ls /dev/sd*
+ls /dev/sd*
 
 /dev/sda  /dev/sda1  /dev/sda2  /dev/sdb  /dev/sdc  /dev/sdd  /dev/sde  /dev/sdf  /dev/sdg  /dev/sdh  /dev/sdi
 ```
@@ -25,25 +25,25 @@ This section enlists the commands to deploy the CORTX Stack on K8s cluster.
 You can use following command for RedHat family OS to install the Git.
 
 ```
-# yum install git -y
+yum install git -y
 ```
 
 ### SELinux should be disabled
 
 -  Use the following command to check status of SELinux.
 ```
-# sestatus
+sestatus
 ```
 -  If SELinux is enabled, run the following command to disable the SELinux.
 
 ```
-# sed -i 's/SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config && setenforce 0
+sed -i 's/SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config && setenforce 0
 ```
 
 -  Once above command runs successfully, reboot your system.
 
 ```
-# reboot
+reboot
 ```   
 
 ### Note
@@ -55,7 +55,7 @@ You can use following command for RedHat family OS to install the Git.
 
 -  Clone cortx-re repository and change directory to `cortx-re/solutions/kubernetes`.
 ```
-# git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/kubernetes
+git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/kubernetes
 ```
 
 -  Create the hosts file in the current directory.
@@ -74,7 +74,7 @@ hostname=cortx-deploy-node3.cortx.com,user=root,pass=<root-password>
 -  To allow PODs creation on primary node pass the first input parameter for `cluster-setup.sh` script as true. Please note you must pass the input parameter as true for Single Node Setup.
 
 ```
-# ./cluster-setup.sh true
+./cluster-setup.sh true
 ```
 
 ## Deploy CORTX Stack 
@@ -82,7 +82,7 @@ hostname=cortx-deploy-node3.cortx.com,user=root,pass=<root-password>
 Execute `cortx-deploy.sh` to deploy the CORTX on your K8s Cluster.
 
 ```
-# export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
+export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
 ```
 
 #### Note:  
@@ -108,16 +108,17 @@ Following parameter/s are passed when the cluster deployment command executes. I
 
 For example:
 ```
-# export CORTX_SCRIPTS_BRANCH=integration && export CORTX_SCRIPTS_REPO=AbhijitPatil1992/cortx-k8s && export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
+export CORTX_SCRIPTS_BRANCH=integration && export CORTX_SCRIPTS_REPO=AbhijitPatil1992/cortx-k8s && export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
 ```
 
 ## Sanity test 
 
 Run IO Sanity on your CORTX Cluster to validate bucket creation and object upload in deployed cluster.
 ```
-# ./cortx-deploy.sh --io-sanity
+./cortx-deploy.sh --io-sanity
 ```
 
 Tested by:
 
+* July 26, 2022: Mukul Malhotra (mukul.malhotra@seagate.com) - AWS EC2, CentOS 7.9 Linux
 * May 06, 2022: Rahul Shenoy (rahul.shenoy@seagate.com) - Windows , VMware Workstation 16 , CentOS 7.9 Linux
