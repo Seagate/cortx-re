@@ -7,7 +7,7 @@ rule_files:
 # All mountpoints in alert.rules have been manually mounted onto the node.
   - 'alert.rules'
 
-# Change all ips below to that of the mounted node. 
+# Change all ips below to that of the mounted node.
 scrape_configs:
   - job_name: 'prometheus'
     static_configs: 
