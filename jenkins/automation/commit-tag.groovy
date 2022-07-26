@@ -18,7 +18,7 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }             
                 script {
-                    checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])                
+                    checkout([$class: 'GitSCM', branches: [[name: 'fix-comit-tagging']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/gauravchaudhari02/cortx-re']]])                
                 }
             }
         }
@@ -27,12 +27,14 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
-                    sh """ 
-                        export CORTX_IMAGE=${CORTX_IMAGE}
-                        export GIT_TAG=${GIT_TAG}
-                        export TAG_MESSAGE=${TAG_MESSAGE}
-                        bash scripts/release_support/image-based-commit-tag.sh
-                    """			
+                    withCredentials([usernamePassword(credentialsId: 'cortx-admin-github', passwordVariable: 'PASSWD', usernameVariable: 'USER_NAME')]) {
+                        sh """ 
+                            export CORTX_IMAGE=${CORTX_IMAGE}
+                            export GIT_TAG=${GIT_TAG}
+                            export TAG_MESSAGE=${TAG_MESSAGE}
+                            bash scripts/release_support/image-based-commit-tag.sh
+                        """
+                    }			
                 }
             }
 	    }
