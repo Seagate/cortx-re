@@ -275,7 +275,7 @@ function run_io_sanity() {
    check_status "Failed to delete '$BUCKET'"
 
    add_common_separator "Remove '$BUCKET2' bucket"
-   aws s3 rb s3://$BUCKET2
+   aws s3api delete-bucket --bucket $BUCKET2
    check_status "Failed to delete '$BUCKET2'"
 
    add_common_separator "Cleanup awscli files"
