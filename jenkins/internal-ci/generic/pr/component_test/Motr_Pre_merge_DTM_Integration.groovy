@@ -19,7 +19,7 @@ pipeline {
         // Motr Repo Info
         GPR_REPO = "https://github.com/${ghprbGhRepository}"
         MOTR_REPO = "${ghprbGhRepository != null ? GPR_REPO : MOTR_REPO}"
-        MOTR_BRANCH = "${ghprbSourceBranch != null ? ghprbSourceBranch : MOTR_BRANCH}"
+        MOTR_BRANCH = "${sha1 != null ? sha1 : MOTR_BRANCH}"
         MOTR_GPR_REFSEPEC = "+refs/pull/${ghprbPullId}/*:refs/remotes/origin/pr/${ghprbPullId}/*"
         MOTR_BRANCH_REFSEPEC = "+refs/heads/*:refs/remotes/origin/*"
         MOTR_PR_REFSEPEC = "${ghprbPullId != null ? MOTR_GPR_REFSEPEC : MOTR_BRANCH_REFSEPEC}"
