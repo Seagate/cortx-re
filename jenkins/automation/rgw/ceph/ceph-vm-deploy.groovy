@@ -10,7 +10,6 @@ pipeline {
         timestamps()
         buildDiscarder(logRotator(daysToKeepStr: '30', numToKeepStr: '30'))
         ansiColor('xterm')
-        disableConcurrentBuilds()   
     }
 
     environment {
@@ -20,12 +19,12 @@ pipeline {
     parameters {
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for Cluster Setup scripts.', trim: true)
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Cluster Setup scripts.', trim: true)
-        text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used. First node will be used as Primary node. Recommended minimum of 3 nodes with same OS, host OS is automatically detected.', name: 'hosts')
-        text(defaultValue: '''/dev/sdX''', description: 'Disks for OSD on VMs. This assumes the disk name and no. of disk is same on all nodes.', name: 'OSD_Disks')
+        text(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'VM details to be used. First node will be used as Primary node. Recommended all nodes with same OS, host OS is automatically detected. Single node deployment is not supported.', name: 'hosts')
+        text(defaultValue: '''/dev/sdX''', description: 'Disks for OSD on VMs. This assumes the disk name and no. of disk is same on all nodes. Provide minimum of 3 disks.', name: 'OSD_Disks')
     }    
 
     stages {
-        stage('Checkout Script') {
+        stage ('Checkout Script') {
             steps { 
                 cleanWs()            
                 script {
@@ -153,6 +152,25 @@ pipeline {
     post {
         always {
             cleanWs()
+            script {
+                env.build_stage = "${build_stage}"
+
+                def toEmail = ""
+                def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
+                if ( manager.build.result.toString() == "FAILURE" ) {
+                    toEmail = "CORTX.DevOps.RE@seagate.com"
+                    recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
+                }
+
+                emailext (
+                    body: '''${SCRIPT, template="cluster-setup-email.template"}''',
+                    mimeType: 'text/html',
+                    subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
+                    attachLog: true,
+                    to: toEmail,
+                    recipientProviders: recipientProvidersClass
+                )
+            }
         }
     }
 }
