@@ -160,7 +160,7 @@ resource "aws_instance" "cortx_deploy" {
 resource "aws_ebs_volume" "data_vol" {
   count             = var.ebs_volume_count * var.instance_count
   availability_zone = data.aws_availability_zones.available.names[0]
-  size              = 10
+  size              = var.ebs_volume_size
   tags = {
     Name = "shailesh-multinode-poc-${count.index + 1}"
   }
