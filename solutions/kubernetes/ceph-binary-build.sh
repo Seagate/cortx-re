@@ -52,7 +52,7 @@ function check_params() {
     if [ -z "$CORTX_RGW_OPTIMIZED_BUILD" ]; then echo "CORTX_RGW_OPTIMIZED_BUILD for ceph packages not provided. Using default: false";CORTX_RGW_OPTIMIZED_BUILD="false"; fi
     if [ -z "$INSTALL_MOTR" ]; then echo "INSTALL_MOTR for ceph build not provided. Using default: false";INSTALL_MOTR="false"; fi
     if [ -z "$PR_BUILD" ]; then echo "PR_BUILD for ceph build not provided. Using default: false";PR_BUILD="false"; fi
-    if [ -z "$PR_ID" ]; then echo "PR_ID for ceph build not provided. Using default: false";PR_ID="0"; fi
+    if [ -z "$PR_ID" ]; then echo "PR_ID for ceph build not provided. Using default: 0";PR_ID="0"; fi
     if [ -z "$MOUNT" ]; then echo "MOUNT for uploading packages is not provided. Using default: cortx-storage.colo.seagate.com:/mnt/data1/releases/ceph";MOUNT="cortx-storage.colo.seagate.com:/mnt/data1/releases/ceph"; fi
     if [ -z "$build_upload_dir" ]; then echo "build_upload_dir for ceph packages not provided. Using default: /mnt/bigstorage/releases/ceph";build_upload_dir="/mnt/bigstorage/releases/ceph"; fi
 

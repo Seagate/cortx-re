@@ -41,7 +41,7 @@ pipeline {
     }    
 
     stages {
-        stage('Checkout Script') {
+        stage ('Checkout Script') {
             steps { 
                 cleanWs()            
                 script {
@@ -86,6 +86,25 @@ pipeline {
             sh label: 'Cleanup Build Location', script: """
             rm -rf ${BUILD_LOCATION}
             """
+            script {
+                env.build_stage = "${build_stage}"
+
+                def toEmail = ""
+                def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
+                if ( manager.build.result.toString() == "FAILURE" ) {
+                    toEmail = "CORTX.DevOps.RE@seagate.com"
+                    recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
+                }
+
+                emailext (
+                    body: '''${SCRIPT, template="cluster-setup-email.template"}''',
+                    mimeType: 'text/html',
+                    subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
+                    attachLog: true,
+                    to: toEmail,
+                    recipientProviders: recipientProvidersClass
+                )
+            }
         }
     }
 }
