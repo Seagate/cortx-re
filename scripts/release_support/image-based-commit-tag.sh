@@ -27,9 +27,13 @@ function get_commit_hash() {
     component="$1"
     for commit_detail in ${component_commit_details//,/ }
     do
+        commit=""
         component_name=$(awk -F":" '{print $1}' <<< "$commit_detail")
         if [ "$component_name" == "$component" ]; then
             commit=$(awk -F":" '{print $2}' <<< "$commit_detail")
+            if [ "$component" == "cortx-rgw" ]; then
+                commit="${commit:1}"
+            fi    
             echo "$commit"
         fi
     done
