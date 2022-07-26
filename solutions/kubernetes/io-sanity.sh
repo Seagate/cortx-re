@@ -227,7 +227,7 @@ function run_io_sanity() {
    aws s3api delete-objects --bucket $BUCKET2 --delete Objects=[{Key=$FILE3},{Key=$FILE4}]
    check_status "Failed to delete multiple objects from '$BUCKET2'"
    
-   add_common_separator "Multipart opearation on '$BUCKET2' bucket"
+   add_common_separator "Multipart upload opearation on '$BUCKET2' bucket"
    rm -rf /tmp/upload.log
    aws s3api create-multipart-upload --bucket $BUCKET2 --key multipart >> /tmp/upload.log
    UPLOAD_ID=$(cat /tmp/upload.log | grep -o "UploadId[\"]:.*" | cut -c12-48)
@@ -252,8 +252,19 @@ function run_io_sanity() {
    }
    ]
    }' > $FILE5
+   check_status "Multipart upload failed to '$BUCKET2'"
+
+   add_common_separator "List multipart upload '$BUCKET2' bucket"
+   aws s3api list-multipart-uploads --bucket $BUCKET2
+   check_status "List Multipart upload failed to '$BUCKET2'"
+
+   add_common_separator "List parts '$BUCKET2' bucket"
+   aws s3api list-parts --bucket $BUCKET2 --key multipart --upload-id $modified
+   check_status "List parts failed to '$BUCKET2'"
+
+   add_common_separator "Complete Multipart upload '$BUCKET2' bucket"
    aws s3api complete-multipart-upload --multipart-upload file://$FILE5 --bucket $BUCKET2 --key multipart --upload-id $modified 
-   check_status "Mutipart upload Failed on '$BUCKET2'Bucket"
+   check_status "Complete Mutipart upload Failed on '$BUCKET2'Bucket"
 
    add_common_separator "Remove all files in '$BUCKET2' bucket"
    aws s3 rm s3://$BUCKET2 --recursive
