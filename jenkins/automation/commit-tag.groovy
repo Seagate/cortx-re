@@ -18,7 +18,7 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }             
                 script {
-                    checkout([$class: 'GitSCM', branches: [[name: 'fix-comit-tagging']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/gauravchaudhari02/cortx-re']]])                
+                    checkout([$class: 'GitSCM', branches: [[name: 'fix-commit-tagging']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/gauravchaudhari02/cortx-re']]])                
                 }
             }
         }
