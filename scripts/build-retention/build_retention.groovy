@@ -41,7 +41,7 @@ pipeline {
                     emailext (
     			    body: "Current Disk Space is ${SPACE} : Job ${env.JOB_NAME} : Build URL ${env.BUILD_URL}",
     			    subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME} : build ${env.BUILD_NUMBER}",
-                    to: 'nitish.singh@seagate.com'
+                    to: 'CORTX.DevOps.RE@seagate.com'
                     )
                 }
             } 
