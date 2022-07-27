@@ -19,7 +19,7 @@ pipeline {
         string(name: 'OS_VERSION', defaultValue: 'CentOS 7.9.2009 x86_64', description: 'Operating system version', trim: true)
         string(name: 'REGION', defaultValue: 'ap-south-1', description: 'AWS region', trim: true)
         string(name: 'KEY_NAME', defaultValue: 'automation-key', description: 'Key name', trim: true)
-        string(name: 'EBS_VOLUME_COUNT', defaultValue: '9', description: 'EBS volumes to attach onto nodes', trim: true)
+        string(name: 'EBS_VOLUME_COUNT', defaultValue: '9', description: 'EBS volumes to attach onto nodes. Currently maximum 26 disks are supported', trim: true)
         string(name: 'EBS_VOLUME_SIZE', defaultValue: '10', description: 'EBS volume size in GB to attach onto nodes', trim: true)
         string(name: 'COMMUNITY_USE', defaultValue: 'yes', description: 'Only use during community deployment', trim: true)
         password(name: 'SECRET_KEY', description: 'secret key for AWS account')

@@ -78,7 +78,6 @@ resource "aws_security_group" "cortx_deploy" {
   tags = {
     Name = "shailesh-multinode-poc"
   }
-
 }
 
 data "aws_ami" "centos" {
@@ -99,7 +98,6 @@ data "aws_ami" "centos" {
     name   = "root-device-type"
     values = ["ebs"]
   }
-
 }
 
 resource "tls_private_key" "example" {
@@ -154,7 +152,6 @@ resource "aws_instance" "cortx_deploy" {
       host        = self.public_dns
     }
   }
-
 }
 
 resource "aws_ebs_volume" "data_vol" {
@@ -164,8 +161,6 @@ resource "aws_ebs_volume" "data_vol" {
   tags = {
     Name = "shailesh-multinode-poc-${count.index + 1}"
   }
-
-
 }
 
 variable "ec2_device_names" {
@@ -179,7 +174,27 @@ variable "ec2_device_names" {
     "/dev/sdh",
     "/dev/sdi",
     "/dev/sdj",
+    "/dev/sdk",
+    "/dev/sdl",
+    "/dev/sdm",
+    "/dev/sdn",
+    "/dev/sdo",
+    "/dev/sdp",
+    "/dev/sdq",
+    "/dev/sdr",
+    "/dev/sds",
+    "/dev/sdt",
+    "/dev/sdu",
+    "/dev/sdv",
+    "/dev/sdw",
+    "/dev/sdx",
+    "/dev/sdy",
+    "/dev/sdz"
   ]
+}
+
+variable "ec2_device_names_to_attach" {
+  default = slice(var.ec2_device_names, 0, var.ebs_volume_count)
 }
 
 resource "aws_volume_attachment" "deploy_server_data" {
