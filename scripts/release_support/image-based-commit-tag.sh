@@ -27,9 +27,13 @@ function get_commit_hash() {
     component="$1"
     for commit_detail in ${component_commit_details//,/ }
     do
+        commit=""
         component_name=$(awk -F":" '{print $1}' <<< "$commit_detail")
         if [ "$component_name" == "$component" ]; then
             commit=$(awk -F":" '{print $2}' <<< "$commit_detail")
+            if [ "$component" == "cortx-rgw" ]; then
+                commit="${commit:1}"
+            fi    
             echo "$commit"
         fi
     done
@@ -45,15 +49,15 @@ fi
 
 component_commit_details=$(docker inspect -f '{{ index .Config.Labels "org.opencontainers.image.revision" }}' "$CORTX_IMAGE")
 declare -A COMPONENT_LIST=(
-        [cortx-motr]="https://github.com/Seagate/cortx-motr.git"
-        [cortx-hare]="https://github.com/Seagate/cortx-hare.git"
-        [cortx-ha]="https://github.com/Seagate/cortx-ha.git"
-        [cortx-provisioner]="https://github.com/Seagate/cortx-prvsnr.git"
-        [cortx-csm_agent]="https://github.com/Seagate/cortx-manager.git"
-        [cortx-py-utils]="https://github.com/Seagate/cortx-utils.git"
-        [cortx-rgw-integration]="https://github.com/Seagate/cortx-rgw-integration.git"
-        [cortx-rgw]="https://github.com/Seagate/cortx-rgw.git"
-        [cortx-re]="https://github.com/Seagate/cortx-re.git"
+        [cortx-motr]="https://$PASSWD@github.com/Seagate/cortx-motr.git"
+        [cortx-hare]="https://$PASSWD@github.com/Seagate/cortx-hare.git"
+        [cortx-ha]="https://$PASSWD@github.com/Seagate/cortx-ha.git"
+        [cortx-provisioner]="https://$PASSWD@github.com/Seagate/cortx-prvsnr.git"
+        [cortx-csm_agent]="https://$PASSWD@github.com/Seagate/cortx-manager.git"
+        [cortx-py-utils]="https://$PASSWD@github.com/Seagate/cortx-utils.git"
+        [cortx-rgw-integration]="https://$PASSWD@github.com/Seagate/cortx-rgw-integration.git"
+        [cortx-rgw]="https://$PASSWD@github.com/Seagate/cortx-rgw.git"
+        [cortx-re]="https://$PASSWD@github.com/Seagate/cortx-re.git"
 )
 git config --global user.email "cortx-application@seagate.com"
 git config --global user.name "cortx-admin"
