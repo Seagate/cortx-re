@@ -70,8 +70,8 @@ hostname=cortx-deploy-node2.cortx.com,user=root,pass=<root-password>
 hostname=cortx-deploy-node3.cortx.com,user=root,pass=<root-password>
 ```
 
--  Execute `cluster-setup.sh` to setup K8s cluster on your VM for N-node deployment.
--  To allow PODs creation on primary node pass the first input parameter for `cluster-setup.sh` script as true. Please note you must pass the input parameter as true for Single Node Setup.
+-  Execute `cluster-setup.sh` script from primary node to setup K8s cluster on your EC2 instances for N-node deployment.
+-  To allow PODs creation on primary node to pass the first input parameter for `cluster-setup.sh` script as true. Please note you must pass the input parameter as true for N-node setup.
 
 ```
 ./cluster-setup.sh true
@@ -79,7 +79,7 @@ hostname=cortx-deploy-node3.cortx.com,user=root,pass=<root-password>
 
 ## Deploy CORTX Stack 
 
-Execute `cortx-deploy.sh` to deploy the CORTX on your K8s Cluster.
+Execute `cortx-deploy.sh` script from primary node to deploy the CORTX stack on your K8s cluster.
 
 ```
 export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
