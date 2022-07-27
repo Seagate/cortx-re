@@ -34,8 +34,8 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'setup metrics server', script: '''
                     pushd solutions/kubernetes/metrics-server/
-                        export CORTX_RE_REPO =${CORTX_RE_REPO}
-                        export CORTX_RE_BRANCH =${CORTX_RE_BRANCH}
+                        export CORTX_RE_REPO=${CORTX_RE_REPO}
+                        export CORTX_RE_BRANCH=${CORTX_RE_BRANCH}
                         echo $hosts | tr ' ' '\n' > hosts
                         cat hosts
                         bash setup-metrics-server.sh
