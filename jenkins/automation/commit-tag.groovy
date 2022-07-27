@@ -11,6 +11,8 @@ pipeline {
         string(name: 'CORTX_IMAGE', defaultValue: '', description: 'CORTX component image')
         string(name: 'GIT_TAG', defaultValue: '', description: 'Tag Name')
         string(name: 'TAG_MESSAGE', defaultValue: '', description: 'Tag Message')
+        string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for commit tag script', trim: true)
+        string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repository for commit tag script', trim: true)
     }
 
     stages {
@@ -18,7 +20,7 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }             
                 script {
-                    checkout([$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
+                    checkout([$class: 'GitSCM', branches: [[name: "${CORTX_RE_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${CORTX_RE_REPO}"]]])
                 }
             }
         }
