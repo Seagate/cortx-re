@@ -15,7 +15,7 @@ pipeline {
     parameters {
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for Cluster Setup scripts', trim: true)
-        string(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'Enter Primary node of your K8s Cluster, If 1N cluster make sure it is untainted', name: 'hosts')
+        string(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'Enter Primary node of your K8s Cluster    ', name: 'hosts')
 
     }    
 
@@ -24,7 +24,7 @@ pipeline {
             steps { 
                 cleanWs()            
                 script {      
-                    checkout([$class: 'GitSCM', branches: [[name: 'CORTX-33620']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: '6c2477fa-c4bc-463f-b926-4c343b86b8c5', url: 'https://github.com/vijwani-seagate/cortx-re/']]])          
+                    checkout([$class: 'GitSCM', branches: [[name: "${CORTX_RE_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${CORTX_RE_REPO}"]]])          
                 }
             }
         }
@@ -32,7 +32,7 @@ pipeline {
         stage ('Setup Metrics server & K8s dashboard') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Tag last_successful', script: '''
+                sh label: 'setup metrics server', script: '''
                     pushd solutions/kubernetes/metrics-server/
                         echo $hosts | tr ' ' '\n' > hosts
                         cat hosts
