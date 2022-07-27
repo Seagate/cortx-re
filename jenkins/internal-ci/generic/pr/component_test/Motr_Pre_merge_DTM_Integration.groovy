@@ -17,9 +17,9 @@ pipeline {
     }
     environment {
         // Motr Repo Info
-        GPR_REPO = "https://github.com/${ghprbGhRepository}"
-        MOTR_REPO = "${ghprbGhRepository != null ? GPR_REPO : MOTR_REPO}"
-        MOTR_BRANCH = "${sha1 != null ? sha1 : MOTR_BRANCH}"
+        GPR_REPO = "https://github.com/${ghprbAuthorRepoGitUrl}"
+        MOTR_REMOTE_REPO = "${ghprbAuthorRepoGitUrl != null ? GPR_REPO : MOTR_REMOTE_REPO}"
+        MOTR_BRANCH = "${ghprbSourceBranch != null ? ghprbSourceBranch : MOTR_BRANCH}"
         MOTR_GPR_REFSEPEC = "+refs/pull/${ghprbPullId}/*:refs/remotes/origin/pr/${ghprbPullId}/*"
         MOTR_BRANCH_REFSEPEC = "+refs/heads/*:refs/remotes/origin/*"
         MOTR_PR_REFSEPEC = "${ghprbPullId != null ? MOTR_GPR_REFSEPEC : MOTR_BRANCH_REFSEPEC}"
@@ -39,8 +39,8 @@ pipeline {
                  sh """
                     set +x
                     echo "--------------BUILD PARAMETERS -------------------"
-                    echo "MOTR_REPO              = ${MOTR_REPO}"
-                    echo "MOTR_BRANCH           = ${MOTR_BRANCH}"
+                    echo "MOTR_REMOTE_REPO       = ${MOTR_REMOTE_REPO}"
+                    echo "MOTR_BRANCH            = ${MOTR_BRANCH}"
                     echo "MOTR_PR_REFSEPEC       = ${MOTR_PR_REFSEPEC}"
                     echo "-----------------------------------------------------------"
                 """ 
