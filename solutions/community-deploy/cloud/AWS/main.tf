@@ -42,6 +42,7 @@ resource "aws_default_subnet" "default" {
 }
 
 locals {
+  ec2_device_names_to_attach = slice(var.ec2_device_names, 0, var.ebs_volume_count)
   common_tags = {
     "Terraform" = "true",
     "CORTX"     = "true"
@@ -163,46 +164,10 @@ resource "aws_ebs_volume" "data_vol" {
   }
 }
 
-variable "ec2_device_names" {
-  description = "Available block devices to attach to instances."
-  type = list(string)
-  default = [
-    "/dev/sdb",
-    "/dev/sdc",
-    "/dev/sdd",
-    "/dev/sde",
-    "/dev/sdf",
-    "/dev/sdg",
-    "/dev/sdh",
-    "/dev/sdi",
-    "/dev/sdj",
-    "/dev/sdk",
-    "/dev/sdl",
-    "/dev/sdm",
-    "/dev/sdn",
-    "/dev/sdo",
-    "/dev/sdp",
-    "/dev/sdq",
-    "/dev/sdr",
-    "/dev/sds",
-    "/dev/sdt",
-    "/dev/sdu",
-    "/dev/sdv",
-    "/dev/sdw",
-    "/dev/sdx",
-    "/dev/sdy",
-    "/dev/sdz"
-  ]
-}
-
-variable "ec2_device_names_to_attach" {
-  default = slice(var.ec2_device_names, 0, var.ebs_volume_count)
-}
-
 resource "aws_volume_attachment" "deploy_server_data" {
   count       = var.ebs_volume_count * var.instance_count
   volume_id   = aws_ebs_volume.data_vol.*.id[count.index]
-  device_name = element(var.ec2_device_names_to_attach, count.index)
+  device_name = element(local.ec2_device_names_to_attach, count.index)
   instance_id = element(aws_instance.cortx_deploy.*.id, floor(count.index/var.ebs_volume_count))
 }
 
