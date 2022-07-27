@@ -164,6 +164,8 @@ resource "aws_ebs_volume" "data_vol" {
 }
 
 variable "ec2_device_names" {
+  description = "Available block devices to attach to instances."
+  type = list(string)
   default = [
     "/dev/sdb",
     "/dev/sdc",
@@ -200,7 +202,7 @@ variable "ec2_device_names_to_attach" {
 resource "aws_volume_attachment" "deploy_server_data" {
   count       = var.ebs_volume_count * var.instance_count
   volume_id   = aws_ebs_volume.data_vol.*.id[count.index]
-  device_name = element(var.ec2_device_names, count.index)
+  device_name = element(var.ec2_device_names_to_attach, count.index)
   instance_id = element(aws_instance.cortx_deploy.*.id, floor(count.index/var.ebs_volume_count))
 }
 
