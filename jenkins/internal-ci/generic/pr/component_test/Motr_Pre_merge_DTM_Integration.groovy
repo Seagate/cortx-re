@@ -18,8 +18,8 @@ pipeline {
     environment {
         // Motr Repo Info
         GPR_REPO = "https://github.com/${ghprbGhRepository}"
-        MOTR_REMOTE_REPO = "${ghprbAuthorRepoGitUrl != null ? GPR_REPO : MOTR_REMOTE_REPO}"
-        MOTR_REMOTE_BRANCH = "${ghprbSourceBranch != null ? ghprbSourceBranch : MOTR_REMOTE_BRANCH}"
+        MOTR_REPO = "${ghprbAuthorRepoGitUrl != null ? GPR_REPO : MOTR_REPO}"
+        MOTR_BRANCH = "${ghprbSourceBranch != null ? ghprbSourceBranch : MOTR_BRANCH}"
         MOTR_GPR_REFSEPEC = "+refs/pull/${ghprbPullId}/*:refs/remotes/origin/pr/${ghprbPullId}/*"
         MOTR_BRANCH_REFSEPEC = "+refs/heads/*:refs/remotes/origin/*"
         MOTR_PR_REFSEPEC = "${ghprbPullId != null ? MOTR_GPR_REFSEPEC : MOTR_BRANCH_REFSEPEC}"
@@ -40,8 +40,8 @@ pipeline {
                  echo ${ghprbGhRepository} && echo ${ghprbAuthorRepoGitUrl}
                     set +x
                     echo "--------------BUILD PARAMETERS -------------------"
-                    echo "MOTR_REMOTE_REPO       = ${MOTR_REMOTE_REPO}"
-                    echo "MOTR_REMOTE_BRANCH     = ${MOTR_REMOTE_BRANCH}"
+                    echo "MOTR_REPO              = ${MOTR_REPO}"
+                    echo "MOTR_BRANCH            = ${MOTR_BRANCH}"
                     echo "MOTR_PR_REFSEPEC       = ${MOTR_PR_REFSEPEC}"
                     echo "-----------------------------------------------------------"
                 """ 
@@ -55,8 +55,8 @@ pipeline {
                     try {
                         def dtmTest = build job: '/Motr/DTM-Integration-Test', wait: true,
                             parameters: [
-                                string(name: 'MOTR_REMOTE_REPO', value: "${MOTR_REMOTE_REPO}"),
-                                string(name: 'MOTR_REMOTE_BRANCH', value: "${MOTR_REMOTE_BRANCH}"),
+                                string(name: 'MOTR_REPO', value: "${MOTR_REPO}"),
+                                string(name: 'MOTR_BRANCH', value: "${MOTR_BRANCH}"),
                                 string(name: 'HARE_BRANCH', value: "${HARE_BRANCH}"),
                                 string(name: 'HARE_REPO', value: "${HARE_REPO}")
                             ]
