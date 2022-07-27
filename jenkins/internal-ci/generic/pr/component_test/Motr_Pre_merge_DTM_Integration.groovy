@@ -17,7 +17,7 @@ pipeline {
     }
     environment {
         // Motr Repo Info
-        GPR_REPO = "https://github.com/${ghprbAuthorRepoGitUrl}"
+        GPR_REPO = "https://github.com/${ghprbGhRepository}"
         MOTR_REMOTE_REPO = "${ghprbAuthorRepoGitUrl != null ? GPR_REPO : MOTR_REMOTE_REPO}"
         MOTR_BRANCH = "${ghprbSourceBranch != null ? ghprbSourceBranch : MOTR_BRANCH}"
         MOTR_GPR_REFSEPEC = "+refs/pull/${ghprbPullId}/*:refs/remotes/origin/pr/${ghprbPullId}/*"
