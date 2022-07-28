@@ -119,7 +119,6 @@ metadata:
   name: metrics-server
   namespace: kube-system
 spec:
-  automountServiceAccountToken: false
   selector:
     matchLabels:
       k8s-app: metrics-server
