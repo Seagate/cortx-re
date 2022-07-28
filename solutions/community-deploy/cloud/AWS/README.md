@@ -81,7 +81,6 @@ done
    
 ```
 sudo su -
-
 passwd root
 ```   
 
@@ -90,17 +89,23 @@ passwd root
 ### CORTX Build
 
 - We will use [cortx-build](https://github.com/Seagate/cortx/pkgs/container/cortx-build) docker image to compile entire CORTX stack.  
-- Login into AWS instance over SSH using IP address from Terraform script execution output
+- Login into AWS instances over SSH using public IP address from Terraform script execution output
 ```
-ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip>"
+ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-node1>"
+ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-node2>"
+ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-node3>"
 ```
 - Clone cortx-re repository and switch to `solutions/kubernetes` directory
 ```
 git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/community-deploy
 ```
-- Execute `build-cortx.sh` script. This script will generate CORTX container images from `main` of CORTX components
+- Execute `build-cortx.sh` on N-nodes. This script will generate CORTX container images from `main` of CORTX components
 ```
-time ./build-cortx.sh
+for instance in node{1..3}; do
+   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-node1>" sudo bash time build-cortx.sh
+   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-node2>" sudo bash time build-cortx.sh
+   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-node3>" sudo bash time build-cortx.sh
+done
 ```
 
 ### CORTX Deployment
