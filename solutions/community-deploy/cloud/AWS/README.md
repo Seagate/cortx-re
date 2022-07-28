@@ -67,11 +67,9 @@ terraform validate && terraform apply -var-file user.tfvars --auto-approve
 - Execute `/home/centos/setup.sh` on N-node to setup Network and Storage devices for CORTX. Script will reboot instances on completion. 
 
 ```
-for instance in node{1..3}; do
-   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-node1>" sudo bash /home/centos/setup.sh
-   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-node2>" sudo bash /home/centos/setup.sh
-   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-node3>" sudo bash /home/centos/setup.sh
-done
+ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-node1>" sudo bash /home/centos/setup.sh
+ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-node2>" sudo bash /home/centos/setup.sh
+ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-node3>" sudo bash /home/centos/setup.sh
 ```
 
 - AWS instance is ready for CORTX Build and deployment now. Connect to instance over SSH and validate that all three network cards has IP address assigned.
