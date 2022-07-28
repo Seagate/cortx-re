@@ -59,7 +59,7 @@ EOF
 	
 		stage('Install Dependencies') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh label: '', script: '''
 					pushd $component
 					yum clean all;rm -rf /var/cache/yum
@@ -73,7 +73,7 @@ EOF
 
 		stage('Build') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh label: 'Build', script: '''
 					set -xe
 					pushd $component
@@ -86,7 +86,7 @@ EOF
 		
 		stage('Test') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh label: 'Test', script: '''
 					set -xe
 					pushd $component
@@ -99,7 +99,7 @@ EOF
 
         stage ('Upload') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh label: 'Copy RPMS', script: '''
 					mkdir -p $build_upload_dir/$BUILD_NUMBER
 					cp $WORKSPACE/cortx-ha/dist/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir/$BUILD_NUMBER
@@ -114,7 +114,7 @@ EOF
 	
 		stage ('Tag last_successful') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh label: 'Tag last_successful', script: '''pushd $build_upload_dir/
 					test -d $build_upload_dir/last_successful && rm -f last_successful
 					ln -s $build_upload_dir/$BUILD_NUMBER last_successful
@@ -126,11 +126,11 @@ EOF
 		stage ("Release") {
 		    when { triggeredBy 'SCMTrigger' }
             steps {
-                script { build_stage=env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
 				script {
                 	def releaseBuild = build job: 'Release', propagate: true
 				 	env.release_build = releaseBuild.number
-                    env.release_build_location="http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/" +releaseBuild.number
+                    env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/" + releaseBuild.number
 				}
             }
         }
@@ -153,7 +153,7 @@ EOF
                                         "* Component Build  :  ${BUILD_NUMBER} \n" +
                                         "* Release Build    :  ${release_build}  \n\n  " +
                                     "h3. Artifact Location  :  \n" +
-                                     "*  "+"${release_build_location} "+"\n" +
+                                     "*  " + "${release_build_location} " + "\n" +
                                     "{panel}",
                             failOnError: false,
                             auditLog: false
@@ -221,6 +221,6 @@ def getAuthor(issue) {
             }
         }
     } 
-    response = "* Author: " +author+ "\n"
+    response = "* Author: " + author + "\n"
     return response
 }
