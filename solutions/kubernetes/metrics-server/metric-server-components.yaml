@@ -165,6 +165,8 @@ spec:
             cpu: 100m
             memory: 200Mi
         securityContext:
+          seccompProfile:
+            type: RuntimeDefault
           capabilities:
             drop:
               - NET_RAW
