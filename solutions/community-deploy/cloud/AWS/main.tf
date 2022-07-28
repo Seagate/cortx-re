@@ -50,7 +50,7 @@ locals {
 }
 
 resource "aws_security_group" "cortx_deploy" {
-  name        = "multinode-poc-cortx_deploy"
+  name        = "multinode-cortx_deploy"
   description = "Allow standard ssh, CORTX mangement ports inbound and everything else outbound."
 
   ingress {
@@ -139,7 +139,7 @@ resource "aws_instance" "cortx_deploy" {
   }
 
   tags = {
-    Name = "multinode-poc-${count.index + 1}"
+    Name = "multinode-${count.index + 1}"
   }
 
   provisioner "file" {
@@ -160,7 +160,7 @@ resource "aws_ebs_volume" "data_vol" {
   availability_zone = data.aws_availability_zones.available.names[0]
   size              = var.ebs_volume_size
   tags = {
-    Name = "multinode-poc-${count.index + 1}"
+    Name = "multinode-${count.index + 1}"
   }
 }
 
