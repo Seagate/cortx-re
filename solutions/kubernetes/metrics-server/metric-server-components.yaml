@@ -119,7 +119,6 @@ metadata:
   name: metrics-server
   namespace: kube-system
 spec:
-  automountServiceAccountToken: false
   securityContext:
     seccompProfile:
       type: RuntimeDefault
