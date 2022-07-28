@@ -405,7 +405,7 @@ def getActualBuild(buildURL) {
 // Get failed component name
 def getComponentInfo(String stage) {
     
-    stage = stage.count(".") > 1 ? stage.tokenize(".")[0] +"."+ stage.tokenize(".")[1] : stage
+    stage = stage.count(".") > 1 ? stage.tokenize(".")[0] + "." + stage.tokenize(".")[1] : stage
     
     def defaultComponentMap = [ name : "RE", email : "CORTX.DevOps.RE@seagate.com"]
     def componentInfoMap = [

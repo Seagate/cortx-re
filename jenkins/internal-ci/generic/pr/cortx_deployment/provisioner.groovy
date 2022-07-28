@@ -43,7 +43,7 @@ pipeline {
         BRANCH = "${ghprbTargetBranch != null ? ghprbTargetBranch : COMPONENTS_BRANCH}"
         THIRD_PARTY_VERSION = "${OS_VERSION}-2.0.0-k8"
         PASSPHARASE = credentials('rpm-sign-passphrase')
-		OS_FAMILY=sh(script: "echo '${OS_VERSION}' | cut -d '-' -f1", returnStdout: true).trim()
+		OS_FAMILY = sh(script: "echo '${OS_VERSION}' | cut -d '-' -f1", returnStdout: true).trim()
 
 	    // Artifacts root location
 		

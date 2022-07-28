@@ -76,7 +76,7 @@ pipeline {
 
 		stage ('Tag last_successful') {
 			steps {
-				script { build_stage=env.STAGE_NAME }
+				script { build_stage = env.STAGE_NAME }
 				sh label: 'Tag last_successful', script: '''pushd $build_upload_dir/
 					test -d $build_upload_dir/last_successful && rm -f last_successful
 					ln -s $build_upload_dir/$BUILD_NUMBER last_successful
@@ -100,7 +100,7 @@ pipeline {
         stage('Update Jira') {
 		when { expression { return env.release_build != null } }
                 steps {
-		        script { build_stage=env.STAGE_NAME }
+		        script { build_stage = env.STAGE_NAME }
 			script {
 				def jiraIssues = jiraIssueSelector(issueSelector: [$class: 'DefaultIssueSelector'])
 				jiraIssues.each { issue ->
@@ -115,7 +115,7 @@ pipeline {
 									"* Component Build  :  ${BUILD_NUMBER} \n" +
 									"* Release Build    :  ${release_build}  \n\n  " +
 							"h3. Artifact Location  :  \n" +
-								"*  " +"${release_build_location} " +"\n" +
+								"*  " + "${release_build_location} " + "\n" +
 								"{panel}",
 						failOnError: false,
 						auditLog: false
@@ -179,6 +179,6 @@ def getAuthor(issue) {
             }
         }
     }
-    response = "* Author: " +author+ "\n"
+    response = "* Author: " + author + "\n"
     return response
 }

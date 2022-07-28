@@ -153,7 +153,7 @@ pipeline {
 										"* Component Build  :  ${BUILD_NUMBER} \n" +
 										"* Release Build    :  ${release_build}  \n\n  " +
 								"h3. Artifact Location  :  \n" +
-									"*  " +"${release_build_location} " +"\n" +
+									"*  " + "${release_build_location} " + "\n" +
 									"{panel}",
 							failOnError: false,
 							auditLog: false
@@ -211,7 +211,7 @@ pipeline {
 def getAuthor(issue) {
 
     def changeLogSets = currentBuild.rawBuild.changeSets
-    def author= ""
+    def author = ""
     def response = ""
     // Grab build information
     for (int i = 0; i < changeLogSets.size(); i++) {
@@ -223,6 +223,6 @@ def getAuthor(issue) {
             }
         }
     }
-    response = "* Author: " +author+ "\n"
+    response = "* Author: " + author + "\n"
     return response
 }
