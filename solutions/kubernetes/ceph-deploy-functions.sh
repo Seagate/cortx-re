@@ -29,7 +29,7 @@ CEPH_NODES=$(cat "$HOST_FILE" | grep -v "$PRIMARY_NODE" | awk -F[,] '{print $1}'
 
 function usage() {
     cat << HEREDOC
-Usage : $0 [--install-pereq, --install-ceph, --deploy-prereq, --deploy-mon, --deploy-mgr, --deploy-osd, --deploy-mds, --deploy-fs, --deploy-rgw, --prereq-ceph-docker, --deploy-ceph-docker, --io-operation, --status]
+Usage : $0 [--install-pereq, --install-ceph, --deploy-prereq, --deploy-mon, --deploy-mgr, --deploy-osd, --deploy-mds, --deploy-fs, --deploy-rgw, --prereq-ceph-docker, --deploy-ceph-docker, --io-operation, --status, --destroy-cluster-vm, --destroy-cluster-docker]
 where,
     --install-prereq - Install Ceph Dependencies before installing ceph packages.
     --install-ceph - Install Ceph Packages.
@@ -44,6 +44,8 @@ where,
     --deploy-ceph-docker - Deploy Ceph in docker.
     --io-operation - Perform IO operation.
     --status - Show Ceph Cluster Status.
+    --destroy-cluster-vm - Destroy Ceph cluster deployed on VMs.
+    --destroy-cluster-docker - Destroy Ceph cluster deployed on Docker.
 HEREDOC
 }
 
@@ -251,7 +253,7 @@ function deploy_dashboard() {
 }
 
 function deploy_mgr() {
-    add_secondary_separator "Setup Ceph Monitor"
+    add_secondary_separator "Setup Ceph Manager"
     mkdir -p /var/lib/ceph/mgr/ceph-foo
     ceph auth get-or-create mgr.foo mon 'allow profile mgr' osd 'allow *' mds 'allow *' > /var/lib/ceph/mgr/ceph-foo/keyring
     ceph-mgr -i foo
@@ -311,6 +313,7 @@ EOF
 }
 
 function deploy_fs() {
+    # Not required for RADOS GW.
     ceph osd pool create cephfs_data 1
     ceph osd pool create cephfs_metadata 1
     ceph fs new cephfs cephfs_metadata cephfs_data
@@ -346,6 +349,16 @@ function prereq_ceph_docker() {
             dnf install -y docker-ce docker-ce-cli containerd.io
             check_status "$HOSTNAME: Docker installation failed"
             systemctl enable docker && systemctl start docker
+
+            add_common_separator "Enable local docker harbor registry"
+            wget https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 && mv jq-linux64 jq && chmod +x jq && mv jq /usr/local/bin/ 
+            mkdir -p /etc/docker/
+            jq -n '{"insecure-registries": $ARGS.positional}' --args "cortx-docker.colo.seagate.com" > /etc/docker/daemon.json
+            echo "Configured /etc/docker/daemon.json for local Harbor docker registry"
+
+            systemctl restart docker && systemctl daemon-reload && systemctl enable docker
+            echo "Docker Runtime Configured Successfully"
+
         fi
         
         if [[ "$ID" == "ubuntu" || "$ID" == "centos" ]]; then
@@ -354,6 +367,15 @@ function prereq_ceph_docker() {
                 chmod +x get-docker.sh
                 ./get-docker.sh
                 check_status "$HOSTNAME: Docker installation failed"
+
+                add_common_separator "Enable local docker harbor registry"
+                wget https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 && mv jq-linux64 jq && chmod +x jq && mv jq /usr/local/bin/
+                mkdir -p /etc/docker/
+                jq -n '{"insecure-registries": $ARGS.positional}' --args "cortx-docker.colo.seagate.com" > /etc/docker/daemon.json
+                echo "Configured /etc/docker/daemon.json for local Harbor docker registry"
+
+                systemctl start docker && systemctl daemon-reload && systemctl enable docker
+                echo "Docker Runtime Configured Successfully"
             popd
         fi
     fi
@@ -408,6 +430,113 @@ function io_operation() {
     fi
 }
 
+function umount_osd() {
+    echo "OSD mounts to unmount: $osd_mount"
+    for mount in $osd_mount;	do
+        umount $mount
+    done
+}
+
+function destroy_cluster_vm() {
+if ! which ceph; then
+    add_secondary_separator "Ceph is not installed"
+else
+    add_secondary_separator "Stop all ceph daemon"
+    systemctl stop ceph.target
+
+    fsid=$(cat /etc/ceph/ceph.conf | grep fsid | awk '{ print $3 }')
+    echo "$fsid"
+
+    add_secondary_separator "Remove cluster"
+    cephadm rm-cluster --fsid $fsid --force
+
+    add_secondary_separator "Zap OSDs"
+    cephadm zap-osds --fsid $fsid --force
+
+    add_secondary_separator "Uninstall Ceph Packages"
+    dnf repository-packages Ceph remove -y
+
+    add_secondary_separator "Unmount osd tmpfs"
+    osd_mount=$(df -hT | grep osd | awk '{ print $7}')
+
+    # umounting 3 times as sometimes osd requires multiple umount even after zapping (possible bug or process improvement required for removing osds cleanup)
+    umount_osd
+    sleep 3
+    umount_osd
+    umount_osd
+
+    add_secondary_separator "Remove files"
+    files_to_remove=(
+        "/etc/ceph"
+        "/tmp/etc/ceph"
+        "/tmp/monmap"
+        "/etc/yum.repos.d/ceph.repo"
+        "/var/lib/ceph"
+        "/lib/systemd/system/ceph*"
+        "/etc/yum.repos.d/_copr\:copr.fedorainfracloud.org\:tchaikov\:python*"
+    )
+    for file in ${files_to_remove[@]}; do
+        if [ -f "$file" ] || [ -d "$file" ]; then
+            echo "Removing file/folder $file"
+            rm -rf $file
+        fi
+    done
+fi
+}
+
+function destroy_cluster_docker() {
+if ! which cephadm; then
+    add_secondary_separator "Ceph is not deployed"
+else
+    add_secondary_separator "Stop all ceph daemon"
+    systemctl stop ceph.target
+
+    fsid=$(cat /etc/ceph/ceph.conf | grep fsid | awk '{ print $3 }')
+    echo "$fsid"
+
+    add_secondary_separator "Remove cluster"
+    cephadm rm-cluster --fsid $fsid --force
+
+    add_secondary_separator "Restore OSD disks"
+    osd_disks=$(lvs -o +devices | grep ceph | awk '{ print $5 }')
+
+    pv_volumes=()
+    for device in $osd_disks; do
+        block_device="${device%(*}"
+        echo $block_device
+        pv_volumes+=($block_device)
+    done
+
+    lvremove /dev/ceph-* -y
+    vgdisplay | grep ceph | awk '{ print $3 }' | xargs -I {} vgremove {}
+
+    for disk in ${!pv_volumes[@]}; do
+        pvremove ${pv_volumes[$disk]}
+    done
+
+    add_secondary_separator "Remove docker images"
+    docker system prune -a -f --filter "label!=vendor=Project Calico"
+
+    add_secondary_separator "Remove files"
+    files_to_remove=(
+        "/etc/ceph"
+        "/tmp/etc/ceph"
+        "/tmp/monmap"
+        "/etc/yum.repos.d/ceph.repo"
+        "/var/lib/ceph"
+        "/lib/systemd/system/ceph*"
+        "/etc/yum.repos.d/_copr\:copr.fedorainfracloud.org\:tchaikov\:python*"
+        "/usr/local/bin/cephadm"
+    )
+    for file in ${files_to_remove[@]}; do
+        if [ -f "$file" ] || [ -d "$file" ]; then
+            echo "Removing file/folder $file"
+            rm -rf $file
+        fi
+    done
+fi
+}
+
 case $ACTION in
     --install-prereq)
         install_prereq
@@ -447,6 +576,12 @@ case $ACTION in
     ;;
     --status)
         ceph_status
+    ;;
+    --destroy-cluster-vm)
+        destroy_cluster_vm
+    ;;
+    --destroy-cluster-docker)
+        destroy_cluster_docker
     ;;
     *)
         echo "ERROR : Please provide a valid option"
