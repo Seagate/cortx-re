@@ -119,6 +119,10 @@ metadata:
   name: metrics-server
   namespace: kube-system
 spec:
+  automountServiceAccountToken: false
+  securityContext:
+    seccompProfile:
+      type: RuntimeDefault
   selector:
     matchLabels:
       k8s-app: metrics-server
@@ -139,7 +143,7 @@ spec:
         - --kubelet-use-node-status-port
         - --metric-resolution=15s
         image: k8s.gcr.io/metrics-server/metrics-server:v0.6.1
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         livenessProbe:
           failureThreshold: 3
           httpGet:
@@ -165,6 +169,10 @@ spec:
             cpu: 100m
             memory: 200Mi
         securityContext:
+          capabilities:
+            drop:
+              - NET_RAW
+              - ALL
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
           runAsNonRoot: true
