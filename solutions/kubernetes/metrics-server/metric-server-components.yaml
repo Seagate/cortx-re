@@ -166,7 +166,7 @@ spec:
               memory: 200Mi
           securityContext:
             seccompProfile:
-            type: RuntimeDefault
+            type: RuntimeDefaul
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
             runAsNonRoot: true
