@@ -103,11 +103,7 @@ git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/comm
 ```
 - Execute `build-cortx.sh` on N-nodes. This script will generate CORTX container images from `main` of CORTX components
 ```
-for instance in node{1..3}; do
-   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-node1>" sudo bash time build-cortx.sh
-   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-node2>" sudo bash time build-cortx.sh
-   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-node3>" sudo bash time build-cortx.sh
-done
+time ./build-cortx.sh
 ```
 
 ### CORTX Deployment
