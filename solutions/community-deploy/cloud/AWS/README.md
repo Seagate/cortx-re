@@ -62,17 +62,18 @@ ebs_volume_size     = "10"
 terraform validate && terraform apply -var-file user.tfvars --auto-approve
 ```
 
-**Note:** AWS instance public ipaddress of N-nodes can be selected from the terraform script execution output.
+**Note:** AWS instance public ipaddress on all nodes in cluster can be used from the terraform script execution output.
 
 ## Network and Storage Configuration.
 
-- Execute `/home/centos/setup.sh` on N-node to setup Network and Storage devices for CORTX. Script will reboot instances on completion. 
+- Execute `/home/centos/setup.sh` on all nodes in cluster to setup network and storage devices for CORTX.
 
+**Note:** `setup.sh` script will reboot all the nodes once completed. 
 ```
 for instance in node{1..3};do
-ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-primarynode>" sudo bash /home/centos/setup.sh
-ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-workernode1>" sudo bash /home/centos/setup.sh
-ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-workernode2>" sudo bash /home/centos/setup.sh
+   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-primarynode>" sudo bash /home/centos/setup.sh
+   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-workernode1>" sudo bash /home/centos/setup.sh
+   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-workernode2>" sudo bash /home/centos/setup.sh
 done
 ```
 
@@ -90,18 +91,18 @@ passwd root
 
 ### CORTX Build
 
+**Note:** Execute all instructions on primary node only.
+
 - We will use [cortx-build](https://github.com/Seagate/cortx/pkgs/container/cortx-build) docker image to compile entire CORTX stack.  
-- Login into one of the AWS instance over SSH using public IP address from terraform script execution output which will be the primary node,
+- Login into primary node of the AWS instance over SSH using public IP address from terraform script execution output,
 ```
 ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-primarynode>"
-ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-workernode1>"
-ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-workernode2>"
 ```
 - Clone cortx-re repository and switch to `solutions/kubernetes` directory
 ```
-git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/community-deploy
+sudo git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/community-deploy
 ```
-- Execute `build-cortx.sh` on N-nodes i.e. primarynode, workernode1 and workernode2. This script will generate CORTX container images from `main` of CORTX components
+- Execute `build-cortx.sh` which will generate CORTX container images from `main` of CORTX components
 ```
 time ./build-cortx.sh
 ```
@@ -113,7 +114,7 @@ time ./build-cortx.sh
 
 ## Cleanup 
 
-You can clean-up all AWS infrastructure created using following command. 
+You can clean-up the AWS infrastructure created using following command,
 ```
 terraform validate && terraform destroy -var-file user.tfvars --auto-approve
 ```
