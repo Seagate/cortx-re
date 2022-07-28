@@ -42,6 +42,7 @@ resource "aws_default_subnet" "default" {
 }
 
 locals {
+  ec2_device_names_to_attach = slice(var.ec2_device_names, 0, var.ebs_volume_count)
   common_tags = {
     "Terraform" = "true",
     "CORTX"     = "true"
@@ -78,7 +79,6 @@ resource "aws_security_group" "cortx_deploy" {
   tags = {
     Name = "shailesh-multinode-poc"
   }
-
 }
 
 data "aws_ami" "centos" {
@@ -99,7 +99,6 @@ data "aws_ami" "centos" {
     name   = "root-device-type"
     values = ["ebs"]
   }
-
 }
 
 resource "tls_private_key" "example" {
@@ -154,38 +153,21 @@ resource "aws_instance" "cortx_deploy" {
       host        = self.public_dns
     }
   }
-
 }
 
 resource "aws_ebs_volume" "data_vol" {
   count             = var.ebs_volume_count * var.instance_count
   availability_zone = data.aws_availability_zones.available.names[0]
-  size              = 10
+  size              = var.ebs_volume_size
   tags = {
     Name = "shailesh-multinode-poc-${count.index + 1}"
   }
-
-
-}
-
-variable "ec2_device_names" {
-  default = [
-    "/dev/sdb",
-    "/dev/sdc",
-    "/dev/sdd",
-    "/dev/sde",
-    "/dev/sdf",
-    "/dev/sdg",
-    "/dev/sdh",
-    "/dev/sdi",
-    "/dev/sdj",
-  ]
 }
 
 resource "aws_volume_attachment" "deploy_server_data" {
   count       = var.ebs_volume_count * var.instance_count
   volume_id   = aws_ebs_volume.data_vol.*.id[count.index]
-  device_name = element(var.ec2_device_names, count.index)
+  device_name = element(local.ec2_device_names_to_attach, count.index)
   instance_id = element(aws_instance.cortx_deploy.*.id, floor(count.index/var.ebs_volume_count))
 }
 
