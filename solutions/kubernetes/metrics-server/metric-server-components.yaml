@@ -139,6 +139,17 @@ spec:
         - --kubelet-use-node-status-port
         - --metric-resolution=15s
         image: k8s.gcr.io/metrics-server/metrics-server:v0.6.1
+        securityContext:
+          seccompProfile:
+            type: RuntimeDefault
+          capabilities:
+            drop:
+              - NET_RAW
+              - ALL
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 1000
         imagePullPolicy: Always
         livenessProbe:
           failureThreshold: 3
@@ -163,18 +174,7 @@ spec:
         resources:
           requests:
             cpu: 100m
-            memory: 200Mi
-        securityContext:
-          seccompProfile:
-            type: RuntimeDefault
-          capabilities:
-            drop:
-              - NET_RAW
-              - ALL
-          allowPrivilegeEscalation: false
-          readOnlyRootFilesystem: true
-          runAsNonRoot: true
-          runAsUser: 1000
+            memory: 200M
         volumeMounts:
         - mountPath: /tmp
           name: tmp-dir
