@@ -56,6 +56,12 @@ variable "ebs_volume_size" {
   default = "10"
 }
 
+variable "tag_name" {
+  description = "TAG name for multi instances"
+  type = string
+  default = "cortx-multinode"
+}
+
 variable "ec2_device_names" {
   description = "Available block devices to attach to instances."
   type = list(string)
