@@ -70,9 +70,9 @@ terraform validate && terraform apply -var-file user.tfvars --auto-approve
 
 ```
 for instance in node{1..3};do
-ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-node1>" sudo bash /home/centos/setup.sh
-ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-node2>" sudo bash /home/centos/setup.sh
-ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-node3>" sudo bash /home/centos/setup.sh
+ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-primarynode>" sudo bash /home/centos/setup.sh
+ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-workernode1>" sudo bash /home/centos/setup.sh
+ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-workernode2>" sudo bash /home/centos/setup.sh
 done
 ```
 
@@ -91,17 +91,17 @@ passwd root
 ### CORTX Build
 
 - We will use [cortx-build](https://github.com/Seagate/cortx/pkgs/container/cortx-build) docker image to compile entire CORTX stack.  
-- Login into AWS instances over SSH using public IP address from terraform script execution output
+- Login into one of the AWS instance over SSH using public IP address from terraform script execution output which will be the primary node,
 ```
-ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-node1>"
-ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-node2>"
-ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-node3>"
+ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-primarynode>"
+ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-workernode1>"
+ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-workernode2>"
 ```
 - Clone cortx-re repository and switch to `solutions/kubernetes` directory
 ```
 git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/community-deploy
 ```
-- Execute `build-cortx.sh` on N-nodes. This script will generate CORTX container images from `main` of CORTX components
+- Execute `build-cortx.sh` on N-nodes i.e. primarynode, workernode1 and workernode2. This script will generate CORTX container images from `main` of CORTX components
 ```
 time ./build-cortx.sh
 ```
