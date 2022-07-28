@@ -62,7 +62,7 @@ ebs_volume_size     = "10"
 terraform validate && terraform apply -var-file user.tfvars --auto-approve
 ```
 
-**Note:** AWS instance public ipaddress of N-nodes will be visible once above terraform script execution is completed.
+**Note:** AWS instance public ipaddress of N-nodes can be selected from the terraform script execution output.
 
 ## Network and Storage Configuration.
 
@@ -76,9 +76,9 @@ ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-n
 done
 ```
 
-- AWS instance is ready for CORTX Build and deployment now. Connect to instance over SSH and validate that all three network cards has IP address assigned.
+- AWS instances are ready for CORTX Build and deployment now. Connect to instances over SSH and validate that all three network cards has IP address assigned.
    
-- Generate `root` user password.  
+- Generate `root` user password on N-nodes.
 *The root password is required as a part of CORTX deployment.*
    
 ```
@@ -91,7 +91,7 @@ passwd root
 ### CORTX Build
 
 - We will use [cortx-build](https://github.com/Seagate/cortx/pkgs/container/cortx-build) docker image to compile entire CORTX stack.  
-- Login into AWS instances over SSH using public IP address from Terraform script execution output
+- Login into AWS instances over SSH using public IP address from terraform script execution output
 ```
 ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-node1>"
 ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-node2>"
