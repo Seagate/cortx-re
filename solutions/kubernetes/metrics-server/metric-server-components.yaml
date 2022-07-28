@@ -166,11 +166,11 @@ spec:
               memory: 200Mi
           securityContext:
             seccompProfile:
-            type: RuntimeDefaul
-            allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: true
-            runAsNonRoot: true
-            runAsUser: 1000
+              type: RuntimeDefaul
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              runAsNonRoot: true
+              runAsUser: 1000
           volumeMounts:
             - mountPath: /tmp
               name: tmp-dir
