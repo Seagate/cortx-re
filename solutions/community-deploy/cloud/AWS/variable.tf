@@ -22,7 +22,7 @@ variable "security_group_cidr" {
 
 
 variable "os_version" {
-  description = "OS Version"
+  description = "OS version"
   type        = string
 }
 
@@ -33,7 +33,7 @@ variable "region" {
 }
 
 variable "key_name" {
-  description = "SSH Key name"
+  description = "SSH key name"
   type        = string
   default     = "cortx-key"
 }
@@ -45,8 +45,45 @@ variable "instance_count" {
 }
 
 variable "ebs_volume_count" {
-  description = "EBS volume count"
+  description = "EBS volumes to attach onto nodes"
   type        = number
   default     = "9"
 }
 
+variable "ebs_volume_size" {
+  description = "EBS volumes size in GB"
+  type        = number
+  default     = "10"
+}
+
+variable "ec2_device_names" {
+  description = "Available block devices to attach to instances."
+  type = list(string)
+  default = [
+    "/dev/sdb",
+    "/dev/sdc",
+    "/dev/sdd",
+    "/dev/sde",
+    "/dev/sdf",
+    "/dev/sdg",
+    "/dev/sdh",
+    "/dev/sdi",
+    "/dev/sdj",
+    "/dev/sdk",
+    "/dev/sdl",
+    "/dev/sdm",
+    "/dev/sdn",
+    "/dev/sdo",
+    "/dev/sdp",
+    "/dev/sdq",
+    "/dev/sdr",
+    "/dev/sds",
+    "/dev/sdt",
+    "/dev/sdu",
+    "/dev/sdv",
+    "/dev/sdw",
+    "/dev/sdx",
+    "/dev/sdy",
+    "/dev/sdz"
+  ]
+}
