@@ -13,7 +13,7 @@ pipeline {
     }
 
     parameters {
-        string(name: 'CORTX_RE_OWNER_REPO_NAME', defaultValue: 'Seagate/cortx-re', description: 'Owner name with Repo name seperated by '/' ', trim: true)
+        string(name: 'CORTX_RE_OWNER_REPO_NAME', defaultValue: 'Seagate/cortx-re', description: 'Owner name with Repo name', trim: true)
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Metrics Server Setup scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for Metrics Server Setup scripts', trim: true)
         string(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'Enter Primary node of your K8s Cluster    ', name: 'hosts')
