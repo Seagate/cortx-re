@@ -13,7 +13,7 @@ pipeline {
     }
 
     parameters {
-        string(name: 'CORTX_RE_OWNER_REPO_NAME', defaultValue: 'Seagate/cortx-re', description: 'Owner name with Repo name', trim: true)
+        string(name: 'RAW_CORTX_RE_REPO', defaultValue: 'https://raw.githubusercontent.com/Seagate/cortx-re', description: 'Raw URl required for creating K8s resources', trim: true)
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Metrics Server Setup scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for Metrics Server Setup scripts', trim: true)
         string(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'Enter Primary node of your K8s Cluster    ', name: 'hosts')
@@ -35,7 +35,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'setup metrics server', script: '''
                     pushd solutions/kubernetes/metrics-server/
-                        export CORTX_RE_OWNER_REPO_NAME=${CORTX_RE_OWNER_REPO_NAME}
+                        export RAW_CORTX_RE_REPO=${RAW_CORTX_RE_REPO}
                         export CORTX_RE_REPO=${CORTX_RE_REPO}
                         export CORTX_RE_BRANCH=${CORTX_RE_BRANCH}
                         echo $hosts | tr ' ' '\n' > hosts

@@ -21,7 +21,8 @@ source /var/tmp/functions.sh
 
 function install_metricsserver() {
     add_primary_separator "Installing Metrics Server"
-    kubectl apply -f https://raw.githubusercontent.com/${CORTX_RE_OWNER_REPO_NAME}/${CORTX_RE_BRANCH}/solutions/kubernetes/metrics-server/metric-server-components.yaml
+    echo ${RAW_CORTX_RE_REPO}/${CORTX_RE_BRANCH}
+    kubectl apply -f ${RAW_CORTX_RE_REPO}/${CORTX_RE_BRANCH}/solutions/kubernetes/metrics-server/metric-server-components.yaml
     POD_NAME=$(kubectl get pods --namespace=kube-system | grep metrics-server | cut -d " " -f 1)
     kubectl wait --for=condition=Ready pod/"$POD_NAME" --namespace=kube-system --timeout=60s
     COUNT=0
