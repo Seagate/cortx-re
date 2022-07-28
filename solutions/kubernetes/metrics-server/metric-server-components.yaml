@@ -119,9 +119,6 @@ metadata:
   name: metrics-server
   namespace: kube-system
 spec:
-  securityContext:
-    seccompProfile:
-      type: RuntimeDefault
   selector:
     matchLabels:
       k8s-app: metrics-server
