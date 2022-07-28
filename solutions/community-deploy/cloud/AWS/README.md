@@ -48,6 +48,9 @@ os_version          = "CentOS 7.9.2009 x86_64"
 region              = "ap-south-1"
 security_group_cidr = "134.204.222.36/32"
 key_name            = "devops-key"
+instance_count      = "3"
+ebs_volume_count    = "9"
+ebs_volume_size     = "10"
 
 ```
 
@@ -61,11 +64,16 @@ terraform validate && terraform apply -var-file user.tfvars --auto-approve
 
 ## Network and Storage Configuration.
 
-- Execute `/home/centos/setup.sh` to setup Network and Storage devices for CORTX. Script will reboot instance on completion. 
+- Execute `/home/centos/setup.sh` on N-node to setup Network and Storage devices for CORTX. Script will reboot instances on completion. 
 
 ```
-ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip>" sudo bash /home/centos/setup.sh
+for instance in node{1..3}; do
+   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-node1>" sudo bash /home/centos/setup.sh
+   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-node2>" sudo bash /home/centos/setup.sh
+   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-node3>" sudo bash /home/centos/setup.sh
+done
 ```
+
 - AWS instance is ready for CORTX Build and deployment now. Connect to instance over SSH and validate that all three network cards has IP address assigned.
    
 - Generate `root` user password.  
