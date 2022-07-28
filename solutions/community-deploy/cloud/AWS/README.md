@@ -79,7 +79,7 @@ done
 
 - AWS instances are ready for CORTX Build and deployment now. Connect to instances over SSH and validate that all three network cards has IP address assigned.
    
-- Generate `root` user password on N-nodes.
+- Generate `root` user password on all the nodes in the cluster.
 *The root password is required as a part of CORTX deployment.*
    
 ```
