@@ -77,7 +77,7 @@ resource "aws_security_group" "cortx_deploy" {
   }
 
   tags = {
-    Name = "multinode-poc"
+    Name = "multinode"
   }
 }
 
