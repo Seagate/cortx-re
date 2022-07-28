@@ -15,7 +15,6 @@
 # For any questions about this software or licensing,
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
-os_version          = "<OS VERSION>"
-region              = "<AWS REGION>"
+os_version = "<OS VERSION>"
+region = "<AWS REGION>"
 security_group_cidr = "<YOUR PUBLIC IP CIDR>"
-instance_count      = "<EC2 INSTANCE COUNT>"
