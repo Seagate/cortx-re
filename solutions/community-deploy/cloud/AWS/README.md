@@ -51,7 +51,7 @@ key_name            = "devops-key"
 instance_count      = "3"
 ebs_volume_count    = "9"
 ebs_volume_size     = "10"
-
+tag_name            = "cortx-multinode"
 ```
 
 ## Create AWS instance
