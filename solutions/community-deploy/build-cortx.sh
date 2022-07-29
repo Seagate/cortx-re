@@ -73,8 +73,8 @@ function docker_compose_check() {
 }
 docker_compose_check
 
-#Install git & time
-yum install git time -y
+#Install git
+yum install git -y
 
 # Compile and Build CORTX Stack
 docker rmi --force $(docker images --filter=reference='*/*/cortx-build:*' --filter=reference='*cortx-build:*' -q)
