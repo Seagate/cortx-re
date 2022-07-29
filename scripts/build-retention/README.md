@@ -1,6 +1,6 @@
 # Build Retention
 
-Any SSC VM with minimum configuration will work. Please add the vm to jenkins production as `build-retention` agent name. All commands have been executed as `root` user. Reference screenshot are provided at end for configuration.
+Any SSC VM with minimum configuration will work. Please add the vm to jenkins production as `build-retention` agent name. All commands have been run as `root` user. Reference screenshot are provided at end for configuration.
 
 ## Clone the repository
 
@@ -58,7 +58,7 @@ cd cortx-re/scripts/build-retention/monitoring
 docker-compose -d up
 ```
 
-## Destroy deployment
+## Remove deployment
 
 ```
 cd cortx-re/scripts/build-retention/monitoring
