@@ -1,11 +1,11 @@
 # Build & Deploy CORTX Stack on Amazon Web Services 
 
-This document discusses the procedure to compile the CORTX Stack and deploy it on AWS instance.
+This document discusses the procedure to compile the CORTX Stack and deploy on AWS instances.
 
+## Prerequisite
 
-## Prerequisite 
-
-Ensure that you have an AWS account with Secret Key and Access Key.
+- Ensure that you have an AWS account with Secret Key and Access Key.
+- Build and deploy CORTX Stack on all the AWS instances.
 
 ## Install and setup Terraform and AWS CLI
 
@@ -56,17 +56,11 @@ tag_name            = "cortx-multinode"
 
 ## Create AWS instance
 
-- Execute Terraform code (as shown below) to create AWS instance for CORTX Build and Deployment.  
-- The command will display public-ip on completion. Use this public-ip to connect AWS instance using SSH Protocol. 
+- Execute Terraform code (as shown below) to create AWS instance for CORTX Build and Deployment.
+- The command will display the public and private ip addresses on completion. Use these public and private to connect to AWS instances
+  using SSH Protocol.
 ```
 terraform validate && terraform apply -var-file user.tfvars --auto-approve
-```
-
-#### Note:
-AWS instance public ipaddress on all nodes in cluster can be seen from the terraform script execution output or use following
-command,
-```
-terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip.txt | tr -d '",[]' | sed '/^$/d'
 ```
 
 ## Network and Storage Configuration.
@@ -82,13 +76,13 @@ ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip o
 
 - AWS instances are ready for CORTX Build and deployment now. Connect to instances over SSH and validate that all three network cards has IP address assigned.
    
-- Generate `root` user password on all the nodes in the cluster.
+- Generate `root` user password on all the EC2 instances in the cluster.
 *The root password is required as a part of CORTX deployment.*
-   
+
 ```
 sudo su -
 passwd root
-```   
+```
 
 ## CORTX Build and Deployment
 
@@ -97,14 +91,16 @@ passwd root
 **Note:** Execute all instructions on primary node only.
 
 - We will use [cortx-build](https://github.com/Seagate/cortx/pkgs/container/cortx-build) docker image to compile entire CORTX stack.  
-- Login into primary node of the AWS instance over SSH using public IP address from terraform script execution output,
+- Login into AWS instance over SSH using public IP address from terraform script execution output,
 ```
 ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip of primarynode>"
 ```
+
 - Clone cortx-re repository and switch to `solutions/kubernetes` directory
 ```
 sudo git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/community-deploy
 ```
+
 - Execute `build-cortx.sh` which will generate CORTX container images from `main` of CORTX components
 ```
 sudo time ./build-cortx.sh
