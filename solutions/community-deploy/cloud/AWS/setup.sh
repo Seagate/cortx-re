@@ -52,7 +52,6 @@ mapping=(sdb sdc sdd sde sdf sdg sdh sdi sdj)
 for ((i = 0; i < ${#device_list[@]}; i++)); do
    echo KERNEL==\""${device_list[$i]}"\", SUBSYSTEM==\"block\", SYMLINK=\""${mapping[$i]}"\" >> /etc/udev/rules.d/99-custom-dev.rules
 done
-yum install time -y
 echo "Rebooting system....."
 #System reboot
 reboot
