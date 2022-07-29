@@ -71,7 +71,7 @@ pipeline {
 
                 sh label: '', script: '''
                     yum erase python36-PyYAML -y
-                    pip3 install  --no-cache-dir --trusted-host cortx-storage.colo.seagate.com -r https://raw.githubusercontent.com/Seagate/cortx-utils/$branch/py-utils/python_requirements.txt -r https://raw.githubusercontent.com/Seagate/cortx-utils/$branch/py-utils/python_requirements.ext.txt
+                    pip3 install  --no-cache-dir --trusted-host cortx-storage.colo.seagate.com -i http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/python-packages-$version-latest/ -r https://raw.githubusercontent.com/Seagate/cortx-utils/$branch/py-utils/python_requirements.txt -r https://raw.githubusercontent.com/Seagate/cortx-utils/$branch/py-utils/python_requirements.ext.txt
                 '''
 
                 sh label: '', script: '''
