@@ -62,7 +62,7 @@ tag_name            = "cortx-multinode"
 terraform validate && terraform apply -var-file user.tfvars --auto-approve
 ```
 
-**Note:**
+#### Note:
 AWS instance public ipaddress on all nodes in cluster can be seen from the terraform script execution output or use following
 command,
 ```
@@ -73,7 +73,7 @@ terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_
 
 - Execute `/home/centos/setup.sh` on primary node in the cluster to setup network and storage devices for CORTX.
 
-**Note:**
+#### Note:
 `/home/centos/setup.sh` will reboot the nodes.
 
 ```
