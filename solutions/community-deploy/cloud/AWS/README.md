@@ -104,7 +104,7 @@ sudo git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions
 ```
 - Execute `build-cortx.sh` which will generate CORTX container images from `main` of CORTX components
 ```
-time ./build-cortx.sh
+sudo time ./build-cortx.sh
 ```
 
 ### CORTX Deployment
