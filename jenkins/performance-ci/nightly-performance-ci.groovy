@@ -185,7 +185,7 @@ pipeline {
 
                 // Email Notification
                 if ( params.EMAIL_RECIPIENTS == "DEVOPS" && currentBuild.result == "SUCCESS" ) {
-                    mailRecipients = "CORTX.DevOps.RE@seagate.com, CORTX.Perf@seagate.com"
+                    mailRecipients = "Cortx.Perf@seagate.com, CORTX.DevOps.RE@seagate.com"
                 }
                 else if ( params.EMAIL_RECIPIENTS == "DEBUG" ) {
                     mailRecipients = "shailesh.vaidya@seagate.com"
