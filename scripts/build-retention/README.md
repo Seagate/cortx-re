@@ -38,7 +38,7 @@ IP configuration files to change:
 1. prometheus.yml
 2. alert.rules 
 
-IP configuration needs to be changed to the VM IP through which all services (grafana, prometheus) are accessed. IP should be accessible from outside vm and ports: 3000, 9090 should be allowed through firewall.  
+IP configuration needs to be changed to the VM IP through which all services (grafana, prometheus, etc) are accessed. IP should be accessible from outside vm and ports: 3000, 9090 should be allowed through firewall.  
 
 ---
 
@@ -50,6 +50,8 @@ Mount configuration files to change:
 Mount configuration paths only needs to be changed if above mentioned mountpoints are not followed and LCO NFS is mounted to another location.
 
 ## Deploy compose files
+
+The deployment will pull all the requierd docker images from docker hub for grafana, prometheus, cadvisor, node-exporter, alertmanager. 
 
 ```
 cd cortx-re/scripts/build-retention/monitoring
@@ -65,4 +67,22 @@ docker-compose down
 
 ## Backup volume
 
-`monitoring_grafana-volume`
+To move deploymet to another node we need to backup `monitoring_grafana-volume` docker volume so that all configuration of grafana, prometheus, alertmanager, etc are preserved.
+
+```
+docker volume ls
+```
+
+## Reference screenshots
+
+![Grafana Dashboard](./screenshots/graph-dashboard.png)
+
+![Alert](./screenshots/alert.png)
+
+![Notification](./screenshots/notification.png)
+
+![Grafana Dashboard](./screenshots/notificationpolicies.png)
+
+![Prometheus](./screenshots/prometheus.png)
+
+![Build Retention Job](./screenshots/build-retention.png)
