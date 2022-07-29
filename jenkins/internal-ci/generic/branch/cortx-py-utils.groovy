@@ -95,7 +95,8 @@ pipeline {
         }
 
         stage('Update Jira') {
-                steps {
+            when { expression { return env.release_build != null } }
+            steps {
                 script { build_stage = env.STAGE_NAME }
                     script {
                         def jiraIssues = jiraIssueSelector(issueSelector: [$class: 'DefaultIssueSelector'])
