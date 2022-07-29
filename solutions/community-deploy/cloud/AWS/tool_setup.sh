@@ -18,12 +18,15 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
+#Install Time
+echo -e "-------------------------[ Installing Time ]----------------------------------------" 
+yum -y install time
+
 #Install Terraform
 echo -e "-------------------------[ Installing Terraform ]----------------------------------------" 
 yum install -y yum-utils unzip
 yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
 yum -y install terraform
-
 
 #Install AWS CLI
 echo -e "-------------------------[ Installing  AWS CLI   ]----------------------------------------" 
@@ -36,7 +39,6 @@ rm -rf /opt/aws-cli/aws
 #Trigger AWS CLI configuration
 echo -e "-------------------------[ AWS CLI configuration ]----------------------------------------" 
 aws configure
-
 
 #Initiate Terraform workspace
 echo -e "------------------------[ Terraform Workspace init ]----------------------------------------" 
