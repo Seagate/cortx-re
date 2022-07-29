@@ -1,6 +1,6 @@
 # Build Retention
 
-Any SSC VM with minimum configuration will work. Please add the vm to jenkins production as `build-retention` agent name. All commands have been executed as `root` user.
+Any SSC VM with minimum configuration will work. Please add the vm to jenkins production as `build-retention` agent name. All commands have been executed as `root` user. Reference screenshot are provided at end for configuration.
 
 ## Clone the repository
 
@@ -65,6 +65,10 @@ cd cortx-re/scripts/build-retention/monitoring
 docker-compose down
 ```
 
+## Jenkins job configuration
+
+When configuring new jenkins job we need to configure webhook trigger to job through which grafana can trigger job on passing disk usage threshold remotely. Install [Generic Webhook Trigger](https://plugins.jenkins.io/generic-webhook-trigger/) plugin to jenkins. Add the configured url with token to the grafana when setting up contact points.
+
 ## Backup volume
 
 To move deploymet to another node we need to backup `monitoring_grafana-volume` docker volume so that all configuration of grafana, prometheus, alertmanager, etc are preserved.
@@ -80,6 +84,8 @@ docker volume ls
 ![Alert](./screenshots/alert.PNG)
 
 ![Notification](./screenshots/notification.PNG)
+
+![Jenkins Webhook](./screenshots/webhook.PNG)
 
 ![Grafana Dashboard](./screenshots/notificationpolicies.PNG)
 
