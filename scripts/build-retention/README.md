@@ -90,5 +90,3 @@ docker volume ls
 ![Grafana Dashboard](./screenshots/notificationpolicies.PNG)
 
 ![Prometheus](./screenshots/prometheus.PNG)
-
-![Build Retention Job](./screenshots/build-retention.PNG)
