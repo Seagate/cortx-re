@@ -62,19 +62,20 @@ tag_name            = "cortx-multinode"
 terraform validate && terraform apply -var-file user.tfvars --auto-approve
 ```
 
-**Note:** AWS instance public ipaddress on all nodes in cluster can be used from the terraform script execution output.
+**Note:** AWS instance public ipaddress on all nodes in cluster can be seen from the terraform script execution output or use following
+command,
+```
+terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip.txt | tr -d '",[]' | sed '/^$/d'
+```
 
 ## Network and Storage Configuration.
 
-- Execute `/home/centos/setup.sh` on all nodes in cluster to setup network and storage devices for CORTX.
+- Execute `/home/centos/setup.sh` on primary node in the cluster to setup network and storage devices for CORTX.
 
-**Note:** `setup.sh` script will reboot all the nodes once completed. 
+**Note:** `/home/centos/setup.sh` will reboot the node.
+
 ```
-for instance in node{1..3};do
-   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-primarynode>" sudo bash /home/centos/setup.sh
-   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-workernode1>" sudo bash /home/centos/setup.sh
-   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-workernode2>" sudo bash /home/centos/setup.sh
-done
+ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip of primarynode>" sudo bash /home/centos/setup.sh
 ```
 
 - AWS instances are ready for CORTX Build and deployment now. Connect to instances over SSH and validate that all three network cards has IP address assigned.
