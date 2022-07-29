@@ -69,6 +69,10 @@ docker-compose down
 
 When configuring new jenkins job we need to configure webhook trigger to job through which grafana can trigger job on passing disk usage threshold remotely. Install [Generic Webhook Trigger](https://plugins.jenkins.io/generic-webhook-trigger/) plugin to jenkins. Add the configured url with token to the grafana when setting up contact points.
 
+## Grafana Contact point configuration
+
+When configuring grafana contact point to add webhook triggered job: the contact point will require login credentials to jenkins server to trigger job notification.
+
 ## Backup volume
 
 To move deploymet to another node we need to backup `monitoring_grafana-volume` docker volume so that all configuration of grafana, prometheus, alertmanager, etc are preserved.
