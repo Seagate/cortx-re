@@ -1,0 +1,61 @@
+version: '3.8'
+volumes:
+  grafana-volume:
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./alert.rules:/etc/prometheus/alert.rules
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+      - '9090:9090'
+    links:
+      - 'node-exporter'
+      - 'cadvisor'
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    ports:
+      - '9100:9100'
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+      - /cgroup:/sys/fs/cgroup:ro
+      - /mnt/cortx-storage:/mnt/cortx-storage:ro
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: always
+    volumes:
+      - grafana-volume:/var/lib/grafana
+      - /mnt/cortx-storage/releases/jenkins/jenkins-prod/certs/:/etc/ssl/certs/:ro
+    depends_on:
+      - prometheus
+    ports:
+      - '3000:3000'
+
+  alertmanager:
+    image: prom/alertmanager:latest
+    volumes:
+      - ./alertmanager.yml:/alertmanager.yml
+    command:
+      - '--config.file=/alertmanager.yml'
+    ports:
+      - '9093:9093'
+
+  cadvisor:
+    image: google/cadvisor:latest
+    ports:
+      - '8080:8080'
+    privileged: true
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+      - /cgroup:/sys/fs/cgroup:ro
