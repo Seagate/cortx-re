@@ -62,7 +62,8 @@ tag_name            = "cortx-multinode"
 terraform validate && terraform apply -var-file user.tfvars --auto-approve
 ```
 
-**Note:** AWS instance public ipaddress on all nodes in cluster can be seen from the terraform script execution output or use following
+**Note:**
+AWS instance public ipaddress on all nodes in cluster can be seen from the terraform script execution output or use following
 command,
 ```
 terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip.txt | tr -d '",[]' | sed '/^$/d'
@@ -72,7 +73,8 @@ terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_
 
 - Execute `/home/centos/setup.sh` on primary node in the cluster to setup network and storage devices for CORTX.
 
-**Note:** `/home/centos/setup.sh` will reboot the node.
+**Note:**
+`/home/centos/setup.sh` will reboot the nodes.
 
 ```
 ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip of primarynode>" sudo bash /home/centos/setup.sh
@@ -97,7 +99,7 @@ passwd root
 - We will use [cortx-build](https://github.com/Seagate/cortx/pkgs/container/cortx-build) docker image to compile entire CORTX stack.  
 - Login into primary node of the AWS instance over SSH using public IP address from terraform script execution output,
 ```
-ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-primarynode>"
+ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip of primarynode>"
 ```
 - Clone cortx-re repository and switch to `solutions/kubernetes` directory
 ```
