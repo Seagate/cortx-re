@@ -75,14 +75,14 @@ docker volume ls
 
 ## Reference screenshots
 
-![Grafana Dashboard](./screenshots/graph-dashboard.png)
+![Grafana Dashboard](./screenshots/graph-dashboard.PNG)
 
-![Alert](./screenshots/alert.png)
+![Alert](./screenshots/alert.PNG)
 
-![Notification](./screenshots/notification.png)
+![Notification](./screenshots/notification.PNG)
 
-![Grafana Dashboard](./screenshots/notificationpolicies.png)
+![Grafana Dashboard](./screenshots/notificationpolicies.PNG)
 
-![Prometheus](./screenshots/prometheus.png)
+![Prometheus](./screenshots/prometheus.PNG)
 
-![Build Retention Job](./screenshots/build-retention.png)
+![Build Retention Job](./screenshots/build-retention.PNG)
