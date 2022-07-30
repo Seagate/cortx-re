@@ -18,10 +18,6 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
-#Install Time
-echo -e "-------------------------[ Installing Time ]----------------------------------------" 
-yum -y install time
-
 #Install Terraform
 echo -e "-------------------------[ Installing Terraform ]----------------------------------------" 
 yum install -y yum-utils unzip
@@ -43,4 +39,3 @@ aws configure
 #Initiate Terraform workspace
 echo -e "------------------------[ Terraform Workspace init ]----------------------------------------" 
 terraform init
-
