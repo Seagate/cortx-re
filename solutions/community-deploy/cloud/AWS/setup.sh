@@ -19,7 +19,7 @@
 #
 
 #Install time package
-yum install time docker -y
+yum install time -y
 
 #Only root to should run setup
 if [ $(whoami) != root ];then
