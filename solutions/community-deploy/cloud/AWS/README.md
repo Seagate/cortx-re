@@ -54,7 +54,7 @@ ebs_volume_size     = "10"
 tag_name            = "cortx-multinode"
 ```
 
-## Create AWS instance
+## Execute Instructions from Local Host to create AWS Instances and Network and Storage Configuration
 
 - Execute Terraform code (as shown below) to create AWS instances for CORTX Build and Deployment.
 ```
@@ -71,13 +71,11 @@ terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_
 ```
 terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d'
 ```
-
-## Network and Storage Configuration.
-
-- Execute `/home/centos/setup.sh` on primary node in the cluster to setup network and storage devices for CORTX.
+## Execute Instructions from Local node
+- Execute `/home/centos/setup.sh` to setup network and storage devices for CORTX.
 
 #### Note:
-`/home/centos/setup.sh` will reboot the nodes.
+`/home/centos/setup.sh` will reboot all the EC2 nodes.
 ```
 for instance in node{1..3};do 
    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-primarynode>" sudo bash /home/centos/setup.sh
@@ -85,45 +83,61 @@ for instance in node{1..3};do
    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-workernode2>" sudo bash /home/centos/setup.sh
 done
 ```
-
-- AWS instances are ready for CORTX Build and deployment now. Connect to EC2 instances over SSH and validate that all three network cards has IP address assigned.
+- AWS instances are ready for CORTX Build and deployment now. Connect to EC2 nodes over SSH and validate that all three network cards has IP address assigned.
    
-- Generate `root` user password on all the EC2 instances in the cluster.
+- Generate `root` user password on all the EC2 nodes in the cluster.
 *The root password is required as a part of CORTX deployment.*
 
 ```
 sudo passwd root
 ```
 
-## CORTX Build and Deployment
-
-### CORTX Build
-
-**Note:** Execute all instructions on primary node only.
+## CORTX Build
 
 - We will use [cortx-build](https://github.com/Seagate/cortx/pkgs/container/cortx-build) docker image to compile entire CORTX stack.  
-- Login into AWS instance over SSH using public IP address,
+- Login into AWS primary node over SSH using public IP address and clone cortx-re repository on all the EC2 nodes in the cluster and switch to `solutions/community-deploy` directory
 ```
-ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-primarynode>"
+REPO="git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/community-deploy"
+for instance in node{1..3};do 
+   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-primarynode>" sudo $REPO
+   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-workernode1>" sudo $REPO
+   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-workernode2>" sudo $REPO
+done
 ```
-
-- Clone cortx-re repository on all the nodes in the cluster and switch to `solutions/community-deploy` directory
-```
-git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/community-deploy
-```
-
-- Execute `build-cortx.sh` which will generate CORTX container images from `main` of CORTX components
-```
-sudo time ./build-cortx.sh
-```
-- Copy pem file from local node to all the AWS EC2 instances using public ip address,
+- Copy pem file from local host to all the EC2 nodes using public ip address,
 ```
 SRC_PATH="/root/cortx-re/solutions/community-deploy/cloud/AWS"
-DST_PATH="/home/centos/cortx-re/solutions/community-deploy"
+DST_PATH="/tmp"
 for instance in node{1..3};do
   rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' ${SRC_PATH}/cortx.pem  centos@"<AWS instance public-ip-primarynode>":${DST_PATH}
   rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' ${SRC_PATH}/cortx.pem  centos@"<AWS instance public-ip-workernode1>":${DST_PATH}
   rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' ${SRC_PATH}/cortx.pem  centos@"<AWS instance public-ip-workernode2>":${DST_PATH}
+```
+- Execute following command on the AWS worker nodes to install docker-ce package and start docker service
+```
+for instance in node1 node2;do
+PACKAGE="yum install -y yum-utils && yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo -y && yum install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin && systemctl start docker"
+  ssh -i cortx.pem -o 'StrictHostKeyChecking=no' root@"<AWS instance public-ip-workernode1>" sudo $PACKAGE
+  ssh -i cortx.pem -o 'StrictHostKeyChecking=no' root@"<AWS instance public-ip-workernode2>" sudo $PACKAGE
+done
+```
+
+## Execute Instructions from Primary node
+- Save and download cortx build images from EC2 primary node to worker nodes using private ip address
+```
+sudo su -
+cd /tmp && docker save -o cortx-rgw.tar cortx-rgw:2.0.0-0 && docker save -o cortx-all.tar cortx-all:2.0.0-0 && \
+docker save -o cortx-data.tar cortx-data:2.0.0-0 && docker save -o cortx-control.tar cortx-control:2.0.0-0 && \
+docker save -o nginx.tar nginx:latest && docker save -o cortx-build.tar ghcr.io/seagate/cortx-build:rockylinux-8.4
+```
+- Copy the cortx build images to worker nodes
+```
+rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' /tmp/*.tar  centos@172.31.34.10:/tmp
+```
+## Execute Instructions from Worker nodes
+- Login to EC2 worker nodes and load the cortx build images
+```
+cd /tmp && for image in *.tar; do cat $image | docker load; done
 ```
 
 ### CORTX Deployment
@@ -140,6 +154,6 @@ terraform validate && terraform destroy -var-file user.tfvars --auto-approve
 
 Tested by:
 
-* July 28, 2022: Mukul Malhotra (mukul.malhotra@seagate.com) - AWS EC2, CentOS 7.9 Linux
+* July 30, 2022: Mukul Malhotra (mukul.malhotra@seagate.com) - AWS EC2, CentOS 7.9 Linux
 * May 06, 2022: Rahul Shenoy (rahul.shenoy@seagate.com) - Windows + VMware Workstation 16 + CentOS 7.9 Linux
 * April 29, 2022: Pranav Sahasrabudhe (pranav.p.sahasrabudhe@seagate.com) - Mac + VMware Fusion 12 + CentOS 7.9 Linux
