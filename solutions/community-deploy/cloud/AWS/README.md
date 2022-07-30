@@ -137,7 +137,7 @@ rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' /tmp/*.tar  
 ## Execute Instructions from Worker nodes
 - Login to EC2 worker nodes and load the cortx build images
 ```
-cd /tmp && for image in *.tar; do cat $image | docker load; done
+for image in /tmp/*.tar; do cat $image | docker load; done
 ```
 
 ### CORTX Deployment
