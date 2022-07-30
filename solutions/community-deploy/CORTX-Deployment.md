@@ -6,87 +6,56 @@ The following sections discusses how to set up the K8s cluster and deploy the CO
 Following are the minimum system specifications required to set up the K8s cluster and deploy the CORTX stack.
 
 -  RAM: 16GB
--  CPU: 8Core
+-  CPU: 8 Core
 -  DISK: 9 Disks (1 with 50GB (For operating system) and rest 8 with 25GB per disk)
 -  OS: CentOS 7.9 (64-bit)
 
 ## Deploy the CORTX Stack on K8s cluster
 This section enlists the commands to deploy the CORTX Stack on K8s cluster. 
 
-### Make sure your VM(virtual machine) has following drives available on it:
+### Make sure your EC2 nodes or VM(virtual machine) has following drives available on it:
 
 ```
 # ls /dev/sd*
-
 /dev/sda  /dev/sda1  /dev/sda2  /dev/sdb  /dev/sdc  /dev/sdd  /dev/sde  /dev/sdf  /dev/sdg  /dev/sdh  /dev/sdi
 ```
 
-### You must have Git installed on your system.
-You can use following command for RedHat family OS to install the Git.
-
-```
-# yum install git -y
-```
-
-### SELinux should be disabled
-
--  Use the following command to check status of SELinux.
-```
-# sestatus
-```
--  If SELinux is enabled, run the following command to disable the SELinux.
-
-```
-# sed -i 's/SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config && setenforce 0
-```
-
--  Once above command runs successfully, reboot your system.
-
-```
-# reboot
-```   
-
-### Note
+### Note:
  1. All the nodes should be reachable over SSH with root user.
  2. You can deploy CORTX on AWS EC2 instance also. Please follow [CORTX Deployment on AWS](https://github.com/Seagate/cortx-re/blob/main/solutions/community-deploy/cloud/AWS/README.md)
 
 ## Install K8s cluster
-**To install the K8s cluster, run the following commands:**
+**To install the K8s cluster on the EC2 primary node and run the following commands:**
 
--  Clone cortx-re repository and change directory to `cortx-re/solutions/kubernetes`.
+-  Clone cortx-re repository in the current directory i.e. `cortx-re/solutions/kubernetes`.
 ```
-# git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/kubernetes
+CD="/home/centos/cortx-re/solutions/kubernetes"
+git clone https://github.com/Seagate/cortx-re && cd $CD
 ```
+- Add entries for all the EC2 nodes with same format in hosts file. Node from first entry will be configured as Primary node and rest as worker nodes. For example `hosts` file for multi-node setup is as below,
+```
+cat hosts
+hostname=cortx-deploy-primarynode.cortx.com,user=root,pass=<root-password>
+hostname=cortx-deploy-workernode1.cortx.com,user=root,pass=<root-password>
+hostname=cortx-deploy-workernode2.cortx.com,user=root,pass=<root-password>
+```
+-  Execute `cluster-setup.sh` to setup K8s cluster on your EC2 primary node in the cluster.
+-  To allow PODs creation on primary node pass the first input parameter for `cluster-setup.sh` script as true.
 
--  Create the hosts file in the current directory.
-```
-echo "hostname=<hostname>,user=root,pass=rootuserpassword" > hosts && cat hosts
-```
-
--  Script supports N-node deployment. Add entries for all the nodes with same format in hosts file. Node from first entry will be configured as Primary node. Example `hosts` file for multi-node setup is as below,
-```
-hostname=cortx-deploy-node1.cortx.com,user=root,pass=<root-password>
-hostname=cortx-deploy-node2.cortx.com,user=root,pass=<root-password>
-hostname=cortx-deploy-node3.cortx.com,user=root,pass=<root-password>
-```
-
--  Execute `cluster-setup.sh` to setup K8s cluster on your VM for N-node deployment.
--  To allow PODs creation on primary node pass the first input parameter for `cluster-setup.sh` script as true. Please note you must pass the input parameter as true for Single Node Setup.
+### Note: You must pass the input parameter as true for multi-node setup.
 
 ```
-# ./cluster-setup.sh true
+./cluster-setup.sh true
 ```
 
 ## Deploy CORTX Stack 
 
 Execute `cortx-deploy.sh` to deploy the CORTX on your K8s Cluster.
-
 ```
-# export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
+export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
 ```
 
-#### Note:  
-
+#### Note:
 Following parameter/s are passed when the cluster deployment command executes. If no parameter is passed, the default ones are chosen.
 
 | Parameter     | Default value     | Description     |
@@ -105,14 +74,12 @@ Following parameter/s are passed when the cluster deployment command executes. I
 | NAMESPACE  | default | Kubernetes cluster Namespace for CORTX deployments. |
 | SOLUTION_CONFIG_TYPE | manual | There are two config types for solution.yaml file; manual and automated. In automated type the solution.yaml is created by script if VM is created as per standard specification. In manual type the user needs to create solution.yaml with required disks, image details etc.; place it at script location and configure SOLUTION_CONFIG_TYPE variable as manual. |
 
-
 For example:
 ```
 # export CORTX_SCRIPTS_BRANCH=integration && export CORTX_SCRIPTS_REPO=AbhijitPatil1992/cortx-k8s && export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
 ```
 
 ## Sanity test 
-
 Run IO Sanity on your CORTX Cluster to validate bucket creation and object upload in deployed cluster.
 ```
 # ./cortx-deploy.sh --io-sanity
