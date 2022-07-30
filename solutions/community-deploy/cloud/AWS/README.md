@@ -116,6 +116,15 @@ git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/comm
 ```
 sudo time ./build-cortx.sh
 ```
+- Copy pem file from local node to all the AWS EC2 instances using public ip address,
+```
+SRC_PATH="/root/cortx-re/solutions/community-deploy/cloud/AWS"
+DST_PATH="/home/centos/cortx-re/solutions/community-deploy"
+for instance in node{1..3};do
+  rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' ${SRC_PATH}/cortx.pem  centos@"<AWS instance public-ip-primarynode>":${DST_PATH}
+  rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' ${SRC_PATH}/cortx.pem  centos@"<AWS instance public-ip-workernode1>":${DST_PATH}
+  rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' ${SRC_PATH}/cortx.pem  centos@"<AWS instance public-ip-workernode2>":${DST_PATH}
+```
 
 ### CORTX Deployment
 
