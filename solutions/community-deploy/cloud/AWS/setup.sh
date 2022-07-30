@@ -18,6 +18,9 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
+#Install time package
+yum install time -y
+
 #Only root to should run setup
 if [ $(whoami) != root ];then
 	echo "$(whoami) is not root user. Please use root user to execute this script"
