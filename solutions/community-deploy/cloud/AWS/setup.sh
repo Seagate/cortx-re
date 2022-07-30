@@ -18,7 +18,7 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
-#Install time & docker package
+#Install time package
 yum install time docker -y
 
 #Only root to should run setup
