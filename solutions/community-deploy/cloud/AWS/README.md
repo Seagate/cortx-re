@@ -75,22 +75,16 @@ terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private
 - Execute `/home/centos/setup.sh` to setup network and storage devices for CORTX.
 
 #### Note:
-`/home/centos/setup.sh` will reboot all the EC2 nodes.
+`/home/centos/setup.sh` will reboot all the EC2 nodes and prompt for generating the `root` user password on all the EC2 nodes in the cluster.
+*The root password is required as a part of CORTX deployment.*
 ```
-for i in $(terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d');do 
-   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$i sudo bash /home/centos/setup.sh
-   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$i sudo bash /home/centos/setup.sh
-   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$i sudo bash /home/centos/setup.sh
+for i in $(terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d');do  
+   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$i 'sudo passwd root && sudo bash /home/centos/setup.sh'
+   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$i 'sudo passwd root && sudo bash /home/centos/setup.sh'
+   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$i 'sudo passwd root && sudo bash /home/centos/setup.sh'
 done
 ```
 - AWS instances are ready for CORTX Build and deployment now. Connect to EC2 nodes over SSH and validate that all three network cards has IP address assigned.
-   
-- Generate `root` user password on all the EC2 nodes in the cluster.
-*The root password is required as a part of CORTX deployment.*
-
-```
-sudo passwd root
-```
 
 ## CORTX Build
 
