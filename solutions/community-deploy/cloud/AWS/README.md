@@ -89,15 +89,11 @@ done
 ## CORTX Build
 
 - We will use [cortx-build](https://github.com/Seagate/cortx/pkgs/container/cortx-build) docker image to compile entire CORTX stack.  
-- Login into AWS primary node over SSH using public IP address and clone cortx-re repository on all the EC2 nodes in the cluster and switch to `solutions/community-deploy` directory
+- Login to all the EC2 nodes over SSH using public IP address and clone cortx-re repository and switch to `solutions/community-deploy` directory
 ```
-REPO="git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/community-deploy"
-for instance in node{1..3};do 
-   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-primarynode>" sudo $REPO
-   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-workernode1>" sudo $REPO
-   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-workernode2>" sudo $REPO
-done
+git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/community-deploy
 ```
+
 - Copy pem file from local host to all the EC2 nodes using public ip address,
 ```
 SRC_PATH="/root/cortx-re/solutions/community-deploy/cloud/AWS"
@@ -107,6 +103,7 @@ for instance in node{1..3};do
   rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' ${SRC_PATH}/cortx.pem  centos@"<AWS instance public-ip-workernode1>":${DST_PATH}
   rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' ${SRC_PATH}/cortx.pem  centos@"<AWS instance public-ip-workernode2>":${DST_PATH}
 ```
+
 - Execute following command on the AWS worker nodes to install docker-ce package and start docker service
 ```
 for instance in node1 node2;do
@@ -124,10 +121,12 @@ cd /tmp && docker save -o cortx-rgw.tar cortx-rgw:2.0.0-0 && docker save -o cort
 docker save -o cortx-data.tar cortx-data:2.0.0-0 && docker save -o cortx-control.tar cortx-control:2.0.0-0 && \
 docker save -o nginx.tar nginx:latest && docker save -o cortx-build.tar ghcr.io/seagate/cortx-build:rockylinux-8.4
 ```
+
 - Copy the cortx build images to worker nodes
 ```
 rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' /tmp/*.tar  centos@172.31.34.10:/tmp
 ```
+
 ## Execute Instructions from Worker nodes
 - Login to EC2 worker nodes and load the cortx build images
 ```
