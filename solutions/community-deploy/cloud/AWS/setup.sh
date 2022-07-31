@@ -18,8 +18,8 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
-#Install time package
-yum install time -y
+#Install packages on worker nodes
+yum install -y yum-utils time && yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo -y && yum install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin && systemctl start docker
 
 #Only root to should run setup
 if [ $(whoami) != root ];then
