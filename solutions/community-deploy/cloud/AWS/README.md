@@ -80,9 +80,9 @@ terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private
 ```
 PUBLIC_IP=`terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d'`
 for ip in $PUBLIC_IP; do
-   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$ip 'sudo passwd root && sudo bash /home/centos/setup.sh'
-   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$ip 'sudo passwd root && sudo bash /home/centos/setup.sh'
-   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$ip 'sudo passwd root && sudo bash /home/centos/setup.sh'
+   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$ip 'echo "Enter new password for root user" && sudo passwd root && sudo bash /home/centos/setup.sh'
+   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$ip 'echo "Enter new password for root user" && sudo passwd root && sudo bash /home/centos/setup.sh'
+   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$ip 'echo "Enter new password for root user" && sudo passwd root && sudo bash /home/centos/setup.sh'
 done
 ```
 - AWS instances are ready for CORTX Build and deployment now. Connect to EC2 nodes over SSH and validate that all three network cards has IP address assigned.
