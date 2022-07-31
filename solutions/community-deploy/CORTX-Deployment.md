@@ -35,9 +35,9 @@ git clone https://github.com/Seagate/cortx-re && cd $CD
 - Add entries for all the EC2 nodes with same format in hosts file. Node from first entry will be configured as Primary node and rest as worker nodes. For example `hosts` file for multi-node setup is as below,
 ```
 cat hosts
-hostname=cortx-deploy-primarynode.cortx.com,user=root,pass=<root-password>
-hostname=cortx-deploy-workernode1.cortx.com,user=root,pass=<root-password>
-hostname=cortx-deploy-workernode2.cortx.com,user=root,pass=<root-password>
+hostname=cortx-deploy-private-dns-name-primarynode.cortx.com,user=root,pass=<root-password>
+hostname=cortx-deploy-private-dns-name-workernode1.cortx.com,user=root,pass=<root-password>
+hostname=cortx-deploy-private-dns-name-workernode2.cortx.com,user=root,pass=<root-password>
 ```
 -  Execute `cluster-setup.sh` to setup K8s cluster on your EC2 primary node in the cluster.
 -  To allow PODs creation on primary node pass the first input parameter for `cluster-setup.sh` script as true.
@@ -45,7 +45,7 @@ hostname=cortx-deploy-workernode2.cortx.com,user=root,pass=<root-password>
 ### Note: You must pass the input parameter as true for multi-node setup.
 
 ```
-./cluster-setup.sh true
+sudo ./cluster-setup.sh true
 ```
 
 ## Deploy CORTX Stack 
@@ -76,15 +76,15 @@ Following parameter/s are passed when the cluster deployment command executes. I
 
 For example:
 ```
-# export CORTX_SCRIPTS_BRANCH=integration && export CORTX_SCRIPTS_REPO=AbhijitPatil1992/cortx-k8s && export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
+export CORTX_SCRIPTS_BRANCH=integration && export CORTX_SCRIPTS_REPO=AbhijitPatil1992/cortx-k8s && export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
 ```
 
 ## Sanity test 
 Run IO Sanity on your CORTX Cluster to validate bucket creation and object upload in deployed cluster.
 ```
-# ./cortx-deploy.sh --io-sanity
+./cortx-deploy.sh --io-sanity
 ```
 
 Tested by:
 
-* May 06, 2022: Rahul Shenoy (rahul.shenoy@seagate.com) - Windows , VMware Workstation 16 , CentOS 7.9 Linux
+* July 31, 2022: Mukul Malhotra (mukul.malhotra@seagate.com) - AWS EC2, CentOS 7.9 Linux
