@@ -71,6 +71,7 @@ terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_
 ```
 terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d'
 ```
+
 ## Execute Instructions from Local node
 - Execute `/home/centos/setup.sh` to setup network and storage devices for CORTX.
 
@@ -105,6 +106,10 @@ for instance in node{1..3};do
   rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' ${SRC_PATH}/cortx.pem  centos@"<AWS instance public-ip-workernode1>":${DST_PATH}
   rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' ${SRC_PATH}/cortx.pem  centos@"<AWS instance public-ip-workernode2>":${DST_PATH}
 done
+```
+- Execute `build-cortx.sh` which will generate CORTX container images from `main` of CORTX components
+```
+time ./build-cortx.sh
 ```
 
 ## Execute Instructions from Primary node
