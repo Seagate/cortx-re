@@ -89,21 +89,22 @@ done
 git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/community-deploy
 ```
 - Copy pem file from local host to all the EC2 nodes using public ip address,
-**Note:** Specify your public ip addresses for the EC2 nodes as per command mentioned above.
 ```
+export PUBLIC_IP=`terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d'`
 SRC_PATH="/root/cortx-re/solutions/community-deploy/cloud/AWS"
 DST_PATH="/tmp"
-for instance in node{1..3};do
-  rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' ${SRC_PATH}/cortx.pem  centos@"<AWS instance public-ip primarynode>":${DST_PATH}
-  rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' ${SRC_PATH}/cortx.pem  centos@"<AWS instance public-ip-workernode1>":${DST_PATH}
-  rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' ${SRC_PATH}/cortx.pem  centos@"<AWS instance public-ip-workernode2>":${DST_PATH}
+for instance in {1..3};do
+  rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' ${SRC_PATH}/cortx.pem  centos@${PUBLIC_IP}:${DST_PATH}
+  rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' ${SRC_PATH}/cortx.pem  centos@${PUBLIC_IP}:${DST_PATH}
+  rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' ${SRC_PATH}/cortx.pem  centos@${PUBLIC_IP}:${DST_PATH}
 done
 ```
 
-### Execute Instructions from EC2 Primary node
+### Login to EC2 Primary node and execute following commands
 - Execute `build-cortx.sh` which will generate CORTX container images from `main` of CORTX components
 ```
-sudo time ./build-cortx.sh
+ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-primarynode>"
+cd $PWD/cortx-re/solutions/community-deploy && sudo time ./build-cortx.sh
 ```
 - Save and download cortx build images
 **Note:** This process might take some time to save and download the images.
@@ -114,8 +115,20 @@ docker save -o cortx-data.tar cortx-data:2.0.0-0 && docker save -o cortx-control
 docker save -o nginx.tar nginx:latest && docker save -o cortx-build.tar ghcr.io/seagate/cortx-build:rockylinux-8.4
 ```
 - Execute following command to copy the cortx build images from EC2 primary node to worker nodes using private ip address,
+**Note:** You can find the private ip address by executing the following command from local node,
 ```
-PRIVATE_IP=`terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d'`
+terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d
+```
+```
+sudo cd /tmp && rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' /tmp/*.tar  centos@${PRIVATE_IP}:/tmp
+```
+
+### Execute command from local node
+```
+terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d'
+```
+### Execute command from local node
+```
 rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' /tmp/*.tar  centos@$PRIVATE_IP:/tmp
 ```
 
