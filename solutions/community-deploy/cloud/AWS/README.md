@@ -53,7 +53,7 @@ ebs_volume_size     = "10"
 tag_name            = "cortx-multinode"
 ```
 
-## Execute Instructions from Local Host to create AWS Instances and Network and Storage Configuration
+### Execute Instructions from Local Host to create AWS Instances and Network and Storage Configuration
 
 - Execute Terraform code (as shown below) to create AWS instances for CORTX Build and Deployment.
 ```
@@ -66,8 +66,6 @@ terraform validate && terraform apply -var-file user.tfvars --auto-approve
 ```
 terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d'
 ```
-
-## Execute Instructions from Local node
 - Execute `/home/centos/setup.sh` to setup network and storage devices for CORTX.
 
 **Note:**
@@ -102,12 +100,12 @@ for instance in node{1..3};do
 done
 ```
 
-## Execute Instructions from EC2 Primary node
+### Execute Instructions from EC2 Primary node
 - Execute `build-cortx.sh` which will generate CORTX container images from `main` of CORTX components
 ```
 sudo time ./build-cortx.sh
 ```
-- Save and download cortx build images from EC2 primary node
+- Save and download cortx build images
 ```
 sudo su -
 cd /tmp && docker save -o cortx-rgw.tar cortx-rgw:2.0.0-0 && docker save -o cortx-all.tar cortx-all:2.0.0-0 && \
