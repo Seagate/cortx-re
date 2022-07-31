@@ -95,13 +95,15 @@ git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/comm
 ```
 
 - Copy pem file from local host to all the EC2 nodes using public ip address,
+**Note:** Specify your public ip addresses for the EC2 nodes as per command mentioned above.
 ```
 SRC_PATH="/root/cortx-re/solutions/community-deploy/cloud/AWS"
 DST_PATH="/tmp"
 for instance in node{1..3};do
-  rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' ${SRC_PATH}/cortx.pem  centos@"<AWS instance public-ip-primarynode>":${DST_PATH}
+  rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' ${SRC_PATH}/cortx.pem  centos@"<AWS instance public-ip primarynode>":${DST_PATH}
   rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' ${SRC_PATH}/cortx.pem  centos@"<AWS instance public-ip-workernode1>":${DST_PATH}
   rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' ${SRC_PATH}/cortx.pem  centos@"<AWS instance public-ip-workernode2>":${DST_PATH}
+done
 ```
 
 - Execute following command on the AWS worker nodes to install docker-ce package and start docker service
