@@ -77,10 +77,10 @@ terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private
 #### Note:
 `/home/centos/setup.sh` will reboot all the EC2 nodes.
 ```
-for instance in node{1..3};do 
-   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-primarynode>" sudo bash /home/centos/setup.sh
-   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-workernode1>" sudo bash /home/centos/setup.sh
-   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-workernode2>" sudo bash /home/centos/setup.sh
+for i in $(terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d');do 
+   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$i sudo bash /home/centos/setup.sh
+   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$i sudo bash /home/centos/setup.sh
+   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$i sudo bash /home/centos/setup.sh
 done
 ```
 - AWS instances are ready for CORTX Build and deployment now. Connect to EC2 nodes over SSH and validate that all three network cards has IP address assigned.
