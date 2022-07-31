@@ -120,16 +120,9 @@ docker save -o nginx.tar nginx:latest && docker save -o cortx-build.tar ghcr.io/
 terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d
 ```
 ```
-sudo cd /tmp && rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' /tmp/*.tar  centos@${PRIVATE_IP}:/tmp
-```
-
-### Execute command from local node
-```
-terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d'
-```
-### Execute command from local node
-```
-rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' /tmp/*.tar  centos@$PRIVATE_IP:/tmp
+for instance in {1..2};do
+  rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' /tmp/*.tar  centos@"<AWS instance private-ip-workernode1>":/tmp
+  rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' /tmp/*.tar  centos@"<AWS instance private-ip-workernode2>":/tmp
 ```
 
 ## Execute Instructions from Worker nodes
