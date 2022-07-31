@@ -109,7 +109,7 @@ done
 ```
 - Execute `build-cortx.sh` which will generate CORTX container images from `main` of CORTX components
 ```
-time ./build-cortx.sh
+sudo time ./build-cortx.sh
 ```
 
 ## Execute Instructions from Primary node
