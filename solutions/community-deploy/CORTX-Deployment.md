@@ -1,6 +1,6 @@
 # Setup K8s Cluster and Deploy CORTX Stack
 
-The following sections discusses how to set up the K8s cluster and deploy the CORTX Stack. The minimum prerequisites are enlisted to make sure the cluster set up process is smooth.
+The following sections discusses how to set up the K8s cluster and deploy the CORTX Stack on multi-node cluster. The minimum prerequisites are enlisted to make sure the cluster set up process is smooth.
 
 ## Prerequisites
 Following are the minimum system specifications required to set up the K8s cluster and deploy the CORTX stack.
@@ -13,50 +13,47 @@ Following are the minimum system specifications required to set up the K8s clust
 ## Deploy the CORTX Stack on K8s cluster
 This section enlists the commands to deploy the CORTX Stack on K8s cluster. 
 
-### Make sure your EC2 nodes or VM(virtual machine) has following drives available on it:
+### Make sure your EC2 nodes has following drives available on it:
 
 ```
-# ls /dev/sd*
+ls /dev/sd*
 /dev/sda  /dev/sda1  /dev/sda2  /dev/sdb  /dev/sdc  /dev/sdd  /dev/sde  /dev/sdf  /dev/sdg  /dev/sdh  /dev/sdi
 ```
 
 ### Note:
- 1. All the nodes should be reachable over SSH with root user.
- 2. You can deploy CORTX on AWS EC2 instance also. Please follow [CORTX Deployment on AWS](https://github.com/Seagate/cortx-re/blob/main/solutions/community-deploy/cloud/AWS/README.md)
+ 1. All the EC2 nodes should be reachable over SSH using private ip address.
+ 2. Follow [CORTX Deployment on AWS](https://github.com/Seagate/cortx-re/blob/main/solutions/community-deploy/cloud/AWS/README.md) to build and deploy CORTX on AWS EC2 instances.
 
 ## Install K8s cluster
-**To install the K8s cluster on the EC2 primary node and run the following commands:**
+**Execute the following commands to install the K8s cluster on the EC2 primary node:**
 
--  Clone cortx-re repository in the current directory i.e. `cortx-re/solutions/kubernetes`.
+-  Clone cortx-re repository in the current directory `cortx-re/solutions/kubernetes`.
 ```
-CD="/home/centos/cortx-re/solutions/kubernetes"
-git clone https://github.com/Seagate/cortx-re && cd $CD
+git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/kubernetes
 ```
-- Add entries for all the EC2 nodes with same format in hosts file. Node from first entry will be configured as Primary node and rest as worker nodes. For example `hosts` file for multi-node setup is as below,
+- Add entries for all the EC2 nodes with same format in hosts file. Node from first entry will be configured as Primary node and rest as Worker nodes. For example `hosts` file for multi-node setup is as below,
 ```
 cat hosts
-hostname=cortx-deploy-private-dns-name-primarynode.cortx.com,user=root,pass=<root-password>
-hostname=cortx-deploy-private-dns-name-workernode1.cortx.com,user=root,pass=<root-password>
-hostname=cortx-deploy-private-dns-name-workernode2.cortx.com,user=root,pass=<root-password>
+hostname="<AWS instance private ip of primarynode>",user=root,pass=<root-password>
+hostname="<AWS instance private ip of workernode1>",user=root,pass=<root-password>
+hostname="<AWS instance private ip of workernode2>",user=root,pass=<root-password>
 ```
 -  Execute `cluster-setup.sh` to setup K8s cluster on your EC2 primary node in the cluster.
--  To allow PODs creation on primary node pass the first input parameter for `cluster-setup.sh` script as true.
-
-### Note: You must pass the input parameter as true for multi-node setup.
-
+-  To allow PODs creation on primary node, you must pass the first input parameter for `cluster-setup.sh` as true for
+   multi-node setup.
 ```
 sudo ./cluster-setup.sh true
 ```
 
 ## Deploy CORTX Stack 
 
-Execute `cortx-deploy.sh` to deploy the CORTX on your K8s Cluster.
+- Execute `cortx-deploy.sh` to deploy the CORTX stack on your K8s Cluster.
 ```
 export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
 ```
 
 #### Note:
-Following parameter/s are passed when the cluster deployment command executes. If no parameter is passed, the default ones are chosen.
+- Following parameter(s) are passed when the cluster deployment command executes. If no parameter is passed, the default ones are chosen.
 
 | Parameter     | Default value     | Description     |
 | :------------- | :----------- | :---------|
@@ -80,9 +77,9 @@ export CORTX_SCRIPTS_BRANCH=integration && export CORTX_SCRIPTS_REPO=AbhijitPati
 ```
 
 ## Sanity test 
-Run IO Sanity on your CORTX Cluster to validate bucket creation and object upload in deployed cluster.
+- Run IO Sanity on your CORTX Cluster to validate bucket creation and object upload in deployed cluster.
 ```
-./cortx-deploy.sh --io-sanity
+sudo ./cortx-deploy.sh --io-sanity
 ```
 
 Tested by:
