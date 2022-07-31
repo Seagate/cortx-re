@@ -106,6 +106,7 @@ done
 sudo time ./build-cortx.sh
 ```
 - Save and download cortx build images
+**Note:** This process might take some time to save and download the images.
 ```
 sudo su -
 cd /tmp && docker save -o cortx-rgw.tar cortx-rgw:2.0.0-0 && docker save -o cortx-all.tar cortx-all:2.0.0-0 && \
