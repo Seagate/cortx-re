@@ -18,3 +18,4 @@
 os_version = "<OS VERSION>"
 region = "<AWS REGION>"
 security_group_cidr = "<YOUR PUBLIC IP CIDR>"
+tag_name = "<YOUR TAG NAME FOR MULTI NODE EC2 Instances>"
