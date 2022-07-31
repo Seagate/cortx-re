@@ -120,7 +120,8 @@ docker save -o nginx.tar nginx:latest && docker save -o cortx-build.tar ghcr.io/
 terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d
 ```
 ```
-for instance in {1..2};do
+  sudo su -
+  cd /tmp
   rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' /tmp/*.tar  centos@"<AWS instance private-ip-workernode1>":/tmp
   rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' /tmp/*.tar  centos@"<AWS instance private-ip-workernode2>":/tmp
 ```
@@ -128,7 +129,8 @@ for instance in {1..2};do
 ## Execute Instructions from Worker nodes
 - Login to EC2 worker nodes and load the cortx build images
 ```
-for prvip in $PRIVATE_IP; do for image in /tmp/*.tar; do cat $image | docker load; done
+sudo su -
+for image in /tmp/*.tar; do cat $image | docker load; done
 ```
 
 ### CORTX Deployment
