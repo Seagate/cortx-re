@@ -78,10 +78,11 @@ terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private
 `/home/centos/setup.sh` will reboot all the EC2 nodes and prompt for generating the `root` user password on all the EC2 nodes in the cluster.
 *The root password is required as a part of CORTX deployment.*
 ```
-for i in $(terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d');do  
-   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$i 'sudo passwd root && sudo bash /home/centos/setup.sh'
-   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$i 'sudo passwd root && sudo bash /home/centos/setup.sh'
-   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$i 'sudo passwd root && sudo bash /home/centos/setup.sh'
+PUBLIC_IP=`terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d'`
+for ip in $PUBLIC_IP; do
+	ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$ip 'sudo passwd root && sudo bash /home/centos/setup.sh'
+	ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$ip 'sudo passwd root && sudo bash /home/centos/setup.sh'
+	ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$ip 'sudo passwd root && sudo bash /home/centos/setup.sh'
 done
 ```
 - AWS instances are ready for CORTX Build and deployment now. Connect to EC2 nodes over SSH and validate that all three network cards has IP address assigned.
@@ -103,15 +104,6 @@ for instance in node{1..3};do
   rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' ${SRC_PATH}/cortx.pem  centos@"<AWS instance public-ip primarynode>":${DST_PATH}
   rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' ${SRC_PATH}/cortx.pem  centos@"<AWS instance public-ip-workernode1>":${DST_PATH}
   rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' ${SRC_PATH}/cortx.pem  centos@"<AWS instance public-ip-workernode2>":${DST_PATH}
-done
-```
-
-- Execute following command on the AWS worker nodes to install docker-ce package and start docker service
-```
-for instance in node1 node2;do
-PACKAGE="yum install -y yum-utils && yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo -y && yum install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin && systemctl start docker"
-  ssh -i cortx.pem -o 'StrictHostKeyChecking=no' root@"<AWS instance public-ip-workernode1>" sudo $PACKAGE
-  ssh -i cortx.pem -o 'StrictHostKeyChecking=no' root@"<AWS instance public-ip-workernode2>" sudo $PACKAGE
 done
 ```
 
