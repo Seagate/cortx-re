@@ -59,7 +59,6 @@ done
 #Start docker service
 systemctl start docker && systemctl enabled docker
 
-
 echo "Rebooting system....."
 #System reboot
 reboot
