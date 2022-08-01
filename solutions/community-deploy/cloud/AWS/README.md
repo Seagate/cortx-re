@@ -91,7 +91,8 @@ ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip>"
         ```
         git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/community-deploy
         ```
-    - If you want to build CORTX from specific branch/tag. Tag based build is supported after and including tag [2.0.0-879](https://github.com/Seagate/cortx-re/releases/tag/2.0.0-879) 
+    - If you want to build CORTX from specific branch/tag.
+      :warning: Tag based build is supported after and including tag [2.0.0-879](https://github.com/Seagate/cortx-re/releases/tag/2.0.0-879) 
         ```
         git clone https://github.com/Seagate/cortx-re -b <branch/tag> && cd $PWD/cortx-re/solutions/community-deploy
         ```  
@@ -100,7 +101,8 @@ ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip>"
         ```
         time ./build-cortx.sh
         ```
-    - Generate CORTX container images from from specific branch/tag. Tag based build is supported after and including tag [2.0.0-879](https://github.com/Seagate/cortx-re/releases/tag/2.0.0-879)
+    - Generate CORTX container images from from specific branch/tag.
+      :warning: Tag based build is supported after and including tag [2.0.0-879](https://github.com/Seagate/cortx-re/releases/tag/2.0.0-879)
         ```
         time ./build-cortx.sh -b <branch/tag>
         ```
