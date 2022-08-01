@@ -60,11 +60,17 @@ terraform validate && terraform apply -var-file user.tfvars --auto-approve
 `/home/centos/setup.sh` will reboot all the EC2 nodes and prompt for generating the `root` user password on all the EC2 nodes in the cluster.
 *The root password is required as a part of CORTX deployment.*
 ```
-export PUBLIC_IP=`terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d'`
-for ip in $PUBLIC_IP; do
+for ip in $PUBLIC_IP;do
+   PUBLIC_IP=`terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d'`
+   SRC_PATH=$PWD/cortx-re/solutions/community-deploy/cloud/AWS
+   DST_PATH=/tmp
    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$ip 'echo "Enter new password for root user" && sudo passwd root && sudo bash /home/centos/setup.sh'
    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$ip 'echo "Enter new password for root user" && sudo passwd root && sudo bash /home/centos/setup.sh'
    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$ip 'echo "Enter new password for root user" && sudo passwd root && sudo bash /home/centos/setup.sh'
+   
+   rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' $SRC_PATH/cortx.pem  centos@$PUBLIC_IP:$DST_PATH
+   rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' $SRC_PATH/cortx.pem  centos@$PUBLIC_IP:$DST_PATH
+   rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' $SRC_PATH/cortx.pem  centos@$PUBLIC_IP:$DST_PATH
 done
 ```
 - AWS instances are ready for CORTX Build and deployment now. Connect to EC2 nodes over SSH and validate that all three network cards has IP address assigned.
@@ -76,8 +82,7 @@ done
 ```
 sudo su -
 ```
-## Login to EC2 Primary node and execute following commands
-- Login to all the EC2 nodes over SSH using public IP address and clone cortx-re repository and switch to `solutions/community-deploy` directory.
+- Login to all the nodes over SSH using public IP address and clone cortx-re repository and switch to `solutions/community-deploy` directory.
 **Note:** Follow similar command for worker nodes
 ```
 CORTXRE=$PWD/cortx-re/solutions/community-deploy
@@ -95,7 +100,7 @@ cd /tmp && docker save -o cortx-rgw.tar cortx-rgw:2.0.0-0 && docker save -o cort
 docker save -o cortx-data.tar cortx-data:2.0.0-0 && docker save -o cortx-control.tar cortx-control:2.0.0-0 && \
 docker save -o nginx.tar nginx:latest && docker save -o cortx-build.tar ghcr.io/seagate/cortx-build:rockylinux-8.4
 ```
-- Execute following command to copy the cortx build images from EC2 primary node to worker nodes using private ip address,
+- Execute the following command to copy the cortx build images from EC2 primary node to worker nodes using private ip address,
 **Note:** You can find the private ip address by executing the following command from local node,
 **Private IP address:**
 ```
