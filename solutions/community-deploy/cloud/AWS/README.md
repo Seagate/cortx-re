@@ -86,12 +86,11 @@ passwd root
 ```
 ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip>"
 ```
-- Clone cortx-re repository from required branch/tag
+- Clone cortx-re repository from required branch/tag. If you do not provide `-b <branch/tag>`, then it will use default main branch    
   :warning: Tag based build is supported after and including tag [2.0.0-879](https://github.com/Seagate/cortx-re/releases/tag/2.0.0-879) 
 ```
 git clone https://github.com/Seagate/cortx-re -b <branch/tag>
 ```
-  If you do not provide `-b <branch/tag>`, then it will use default main branch
 - Switch to solutions/community-deploy directory 
 ```
 cd $PWD/cortx-re/solutions/community-deploy
