@@ -1,0 +1,26 @@
+global:
+  resolve_timeout: 1h
+
+route:
+  group_wait: 60s
+  group_interval: 30m
+  repeat_interval: 4h
+  receiver: 'CORTX_RE-email'
+  routes:
+  - receiver: "CORTX_RE-email"
+    group_wait: 10s
+    match_re:
+      severity: Critical|Warning
+    continue: true
+
+receivers:
+- name: 'CORTX_RE-email'
+  email_configs:
+  - to: 'CORTX.DevOps.RE@seagate.com'
+    from: 'nobody@seagate.com'
+    headers:
+      subject: '{{ .CommonLabels.severity }} Disk Space Consumption'
+    require_tls: no
+    smarthost: mailhost.seagate.com:25
+    send_resolved: true
+    text: "<!channel> \nsummary: {{ .CommonAnnotations.summary }}\ndescription: {{ .CommonAnnotations.description }}"
