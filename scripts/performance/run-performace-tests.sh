@@ -53,7 +53,7 @@ validation
 generate_rsa_key
 nodes_setup
 
-scp_all_nodes _run-performace-tests-functions.sh ../../solutions/kubernetes/*
+scp_all_nodes _run-performace-tests-functions.sh ../../solutions/kubernetes/functions.sh
 
 add_primary_separator "Fetch Endpoint URL,Access Key and Secret Key from CORTX Cluster"
 SETUP_INFO=$(ssh_primary_node "export SOLUTION_FILE=$SOLUTION_FILE && /var/tmp/_run-performace-tests-functions.sh --fetch-setup-info")
