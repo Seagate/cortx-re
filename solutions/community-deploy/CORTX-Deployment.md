@@ -41,7 +41,7 @@ reboot
 ```   
 
 **Note:**
- 1. All the EC2 nodes should be reachable over SSH
+ 1. All the nodes should be reachable over SSH
  2. You can deploy CORTX on AWS EC2 instance also. Please follow [CORTX Deployment on AWS](https://github.com/Seagate/cortx-re/blob/main/solutions/community-deploy/cloud/AWS/README.md)
 
 ## Install K8s cluster
@@ -56,14 +56,14 @@ hostname=cortx-deploy-node1.cortx.com,user=root,pass=<root-password>
 hostname=cortx-deploy-node2.cortx.com,user=root,pass=<root-password>
 hostname=cortx-deploy-node3.cortx.com,user=root,pass=<root-password>
 ```
--  Execute `cluster-setup.sh` script from primary node to setup K8s cluster on your EC2 instances for multi-node deployment.
+-  Execute `cluster-setup.sh` script to setup K8s cluster on your EC2 instances for deployment.
 -  To allow the PODs creation on primary node, pass the first input parameter for `cluster-setup.sh` script as `true`. Please note you must pass the input parameter as true for multi-node setup.
 ```
 ./cluster-setup.sh true
 ```
 
 ## Deploy CORTX Stack 
-- Execute `cortx-deploy.sh` script from primary node to deploy the CORTX stack on your K8s cluster.
+- Execute `cortx-deploy.sh` to deploy the CORTX stack on your K8s cluster.
 ```
 export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
 ```
