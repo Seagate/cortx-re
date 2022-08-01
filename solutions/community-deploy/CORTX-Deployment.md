@@ -40,7 +40,7 @@ sed -i 's/SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config && setenforce
 reboot
 ```   
 
-### Note
+**Note:**
  1. All the EC2 nodes should be reachable over SSH
  2. You can deploy CORTX on AWS EC2 instance also. Please follow [CORTX Deployment on AWS](https://github.com/Seagate/cortx-re/blob/main/solutions/community-deploy/cloud/AWS/README.md)
 
@@ -68,8 +68,9 @@ hostname=cortx-deploy-node3.cortx.com,user=root,pass=<root-password>
 export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
 ```
 
-#### Note:  
+**Note:**  
 - Following parameter/s are passed when the cluster deployment command executes. If no parameter is passed, the default ones are chosen.
+
 | Parameter     | Default value     | Description     |
 | :------------- | :----------- | :---------|
 | CORTX_SCRIPTS_BRANCH      | v0.6.0  | If you want to use another cortx-K8s branch then export this variable with your branch.     |
