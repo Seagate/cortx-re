@@ -128,47 +128,25 @@ pipeline {
             }
         }
         
-        stage ("Trigger Downstream Jobs") {
-            parallel {
-                stage ("build S3Server") {
-                    when { expression { false } }
-                    steps {
-                        script { build_stage = env.STAGE_NAME }
-                        script {
-                            try {
-                                def s3Build = build job: 's3server', wait: true,
-                                parameters: [
-                                    string(name: 'branch', value: "${branch}")
-                                ]
-                                env.S3_BUILD_NUMBER = s3Build.number
-                            }catch (err) {
-                                build_stage = env.STAGE_NAME
-                                error "Failed to Build S3Server"
-                            }
+        stage ("build Hare") {
+            steps {
+                    script { build_stage = env.STAGE_NAME }
+                    script {
+                        try {
+                            def hareBuild = build job: 'hare', wait: true,
+                            parameters: [
+                                string(name: 'branch', value: "${branch}")
+                            ]
+                            env.HARE_BUILD_NUMBER = hareBuild.number
+                        }catch (err) {
+                            build_stage = env.STAGE_NAME
+                            error "Failed to Build Hare"
                         }
                     }
                 }
-                            
-                stage ("build Hare") {
-                    steps {
-                        script { build_stage = env.STAGE_NAME }
-                        script {
-                            try {
-                                def hareBuild = build job: 'hare', wait: true,
-                                parameters: [
-                                    string(name: 'branch', value: "${branch}")
-                                ]
-                                env.HARE_BUILD_NUMBER = hareBuild.number
-                            }catch (err) {
-                                build_stage = env.STAGE_NAME
-                                error "Failed to Build Hare"
-                            }
-                        }
-                    }
-                }
-            }    
-        }
-    
+            }
+
+
         stage ('Tag last_successful') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -205,6 +183,7 @@ pipeline {
             }
         }
         stage('Update Jira') {
+            when { expression { return env.release_build != null } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                     script {
