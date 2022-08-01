@@ -49,7 +49,7 @@ ebs_volume_size     = "10"
 tag_name            = "cortx-multinode"
 ```
 
-### Execute Instructions from Local Host to create AWS Instances and Network and Storage Configuration
+## Execute Instructions from Local Host to create AWS Instances and Network and Storage Configuration
 
 - Execute Terraform code (as shown below) to create AWS instances for CORTX Build and Deployment.
 ```
@@ -77,7 +77,7 @@ done
 ```
 sudo su -
 ```
-### Login to EC2 Primary node and execute following commands
+## Login to EC2 Primary node and execute following commands
 - Login to all the EC2 nodes over SSH using public IP address and clone cortx-re repository and switch to `solutions/community-deploy` directory
 ```
 git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/community-deploy
@@ -85,7 +85,7 @@ git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/comm
 - Execute `build-cortx.sh` which will generate CORTX container images from `main` of CORTX components
 ```
 ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-primarynode>"
-sudo time ./build-cortx.sh
+time ./build-cortx.sh
 ```
 - Save and download cortx build images
 **Note:** This process might take some time to save and download the images.
@@ -96,6 +96,7 @@ docker save -o nginx.tar nginx:latest && docker save -o cortx-build.tar ghcr.io/
 ```
 - Execute following command to copy the cortx build images from EC2 primary node to worker nodes using private ip address,
 **Note:** You can find the private ip address by executing the following command from local node,
+**Private IP address:**
 ```
 terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d
 ```
