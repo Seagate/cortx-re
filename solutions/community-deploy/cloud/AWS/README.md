@@ -54,23 +54,29 @@ tag_name            = "cortx-multinode"
 ```
 terraform validate && terraform apply -var-file user.tfvars --auto-approve
 ```
-- Execute `/home/centos/setup.sh` to setup network and storage devices for CORTX.
+- Execute following commands which will perform on all the nodes in the cluster,
+  - Setup network and storage devices for CORTX.
+  - Prompt for generating the `root` user password
+  - `/home/centos/setup.sh` will reboot all the nodes once executed
 
 **Note:**
-`/home/centos/setup.sh` will reboot all the EC2 nodes and prompt for generating the `root` user password on all the EC2 nodes in the cluster.
 *The root password is required as a part of CORTX deployment.*
 ```
-for ip in $PUBLIC_IP;do
-   PUBLIC_IP=`terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d'`
-   SRC_PATH=$PWD/cortx-re/solutions/community-deploy/cloud/AWS
-   DST_PATH=/tmp
-   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$ip 'echo "Enter new password for root user" && sudo passwd root && sudo bash /home/centos/setup.sh'
-   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$ip 'echo "Enter new password for root user" && sudo passwd root && sudo bash /home/centos/setup.sh'
-   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$ip 'echo "Enter new password for root user" && sudo passwd root && sudo bash /home/centos/setup.sh'
-   
-   rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' $SRC_PATH/cortx.pem  centos@$PUBLIC_IP:$DST_PATH
-   rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' $SRC_PATH/cortx.pem  centos@$PUBLIC_IP:$DST_PATH
-   rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' $SRC_PATH/cortx.pem  centos@$PUBLIC_IP:$DST_PATH
+export PUBLIC_IP=`terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d'`
+SRC_PATH=$PWD/cortx-re/solutions/community-deploy/cloud/AWS
+DST_PATH=/tmp
+for ip in $PUBLIC_IP;
+do
+  for instance in {1..3};
+  do
+     rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' $SRC_PATH/cortx.pem  centos@$PUBLIC_IP:$DST_PATH
+     rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' $SRC_PATH/cortx.pem  centos@$PUBLIC_IP:$DST_PATH
+     rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' $SRC_PATH/cortx.pem  centos@$PUBLIC_IP:$DST_PATH
+  done
+    
+ ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$ip 'echo "Enter new password for root user" && sudo passwd root && sudo bash /home/centos/setup.sh'
+ ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$ip 'echo "Enter new password for root user" && sudo passwd root && sudo bash /home/centos/setup.sh'
+ ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$ip 'echo "Enter new password for root user" && sudo passwd root && sudo bash /home/centos/setup.sh'
 done
 ```
 - AWS instances are ready for CORTX Build and deployment now. Connect to EC2 nodes over SSH and validate that all three network cards has IP address assigned.
