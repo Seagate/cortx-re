@@ -22,10 +22,10 @@ aws sts get-caller-identity
 - You can add following function in your `~/.bashrc` file under your HOME directory to set the environment varibles,
 ```
 function cortxec2var(){
-  export PUBLIC_IP=`terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d'`
-  export JAVA_HOME=/other/path
-	 export SRC_PATH=/root/cortx-re/solutions/community-deploy/cloud/AWS
-  export DST_PATH=/tmp
+    export PUBLIC_IP=`terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d'`
+    export JAVA_HOME=/other/path
+    export SRC_PATH=/root/cortx-re/solutions/community-deploy/cloud/AWS
+    export DST_PATH=/tmp
 }
 cortxec2var
 ```
