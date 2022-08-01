@@ -49,7 +49,7 @@ ebs_volume_size     = "10"
 tag_name            = "cortx-multinode"
 ```
 
-## Execute Instructions from Local Host to create AWS Instances and Network and Storage Configuration
+### Execute Instructions from Local Host to create AWS Instances and Network and Storage Configuration
 - Execute Terraform code (as shown below) to create AWS instances for CORTX Build and Deployment.
 ```
 terraform validate && terraform apply -var-file user.tfvars --auto-approve
@@ -81,7 +81,7 @@ done
 ```
 - AWS instances are ready for CORTX Build and deployment now. Connect to EC2 nodes over SSH and validate that all three network cards has IP address assigned.
 
-## CORTX Build
+### CORTX Build
 
 - We will use [cortx-build](https://github.com/Seagate/cortx/pkgs/container/cortx-build) docker image to compile entire CORTX stack.  
 - Become the root user by running the following command,
@@ -118,7 +118,7 @@ rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' /tmp/*.tar  
 rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' /tmp/*.tar  centos@"<AWS instance private-ip-workernode2>":/tmp
 ```
 
-## Execute Instructions from Worker nodes
+### Execute Instructions from Worker nodes
 - Login to all worker nodes and load the cortx build images
 ```
 for image in /tmp/*.tar; do cat $image | docker load; done
@@ -129,7 +129,7 @@ for image in /tmp/*.tar; do cat $image | docker load; done
 - After CORTX build is ready, follow [CORTX Deployment](https://github.com/Seagate/cortx-re/blob/main/solutions/community-deploy/CORTX-Deployment.md) to deploy CORTX on AWS instance.   
 - Please exclude SELINUX and Hostname setup steps.
 
-## Cleanup 
+### Cleanup 
 
 You can clean-up the AWS infrastructure created using following command,
 ```
