@@ -128,7 +128,7 @@ function nginx_validation() {
 nginx_validation
 # clone cortx-re repository & run build.sh
 if [ -d $LOCAL_MOUNT/cortx-re ]; then rm -rf $LOCAL_MOUNT/cortx-re; fi
-git clone https://github.com/Seagate/cortx-re && pushd cortx-re/docker/cortx-deploy/
+git clone https://github.com/Seagate/cortx-re -b $BRANCH && pushd cortx-re/docker/cortx-deploy/
 ./build.sh -b http://$IP -o rockylinux-8.4 -s all -e opensource-ci
 
 # Show recently generated cortx-all images
