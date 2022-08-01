@@ -80,13 +80,13 @@ done
 ## CORTX Build
 
 - We will use [cortx-build](https://github.com/Seagate/cortx/pkgs/container/cortx-build) docker image to compile entire CORTX stack.  
-- Login to all the EC2 nodes over SSH using public IP address and clone cortx-re repository and switch to `solutions/community-deploy` directory
+- Become the root user by running the following command,
 ```
-git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/community-deploy
+sudo su -
 ```
 - Copy pem file from local host to all the EC2 nodes using public ip address,
 ```
-PUBLIC_IP=`terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d'`
+export PUBLIC_IP=`terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d'`
 SRC_PATH="/root/cortx-re/solutions/community-deploy/cloud/AWS"
 DST_PATH="/tmp"
 for instance in {1..3};do
@@ -97,14 +97,14 @@ done
 ```
 
 ### Login to EC2 Primary node and execute following commands
+- Login to all the EC2 nodes over SSH using public IP address and clone cortx-re repository and switch to `solutions/community-deploy` directory
+```
+git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/community-deploy
+```
 - Execute `build-cortx.sh` which will generate CORTX container images from `main` of CORTX components
 ```
 ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-primarynode>"
-cd $PWD/cortx-re/solutions/community-deploy && sudo time ./build-cortx.sh
-```
-- Become the root user by running the following command,
-```
-sudo su -
+sudo time ./build-cortx.sh
 ```
 - Save and download cortx build images
 **Note:** This process might take some time to save and download the images.
