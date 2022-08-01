@@ -95,16 +95,11 @@ git clone https://github.com/Seagate/cortx-re -b <branch/tag>
 ```
 cd $PWD/cortx-re/solutions/community-deploy
 ```  
-- Execute `build-cortx.sh` script. 
-    - Generate CORTX container images from default `main` branch of CORTX components
-        ```
-        time ./build-cortx.sh
-        ```
-    - Generate CORTX container images from from specific branch/tag.
-      :warning: Tag based build is supported after and including tag [2.0.0-879](https://github.com/Seagate/cortx-re/releases/tag/2.0.0-879)
-        ```
-        time ./build-cortx.sh -b <branch/tag>
-        ```
+- Generate CORTX container images from required branch/tag. If you do not provide `-b <branch/tag>`, then it will use default main branch  
+  :warning: Tag based build is supported after and including tag [2.0.0-879](https://github.com/Seagate/cortx-re/releases/tag/2.0.0-879)
+```
+time ./build-cortx.sh -b <branch/tag>
+```
 
 ### CORTX Deployment
 
