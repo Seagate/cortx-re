@@ -113,7 +113,7 @@ function packet_validation() {
 packet_validation
 
 # Nginx container creation with required configuration
-docker container rm -f $(docker container ls --filter name=^/release-packages-server$ -q)
+docker container rm -f $(docker container ls -a --filter name=^/release-packages-server$ -q) || true
 docker run --name release-packages-server -v /var/artifacts/0/:/usr/share/nginx/html:ro -d -p 80:80 nginx
 
 function nginx_validation() {
