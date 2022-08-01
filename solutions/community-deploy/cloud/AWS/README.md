@@ -88,7 +88,7 @@ done
 ```
 sudo su -
 ```
-- Login to all the nodes over SSH using public IP address and clone cortx-re repository and switch to `solutions/community-deploy` directory.
+- Login to all the nodes over SSH from local host using public IP address and clone cortx-re repository and switch to `solutions/community-deploy` directory.
 **Note:** Follow similar command for worker nodes
 ```
 CORTXRE=$PWD/cortx-re/solutions/community-deploy
