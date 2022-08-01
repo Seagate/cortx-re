@@ -57,7 +57,7 @@ hostname=cortx-deploy-node2.cortx.com,user=root,pass=<root-password>
 hostname=cortx-deploy-node3.cortx.com,user=root,pass=<root-password>
 ```
 -  Execute `cluster-setup.sh` script from primary node to setup K8s cluster on your EC2 instances for multi-node deployment.
--  To allow PODs creation on primary node to pass the first input parameter for `cluster-setup.sh` script as true. Please note you must pass the input parameter as true for multi-node setup.
+-  To allow the PODs creation on primary node, pass the first input parameter for `cluster-setup.sh` script as `true`. Please note you must pass the input parameter as true for multi-node setup.
 ```
 ./cluster-setup.sh true
 ```
