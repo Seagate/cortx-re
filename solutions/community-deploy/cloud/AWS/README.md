@@ -108,9 +108,14 @@ cd /tmp && docker save -o cortx-rgw.tar cortx-rgw:2.0.0-0 && docker save -o cort
 docker save -o cortx-data.tar cortx-data:2.0.0-0 && docker save -o cortx-control.tar cortx-control:2.0.0-0 && \
 docker save -o nginx.tar nginx:latest && docker save -o cortx-build.tar ghcr.io/seagate/cortx-build:rockylinux-8.4
 ```
-- Execute the following command to copy the cortx build images from EC2 primary node to worker nodes using private ip address,
+- Execute the following command to copy the cortx build images from EC2 primary node to worker nodes using private ip address
+```
+rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' /tmp/*.tar  centos@"<AWS instance private-ip-workernode1>":/tmp
+rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' /tmp/*.tar  centos@"<AWS instance private-ip-workernode2>":/tmp
+```
 
-**Note:** You can find the private ip address by executing the following command from local node,
+**Note:** You can find the private ip address by executing the following command
+
 **From Local Host:**
 ```
 terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d
@@ -118,8 +123,6 @@ terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private
 **From EC2 node:**
 ```
 curl http://169.254.169.254/latest/meta-data/local-ipv4
-rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' /tmp/*.tar  centos@"<AWS instance private-ip-workernode1>":/tmp
-rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' /tmp/*.tar  centos@"<AWS instance private-ip-workernode2>":/tmp
 ```
 
 ### Execute Instructions from Worker nodes
