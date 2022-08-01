@@ -111,12 +111,13 @@ docker save -o nginx.tar nginx:latest && docker save -o cortx-build.tar ghcr.io/
 - Execute the following command to copy the cortx build images from EC2 primary node to worker nodes using private ip address,
 
 **Note:** You can find the private ip address by executing the following command from local node,
-**Private IP address:**
+**From Local Host:**
 ```
 terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d
 ```
+**From EC2 node:**
 ```
-cd /tmp
+curl http://169.254.169.254/latest/meta-data/local-ipv4
 rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' /tmp/*.tar  centos@"<AWS instance private-ip-workernode1>":/tmp
 rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' /tmp/*.tar  centos@"<AWS instance private-ip-workernode2>":/tmp
 ```
