@@ -19,20 +19,6 @@ git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/comm
 ```
 aws sts get-caller-identity
 ```
-- You can add following function in your `~/.bashrc` file under your HOME directory to set the environment varibles,
-```
-function cortxec2var(){
-    export PUBLIC_IP=`terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d'`
-    export JAVA_HOME=/other/path
-    export SRC_PATH=/root/cortx-re/solutions/community-deploy/cloud/AWS
-    export DST_PATH=/tmp
-}
-cortxec2var
-```
-- Now, you can read and execute the commands from `~/.bashrc` in the current shell environment by executing following command,
-```
-source ~/.bashrc
-```
 
 **Procedure**
 
@@ -75,6 +61,7 @@ terraform validate && terraform apply -var-file user.tfvars --auto-approve
 `/home/centos/setup.sh` will reboot all the EC2 nodes and prompt for generating the `root` user password on all the EC2 nodes in the cluster.
 *The root password is required as a part of CORTX deployment.*
 ```
+export PUBLIC_IP=`terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d'`
 for ip in $PUBLIC_IP; do
    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$ip 'echo "Enter new password for root user" && sudo passwd root && sudo bash /home/centos/setup.sh'
    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$ip 'echo "Enter new password for root user" && sudo passwd root && sudo bash /home/centos/setup.sh'
@@ -93,6 +80,8 @@ sudo su -
 - Copy pem file from local host to all the EC2 nodes using public ip address,
 ```
 for instance in {1..3};do
+  SRC_PATH="$PWD/cortx-re/solutions/community-deploy/cloud/AWS"
+  DST_PATH=/tmp
   rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' ${SRC_PATH}/cortx.pem  centos@${PUBLIC_IP}:${DST_PATH}
   rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' ${SRC_PATH}/cortx.pem  centos@${PUBLIC_IP}:${DST_PATH}
   rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' ${SRC_PATH}/cortx.pem  centos@${PUBLIC_IP}:${DST_PATH}
