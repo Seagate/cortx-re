@@ -69,13 +69,6 @@ tag_name            = "cortx-multinode"
 ```
 terraform validate && terraform apply -var-file user.tfvars --auto-approve
 ```
-- The following commands will display the public and private ip addresses so use these ip addresses to connect to AWS instances
-  using SSH Protocol.
-  
-**Public ip addresses:**
-```
-terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d'
-```
 - Execute `/home/centos/setup.sh` to setup network and storage devices for CORTX.
 
 **Note:**
