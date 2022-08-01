@@ -56,7 +56,7 @@ hostname=cortx-deploy-node1.cortx.com,user=root,pass=<root-password>
 hostname=cortx-deploy-node2.cortx.com,user=root,pass=<root-password>
 hostname=cortx-deploy-node3.cortx.com,user=root,pass=<root-password>
 ```
--  Execute `cluster-setup.sh` script to setup K8s cluster on your EC2 instances for deployment.
+-  Execute `cluster-setup.sh` to setup K8s cluster on your EC2 instances for deployment.
 -  To allow the PODs creation on primary node, pass the first input parameter for `cluster-setup.sh` script as `true`. Please note you must pass the input parameter as true for multi-node setup.
 ```
 ./cluster-setup.sh true
@@ -89,7 +89,7 @@ export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
 
 **For example:**
 ```
-export CORTX_SCRIPTS_BRANCH=integration && export CORTX_SCRIPTS_REPO=<owner>/cortx-k8s && export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
+export CORTX_SCRIPTS_BRANCH=integration && export CORTX_SCRIPTS_REPO=Seagate/cortx-k8s && export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
 ```
 
 ## Sanity test 
