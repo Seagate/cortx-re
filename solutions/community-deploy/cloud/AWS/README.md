@@ -29,12 +29,10 @@ function cortxec2var(){
 }
 cortxec2var
 ```
-- Now, you read and execute the commands from `~/.bashrc` in the current shell environment by executing following command,
+- Now, you can read and execute the commands from `~/.bashrc` in the current shell environment by executing following command,
 ```
 source ~/.bashrc
 ```
-
-Now, you can start your program by the following command:
 
 **Procedure**
 
