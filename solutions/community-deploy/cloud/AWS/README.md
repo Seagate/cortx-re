@@ -26,6 +26,7 @@ function cortxec2var(){
     export JAVA_HOME=/other/path
     export SRC_PATH=/root/cortx-re/solutions/community-deploy/cloud/AWS
     export DST_PATH=/tmp
+    export SOLUTION_CONFIG_TYPE=automated
 }
 cortxec2var
 ```
