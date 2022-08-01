@@ -82,6 +82,7 @@ docker rmi --force $(docker images --filter=reference='*/*/cortx-build:*' --filt
 docker pull ghcr.io/seagate/cortx-build:rockylinux-8.4
 
 # Clone the CORTX repository
+if [ -d $LOCAL_MOUNT/cortx ]; then rm -rf $LOCAL_MOUNT/cortx; fi
 pushd $LOCAL_MOUNT && git clone https://github.com/Seagate/cortx --recursive --depth=1
 
 # Checkout branch for generating CORTX packages
