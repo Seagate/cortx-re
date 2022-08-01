@@ -39,17 +39,16 @@ hostname="<AWS instance private ip of workernode1>",user=root,pass=<root-passwor
 hostname="<AWS instance private ip of workernode2>",user=root,pass=<root-password>
 ```
 -  Execute `cluster-setup.sh` to setup K8s cluster on your EC2 primary node in the cluster.
--  To allow PODs creation on primary node, you must pass the first input parameter for `cluster-setup.sh` as true for
-   multi-node setup.
+-  To allow PODs creation on primary node, you must pass the first input parameter for `cluster-setup.sh` as true for multi-node setup.
 ```
-sudo ./cluster-setup.sh true
+./cluster-setup.sh true
 ```
 
 ## Deploy CORTX Stack 
 
 - Execute `cortx-deploy.sh` to deploy the CORTX stack on your K8s Cluster.
 ```
-sudo ./cortx-deploy.sh --cortx-cluster
+export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
 ```
 
 #### Note:
