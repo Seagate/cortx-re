@@ -80,6 +80,7 @@ sudo su -
 - Copy pem file from local host to all the EC2 nodes using public ip address,
 ```
 for instance in {1..3};do
+  export PUBLIC_IP=`terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d'`
   SRC_PATH="$PWD/cortx-re/solutions/community-deploy/cloud/AWS"
   DST_PATH=/tmp
   rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' ${SRC_PATH}/cortx.pem  centos@${PUBLIC_IP}:${DST_PATH}
