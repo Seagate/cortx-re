@@ -86,7 +86,7 @@ passwd root
 ```
 ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip>"
 ```
-- Clone cortx-re repository and switch to `solutions/kubernetes` directory
+- Clone cortx-re repository and switch to `solutions/community-deploy` directory
     - If you want to build CORTX from `main` branch
         ```
         git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/community-deploy
