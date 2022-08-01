@@ -90,10 +90,18 @@ ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip>"
 ```
 git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/community-deploy
 ```
-- Execute `build-cortx.sh` script. This script will generate CORTX container images from `main` of CORTX components
+  If you want to build CORTX from specific branch/tag
+```
+git clone https://github.com/Seagate/cortx-re -b <branch/tag> && cd $PWD/cortx-re/solutions/community-deploy
+```  
+- Execute `build-cortx.sh` script. This script will generate CORTX container images from default `main` branch of CORTX components
 ```
 time ./build-cortx.sh
 ```
+  If you want to build CORTX from specific branch/tag
+```
+time ./build-cortx.sh -b <branch/tag>
+```    
 
 ### CORTX Deployment
 
