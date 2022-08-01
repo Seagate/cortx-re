@@ -20,7 +20,7 @@ git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/comm
 aws sts get-caller-identity
 ```
 
-**Procedure**
+## Procedure
 
 - Modify `user.tfvars` file on local host with your AWS details.
 ```
@@ -50,7 +50,6 @@ tag_name            = "cortx-multinode"
 ```
 
 ## Execute Instructions from Local Host to create AWS Instances and Network and Storage Configuration
-
 - Execute Terraform code (as shown below) to create AWS instances for CORTX Build and Deployment.
 ```
 terraform validate && terraform apply -var-file user.tfvars --auto-approve
@@ -78,13 +77,15 @@ done
 sudo su -
 ```
 ## Login to EC2 Primary node and execute following commands
-- Login to all the EC2 nodes over SSH using public IP address and clone cortx-re repository and switch to `solutions/community-deploy` directory
+- Login to all the EC2 nodes over SSH using public IP address and clone cortx-re repository and switch to `solutions/community-deploy` directory.
+**Note:** Follow similar command for worker nodes
 ```
-git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/community-deploy
-```
-- Execute `build-cortx.sh` which will generate CORTX container images from `main` of CORTX components
-```
+CORTXRE=$PWD/cortx-re/solutions/community-deploy
 ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-primarynode>"
+git clone https://github.com/Seagate/cortx-re && cd $CORTXRE
+```
+- Execute `build-cortx.sh` from primary node which will generate CORTX container images from `main` of CORTX components
+```
 time ./build-cortx.sh
 ```
 - Save and download cortx build images
@@ -101,13 +102,13 @@ docker save -o nginx.tar nginx:latest && docker save -o cortx-build.tar ghcr.io/
 terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d
 ```
 ```
-  cd /tmp
-  rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' /tmp/*.tar  centos@"<AWS instance private-ip-workernode1>":/tmp
-  rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' /tmp/*.tar  centos@"<AWS instance private-ip-workernode2>":/tmp
+cd /tmp
+rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' /tmp/*.tar  centos@"<AWS instance private-ip-workernode1>":/tmp
+rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' /tmp/*.tar  centos@"<AWS instance private-ip-workernode2>":/tmp
 ```
 
 ## Execute Instructions from Worker nodes
-- Login to EC2 worker nodes and load the cortx build images
+- Login to all worker nodes and load the cortx build images
 ```
 for image in /tmp/*.tar; do cat $image | docker load; done
 ```
