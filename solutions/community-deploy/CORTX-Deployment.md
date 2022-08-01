@@ -49,7 +49,7 @@ sudo ./cluster-setup.sh true
 
 - Execute `cortx-deploy.sh` to deploy the CORTX stack on your K8s Cluster.
 ```
-export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
+sudo ./cortx-deploy.sh --cortx-cluster
 ```
 
 #### Note:
@@ -73,7 +73,7 @@ export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
 
 For example:
 ```
-export CORTX_SCRIPTS_BRANCH=integration && export CORTX_SCRIPTS_REPO=AbhijitPatil1992/cortx-k8s && export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
+export CORTX_SCRIPTS_BRANCH=integration && export CORTX_SCRIPTS_REPO=<owner>/cortx-k8s && export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
 ```
 
 ## Sanity test 
