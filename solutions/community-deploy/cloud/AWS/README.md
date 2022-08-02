@@ -62,21 +62,11 @@ terraform validate && terraform apply -var-file user.tfvars --auto-approve
 **Note:**
 *The root password is required as a part of CORTX deployment.*
 ```
-export PUBLIC_IP=`terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d'`
-SRC_PATH=$PWD/cortx-re/solutions/community-deploy/cloud/AWS
-DST_PATH=/tmp
-for ip in $PUBLIC_IP;
-do
-  for instance in {1..3};
-  do
-     rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' $SRC_PATH/cortx.pem  centos@$PUBLIC_IP:$DST_PATH
-     rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' $SRC_PATH/cortx.pem  centos@$PUBLIC_IP:$DST_PATH
-     rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' $SRC_PATH/cortx.pem  centos@$PUBLIC_IP:$DST_PATH
-  done
-    
- ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$ip 'echo "Enter new password for root user" && sudo passwd root && sudo bash /home/centos/setup.sh'
- ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$ip 'echo "Enter new password for root user" && sudo passwd root && sudo bash /home/centos/setup.sh'
- ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$ip 'echo "Enter new password for root user" && sudo passwd root && sudo bash /home/centos/setup.sh'
+PUBLIC_IP=`terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d'`
+for ip in $PUBLIC_IP;do
+   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$ip 'echo "Enter new password for root user" && sudo passwd root && sudo bash /home/centos/setup.sh'
+   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$ip 'echo "Enter new password for root user" && sudo passwd root && sudo bash /home/centos/setup.sh'
+   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$ip 'echo "Enter new password for root user" && sudo passwd root && sudo bash /home/centos/setup.sh'
 done
 ```
 - AWS instances are ready for CORTX Build and deployment now. Connect to EC2 nodes over SSH and validate that all three network cards has IP address assigned.
@@ -88,20 +78,18 @@ done
 ```
 sudo su -
 ```
-- Login to all the nodes over SSH from local host using public IP address and clone cortx-re repository and switch to `solutions/community-deploy` directory.
+- Login to all the nodes over SSH from local host using public IP address and clone the cortx-re repository
+```
+ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-primarynode>" 'git clone https://github.com/Seagate/cortx-re'
+ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance private-ip-workernode1>" 'git clone https://github.com/Seagate/cortx-re'
+ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance private-ip-workernode2>" 'git clone https://github.com/Seagate/cortx-re'
 
-**Note:** Follow similar command for worker nodes
-```
-CORTXRE=$PWD/cortx-re/solutions/community-deploy
-ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-primarynode>"
-git clone https://github.com/Seagate/cortx-re && cd $CORTXRE
-```
 - Execute `build-cortx.sh` from primary node which will generate CORTX container images from `main` of CORTX components
 ```
-time ./build-cortx.sh
+cd $PWD/cortx-re/solutions/community-deploy
+ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-primarynode>" sudo time build-cortx.sh
 ```
 - Save and compress the cortx build images
-
 **Note:** The process might take some time to save and compress the images.
 ```
 cd /tmp && docker save -o cortx-rgw.tar cortx-rgw:2.0.0-0 && docker save -o cortx-all.tar cortx-all:2.0.0-0 && \
