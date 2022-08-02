@@ -6,7 +6,7 @@ This document discusses the procedure to compile the CORTX Stack and deploy on A
 
 - Ensure that you have an AWS account with Secret Key and Access Key.
 - Build and deploy CORTX Stack on all the AWS instances in the cluster.
-- Clone the `cortx-re` repository and change the directory to `cortx-re/solutions/community-deploy/cloud/AWS`.
+- Clone the `cortx-re` repository on all nodes and then change the directory to `cortx-re/solutions/community-deploy/cloud/AWS`.
 ```
 git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/community-deploy/cloud/AWS
 ```
@@ -78,16 +78,10 @@ done
 ```
 sudo su -
 ```
-- Login to all the nodes over SSH from local host using public IP address and clone the cortx-re repository
+- Execute `build-cortx.sh` from primary node using public ip address which will generate CORTX container images from `main` of CORTX components
 ```
-ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-primarynode>" 'git clone https://github.com/Seagate/cortx-re'
-ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance private-ip-workernode1>" 'git clone https://github.com/Seagate/cortx-re'
-ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance private-ip-workernode2>" 'git clone https://github.com/Seagate/cortx-re'
-```
-- Execute `build-cortx.sh` from primary node which will generate CORTX container images from `main` of CORTX components
-```
-cd $PWD/cortx-re/solutions/community-deploy
-ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-primarynode>" sudo time build-cortx.sh
+cd /home/centos/cortx-re/solutions/community-deploy
+time build-cortx.sh
 ```
 - Save and compress the cortx build images
 **Note:** The process might take some time to save and compress the images.
