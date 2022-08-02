@@ -73,14 +73,10 @@ done
 
 ### CORTX Build
 
-- We will use [cortx-build](https://github.com/Seagate/cortx/pkgs/container/cortx-build) docker image to compile entire CORTX stack.  
-- Become the root user by running the following command,
-```
-sudo su -
-```
+- We will use [cortx-build](https://github.com/Seagate/cortx/pkgs/container/cortx-build) docker image to compile entire CORTX stack.
 - Execute `build-cortx.sh` from primary node using public ip address which will generate CORTX container images from `main` of CORTX components
 ```
-cd /home/centos/cortx-re/solutions/community-deploy
+sudo su && cd /home/centos/cortx-re/solutions/community-deploy
 time build-cortx.sh
 ```
 - Save and compress the cortx build images
