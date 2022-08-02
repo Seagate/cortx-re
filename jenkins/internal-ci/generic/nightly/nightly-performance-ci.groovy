@@ -23,7 +23,7 @@ pipeline {
         string(name: 'CORTX_TOOLS_REPO', defaultValue: 'Seagate/seagate-tools', description: 'Repository for Cluster Setup scripts', trim: true)
         string(name: 'SYSTEM_DRIVE', defaultValue: '/dev/sdb', description: 'Partition to be used for local provisioner', trim: true)
         choice (
-            choices: ['DEVOPS', 'ALL', 'DEBUG'],
+            choices: ['ALL', 'DEBUG'],
             description: 'Email Notification Recipients ',
             name: 'EMAIL_RECIPIENTS'
         )
@@ -184,8 +184,8 @@ pipeline {
                 manager.createSummary("${ICON}").appendText("<h3>Nightly CORTX Performance CI ${currentBuild.currentResult} </h3><p>Please check <a href=\"${BUILD_URL}/console\">Performance Sanity Execution logs</a> for more info <h4>Sanity Execution Logs:</h4>${clusterStatusHTML}", false, false, false, "red")
 
                 // Email Notification
-                if ( params.EMAIL_RECIPIENTS == "DEVOPS" && currentBuild.result == "SUCCESS" ) {
-                    mailRecipients = "Cortx.Perf@seagate.com, CORTX.DevOps.RE@seagate.com"
+                if ( params.EMAIL_RECIPIENTS == "ALL" && currentBuild.result == "SUCCESS" ) {
+                    mailRecipients = "Cortx.Perf@seagate.com, CORTX.DevOps.RE@seagate.com, rajesh.deshmukh@seagate.com, sampada.petkar@seagate.com"
                 }
                 else if ( params.EMAIL_RECIPIENTS == "DEBUG" ) {
                     mailRecipients = "shailesh.vaidya@seagate.com"
