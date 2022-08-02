@@ -62,12 +62,18 @@ terraform validate && terraform apply -var-file user.tfvars --auto-approve
 **Note:**
 *The root password is required as a part of CORTX deployment.*
 ```
-PUBLIC_IP=`terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d'`
+export PUBLIC_IP=`terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d'`
 for ip in $PUBLIC_IP;do
    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$ip 'echo "Enter new password for root user" && sudo passwd root && sudo bash /home/centos/setup.sh'
    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$ip 'echo "Enter new password for root user" && sudo passwd root && sudo bash /home/centos/setup.sh'
    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$ip 'echo "Enter new password for root user" && sudo passwd root && sudo bash /home/centos/setup.sh'
 done
+```
+- Execute the following command to copy the pem file from the primary node to the worker nodes to copy files using private ip address
+```
+SRC_PATH=$PWD/cortx-re/solutions/community-deploy/cloud/AWS
+DST_PATH=/tmp
+for instance in {1..3};do rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' $SRC_PATH/cortx.pem centos@$PUBLIC_IP:$DST_PATH;  rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' $SRC_PATH/cortx.pem  centos@$PUBLIC_IP:$DST_PATH; rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' $SRC_PATH/cortx.pem  centos@$PUBLIC_IP:$DST_PATH; done
 ```
 - AWS instances are ready for CORTX Build and deployment now. Connect to EC2 nodes over SSH and validate that all three network cards has IP address assigned.
 
