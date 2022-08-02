@@ -77,7 +77,7 @@ done
 - Execute `build-cortx.sh` from primary node using public ip address which will generate CORTX container images from `main` of CORTX components
 ```
 sudo su && cd /home/centos/cortx-re/solutions/community-deploy
-time build-cortx.sh
+time ./build-cortx.sh
 ```
 - Save and compress the cortx build images
 **Note:** The process might take some time to save and compress the images.
