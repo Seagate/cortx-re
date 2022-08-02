@@ -24,6 +24,9 @@ if [ $(whoami) != root ];then
 	exit
 fi
 
+#Install epel-release
+yum install -y epel-release && yum -y install jq
+
 #Configure Elastic Network cards
 #echo "Configuring Elastic NIC"
 #for nic in eth1 eth2
