@@ -83,7 +83,7 @@ sudo su -
 ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-primarynode>" 'git clone https://github.com/Seagate/cortx-re'
 ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance private-ip-workernode1>" 'git clone https://github.com/Seagate/cortx-re'
 ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance private-ip-workernode2>" 'git clone https://github.com/Seagate/cortx-re'
-
+```
 - Execute `build-cortx.sh` from primary node which will generate CORTX container images from `main` of CORTX components
 ```
 cd $PWD/cortx-re/solutions/community-deploy
