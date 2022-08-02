@@ -13,7 +13,7 @@ Following are the minimum system specifications required to set up the K8s clust
 ## Deploy the CORTX Stack on K8s cluster
 This section enlists the commands to deploy the CORTX Stack on K8s cluster. 
 
-### Make sure your EC2 nodes has following drives available on it:
+### Make sure your nodes or VM(virtual machine) has following drives available on it:
 ```
 ls /dev/sd*
 /dev/sda  /dev/sda1  /dev/sda2  /dev/sdb  /dev/sdc  /dev/sdd  /dev/sde  /dev/sdf  /dev/sdg  /dev/sdh  /dev/sdi
