@@ -18,9 +18,6 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
-#Install packages on worker nodes
-yum install -y time yum-utils time && yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo -y && yum install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
-
 #Only root to should run setup
 if [ $(whoami) != root ];then
 	echo "$(whoami) is not root user. Please use root user to execute this script"
@@ -55,10 +52,6 @@ mapping=(sdb sdc sdd sde sdf sdg sdh sdi sdj)
 for ((i = 0; i < ${#device_list[@]}; i++)); do
    echo KERNEL==\""${device_list[$i]}"\", SUBSYSTEM==\"block\", SYMLINK=\""${mapping[$i]}"\" >> /etc/udev/rules.d/99-custom-dev.rules
 done
-
-#Start docker service
-systemctl start docker && systemctl enabled docker
-
 echo "Rebooting system....."
 #System reboot
 reboot
