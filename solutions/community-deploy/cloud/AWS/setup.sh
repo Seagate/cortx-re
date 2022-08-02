@@ -24,9 +24,6 @@ if [ $(whoami) != root ];then
 	exit
 fi
 
-#Install epel-release
-yum install -y epel-release && yum -y install jq
-
 #Configure Elastic Network cards
 #echo "Configuring Elastic NIC"
 #for nic in eth1 eth2
@@ -55,6 +52,10 @@ mapping=(sdb sdc sdd sde sdf sdg sdh sdi sdj)
 for ((i = 0; i < ${#device_list[@]}; i++)); do
    echo KERNEL==\""${device_list[$i]}"\", SUBSYSTEM==\"block\", SYMLINK=\""${mapping[$i]}"\" >> /etc/udev/rules.d/99-custom-dev.rules
 done
+
+#Install epel-release
+yum install -y epel-release && yum -y install jq
+
 echo "Rebooting system....."
 #System reboot
 reboot
