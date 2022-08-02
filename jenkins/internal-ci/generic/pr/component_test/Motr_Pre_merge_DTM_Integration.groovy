@@ -36,7 +36,6 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                  sh """
-                 echo ${ghprbGhRepository} && echo ${ghprbAuthorRepoGitUrl}
                     set +x
                     echo "--------------BUILD PARAMETERS -------------------"
                     echo "MOTR_REPO              = ${MOTR_REPO}"

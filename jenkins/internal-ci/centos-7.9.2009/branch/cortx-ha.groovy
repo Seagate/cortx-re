@@ -216,6 +216,6 @@ def getAuthor(issue) {
             }
         }
     }
-    response = "* Author: " +author+ "\n"
+    response = "* Author: " + author + "\n"
     return response
 }

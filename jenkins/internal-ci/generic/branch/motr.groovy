@@ -128,47 +128,25 @@ pipeline {
             }
         }
         
-        stage ("Trigger Downstream Jobs") {
-            parallel {
-                stage ("build S3Server") {
-                    when { expression { false } }
-                    steps {
-                        script { build_stage = env.STAGE_NAME }
-                        script {
-                            try {
-                                def s3Build = build job: 's3server', wait: true,
-                                parameters: [
-                                    string(name: 'branch', value: "${branch}")
-                                ]
-                                env.S3_BUILD_NUMBER = s3Build.number
-                            }catch (err) {
-                                build_stage = env.STAGE_NAME
-                                error "Failed to Build S3Server"
-                            }
+        stage ("build Hare") {
+            steps {
+                    script { build_stage = env.STAGE_NAME }
+                    script {
+                        try {
+                            def hareBuild = build job: 'hare', wait: true,
+                            parameters: [
+                                string(name: 'branch', value: "${branch}")
+                            ]
+                            env.HARE_BUILD_NUMBER = hareBuild.number
+                        }catch (err) {
+                            build_stage = env.STAGE_NAME
+                            error "Failed to Build Hare"
                         }
                     }
                 }
-                            
-                stage ("build Hare") {
-                    steps {
-                        script { build_stage = env.STAGE_NAME }
-                        script {
-                            try {
-                                def hareBuild = build job: 'hare', wait: true,
-                                parameters: [
-                                    string(name: 'branch', value: "${branch}")
-                                ]
-                                env.HARE_BUILD_NUMBER = hareBuild.number
-                            }catch (err) {
-                                build_stage = env.STAGE_NAME
-                                error "Failed to Build Hare"
-                            }
-                        }
-                    }
-                }
-            }    
-        }
-    
+            }
+
+
         stage ('Tag last_successful') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -200,11 +178,12 @@ pipeline {
                     def releaseBuild = build job: 'Release', propagate: true
                     env.release_build = releaseBuild.number
                     env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/${env.release_build}"
-                    env.cortx_images = releaseBuild.buildVariables.cortx_all_image +"\n" +releaseBuild.buildVariables.cortx_rgw_image +"\n" +releaseBuild.buildVariables.cortx_data_image +"\n" +releaseBuild.buildVariables.cortx_control_image
+                    env.cortx_images = releaseBuild.buildVariables.cortx_all_image + "\n" + releaseBuild.buildVariables.cortx_rgw_image + "\n" + releaseBuild.buildVariables.cortx_data_image + "\n" + releaseBuild.buildVariables.cortx_control_image
                 }
             }
         }
         stage('Update Jira') {
+            when { expression { return env.release_build != null } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                     script {
@@ -221,9 +200,9 @@ pipeline {
                                             "* Component Build  :  ${BUILD_NUMBER} \n" +
                                             "* Release Build    :  ${release_build}  \n\n  " +
                                     "h3. Artifact Location  :  \n" +
-                                        "*  " +"${release_build_location} " +"\n\n" +
+                                        "*  " + "${release_build_location} " + "\n\n" +
                                     "h3. Image Location  :  \n" +
-                                        "*  " +"${cortx_images} " +"\n" +
+                                        "*  " + "${cortx_images} " + "\n" +
                                     "{panel}",
                                 failOnError: false,
                                 auditLog: false
@@ -292,6 +271,6 @@ def getAuthor(issue) {
             }
         }
     }
-    response = "* Author: " +author+ "\n"
+    response = "* Author: " + author + "\n"
     return response
 }

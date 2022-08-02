@@ -56,7 +56,7 @@ terraform validate && terraform apply -var-file user.tfvars --auto-approve
 ```
 - Execute following commands which will perform on all the nodes in the cluster,
   - Setup network and storage devices for CORTX.
-  - Prompt for generating the `root` user password
+  - Generating the `root` user password
   - `/home/centos/setup.sh` will reboot all the nodes once executed
 
 **Note:**
@@ -108,15 +108,28 @@ curl http://169.254.169.254/latest/meta-data/local-ipv4
 ```
 for image in /tmp/*.tar; do cat $image | docker load; done
 ```
+- Clone cortx-re repository from required branch/tag. If you do not provide `-b <branch/tag>`, then it will use default main branch    
+  :warning: Tag based build is supported after and including tag [2.0.0-879](https://github.com/Seagate/cortx-re/releases/tag/2.0.0-879) 
+```
+git clone https://github.com/Seagate/cortx-re -b <branch/tag>
+```
+- Switch to solutions/community-deploy directory 
+```
+cd $PWD/cortx-re/solutions/community-deploy
+```  
+- Generate CORTX container images from required branch/tag. If you do not provide `-b <branch/tag>`, then it will use default main branch  
+  :warning: Tag based build is supported after and including tag [2.0.0-879](https://github.com/Seagate/cortx-re/releases/tag/2.0.0-879)
+```
+time ./build-cortx.sh -b <branch/tag>
+```
 
 ### CORTX Deployment
 
 - After CORTX build is ready, follow [CORTX Deployment](https://github.com/Seagate/cortx-re/blob/main/solutions/community-deploy/CORTX-Deployment.md) to deploy CORTX on AWS instance.   
 - Please exclude SELINUX and Hostname setup steps.
 
-### Cleanup 
-
-You can clean-up the AWS infrastructure created using following command,
+### Cleanup
+- You can clean-up the AWS infrastructure created using following command,
 ```
 terraform validate && terraform destroy -var-file user.tfvars --auto-approve
 ```
@@ -124,5 +137,3 @@ terraform validate && terraform destroy -var-file user.tfvars --auto-approve
 Tested by:
 
 * July 30, 2022: Mukul Malhotra (mukul.malhotra@seagate.com) - AWS EC2, CentOS 7.9 Linux
-* May 06, 2022: Rahul Shenoy (rahul.shenoy@seagate.com) - Windows + VMware Workstation 16 + CentOS 7.9 Linux
-* April 29, 2022: Pranav Sahasrabudhe (pranav.p.sahasrabudhe@seagate.com) - Mac + VMware Fusion 12 + CentOS 7.9 Linux

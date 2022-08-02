@@ -79,14 +79,15 @@ pipeline {
                     def releaseBuild = build job: 'Release', propagate: true
                     env.release_build = releaseBuild.number
                     env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/${env.release_build}"
-                    env.cortx_images = releaseBuild.buildVariables.cortx_all_image+"\n" +releaseBuild.buildVariables.cortx_rgw_image+"\n" +releaseBuild.buildVariables.cortx_data_image+"\n" +releaseBuild.buildVariables.cortx_control_image
+                    env.cortx_images = releaseBuild.buildVariables.cortx_all_image +"\n" +releaseBuild.buildVariables.cortx_rgw_image +"\n" +releaseBuild.buildVariables.cortx_data_image +"\n" +releaseBuild.buildVariables.cortx_control_image
                 }
             }
         }
 
         stage('Update Jira') {
+            when { expression { return env.release_build != null } }
             steps {
-                script { build_stage=env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
                 script {
                     def jiraIssues = jiraIssueSelector(issueSelector: [$class: 'DefaultIssueSelector'])
                     jiraIssues.each { issue ->
@@ -101,9 +102,9 @@ pipeline {
                                         "* Component Build  :  ${BUILD_NUMBER} \n" +
                                         "* Release Build    :  ${release_build}  \n\n  " +
                                 "h3. Artifact Location  :  \n" +
-                                    "*  " +"${release_build_location} " +"\n\n" +
+                                    "*  " + "${release_build_location}" + "\n\n" +
                                 "h3. Image Location  :  \n" +
-                                    "*  " +"${cortx_images} " +"\n" +
+                                    "*  " + "${cortx_images}" + "\n" +
                                 "{panel}",
                             failOnError: false,
                             auditLog: false
@@ -163,6 +164,6 @@ def getAuthor(issue) {
             }
         }
     }
-    response = "* Author: " +author+ "\n"
+    response = "* Author: " + author + "\n"
     return response
 }
