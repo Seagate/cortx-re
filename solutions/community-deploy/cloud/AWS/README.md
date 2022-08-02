@@ -62,7 +62,7 @@ terraform validate && terraform apply -var-file user.tfvars --auto-approve
 **Note:**
 *The root password is required as a part of CORTX deployment.*
 ```
-export PUBLIC_IP=`terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d'`
+PUBLIC_IP=`terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d'`
 for ip in $PUBLIC_IP;do
    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$ip 'echo "Enter new password for root user" && sudo passwd root && sudo bash /home/centos/setup.sh'
    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$ip 'echo "Enter new password for root user" && sudo passwd root && sudo bash /home/centos/setup.sh'
@@ -70,7 +70,9 @@ for ip in $PUBLIC_IP;do
 done
 ```
 - Execute the following command to copy the pem file from the primary node to the worker nodes to copy files using private ip address
+
 ```
+PUBLIC_IP=`terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d'`
 SRC_PATH=$PWD/cortx-re/solutions/community-deploy/cloud/AWS
 DST_PATH=/tmp
 for instance in {1..3};do rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' $SRC_PATH/cortx.pem centos@$PUBLIC_IP:$DST_PATH;  rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' $SRC_PATH/cortx.pem  centos@$PUBLIC_IP:$DST_PATH; rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' $SRC_PATH/cortx.pem  centos@$PUBLIC_IP:$DST_PATH; done
@@ -97,7 +99,6 @@ docker save -o nginx.tar nginx:latest && docker save -o cortx-build.tar ghcr.io/
 rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' /tmp/*.tar  centos@"<AWS instance private-ip-workernode1>":/tmp
 rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' /tmp/*.tar  centos@"<AWS instance private-ip-workernode2>":/tmp
 ```
-
 **Note:** You can find the private ip address by executing the following command
 
 **From Local Host:**
