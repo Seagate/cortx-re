@@ -32,5 +32,5 @@ services:
       - /mnt/data1/releases/jenkins/jenkins-prod/certs/jenkins_keystore.jks:/var/lib/jenkins/jenkins.jks
       - /mnt/bigstorage/:/mnt/bigstorage
     environment:
-      - JAVA_OPTS=-Xmx4096m
+      - JAVA_OPTS=-Xmx8192m
       - JENKINS_OPTS= --httpPort=-1 --httpsPort=8443 --httpsKeyStore=/var/lib/jenkins/jenkins.jks --httpsKeyStorePassword=opensource!
