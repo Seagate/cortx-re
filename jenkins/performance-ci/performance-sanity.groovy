@@ -81,7 +81,6 @@ pipeline {
                 // Jenkins Summary
                 clusterStatus = ""
                 if ( currentBuild.currentResult == "SUCCESS" ) {
-                    clusterStatus = readFile(file: 'perf_sanity_stats.md')
                     MESSAGE = "CORTX Performance Sanity Execution Success for the build ${build_id}"
                     ICON = "accept.gif"
                     STATUS = "SUCCESS"
