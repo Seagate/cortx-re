@@ -19,8 +19,9 @@
 #
 set -eo pipefail
 source /var/tmp/functions.sh
+PERF_UI_ENDPOINT="http://cftic2.pun.seagate.com:3030/"
 ANIBLE_LOG_FILE="/var/tmp/perf_sanity_run.log"
-PERF_STATS_FILE="/var/tmp/perf_sanity_stats.txt"
+PERF_STATS_FILE="/var/tmp/perf_sanity_stats.md"
 SSH_KEY_FILE=/root/.ssh/id_rsa
 
 function usage() {
@@ -142,6 +143,9 @@ function generate_perf_stats() {
    grep -i '\[S3Bench\] Running' $ANIBLE_LOG_FILE | grep -vi TASK | sed -e 's/-//g' -e 's/^ //g' -e 's/*//g' | cut -d':' -f4 | sed 's/^ //g' | sort -n | tee -a $PERF_STATS_FILE
    add_secondary_separator "Performance Stats" | tee -a $PERF_STATS_FILE
    /usr/bin/python3  /root/PerfProBenchmark/s3bench/s3bench_summary.py /root/PerfProBenchmark/sanity_results/ | tee -a $PERF_STATS_FILE
+   RUN_ID=$(grep -E 'run_ID.*JENKINS|JENKINS.*run_ID' /var/tmp/perf_sanity_run.log | awk -F'(' '{print $2}' | awk -F')' '{print $1}' | sed s/\'//g)
+   add_secondary_separator "Performance Stats summary report" | tee -a $PERF_STATS_FILE
+   echo "$PERF_UI_ENDPOINT?run_id=$RUN_ID" | tee -a $PERF_STATS_FILE
 }
 
 case $ACTION in
