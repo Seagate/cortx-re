@@ -1,36 +1,43 @@
 #!/usr/bin/env groovy
-pipeline { 
+pipeline {
     agent {
         node {
            label 'docker-image-builder-centos-7.9.2009'
         }
     }
-    
+
     options {
         timeout(time: 120, unit: 'MINUTES')
         timestamps()
-        ansiColor('xterm') 
+        ansiColor('xterm')
         disableConcurrentBuilds()
-        buildDiscarder(logRotator(daysToKeepStr: '5', numToKeepStr: '20'))  
+        buildDiscarder(logRotator(daysToKeepStr: '5', numToKeepStr: '20'))
     }
 
     environment {
         GITHUB_CRED = credentials('shailesh-github')
+        LOCAL_REG_CRED = credentials('local-registry-access')
     }
 
-    parameters {  
-        string(name: 'BASE_IMAGE_NAME', defaultValue: 'ghcr.io/seagate/cortx-<component>:2.0.0-latest', description: 'Docker Image to be tagged.')
-        string(name: 'TAGGED_IMAGE_NAME', defaultValue: 'ghcr.io/seagate/cortx-<component>:TAG', description: 'Tag to be used.')
-    
+    parameters {
+        string(name: 'BASE_TAG', defaultValue: '2.0.0-latest', description: 'Release version to be tagged.')
+        string(name: 'TARGET_TAG', defaultValue: '2.0.0-latest', description: 'Tag to be used.')
+
         choice (
             choices: ['DEVOPS', 'DEBUG'],
             description: 'Email Notification Recipients ',
             name: 'EMAIL_RECIPIENTS'
         )
-    }    
-    
+
+        choice (
+            choices: ['cortx-docker.colo.seagate.com' , 'ghcr.io'],
+            description: 'Docker Registry to be used',
+            name: 'DOCKER_REGISTRY'
+        )
+    }
+
     stages {
-    
+
         stage('Prerequisite') {
             steps {
                 sh encoding: 'utf-8', label: 'Validate Docker pre-requisite', script: """
@@ -41,11 +48,15 @@ pipeline {
             }
         }
 
-        stage ('GHCR Login') {
+        stage ('Docker Registry Login') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'GHCR Login', script: '''
-                docker login ghcr.io -u ${GITHUB_CRED_USR} -p ${GITHUB_CRED_PSW}
+                sh label: 'Docker Registry Login', script: '''
+                if [ "$DOCKER_REGISTRY" == "ghcr.io" ]; then
+                    docker login ghcr.io -u ${GITHUB_CRED_USR} -p ${GITHUB_CRED_PSW}
+                elif [ "$DOCKER_REGISTRY" == "cortx-docker.colo.seagate.com" ]; then
+                    docker login cortx-docker.colo.seagate.com -u ${LOCAL_REG_CRED_USR} -p ${LOCAL_REG_CRED_PSW}
+                fi
                 '''
             }
         }
@@ -53,13 +64,17 @@ pipeline {
         stage('Tag and Push Image') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh encoding: 'utf-8', label: 'Tag and push docker image', script: """
-                    docker pull $BASE_IMAGE_NAME
-                    docker tag $BASE_IMAGE_NAME $TAGGED_IMAGE_NAME
-                    docker push $TAGGED_IMAGE_NAME
-                    
-                    docker logout  
-                """
+                sh label: '', script: '''
+                for image in cortx-rgw cortx-control cortx-data
+                do
+                    echo -e "\\n Pulling $DOCKER_REGISTRY/seagate/$image:$BASE_TAG \\n"
+                    docker pull $DOCKER_REGISTRY/seagate/$image:$BASE_TAG
+                    echo -e "\\n Tagging $DOCKER_REGISTRY/seagate/$image:$BASE_TAG as $DOCKER_REGISTRY/seagate/$image:$TARGET_TAG"
+                    docker tag $DOCKER_REGISTRY/seagate/$image:$BASE_TAG $DOCKER_REGISTRY/seagate/$image:$TARGET_TAG
+                    docker push $DOCKER_REGISTRY/seagate/$image:$TARGET_TAG
+                done
+                    docker logout 
+                '''
             }
         }
     }
@@ -69,9 +84,20 @@ pipeline {
         always {
             cleanWs()
             script {
-                env.docker_image_location = "https://github.com/orgs/Seagate/packages?repo_name=cortx"
-                env.image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' | head -1", returnStdout: true).trim()
+                if ( params.DOCKER_REGISTRY == "ghcr.io" ) {
+                    env.docker_image_location = "https://github.com/orgs/Seagate/packages?repo_name=cortx"
+                } else if ( params.DOCKER_REGISTRY == "cortx-docker.colo.seagate.com" ) {
+                    env.docker_image_location = "http://cortx-docker.colo.seagate.com/harbor/projects/2/repositories"
+                }  
+
+                env.image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' --filter=reference='*/*/cortx*:[0-9]*' | grep -E '${TARGET_TAG}'", returnStdout: true).trim()
+
+                env.cortx_rgw_image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' --filter=reference='*/*/cortx-rgw:[0-9]*' | grep -E '${TARGET_TAG}'", returnStdout: true).trim()
+                env.cortx_data_image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' --filter=reference='*/*/cortx-data:[0-9]*' | grep -E '${TARGET_TAG}' | head -n 1", returnStdout: true).trim()
+                env.cortx_control_image = sh( script: "docker images --format='{{.Repository}}:{{.Tag}}' --filter=reference='*/*/cortx-control:[0-9]*' | grep -E '${TARGET_TAG}' | head -n 1", returnStdout: true).trim()
+
                 env.build_stage = "${build_stage}"
+
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
                 if ( params.EMAIL_RECIPIENTS == "DEVOPS" ) {
                     mailRecipients = "CORTX.DevOps.RE@seagate.com"
@@ -79,7 +105,7 @@ pipeline {
                     mailRecipients = "shailesh.vaidya@seagate.com"
                 }
 
-                emailext ( 
+                emailext (
                     body: '''${SCRIPT, template="docker-image-email.template"}''',
                     mimeType: 'text/html',
                     subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",

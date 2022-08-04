@@ -71,15 +71,7 @@ pipeline {
 
                 sh label: '', script: '''
                     yum erase python36-PyYAML -y
-                    cat <<EOF >>/etc/pip.conf
-[global]
-timeout: 60
-index-url: http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/python-packages-2.0.0-latest/
-trusted-host: cortx-storage.colo.seagate.com
-EOF
-                    pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/$branch/py-utils/python_requirements.txt
-                    pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/$branch/py-utils/python_requirements.ext.txt
-                    rm -rf /etc/pip.conf
+                    pip3 install  --no-cache-dir --trusted-host cortx-storage.colo.seagate.com -i http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/python-packages-$version-latest/ -r https://raw.githubusercontent.com/Seagate/cortx-utils/$branch/py-utils/python_requirements.txt -r https://raw.githubusercontent.com/Seagate/cortx-utils/$branch/py-utils/python_requirements.ext.txt
                 '''
 
                 sh label: '', script: '''
@@ -140,13 +132,14 @@ EOF
                     def releaseBuild = build job: 'Release', propagate: true
                     env.release_build = releaseBuild.number
                     env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/${env.release_build}"
-                    env.cortx_images = releaseBuild.buildVariables.cortx_all_image+"\n"+releaseBuild.buildVariables.cortx_rgw_image+"\n"+releaseBuild.buildVariables.cortx_data_image+"\n"+releaseBuild.buildVariables.cortx_control_image
+                    env.cortx_images = releaseBuild.buildVariables.cortx_all_image + "\n" + releaseBuild.buildVariables.cortx_rgw_image + "\n" + releaseBuild.buildVariables.cortx_data_image + "\n" + releaseBuild.buildVariables.cortx_control_image
                 }
             }
         }
         stage('Update Jira') {
+            when { expression { return env.release_build != null } }
             steps {
-                    script { build_stage=env.STAGE_NAME }
+                    script { build_stage = env.STAGE_NAME }
                     script {
                         def jiraIssues = jiraIssueSelector(issueSelector: [$class: 'DefaultIssueSelector'])
                         jiraIssues.each { issue ->
@@ -154,16 +147,16 @@ EOF
                             jiraAddComment(
                                 idOrKey: issue,
                                 site: "SEAGATE_JIRA",
-                                comment: "{panel:bgColor=#c1c7d0}"+
-                                    "h2. ${component} - ${branch} branch build pipeline SUCCESS\n"+
-                                    "h3. Build Info:  \n"+
-                                        author+
-                                            "* Component Build  :  ${BUILD_NUMBER} \n"+
-                                            "* Release Build    :  ${release_build}  \n\n  "+
-                                    "h3. Artifact Location  :  \n"+
-                                        "*  "+"${release_build_location} "+"\n\n"+
-                                    "h3. Image Location  :  \n"+
-                                        "*  "+"${cortx_images} "+"\n"+    
+                                comment: "{panel:bgColor=#c1c7d0}" +
+                                    "h2. ${component} - ${branch} branch build pipeline SUCCESS\n" +
+                                    "h3. Build Info:  \n" +
+                                        author +
+                                            "* Component Build  :  ${BUILD_NUMBER} \n" +
+                                            "* Release Build    :  ${release_build}  \n\n  " +
+                                    "h3. Artifact Location  :  \n" +
+                                        "*  " + "${release_build_location} " + "\n\n" +
+                                    "h3. Image Location  :  \n" +
+                                        "*  " + "${cortx_images} " + "\n" +
                                     "{panel}",
                                 failOnError: false,
                                 auditLog: false
@@ -192,9 +185,9 @@ EOF
                 }
 
                 def toEmail = ""
-                def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
+                def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
                 if ( manager.build.result.toString() == "FAILURE" ) {
-                    toEmail = "shailesh.vaidya@seagate.com"
+                    toEmail = "CORTX.DevOps.RE@seagate.com"
                     recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'],[$class: 'RequesterRecipientProvider']]
                 }
 
@@ -204,7 +197,7 @@ EOF
                     subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
                     attachLog: true,
                     to: toEmail,
-                    //recipientProviders: recipientProvidersClass
+                    recipientProviders: recipientProvidersClass
                 )
             }
         }    
@@ -215,7 +208,7 @@ EOF
 def getAuthor(issue) {
 
     def changeLogSets = currentBuild.rawBuild.changeSets
-    def author= ""
+    def author = ""
     def response = ""
     // Grab build information
     for (int i = 0; i < changeLogSets.size(); i++) {
@@ -227,6 +220,6 @@ def getAuthor(issue) {
             }
         }
     }
-    response = "* Author: "+author+"\n"
+    response = "* Author: " + author + "\n"
     return response
 }

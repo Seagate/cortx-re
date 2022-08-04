@@ -133,9 +133,11 @@ _run_test(){
       if [ "${S3_TEST_VERSION}" = "all" -o "${S3_TEST_VERSION}" = "v2" ]; then
                   
             # Running test with aws v2signature
-            unset S3_USE_SIGV4
+            export S3_USE_SIGV4=0
 
             _execute_compatability_tets "${S3_TEST_DATA_V2}"
+
+            unset S3_USE_SIGV4
 
             sleep 30s
       fi

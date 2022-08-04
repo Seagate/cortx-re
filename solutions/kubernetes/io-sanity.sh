@@ -53,29 +53,47 @@ function setup_awscli() {
    add_secondary_separator "Setup awscli"
 
    if [[ $CEPH_DEPLOYMENT = "true" ]]; then
-      case "$ID" in
-         rocky)
-            yum install http://mirror.centos.org/centos/8-stream/AppStream/x86_64/os/Packages/jq-1.6-3.el8.x86_64.rpm -y 
-         ;;
-         centos)
-            yum install jq -y
-         ;;
-         ubuntu)
-            apt install -y jq
-        ;;
-      esac
 
-      # Get credentials.
-      access_key=$(radosgw-admin user info --uid=io-test | jq .keys[].access_key | tr -d '"')
-      secret_key=$(radosgw-admin user info --uid=io-test | jq .keys[].secret_key | tr -d '"')
+      if ! which jq; then
+         case "$ID" in
+            rocky)
+               yum install http://mirror.centos.org/centos/8-stream/AppStream/x86_64/os/Packages/jq-1.6-3.el8.x86_64.rpm -y 
+            ;;
+            centos)
+               yum install jq -y
+            ;;
+            ubuntu)
+               apt install -y jq
+         ;;
+         esac
+      fi
+
+      if [[ $CEPH_DOCKER_DEPLOYMENT = "true" ]]; then
+         # Get credentials.
+         access_key=$(cephadm shell -- radosgw-admin user info --uid=io-test | jq .keys[].access_key | tr -d '"')
+         secret_key=$(cephadm shell -- radosgw-admin user info --uid=io-test | jq .keys[].secret_key | tr -d '"')      
+
+      else
+         # Get credentials.
+         access_key=$(radosgw-admin user info --uid=io-test | jq .keys[].access_key | tr -d '"')
+         secret_key=$(radosgw-admin user info --uid=io-test | jq .keys[].secret_key | tr -d '"')
+      fi
+
+      # Set endpoint url.
       endpoint_url="http://""$(hostname -i)"":9999"
 
    else
       # Get credentials.
       access_key=$(yq e '.solution.common.s3.default_iam_users.auth_admin' $SOLUTION_FILE)
-      secret_key=$(yq e '.solution.secrets.content.s3_auth_admin_secret' $SOLUTION_FILE)
+      secret_key=$(kubectl get secrets/cortx-secret  --template={{.data.s3_auth_admin_secret}} | base64 -d)
+
+      # Set endpoint url.
       endpoint_url="http://""$(kubectl get svc | grep cortx-io | awk '{ print $3 }')"":80"
    fi
+
+   add_common_separator "AWS keys-:"
+   echo "Access Key: $access_key"
+   echo "Secret Key: $secret_key"
 
    mkdir -p /root/.aws/
 
@@ -108,13 +126,28 @@ function run_io_sanity() {
    add_primary_separator "\tStarting IO Sanity Testing"
 
    BUCKET="test-bucket"
+   BUCKET2="test-bucket2"
    FILE1="file10mb"
    FILE2="test-obj.bin"
+   FILE3="file15mb"
+   FILE4="file18mb"
+   FILE5="Parts.json"
 
    add_common_separator "Creating S3 bucket:- '$BUCKET'"
    aws s3 mb s3://$BUCKET
    check_status "Failed to create bucket"
+   add_common_separator "Creating S3 bucket:- '$BUCKET2'"
+   aws s3api create-bucket --bucket $BUCKET2
+   check_status "Failed to create bucket"
    aws s3 ls
+   check_status "Failed to list buckets"
+
+   add_common_separator "Head bucket operation for '$BUCKET2' bucket"
+   aws s3api head-bucket --bucket $BUCKET2
+   check_status "Failed in head-bucket operation for '$BUCKET2'"
+
+   add_common_separator "List bucket operation"
+   aws s3api list-buckets --query "Buckets[].Name"
    check_status "Failed to list buckets"
 
    add_common_separator "Create files to upload to '$BUCKET' bucket"
@@ -122,6 +155,13 @@ function run_io_sanity() {
    dd if=/dev/zero of=$FILE1 bs=1M count=10
    echo -e "\nCreating '$FILE2'"
    date > $FILE2
+   add_common_separator "Create files to upload to '$BUCKET2' bucket"
+   echo -e "\nCreating '$FILE3'"
+   dd if=/dev/zero of=$FILE3 bs=1M count=15
+   echo -e "\nCreating '$FILE4'"
+   dd if=/dev/zero of=$FILE4 bs=1M count=18
+   echo -e "\nCreating '$FILE5"
+   touch $FILE5
 
    add_common_separator "Uploading '$FILE1' file to '$BUCKET' bucket"
    aws s3 cp $FILE1 s3://$BUCKET/file10MB
@@ -129,29 +169,114 @@ function run_io_sanity() {
    add_common_separator "Uploading '$FILE2' file to '$BUCKET' bucket"
    aws s3 cp $FILE2 s3://$BUCKET
    check_status "Failed to upload '$FILE2' to '$BUCKET'"
+   add_common_separator "Uploading '$FILE3' file to '$BUCKET2' bucket"
+   aws s3api put-object --bucket $BUCKET2 --key $FILE3 --body $FILE3
+   check_status "Failed to upload '$FILE3' to '$BUCKET2'"
+   add_common_separator "Uploading '$FILE4' file to '$BUCKET2' bucket"
+   aws s3api put-object --bucket $BUCKET2 --key $FILE4 --body $FILE4
+   check_status "Failed to upload '$FILE4' to '$BUCKET2'"
+
+   add_common_separator "Overwrite simple object '$FILE4' in '$BUCKET2' bucket"
+   aws s3api put-object --bucket $BUCKET2 --key $FILE4 --body $FILE4
+   check_status "Simple object overwrite operation failed"
+
+   add_common_separator "Head object operation for '$FILE3' object"
+   aws s3api head-object --bucket $BUCKET2 --key $FILE3
+   check_status "Failed in head-object operation for object '$FILE3' in bucket '$BUCKET2'"
 
    add_common_separator "List files in '$BUCKET' bucket"
    aws s3 ls s3://$BUCKET
    check_status "Failed to list files in '$BUCKET'"
+   add_common_separator "List files in '$BUCKET2' bucket"
+   aws s3api list-objects --bucket $BUCKET2
+   check_status "Failed to list files in '$BUCKET2'"
 
    add_common_separator "Download '$FILE1' as 'file10mbDn' and check diff"
    aws s3 cp s3://$BUCKET/file10MB file10mbDn
    check_status "Failed to download '$FILE1' as 'file10mbDn' from '$BUCKET'"
    FILE_DIFF=$(diff $FILE1 file10mbDn)
-
    if [[ $FILE_DIFF ]]; then
       echo -e "\nDIFF Status: $FILE_DIFF"
    else
       echo -e "\nDIFF Status: The files $FILE1 and file10mbDn are similar."
    fi
 
+   add_common_separator "Download '$FILE3' as 'file15mbDn' and check diff"
+   aws s3api get-object --bucket $BUCKET2 --key $FILE3 file15mbDn
+   check_status "Failed to download '$FILE3' as 'file15mbDn' from '$BUCKET2'"
+   FILE_DIFF2=$(diff $FILE3 file15mbDn)
+   if [[ $FILE_DIFF2 ]]; then
+      echo -e "\nDIFF Status: $FILE_DIFF2"
+   else
+      echo -e "\nDIFF Status: The files $FILE3 and file15mbDn are similar."
+   fi
+
+   add_common_separator "Copy object 'file10MB' from '$BUCKET' bucket to '$BUCKET2' bucket"
+   aws s3api copy-object --copy-source $BUCKET/file10MB --key file10MB --bucket $BUCKET2
+   check_status "Failed to copy object '$FILE1' from '$BUCKET' bucket to '$BUCKET2' bucket"
+
    add_common_separator "Remove all files in '$BUCKET' bucket"
    aws s3 rm s3://$BUCKET --recursive
    check_status "Failed to delete all files from '$BUCKET'"
+   
+   add_common_separator "Delete single object 'file10MB' from '$BUCKET2' bucket"
+   aws s3api delete-object --bucket $BUCKET2 --key file10MB
+   check_status "Failed to delete object 'file10MB' from '$BUCKET2'"
+
+   add_common_separator "Delete multiple objects from '$BUCKET2' bucket"
+   aws s3api delete-objects --bucket $BUCKET2 --delete Objects=[{Key=$FILE3},{Key=$FILE4}]
+   check_status "Failed to delete multiple objects from '$BUCKET2'"
+   
+   add_common_separator "Multipart upload opearation on '$BUCKET2' bucket"
+   rm -rf /tmp/upload.log
+   aws s3api create-multipart-upload --bucket $BUCKET2 --key multipart >> /tmp/upload.log
+   UPLOAD_ID=$(cat /tmp/upload.log | grep -o "UploadId[\"]:.*" | cut -c12-48)
+   modified="${UPLOAD_ID:1:-1}"
+   echo $modified
+   aws s3api upload-part --bucket $BUCKET2 --key multipart --part-number 1 --body $FILE3 --upload-id $modified  > /tmp/etag1
+   Etag1=$(cat /tmp/etag1 | grep -o "ETag[\"]:.*" | cut -c8-48)
+   echo $Etag1
+   aws s3api upload-part --bucket $BUCKET2 --key multipart --part-number 2 --body $FILE4 --upload-id $modified  > /tmp/etag2
+   Etag2=$(cat /tmp/etag2 | grep -o "ETag[\"]:.*" | cut -c8-48)
+   echo $Etag2
+   echo '
+   {
+   "Parts": [
+   {
+   "ETag": '$Etag1',
+   "PartNumber": 1
+   },
+   {
+   "ETag": '$Etag2',
+   "PartNumber": 2
+   }
+   ]
+   }' > $FILE5
+   check_status "Multipart upload failed to '$BUCKET2'"
+
+   add_common_separator "List multipart upload '$BUCKET2' bucket"
+   aws s3api list-multipart-uploads --bucket $BUCKET2
+   check_status "List Multipart upload failed to '$BUCKET2'"
+
+   add_common_separator "List parts '$BUCKET2' bucket"
+   aws s3api list-parts --bucket $BUCKET2 --key multipart --upload-id $modified
+   check_status "List parts failed to '$BUCKET2'"
+
+   add_common_separator "Complete Multipart upload '$BUCKET2' bucket"
+   aws s3api complete-multipart-upload --multipart-upload file://$FILE5 --bucket $BUCKET2 --key multipart --upload-id $modified 
+   check_status "Complete Mutipart upload Failed on '$BUCKET2'Bucket"
+
+   add_common_separator "Remove all files in '$BUCKET2' bucket"
+   aws s3 rm s3://$BUCKET2 --recursive
+   check_status "Failed to delete all files from '$BUCKET2'"
 
    add_common_separator "Remove '$BUCKET' bucket"
    aws s3 rb s3://$BUCKET
    check_status "Failed to delete '$BUCKET'"
+
+   add_common_separator "Remove '$BUCKET2' bucket"
+   aws s3api delete-bucket --bucket $BUCKET2
+   check_status "Failed to delete '$BUCKET2'"
 
    add_common_separator "Cleanup awscli files"
    rm -rf ~/.aws/credentials
@@ -177,4 +302,4 @@ else
    install_awscli
    setup_awscli
    run_io_sanity
-fi   
+fi

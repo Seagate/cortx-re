@@ -87,6 +87,12 @@ pipeline {
         )
 
         choice(
+            name: 'BUILD_LATEST_HARE',
+                choices: ['yes', 'no'],
+                description: 'Build cortx-Hare from latest code or use last-successful build.'
+        )
+
+        choice(
             name: 'BUILD_LATEST_CORTX_RGW',
             choices: ['yes', 'no'],
             description: 'Build cortx-rgw from latest code or use last-successful build.'
@@ -176,7 +182,8 @@ pipeline {
                                                         string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}"),
                                                         string(name: 'CORTX_UTILS_URL', value: "${CORTX_UTILS_URL}"),
                                                         string(name: 'THIRD_PARTY_PYTHON_VERSION', value: "${THIRD_PARTY_PYTHON_VERSION}"),
-                                                        string(name: 'BUILD_LATEST_CORTX_RGW', value: "${BUILD_LATEST_CORTX_RGW}")
+                                                        string(name: 'BUILD_LATEST_CORTX_RGW', value: "${BUILD_LATEST_CORTX_RGW}"),
+                                                        string(name: 'BUILD_LATEST_HARE', value: "${BUILD_LATEST_HARE}")
                                                     ]
                             } catch (err) {
                                 build_stage = env.STAGE_NAME
@@ -293,6 +300,7 @@ pipeline {
         }
 
         stage('RPM Validation') {
+            when { expression { params.BUILD_LATEST_HARE == 'yes' } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Validate RPMS for Motr Dependency', script:'''
@@ -517,13 +525,17 @@ pipeline {
                 env.build_stage = "${build_stage}"
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
 
-                def mailRecipients = "shailesh.vaidya@seagate.com"
+                def toEmail = ""
+                if ( manager.build.result.toString() == "FAILURE") {
+                    toEmail = "CORTX.DevOps.RE@seagate.com"
+                }
+                
                 emailext (
                     body: '''${SCRIPT, template="K8s-release-email.template"}''',
                     mimeType: 'text/html',
                     subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
                     attachLog: true,
-                    to: "${mailRecipients}",
+                    to: toEmail,
                     recipientProviders: recipientProvidersClass
                 )
             }

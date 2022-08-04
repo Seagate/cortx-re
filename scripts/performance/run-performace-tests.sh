@@ -33,28 +33,45 @@ function check_params() {
 add_primary_separator "Fetching setup details"
 
 check_params
+PRIMARY_NODES_FILE=$PWD/primary_nodes
+CLIENT_NODES_FILE=$PWD/client_nodes
 HOST_FILE=$PWD/hosts
 SSH_KEY_FILE=/root/.ssh/id_rsa
-ALL_NODES=$(awk -F[,] '{print $1}' $HOST_FILE | cut -d'=' -f2)
-PRIMARY_NODE=$(grep "role=server" $HOST_FILE | awk -F[,] '{print $1}' | cut -d'=' -f2)
-PRIMARY_CRED=$(grep "role=server" $HOST_FILE | awk -F[,] '{print $3}' | cut -d'=' -f2)
-CLIENT_NODE=$(grep "role=client" $HOST_FILE | awk -F[,] '{print $1}' | cut -d'=' -f2)
+cat $PRIMARY_NODES_FILE $CLIENT_NODES_FILE > $PWD/hosts
+ALL_NODES=$(awk -F[,] '{print $1}' $HOST_FILE | cut -d'=' -f2) || (echo -e "\n###### Could not fetch ALL_NODES value.Please check provided hosts file ######"; exit)
+PRIMARY_NODE=$(head -1 "$PRIMARY_NODES_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2) || { echo -e "\n###### Could not fetch PRIMARY_NODE value. Please check provided hosts file ######"; exit; }
+PRIMARY_CRED=$(head -1 "$PRIMARY_NODES_FILE" | awk -F[,] '{print $3}' | cut -d'=' -f2) || { echo -e "\n###### Could not fetch PRIMARY_CRED value. Please check provided hosts file ######" ;exit; }
+CLIENT_NODE=$(head -1 "$CLIENT_NODES_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2) || { echo -e "\n###### Could not fetch CLIENT_NODE value. Please check provided hosts file ######";exit; }
+CLIENT_CRED=$(head -1 "$CLIENT_NODES_FILE" | awk -F[,] '{print $3}' | cut -d'=' -f2) || { echo -e "\n###### Could not fetch CLIENT_CRED value. Please check provided hosts file ######" ;exit; }
+
+if [ $(echo $PRIMARY_NODE | tr ' ' '\n' | wc -l) -gt 2 ]; then
+echo -e "\n###### There are multiple entries in hosts.Please check provided hosts file ######"
+exit
+fi
 
 validation
 generate_rsa_key
 nodes_setup
 
-scp_all_nodes run-performace-tests-functions.sh ../../solutions/kubernetes/*
+scp_all_nodes _run-performace-tests-functions.sh ../../solutions/kubernetes/functions.sh
 
 add_primary_separator "Fetch Endpoint URL,Access Key and Secret Key from CORTX Cluster"
-SETUP_INFO=$(ssh_primary_node "export SOLUTION_FILE=$SOLUTION_FILE && /var/tmp/run-performace-tests-functions.sh --fetch-setup-info")
+SETUP_INFO=$(ssh_primary_node "export SOLUTION_FILE=$SOLUTION_FILE && /var/tmp/_run-performace-tests-functions.sh --fetch-setup-info")
+
+export ENDPOINT_URL=$(echo $SETUP_INFO | tr ' ' '\n' | grep ENDPOINT_URL | cut -d'=' -f2)
+export ACCESS_KEY=$(echo $SETUP_INFO | tr ' ' '\n' | grep ACCESS_KEY | cut -d'=' -f2) &&
+export SECRET_KEY=$(echo $SETUP_INFO | tr ' ' '\n' | grep SECRET_KEY | cut -d'=' -f2) &&
+export BUILD_URL=$(echo $SETUP_INFO | tr ' ' '\n' | grep BUILD_URL | cut -d'=' -f2)
+
+
+echo $ENDPOINT_URL
 
 add_primary_separator "Configure awscli on client"
 ssh -o 'StrictHostKeyChecking=no' "$CLIENT_NODE" "
-export ENDPOINT_URL=$(echo $SETUP_INFO | tr ' ' '\n' | grep ENDPOINT_URL | cut -d'=' -f2) &&
-export ACCESS_KEY=$(echo $SETUP_INFO | tr ' ' '\n' | grep ACCESS_KEY | cut -d'=' -f2) &&
-export SECRET_KEY=$(echo $SETUP_INFO | tr ' ' '\n' | grep SECRET_KEY | cut -d'=' -f2) &&
-/var/tmp/run-performace-tests-functions.sh --setup-client"
+export ENDPOINT_URL=$ENDPOINT_URL &&
+export ACCESS_KEY=$ACCESS_KEY &&
+export SECRET_KEY=$SECRET_KEY &&
+/var/tmp/_run-performace-tests-functions.sh --setup-client"
 
 export CLUSTER_TYPE=$(echo $SETUP_INFO | tr ' ' '\n' | grep CLUSTER_TYPE | cut -d'=' -f2)
 
@@ -68,7 +85,7 @@ echo -e "# BUILD_URL                  : $BUILD_URL                              
 echo -e "# CLUSTER_TYPE               : $CLUSTER_TYPE                                "
 echo -e "############################################################################"
 
-add_primary_separator "Execute PerfPro Sanity Suit"
+add_primary_separator "Execute PerfPro Sanity Suite"
 ssh -o 'StrictHostKeyChecking=no' "$CLIENT_NODE" "
 export GITHUB_TOKEN=$GITHUB_TOKEN &&
 export SCRIPT_LOCATION=$SCRIPT_LOCATION &&
@@ -77,7 +94,14 @@ export CORTX_TOOLS_REPO=$CORTX_TOOLS_REPO &&
 export PRIMARY_NODE=$PRIMARY_NODE &&
 export CLIENT_NODE=$CLIENT_NODE &&
 export PRIMARY_CRED=$PRIMARY_CRED &&
-export ENDPOINT_URL=$(echo $SETUP_INFO | tr ' ' '\n' | grep ENDPOINT_URL | cut -d'=' -f2) &&
-export BUILD_URL=$(echo $SETUP_INFO | tr ' ' '\n' | grep BUILD_URL | cut -d'=' -f2) &&
+export CLIENT_CRED=$CLIENT_CRED &&
+export ENDPOINT_URL=$ENDPOINT_URL &&
+export BUILD_URL=$BUILD_URL &&
 export CLUSTER_TYPE=$CLUSTER_TYPE &&
-/var/tmp/run-performace-tests-functions.sh --execute-perf-sanity"
+export DB_SERVER=$DB_SERVER &&
+export DB_PORT=$DB_PORT &&
+export DB_USER=$DB_USER &&
+export DB_PASSWD=$DB_PASSWD &&
+export DB_NAME=$DB_NAME &&
+export DB_DATABASE=$DB_DATABASE &&
+/var/tmp/_run-performace-tests-functions.sh --execute-perf-sanity"

@@ -84,6 +84,8 @@ function passwordless_ssh() {
         check_status "$NODE: Package installation failed"
     fi
 
+    test -f /root/.ssh/known_hosts && sed -i '/"$NODE"/d' /root/.ssh/known_hosts
+    
     sshpass -p "$PASS" ssh-copy-id -f -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa.pub "$USER"@"$NODE"
     check_status "$NODE: Passwordless ssh setup failed. Please validate provided credentails"
 }
@@ -98,6 +100,53 @@ function nodes_setup() {
         add_secondary_separator Setting up passwordless ssh for $NODE
         passwordless_ssh "$NODE" "$USER" "$PASS"
     done
+}
+
+function pull_image() {
+    local image="$1"
+    if [[ "$image" =~ "latest" ]]; then
+        docker pull "$image" &>/dev/null
+        actual_image_tag=$(docker run --rm -t "$image" cat /opt/seagate/cortx/RELEASE.INFO | grep VERSION | awk -F'"' '{print $2}')        
+        actual_image=$(echo "${image//2.0.0-latest/${actual_image_tag}}")
+        docker rmi -f "$image" &>/dev/null
+        docker pull "$actual_image" &>/dev/null
+        echo "$actual_image"
+    else
+        docker pull "$image" &>/dev/null
+        echo "$image"
+    fi    
+}
+
+function update_image() {
+    local POD_TYPE=$1
+    local IMAGE=$2
+    local SCRIPT_LOCATION="${3:-"/root/deploy-scripts/k8_cortx_cloud/"}"
+    pushd $SCRIPT_LOCATION
+        if [ $POD_TYPE == 'control-pod' ]; then 
+            image=$IMAGE yq e -i '.solution.images.cortxcontrol = env(image)' solution.yaml
+        elif [ $POD_TYPE == 'data-pod' ]; then
+            image=$IMAGE yq e -i '.solution.images.cortxdata = env(image)' solution.yaml
+        elif [ $POD_TYPE == 'server-pod' ]; then
+            image=$IMAGE yq e -i '.solution.images.cortxserver = env(image)' solution.yaml
+        elif [ $POD_TYPE == 'ha-pod' ]; then
+            image=$IMAGE yq e -i '.solution.images.cortxha = env(image)' solution.yaml
+        elif [ $POD_TYPE == 'client-pod' ]; then
+            image=$IMAGE yq e -i '.solution.images.cortxclient = env(image)' solution.yaml
+        else
+            echo "Wrong POD_TYPE $POD_TYPE is provided. Please provide any one of the following options. [ control-pod, data-pod, server-pod, ha-pod, client-pod ]" && exit 1;
+        fi         
+    popd 
+}
+
+function copy_solution_config() {
+    local SOLUTION_CONFIG=$1
+    local SCRIPT_LOCATION=$2
+	if [ -z "$SOLUTION_CONFIG" ]; then echo "SOLUTION_CONFIG not provided.Exiting..."; exit 1; fi
+	echo "Copying $SOLUTION_CONFIG file" 
+	pushd $SCRIPT_LOCATION
+        if [ ! -f "$SOLUTION_CONFIG" ]; then echo "file $SOLUTION_CONFIG not available..."; exit 1; fi	
+        cp $SOLUTION_CONFIG .
+    popd 
 }
 
 function k8s_deployment_type() {
@@ -231,8 +280,8 @@ function install_yq() {
 function run_io_sanity() {
    add_primary_separator "\tStarting IO Sanity Testing"
 
-   add_primary_separator "\tClean up existing buckets"
-   for bucket in $(aws s3 ls | awk '{ print $NF}'); do add_common_separator "Deleteing $bucket"; aws s3 rm s3://$bucket --recursive && aws s3 rb s3://$bucket; done
+#   add_primary_separator "\tClean up existing buckets"
+#   for bucket in $(aws s3 ls | awk '{ print $NF}'); do add_common_separator "Deleteing $bucket"; aws s3 rm s3://$bucket --recursive && aws s3 rb s3://$bucket; done
 
    BUCKET="test-bucket"
    FILE1="file10mb"

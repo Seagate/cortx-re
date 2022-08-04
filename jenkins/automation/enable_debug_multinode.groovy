@@ -69,7 +69,7 @@ def enableOfflineVM(nodeLabel) {
 
                 }
 
-            } else if ( computer.countBusy()==0 )  {  // This is not part of this job scope, but still it cleanups the online nodes
+            } else if ( computer.countBusy() == 0 )  {  // This is not part of this job scope, but still it cleanups the online nodes
 			
 				build job: 'Cortx-Automation/Deployment/VM-Cleanup-MultiNode', wait: false, parameters: [string(name: 'NODE_LABEL', value: "${node.getNodeName()}")]            
 			}
