@@ -50,7 +50,7 @@ locals {
 }
 
 resource "aws_security_group" "cortx_deploy" {
-  name        = "var.tag_name"
+  name        = "${var.tag_name}"
   description = "Allow standard ssh, CORTX mangement ports inbound and everything else outbound."
 
   ingress {
@@ -77,7 +77,7 @@ resource "aws_security_group" "cortx_deploy" {
   }
 
   tags = {
-    Name = "var.tag_name"
+    Name = "${var.tag_name}"
   }
 }
 
@@ -120,7 +120,7 @@ resource "local_sensitive_file" "pem_file" {
 
 resource "aws_instance" "cortx_deploy" {
   # https://wiki.centos.org/Cloud/AWS
-  count 		 = var.instance_count		
+  count 		             = "${var.instance_count}"		
   ami                    = data.aws_ami.centos.id
   instance_type          = "t3a.2xlarge"
   availability_zone      = data.aws_availability_zones.available.names[0]
@@ -132,14 +132,14 @@ resource "aws_instance" "cortx_deploy" {
         systemctl restart sshd
         sed -i 's/SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config
         /sbin/setenforce 0
-        yum install -y yum-utils git firewalld -y
+        yum install -y yum-utils git firewalld epel-release && yum install -y jq
   EOT
   root_block_device {
     volume_size = 90
   }
 
   tags = {
-    Name = "var.tag_name-${count.index + 1}"
+    Name = "${var.tag_name}-${count.index + 1}"
   }
 
   provisioner "file" {
@@ -170,7 +170,7 @@ resource "aws_ebs_volume" "data_vol" {
   availability_zone = data.aws_availability_zones.available.names[0]
   size              = var.ebs_volume_size
   tags = {
-    Name = "var.tag_name-${count.index + 1}"
+    Name = "${var.tag_name}-${count.index + 1}"
   }
 }
 
