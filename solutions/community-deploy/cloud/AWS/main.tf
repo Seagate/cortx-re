@@ -155,6 +155,16 @@ resource "aws_instance" "cortx_deploy" {
   }
 }
 
+output "aws_instance_public_ip_addr" {
+  value       = aws_instance.cortx_deploy.*.public_ip
+  description = "Public IP to connect CORTX server"
+  }
+
+output "aws_instance_private_ip_addr" {
+  value       = aws_instance.cortx_deploy.*.private_ip
+  description = "Private IP to connect to EC2 Instances"
+  }
+
 resource "aws_ebs_volume" "data_vol" {
   count             = var.ebs_volume_count * var.instance_count
   availability_zone = data.aws_availability_zones.available.names[0]
