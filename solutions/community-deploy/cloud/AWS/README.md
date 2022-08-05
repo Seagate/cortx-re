@@ -35,6 +35,10 @@ Following parameter/s are passed when the cluster deployment command executes. I
 | region | ap-south-1 | You can pick any region from this region code : https://awsregion.info/  |
 | security_group_cidr | 134.204.222.36/32  | You need to find the own Public IP using this command : `curl ipinfo.io/ip`. Also calculate CIDR for IP using Subnet Calculator from https://mxtoolbox.com/subnetcalculator.aspx |
 | key_name | devops-key | You can pass .pem key file name to login to aws EC2 instance in `key_name`. |
+| ebs_volume_count | 9 |  You can select the number of volumes |
+| ebs_volume_size | 10 |  You can select the volume size |
+| instance_count | 3  | You can select the number of EC2 instances |
+| tag_name | cortx-multinode | You can assign your tag name to the EC2 Instances |
 
 - Contents of `user.tfvars` file should display as follows:
 ```
