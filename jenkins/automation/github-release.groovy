@@ -31,6 +31,7 @@ pipeline {
                 script {
                     withCredentials([string(credentialsId: 'gaurav-github-token', variable: 'GITHUB_ACCESS_TOKEN')]) {
                         sh """
+                            export GITHUB_ACCESS_TOKEN="$GITHUB_ACCESS_TOKEN"
                             bash scripts/release_support/github-release.sh -t "$GIT_TAG" -v "$SERVICES_VERSION" -c "$CHANGESET_URL"
                         """
                     }			
