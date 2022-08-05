@@ -102,7 +102,7 @@ export CORTX_SCRIPTS_BRANCH=main && export CORTX_SCRIPTS_REPO=Seagate/cortx-k8s 
 ## Sanity test 
 - Run IO Sanity on your CORTX Cluster to validate bucket creation and object upload in deployed cluster.
 ```
-sudo ./cortx-deploy.sh --io-sanity
+./cortx-deploy.sh --io-sanity
 ```
 
 Tested by:
