@@ -97,6 +97,13 @@ echo cortx-rgw:"$(awk -F['-'] '/'ceph-base'/{ print $5  }' RELEASE.INFO | cut -d
 echo cortx-re:"$(git rev-parse --short HEAD)",
 }
 
+function setup_local_image_registry {
+docker rm -f local-registry
+docker run -d -e REGISTRY_HTTP_ADDR=0.0.0.0:8080 -p 5000:5000 -p 8080:8080 --restart=always --name local-registry registry:2
+jq -n '{"insecure-registries": $ARGS.positional}' --args "$HOSTNAME:8080" > /etc/docker/daemon.json
+systemctl restart docker
+}
+
 curl -s $BUILD_URL/RELEASE.INFO -o RELEASE.INFO
 if grep -q "404 Not Found" RELEASE.INFO ; then echo -e "\nProvided Build does not have required structure..existing\n"; exit 1; fi
 
@@ -119,12 +126,19 @@ CREATED_DATE=$(date -u +'%Y-%m-%d %H:%M:%S%:z')
 
 docker-compose -f ./docker-compose.yml build --parallel --force-rm --compress --build-arg GIT_HASH="$GIT_HASH" --build-arg VERSION="$VERSION-$DOCKER_BUILD_BUILD" --build-arg CREATED_DATE="$CREATED_DATE" --build-arg BUILD_URL=$BUILD_URL --build-arg ENVIRONMENT=$ENVIRONMENT --build-arg OS=$OS --build-arg OS_TYPE=$OS_TYPE --build-arg OS_RELEASE=$OS_RELEASE --build-arg CORTX_VERSION="$CORTX_VERSION" $SERVICE
 
+
+if [ "$REGISTRY" == "local" ]; then
+echo "Setting up local container image registry"
+setup_local_image_registry
+REGISTRY="$HOSTNAME:8080"
+fi
+
 for SERVICE_NAME in $SERVICE
 do
 if [ "$DOCKER_PUSH" == "yes" ];then
         echo "Pushing Docker image to GitHub Container Registry"
         docker tag $SERVICE_NAME:$TAG $REGISTRY/$PROJECT/$SERVICE_NAME:$TAG
-        docker push $REGISTRY/$PROJECT/$SERVICE_NAME:$TAG
+#        docker push $REGISTRY/$PROJECT/$SERVICE_NAME:$TAG
 else
         echo "Docker Image push skipped"
         exit 0
