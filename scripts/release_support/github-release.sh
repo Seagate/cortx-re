@@ -7,7 +7,7 @@ RELEASE_REPO_OWNER="gauravchaudhari02"
 BUILD_INFO_STRING="**Build Instructions**: https://github.com/Seagate/cortx-re/tree/main/solutions/community-deploy/cloud/AWS#cortx-build\n"
 DEPLOY_INFO_STRING="**Deployment Instructions**: https://github.com/Seagate/cortx-re/blob/main/solutions/community-deploy/CORTX-Deployment.md\n"
 SERVICES_VERSION_STRING="**CORTX Services Release**: "
-CORTX_IMAGE_STRING="**CORTX Component Images: "
+CORTX_IMAGE_STRING="**CORTX Component Images**: "
 CHANGESET_STRING="**Changeset**: "
 # get args
 while getopts :t:v:c: option
