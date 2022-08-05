@@ -3,12 +3,17 @@
 The following sections discusses how to set up the K8s cluster and deploy the CORTX Stack on multi-node cluster. The minimum prerequisites are enlisted to make sure the cluster set up process is smooth.
 
 **Prerequisites**
-Following are the minimum system specifications required to set up the K8s cluster and deploy the CORTX stack.
-
--  RAM: 16GB
--  CPU: 8 Core
--  DISK: 9 Disks (1 with 50GB (For operating system) and rest 8 with 25GB per disk)
--  OS: CentOS 7.9 (64-bit)
+- Following are the minimum system specifications required to set up the K8s cluster and deploy the CORTX stack.
+ -  RAM: 16GB
+ -  CPU: 8 Core
+ -  DISK: 9 Disks (1 with 50GB (For operating system) and rest 8 with 25GB per disk)
+ -  OS: CentOS 7.9 (64-bit)
+- All the nodes should be reachable over SSH
+- You must have Git installed on your system
+- SELinux should be disabled and If its enabled, run the following command to disable then reboot your system,
+```
+sed -i 's/SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config && setenforce 0
+```
 
 ## Deploy the CORTX Stack on K8s cluster
 This section enlists the commands to deploy the CORTX Stack on K8s cluster. 
@@ -18,56 +23,25 @@ This section enlists the commands to deploy the CORTX Stack on K8s cluster.
 ls /dev/sd*
 /dev/sda  /dev/sda1  /dev/sda2  /dev/sdb  /dev/sdc  /dev/sdd  /dev/sde  /dev/sdf  /dev/sdg  /dev/sdh  /dev/sdi
 ```
-
 **Note:**
- 1. All the nodes should be reachable over SSH
- 2. Follow [CORTX Deployment on AWS](https://github.com/Seagate/cortx-re/blob/main/solutions/community-deploy/cloud/AWS/README.md) to build and deploy CORTX on AWS instances.
+Follow [CORTX Deployment on AWS](https://github.com/Seagate/cortx-re/blob/main/solutions/community-deploy/cloud/AWS/README.md) to build and deploy CORTX on AWS instances.
 
 ## Install K8s cluster
 **Execute the following commands to install the K8s cluster on the primary node:**
--  Clone cortx-re repository in the current directory `cortx-re/solutions/kubernetes`.
+- Clone cortx-re repository in the current directory `cortx-re/solutions/kubernetes`.
 ```
 git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/kubernetes
 ```
-
-### You must have Git installed on your system.
-You can use following command for RedHat family OS to install the Git.
-```
-yum install git -y
-```
-
-### SELinux should be disabled
--  Use the following command to check status of SELinux.
-```
-sestatus
-```
--  If SELinux is enabled, run the following command to disable the SELinux.
-```
-sed -i 's/SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config && setenforce 0
-```
--  Once above command runs successfully, reboot your system.
-```
-reboot
-```   
-
 **Note:**
- 1. All the nodes should be reachable over SSH
- 2. You can deploy CORTX on AWS instance also. Please follow [CORTX Deployment on AWS](https://github.com/Seagate/cortx-re/blob/main/solutions/community-deploy/cloud/AWS/README.md)
-
-## Install K8s cluster
-**To install the K8s cluster, run the following commands:**
--  Clone cortx-re repository and change directory to `cortx-re/solutions/kubernetes`.
-```
-git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/kubernetes
-```
--  Create the hosts file in the current directory to add entries for all the nodes with same format in hosts file. Node from first entry will be configured as Primary node. Example `hosts` file for multi-node setup is as below,
+You can deploy CORTX on AWS instance also. Please follow [CORTX Deployment on AWS](https://github.com/Seagate/cortx-re/blob/main/solutions/community-deploy/cloud/AWS/README.md)
+- Create the `hosts` file in the current directory to add entries for all the nodes with same format in hosts file. Node from first entry will be configured as Primary node. Example `hosts` file for multi-node setup is as below,
 ```
 hostname="<AWS instance private ip of primarynode>",user=root,pass=<root-password>
 hostname="<AWS instance private ip of workernode1>",user=root,pass=<root-password>
 hostname="<AWS instance private ip of workernode2>",user=root,pass=<root-password>
 ```
--  Execute `cluster-setup.sh` to setup K8s cluster on your nodes for deployment.
--  To allow the PODs creation on primary node, pass the first input parameter for `cluster-setup.sh` script as `true`. Please note you must pass the input parameter as true for multi-node setup.
+- Execute `cluster-setup.sh` to setup K8s cluster on your nodes for deployment.
+- To allow the PODs creation on primary node, pass the first input parameter for `cluster-setup.sh` script as `true`. Please note you must pass the input parameter as true for multi-node setup.
 ```
 ./cluster-setup.sh true
 ```
