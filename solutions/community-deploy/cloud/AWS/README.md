@@ -99,15 +99,11 @@ docker save -o nginx.tar nginx:latest && docker save -o cortx-build.tar ghcr.io/
 ```
 for instance in {1..2};do rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' /tmp/*.tar  centos@"<AWS instance private-ip-workernodes>":/tmp; done
 ```
-**Note:** You can find the private ip address by executing the following command
+**Note:** You can find the private ip address by executing the following command,
 
 **From Local Host:**
 ```
 terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d
-```
-**From EC2 node:**
-```
-curl http://169.254.169.254/latest/meta-data/local-ipv4
 ```
 
 ### Execute Instructions from Worker nodes
