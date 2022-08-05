@@ -107,7 +107,7 @@ terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private
 ```
 
 ### Execute Instructions from Worker nodes
-- Login to all worker nodes and load the cortx build images
+- Login to primary node and load the cortx build images
 ```
 for image in /tmp/*.tar; do cat $image | docker load; done
 ```
