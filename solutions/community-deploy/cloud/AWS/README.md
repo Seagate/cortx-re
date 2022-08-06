@@ -6,7 +6,7 @@ This document discusses the procedure to compile the CORTX Stack and deploy on A
 
 - Ensure that you have an AWS account with Secret Key and Access Key.
 - Build and deploy CORTX Stack on all the AWS instances in the cluster.
-- Clone the `cortx-re` repository on all nodes and then change the directory to `cortx-re/solutions/community-deploy/cloud/AWS`.
+- Clone the `cortx-re` repository and then change the directory to `cortx-re/solutions/community-deploy/cloud/AWS`.
 ```
 git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/community-deploy/cloud/AWS
 ```
@@ -19,9 +19,9 @@ git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/comm
 ```
 aws sts get-caller-identity
 ```
+- Execute the commands from `$PWD/cortx-re/solutions/community-deploy/cloud/AWS` directory
 
 ## Procedure
-
 - Modify `user.tfvars` file on local host with your AWS details.
 ```
 vi user.tfvars
@@ -58,35 +58,34 @@ tag_name            = "cortx-multinode"
 ```
 terraform validate && terraform apply -var-file user.tfvars --auto-approve
 ```
-- Execute following commands which will perform on all the nodes in the cluster,
+- Execute the following command which will perform on all the nodes in the cluster,
   - Setup network and storage devices for CORTX.
-  - Generating the `root` user password
-  - `/home/centos/setup.sh` will reboot all the nodes once executed
-
-**Note:**
-*The root password is required as a part of CORTX deployment.*
+  - Generating the `root` user password which is required as a part of CORTX deployment
+  - `setup.sh` will reboot all the nodes once executed
+  - Copy the pem file from primary node to the worker nodes using private ip address
+- Execute the following commands to find the Public and Private ip addresses
+**Public ip address**
 ```
-export PUBLIC_IP=`terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d'`
-for ip in $PUBLIC_IP;do
-   ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$ip 'echo "Enter new password for root user" && sudo passwd root && sudo bash /home/centos/setup.sh'
-done
+terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d'
 ```
-- Execute the following command to copy the pem file from the primary node to the worker nodes to copy files using private ip address
-
+**Private ip address**
 ```
-SRC_PATH=$PWD/cortx-re/solutions/community-deploy/cloud/AWS
-DST_PATH=/tmp
-for instance in {1..3};do rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' $SRC_PATH/cortx.pem centos@$PUBLIC_IP:$DST_PATH; done
+terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d'
+```
+- Execute the following commands for all the nodes to generate the root user password and run `/home/centos/setup.sh`
+```
+ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-primarynode>" 'echo "Enter new password for root user" && sudo passwd root && sudo bash /home/centos/setup.sh'
+rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' cortx.pem centos@"<AWS instance public-ip-primarynode>":/tmp
 ```
 - AWS instances are ready for CORTX Build and deployment now. Connect to EC2 nodes over SSH and validate that all three network cards has IP address assigned.
 
 ### CORTX Build
-
 - We will use [cortx-build](https://github.com/Seagate/cortx/pkgs/container/cortx-build) docker image to compile entire CORTX stack.
 - Execute `build-cortx.sh` from primary node using public ip address which will generate CORTX container images from `main` of CORTX components
+**Note:** Become the **root** user once logged in to the primary node by running `sudo su` command.
 ```
-sudo su && cd /home/centos/cortx-re/solutions/community-deploy
-time ./build-cortx.sh
+ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-primarynode>" 'git clone https://github.com/Seagate/cortx-re'
+cd $PWD/cortx-re/solutions/community-deploy && time ./build-cortx.sh
 ```
 - Save and compress the cortx build images
 **Note:** The process might take some time to save and compress the images.
@@ -99,13 +98,7 @@ docker save -o nginx.tar nginx:latest && docker save -o cortx-build.tar ghcr.io/
 ```
 for instance in {1..2};do rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' /tmp/*.tar  centos@"<AWS instance private-ip-workernodes>":/tmp; done
 ```
-**Note:** You can find the private ip address by executing the following command,
-
-**From Local Host:**
-```
-terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d
-```
-
+ 
 ### Execute Instructions from Worker nodes
 - Login to primary node and load the cortx build images
 ```
