@@ -19,7 +19,6 @@ git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/comm
 ```
 aws sts get-caller-identity
 ```
-- Execute the commands from `$PWD/cortx-re/solutions/community-deploy/cloud/AWS` directory
 
 ## Procedure
 - Modify `user.tfvars` file on local host with your AWS details.
@@ -54,6 +53,7 @@ tag_name            = "cortx-multinode"
 ```
 
 ### Execute Instructions from Local Host to create AWS Instances and Network and Storage Configuration
+- Execute the commands from `$PWD/cortx-re/solutions/community-deploy/cloud/AWS` directory
 - Execute Terraform code (as shown below) to create AWS instances for CORTX Build and Deployment.
 ```
 terraform validate && terraform apply -var-file user.tfvars --auto-approve
