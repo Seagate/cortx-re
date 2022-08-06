@@ -64,6 +64,7 @@ terraform validate && terraform apply -var-file user.tfvars --auto-approve
   - `setup.sh` will reboot all the nodes once executed
   - Copy the pem file from primary node to the worker nodes using private ip address
 - Execute the following commands to find the Public and Private ip addresses
+
 **Public ip address**
 ```
 terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d'
@@ -82,12 +83,13 @@ rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' cortx.pem ce
 ### CORTX Build
 - We will use [cortx-build](https://github.com/Seagate/cortx/pkgs/container/cortx-build) docker image to compile entire CORTX stack.
 - Execute `build-cortx.sh` from primary node using public ip address which will generate CORTX container images from `main` of CORTX components
-**Note:** Become the **root** user once logged in to the primary node by running `sudo su` command.
+**Note:** Become the **root** user after logged in to the primary node by running `sudo su` command.
 ```
 ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-primarynode>" 'git clone https://github.com/Seagate/cortx-re'
 cd $PWD/cortx-re/solutions/community-deploy && time ./build-cortx.sh
 ```
 - Save and compress the cortx build images
+
 **Note:** The process might take some time to save and compress the images.
 ```
 cd /tmp && docker save -o cortx-rgw.tar cortx-rgw:2.0.0-0 && docker save -o cortx-all.tar cortx-all:2.0.0-0 && \
