@@ -21,16 +21,18 @@ This section enlists the commands to deploy the CORTX Stack on K8s cluster.
 ### Make sure your nodes or VM(virtual machine) has following drives available on it:
 ```
 ls /dev/sd*
-/dev/sda  /dev/sda1  /dev/sda2  /dev/sdb  /dev/sdc  /dev/sdd  /dev/sde  /dev/sdf  /dev/sdg  /dev/sdh  /dev/sdi
 ```
+**For example:**
+/dev/sda  /dev/sda1  /dev/sda2  /dev/sdb  /dev/sdc  /dev/sdd  /dev/sde  /dev/sdf  /dev/sdg  /dev/sdh  /dev/sdi
+
 **Note:**
 Follow [CORTX Deployment on AWS](https://github.com/Seagate/cortx-re/blob/main/solutions/community-deploy/cloud/AWS/README.md) to build and deploy CORTX on AWS instances.
 
 ## Install K8s cluster
 **Execute the following commands to install the K8s cluster on the primary node:**
-- Clone cortx-re repository in the current directory `cortx-re/solutions/kubernetes`.
+- Clone cortx-re repository and switch to `cortx-re/solutions/kubernetes`directory.
 ```
-git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/kubernetes
+sudo su && git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/kubernetes
 ```
 **Note:**
 You can deploy CORTX on AWS instance also. Please follow [CORTX Deployment on AWS](https://github.com/Seagate/cortx-re/blob/main/solutions/community-deploy/cloud/AWS/README.md)
@@ -81,4 +83,4 @@ export CORTX_SCRIPTS_BRANCH=main && export CORTX_SCRIPTS_REPO=Seagate/cortx-k8s 
 
 Tested by:
 
-* July 31, 2022: Mukul Malhotra (mukul.malhotra@seagate.com) - AWS, CentOS 7.9 Linux
+* August 7, 2022: Mukul Malhotra (mukul.malhotra@seagate.com) - AWS, CentOS 7.9 Linux
