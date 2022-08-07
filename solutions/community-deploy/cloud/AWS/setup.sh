@@ -23,6 +23,12 @@ if [ $(whoami) != root ];then
 	echo "$(whoami) is not root user. Please use root user to execute this script"
 fi
 
+#Install Docker engine on worker nodes
+echo -e "-------------------------[ Installing docker ]----------------------------------------" 
+yum install -y yum-utils && yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo -y && yum install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+sleep 30
+systemctl start docker && systemctl enable docker
+
 #Setup udev rules for ESB volumes. Refer- https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html#ec2-nitro-instances 
 echo "Mapping Nitro EBS volumes"
 declare -a device_list
