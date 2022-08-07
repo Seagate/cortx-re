@@ -91,15 +91,7 @@ for ip in $PUBLIC_IP;do rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyC
 ```
 ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-primarynode>" 'git clone https://github.com/Seagate/cortx-re'
 sudo su && cd $PWD/cortx-re/solutions/community-deploy
-time ./build-cortx.sh
-```
-- Save and compress the cortx build images
-
-**Note:** The process might take some time to save and compress the images.
-```
-cd /tmp && docker save -o cortx-rgw.tar cortx-rgw:2.0.0-0 && docker save -o cortx-all.tar cortx-all:2.0.0-0 && \
-docker save -o cortx-data.tar cortx-data:2.0.0-0 && docker save -o cortx-control.tar cortx-control:2.0.0-0 && \
-docker save -o nginx.tar nginx:latest && docker save -o cortx-build.tar ghcr.io/seagate/cortx-build:rockylinux-8.4
+time bash -x ./build-cortx.sh
 ```
 - Execute the following command to copy the cortx build images from primary node to worker nodes using private ip address
 ```
