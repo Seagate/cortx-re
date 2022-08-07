@@ -63,7 +63,7 @@ terraform validate && terraform apply -var-file user.tfvars --auto-approve
   - Generating the `root` user password which is required as a part of CORTX deployment
   - `setup.sh` will reboot all the nodes once executed
   - Copy the pem file from primary node to the worker nodes using private ip address
-- Execute the following commands to find the Public and Private ip addresses
+- Execute the following commands to find the Public and Private ip addresses by setting as environment variable.
 
 **Public ip address:**
 ```
