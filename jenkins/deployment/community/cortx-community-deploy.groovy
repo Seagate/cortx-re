@@ -20,8 +20,13 @@ pipeline {
         string(name: 'REGION', defaultValue: 'ap-south-1', description: 'AWS region', trim: true)
         string(name: 'KEY_NAME', defaultValue: 'automation-key', description: 'Key name', trim: true)
         string(name: 'COMMUNITY_USE', defaultValue: 'yes', description: 'Only use during community deployment', trim: true)
+        string(name: 'EBS_VOLUME_COUNT', defaultValue: '9', description: 'EBS volume', trim: true)
+        string(name: 'EBS_VOLUME_SIZE', defaultValue: '10', description: 'EBS volume size', trim: true)
+        string(name: 'EC2_INSTANCE_COUNT', defaultValue: '3', description: 'Instance count', trim: true)
+        string(name: 'EC2_INSTANCE_TAG_NAME', defaultValue: 'cortx-multinode', description: 'Tag name', trim: true)
         password(name: 'SECRET_KEY', description: 'secret key for AWS account')
         password(name: 'ACCESS_KEY', description: 'access key for AWS account')
+        
         
         // Please configure ROOT_PASSWORD parameter in Jenkins job configuration.
     }
@@ -47,6 +52,10 @@ pipeline {
                 export SECRET_KEY=${SECRET_KEY}
                 export ACCESS_KEY=${ACCESS_KEY}
                 export KEY_NAME=${KEY_NAME}
+                export EBS_VOLUME_COUNT=${EBS_VOLUME_COUNT}
+                export EBS_VOLUME_SIZE=${EBS_VOLUME_SIZE}
+                export EC2_INSTANCE_COUNT=${EC2_INSTANCE_COUNT}
+                export EC2_INSTANCE_TAG_NAME=${EC2_INSTANCE_TAG_NAME}
                             rm -rvf /usr/local/bin/aws /usr/local/bin/aws_completer /usr/local/aws-cli >/dev/null 2>&1
                             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && yum install unzip -y && unzip awscliv2.zip
                             ./aws/install
