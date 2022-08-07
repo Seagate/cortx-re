@@ -60,7 +60,7 @@ pipeline {
                 '''
             }
         }            
-        stage ('Create EC2 instace') {
+        stage ('Create EC2 instances') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Setting up EC2 instance', script: '''
@@ -111,7 +111,7 @@ pipeline {
             '''
             }
         }
-        stage ('Setup K8s cluster on EC2') {
+        stage ('Setup K8s cluster on EC2 Primary node') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'setting up K8s cluster on EC2', script: '''
@@ -123,7 +123,7 @@ pipeline {
             '''
             }
         }
-        stage ('Deploy 1N cortx cluster') {
+        stage ('Deploy multi-node cortx cluster') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Deploying 1N cortx cluster on EC2', script: '''
