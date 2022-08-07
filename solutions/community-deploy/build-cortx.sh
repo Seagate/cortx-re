@@ -134,3 +134,8 @@ git clone https://github.com/Seagate/cortx-re -b $BRANCH && pushd cortx-re/docke
 
 # Show recently generated cortx-all images
 docker images --format='{{.Repository}}:{{.Tag}} {{.CreatedAt}}' --filter=reference='cortx-*'
+
+# Save and compress the cortx build images
+cd /tmp && docker save -o cortx-rgw.tar cortx-rgw:2.0.0-0 && docker save -o cortx-all.tar cortx-all:2.0.0-0 && \
+docker save -o cortx-data.tar cortx-data:2.0.0-0 && docker save -o cortx-control.tar cortx-control:2.0.0-0 && \
+docker save -o nginx.tar nginx:latest && docker save -o cortx-build.tar ghcr.io/seagate/cortx-build:rockylinux-8.4
