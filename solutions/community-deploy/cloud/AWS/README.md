@@ -67,20 +67,19 @@ terraform validate && terraform apply -var-file user.tfvars --auto-approve
 
 **Public ip address:**
 ```
-terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d'
+export PUBLIC_IP=`terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d'`
 ```
 **Private ip address:**
 ```
-terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d'
+export PRIVATE_IP=`terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_ip_addr.value 2>&1 | tee ip.txt  | tr -d '",[]' | sed '/^$/d'`
 ```
-- Execute the following commands for all the nodes to generate the root user password and run `/home/centos/setup.sh`
+- Execute the following commands on all the nodes to generate the root user password and run `/home/centos/setup.sh`
 ```
-ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-primarynode>" 'echo "Enter new password for root user" && sudo passwd root && sudo bash /home/centos/setup.sh'
+for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$ip 'echo "Enter new password for root user" && sudo passwd root && sudo bash /home/centos/setup.sh'; done
 ```
-- Copy the pem file to the worker nodes using public ip address
+- Copy the pem file to all the nodes using public ip address
 ```
-rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' cortx.pem centos@"<AWS instance public-ip-worker1>":/tmp
-rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' cortx.pem centos@"<AWS instance public-ip-worker2>":/tmp
+for ip in $PUBLIC_IP;do rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' cortx.pem centos@$ip:/tmp; done
 ```
 - AWS instances are ready for CORTX Build and deployment now. Connect to EC2 nodes over SSH and validate that all three network cards has IP address assigned.
 
