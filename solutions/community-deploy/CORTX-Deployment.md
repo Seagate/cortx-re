@@ -43,7 +43,7 @@ hostname="<AWS instance private ip of workernode1>",user=root,pass=<root-passwor
 hostname="<AWS instance private ip of workernode2>",user=root,pass=<root-password>
 ```
 - Execute `cluster-setup.sh` to setup K8s cluster on your nodes for deployment.
-- To allow the PODs creation on primary node, pass the first input parameter for `cluster-setup.sh` script as `true`. Please note you must pass the input parameter as true for multi-node setup.
+- To allow the PODs creation on primary node, pass the first input parameter for `cluster-setup.sh` script as `true`. Please note, you must pass the input parameter as true for multi-node setup.
 ```
 ./cluster-setup.sh true
 ```
