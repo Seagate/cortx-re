@@ -93,9 +93,10 @@ ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-p
 sudo su && cd $PWD/cortx-re/solutions/community-deploy
 time bash -x ./build-cortx.sh
 ```
-- Execute the following command to copy the cortx build images from primary node to worker nodes using private ip address
+- Execute the following command to copy the cortx build images from primary node to worker nodes using private ip address,
+**For example:**
 ```
-for instance in {1..2};do rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' /tmp/*.tar  centos@"<AWS instance private-ip-workernodes>":/tmp; done
+cd /tmp && rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' /tmp/*.tar  centos@"<AWS instance private-ip-workernodes>":/tmp
 ```
 **Note:** You can find the private ip address as referenced above from the local host or execute following command from EC2 instances,
 ```
