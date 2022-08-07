@@ -86,13 +86,19 @@ passwd root
 ```
 ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip>"
 ```
-- Clone cortx-re repository and switch to `solutions/kubernetes` directory
+- Clone cortx-re repository from required branch/tag. If you do not provide `-b <branch/tag>`, then it will use default main branch    
+  :warning: Tag based build is supported after and including tag [2.0.0-879](https://github.com/Seagate/cortx-re/releases/tag/2.0.0-879) 
 ```
-git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/community-deploy
+git clone https://github.com/Seagate/cortx-re -b <branch/tag>
 ```
-- Execute `build-cortx.sh` script. This script will generate CORTX container images from `main` of CORTX components
+- Switch to solutions/community-deploy directory 
 ```
-time ./build-cortx.sh
+cd $PWD/cortx-re/solutions/community-deploy
+```  
+- Generate CORTX container images from required branch/tag. If you do not provide `-b <branch/tag>`, then it will use default main branch  
+  :warning: Tag based build is supported after and including tag [2.0.0-879](https://github.com/Seagate/cortx-re/releases/tag/2.0.0-879)
+```
+time ./build-cortx.sh -b <branch/tag>
 ```
 
 ### CORTX Deployment

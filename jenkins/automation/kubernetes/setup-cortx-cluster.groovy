@@ -190,8 +190,7 @@ pipeline {
                 ./cortx-deploy.sh --support-bundle
                 HOST_FILE=$PWD/hosts
                 PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
-                LOG_FILE=$(ssh -o 'StrictHostKeyChecking=no' $PRIMARY_NODE 'ls -t /root/deploy-scripts/k8_cortx_cloud | grep logs-cortx-cloud | grep .tar | head -1')
-                scp -q "$PRIMARY_NODE":/root/deploy-scripts/k8_cortx_cloud/$LOG_FILE $WORKSPACE/artifacts/
+                scp -q "$PRIMARY_NODE":/root/deploy-scripts/k8_cortx_cloud/logs-cortx-cloud*.tgz $WORKSPACE/artifacts/
             popd
             '''
         }

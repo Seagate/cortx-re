@@ -82,7 +82,7 @@ pipeline {
                         string(name: 'BUILD_TO', value: "${env.actual_server_image}"),
                     ]
                     env.changeset_log_url = changelog.absoluteUrl
-                    copyArtifacts filter: 'CHANGESET.txt', fingerprintArtifacts: true, flatten: true, optional: true, projectName: '/Release_Engineering/Cortx-Automation/changelog-generation', selector: lastCompleted(), target: ''
+                    copyArtifacts filter: 'CHANGESET.md', fingerprintArtifacts: true, flatten: true, optional: true, projectName: '/Release_Engineering/Cortx-Automation/changelog-generation', selector: lastCompleted(), target: ''
                 }
             }
         }
@@ -127,7 +127,7 @@ pipeline {
                 env.build_stage = "${build_stage}"
                 env.cluster_status = sh( script: "echo ${env.upgradecluster_build_url}/artifact/artifacts/cortx-cluster-status.txt", returnStdout: true)
                 env.upgrade_logs = sh( script: "echo ${env.upgradecluster_build_url}/artifact/artifacts/upgrade-logs.txt", returnStdout: true)
-                env.changeset_log_url = sh( script: "echo ${env.changeset_log_url}artifact/CHANGESET.txt", returnStdout: true)
+                env.changeset_log_url = sh( script: "echo ${env.changeset_log_url}artifact/CHANGESET.md", returnStdout: true)
                 env.preupgrade_images_info = "${last_successful_server_image},${last_successful_data_image},${last_successful_control_image}" 
                 env.cortx_script_branch = "${CORTX_SCRIPTS_BRANCH}"
                 env.hosts = sh( script: '''

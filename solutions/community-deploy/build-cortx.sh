@@ -21,12 +21,13 @@
 REPO_ROOT=$PWD/../..
 source $REPO_ROOT/solutions/kubernetes/functions.sh
 BRANCH="main"
+LOCAL_MOUNT="/mnt"
 
 function usage() {
     cat << HEREDOC
 Usage : $0 [--branch]
 where,
-    --branch - provide spesific branch.
+    --branch - provide specific branch or tag.
 HEREDOC
 }
 
@@ -81,28 +82,24 @@ docker rmi --force $(docker images --filter=reference='*/*/cortx-build:*' --filt
 docker pull ghcr.io/seagate/cortx-build:rockylinux-8.4
 
 # Clone the CORTX repository
-pushd /mnt && git clone https://github.com/Seagate/cortx --recursive --depth=1
+if [ -d $LOCAL_MOUNT/cortx ]; then rm -rf $LOCAL_MOUNT/cortx; fi
+pushd $LOCAL_MOUNT && git clone https://github.com/Seagate/cortx --recursive --depth=1
 
-# Checkout main branch for generating CORTX packages
-docker run --rm -v /mnt/cortx:/cortx-workspace ghcr.io/seagate/cortx-build:rockylinux-8.4 make checkout BRANCH=$BRANCH
+# Checkout branch for generating CORTX packages
+docker run --rm -v $LOCAL_MOUNT/cortx:/cortx-workspace ghcr.io/seagate/cortx-build:rockylinux-8.4 make checkout BRANCH=$BRANCH
 
 # Validate CORTX component clone status
-pushd /mnt/cortx/ 
+pushd $LOCAL_MOUNT/cortx/ 
 for component in cortx-motr cortx-hare cortx-rgw-integration cortx-manager cortx-utils cortx-ha cortx-rgw
 do 
-echo -e "\n==[ Checking git branch for $component ]=="
-pushd $component
-git status | egrep -iw 'Head|modified|Untracked'
-    if [ $? -eq 0 ]; then
-       add_common_separator "Git status pending"
-        exit 1
-    else    
-        popd
-    fi    
+    echo -e "\n==[ Checking git branch/tag for $component ]=="
+    pushd $component
+        git status
+    popd    
 done && pushd -
 
 # Build the CORTX packages
-docker run --rm -v /var/artifacts:/var/artifacts -v /mnt/cortx:/cortx-workspace ghcr.io/seagate/cortx-build:rockylinux-8.4 make clean cortx-all-rockylinux-image
+docker run --rm -v /var/artifacts:/var/artifacts -v $LOCAL_MOUNT/cortx:/cortx-workspace ghcr.io/seagate/cortx-build:rockylinux-8.4 make clean cortx-all-rockylinux-image
 
 function packet_validation() {
         ls -l /var/artifacts/0 | egrep -iw '3rd_party|python_deps'
@@ -116,6 +113,7 @@ function packet_validation() {
 packet_validation
 
 # Nginx container creation with required configuration
+docker container rm -f $(docker container ls -a --filter name=^/release-packages-server$ -q) || true
 docker run --name release-packages-server -v /var/artifacts/0/:/usr/share/nginx/html:ro -d -p 80:80 nginx
 
 function nginx_validation() {
@@ -130,7 +128,8 @@ function nginx_validation() {
 }
 nginx_validation
 # clone cortx-re repository & run build.sh
-git clone https://github.com/Seagate/cortx-re && pushd cortx-re/docker/cortx-deploy/
+if [ -d $LOCAL_MOUNT/cortx-re ]; then rm -rf $LOCAL_MOUNT/cortx-re; fi
+git clone https://github.com/Seagate/cortx-re -b $BRANCH && pushd cortx-re/docker/cortx-deploy/
 ./build.sh -b http://$IP -o rockylinux-8.4 -s all -e opensource-ci
 
 # Show recently generated cortx-all images

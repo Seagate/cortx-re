@@ -49,8 +49,8 @@ function fetch_build_url() {
 function create_endpoint_url() {
     echo SOLUTION_FILE=$SOLUTION_FILE
     ACCESS_KEY=$(yq e '.solution.common.s3.default_iam_users.auth_admin' $SOLUTION_FILE)
-    SECRET_KEY=$(yq e '.solution.secrets.content.s3_auth_admin_secret' $SOLUTION_FILE)
-    HTTP_PORT=$(kubectl get svc cortx-io-svc-0 -o=jsonpath='{.spec.ports[?(@.port==80)].nodePort}')
+    SECRET_KEY=$(kubectl get secrets/cortx-secret  --template={{.data.s3_auth_admin_secret}} | base64 -d)
+    HTTP_PORT=$(kubectl get svc cortx-server-0 -o=jsonpath='{.spec.ports[?(@.port==80)].nodePort}')
     if [ $(systemd-detect-virt -v) == "none" ];then
         CLUSTER_TYPE=HW 
 	    IP_ADDRESS=$(ifconfig eno5 | grep inet -w | awk '{print $2}')
@@ -83,13 +83,6 @@ function clone_segate_tools_repo() {
 
 function update_setup_confiuration() {
 
-    CONFIG_FILE=$SCRIPT_LOCATION/performance/PerfPro/roles/benchmark/vars/config.yml
-    S3_CONFIG_FILE=$SCRIPT_LOCATION/performance/PerfPro/roles/benchmark/vars/s3config.yml 
-    sed -i -e '/CLUSTER_PASS/s/:/: '$PRIMARY_CRED'/g' -e '/END_POINTS/s/:/: '${ENDPOINT_URL//\//\\/}'/g' $CONFIG_FILE
-    sed -i -e '/node_number_srvnode-*/d' -e '/#client_number/d' -e '/NODES/{n;s/.*/  - 1: '$PRIMARY_NODE'/}' -e '/CLIENTS/{n;s/.*/  - 1: '$CLIENT_NODE'/}' $CONFIG_FILE
-    sed -i -e '/BUILD_URL/s/\:/: '${BUILD_URL//\//\\/}'/g' $CONFIG_FILE
-    #-e 's/https\:\/\/s3.seagate.com/'${ENDPOINT_URL//\//\\/}'/g' $CONFIG_FILE
-
     if [ $CLUSTER_TYPE == VM ]; then
 	sed -i -e 's/00/0/g' -e 's/450/45/g'  /root/performance-scripts/performance/PerfPro/roles/benchmark/vars/s3config.yml    
     fi
@@ -99,7 +92,7 @@ function execute_perfpro() {
     yum install ansible -y
     pushd $SCRIPT_LOCATION/performance/PerfPro
         add_primary_separator "Executing Ansible CLI"
-        ANSIBLE_LOG_PATH=$ANIBLE_LOG_FILE ansible-playbook perfpro.yml -i inventories/hosts --extra-vars '{ "EXECUTION_TYPE" : "sanity" }' -v
+        ANSIBLE_LOG_PATH=$ANIBLE_LOG_FILE ansible-playbook perfpro.yml -i inventories/hosts --extra-vars "{ \"EXECUTION_TYPE\" : \"sanity\" ,\"REPOSITORY\":[{ \"category\": \"motr\", \"repo\": \"cortx-motr\", \"branch\": \"k8s\", \"commit\": \"a1234b\" }, { \"category\": \"rgw\", \"repo\": \"cortx-rgw\", \"branch\": \"dev\", \"commit\": \"c5678d\" }, { \"category\": \"hare\", \"repo\": \"cortx-hare\", \"branch\": \"main\", \"commit\": \"e9876f\" }],\"PR_ID\" : \"cortx-rgw/1234\" , \"USER\":\"Username\",\"GID\" : \"JENKINS\", \"NODES\":{\"1\": \"$PRIMARY_NODE\"} , \"CLIENTS\":{\"1\": \"$CLIENT_NODE\"} , \"main\":{\"db_server\": \"$DB_SERVER\", \"db_port\": \"$DB_PORT\", \"db_name\": \"$DB_NAME\", \"db_user\": \"$DB_USER\", \"db_passwd\": \"$DB_PASSWD\", \"$DB_DATABASE\": \"performance_database\", \"db_url\": \"mongodb://$DB_USER:$DB_PASSWD@$DB_SERVER:$DB_PORT/\"}, \"config\":{\"CLUSTER_PASS\": \"$PRIMARY_CRED\", \"END_POINTS\": \"$ENDPOINT_URL\", \"CUSTOM\" : \"VM\" }}" -v
     popd
 }
 
@@ -129,6 +122,7 @@ function execute-perf-sanity() {
     if [ -z "$BUILD_URL" ]; then echo "ERROR:BUILD_URL not provided.Exiting..."; exit 1; fi
     
     generate_rsa_key
+    sed -i '/'$PRIMARY_NODE'/d' /root/.ssh/known_hosts
     passwordless_ssh "$PRIMARY_NODE" "root" "$PRIMARY_CRED"
     passwordless_ssh "$CLIENT_NODE" "root" "$CLIENT_CRED"
     clone_segate_tools_repo
@@ -138,14 +132,17 @@ function execute-perf-sanity() {
 }
 
 function generate_perf_stats() {
-   add_secondary_separator "CORTX Image details" | tee $PERF_STATS_FILE
+   add_secondary_separator "CORTX Cluster details" | tee -a $PERF_STATS_FILE
+   echo "CLUSTER INFRASTRUCTURE: $CLUSTER_TYPE" | tee -a $PERF_STATS_FILE
+   ssh $PRIMARY_NODE "kubectl get nodes --no-headers | awk '{print $1}'" | tee -a $PERF_STATS_FILE
+   add_secondary_separator "CORTX Image details" | tee -a $PERF_STATS_FILE
    ssh $PRIMARY_NODE "kubectl get pods -o jsonpath="{.items[*].spec.containers[*].image}" | tr ' ' '\n' | sort | uniq" | tee -a $PERF_STATS_FILE
    #Fetch info from Ansible logs
+   add_secondary_separator "Performance Test Runtimes" | tee -a $PERF_STATS_FILE
+   grep -i '\[S3Bench\] Running' $ANIBLE_LOG_FILE | grep -vi TASK | sed -e 's/-//g' -e 's/^ //g' -e 's/*//g' | cut -d':' -f4 | sed 's/^ //g' | sort -n | tee -a $PERF_STATS_FILE
    add_secondary_separator "Performance Stats" | tee -a $PERF_STATS_FILE
-   grep -i '\[S3Bench\] Running' $ANIBLE_LOG_FILE | sed -e 's/-//g' -e 's/^ //g' | cut -d':' -f4 | sed 's/^ //g' | tee -a $PERF_STATS_FILE
+   /usr/bin/python3  /root/PerfProBenchmark/s3bench/s3bench_summary.py /root/PerfProBenchmark/sanity_results/ | tee -a $PERF_STATS_FILE
 }
-
-
 
 case $ACTION in
     --setup-client)

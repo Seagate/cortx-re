@@ -30,7 +30,7 @@ DEPLOYMENT_METHOD="standard"
 
 function usage() {
     cat << HEREDOC
-Usage : $0 [--install-pereq, --install-ceph, --deploy-prereq, --deploy-mon, --deploy-mgr, --deploy-osd, --deploy-mds, --deploy-fs, --deploy-rgw, --prereq-ceph-docker, --deploy-ceph-docker, --io-operation]
+Usage : $0 [--install-pereq, --install-ceph, --deploy-prereq, --deploy-mon, --deploy-mgr, --deploy-osd, --deploy-mds, --deploy-fs, --deploy-rgw, --prereq-ceph-docker, --deploy-ceph-docker, --io-operation, --destroy-cluster-vm, --destroy-cluster-docker]
 where,
     --install-prereq - Install Ceph Dependencies before installing ceph packages.
     --install-ceph - Install Ceph Packages.
@@ -44,6 +44,8 @@ where,
     --prereq-ceph-docker - Setup prerequisites for Ceph docker deployment.
     --deploy-ceph-docker - Deploy Ceph in docker.
     --io-operation - Perform IO operation.
+    --destroy-cluster-vm - Destroy Ceph cluster deployed on VMs.
+    --destroy-cluster-docker - Destroy Ceph cluster deployed on Docker.
 HEREDOC
 }
 
@@ -143,6 +145,27 @@ function io_operation() {
     ssh_primary_node "export CEPH_DEPLOYMENT=$CEPH_DEPLOYMENT && export DEPLOYMENT_METHOD=$DEPLOYMENT_METHOD && export CEPH_DOCKER_DEPLOYMENT=$CEPH_DOCKER_DEPLOYMENT && /var/tmp/ceph-deploy-functions.sh --io-operation"
 }
 
+function destroy_cluster_vm() {
+    validation
+    generate_rsa_key
+    nodes_setup
+
+    add_primary_separator "\tDestroy Ceph Cluster"
+    add_secondary_separator "Copy scripts"
+    scp_all_nodes functions.sh ceph-deploy-functions.sh
+    ssh_all_nodes "/var/tmp/ceph-deploy-functions.sh --destroy-cluster-vm"
+}
+
+function destroy_cluster_docker() {
+    validation
+    generate_rsa_key
+    nodes_setup
+
+    add_primary_separator "\tDestroy Ceph Cluster"
+    add_secondary_separator "Copy scripts"
+    scp_all_nodes functions.sh ceph-deploy-functions.sh
+    ssh_all_nodes "/var/tmp/ceph-deploy-functions.sh --destroy-cluster-docker"
+}
 case $ACTION in
     --install-prereq)
         install_prereq
@@ -179,6 +202,12 @@ case $ACTION in
     ;;
     --io-operation)
         io_operation
+    ;;
+    --destroy-cluster-vm)
+        destroy_cluster_vm
+    ;;
+    --destroy-cluster-docker)
+        destroy_cluster_docker
     ;;
     *)
         echo "ERROR : Please provide a valid option"

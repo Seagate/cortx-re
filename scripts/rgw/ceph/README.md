@@ -1,7 +1,8 @@
 # Updating the spec template file
 
 ## Download the ceph.spec.template in raw format
-wget -O $release_dir/SPECS/ceph.spec https://raw.githubusercontent.com/Seagate/cortx-re/main/scripts/rgw/ceph/ceph.spec.template
+
+`wget -O $release_dir/SPECS/ceph.spec https://raw.githubusercontent.com/Seagate/cortx-re/main/scripts/rgw/ceph/ceph.spec.template`
 
 ## Change to cortx-rgw repo and update the downloaded spec file
 

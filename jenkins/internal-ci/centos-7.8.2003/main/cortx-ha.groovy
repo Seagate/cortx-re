@@ -136,7 +136,7 @@ EOF
                 script {
                     def releaseBuild = build job: 'Main Release', propagate: true
                      env.release_build = releaseBuild.number
-                    env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/" +releaseBuild.number
+                    env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/" + releaseBuild.number
                 }
             }
         }
@@ -158,7 +158,7 @@ EOF
                                         "* Component Build  :  ${BUILD_NUMBER} \n" +
                                         "* Release Build    :  ${release_build}  \n\n  " +
                                 "h3. Artifact Location  :  \n" +
-                                    "*  " +"${release_build_location} " +"\n" +
+                                    "*  " + "${release_build_location} " + "\n" +
                                     "{panel}",
                             failOnError: false,
                             auditLog: false
@@ -214,7 +214,7 @@ EOF
 def getAuthor(issue) {
 
     def changeLogSets = currentBuild.rawBuild.changeSets
-    def author= ""
+    def author = ""
     def response = ""
     // Grab build information
     for (int i = 0; i < changeLogSets.size(); i++) {
@@ -226,7 +226,7 @@ def getAuthor(issue) {
             }
         }
     }
-    response = "* Author: " +author+ "\n"
+    response = "* Author: " + author + "\n"
     return response
 }
 

@@ -52,6 +52,8 @@ pipeline {
 
         string(name: 'CORTX_SCRIPTS_REPO', defaultValue: 'https://github.com/Seagate/cortx-k8s', description: 'Repository for cortx-k8s scripts (Services Team)', trim: true)
         string(name: 'CORTX_SCRIPTS_BRANCH', defaultValue: 'cortx-test', description: 'cortx-k8s scripts (Provisioner Team)', trim: true)
+        string(name: 'CORTX_RE_BRANCH', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repository for cortx-re scripts (Services Team)', trim: true)
+        string(name: 'CORTX_RE_REPO', defaultValue: 'main', description: 'Repository for cortx-re scripts (Services Team)', trim: true)
         booleanParam(name: 'SETUP_K8s_CLUSTER', defaultValue: false, description: 'Selecting this option will setup K8s Cluster before running Deployment.')
         choice (
             choices: ['yes' , 'no'],
@@ -196,7 +198,20 @@ pipeline {
                 }
             }
         }
-
+        stage('Setup Upgrade') {
+            steps {
+                script {
+                    catchError(stageResult: 'FAILURE') {
+                        build job: '/Provisioner/cortx-rgw-cluster-upgrade_prov', wait: true,
+                        parameters: [
+                            string(name: 'hosts', value: "${NODE_HOST_LIST}"),
+                            string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
+                            string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}")
+                        ]
+                    }
+                }
+            }
+        }
     }
 
     post {

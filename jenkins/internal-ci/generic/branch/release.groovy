@@ -223,9 +223,9 @@ pipeline {
                     pushd scripts/release_support
                         sh +x changelog.sh ${currentBuild.previousBuild.getNumber()} ${currentBuild.number} ${ARTIFACT_LOCATION}
                     popd
-                    cp /root/git_build_checkin_stats/clone/git-build-checkin-report.txt CHANGESET.txt
-                    cp CHANGESET.txt $integration_dir/$release_tag/dev
-                    cp CHANGESET.txt $integration_dir/$release_tag/prod
+                    cp /root/git_build_checkin_stats/clone/git-build-checkin-report.md CHANGESET.md
+                    cp CHANGESET.md $integration_dir/$release_tag/dev
+                    cp CHANGESET.md $integration_dir/$release_tag/prod
                 """
             }
         }
@@ -298,7 +298,7 @@ pipeline {
                 stage ("1 Node Deployment") {
                     steps {
                         script { build_stage = env.STAGE_NAME }
-                        build job: "K8s-1N-deployment", wait: true,
+                        build job: "K8s-1N-deployment", wait: false,
                         parameters: [
                         string(name: 'CORTX_RE_BRANCH', value: "main"),
                         string(name: 'CORTX_RE_REPO', value: "https://github.com/Seagate/cortx-re"),
@@ -312,7 +312,7 @@ pipeline {
                 stage ("3 Node Deployment") {
                     steps {
                         script { build_stage = env.STAGE_NAME }
-                        build job: "K8s-3N-deployment", wait: true,
+                        build job: "K8s-3N-deployment", wait: false,
                         parameters: [
                         string(name: 'CORTX_RE_BRANCH', value: "main"),
                         string(name: 'CORTX_RE_REPO', value: "https://github.com/Seagate/cortx-re"),
@@ -368,10 +368,10 @@ pipeline {
                         attachLog: true,
                         to: toEmail,
                         recipientProviders: recipientProvidersClass,
-                        attachmentsPattern: 'CHANGESET.txt'
+                        attachmentsPattern: 'CHANGESET.md'
                     )
 
-                archiveArtifacts artifacts: "README.txt, RELEASE.INFO, CHANGESET.txt", onlyIfSuccessful: false, allowEmptyArchive: true
+                archiveArtifacts artifacts: "README.txt, RELEASE.INFO, CHANGESET.md", onlyIfSuccessful: false, allowEmptyArchive: true
             }
         }
     }
