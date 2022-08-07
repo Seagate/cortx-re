@@ -63,7 +63,7 @@ terraform validate && terraform apply -var-file user.tfvars --auto-approve
   - Generating the `root` user password which is required as a part of CORTX deployment
   - `setup.sh` will reboot all the nodes once executed
   - Copy the pem file from primary node to the worker nodes using private ip address
-- Execute the following commands to find the Public and Private ip addresses by setting as environment variable.
+- Execute the following commands to find the Public and Private ip addresses from local host by setting as environment variable.
 
 **Public ip address:**
 ```
@@ -96,6 +96,10 @@ time bash -x ./build-cortx.sh
 - Execute the following command to copy the cortx build images from primary node to worker nodes using private ip address
 ```
 for instance in {1..2};do rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' /tmp/*.tar  centos@"<AWS instance private-ip-workernodes>":/tmp; done
+```
+**Note:** You can find the private ip address as referenced above from the local host or execute following command from EC2 instances,
+```
+curl http://169.254.169.254/latest/meta-data/local-ipv4
 ```
  
 ### Execute Instructions from Worker nodes
