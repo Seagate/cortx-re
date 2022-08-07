@@ -90,7 +90,8 @@ for ip in $PUBLIC_IP;do rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyC
 **Note:** Become the **root** user after logged in to the primary node by running `sudo su` command.
 ```
 ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-primarynode>" 'git clone https://github.com/Seagate/cortx-re'
-cd $PWD/cortx-re/solutions/community-deploy && time ./build-cortx.sh
+sudo su && cd $PWD/cortx-re/solutions/community-deploy
+time ./build-cortx.sh
 ```
 - Save and compress the cortx build images
 
