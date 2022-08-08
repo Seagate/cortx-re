@@ -26,8 +26,12 @@ This section enlists the commands to deploy the CORTX Stack on K8s cluster.
 ```
 ls /dev/sd*
 ```
+
 **For example:**
+```
+ls /dev/sd*
 /dev/sda  /dev/sda1  /dev/sda2  /dev/sdb  /dev/sdc  /dev/sdd  /dev/sde  /dev/sdf  /dev/sdg  /dev/sdh  /dev/sdi
+```
 
 **Note:**
 Follow [CORTX Deployment on AWS](https://github.com/Seagate/cortx-re/blob/main/solutions/community-deploy/cloud/AWS/README.md) to build and deploy CORTX on AWS instances.
