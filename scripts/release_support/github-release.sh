@@ -37,11 +37,13 @@ SERVICES_VERSION="[$SERVICES_VERSION](https://github.com/Seagate/cortx-k8s/relea
 MESSAGE="$CORTX_IMAGE_TITLE\n$IMAGES_INFO\n\n$SERVICES_VERSION_TITLE$SERVICES_VERSION\n\n$BUILD_INFO\n$DEPLOY_INFO\n\n$CHANGESET_TITLE\n\n${CHANGESET//$'\n'/\\n}"
 
 API_JSON=$(printf '{"tag_name":"%s","name":"%s","body":"%s","prerelease":%s}' "$TAG" "$TAG" "$MESSAGE" "$PRE" )
+echo $API_JSON
+jq -n $API_JSON | gh api /repos/$RELEASE_REPO_OWNER/$RELEASE_REPO_NAME/releases --input -
 # if curl --data "$API_JSON" -sif -H "Accept: application/vnd.github+json" -H "Authorization: token $GITHUB_ACCESS_TOKEN" "https://api.github.com/repos/$RELEASE_REPO_OWNER/$RELEASE_REPO_NAME/releases" > /tmp/api_response.html
-if jq -n $API_JSON | gh api /repos/$RELEASE_REPO_OWNER/$RELEASE_REPO_NAME/releases --input - > /tmp/api_response.html
-then
-    echo "https://github.com/$RELEASE_REPO_OWNER/$RELEASE_REPO_NAME/releases/tag/$TAG"
-else
-    echo "ERROR: curl command has failed. Please check API response for more details"
-    exit 1
-fi      
+# if jq -n $API_JSON | gh api /repos/$RELEASE_REPO_OWNER/$RELEASE_REPO_NAME/releases --input - > /tmp/api_response.html
+# then
+#     echo "https://github.com/$RELEASE_REPO_OWNER/$RELEASE_REPO_NAME/releases/tag/$TAG"
+# else
+#     echo "ERROR: curl command has failed. Please check API response for more details"
+#     exit 1
+# fi      
