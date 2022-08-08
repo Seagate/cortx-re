@@ -38,6 +38,6 @@ if curl --data "$API_JSON" -sif -H "Accept: application/vnd.github+json" -H "Aut
 then
     echo "https://github.com/$RELEASE_REPO_OWNER/$RELEASE_REPO_NAME/releases/tag/$TAG"
 else
-    echo "GitHub Release: curl command has failed"
+    echo "ERROR: curl command has failed. Please check API response for more details"
     exit 1
 fi      
