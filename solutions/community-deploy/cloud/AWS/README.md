@@ -57,11 +57,6 @@ tag_name            = "cortx-multinode"
 ```
 terraform validate && terraform apply -var-file user.tfvars --auto-approve
 ```
-- Execute the following command which will perform on all the nodes in the cluster,
-  - Setup network and storage devices for CORTX.
-  - Generating the `root` user password which is required as a part of CORTX deployment
-  - `setup.sh` will reboot all the nodes once executed
-  - Copy the pem file from primary node to the worker nodes using private ip address
 - Execute the following commands to find the Public and Private ip addresses from local host by setting as environment variable.
 
 **Public ip address:**
@@ -72,11 +67,15 @@ export PUBLIC_IP=`terraform show -json terraform.tfstate | jq .values.outputs.aw
 ```
 export PRIVATE_IP=`terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_ip_addr.value 2>&1 | tee ip_private.txt  | tr -d '",[]' | sed '/^$/d'`
 ```
-- Execute the following commands on all the nodes to generate the root user password and run `/home/centos/setup.sh`
+- Execute the following commands on all the nodes which will perform the following actions:
+  - Setup network and storage devices for CORTX.
+  - Generating the `root` user password which is required as a part of CORTX deployment
+  - `setup.sh` will reboot all the nodes once executed
+  - Copy the pem file from primary node to the worker nodes using private ip address
+
 ```
 for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$ip 'echo "Enter new password for root user" && sudo passwd root && sudo bash /home/centos/setup.sh'; done
 ```
-- Copy the pem file to all the nodes using public ip address
 ```
 for ip in $PUBLIC_IP;do rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' cortx.pem centos@$ip:/tmp; done
 ```
