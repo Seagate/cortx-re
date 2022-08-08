@@ -40,7 +40,7 @@ sudo su && git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/sol
 ```
 **Note:**
 You can deploy CORTX on AWS instance also. Please follow [CORTX Deployment on AWS](https://github.com/Seagate/cortx-re/blob/main/solutions/community-deploy/cloud/AWS/README.md)
-- Create the `hosts` file in the current directory to add entries for all the nodes with same format in hosts file. Node from first entry will be configured as Primary node. Example `hosts` file for multi-node setup is as below,
+- Create the `hosts` file in the current directory to add entries for all the nodes with same format in hosts file for the multi-node cluster. Node from first entry will be configured as Primary node. Example `hosts` file for multi-node setup is as below,
 ```
 hostname="<AWS instance private ip of primarynode>",user=root,pass=<root-password>
 hostname="<AWS instance private ip of workernode1>",user=root,pass=<root-password>
@@ -88,3 +88,4 @@ export CORTX_SCRIPTS_BRANCH=main && export CORTX_SCRIPTS_REPO=Seagate/cortx-k8s 
 Tested by:
 
 * August 7, 2022: Mukul Malhotra (mukul.malhotra@seagate.com) - AWS, CentOS 7.9 Linux
+* May 06, 2022: Rahul Shenoy (rahul.shenoy@seagate.com) - Windows , VMware Workstation 16 , CentOS 7.9 Linux
