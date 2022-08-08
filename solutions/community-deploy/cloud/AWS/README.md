@@ -5,10 +5,6 @@ This document discusses the procedure to compile the CORTX Stack and deploy on A
 **Prerequisites:**
 
 - Ensure that you have an AWS account with Secret Key and Access Key.
-- Clone the `cortx-re` repository and then change the directory to `cortx-re/solutions/community-deploy/cloud/AWS`.
-```
-git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/community-deploy/cloud/AWS
-```
 - Install the required tools on the local host
 ```
 ./tool_setup.sh
@@ -20,6 +16,10 @@ aws sts get-caller-identity
 ```
 
 ## Procedure
+- Clone the `cortx-re` repository and then change the directory to `cortx-re/solutions/community-deploy/cloud/AWS`
+```
+git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/community-deploy/cloud/AWS
+```
 - Modify `user.tfvars` file on local host with your AWS details.
 ```
 vi user.tfvars
