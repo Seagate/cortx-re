@@ -120,7 +120,7 @@ resource "local_sensitive_file" "pem_file" {
 
 resource "aws_instance" "cortx_deploy" {
   # https://wiki.centos.org/Cloud/AWS
-  count 		             = "${var.instance_count}"		
+  count                  = "${var.instance_count}"		
   ami                    = data.aws_ami.centos.id
   instance_type          = "t3a.2xlarge"
   availability_zone      = data.aws_availability_zones.available.names[0]
