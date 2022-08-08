@@ -77,7 +77,7 @@ pipeline {
                 emailext ( 
                     body: '''${SCRIPT, template="github-release-email.template"}''',
                     mimeType: 'text/html',
-                    subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
+                    subject: "${MESSAGE}",
                     attachLog: true,
                     to: toEmail,
                     recipientProviders: recipientProvidersClass
