@@ -40,6 +40,48 @@ pipeline {
     }
     post {
         always {
+
+            script {
+
+                // Jenkins Summary
+                if ( currentBuild.currentResult == "SUCCESS" ) {
+                    MESSAGE = "Success: GitHub Release ${GIT_TAG}"
+                    ICON = "accept.gif"
+                    STATUS = "SUCCESS"
+                } else if ( currentBuild.currentResult == "FAILURE" ) {
+                    manager.buildFailure()
+                    MESSAGE = "Failure: GitHub Release ${GIT_TAG}"
+                    ICON = "error.gif"
+                    STATUS = "FAILURE"
+ 
+                } else {
+                    manager.buildUnstable()
+                    MESSAGE = "GitHub release creation is Unstable"
+                    ICON = "warning.gif"
+                    STATUS = "UNSTABLE"
+                }
+
+                manager.createSummary("${ICON}").appendText("<h3>GitHub Release ${currentBuild.currentResult} </h3><p>Please check <a href=\"${BUILD_URL}/console\">GitHub release logs</a> for more info", false, false, false, "red")
+
+                // Email Notification
+                env.build_stage = "${build_stage}"
+
+                def toEmail = "gaurav.chaudhari@seagate.com"
+                def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
+                if ( manager.build.result.toString() == "FAILURE" ) {
+                    toEmail = "gaurav.chaudhari@seagate.com"
+                    recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
+                }
+               
+                emailext ( 
+                    body: '''${SCRIPT, template="github-release-email.template"}''',
+                    mimeType: 'text/html',
+                    subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
+                    attachLog: true,
+                    to: toEmail,
+                    recipientProviders: recipientProvidersClass
+                )
+            }
             cleanWs()
         }
     }            

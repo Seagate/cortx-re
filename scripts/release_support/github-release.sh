@@ -19,7 +19,6 @@ do
                 c) CHANGESET_URL="$OPTARG";;
         esac
 done
-echo $TAG $SERVICES_VERSION $CHANGESET_URL
 if [[ -z "$TAG" || -z "$SERVICES_VERSION" || -z "$CHANGESET_URL" ]]; then
         echo "Usage: git-release [-t <tag>] [-v <services-version>] [-c <changeset file url>]"
         exit 1
@@ -33,8 +32,11 @@ CORTX_CONTROL_IMAGE="[$REGISTRY/cortx-control:$TAG]($REGISTRY/cortx-control:$TAG
 IMAGES_INFO="| Image      | Location |\n|    :----:   |    :----:   |\n| cortx-server      | $CORTX_SERVER_IMAGE       |\n| cortx-data      | $CORTX_DATA_IMAGE      |\n| cortx-control      | $CORTX_CONTROL_IMAGE       |"
 SERVICES_VERSION="[$SERVICES_VERSION](https://github.com/Seagate/cortx-k8s/releases/tag/$SERVICES_VERSION)"
 MESSAGE="$CORTX_IMAGE_TITLE\n$IMAGES_INFO\n\n$SERVICES_VERSION_TITLE$SERVICES_VERSION\n\n$BUILD_INFO\n$DEPLOY_INFO\n\n$CHANGESET_TITLE\n\n${CHANGESET//$'\n'/\\n}"
-echo $MESSAGE
 
 API_JSON=$(printf '{"tag_name": "%s","name": "%s","body": "%s","prerelease": %s}' "$TAG" "$TAG" "$MESSAGE" "$PRE" )
-API_RESPONSE_STATUS=$(curl --data "$API_JSON" -s -i -H "Accept: application/vnd.github+json" -H "Authorization: token $GITHUB_ACCESS_TOKEN" https://api.github.com/repos/$RELEASE_REPO_OWNER/$RELEASE_REPO_NAME/releases)
-echo "$API_RESPONSE_STATUS"
+if curl --data "$API_JSON" -s -i -H "Accept: application/vnd.github+json" -H "Authorization: token $GITHUB_ACCESS_TOKEN" https://api.github.com/repos/$RELEASE_REPO_OWNER/$RELEASE_REPO_NAME/releases) > API_RESPONSE_STATUS
+then
+    echo "Success"
+else
+    echo "Fail"
+fi      
