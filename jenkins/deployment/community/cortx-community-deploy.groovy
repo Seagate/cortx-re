@@ -28,6 +28,7 @@ pipeline {
     }
 
     stages {
+
         stage('Checkout Script') {
             steps { 
                 cleanWs()            
@@ -59,7 +60,8 @@ pipeline {
                 popd
                 '''
             }
-        }            
+        }
+
         stage ('Create EC2 instace') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -70,6 +72,7 @@ pipeline {
             '''
             }
         }
+
         stage ('Network and storage configuration') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -82,9 +85,10 @@ pipeline {
                     sleep 240
                 popd
                 '''
+                }
             }
         }
-    }
+
         stage ('Execute cortx build script') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -99,6 +103,7 @@ pipeline {
             '''
             }
         }
+
         stage ('EC2 connection prerequisites') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -112,6 +117,7 @@ pipeline {
             '''
             }
         }
+
         stage ('Setup K8s cluster on EC2') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -121,9 +127,10 @@ pipeline {
                     IP=$(cat ip.txt | tr -d '""')                
                     ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${IP} "pushd /home/centos/cortx-re/solutions/kubernetes && sudo ./cluster-setup.sh true"
                     popd
-            '''
+                '''
             }
         }
+
         stage ('Deploy 1N cortx cluster') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -131,16 +138,19 @@ pipeline {
                 pushd solutions/community-deploy/cloud/AWS
                     AWS_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.cortx_deploy_ip_addr.value 2>&1 | tee ip.txt)
                     IP=$(cat ip.txt | tr -d '""')
-                    export SOLUTION_CONFIG_TYPE="automated"
-                    export CORTX_SERVER_IMAGE="$HOSTNAME:8080/seagate/cortx-rgw:2.0.0-0"
-                    export CORTX_DATA_IMAGE="$HOSTNAME:8080/seagate/cortx-data:2.0.0-0"
-                    export CORTX_CONTROL_IMAGE="$HOSTNAME:8080/seagate/cortx-control:2.0.0-0"
-                    export COMMUNITY_USE=${COMMUNITY_USE}    
-                    ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${IP} 'pushd /home/centos/cortx-re/solutions/kubernetes && export SOLUTION_CONFIG_TYPE='"${SOLUTION_CONFIG_TYPE}"' && export COMMUNITY_USE='"${COMMUNITY_USE}"' && export CORTX_SERVER_IMAGE='"${CORTX_SERVER_IMAGE}"' && export CORTX_DATA_IMAGE='"${CORTX_DATA_IMAGE}"' && export CORTX_CONTROL_IMAGE='"${CORTX_CONTROL_IMAGE}"' && sudo env SOLUTION_CONFIG_TYPE=${SOLUTION_CONFIG_TYPE} env CORTX_SERVER_IMAGE=${CORTX_SERVER_IMAGE} env CORTX_CONTROL_IMAGE=${CORTX_CONTROL_IMAGE} env CORTX_DATA_IMAGE=${CORTX_DATA_IMAGE} env COMMUNITY_USE=${COMMUNITY_USE} ./cortx-deploy.sh --cortx-cluster'
+                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${IP} 'sudo sed -i 's/cortx-docker.colo.seagate.com/'$HOSTNAME':8080/g' /etc/docker/daemon.json && sudo systemctl restart docker' 
+                    ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${IP} 'pushd /home/centos/cortx-re/solutions/kubernetes && 
+                    export SOLUTION_CONFIG_TYPE='automated' && 
+                    export COMMUNITY_USE='yes' && 
+                    export CORTX_SERVER_IMAGE=$HOSTNAME:8080/seagate/cortx-rgw:2.0.0-0 && 
+                    export CORTX_DATA_IMAGE=$HOSTNAME:8080/seagate/cortx-data:2.0.0-0 && 
+                    export CORTX_CONTROL_IMAGE=$HOSTNAME:8080/seagate/cortx-control:2.0.0-0 && 
+                    sudo env SOLUTION_CONFIG_TYPE=${SOLUTION_CONFIG_TYPE} env CORTX_SERVER_IMAGE=${CORTX_SERVER_IMAGE} env CORTX_CONTROL_IMAGE=${CORTX_CONTROL_IMAGE} env CORTX_DATA_IMAGE=${CORTX_DATA_IMAGE} env COMMUNITY_USE=${COMMUNITY_USE} ./cortx-deploy.sh --cortx-cluster'
                     popd
             '''
             }
         }
+
         stage ('IO Sanity') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -159,11 +169,11 @@ pipeline {
         always {
             retry(count: 3) {
             script { build_stage = env.STAGE_NAME }
-            sh label: 'destroying EC2 instance', script: '''
-            pushd solutions/community-deploy/cloud/AWS
-                terraform validate && terraform destroy -var-file user.tfvars --auto-approve
-            popd
-        '''
+                sh label: 'destroying EC2 instance', script: '''
+                pushd solutions/community-deploy/cloud/AWS
+                    terraform validate && terraform destroy -var-file user.tfvars --auto-approve
+                popd
+                '''
             }
            script {
 
