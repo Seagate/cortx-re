@@ -63,6 +63,13 @@ function setup_cluster() {
         # Join worker nodes.
         JOIN_WORKER="/var/tmp/cluster-functions.sh --join-worker-nodes $JOIN_COMMAND"
         pdsh -w ^/var/tmp/pdsh-hosts "$JOIN_WORKER"
+        
+        # Label worker nodes.
+        for worker_node in $WORKER_NODES
+            do
+                ssh_primary_node "kubectl label node $worker_node" node-role.kubernetes.io/worker=worker
+                check_status "Failed to label $worker_node"
+            done
     fi
 }
 
