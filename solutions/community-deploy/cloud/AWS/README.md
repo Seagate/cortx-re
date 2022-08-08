@@ -83,7 +83,7 @@ for ip in $PUBLIC_IP;do rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyC
 ```
 - AWS instances are ready for CORTX Build and deployment now. Connect to EC2 nodes over SSH and validate that all three network cards has IP address assigned.
 
-### CORTX Build
+### CORTX Build without Tag
 - We will use [cortx-build](https://github.com/Seagate/cortx/pkgs/container/cortx-build) docker image to compile entire CORTX stack.
 - Execute `build-cortx.sh` from primary node using public ip address which will generate CORTX container images from `main` of CORTX components
 
@@ -107,19 +107,24 @@ cd /tmp && rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' /
 ```
 for image in /tmp/*.tar; do cat $image | docker load; done
 ```
+
+### CORTX Build with Tag
 - Clone cortx-re repository from required branch/tag. If you do not provide `-b <branch/tag>`, then it will use default main branch    
-  :warning: Tag based build is supported after and including tag [2.0.0-879](https://github.com/Seagate/cortx-re/releases/tag/2.0.0-879) 
+  :warning: Tag based build is supported after including tag [2.0.0-879](https://github.com/Seagate/cortx-re/releases/tag/2.0.0-879)
+  
+**Note:** If you had cloned cortx-re repo earlier based on above instructions then remove it before following with `branch/tag`
 ```
-git clone https://github.com/Seagate/cortx-re -b <branch/tag>
+git clone https://github.com/Seagate/cortx-re -b <branch/tag> && cd $PWD/cortx-re/solutions/community-deploy
 ```
-- Switch to solutions/community-deploy directory 
+
+**For example:**
 ```
-cd $PWD/cortx-re/solutions/community-deploy
-```  
+git clone https://github.com/Seagate/cortx-re -b 2.0.0-879 && cd $PWD/cortx-re/solutions/community-deploy
+```
 - Generate CORTX container images from required branch/tag. If you do not provide `-b <branch/tag>`, then it will use default main branch  
   :warning: Tag based build is supported after and including tag [2.0.0-879](https://github.com/Seagate/cortx-re/releases/tag/2.0.0-879)
 ```
-time ./build-cortx.sh -b <branch/tag>
+sudo time bash -x ./build-cortx.sh -b <branch/tag>
 ```
 
 ### CORTX Deployment
