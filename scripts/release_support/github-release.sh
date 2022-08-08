@@ -24,8 +24,9 @@ if [[ -z "$TAG" || -z "$SERVICES_VERSION" || -z "$CHANGESET_URL" ]]; then
         exit 1
 fi
 
-# Install gh api package
+# Install required packages
 yum install -y https://github.com/cli/cli/releases/download/v2.14.3/gh_2.14.3_linux_amd64.rpm || { echo "ERROR: failed to install gh"; exit 1; } 
+yum install jq -y || { echo "ERROR: failed to install jq"; exit 1; } 
 # set release content
 CHANGESET=$( curl -ks $CHANGESET_URL | tail -n +2 )
 CORTX_SERVER_IMAGE="[$REGISTRY/cortx-rgw:$TAG]($REGISTRY/cortx-rgw:$TAG)"
@@ -35,9 +36,9 @@ IMAGES_INFO="| Image      | Location |\n|    :----:   |    :----:   |\n| cortx-s
 SERVICES_VERSION="[$SERVICES_VERSION](https://github.com/Seagate/cortx-k8s/releases/tag/$SERVICES_VERSION)"
 MESSAGE="$CORTX_IMAGE_TITLE\n$IMAGES_INFO\n\n$SERVICES_VERSION_TITLE$SERVICES_VERSION\n\n$BUILD_INFO\n$DEPLOY_INFO\n\n$CHANGESET_TITLE\n\n${CHANGESET//$'\n'/\\n}"
 
-# API_JSON=$(printf '{"tag_name": "%s","name": "%s","body": "%s","prerelease": %s}' "$TAG" "$TAG" "$MESSAGE" "$PRE" )
+API_JSON=$(printf '{"tag_name":"%s","name":"%s","body":"%s","prerelease":%s}' "$TAG" "$TAG" "$MESSAGE" "$PRE" )
 # if curl --data "$API_JSON" -sif -H "Accept: application/vnd.github+json" -H "Authorization: token $GITHUB_ACCESS_TOKEN" "https://api.github.com/repos/$RELEASE_REPO_OWNER/$RELEASE_REPO_NAME/releases" > /tmp/api_response.html
-if gh api --method POST -H "Accept: application/vnd.github+json" /repos/$RELEASE_REPO_OWNER/$RELEASE_REPO_NAME/releases -f tag_name="$TAG" -f name="$TAG" -f body="$MESSAGE" -F prerelease=true > /tmp/api_response.html
+if jq -n $API_JSON | gh api /repos/$RELEASE_REPO_OWNER/$RELEASE_REPO_NAME/releases --input - > /tmp/api_response.html
 then
     echo "https://github.com/$RELEASE_REPO_OWNER/$RELEASE_REPO_NAME/releases/tag/$TAG"
 else
