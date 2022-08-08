@@ -30,9 +30,9 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 script {
                     withCredentials([string(credentialsId: 'gaurav-github-token', variable: 'GITHUB_ACCESS_TOKEN')]) {
-                        sh """
-                            bash scripts/release_support/github-release.sh -t "$GIT_TAG" -v "$SERVICES_VERSION" -c "$CHANGESET_URL"
-                        """
+                        env.github_release_url = sh( script: """
+                            bash scripts/release_support/github-release.sh -t $GIT_TAG -v $SERVICES_VERSION -c $CHANGESET_URL
+                        """, returnStdout: true).trim()
                     }			
                 }
             }
