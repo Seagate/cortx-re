@@ -102,6 +102,9 @@ cd /tmp && rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' /
  
 ### Execute Instructions from Worker nodes
 - Login to worker nodes and load the cortx build images by executing the following command
+
+**Note:**
+Either use public ip addresss from local host or private ip address from AWS primary node to login to worker nodes
 ```
 for image in /tmp/*.tar; do cat $image | docker load; done
 ```
