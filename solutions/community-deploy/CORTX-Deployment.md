@@ -18,7 +18,7 @@ sed -i 's/SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config && setenforce
 ## Deploy the CORTX Stack on K8s cluster
 This section enlists the commands to deploy the CORTX Stack on K8s cluster. 
 
-### Make sure your nodes or VM(virtual machine) has following drives available on it:
+### Make sure your node or virtual machine has following drives available on it:
 ```
 ls /dev/sd*
 ```
