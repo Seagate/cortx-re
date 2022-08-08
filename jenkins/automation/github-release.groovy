@@ -81,6 +81,8 @@ pipeline {
                     to: toEmail,
                     recipientProviders: recipientProvidersClass
                 )
+
+                archiveArtifacts artifacts: "/tmp/api_response.html", onlyIfSuccessful: false, allowEmptyArchive: true
             }
             cleanWs()
         }
