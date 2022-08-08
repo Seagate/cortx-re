@@ -102,7 +102,7 @@ curl http://169.254.169.254/latest/meta-data/local-ipv4
 ```
  
 ### Execute Instructions from Worker nodes
-- Login to primary node and load the cortx build images
+- Login to worker nodes and load the cortx build images by executing the following command
 ```
 for image in /tmp/*.tar; do cat $image | docker load; done
 ```
