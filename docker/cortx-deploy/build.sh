@@ -53,9 +53,10 @@ while getopts "b:p:t:r:e:o:s:h:" opt; do
     esac
 done
 
-if [ -z "${BUILD}" ] ; then
-    BUILD=last_successful_prod
-fi
+#if [ -z "${BUILD}" ] ; then
+#    BUILD=last_successful_prod
+#fi
+[ -z $BUILD ] && BUILD=last_successful_prod
 
 if echo $BUILD | grep -q http;then
         BUILD_URL="$BUILD"
@@ -64,9 +65,7 @@ else
         BUILD_URL="$ARTFACT_URL/$BRANCH/$OS/$BUILD"
 fi
 
-if [ $SERVICE == all ];then
-SERVICE=${IMAGE_LIST[@]}
-fi
+if [ $SERVICE == all ];then SERVICE=${IMAGE_LIST[@]}; fi
 
 if [ "$SERVICE" == "cortx-rgw" ] && [ "$OS" == "centos-7.9.2009" ]; then
 echo -e "#####################################################################"
@@ -84,6 +83,7 @@ echo -e "# SERVICE    : $SERVICE                                 "
 echo -e "# BUILD_URL  : $BUILD_URL                               "
 echo -e "# Base OS    : $OS_TYPE                                 "
 echo -e "# Base image : $OS_TYPE:$OS_RELEASE                     "
+echo -e "# Registry   : $REGISTRY                                "
 echo -e "########################################################"
 
 function get_git_hash {
@@ -155,3 +155,4 @@ else
         echo "Latest tag creation skipped"
 fi
 done
+
