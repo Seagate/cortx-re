@@ -17,6 +17,7 @@ yum install git -y
 ```
 sed -i 's/SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config && setenforce 0
 ```
+- Primary node and worker nodes are selected based on your selection of EC2 Instances
 
 ## Deploy the CORTX Stack on K8s cluster
 This section enlists the commands to deploy the CORTX Stack on K8s cluster. 
