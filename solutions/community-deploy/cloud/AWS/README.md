@@ -93,10 +93,11 @@ ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-p
 git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/community-deploy
 sudo su -c 'time bash -x ./build-cortx.sh'
 ```
-- Execute the following command to copy the cortx build images from primary node to worker nodes using private ip address,
+- Execute the following command to copy the cortx build images from primary node to **all the worker nodes** using private ip address,
+
 **For example:**
 ```
-cd /tmp && rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' /tmp/*.tar centos@"<AWS instance private-ip-workernodes>":/tmp
+cd /tmp && rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' /tmp/*.tar centos@"<AWS instance private-ip-workernode>":/tmp
 ```
  
 ### Execute Instructions from Worker nodes
@@ -120,7 +121,6 @@ time ./build-cortx.sh -b <branch/tag>
 ```
 
 ### CORTX Deployment
-
 - After CORTX build is ready, follow [CORTX Deployment](https://github.com/Seagate/cortx-re/blob/main/solutions/community-deploy/CORTX-Deployment.md) to deploy CORTX on AWS instance.   
 - Please exclude SELINUX and Hostname setup steps.
 
