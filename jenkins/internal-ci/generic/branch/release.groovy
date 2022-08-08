@@ -298,7 +298,7 @@ pipeline {
                 stage ("1 Node Deployment") {
                     steps {
                         script { build_stage = env.STAGE_NAME }
-                        build job: "K8s-1N-deployment", wait: true,
+                        build job: "K8s-1N-deployment", wait: false,
                         parameters: [
                         string(name: 'CORTX_RE_BRANCH', value: "main"),
                         string(name: 'CORTX_RE_REPO', value: "https://github.com/Seagate/cortx-re"),
@@ -312,7 +312,7 @@ pipeline {
                 stage ("3 Node Deployment") {
                     steps {
                         script { build_stage = env.STAGE_NAME }
-                        build job: "K8s-3N-deployment", wait: true,
+                        build job: "K8s-3N-deployment", wait: false,
                         parameters: [
                         string(name: 'CORTX_RE_BRANCH', value: "main"),
                         string(name: 'CORTX_RE_REPO', value: "https://github.com/Seagate/cortx-re"),
