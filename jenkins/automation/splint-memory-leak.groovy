@@ -51,7 +51,7 @@ pipeline {
         always {
             script {
                 // Jenkins Summary
-                clusterStatus = ""
+                MemoryLeakStats = ""
                 if ( currentBuild.currentResult == "SUCCESS" ) {
                     MESSAGE = "Memory Leak Analysis Execution Success for the build ${build_id}"
                     ICON = "accept.gif"
@@ -69,7 +69,7 @@ pipeline {
                     STATUS = "UNSTABLE"
                 }
 
-                MemoryLeakAnalysisStatusHTML = "<pre>${clusterStatus}</pre>"
+                MemoryLeakAnalysisStatusHTML = "<pre>${MemoryLeakStats}</pre>"
 
                 manager.createSummary("${ICON}").appendText("<h3>Memory Leak Analysis Execution ${currentBuild.currentResult} </h3><p>Please check <a href=\"${BUILD_URL}/artifact/artifacts/splint-analysis.log\">Memory Leak Analysis logs</a> for Memory leak errors</p><p>Please check <a href=\"${BUILD_URL}/console\">Memory Leak Analysis Execution logs</a> for more info</p>", false, false, false, "red")
 
