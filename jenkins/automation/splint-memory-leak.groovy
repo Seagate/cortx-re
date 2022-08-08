@@ -32,7 +32,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: '', returnStatus: true, script: '''
                 yum install splint -y
-				mkdir -p artifacts
+                mkdir -p artifacts
                 for file in  $(find $PWD -type f -regextype posix-egrep -regex ".+\\\\.(c|h|lcl)$"); do splint +trytorecover -preproc -warnposix $file >> artifacts/split-analysis.log ; done || echo "Log Generated"
                 '''
             }
@@ -71,13 +71,13 @@ pipeline {
 
                 MemoryLeakAnalysisStatusHTML = "<pre>${clusterStatus}</pre>"
 
-                manager.createSummary("${ICON}").appendText("<h3>Memory Leak Analysis Execution ${currentBuild.currentResult} </h3><p>Please check <a href=\"${BUILD_URL}/artifact/artifacts/split-analysis.log\">Memory Leak Analysis logs</a> for Memory leak errors</p><p>Please check <a href=\"${BUILD_URL}/console\">Memory Leak Analysis Execution logs</a> for more info</p><h4>Cluster Status:</h4>${MemoryLeakAnalysisStatusHTML}", false, false, false, "red")
+                manager.createSummary("${ICON}").appendText("<h3>Memory Leak Analysis Execution ${currentBuild.currentResult} </h3><p>Please check <a href=\"${BUILD_URL}/artifact/artifacts/split-analysis.log\">Memory Leak Analysis logs</a> for Memory leak errors</p><p>Please check <a href=\"${BUILD_URL}/console\">Memory Leak Analysis Execution logs</a> for more info</p>", false, false, false, "red")
 
                 // Email Notification
                 env.build_stage = "${build_stage}"
                 env.cluster_status = "${MemoryLeakAnalysisStatusHTML}"
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
-                mailRecipients = "CORTX.DevOps.RE@seagate.com"
+                mailRecipients = "shailesh.vaidya@seagate.com"
                 emailext (
                     body: '''${SCRIPT, template="cluster-setup-email.template"}''',
                     mimeType: 'text/html',
