@@ -74,8 +74,8 @@ function docker_compose_check() {
 }
 docker_compose_check
 
-#Install git
-yum install git -y
+#Install git and jq
+yum install git epel-release jq -y
 
 # Compile and Build CORTX Stack
 docker rmi --force $(docker images --filter=reference='*/*/cortx-build:*' --filter=reference='*cortx-build:*' -q)
@@ -130,7 +130,7 @@ nginx_validation
 # clone cortx-re repository & run build.sh
 if [ -d $LOCAL_MOUNT/cortx-re ]; then rm -rf $LOCAL_MOUNT/cortx-re; fi
 git clone https://github.com/Seagate/cortx-re -b $BRANCH && pushd cortx-re/docker/cortx-deploy/
-./build.sh -b http://$IP -o rockylinux-8.4 -s all -e opensource-ci
+./build.sh -b http://$IP -o rockylinux-8.4 -s all -e opensource-ci -r local -p yes
 
 # Show recently generated cortx-all images
 docker images --format='{{.Repository}}:{{.Tag}} {{.CreatedAt}}' --filter=reference='cortx-*'
