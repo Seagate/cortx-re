@@ -40,7 +40,7 @@ API_JSON=$(printf '{"tag_name":"%s","name":"%s","body":"%s","prerelease":%s}' "$
 # echo $API_JSON
 # if jq -n $API_JSON | gh api /repos/$RELEASE_REPO_OWNER/$RELEASE_REPO_NAME/releases --input - > /tmp/api_response.html
 # gh release create test-tag --repo gauravchaudhari02/cortx-re --notes-file CHANGESET.md -p
-if curl --data "$API_JSON" -sif -H "Accept: application/json" -H "Authorization: token $GH_TOKEN" "https://api.github.com/repos/$RELEASE_REPO_OWNER/$RELEASE_REPO_NAME/releases" > /tmp/api_response.html
+if curl --data "$API_JSON" -sif -H "Accept: application/json" -H "Authorization: token $GH_TOKEN" "https://api.github.com/repos/$RELEASE_REPO_OWNER/$RELEASE_REPO_NAME/releases" -o api_response.html
 then
     echo "https://github.com/$RELEASE_REPO_OWNER/$RELEASE_REPO_NAME/releases/tag/$TAG"
 else
