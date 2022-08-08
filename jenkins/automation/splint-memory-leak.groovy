@@ -33,7 +33,7 @@ pipeline {
                 sh label: '', returnStatus: true, script: '''
                 yum install splint -y
                 mkdir -p artifacts
-                for file in  $(find $PWD -type f -regextype posix-egrep -regex ".+\\\\.(c|h|lcl)$"); do splint +trytorecover -preproc -warnposix $file >> artifacts/split-analysis.log ; done || echo "Log Generated"
+                for file in  $(find $PWD -type f -regextype posix-egrep -regex ".+\\\\.(c|h|lcl)$"); do splint +trytorecover -preproc -warnposix $file >> artifacts/splint-analysis.log ; done || echo "Log Generated"
                 '''
             }
         }
@@ -71,7 +71,7 @@ pipeline {
 
                 MemoryLeakAnalysisStatusHTML = "<pre>${clusterStatus}</pre>"
 
-                manager.createSummary("${ICON}").appendText("<h3>Memory Leak Analysis Execution ${currentBuild.currentResult} </h3><p>Please check <a href=\"${BUILD_URL}/artifact/artifacts/split-analysis.log\">Memory Leak Analysis logs</a> for Memory leak errors</p><p>Please check <a href=\"${BUILD_URL}/console\">Memory Leak Analysis Execution logs</a> for more info</p>", false, false, false, "red")
+                manager.createSummary("${ICON}").appendText("<h3>Memory Leak Analysis Execution ${currentBuild.currentResult} </h3><p>Please check <a href=\"${BUILD_URL}/artifact/artifacts/splint-analysis.log\">Memory Leak Analysis logs</a> for Memory leak errors</p><p>Please check <a href=\"${BUILD_URL}/console\">Memory Leak Analysis Execution logs</a> for more info</p>", false, false, false, "red")
 
                 // Email Notification
                 env.build_stage = "${build_stage}"
