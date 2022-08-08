@@ -29,7 +29,7 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
-                    withCredentials([string(credentialsId: 'gaurav-github-token', variable: 'GITHUB_ACCESS_TOKEN')]) {
+                    withCredentials([string(credentialsId: 'gaurav-github-token', variable: 'GH_TOKEN')]) {
                         env.github_release_url = sh( script: """
                             bash scripts/release_support/github-release.sh -t $GIT_TAG -v $SERVICES_VERSION -c $CHANGESET_URL
                             cp /tmp/api_response.html api_response.html
