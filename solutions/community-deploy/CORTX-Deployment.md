@@ -42,9 +42,12 @@ Follow [CORTX Deployment on AWS](https://github.com/Seagate/cortx-re/blob/main/s
 ```
 sudo su && git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/kubernetes
 ```
+
 **Note:**
-You can deploy CORTX on AWS instance also. Please follow [CORTX Deployment on AWS](https://github.com/Seagate/cortx-re/blob/main/solutions/community-deploy/cloud/AWS/README.md)
-- Create the `hosts` file in the current directory to add entries for all the nodes with same format in hosts file for the multi-node cluster. Node from first entry will be configured as Primary node. Example `hosts` file for multi-node setup is as below,
+Please follow [CORTX Deployment on AWS](https://github.com/Seagate/cortx-re/blob/main/solutions/community-deploy/cloud/AWS/README.md) where you can deploy CORTX on AWS instance also. 
+- Create the `hosts` file in the current directory to add entries for all the nodes with same format for the multi-node cluster. Node from first entry will be configured as Primary node.
+
+**For Example:** `hosts` file for multi-node setup is as below,
 ```
 hostname="<AWS instance private ip of primarynode>",user=root,pass=<root-password>
 hostname="<AWS instance private ip of workernode1>",user=root,pass=<root-password>
@@ -59,6 +62,7 @@ hostname="<AWS instance private ip of workernode2>",user=root,pass=<root-passwor
 ```
 export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
 ```
+
 **Note:**
 - Following parameter(s) are passed when the cluster deployment command executes. If no parameter is passed then script will use default values
 
