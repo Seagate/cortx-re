@@ -56,7 +56,7 @@ hostname="<AWS instance private ip of workernode2>",user=root,pass=<root-passwor
 export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
 ```
 **Note:**
-- Following parameter(s) are passed when the cluster deployment command executes. If no parameter is passed, the default ones are chosen.
+- Following parameter(s) are passed when the cluster deployment command executes. If no parameter is passed then script will use default values
 
 | Parameter     | Default value     | Description     |
 | :------------- | :----------- | :---------|
