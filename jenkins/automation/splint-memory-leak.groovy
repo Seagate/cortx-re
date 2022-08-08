@@ -77,7 +77,7 @@ pipeline {
                 env.build_stage = "${build_stage}"
                 env.cluster_status = "${MemoryLeakAnalysisStatusHTML}"
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
-                mailRecipients = "shailesh.vaidya@seagate.com"
+                mailRecipients = "CORTX.DevOps.RE@seagate.com"
                 emailext (
                     body: '''${SCRIPT, template="devops-automation-email.template"}''',
                     mimeType: 'text/html',
