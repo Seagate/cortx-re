@@ -5,12 +5,11 @@ This document discusses the procedure to compile the CORTX Stack and deploy on A
 **Prerequisites:**
 
 - Ensure that you have an AWS account with Secret Key and Access Key.
-- Build and deploy CORTX Stack on all the AWS instances in the cluster.
 - Clone the `cortx-re` repository and then change the directory to `cortx-re/solutions/community-deploy/cloud/AWS`.
 ```
 git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/community-deploy/cloud/AWS
 ```
-- Install the required tools.
+- Install the required tools on the local host
 ```
 ./tool_setup.sh
 ```
