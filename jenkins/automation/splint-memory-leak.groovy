@@ -79,7 +79,7 @@ pipeline {
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
                 mailRecipients = "shailesh.vaidya@seagate.com"
                 emailext (
-                    body: '''${SCRIPT, template="cluster-setup-email.template"}''',
+                    body: '''${SCRIPT, template="devops-automation-email.template"}''',
                     mimeType: 'text/html',
                     subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
                     attachLog: true,
