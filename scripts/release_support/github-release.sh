@@ -4,11 +4,11 @@ PRE="true"
 REGISTRY="ghcr.io/seagate"
 RELEASE_REPO_NAME="cortx-re"
 RELEASE_REPO_OWNER="gauravchaudhari02"
-BUILD_INFO_STRING="**Build Instructions**: https://github.com/Seagate/cortx-re/tree/main/solutions/community-deploy/cloud/AWS#cortx-build\n"
-DEPLOY_INFO_STRING="**Deployment Instructions**: https://github.com/Seagate/cortx-re/blob/main/solutions/community-deploy/CORTX-Deployment.md\n"
-SERVICES_VERSION_STRING="**CORTX Services Release**: "
-CORTX_IMAGE_STRING="**CORTX Component Images**: "
-CHANGESET_STRING="**Changeset**: "
+BUILD_INFO="**Build Instructions**: https://github.com/Seagate/cortx-re/tree/main/solutions/community-deploy/cloud/AWS#cortx-build"
+DEPLOY_INFO="**Deployment Instructions**: https://github.com/Seagate/cortx-re/blob/main/solutions/community-deploy/CORTX-Deployment.md"
+SERVICES_VERSION_TITLE="**CORTX Services Release**: "
+CORTX_IMAGE_TITLE="**CORTX Container Images**: "
+CHANGESET_TITLE="**Changeset**: "
 # get args
 while getopts :t:v:c: option
 do
@@ -32,7 +32,7 @@ CORTX_DATA_IMAGE="[$REGISTRY/cortx-data:$TAG]($REGISTRY/cortx-data:$TAG)"
 CORTX_CONTROL_IMAGE="[$REGISTRY/cortx-control:$TAG]($REGISTRY/cortx-control:$TAG)"
 IMAGES_INFO="| Image      | Location |\n|    :----:   |    :----:   |\n| cortx-server      | $CORTX_SERVER_IMAGE       |\n| cortx-data      | $CORTX_DATA_IMAGE      |\n| cortx-control      | $CORTX_CONTROL_IMAGE       |"
 SERVICES_VERSION="[$SERVICES_VERSION](https://github.com/Seagate/cortx-k8s/releases/tag/$SERVICES_VERSION)"
-MESSAGE="$CORTX_IMAGE_STRING\n$IMAGES_INFO\n\n$SERVICES_VERSION_STRING$SERVICES_VERSION\n\n$BUILD_INFO_STRING$DEPLOY_INFO_STRING\n\n$CHANGESET_STRING\n\n${CHANGESET//$'\n'/\\n}"
+MESSAGE="$CORTX_IMAGE_TITLE\n$IMAGES_INFO\n\n$SERVICES_VERSION_TITLE$SERVICES_VERSION\n\n$BUILD_INFO\n$DEPLOY_INFO\n\n$CHANGESET_TITLE\n\n${CHANGESET//$'\n'/\\n}"
 
 
 API_JSON=$(printf '{"tag_name": "%s","name": "%s","body": "%s","prerelease": %s}' "$TAG" "$TAG" "$MESSAGE" "$PRE" )
