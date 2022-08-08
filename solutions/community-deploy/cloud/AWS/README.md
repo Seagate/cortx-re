@@ -89,9 +89,9 @@ for ip in $PUBLIC_IP;do rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyC
 
 **Note:** Become the **root** user after logged in to the primary node by running `sudo su` command.
 ```
-ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-primarynode>" 'git clone https://github.com/Seagate/cortx-re'
-sudo su && cd $PWD/cortx-re/solutions/community-deploy
-time bash -x ./build-cortx.sh
+ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"<AWS instance public-ip-primarynode>"
+git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/community-deploy
+sudo su -c 'time bash -x ./build-cortx.sh'
 ```
 - Execute the following command to copy the cortx build images from primary node to worker nodes using private ip address,
 **For example:**
