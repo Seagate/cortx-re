@@ -30,7 +30,9 @@ CHANGESET=$( curl -ks $CHANGESET_URL | tail -n +2 )
 CORTX_SERVER_IMAGE="[$REGISTRY/cortx-rgw:$TAG]($REGISTRY/cortx-rgw:$TAG)"
 CORTX_DATA_IMAGE="[$REGISTRY/cortx-data:$TAG]($REGISTRY/cortx-data:$TAG)"
 CORTX_CONTROL_IMAGE="[$REGISTRY/cortx-control:$TAG]($REGISTRY/cortx-control:$TAG)"
-MESSAGE="$CORTX_IMAGE_STRING\n$CORTX_SERVER_IMAGE\n$CORTX_DATA_IMAGE\n$CORTX_CONTROL_IMAGE\n\n$SERVICES_VERSION_STRING$SERVICES_VERSION\n\n$BUILD_INFO_STRING$DEPLOY_INFO_STRING\n\n$CHANGESET_STRING\n\n${CHANGESET//$'\n'/\\n}"
+IMAGES_INFO="| Image      | Location |\n|    :----:   |    :----:   |\n| cortx-server      | $CORTX_SERVER_IMAGE       |\n| cortx-data      | $CORTX_DATA_IMAGE      |\n| cortx-control      | $CORTX_CONTROL_IMAGE       |"
+SERVICES_VERSION="[$SERVICES_VERSION](https://github.com/Seagate/cortx-k8s/releases/tag/$SERVICES_VERSION)"
+MESSAGE="$CORTX_IMAGE_STRING\n$IMAGES_INFO\n\n$SERVICES_VERSION_STRING$SERVICES_VERSION\n\n$BUILD_INFO_STRING$DEPLOY_INFO_STRING\n\n$CHANGESET_STRING\n\n${CHANGESET//$'\n'/\\n}"
 
 
 API_JSON=$(printf '{"tag_name": "%s","name": "%s","body": "%s","prerelease": %s}' "$TAG" "$TAG" "$MESSAGE" "$PRE" )
