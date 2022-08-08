@@ -9,7 +9,10 @@ The following sections discusses how to set up the K8s cluster and deploy the CO
   -  DISK: 9 Disks (1 with 50GB (For operating system) and rest 8 with 25GB per disk)
   -  OS: CentOS 7.9 (64-bit)
 - All the nodes should be reachable over SSH
-- You must have Git installed on your system
+- You must have Git installed on your system by executing following command,
+```
+yum install git -y
+```
 - SELinux should be disabled and If its enabled, run the following command to disable then reboot your system,
 ```
 sed -i 's/SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config && setenforce 0
