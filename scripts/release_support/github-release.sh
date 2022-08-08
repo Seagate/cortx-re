@@ -36,7 +36,8 @@ MESSAGE="$CORTX_IMAGE_TITLE\n$IMAGES_INFO\n\n$SERVICES_VERSION_TITLE$SERVICES_VE
 API_JSON=$(printf '{"tag_name": "%s","name": "%s","body": "%s","prerelease": %s}' "$TAG" "$TAG" "$MESSAGE" "$PRE" )
 if curl --data "$API_JSON" -s -i -H "Accept: application/vnd.github+json" -H "Authorization: token $GITHUB_ACCESS_TOKEN" "https://api.github.com/repos/$RELEASE_REPO_OWNER/$RELEASE_REPO_NAME/releases" > /tmp/api_response.html
 then
-    echo "Success"
+    echo "https://github.com/$RELEASE_REPO_OWNER/$RELEASE_REPO_NAME/releases/tag/$TAG"
 else
-    echo "Fail"
+    echo "GitHub Release: curl command has failed"
+    exit 1
 fi      
