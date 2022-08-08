@@ -131,9 +131,9 @@ pipeline {
                     AWS_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.cortx_deploy_ip_addr.value 2>&1 | tee ip.txt)
                     IP=$(cat ip.txt | tr -d '""')
                     export SOLUTION_CONFIG_TYPE="automated"
-                    export CORTX_SERVER_IMAGE="cortx-rgw:2.0.0-0"
-                    export CORTX_DATA_IMAGE="cortx-data:2.0.0-0"
-                    export CORTX_CONTROL_IMAGE="cortx-control:2.0.0-0"
+                    export CORTX_SERVER_IMAGE="$HOSTNAME:8080/seagate/cortx-rgw:2.0.0-0"
+                    export CORTX_DATA_IMAGE="$HOSTNAME:8080/seagate/cortx-data:2.0.0-0"
+                    export CORTX_CONTROL_IMAGE="$HOSTNAME:8080/seagate/cortx-control:2.0.0-0"
                     export COMMUNITY_USE=${COMMUNITY_USE}    
                     ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${IP} 'pushd /home/centos/cortx-re/solutions/kubernetes && export SOLUTION_CONFIG_TYPE='"${SOLUTION_CONFIG_TYPE}"' && export COMMUNITY_USE='"${COMMUNITY_USE}"' && export CORTX_SERVER_IMAGE='"${CORTX_SERVER_IMAGE}"' && export CORTX_DATA_IMAGE='"${CORTX_DATA_IMAGE}"' && export CORTX_CONTROL_IMAGE='"${CORTX_CONTROL_IMAGE}"' && sudo env SOLUTION_CONFIG_TYPE=${SOLUTION_CONFIG_TYPE} env CORTX_SERVER_IMAGE=${CORTX_SERVER_IMAGE} env CORTX_CONTROL_IMAGE=${CORTX_CONTROL_IMAGE} env CORTX_DATA_IMAGE=${CORTX_DATA_IMAGE} env COMMUNITY_USE=${COMMUNITY_USE} ./cortx-deploy.sh --cortx-cluster'
                     popd
