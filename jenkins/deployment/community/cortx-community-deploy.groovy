@@ -89,7 +89,8 @@ pipeline {
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                 sh label: 'Setting up Network and Storage devices for CORTX. Script will reboot the instance on completion', script: '''
                 pushd solutions/community-deploy/cloud/AWS
-                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${env.AWS_IP} sudo bash /home/centos/setup.sh
+                    echo "${env.AWS_IP}"
+                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${env.AWS_IP}" sudo bash /home/centos/setup.sh
                     sleep 240
                 popd
                 '''
@@ -104,7 +105,7 @@ pipeline {
                 pushd solutions/community-deploy/cloud/AWS
                     export CORTX_RE_BRANCH=${CORTX_RE_BRANCH}
                     export CORTX_TAG=${CORTX_TAG}                
-                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${env.AWS_IP} "export CORTX_RE_BRANCH=$CORTX_RE_BRANCH; git clone $CORTX_RE_REPO -b $CORTX_RE_BRANCH; pushd /home/centos/cortx-re/solutions/community-deploy; time sudo ./build-cortx.sh -b ${CORTX_TAG}"
+                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${env.AWS_IP}" "export CORTX_RE_BRANCH=$CORTX_RE_BRANCH; git clone $CORTX_RE_REPO -b $CORTX_RE_BRANCH; pushd /home/centos/cortx-re/solutions/community-deploy; time sudo ./build-cortx.sh -b ${CORTX_TAG}"
                 popd
             '''
             }
@@ -116,7 +117,7 @@ pipeline {
                 sh label: 'Changing root password and creating hosts file', script: '''
                 pushd solutions/community-deploy/cloud/AWS
                     export ROOT_PASSWORD=${ROOT_PASSWORD}              
-                    ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${env.AWS_IP} "export ROOT_PASSWORD=$ROOT_PASSWORD && echo $ROOT_PASSWORD | sudo passwd --stdin root && pushd /home/centos/cortx-re/solutions/kubernetes && echo "'"hostname=$HOSTNAME,user=root,pass="'" > hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && cat hosts"
+                    ssh -i cortx.pem -o StrictHostKeyChecking=no centos@"${env.AWS_IP}" "export ROOT_PASSWORD=$ROOT_PASSWORD && echo $ROOT_PASSWORD | sudo passwd --stdin root && pushd /home/centos/cortx-re/solutions/kubernetes && echo "'"hostname=$HOSTNAME,user=root,pass="'" > hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && cat hosts"
                     popd
             '''
             }
@@ -127,7 +128,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'setting up K8s cluster on EC2', script: '''
                 pushd solutions/community-deploy/cloud/AWS                
-                    ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${env.AWS_IP} "pushd /home/centos/cortx-re/solutions/kubernetes && sudo ./cluster-setup.sh true"
+                    ssh -i cortx.pem -o StrictHostKeyChecking=no centos@"${env.AWS_IP}" "pushd /home/centos/cortx-re/solutions/kubernetes && sudo ./cluster-setup.sh true"
                     popd
                 '''
             }
@@ -138,9 +139,9 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Deploying 1N cortx cluster on EC2', script: '''
                 pushd solutions/community-deploy/cloud/AWS
-                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${env.AWS_IP} 'sudo sed -i 's/cortx-docker.colo.seagate.com/'$HOSTNAME':8080/g' /etc/docker/daemon.json && sudo systemctl restart docker'
+                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${env.AWS_IP}" 'sudo sed -i 's/cortx-docker.colo.seagate.com/'$HOSTNAME':8080/g' /etc/docker/daemon.json && sudo systemctl restart docker'
                     sleep 240
-                    ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${env.AWS_IP} 'pushd /home/centos/cortx-re/solutions/kubernetes && 
+                    ssh -i cortx.pem -o StrictHostKeyChecking=no centos@"${env.AWS_IP}" 'pushd /home/centos/cortx-re/solutions/kubernetes && 
                     export SOLUTION_CONFIG_TYPE='automated' && 
                     export COMMUNITY_USE='yes' && 
                     export CORTX_SERVER_IMAGE=$HOSTNAME:8080/seagate/cortx-rgw:2.0.0-0 && 
@@ -157,7 +158,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'IO Sanity on CORTX Cluster to validate bucket creation and object upload in deployed cluster', script: '''
                 pushd solutions/community-deploy/cloud/AWS
-                    ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${env.AWS_IP} "pushd /home/centos/cortx-re/solutions/kubernetes && sudo ./cortx-deploy.sh --io-sanity"
+                    ssh -i cortx.pem -o StrictHostKeyChecking=no centos@"${env.AWS_IP}" "pushd /home/centos/cortx-re/solutions/kubernetes && sudo ./cortx-deploy.sh --io-sanity"
                 popd
             '''
             }
