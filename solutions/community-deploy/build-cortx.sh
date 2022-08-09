@@ -136,4 +136,4 @@ git clone https://github.com/Seagate/cortx-re -b $BRANCH && pushd cortx-re/docke
 docker images --format='{{.Repository}}:{{.Tag}} {{.CreatedAt}}' --filter=reference='cortx-*'
 
 # Save and compress the cortx build images
-docker save $(docker images | sed '1d' | awk '{print $1 ":" $2 }') -o cortximages.tar
+docker save $(docker images | sed '1d' | awk '{print $1 ":" $2 }') -o /tmp/cortximages.tar
