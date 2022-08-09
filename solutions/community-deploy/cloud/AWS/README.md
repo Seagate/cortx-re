@@ -62,18 +62,19 @@ terraform validate && terraform apply -var-file user.tfvars --auto-approve
 ```
 terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip_public.txt
 export PUBLIC_IP=$(cat ip_public.txt | tr -d '",[]' | sed '/^$/d')
+echo 'PATH=~/bin:$PATH:$PUBLIC_IP' >> ~/.bashrc && source ~/.bashrc
 ```
 **Private ip address:**
 ```
 terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_ip_addr.value 2>&1 | tee ip_private.txt
 export PRIVATE_IP=$(cat ip_private.txt | tr -d '",[]' | sed '/^$/d')
+echo 'PATH=~/bin:$PATH:$PRIVATE_IP' >> ~/.bashrc && source ~/.bashrc
 ```
 - Execute the following commands on all the nodes which will perform the following actions:
   - Setup network and storage devices for CORTX.
   - Generating the `root` user password which is required as a part of CORTX deployment
   - `setup.sh` will reboot all the nodes once executed
   - Copy the pem file from primary node to the worker nodes using private ip address
-
 ```
 for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$ip 'echo "Enter new password for root user" && sudo passwd root && sudo bash /home/centos/setup.sh'; done
 ```
