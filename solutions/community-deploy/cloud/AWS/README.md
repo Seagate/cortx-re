@@ -1,6 +1,6 @@
 # Build & Deploy CORTX Stack on Amazon Web Services 
 
-This document discusses the procedure to compile the CORTX Stack and deploy on AWS instances.
+This document discusses the procedure to compile the CORTX Stack and deploy on AWS environment (One/Multi-node)
 
 **Prerequisites:**
 
