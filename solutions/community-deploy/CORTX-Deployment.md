@@ -16,7 +16,11 @@ This section enlists the commands to deploy the CORTX Stack on K8s cluster.
 ### Make sure your VM(virtual machine) has following drives available on it:
 ```
 ls /dev/sd*
+```
 
+**For Example:**
+```
+ls /dev/sd*
 /dev/sda  /dev/sda1  /dev/sda2  /dev/sdb  /dev/sdc  /dev/sdd  /dev/sde  /dev/sdf  /dev/sdg  /dev/sdh  /dev/sdi
 ```
 
@@ -42,7 +46,7 @@ reboot
 
 **Note:**
  1. All the nodes should be reachable over SSH
- 2. You can deploy CORTX on AWS EC2 instance also. Please follow [CORTX Deployment on AWS](https://github.com/Seagate/cortx-re/blob/main/solutions/community-deploy/cloud/AWS/README.md)
+ 2. Please follow [CORTX Deployment on AWS](https://github.com/Seagate/cortx-re/blob/main/solutions/community-deploy/cloud/AWS/README.md) where you can deploy CORTX on AWS EC2 instances also. 
 
 ## Install K8s cluster
 **To install the K8s cluster, run the following commands:**
@@ -50,7 +54,10 @@ reboot
 ```
 git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/kubernetes
 ```
--  Create the hosts file in the current directory to add entries for all the nodes with same format in hosts file. Node from first entry will be configured as Primary node. Example `hosts` file for multi-node setup is as below,
+-  Create the hosts file in the current directory to add entries for all the nodes with same format in hosts file.
+**Note:** Node from first entry will be configured as Primary node and in case of AWS EC2, update the `hostname` as Private dns name to connect between EC2 Instances.
+
+**For Example:** `hosts` file for multi-node setup is as below,
 ```
 hostname=cortx-deploy-node1.cortx.com,user=root,pass=<root-password>
 hostname=cortx-deploy-node2.cortx.com,user=root,pass=<root-password>
