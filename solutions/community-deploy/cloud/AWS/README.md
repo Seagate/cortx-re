@@ -60,12 +60,12 @@ terraform validate && terraform apply -var-file user.tfvars --auto-approve
 
 **Public ip address:**
 ```
-export PUBLIC_IP=`terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip_public.txt  | tr -d '",[]' | sed '/^$/d'`
+export PUBLIC_IP=`terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip_public.txt`
 cat ip_public.txt | tr -d '",[]' | sed '/^$/d'
 ```
 **Private ip address:**
 ```
-export PRIVATE_IP=`terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_ip_addr.value 2>&1 | tee ip_private.txt  | tr -d '",[]' | sed '/^$/d'`
+export PRIVATE_IP=`terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_ip_addr.value 2>&1 | tee ip_private.txt`
 cat ip_private.txt | tr -d '",[]' | sed '/^$/d'
 ```
 - Execute the following commands on all the nodes which will perform the following actions:
