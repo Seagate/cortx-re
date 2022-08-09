@@ -138,7 +138,8 @@ pipeline {
                 pushd solutions/community-deploy/cloud/AWS
                     AWS_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.cortx_deploy_ip_addr.value 2>&1 | tee ip.txt)
                     IP=$(cat ip.txt | tr -d '""')
-                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${IP} 'sudo sed -i 's/cortx-docker.colo.seagate.com/'$HOSTNAME':8080/g' /etc/docker/daemon.json && sudo systemctl restart docker' 
+                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${IP} 'sudo sed -i 's/cortx-docker.colo.seagate.com/'$HOSTNAME':8080/g' /etc/docker/daemon.json && sudo systemctl restart docker'
+                    sleep 240
                     ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${IP} 'pushd /home/centos/cortx-re/solutions/kubernetes && 
                     export SOLUTION_CONFIG_TYPE='automated' && 
                     export COMMUNITY_USE='yes' && 
