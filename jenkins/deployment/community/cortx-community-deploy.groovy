@@ -12,7 +12,6 @@ pipeline {
         ansiColor('xterm')
     }
 
-
     parameters {
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX Cluster scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for CORTX Cluster scripts', trim: true)
@@ -26,23 +25,22 @@ pipeline {
         string(name: 'EC2_INSTANCE_TAG_NAME', defaultValue: 'cortx-multinode', description: 'Tag name', trim: true)
         password(name: 'SECRET_KEY', description: 'secret key for AWS account')
         password(name: 'ACCESS_KEY', description: 'access key for AWS account')
-        
-        
-        // Please configure ROOT_PASSWORD parameter in Jenkins job configuration.
+
+    // Please configure ROOT_PASSWORD parameter in Jenkins job configuration.
     }
 
         stages {
 
             stage('Checkout Script') {
-                steps { 
-                    cleanWs()            
+                steps {
+                    cleanWs()
                     script {
-                        checkout([$class: 'GitSCM', branches: [[name: "${CORTX_RE_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${CORTX_RE_REPO}"]]])                
+                        checkout([$class: 'GitSCM', branches: [[name: "${CORTX_RE_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${CORTX_RE_REPO}"]]])
                     }
                 }
             }
 
-        stage ('Install tools') {
+        stage ('Install Prerequisite tools') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'install tools', script: '''
@@ -62,17 +60,17 @@ pipeline {
                             aws configure set default.region $REGION; aws configure set aws_access_key_id $ACCESS_KEY; aws configure set aws_secret_access_key $SECRET_KEY
                         pushd solutions/community-deploy/cloud/AWS
                             ./tool_setup.sh
-                            sed -i 's,os_version          =.*,os_version          = "'"$OS_VERSION"'",g' user.tfvars && sed -i 's,region              =.*,region              = "'"$REGION"'",g' user.tfvars && sed -i 's,security_group_cidr =.*,security_group_cidr = "'"$VM_IP/32"'",g' user.tfvars
+                            sed -i 's,os_version          =.*,os_version          = "'"$OS_VERSION"'",g' user.tfvars && sed -i 's,region              =.*,region              = "'"$REGION"'",g' user.tfvars && sed -i 's,security_group_cidr =.*,security_group_cidr = "'"$VM_IP/32"'",g' user.tfvars && sed -i 's,instance_count          =.*,instance_count          = "'"$EC2_INSTANCE_COUNT"'",g' user.tfvars && sed -i 's,ebs_volume_count          =.*,ebs_volume_count          = "'"$EBS_VOLUME_COUNT"'",g' user.tfvars && sed -i 's,ebs_volume_size          =.*,ebs_volume_size          = "'"$EBS_VOLUME_SIZE"'",g' user.tfvars && sed -i 's,tag_name          =.*,tag_name          = "'"$EC2_INSTANCE_TAG_NAME"'",g' user.tfvars
                             echo key_name            = '"'$KEY_NAME'"' | cat >>user.tfvars
                             cat user.tfvars | tail -4
                         popd
                 '''
             }
-        }            
-        stage ('Create EC2 instances') {
+        }
+        stage ('Create Multi EC2 instances') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Setting up EC2 instance', script: '''
+                sh label: 'Setting up multi EC2 instances', script: '''
                     pushd solutions/community-deploy/cloud/AWS
                         terraform validate && terraform apply -var-file user.tfvars --auto-approve
                     popd
@@ -85,15 +83,19 @@ pipeline {
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                 sh label: 'Setting up Network and Storage devices for CORTX. Script will reboot the instance on completion', script: '''
                     pushd solutions/community-deploy/cloud/AWS
-                        AWS_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.cortx_deploy_ip_addr.value 2>&1 | tee ip.txt)
-                        IP=$(cat ip.txt | tr -d '""')                        
-                        ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${IP} sudo bash /home/centos/setup.sh
+                        AWS_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip_public.txt)
+                        IP=$(cat ip_public.txt | tr -d '",[]' | sed '/^$/d')
+                        for ip in $IP
+                        do
+                         ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${ip} 'echo "Enter new password for root user" && sudo passwd root && sudo bash /home/centos/setup.sh'
+                        done
                         sleep 240
                     popd
             '''
+                }
             }
         }
-    }
+            
         stage ('Execute cortx build script') {
             steps {
                 script { build_stage = env.STAGE_NAME }
