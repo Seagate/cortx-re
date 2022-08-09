@@ -167,14 +167,7 @@ pipeline {
 
     post {
         always {
-            retry(count: 3) {
-            script { build_stage = env.STAGE_NAME }
-                sh label: 'destroying EC2 instance', script: '''
-                pushd solutions/community-deploy/cloud/AWS
-                    terraform validate && terraform destroy -var-file user.tfvars --auto-approve
-                popd
-                '''
-            }
+
            script {
 
             // Jenkins Summary
@@ -207,7 +200,7 @@ pipeline {
             def toEmail = ""
             def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
             if ( manager.build.result.toString() == "FAILURE" ) {
-                toEmail = "CORTX.DevOps.RE@seagate.com"
+                toEmail = "shailesh.vaidya@seagate.com"
                 recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
             }
             emailext ( 
