@@ -69,7 +69,7 @@ pipeline {
                         string(name: 'BUILD_FROM', value: "${LATEST_GH_SERVER_IMAGE}"),
                         string(name: 'BUILD_TO', value: "${CORTX_SERVER_IMAGE}")
                     ]
-                env.changeseturl = sh( script: "echo ${changelog_info.absoluteUrl}/artifact/CHANGESET.md", returnStdout: true)    
+                    env.changeseturl = sh( script: "echo ${changelog_info.absoluteUrl}artifact/CHANGESET.md", returnStdout: true)  
                 }
             }        
         }
