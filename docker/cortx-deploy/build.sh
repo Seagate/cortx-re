@@ -53,9 +53,6 @@ while getopts "b:p:t:r:e:o:s:h:" opt; do
     esac
 done
 
-#if [ -z "${BUILD}" ] ; then
-#    BUILD=last_successful_prod
-#fi
 [ -z $BUILD ] && BUILD=last_successful_prod
 
 if echo $BUILD | grep -q http;then
