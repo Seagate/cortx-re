@@ -102,8 +102,8 @@ pipeline {
                 sh label: 'executing cortx build image script', script: '''
                 pushd solutions/community-deploy/cloud/AWS
                     export CORTX_RE_BRANCH=${CORTX_RE_BRANCH}
-                    AWS_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.cortx_deploy_ip_addr.value 2>&1 | tee ip.txt)
-                    IP=$(cat ip.txt | tr -d '""')                
+                    AWS_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip_public.txt)
+                    IP=$(cat ip_public.txt | tr -d '",[]' | sed '/^$/d')
                     ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${IP} "export CORTX_RE_BRANCH=$CORTX_RE_BRANCH; git clone https://github.com/Seagate/cortx-re; pushd /home/centos/cortx-re/solutions/community-deploy; time sudo ./build-cortx.sh -b ${CORTX_RE_BRANCH}"
                 popd
             '''
