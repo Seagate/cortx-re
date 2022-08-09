@@ -21,6 +21,7 @@
 #Only root to should run setup
 if [ $(whoami) != root ];then
 	echo "$(whoami) is not root user. Please use root user to execute this script"
+	exit
 fi
 
 #Install Docker engine on worker nodes
