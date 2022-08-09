@@ -53,18 +53,18 @@ pipeline {
                 // Jenkins Summary
                 MemoryLeakStats = ""
                 if ( currentBuild.currentResult == "SUCCESS" ) {
-                    MESSAGE = "Memory Leak Analysis Execution Success for the build ${build_id}"
+                    MESSAGE = "Memory Leak Analysis Execution Success for the build#${build_id}"
                     ICON = "accept.gif"
                     STATUS = "SUCCESS"
                 } else if ( currentBuild.currentResult == "FAILURE" ) {
                     manager.buildFailure()
-                    MESSAGE = "Memory Leak Analysis Execution Failed for the build ${build_id}"
+                    MESSAGE = "Memory Leak Analysis Execution Failed for the build#${build_id}"
                     ICON = "error.gif"
                     STATUS = "FAILURE"
 
                 } else {
                     manager.buildUnstable()
-                    MESSAGE = "Memory Leak Analysis Execution is Unstable for the build ${build_id}"
+                    MESSAGE = "Memory Leak Analysis Execution is Unstable for the build#${build_id}"
                     ICON = "warning.gif"
                     STATUS = "UNSTABLE"
                 }
