@@ -109,26 +109,28 @@ pipeline {
             '''
             }
         }
+    
         stage ('EC2 connection prerequisites') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Changing root password and creating hosts file', script: '''
                 pushd solutions/community-deploy/cloud/AWS
                     export ROOT_PASSWORD=${ROOT_PASSWORD}
-                    AWS_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.cortx_deploy_ip_addr.value 2>&1 | tee ip.txt)
-                    IP=$(cat ip.txt | tr -d '""')                
+                    AWS_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip_public.txt)
+                    IP=$(cat ip_public.txt | tr -d '",[]' | sed '/^$/d')
                     ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${IP} "export ROOT_PASSWORD=$ROOT_PASSWORD && echo $ROOT_PASSWORD | sudo passwd --stdin root && pushd /home/centos/cortx-re/solutions/kubernetes && echo "'"hostname=$HOSTNAME,user=root,pass="'" > hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && cat hosts"
                     popd
             '''
             }
         }
+  
         stage ('Setup K8s cluster on EC2 Primary node') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'setting up K8s cluster on EC2', script: '''
                 pushd solutions/community-deploy/cloud/AWS
-                    AWS_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.cortx_deploy_ip_addr.value 2>&1 | tee ip.txt)
-                    IP=$(cat ip.txt | tr -d '""')                
+                    AWS_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip_public.txt)
+                    IP=$(cat ip_public.txt | tr -d '",[]' | sed '/^$/d')               
                     ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${IP} "pushd /home/centos/cortx-re/solutions/kubernetes && sudo ./cluster-setup.sh true"
                     popd
             '''
