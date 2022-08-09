@@ -4,10 +4,13 @@ pipeline {
             label 'community-build-executor'
         }
     }
+
     triggers { cron('0 22 * * 1,3,5') }
+    
     options {
         timeout(time: 360, unit: 'MINUTES')
         timestamps()
+        disableConcurrentBuilds()
         buildDiscarder(logRotator(daysToKeepStr: '30', numToKeepStr: '30'))
         ansiColor('xterm')
     }
