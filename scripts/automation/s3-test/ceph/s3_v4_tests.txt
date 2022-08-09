@@ -300,7 +300,6 @@ s3tests_boto3.functional.test_s3:test_bucket_policy
 s3tests_boto3.functional.test_s3:test_bucketv2_policy 
 s3tests_boto3.functional.test_s3:test_bucket_policy_acl 
 s3tests_boto3.functional.test_s3:test_bucketv2_policy_acl 
-s3tests_boto3.functional.test_s3:test_versioning_bucket_create_suspend 
 s3tests_boto3.functional.test_s3:test_bucketv2_policy_different_tenant 
 s3tests_boto3.functional.test_s3:test_bucket_policy_another_bucket 
 s3tests_boto3.functional.test_s3:test_bucketv2_policy_another_bucket 
@@ -338,6 +337,4 @@ s3tests_boto3.functional.test_s3:test_put_excess_key_tags
 s3tests_boto3.functional.test_s3:test_put_excess_val_tags
 s3tests_boto3.functional.test_s3:test_put_modify_tags
 s3tests_boto3.functional.test_s3:test_put_delete_tags
-s3tests_boto3.functional.test_s3:test_post_object_tags_anonymous_request
-s3tests_boto3.functional.test_s3:test_post_object_tags_authenticated_request
 s3tests_boto3.functional.test_s3:test_put_obj_with_tags
