@@ -33,7 +33,7 @@ pipeline {
                 sh label: '', returnStatus: true, script: '''
                 yum install splint -y
                 mkdir -p artifacts
-                for file in  $(find $PWD -type f -regextype posix-egrep -regex ".+\\\\.(c|h|lcl)$"); do splint +trytorecover -preproc -warnposix $file >> artifacts/splint-analysis.log ; done || echo "Log Generated"
+                for file in  $(find $PWD -type f -regextype posix-egrep -regex ".+\\\\.(c|h|lcl)$"); do splint +trytorecover -preproc -warnposix +line-len 100000 $file >> artifacts/splint-analysis.log ; done || echo "Log Generated"
                 '''
             }
         }
@@ -53,7 +53,7 @@ pipeline {
                 // Jenkins Summary
                 MemoryLeakStats = ""
                 if ( currentBuild.currentResult == "SUCCESS" ) {
-                    MESSAGE = "Memory Leak Analysis Execution Success for the build#${build_id}"
+                    MESSAGE = "Memory Leak Analysis Execution Successful for the build#${build_id}"
                     ICON = "accept.gif"
                     STATUS = "SUCCESS"
                 } else if ( currentBuild.currentResult == "FAILURE" ) {
