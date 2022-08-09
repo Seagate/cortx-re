@@ -81,7 +81,7 @@ pipeline {
                 emailext (
                     body: '''${SCRIPT, template="devops-automation-email.template"}''',
                     mimeType: 'text/html',
-                    subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
+                    subject: "${MESSAGE}",
                     attachLog: true,
                     to: "${mailRecipients}",
                     recipientProviders: recipientProvidersClass
