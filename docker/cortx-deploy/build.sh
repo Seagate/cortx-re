@@ -95,11 +95,11 @@ function get_git_hash {
 }
 
 function setup_local_image_registry {
-        docker rm -f local-registry
-        docker run -d -e REGISTRY_HTTP_ADDR=0.0.0.0:8080 -p 5000:5000 -p 8080:8080 --restart=always --name local-registry registry:2
-        jq -n '{"insecure-registries": $ARGS.positional}' --args "$HOSTNAME:8080" > /etc/docker/daemon.json
-        systemctl restart docker
-}
+        docker rm -f local-registry || { echo "Failed to remove existing local-registry container"; exit 1; }
+        docker run -d -e REGISTRY_HTTP_ADDR=0.0.0.0:8080 -p 5000:5000 -p 8080:8080 --restart=always --name local-registry registry:2 || { echo "Failed setup local container regsitry"; exit 1; }
+        yum install jq -q -y ||  { echo "Failed to install jq package"; exit 1; } && jq -n '{"insecure-registries": $ARGS.positional}' --args "$HOSTNAME:8080" > /etc/docker/daemon.json
+        systemctl restart docker || { echo "Docker daemon restart failed"; exit 1; } && systemctl status docker
+} 
 
 curl -s $BUILD_URL/RELEASE.INFO -o RELEASE.INFO
 if grep -q "404 Not Found" RELEASE.INFO ; then echo -e "\nProvided Build does not have required structure..existing\n"; exit 1; fi
