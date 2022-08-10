@@ -21,7 +21,7 @@ pipeline {
         REGISTRY = "ghcr.io"
         OWNER = "seagate"
         LATEST_GH_SERVER_IMAGE_TAG = sh( script: """
-            curl -s -H \"Accept: application/vnd.github+json\" -H \"Authorization: token ${GITHUB_TOKEN}\" \"https://api.github.com/repos/${OWNER}/cortx-re/releases/latest\" | jq '.tag_name' | tr -d '\"'
+            curl -s -H \"Accept: application/vnd.github+json\" -H \"Authorization: token ${GITHUB_TOKEN}\" \"https://api.github.com/repos/${OWNER}/cortx/releases/latest\" | jq '.tag_name' | tr -d '\"'
         """, returnStdout: true).trim()
         CORTX_SERVER_IMAGE = "${REGISTRY}/${OWNER}/cortx-rgw:${BASE_TAG}"
         LATEST_GH_SERVER_IMAGE = "${REGISTRY}/${OWNER}/cortx-rgw:${LATEST_GH_SERVER_IMAGE_TAG}"
@@ -48,11 +48,11 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
-                    def commit_tag_info = build job: 'Release_Engineering/re-workspace/Tagging', wait: true,
+                    def commit_tag_info = build job: 'Cortx-Automation/Release-Process/Commit-Tagging/', wait: true,
                     parameters: [
                         string(name: 'CORTX_IMAGE', value: "${CORTX_SERVER_IMAGE}"),
                         string(name: 'GIT_TAG', value: "${BASE_TAG}"),
-                        string(name: 'TAG_MESSAGE', value: ""),
+                        string(name: 'TAG_MESSAGE', value: "CORTX Release ${BASE_TAG}"),
                         string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
                         string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}")
                     ]    
