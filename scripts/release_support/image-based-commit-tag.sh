@@ -49,18 +49,10 @@ fi
 
 component_commit_details=$(docker inspect -f '{{ index .Config.Labels "org.opencontainers.image.revision" }}' "$CORTX_IMAGE")
 declare -A COMPONENT_LIST=(
-        [cortx-motr]="https://$PASSWD@github.com/Seagate/cortx-motr.git"
-        [cortx-hare]="https://$PASSWD@github.com/Seagate/cortx-hare.git"
-        [cortx-ha]="https://$PASSWD@github.com/Seagate/cortx-ha.git"
-        [cortx-provisioner]="https://$PASSWD@github.com/Seagate/cortx-prvsnr.git"
-        [cortx-csm_agent]="https://$PASSWD@github.com/Seagate/cortx-manager.git"
-        [cortx-py-utils]="https://$PASSWD@github.com/Seagate/cortx-utils.git"
-        [cortx-rgw-integration]="https://$PASSWD@github.com/Seagate/cortx-rgw-integration.git"
-        [cortx-rgw]="https://$PASSWD@github.com/Seagate/cortx-rgw.git"
-        [cortx-re]="https://$PASSWD@github.com/Seagate/cortx-re.git"
+        [cortx-motr]="https://$PASSWD@github.com/gauravchaudhari02/cortx-motr.git"
 )
-git config --global user.email "cortx-application@seagate.com"
-git config --global user.name "cortx-admin"
+git config --global user.email "gaurav.chaudhari@seagate.com"
+git config --global user.name "Gaurav Chaudhari"
 
 for component in "${!COMPONENT_LIST[@]}"
 do
