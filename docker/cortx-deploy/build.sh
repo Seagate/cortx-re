@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (c) 2020 Seagate Technology LLC and/or its Affiliates
+# Copyright (c) 2022 Seagate Technology LLC and/or its Affiliates
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -53,9 +53,7 @@ while getopts "b:p:t:r:e:o:s:h:" opt; do
     esac
 done
 
-if [ -z "${BUILD}" ] ; then
-    BUILD=last_successful_prod
-fi
+[ -z $BUILD ] && BUILD=last_successful_prod
 
 if echo $BUILD | grep -q http;then
         BUILD_URL="$BUILD"
@@ -64,15 +62,13 @@ else
         BUILD_URL="$ARTFACT_URL/$BRANCH/$OS/$BUILD"
 fi
 
-if [ $SERVICE == all ];then
-SERVICE=${IMAGE_LIST[@]}
-fi
+if [ $SERVICE == all ];then SERVICE=${IMAGE_LIST[@]}; fi
 
 if [ "$SERVICE" == "cortx-rgw" ] && [ "$OS" == "centos-7.9.2009" ]; then
-echo -e "#####################################################################"
-echo -e "# SERVICE: $SERVICE Image Build is NOT supported on $OS              "
-echo -e "#####################################################################"
-exit 1
+        echo -e "#####################################################################"
+        echo -e "# SERVICE: $SERVICE Image Build is NOT supported on $OS              "
+        echo -e "#####################################################################"
+        exit 1
 fi
 
 OS_TYPE=$(echo $OS | awk -F[-] '{print $1}')
@@ -84,18 +80,26 @@ echo -e "# SERVICE    : $SERVICE                                 "
 echo -e "# BUILD_URL  : $BUILD_URL                               "
 echo -e "# Base OS    : $OS_TYPE                                 "
 echo -e "# Base image : $OS_TYPE:$OS_RELEASE                     "
+echo -e "# Registry   : $REGISTRY                                "
 echo -e "########################################################"
 
 function get_git_hash {
-sed -i '/KERNEL/d' RELEASE.INFO
-for component in cortx-py-utils cortx-motr cortx-hare cortx-provisioner cortx-ha cortx-rgw-integration
-do
-    echo $component:"$(awk -F['_'] '/'$component'-'$VERSION'/ { print $2 }' RELEASE.INFO | cut -d. -f1 | sed 's/git//g')",
-done
-echo cortx-csm_agent:"$(awk -F['_'] '/cortx-csm_agent-'$VERSION'/ { print $3 }' RELEASE.INFO | cut -d. -f1)",
-echo cortx-rgw:"$(awk -F['-'] '/'ceph-base'/{ print $5  }' RELEASE.INFO | cut -d. -f2)",
-echo cortx-re:"$(git rev-parse --short HEAD)",
+        sed -i '/KERNEL/d' RELEASE.INFO
+        for component in cortx-py-utils cortx-motr cortx-hare cortx-provisioner cortx-ha cortx-rgw-integration
+        do
+        echo $component:"$(awk -F['_'] '/'$component'-'$VERSION'/ { print $2 }' RELEASE.INFO | cut -d. -f1 | sed 's/git//g')",
+        done
+        echo cortx-csm_agent:"$(awk -F['_'] '/cortx-csm_agent-'$VERSION'/ { print $3 }' RELEASE.INFO | cut -d. -f1)",
+        echo cortx-rgw:"$(awk -F['-'] '/'ceph-base'/{ print $5  }' RELEASE.INFO | cut -d. -f2)",
+        echo cortx-re:"$(git rev-parse --short HEAD)",
 }
+
+function setup_local_image_registry {
+        docker rm -f local-registry || { echo "Failed to remove existing local-registry container"; exit 1; }
+        docker run -d -e REGISTRY_HTTP_ADDR=0.0.0.0:8080 -p 5000:5000 -p 8080:8080 --restart=always --name local-registry registry:2 || { echo "Failed setup local container regsitry"; exit 1; }
+        yum install jq -q -y ||  { echo "Failed to install jq package"; exit 1; } && jq -n '{"insecure-registries": $ARGS.positional}' --args "$HOSTNAME:8080" > /etc/docker/daemon.json
+        systemctl restart docker || { echo "Docker daemon restart failed"; exit 1; } && systemctl status docker
+} 
 
 curl -s $BUILD_URL/RELEASE.INFO -o RELEASE.INFO
 if grep -q "404 Not Found" RELEASE.INFO ; then echo -e "\nProvided Build does not have required structure..existing\n"; exit 1; fi
@@ -119,6 +123,13 @@ CREATED_DATE=$(date -u +'%Y-%m-%d %H:%M:%S%:z')
 
 docker-compose -f ./docker-compose.yml build --parallel --force-rm --compress --build-arg GIT_HASH="$GIT_HASH" --build-arg VERSION="$VERSION-$DOCKER_BUILD_BUILD" --build-arg CREATED_DATE="$CREATED_DATE" --build-arg BUILD_URL=$BUILD_URL --build-arg ENVIRONMENT=$ENVIRONMENT --build-arg OS=$OS --build-arg OS_TYPE=$OS_TYPE --build-arg OS_RELEASE=$OS_RELEASE --build-arg CORTX_VERSION="$CORTX_VERSION" $SERVICE
 
+
+if [ "$REGISTRY" == "local" ]; then
+        echo "Setting up local container image registry"
+        setup_local_image_registry
+        REGISTRY="$HOSTNAME:8080"
+fi
+
 for SERVICE_NAME in $SERVICE
 do
 if [ "$DOCKER_PUSH" == "yes" ];then
@@ -141,3 +152,4 @@ else
         echo "Latest tag creation skipped"
 fi
 done
+
