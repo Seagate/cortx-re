@@ -24,10 +24,8 @@ pipeline {
         string(name: 'REGION', defaultValue: 'ap-south-1', description: 'AWS region', trim: true)
         string(name: 'KEY_NAME', defaultValue: 'automation-key', description: 'Key name', trim: true)
         string(name: 'COMMUNITY_USE', defaultValue: 'yes', description: 'Only use during community deployment', trim: true)
-        password(name: 'SECRET_KEY', description: 'secret key for AWS account')
-        password(name: 'ACCESS_KEY', description: 'access key for AWS account')
         
-        // Please configure ROOT_PASSWORD parameter in Jenkins job configuration.
+        // Please configure ROOT_PASSWORD, ACCESS_KEY and SECRET_KEY parameters in Jenkins job configuration.
     }
 
     stages {

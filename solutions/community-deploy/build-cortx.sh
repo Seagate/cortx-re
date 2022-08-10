@@ -132,7 +132,7 @@ nginx_validation
 if [ -d $LOCAL_MOUNT/cortx-re ]; then rm -rf $LOCAL_MOUNT/cortx-re; fi
 #git clone https://github.com/Seagate/cortx-re -b $BRANCH && pushd cortx-re/docker/cortx-deploy/
 git clone https://github.com/shailesh-vaidya/cortx-re -b community-deploy && pushd cortx-re/docker/cortx-deploy/
-./build.sh -b http://$IP -o rockylinux-8.4 -s all -e opensource-ci -r local -p yes
+./build.sh -b http://$/var/artifacts/0/ -o rockylinux-8.4 -s all -e opensource-ci -r local -p yes
 
 # Show recently generated cortx-all images
 docker images --format='{{.Repository}}:{{.Tag}} {{.CreatedAt}}' --filter=reference='cortx-*'
