@@ -99,9 +99,7 @@ sudo su -c 'time bash -x ./build-cortx.sh'
 AWS_WORKER_IP=$(cat ip_public.txt | jq '.[1]','.[2]' | tr -d '",[]')
 for worker in $AWS_WORKER_IP;do cd /tmp && rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' /tmp/*.tar centos@$worker:/tmp; done
 ```
- 
-### Execute Instructions from Worker nodes
-- Login to worker nodes and load the cortx build images by executing the following command
+- Login to worker nodes and load the cortx build images by executing the following command,
 
 **Note:** Either use public ip addresss from local host or private ip address from AWS primary node to login to worker nodes.
 ```
