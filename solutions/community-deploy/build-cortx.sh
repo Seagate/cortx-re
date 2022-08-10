@@ -45,6 +45,20 @@ done
 IP=$(ip route get 8.8.8.8| cut -d' ' -f7|awk '!/^$/')
 DOCKER_VERSION=latest
 
+function docker_check() {
+        docker --version >/dev/null 2>&1
+        if [ $? -eq 0 ]; then
+                add_common_separator "Installed Docker version: $(docker --version)."
+        else
+                add_common_separator "Docker is not installed. Installing Docker engine"
+                rm -rf /etc/yum.repos.d/download.docker.com_linux_centos_7_x86_64_stable_.repo docker-ce.repo
+                yum install -y yum-utils && yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo -y && yum install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+                sleep 30
+                systemctl start docker
+        fi
+}
+docker_check
+
 function docker_compose_check() {
         docker-compose --version >/dev/null 2>&1
         if [ $? -eq 0 ]; then
