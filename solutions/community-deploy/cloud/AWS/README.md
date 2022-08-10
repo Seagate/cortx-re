@@ -94,13 +94,17 @@ ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$PRIMARY_IP
 git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/community-deploy
 time bash -x ./build-cortx.sh
 ```
+- Save and compress the cortx build images by running following command,
+```
+docker save $(docker images | sed '1d' | awk '{print $1 ":" $2 }') -o /tmp/cortximages.tar
+```
 - Execute the following command to copy the cortx build images from **primary node to all the worker nodes using private ip address**,
 ```
 AWS_WORKER_IP=$(cat /tmp/ip_private.txt | jq '.[1]','.[2]' | tr -d '",[]')
 ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$PRIMARY_IP
 for worker in $AWS_WORKER_IP;do cd /tmp && rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' /tmp/*.tar centos@$worker:/tmp; done
 ```
-- Login to worker nodes and load the cortx build images by executing the following command,
+- **Login to worker nodes** and load the cortx build images by executing the following command,
 
 **Note:** Either use public ip addresss from local host or private ip address from AWS primary node to login to worker nodes.
 ```
