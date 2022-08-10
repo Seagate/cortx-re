@@ -79,7 +79,7 @@ for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$i
 ```
 - Execute the following commands on all the nodes which will copy the pem file from primary node to the worker nodes using private ip address
 ```
-for ip in $PUBLIC_IP;do rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' cortx.pem centos@$ip:/tmp; done
+for ip in $PUBLIC_IP;do rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' cortx.pem ip_public.txt ip_private.txt centos@$ip:/tmp; done
 ```
 - AWS instances are ready for CORTX Build and deployment now. Connect to EC2 nodes over SSH and validate that all three network cards has IP address assigned.
 
@@ -87,19 +87,17 @@ for ip in $PUBLIC_IP;do rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyC
 - We will use [cortx-build](https://github.com/Seagate/cortx/pkgs/container/cortx-build) docker image to compile entire CORTX stack.
 - Execute `build-cortx.sh` from primary node using public ip address which will generate CORTX container images from `main` of CORTX components
 
-**Note:** Become the **root** user after logged in to the primary node by running the following command,
-```
-sudo su
-```
+**Note:** Become the **root** user after logged in to the primary node by running `sudo su` command.
 ```
 PRIMARY_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
 ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$PRIMARY_IP
 git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/community-deploy
 time bash -x ./build-cortx.sh
 ```
-- Execute the following command to copy the cortx build images from primary node to all the worker nodes using private ip address,
+- Execute the following command to copy the cortx build images from **primary node to all the worker nodes using private ip address**,
 ```
-AWS_WORKER_IP=$(cat ip_public.txt | jq '.[1]','.[2]' | tr -d '",[]')
+AWS_WORKER_IP=$(cat /tmp/ip_public.txt | jq '.[1]','.[2]' | tr -d '",[]')
+ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$PRIMARY_IP
 for worker in $AWS_WORKER_IP;do cd /tmp && rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' /tmp/*.tar centos@$worker:/tmp; done
 ```
 - Login to worker nodes and load the cortx build images by executing the following command,
