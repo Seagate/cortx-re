@@ -2,7 +2,7 @@
 
 PRE="true"
 REGISTRY="ghcr.io/seagate"
-RELEASE_REPO_NAME="cortx-re"
+RELEASE_REPO_NAME="cortx"
 RELEASE_REPO_OWNER="gauravchaudhari02"
 BUILD_INFO="**Build Instructions**: https://github.com/Seagate/cortx-re/tree/main/solutions/community-deploy/cloud/AWS#cortx-build"
 DEPLOY_INFO="**Deployment Instructions**: https://github.com/Seagate/cortx-re/blob/main/solutions/community-deploy/CORTX-Deployment.md"
@@ -25,8 +25,8 @@ if [[ -z "$TAG" || -z "$SERVICES_VERSION" || -z "$CHANGESET_URL" ]]; then
 fi
 
 # Install required packages
-yum install -y https://github.com/cli/cli/releases/download/v2.14.3/gh_2.14.3_linux_amd64.rpm || { echo "ERROR: failed to install gh"; exit 1; } 
-yum install jq -y || { echo "ERROR: failed to install jq"; exit 1; } 
+# yum install -y https://github.com/cli/cli/releases/download/v2.14.3/gh_2.14.3_linux_amd64.rpm || { echo "ERROR: failed to install gh"; exit 1; } 
+# yum install jq -y || { echo "ERROR: failed to install jq"; exit 1; } 
 # set release content
 CHANGESET=$( curl -ks $CHANGESET_URL | tail -n +2 )
 CORTX_SERVER_IMAGE="[$REGISTRY/cortx-rgw:$TAG]($REGISTRY/cortx-rgw:$TAG)"
