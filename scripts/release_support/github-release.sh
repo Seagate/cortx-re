@@ -3,7 +3,7 @@
 PRE="true"
 REGISTRY="ghcr.io/seagate"
 RELEASE_REPO_NAME="cortx"
-RELEASE_REPO_OWNER="gauravchaudhari02"
+RELEASE_REPO_OWNER="seagate"
 BUILD_INFO="**Build Instructions**: https://github.com/Seagate/cortx-re/tree/main/solutions/community-deploy/cloud/AWS#cortx-build"
 DEPLOY_INFO="**Deployment Instructions**: https://github.com/Seagate/cortx-re/blob/main/solutions/community-deploy/CORTX-Deployment.md"
 SERVICES_VERSION_TITLE="**CORTX Services Release**: "
