@@ -16,7 +16,7 @@ pipeline {
     }
 
     environment {
-        GITHUB_TOKEN = credentials('gaurav-github-token')
+        GITHUB_TOKEN = credentials('cortx-admin-token')
         EMAIL_RECIPIENTS = "DEBUG"
         REGISTRY = "ghcr.io"
         OWNER = "seagate"
