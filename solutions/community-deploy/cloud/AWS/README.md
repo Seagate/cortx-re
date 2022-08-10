@@ -94,11 +94,10 @@ ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$PRIMARY_IP
 git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/community-deploy
 sudo su -c 'time bash -x ./build-cortx.sh'
 ```
-- Execute the following command to copy the cortx build images from primary node to **all the worker nodes** using private ip address,
-
-**For example:**
+- Execute the following command to copy the cortx build images from primary node to all the worker nodes using private ip address,
 ```
-cd /tmp && rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' /tmp/*.tar centos@"<AWS instance private-ip-workernode>":/tmp
+AWS_WORKER_IP=$(cat ip_public.txt | jq '.[1]','.[2]' | tr -d '",[]')
+for worker in $AWS_WORKER_IP;do cd /tmp && rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' /tmp/*.tar centos@$AWS_WORKER_IP:/tmp; done
 ```
  
 ### Execute Instructions from Worker nodes
