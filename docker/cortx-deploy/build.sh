@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (c) 2020 Seagate Technology LLC and/or its Affiliates
+# Copyright (c) 2022 Seagate Technology LLC and/or its Affiliates
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -65,10 +65,10 @@ fi
 if [ $SERVICE == all ];then SERVICE=${IMAGE_LIST[@]}; fi
 
 if [ "$SERVICE" == "cortx-rgw" ] && [ "$OS" == "centos-7.9.2009" ]; then
-echo -e "#####################################################################"
-echo -e "# SERVICE: $SERVICE Image Build is NOT supported on $OS              "
-echo -e "#####################################################################"
-exit 1
+        echo -e "#####################################################################"
+        echo -e "# SERVICE: $SERVICE Image Build is NOT supported on $OS              "
+        echo -e "#####################################################################"
+        exit 1
 fi
 
 OS_TYPE=$(echo $OS | awk -F[-] '{print $1}')
@@ -84,21 +84,21 @@ echo -e "# Registry   : $REGISTRY                                "
 echo -e "########################################################"
 
 function get_git_hash {
-sed -i '/KERNEL/d' RELEASE.INFO
-for component in cortx-py-utils cortx-motr cortx-hare cortx-provisioner cortx-ha cortx-rgw-integration
-do
-    echo $component:"$(awk -F['_'] '/'$component'-'$VERSION'/ { print $2 }' RELEASE.INFO | cut -d. -f1 | sed 's/git//g')",
-done
-echo cortx-csm_agent:"$(awk -F['_'] '/cortx-csm_agent-'$VERSION'/ { print $3 }' RELEASE.INFO | cut -d. -f1)",
-echo cortx-rgw:"$(awk -F['-'] '/'ceph-base'/{ print $5  }' RELEASE.INFO | cut -d. -f2)",
-echo cortx-re:"$(git rev-parse --short HEAD)",
+        sed -i '/KERNEL/d' RELEASE.INFO
+        for component in cortx-py-utils cortx-motr cortx-hare cortx-provisioner cortx-ha cortx-rgw-integration
+        do
+        echo $component:"$(awk -F['_'] '/'$component'-'$VERSION'/ { print $2 }' RELEASE.INFO | cut -d. -f1 | sed 's/git//g')",
+        done
+        echo cortx-csm_agent:"$(awk -F['_'] '/cortx-csm_agent-'$VERSION'/ { print $3 }' RELEASE.INFO | cut -d. -f1)",
+        echo cortx-rgw:"$(awk -F['-'] '/'ceph-base'/{ print $5  }' RELEASE.INFO | cut -d. -f2)",
+        echo cortx-re:"$(git rev-parse --short HEAD)",
 }
 
 function setup_local_image_registry {
-docker rm -f local-registry
-docker run -d -e REGISTRY_HTTP_ADDR=0.0.0.0:8080 -p 5000:5000 -p 8080:8080 --restart=always --name local-registry registry:2
-jq -n '{"insecure-registries": $ARGS.positional}' --args "$HOSTNAME:8080" > /etc/docker/daemon.json
-systemctl restart docker
+        docker rm -f local-registry
+        docker run -d -e REGISTRY_HTTP_ADDR=0.0.0.0:8080 -p 5000:5000 -p 8080:8080 --restart=always --name local-registry registry:2
+        jq -n '{"insecure-registries": $ARGS.positional}' --args "$HOSTNAME:8080" > /etc/docker/daemon.json
+        systemctl restart docker
 }
 
 curl -s $BUILD_URL/RELEASE.INFO -o RELEASE.INFO
@@ -125,9 +125,9 @@ docker-compose -f ./docker-compose.yml build --parallel --force-rm --compress --
 
 
 if [ "$REGISTRY" == "local" ]; then
-echo "Setting up local container image registry"
-setup_local_image_registry
-REGISTRY="$HOSTNAME:8080"
+        echo "Setting up local container image registry"
+        setup_local_image_registry
+        REGISTRY="$HOSTNAME:8080"
 fi
 
 for SERVICE_NAME in $SERVICE
@@ -135,7 +135,7 @@ do
 if [ "$DOCKER_PUSH" == "yes" ];then
         echo "Pushing Docker image to GitHub Container Registry"
         docker tag $SERVICE_NAME:$TAG $REGISTRY/$PROJECT/$SERVICE_NAME:$TAG
-#        docker push $REGISTRY/$PROJECT/$SERVICE_NAME:$TAG
+        docker push $REGISTRY/$PROJECT/$SERVICE_NAME:$TAG
 else
         echo "Docker Image push skipped"
         exit 0
