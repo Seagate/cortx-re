@@ -96,7 +96,7 @@ time bash -x ./build-cortx.sh
 ```
 - Execute the following command to copy the cortx build images from **primary node to all the worker nodes using private ip address**,
 ```
-AWS_WORKER_IP=$(cat /tmp/ip_public.txt | jq '.[1]','.[2]' | tr -d '",[]')
+AWS_WORKER_IP=$(cat /tmp/ip_private.txt | jq '.[1]','.[2]' | tr -d '",[]')
 ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$PRIMARY_IP
 for worker in $AWS_WORKER_IP;do cd /tmp && rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' /tmp/*.tar centos@$worker:/tmp; done
 ```
