@@ -52,7 +52,7 @@ pipeline {
                     parameters: [
                         string(name: 'CORTX_IMAGE', value: "${CORTX_SERVER_IMAGE}"),
                         string(name: 'GIT_TAG', value: "${BASE_TAG}"),
-                        string(name: 'TAG_MESSAGE', value: "CORTX Release ${BASE_TAG}"),
+                        string(name: 'TAG_MESSAGE', value: ""),
                         string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
                         string(name: 'CORTX_RE_REPO', value: "${CORTX_RE_REPO}")
                     ]    
