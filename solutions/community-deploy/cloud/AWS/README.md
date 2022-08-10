@@ -63,7 +63,7 @@ PUBLIC_IP=`terraform show -json terraform.tfstate | jq .values.outputs.aws_insta
 ```
 **Private ip address:**
 ```
-PRIVATE_IP=`terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_ip_addr.value 2>&1 | tee ip_private.txt | tr -d '",[]' | sed '/^$/d')`
+PRIVATE_IP=`terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_ip_addr.value 2>&1 | tee ip_private.txt | tr -d '",[]' | sed '/^$/d'`
 ```
 - Execute the following commands on all the nodes which will perform the following actions:
   - Setup network and storage devices for CORTX.
