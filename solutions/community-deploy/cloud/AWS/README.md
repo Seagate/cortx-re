@@ -74,10 +74,10 @@ echo 'PATH=~/bin:$PATH:$PRIVATE_IP' >> ~/.bashrc && source ~/.bashrc
   - Setup network and storage devices for CORTX.
   - Generating the `root` user password which is required as a part of CORTX deployment
   - `setup.sh` will reboot all the nodes once executed
-  - Copy the pem file from primary node to the worker nodes using private ip address
 ```
 for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$ip 'echo "Enter new password for root user" && sudo passwd root && sudo bash /home/centos/setup.sh'; done
 ```
+- Execute the following commands on all the nodes which will copy the pem file from primary node to the worker nodes using private ip address
 ```
 for ip in $PUBLIC_IP;do rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' cortx.pem centos@$ip:/tmp; done
 ```
