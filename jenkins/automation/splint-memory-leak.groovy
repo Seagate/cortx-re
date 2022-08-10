@@ -33,7 +33,7 @@ pipeline {
                 sh label: '', returnStatus: true, script: '''
                 yum install splint -y
                 mkdir -p artifacts
-                for file in  $(find $PWD -type f -regextype posix-egrep -regex ".+\\\\.(c|h|lcl)$"); do splint +trytorecover -preproc -warnposix +line-len 100000 $file | sed \'H;1h;$!d;g;s/\\n  */ /g\' >> artifacts/splint-analysis.log ; done || ERROR: Splint execution failed. please check logs for more details
+                for file in  $(find $PWD -type f -regextype posix-egrep -regex ".+\\\\.(c|h|lcl)$"); do splint +trytorecover -preproc -warnposix +line-len 100000 $file | sed \'H;1h;$!d;g;s/\\n  */ /g\' >> artifacts/splint-analysis.log ; done || echo "ERROR: Splint execution failed. please check logs for more details"
                 '''
             }
         }
