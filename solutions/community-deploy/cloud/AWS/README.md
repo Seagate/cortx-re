@@ -59,15 +59,11 @@ terraform validate && terraform apply -var-file user.tfvars --auto-approve
 
 **Public ip address:**
 ```
-terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip_public.txt
-export PUBLIC_IP=$(cat ip_public.txt | tr -d '",[]' | sed '/^$/d')
-echo 'PATH=~/bin:$PATH:$PUBLIC_IP' >> ~/.bashrc && source ~/.bashrc
+PUBLIC_IP=`terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip_public.txt | tr -d '",[]' | sed '/^$/d'`
 ```
 **Private ip address:**
 ```
-terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_ip_addr.value 2>&1 | tee ip_private.txt
-export PRIVATE_IP=$(cat ip_private.txt | tr -d '",[]' | sed '/^$/d')
-echo 'PATH=~/bin:$PATH:$PRIVATE_IP' >> ~/.bashrc && source ~/.bashrc
+PRIVATE_IP=`terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_ip_addr.value 2>&1 | tee ip_private.txt | tr -d '",[]' | sed '/^$/d')`
 ```
 - Execute the following commands on all the nodes which will perform the following actions:
   - Setup network and storage devices for CORTX.
