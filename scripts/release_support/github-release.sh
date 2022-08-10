@@ -29,9 +29,9 @@ fi
 # yum install jq -y || { echo "ERROR: failed to install jq"; exit 1; } 
 # set release content
 CHANGESET=$( curl -ks $CHANGESET_URL | tail -n +2 )
-CORTX_SERVER_IMAGE="[$REGISTRY/cortx-rgw:$TAG]($REGISTRY/cortx-rgw:$TAG)"
-CORTX_DATA_IMAGE="[$REGISTRY/cortx-data:$TAG]($REGISTRY/cortx-data:$TAG)"
-CORTX_CONTROL_IMAGE="[$REGISTRY/cortx-control:$TAG]($REGISTRY/cortx-control:$TAG)"
+CORTX_SERVER_IMAGE="[$REGISTRY/cortx-rgw:$TAG](https://github.com/Seagate/cortx/pkgs/container/cortx-rgw)"
+CORTX_DATA_IMAGE="[$REGISTRY/cortx-data:$TAG](https://github.com/Seagate/cortx/pkgs/container/cortx-data)"
+CORTX_CONTROL_IMAGE="[$REGISTRY/cortx-control:$TAG](https://github.com/Seagate/cortx/pkgs/container/cortx-control)"
 IMAGES_INFO="| Image      | Location |\n|    :----:   |    :----:   |\n| cortx-server      | $CORTX_SERVER_IMAGE       |\n| cortx-data      | $CORTX_DATA_IMAGE      |\n| cortx-control      | $CORTX_CONTROL_IMAGE       |"
 SERVICES_VERSION="[$SERVICES_VERSION](https://github.com/Seagate/cortx-k8s/releases/tag/$SERVICES_VERSION)"
 MESSAGE="$CORTX_IMAGE_TITLE\n$IMAGES_INFO\n\n$SERVICES_VERSION_TITLE$SERVICES_VERSION\n\n$BUILD_INFO\n$DEPLOY_INFO\n\n$CHANGESET_TITLE\n\n${CHANGESET//$'\n'/\\n}"
