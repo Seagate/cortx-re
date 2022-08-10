@@ -33,7 +33,7 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
-                    def image_tag_info = build job: 'Cortx-Automation/Release-Process/Image-Tagging/', wait: true,
+                    def imageTagInfo = build job: 'Cortx-Automation/Release-Process/Image-Tagging/', wait: true,
                     parameters: [
                         string(name: 'BASE_TAG', value: "${BASE_TAG}"),
                         string(name: 'TARGET_TAG', value: "${TARGET_TAG}"),
@@ -48,7 +48,7 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
-                    def commit_tag_info = build job: 'Cortx-Automation/Release-Process/Commit-Tagging/', wait: true,
+                    def commitTagInfo = build job: 'Cortx-Automation/Release-Process/Commit-Tagging/', wait: true,
                     parameters: [
                         string(name: 'CORTX_IMAGE', value: "${CORTX_SERVER_IMAGE}"),
                         string(name: 'GIT_TAG', value: "${BASE_TAG}"),
@@ -64,12 +64,12 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
-                    def changelog_info = build job: 'Release_Engineering/Cortx-Automation/changelog-generation', wait: true,
+                    def changelogInfo = build job: 'Release_Engineering/Cortx-Automation/changelog-generation', wait: true,
                     parameters: [
                         string(name: 'BUILD_FROM', value: "${LATEST_GH_SERVER_IMAGE}"),
                         string(name: 'BUILD_TO', value: "${CORTX_SERVER_IMAGE}")
                     ]
-                    env.changeseturl = sh( script: "echo ${changelog_info.absoluteUrl}artifact/CHANGESET.md", returnStdout: true)  
+                    env.changeseturl = sh( script: "echo ${changelogInfo.absoluteUrl}artifact/CHANGESET.md", returnStdout: true)  
                 }
             }        
         }
@@ -78,7 +78,7 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
-                    def gh_release = build job: 'Cortx-Automation/Release-Process/Create-GitHub-Release', wait: true,
+                    def ghRelease = build job: 'Cortx-Automation/Release-Process/Create-GitHub-Release', wait: true,
                     parameters: [
                         string(name: 'GIT_TAG', value: "${BASE_TAG}"),
                         string(name: 'SERVICES_VERSION', value: "${SERVICES_RELEASE}"),
