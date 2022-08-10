@@ -66,7 +66,7 @@ pipeline {
                 // Email Notification
                 env.build_stage = "${build_stage}"
 
-                def toEmail = "CORTX.DevOps.RE@seagate.com"
+                def toEmail = "gaurav.chaudhari@seagate.com"
                 def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
                 if ( manager.build.result.toString() == "FAILURE" ) {
                     toEmail = "${toEmail}"
