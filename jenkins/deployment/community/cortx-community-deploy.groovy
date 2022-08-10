@@ -79,7 +79,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 script {
                     env.AWS_IP = sh( script: '''
-                    cd solutions/community-deploy/cloud/AWS && terraform show -json terraform.tfstate | jq .values.outputs.cortx_deploy_ip_addr.value | tr -d '""'
+                    cd solutions/community-deploy/cloud/AWS && terraform show -json terraform.tfstate | jq .values.outputs.cortx_deploy_ip_addr.value | tr -d '"'
                     ''', returnStdout: true).trim()
                 }
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
