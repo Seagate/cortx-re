@@ -4,12 +4,7 @@ This document discusses the procedure to compile the CORTX Stack and deploy on A
 
 **Prerequisites:**
 
-- Ensure that you have an AWS account with Secret Key and Access Key.
- - During tools installation, you will be prompted to enter your AWS Access and Secret key. For more details, refer [AWS CLI Configuration](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-config).
-- Execute below command to check the connectivity with AWS
-```
-aws sts get-caller-identity
-```
+ - During tools installation, you will be prompted to enter your AWS Access and Secret key so ensure that you have an AWS account with Secret Key and Access Key. For more details, refer [AWS CLI Configuration](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-config).
 
 ## Procedure
 - Clone the `cortx-re` repository and then change the directory to `cortx-re/solutions/community-deploy/cloud/AWS`
@@ -19,6 +14,10 @@ git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/comm
 - Install the required tools by executing the following script,
 ```
 ./tool_setup.sh
+```
+- Execute below command to check the connectivity with AWS
+```
+aws sts get-caller-identity
 ```
 - Modify `user.tfvars` file on local host with your AWS details.
 ```
