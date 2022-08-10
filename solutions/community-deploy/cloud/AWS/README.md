@@ -100,8 +100,8 @@ docker save $(docker images | sed '1d' | awk '{print $1 ":" $2 }') -o /tmp/cortx
 ```
 - Execute the following command to copy the cortx build images from **primary node to all the worker nodes using private ip address**,
 ```
-AWS_WORKER_IP=$(cat /tmp/ip_private.txt | jq '.[1]','.[2]' | tr -d '",[]')
 ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$PRIMARY_IP
+AWS_WORKER_IP=$(cat /tmp/ip_private.txt | jq '.[1]','.[2]' | tr -d '",[]')
 for worker in $AWS_WORKER_IP;do cd /tmp && rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' /tmp/*.tar centos@$worker:/tmp; done
 ```
 - **Login to worker nodes** and load the cortx build images by executing the following command,
