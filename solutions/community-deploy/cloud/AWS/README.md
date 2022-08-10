@@ -78,7 +78,7 @@ for ip in $PUBLIC_IP;do rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyC
 ```
 - AWS instances are ready for CORTX Build and deployment now. Connect to EC2 nodes over SSH and validate that all three network cards has IP address assigned.
 
-### CORTX Build without Tag
+### CORTX Build
 - We will use [cortx-build](https://github.com/Seagate/cortx/pkgs/container/cortx-build) docker image to compile entire CORTX stack.
 - Execute `build-cortx.sh` from primary node using public ip address which will generate CORTX container images from `main` of CORTX components
 
@@ -102,8 +102,6 @@ for worker in $AWS_WORKER_IP;do cd /tmp && rsync -avzrP -e 'sudo ssh -i cortx.pe
 ```
 for worker in $AWS_WORKER_IP;do pushd /tmp ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$workernode 'sudo docker load -i /tmp/cortximages.tar'; done
 ```
-
-### CORTX Build with Tag
 - Clone cortx-re repository from required branch/tag. If you do not provide `-b <branch/tag>`, then it will use default main branch    
   :warning: Tag based build is supported after including tag [2.0.0-879](https://github.com/Seagate/cortx-re/releases/tag/2.0.0-879)
   
