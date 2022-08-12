@@ -10,6 +10,7 @@ pipeline {
     parameters {
         string(name: 'BASE_TAG', defaultValue: '', description: 'Image tag which need to be tagged with TARGET_TAG. It is used to tag component commits and create GitHub Release as well')
         string(name: 'TARGET_TAG', defaultValue: '', description: 'New tag to be tagged on Image')
+        string(name: 'RELEASE_REPO', defaultValue: 'Seagate/cortx', description: 'owner/repository-name where release need to be created')
         string(name: 'SERVICES_RELEASE', defaultValue: '', description: 'Services(cortx-k8s) release version on which image deployment is tested')
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for tagging/Changelog/GitHub Release scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repository for tagging/Changelog/GitHub Release scripts', trim: true)
@@ -25,7 +26,7 @@ pipeline {
         REGISTRY = "ghcr.io"
         OWNER = "seagate"
         LATEST_GH_SERVER_IMAGE_TAG = sh( script: """
-            curl -s -H \"Accept: application/vnd.github+json\" -H \"Authorization: token ${GITHUB_TOKEN}\" \"https://api.github.com/repos/${OWNER}/cortx/releases/latest\" | jq '.tag_name' | tr -d '\"'
+            curl -s -H \"Accept: application/vnd.github+json\" -H \"Authorization: token ${GITHUB_TOKEN}\" \"https://api.github.com/repos/${OWNER}/cortx/releases\" | jq -r 'map(select(.prerelease)) | first | .tag_name' | tr -d '\"'
         """, returnStdout: true).trim()
         CORTX_SERVER_IMAGE = "${REGISTRY}/${OWNER}/cortx-rgw:${BASE_TAG}"
         LATEST_GH_SERVER_IMAGE = "${REGISTRY}/${OWNER}/cortx-rgw:${LATEST_GH_SERVER_IMAGE_TAG}"
@@ -85,6 +86,7 @@ pipeline {
                     def ghRelease = build job: 'Cortx-Automation/Release-Process/Create-GitHub-Release', wait: true,
                     parameters: [
                         string(name: 'GIT_TAG', value: "${BASE_TAG}"),
+                        string(name: 'RELEASE_REPO', value: "${RELEASE_REPO}"),
                         string(name: 'SERVICES_VERSION', value: "${SERVICES_RELEASE}"),
                         string(name: 'CHANGESET_URL', value: "${env.changeseturl}"),
                         string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
