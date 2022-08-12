@@ -70,9 +70,9 @@ hostname=cortx-deploy-node3.cortx.com,user=root,pass=<root-password>
 ```
 
 ## Deploy CORTX Stack 
-- Execute `cortx-deploy.sh` to deploy the CORTX stack on your K8s cluster.
+- Execute `cortx-deploy.sh` to deploy the CORTX stack on your K8s cluster with locally generated images,
 ```
-export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
+export SOLUTION_CONFIG_TYPE=automated && export CORTX_SERVER_IMAGE="<AWS instance primarynode hostname>":8080/cortx-rgw:2.0.0-0 && export CORTX_DATA_IMAGE="<AWS instance primarynode hostname>":8080/cortx-data:2.0.0-0 && export CORTX_CONTROL_IMAGE="<AWS instance primarynode hostname>":8080/cortx-control:2.0.0-0 && export COMMUNITY_USE=yes && bash -x ./cortx-deploy.sh --cortx-cluster
 ```
 
 **Note:**  
@@ -96,7 +96,7 @@ export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
 
 **For example:**
 ```
-export CORTX_SCRIPTS_BRANCH=main && export CORTX_SCRIPTS_REPO=Seagate/cortx-k8s && export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
+export CORTX_SCRIPTS_BRANCH=main && export CORTX_SCRIPTS_REPO=Seagate/cortx-k8s && export SOLUTION_CONFIG_TYPE=automated && export SOLUTION_CONFIG_TYPE=automated && export CORTX_SERVER_IMAGE=ip-172-31-45-16.ap-south-1.compute.internal:8080/cortx-rgw:2.0.0-0 && export CORTX_DATA_IMAGE=ip-172-31-45-16.ap-south-1.compute.internal:8080/cortx-data:2.0.0-0 && export CORTX_CONTROL_IMAGE=ip-172-31-45-16.ap-south-1.compute.internal:8080/cortx-control:2.0.0-0 && export COMMUNITY_USE=yes && bash -x ./cortx-deploy.sh --cortx-cluster
 ```
 
 ## Sanity test 
