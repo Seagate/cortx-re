@@ -95,10 +95,10 @@ pipeline {
     }            
 }
 
-def getImageTags(image, git_tag) {
+def getImageTags(image, tag) {
     withCredentials([string(credentialsId: 'gaurav-github-token', variable: 'GH_TOKEN')]) {
         image_tags = sh( script: """
-            tags=\$( curl -s -H \"Accept: application/vnd.github+json\" -H \"Authorization: token ${GH_TOKEN}\" \"https://api.github.com/orgs/seagate/packages/container/${image}/versions\" | jq '.[] | select(.metadata.container.tags[]==\"${git_tag}\") | .metadata.container.tags[]' | awk '!/2.0.0-latest/' | tr -d '\"' )
+            tags=\$( curl -s -H \"Accept: application/vnd.github+json\" -H \"Authorization: token ${GH_TOKEN}\" \"https://api.github.com/orgs/seagate/packages/container/${image}/versions\" | jq '.[] | select(.metadata.container.tags[]==\"${tag}\") | .metadata.container.tags[]' | awk '!/2.0.0-latest/' | tr -d '\"' )
             echo \${tags} | tr ' ' '/'
         """, returnStdout: true).trim()
         return image_tags
