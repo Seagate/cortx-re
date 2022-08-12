@@ -65,6 +65,7 @@ pipeline {
 
                 // Email Notification
                 env.build_stage = "${build_stage}"
+                env.tags = getImageTags("cortx-rgw","${GIT_TAG}")
 
                 def toEmail = "gaurav.chaudhari@seagate.com"
                 def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
@@ -87,4 +88,15 @@ pipeline {
             cleanWs()
         }
     }            
+}
+
+def getImageTags(container_image,git_tag) {
+
+    withCredentials([string(credentialsId: 'gaurav-github-token', variable: 'GH_TOKEN')]) {
+        image_tags = sh( script: """
+            tags=$( curl -s -H "Accept: application/vnd.github+json" -H "Authorization: token $GH_TOKEN" https://api.github.com/orgs/seagate/packages/container/${container_image}/versions | jq '.[] | select(.metadata.container.tags[]=="${git_tag}") | .metadata.container.tags[]' | awk '!/2.0.0-latest/' | tr -d '"' )
+            echo "$tag" | tr ' ' '/'
+        """, returnStdout: true).trim()
+        return image_tags
+    }
 }
