@@ -91,7 +91,7 @@ time bash -x ./build-cortx.sh
 ```
 - Save and compress the cortx build images by running following command,
 ```
-docker save $(docker images | sed '1d' | awk '{print $1 ":" $2 }') -o /tmp/cortximages.tar
+echo "Wait till the operation is completed..." && docker save $(docker images | sed '1d' | awk '{print $1 ":" $2 }') -o /tmp/cortximages.tar
 ```
 - Execute the following command to copy the cortx build images from **primary node to all the worker nodes using private ip address**,
 ```
