@@ -17,7 +17,7 @@ pipeline {
     }
 
     environment {
-        IMAGE_TAGS = getImageTags("cortx-rgw", "${GIT_TAG}")
+        IMAGE_TAGS = getImageTags("cortx-rgw", "2.0.0-895")
     }
 
     stages {
