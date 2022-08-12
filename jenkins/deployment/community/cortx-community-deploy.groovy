@@ -26,8 +26,8 @@ pipeline {
         string(name: 'EBS_VOLUME_COUNT', defaultValue: '9', description: 'EBS volumes to attach onto nodes. Currently maximum 25 disks are supported', trim: true)
         string(name: 'EBS_VOLUME_SIZE', defaultValue: '10', description: 'EBS volume size in GB to attach onto nodes', trim: true)
         string(name: 'COMMUNITY_USE', defaultValue: 'yes', description: 'Only use during community deployment', trim: true)
+        
         // Please configure ROOT_PASSWORD, ACCESS_KEY and SECRET_KEY parameters in Jenkins job configuration.
-    }
 
     stages {
 
@@ -65,33 +65,34 @@ pipeline {
                 popd
                 '''
             }
-            }
-
-        stage ('Create EC2 Instance') {
-                steps {
-                    script { build_stage = env.STAGE_NAME }
-                    sh label: 'Setting up EC2 instance', script: '''
-                        pushd solutions/community-deploy/cloud/AWS
-                            terraform init && terraform validate
-                            terraform plan -var-file user.tfvars
-                            terraform apply -var-file user.tfvars --auto-approve
-                        popd
-                '''
-                }
         }
 
-        stage ('Network and Storage Configuration') {
+                stage ('Create EC2 instace') {
             steps {
                 script { build_stage = env.STAGE_NAME }
+                sh label: 'Setting up EC2 instance', script: '''
+                    pushd solutions/community-deploy/cloud/AWS
+                        terraform validate && terraform apply -var-file user.tfvars --auto-approve
+                    popd
+            '''
+            }
+        }
+
+        stage ('Network and storage configuration') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                script {
+                    env.AWS_IP = sh( script: '''
+                    cd solutions/community-deploy/cloud/AWS && terraform show -json terraform.tfstate | jq .values.outputs.cortx_deploy_ip_addr.value | tr -d '"'
+                    ''', returnStdout: true).trim()
+                }
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                    sh label: 'Setting up Network and Storage devices for CORTX. Script will reboot the instance on completion', script: '''
-                        pushd solutions/community-deploy/cloud/AWS
-                            AWS_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.cortx_deploy_ip_addr.value 2>&1 | tee ip.txt)
-                            IP=$(cat ip.txt | tr -d '""')
-                            ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${IP} sudo bash /home/centos/setup.sh
-                            sleep 240
-                        popd
-                    '''
+                sh label: 'Setting up Network and Storage devices for CORTX. Script will reboot the instance on completion', script: '''
+                pushd solutions/community-deploy/cloud/AWS
+                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${AWS_IP}" sudo bash /home/centos/setup.sh
+                    sleep 240
+                popd
+                '''
                 }
             }
         }
