@@ -9,10 +9,15 @@ pipeline {
 
     parameters {
         string(name: 'GIT_TAG', defaultValue: '', description: 'Image tag/Commit tag required for GitHub Release')
+        string(name: 'RELEASE_REPO', defaultValue: 'Seagate/cortx', description: 'owner/repository-name where release need to be created')
         string(name: 'SERVICES_VERSION', defaultValue: '', description: 'Services(cortx-k8s) version on which image deployment is tested')
         string(name: 'CHANGESET_URL', defaultValue: '', description: 'CHNAGESET.md file url.')
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for GitHub Release script', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repository for GitHub release script', trim: true)
+    }
+
+    environment {
+        IMAGE_TAGS = getImageTags("cortx-rgw","2.0.0-895")
     }
 
     stages {
@@ -31,7 +36,7 @@ pipeline {
                 script {
                     withCredentials([string(credentialsId: 'gaurav-github-token', variable: 'GH_TOKEN')]) {
                         env.github_release_url = sh( script: """
-                            bash scripts/release_support/github-release.sh -t $GIT_TAG -v $SERVICES_VERSION -c $CHANGESET_URL
+                            bash scripts/release_support/github-release.sh -t $GIT_TAG -v $SERVICES_VERSION -c $CHANGESET_URL -r $RELEASE_REPO
                         """, returnStdout: true).trim()
                     }			
                 }
@@ -44,8 +49,8 @@ pipeline {
             script {
 
                 // Jenkins Summary
-                if ( currentBuild.currentResult == "SUCCESS" ) {
-                    MESSAGE = "Success: GitHub Release ${GIT_TAG}"
+                if ( currentBuild.currentResult == "SUCCESS" ) { 
+                    MESSAGE = "CORTX Release: ${IMAGE_TAGS} (Available on GitHub)"
                     ICON = "accept.gif"
                     STATUS = "SUCCESS"
                 } else if ( currentBuild.currentResult == "FAILURE" ) {
@@ -61,11 +66,11 @@ pipeline {
                     STATUS = "UNSTABLE"
                 }
 
-                manager.createSummary("${ICON}").appendText("<h3>GitHub Release ${currentBuild.currentResult} </h3><p>Please check <a href=\"${BUILD_URL}/console\">GitHub release logs</a> for more info", false, false, false, "red")
+                manager.createSummary("${ICON}").appendText("<h3>CORTX GitHub Release creation ${currentBuild.currentResult} </h3><p>Please check <a href=\"${BUILD_URL}/console\">GitHub release logs</a> for more info", false, false, false, "red")
 
                 // Email Notification
                 env.build_stage = "${build_stage}"
-                env.tags = getImageTags("cortx-rgw","${GIT_TAG}")
+                env.tags = "${IMAGE_TAGS}"
 
                 def toEmail = "gaurav.chaudhari@seagate.com"
                 def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]

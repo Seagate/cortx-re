@@ -13,11 +13,15 @@ pipeline {
         string(name: 'SERVICES_RELEASE', defaultValue: '', description: 'Services(cortx-k8s) release version on which image deployment is tested')
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for tagging/Changelog/GitHub Release scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repository for tagging/Changelog/GitHub Release scripts', trim: true)
+        choice (
+            choices: ['DEVOPS', 'DEBUG'],
+            description: 'Email Notification Recipients ',
+            name: 'EMAIL_RECIPIENTS'
+        )
     }
 
     environment {
         GITHUB_TOKEN = credentials('cortx-admin-token')
-        EMAIL_RECIPIENTS = "DEBUG"
         REGISTRY = "ghcr.io"
         OWNER = "seagate"
         LATEST_GH_SERVER_IMAGE_TAG = sh( script: """
