@@ -98,7 +98,7 @@ echo "Wait till the operation is completed..." && docker save $(docker images | 
 AWS_WORKER_IP=$(cat /tmp/ip_private.txt | jq '.[1]','.[2]' | tr -d '",[]')
 for worker in $AWS_WORKER_IP;do cd /tmp && rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' /tmp/*.tar centos@$worker:/tmp; done
 ```
-- **Login to worker nodes** and load the cortx build images by executing the following command,
+- Load the cortx build images to the worker nodes by executing the following command,
 ```
 for worker in $AWS_WORKER_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$worker 'sudo docker load -i /tmp/cortximages.tar'; done
 ```
