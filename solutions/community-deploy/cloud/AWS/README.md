@@ -74,7 +74,7 @@ for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$i
 ```
 - Execute the following commands on all the nodes which will copy the pem file from primary node to the worker nodes using private ip address
 ```
-for ip in $PUBLIC_IP;do rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' cortx.pem ip_public.txt ip_private.txt centos@$ip:/tmp; done
+for ip in $PUBLIC_IP;do rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' cortx.pem ip_public.txt ip_private.txt /etc/docker/daemon.json centos@$ip:/tmp; done
 ```
 - AWS instances are ready for CORTX Build and deployment now. Connect to EC2 nodes over SSH and validate that all three network cards has IP address assigned.
 
@@ -85,7 +85,7 @@ for ip in $PUBLIC_IP;do rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyC
 **Note:** Become the **root** user after logged in to the primary node by running `sudo su` command.
 ```
 AWS_PRIMARY_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
-ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$AWS_PRIMARY_IP
+ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$AWS_PRIMARY_IP 'sudo cp /tmp/daemon.json /etc/docker/daemon.json'
 git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/community-deploy
 time bash -x ./build-cortx.sh
 ```
