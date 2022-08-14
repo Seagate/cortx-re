@@ -57,22 +57,30 @@ git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/kube
 -  Create the hosts file in the current directory to add entries for all the nodes with same format in hosts file.
 **Note:** Node from first entry will be configured as Primary node and in case of AWS EC2, update the `hostname` as Private dns name to connect between EC2 Instances.
 
-**For Example:** `hosts` file for multi-node setup is as below,
+**For Example:** 
+`hosts` file for multi-node setup is as below,
 ```
 hostname=cortx-deploy-node1.cortx.com,user=root,pass=<root-password>
 hostname=cortx-deploy-node2.cortx.com,user=root,pass=<root-password>
 hostname=cortx-deploy-node3.cortx.com,user=root,pass=<root-password>
 ```
--  Execute `cluster-setup.sh` to setup K8s cluster on your EC2 instances for deployment.
--  To allow the PODs creation on primary node, pass the first input parameter for `cluster-setup.sh` script as `true`. Please note you must pass the input parameter as true for multi-node setup.
+-  Execute `cluster-setup.sh` to setup K8s cluster on your EC2 instances for multi-node deployment and
+   - copy `/tmp/daemon.json` file from primary node to all the worker nodes in `/etc/docker/daemon.json` path either by `rsync` command or vi editor.
+   - Then restart docker service on all the worker nodes by running, `systemctl restart docker`
+-  To allow the PODs creation on primary node, pass the first input parameter for `cluster-setup.sh` script as `true`
+   - **Note:** You must pass the input parameter as `true` for multi-node deployment.
 ```
 ./cluster-setup.sh true
 ```
 
-## Deploy CORTX Stack 
+## Deploy CORTX Stack
 - Execute `cortx-deploy.sh` to deploy the CORTX stack on your K8s cluster with locally generated images,
 ```
 export SOLUTION_CONFIG_TYPE=automated && export CORTX_SERVER_IMAGE="<AWS instance primarynode hostname>":8080/cortx-rgw:2.0.0-0 && export CORTX_DATA_IMAGE="<AWS instance primarynode hostname>":8080/cortx-data:2.0.0-0 && export CORTX_CONTROL_IMAGE="<AWS instance primarynode hostname>":8080/cortx-control:2.0.0-0 && export COMMUNITY_USE=yes && bash -x ./cortx-deploy.sh --cortx-cluster
+```
+**For example:**
+```
+export SOLUTION_CONFIG_TYPE=automated && export SOLUTION_CONFIG_TYPE=automated && export CORTX_SERVER_IMAGE=ip-172-31-43-44.ap-south-1.compute.internal:8080/seagate/cortx-rgw:2.0.0-0 && export CORTX_DATA_IMAGE=ip-172-31-43-44.ap-south-1.compute.internal:8080/seagate/cortx-data:2.0.0-0 && export CORTX_CONTROL_IMAGE=ip-172-31-43-44.ap-south-1.compute.internal:8080/seagate/cortx-control:2.0.0-0 && bash -x ./cortx-deploy.sh --cortx-cluster
 ```
 
 **Note:**  
@@ -94,11 +102,6 @@ export SOLUTION_CONFIG_TYPE=automated && export CORTX_SERVER_IMAGE="<AWS instanc
 | NAMESPACE  | default | Kubernetes cluster Namespace for CORTX deployments. |
 | SOLUTION_CONFIG_TYPE | manual | There are two config types for solution.yaml file; manual and automated. In automated type the solution.yaml is created by script if VM is created as per standard specification. In manual type the user needs to create solution.yaml with required disks, image details etc.; place it at script location and configure SOLUTION_CONFIG_TYPE variable as manual. |
 
-**For example:**
-```
-export CORTX_SCRIPTS_BRANCH=main && export CORTX_SCRIPTS_REPO=Seagate/cortx-k8s && export SOLUTION_CONFIG_TYPE=automated && export SOLUTION_CONFIG_TYPE=automated && export CORTX_SERVER_IMAGE=ip-172-31-45-16.ap-south-1.compute.internal:8080/cortx-rgw:2.0.0-0 && export CORTX_DATA_IMAGE=ip-172-31-45-16.ap-south-1.compute.internal:8080/cortx-data:2.0.0-0 && export CORTX_CONTROL_IMAGE=ip-172-31-45-16.ap-south-1.compute.internal:8080/cortx-control:2.0.0-0 && export COMMUNITY_USE=yes && bash -x ./cortx-deploy.sh --cortx-cluster
-```
-
 ## Sanity test 
 - Run IO Sanity on your CORTX Cluster to validate bucket creation and object upload in deployed cluster.
 ```
@@ -107,5 +110,5 @@ export CORTX_SCRIPTS_BRANCH=main && export CORTX_SCRIPTS_REPO=Seagate/cortx-k8s 
 
 Tested by:
 
-* July 26, 2022: Mukul Malhotra (mukul.malhotra@seagate.com) - AWS EC2, CentOS 7.9 Linux
+* August 14, 2022: Mukul Malhotra (mukul.malhotra@seagate.com) - AWS EC2, CentOS 7.9 Linux
 * May 06, 2022: Rahul Shenoy (rahul.shenoy@seagate.com) - Windows , VMware Workstation 16 , CentOS 7.9 Linux
