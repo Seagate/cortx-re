@@ -55,7 +55,6 @@ reboot
 git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/kubernetes
 ```
 - Create the hosts file in the current directory to add entries for all the nodes with same format in hosts file.
-**Note:** Node from first entry will be configured as Primary node and in case of AWS EC2, update the `hostname` as Private dns name to connect between EC2 Instances.
 
 **For Example:** 
 `hosts` file for multi-node setup is as below,
@@ -68,11 +67,17 @@ hostname=cortx-deploy-node3.cortx.com,user=root,pass=<root-password>
    - copy `/tmp/daemon.json` file from primary node to all the worker nodes in `/etc/docker/daemon.json` path either by `rsync` command or vi editor or,
    - copy `/etc/docker/daemon.json` file content from primary node to worker nodes on same target path to update the local registry node.
    - Then restart docker service on all the worker nodes by running, `systemctl restart docker`
+- To allow the PODs creation on primary node, pass the first input parameter for cluster-setup.sh script as true. Please note you must pass the input parameter as true for multi-node setup.
+```
+./cluster-setup.sh true
+```
 
 ## Deploy CORTX Stack
-- Execute `cortx-deploy.sh` to deploy the CORTX stack on your K8s cluster with locally generated images, to allow the PODs creation on primary node, pass the first input parameter for `cluster-setup.sh` script as `true`
-
-**Note:** You must pass the input parameter as `true` for multi-node deployment.
+- Execute cortx-deploy.sh to deploy the CORTX stack on your K8s cluster.
+```
+export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
+```
+- To execute `cortx-deploy.sh` on AWS to deploy the CORTX stack on your K8s cluster with locally generated images run the following command
 ```
 export SOLUTION_CONFIG_TYPE=automated && export CORTX_SERVER_IMAGE="<AWS instance primarynode hostname>":8080/cortx-rgw:2.0.0-0 && export CORTX_DATA_IMAGE="<AWS instance primarynode hostname>":8080/cortx-data:2.0.0-0 && export CORTX_CONTROL_IMAGE="<AWS instance primarynode hostname>":8080/cortx-control:2.0.0-0 && bash -x ./cortx-deploy.sh --cortx-cluster
 ```
