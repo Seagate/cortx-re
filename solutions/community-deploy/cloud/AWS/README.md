@@ -100,7 +100,7 @@ for worker in $AWS_WORKER_IP;do cd /tmp && rsync -avzrP -e 'sudo ssh -i cortx.pe
 ```
 - Load the cortx build images to the worker nodes by executing the following command,
 ```
-for worker in $AWS_WORKER_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$worker 'sudo docker load -i /tmp/cortximages.tar && cp /tmp/daemon.json /etc/docker/daemon.json'; done
+for worker in $AWS_WORKER_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$worker 'sudo docker load -i /tmp/cortximages.tar'; done
 ```
 - Clone cortx-re repository from required branch/tag. If you do not provide `-b <branch/tag>`, then it will use default main branch    
   :warning: Tag based build is supported after including tag [2.0.0-879](https://github.com/Seagate/cortx-re/releases/tag/2.0.0-879)
