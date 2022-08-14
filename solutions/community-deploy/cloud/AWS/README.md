@@ -74,7 +74,7 @@ for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$i
 ```
 - Execute the following commands on all the nodes which will copy the pem file from primary node to the worker nodes using private ip address
 ```
-for ip in $PUBLIC_IP;do rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' cortx.pem ip_public.txt ip_private.txt /etc/docker/daemon.json centos@$ip:/tmp; done
+for ip in $PUBLIC_IP;do rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' cortx.pem ip_public.txt ip_private.txt centos@$ip:/tmp; done
 ```
 - AWS instances are ready for CORTX Build and deployment now. Connect to EC2 nodes over SSH and validate that all three network cards has IP address assigned.
 
@@ -85,7 +85,7 @@ for ip in $PUBLIC_IP;do rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyC
 **Note:** Become the **root** user after logged in to the primary node by running `sudo su` command.
 ```
 AWS_PRIMARY_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
-ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$AWS_PRIMARY_IP 'sudo cp /tmp/daemon.json /etc/docker/daemon.json'
+ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$AWS_PRIMARY_IP
 git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/community-deploy
 time bash -x ./build-cortx.sh
 ```
@@ -96,11 +96,11 @@ echo "Wait till the operation is completed..." && docker save $(docker images | 
 - Execute the following command to copy the cortx build images from **primary node to all the worker nodes using private ip address**,
 ```
 AWS_WORKER_IP=$(cat /tmp/ip_private.txt | jq '.[1]','.[2]' | tr -d '",[]')
-for worker in $AWS_WORKER_IP;do cd /tmp && rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' /tmp/*.tar centos@$worker:/tmp; done
+for worker in $AWS_WORKER_IP;do cd /tmp && rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' /tmp/*.tar /etc/docker/daemon.json centos@$worker:/tmp; done
 ```
 - Load the cortx build images to the worker nodes by executing the following command,
 ```
-for worker in $AWS_WORKER_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$worker 'sudo docker load -i /tmp/cortximages.tar'; done
+for worker in $AWS_WORKER_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$worker 'sudo docker load -i /tmp/cortximages.tar && cp /tmp/daemon.json /etc/docker/daemon.json'; done
 ```
 - Clone cortx-re repository from required branch/tag. If you do not provide `-b <branch/tag>`, then it will use default main branch    
   :warning: Tag based build is supported after including tag [2.0.0-879](https://github.com/Seagate/cortx-re/releases/tag/2.0.0-879)
