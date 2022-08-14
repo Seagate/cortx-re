@@ -65,18 +65,16 @@ hostname=cortx-deploy-node2.cortx.com,user=root,pass=<root-password>
 hostname=cortx-deploy-node3.cortx.com,user=root,pass=<root-password>
 ```
 -  Execute `cluster-setup.sh` to setup K8s cluster on your EC2 instances for multi-node deployment and
-   - copy `/tmp/daemon.json` file from primary node to all the worker nodes in `/etc/docker/daemon.json` path either by `rsync` command or vi editor.
+   - copy `/tmp/daemon.json` file from primary node to all the worker nodes in `/etc/docker/daemon.json` path either by `rsync` command or vi editor or,
+   - copy `/etc/docker/daemon.json` file content from primary node to worker nodes on same target path to update the local registry node.
    - Then restart docker service on all the worker nodes by running, `systemctl restart docker`
--  To allow the PODs creation on primary node, pass the first input parameter for `cluster-setup.sh` script as `true`
-   - **Note:** You must pass the input parameter as `true` for multi-node deployment.
-```
-./cluster-setup.sh true
-```
 
 ## Deploy CORTX Stack
-- Execute `cortx-deploy.sh` to deploy the CORTX stack on your K8s cluster with locally generated images,
+- Execute `cortx-deploy.sh` to deploy the CORTX stack on your K8s cluster with locally generated images, to allow the PODs creation on primary node, pass the first input parameter for `cluster-setup.sh` script as `true`
+
+**Note:** You must pass the input parameter as `true` for multi-node deployment.
 ```
-export SOLUTION_CONFIG_TYPE=automated && export CORTX_SERVER_IMAGE="<AWS instance primarynode hostname>":8080/cortx-rgw:2.0.0-0 && export CORTX_DATA_IMAGE="<AWS instance primarynode hostname>":8080/cortx-data:2.0.0-0 && export CORTX_CONTROL_IMAGE="<AWS instance primarynode hostname>":8080/cortx-control:2.0.0-0 && export COMMUNITY_USE=yes && bash -x ./cortx-deploy.sh --cortx-cluster
+export SOLUTION_CONFIG_TYPE=automated && export CORTX_SERVER_IMAGE="<AWS instance primarynode hostname>":8080/cortx-rgw:2.0.0-0 && export CORTX_DATA_IMAGE="<AWS instance primarynode hostname>":8080/cortx-data:2.0.0-0 && export CORTX_CONTROL_IMAGE="<AWS instance primarynode hostname>":8080/cortx-control:2.0.0-0 && bash -x ./cortx-deploy.sh --cortx-cluster
 ```
 **For example:**
 ```
