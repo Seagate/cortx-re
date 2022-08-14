@@ -31,15 +31,15 @@ yum install git -y
 ```
 
 ### SELinux should be disabled
--  Use the following command to check status of SELinux.
+- Use the following command to check status of SELinux.
 ```
 sestatus
 ```
--  If SELinux is enabled, run the following command to disable the SELinux.
+- If SELinux is enabled, run the following command to disable the SELinux.
 ```
 sed -i 's/SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config && setenforce 0
 ```
--  Once above command runs successfully, reboot your system.
+- Once above command runs successfully, reboot your system.
 ```
 reboot
 ```   
@@ -50,11 +50,11 @@ reboot
 
 ## Install K8s cluster
 **To install the K8s cluster, run the following commands:**
--  Clone cortx-re repository and change directory to `cortx-re/solutions/kubernetes`.
+- Clone cortx-re repository and change directory to `cortx-re/solutions/kubernetes`.
 ```
 git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/kubernetes
 ```
--  Create the hosts file in the current directory to add entries for all the nodes with same format in hosts file.
+- Create the hosts file in the current directory to add entries for all the nodes with same format in hosts file.
 **Note:** Node from first entry will be configured as Primary node and in case of AWS EC2, update the `hostname` as Private dns name to connect between EC2 Instances.
 
 **For Example:** 
@@ -64,7 +64,7 @@ hostname=cortx-deploy-node1.cortx.com,user=root,pass=<root-password>
 hostname=cortx-deploy-node2.cortx.com,user=root,pass=<root-password>
 hostname=cortx-deploy-node3.cortx.com,user=root,pass=<root-password>
 ```
--  Execute `cluster-setup.sh` to setup K8s cluster on your EC2 instances for multi-node deployment and
+- To execute `cluster-setup.sh` to setup K8s cluster on your AWS EC2 instances for multi-node deployment follow,
    - copy `/tmp/daemon.json` file from primary node to all the worker nodes in `/etc/docker/daemon.json` path either by `rsync` command or vi editor or,
    - copy `/etc/docker/daemon.json` file content from primary node to worker nodes on same target path to update the local registry node.
    - Then restart docker service on all the worker nodes by running, `systemctl restart docker`
