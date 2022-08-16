@@ -13,9 +13,9 @@ pipeline {
     }
 
     parameters {
-        string(name: 'RAW_CORTX_RE_REPO', defaultValue: 'https://raw.githubusercontent.com/Seagate/cortx-re', description: 'Raw URl required for creating K8s resources', trim: true)
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Metrics Server Setup scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for Metrics Server Setup scripts', trim: true)
+        string(name: 'DASHBOARD_VERSION', defaultValue: 'v2.6.0', description: 'Kubernetes Dashboard version', trim: true)
         string(defaultValue: '''hostname=<hostname>,user=<user>,pass=<password>''', description: 'Enter Primary node of your K8s Cluster    ', name: 'hosts')
 
     }    

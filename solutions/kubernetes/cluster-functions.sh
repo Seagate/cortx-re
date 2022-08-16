@@ -88,14 +88,14 @@ function print_cluster_status() {
 	       sleep 10
 	    fi
 	    done
-            add_common_separator "PODs are not online within 10mins. Existing"
+            add_common_separator "PODs are not online within 10mins. Exiting..."
             exit 1
     else
        add_common_separator "Waiting for Nodes to become online. Sleeping for 10 sec...."
        sleep 10
     fi
     done
-    add_common_separator "Nodes are not online witing 10mins. Existing"
+    add_common_separator "Nodes are not online within 10mins. Exiting..."
     exit 1
 }
 
