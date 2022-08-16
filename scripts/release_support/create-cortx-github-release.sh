@@ -56,8 +56,8 @@ function getImageTags {
 }
 
 # Fetch tags of given image
-image_tags=$( getImageTags "cortx-rgw" "2.0.0-895" )
-
+image_tags=$(getImageTags "cortx-rgw" "2.0.0-895")
+echo $image_tags
 # Set release content
 CHANGESET=$( curl -ks $CHANGESET_URL | tail -n +2 | sed 's/"//g' )
 CORTX_SERVER_IMAGE="[$REGISTRY/cortx-rgw:$TAG](https://github.com/$RELEASE_REPO/pkgs/container/cortx-rgw/$( get_container_id "cortx-rgw" )?tag=$TAG)"
