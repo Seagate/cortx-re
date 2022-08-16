@@ -33,7 +33,11 @@ function setup_metrics_server() {
 
     # Copy scripts to all nodes:
     scp_primary_node setup-metrics-server-functions.sh  ../functions.sh ../cluster-functions.sh
-    ssh_primary_node "export RAW_CORTX_RE_REPO=$RAW_CORTX_RE_REPO && export CORTX_RE_REPO=$CORTX_RE_REPO && export CORTX_RE_BRANCH=$CORTX_RE_BRANCH && bash /var/tmp/setup-metrics-server-functions.sh"
+    ssh_primary_node "
+    export DASHBOARD_VERSION=$DASHBOARD_VERSION &&
+    export CORTX_RE_REPO=$CORTX_RE_REPO && 
+    export CORTX_RE_BRANCH=$CORTX_RE_BRANCH && 
+    bash /var/tmp/setup-metrics-server-functions.sh"
     check_status
 }
 function print_status() {
