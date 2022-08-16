@@ -16,10 +16,6 @@ pipeline {
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repository for GitHub release script', trim: true)
     }
 
-    environment {
-        IMAGE_TAGS = getImageTags("cortx-rgw", "2.0.0-895")
-    }
-
     stages {
         stage('Checkout Script') {
             steps {
@@ -35,9 +31,11 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 script {
                     withCredentials([string(credentialsId: 'gaurav-github-token', variable: 'GH_TOKEN')]) {
-                        env.github_release_url = sh( script: """
+                        github_release_info = sh( script: """
                             bash scripts/release_support/create-cortx-github-release.sh -t $GIT_TAG -v $SERVICES_VERSION -c $CHANGESET_URL -r $RELEASE_REPO
                         """, returnStdout: true).trim()
+                        env.github_release_url = github_release_info.split()[0]
+                        env.tags = github_release_info.split()[1]
                     }			
                 }
             }
@@ -70,7 +68,6 @@ pipeline {
 
                 // Email Notification
                 env.build_stage = "${build_stage}"
-                env.tags = "${IMAGE_TAGS}"
 
                 def toEmail = "gaurav.chaudhari@seagate.com"
                 def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
@@ -93,14 +90,4 @@ pipeline {
             cleanWs()
         }
     }            
-}
-
-def getImageTags(image, tag) {
-    withCredentials([string(credentialsId: 'gaurav-github-token', variable: 'GH_TOKEN')]) {
-        image_tags = sh( script: """
-            tags=\$( curl -s -H \"Accept: application/vnd.github+json\" -H \"Authorization: token ${GH_TOKEN}\" \"https://api.github.com/orgs/seagate/packages/container/${image}/versions\" | jq '.[] | select(.metadata.container.tags[]==\"${tag}\") | .metadata.container.tags[]' | awk '!/2.0.0-latest/' | tr -d '\"' )
-            echo \${tags} | tr ' ' '/'
-        """, returnStdout: true).trim()
-        return image_tags
-    }
 }

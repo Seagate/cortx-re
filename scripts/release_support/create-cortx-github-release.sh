@@ -48,7 +48,17 @@ function get_container_id {
     echo "$container_id"
 }
 
-# set release content
+function getImageTags {
+    image="$1"
+    tag="$2"
+    tags=$( curl -s -H "Accept: application/vnd.github+json" -H "Authorization: token ${GH_TOKEN}" "https://api.github.com/orgs/seagate/packages/container/${image}/versions" | jq '.[] | select(.metadata.container.tags[]==${tag}) | .metadata.container.tags[]' | awk '!/2.0.0-latest/' | tr -d '"' )
+    echo ${tags} | tr ' ' '/'
+}
+
+# Fetch tags of given image
+image_tags=$( getImageTags "cortx-rgw" "2.0.0-895" )
+
+# Set release content
 CHANGESET=$( curl -ks $CHANGESET_URL | tail -n +2 | sed 's/"//g' )
 CORTX_SERVER_IMAGE="[$REGISTRY/cortx-rgw:$TAG](https://github.com/$RELEASE_REPO/pkgs/container/cortx-rgw/$( get_container_id "cortx-rgw" )?tag=$TAG)"
 CORTX_DATA_IMAGE="[$REGISTRY/cortx-data:$TAG](https://github.com/$RELEASE_REPO/pkgs/container/cortx-data/$( get_container_id "cortx-data" )?tag=$TAG)"
@@ -60,7 +70,7 @@ MESSAGE="$CORTX_IMAGE_TITLE\n$IMAGES_INFO\n\n$SERVICES_VERSION_TITLE$SERVICES_VE
 API_JSON=$(printf '{"tag_name":"%s","name":"%s","body":"%s","prerelease":%s}' "$TAG" "$TAG" "$MESSAGE" "$PRE" )
 if curl --data "$API_JSON" -sif -H "Accept: application/json" -H "Authorization: token $GH_TOKEN" "https://api.github.com/repos/$RELEASE_REPO/releases" > api_response.html
 then
-    echo "https://github.com/$RELEASE_REPO/releases/tag/$TAG"
+    echo "https://github.com/$RELEASE_REPO/releases/tag/$TAG $image_tags"
 else
     echo "ERROR: curl command has failed. Please check API response for more details"
     exit 1
