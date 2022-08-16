@@ -5,41 +5,45 @@ pipeline {
         }
     }
 
-    triggers { cron('0 22 * * 1,3,5') }
+    \\triggers { cron('0 22 * * 1,3,5') }
     
     options {
         timeout(time: 360, unit: 'MINUTES')
         timestamps()
-        disableConcurrentBuilds()
         buildDiscarder(logRotator(daysToKeepStr: '30', numToKeepStr: '30'))
         ansiColor('xterm')
     }
 
-
     parameters {
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX Cluster scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for CORTX Cluster scripts', trim: true)
-        string(name: 'CORTX_TAG', defaultValue: 'main', description: 'Branch or GitHash for generaing CORTX container images', trim: true)
         string(name: 'OS_VERSION', defaultValue: 'CentOS 7.9.2009 x86_64', description: 'Operating system version', trim: true)
         string(name: 'REGION', defaultValue: 'ap-south-1', description: 'AWS region', trim: true)
         string(name: 'KEY_NAME', defaultValue: 'automation-key', description: 'Key name', trim: true)
         string(name: 'COMMUNITY_USE', defaultValue: 'yes', description: 'Only use during community deployment', trim: true)
-        
-        // Please configure ROOT_PASSWORD, ACCESS_KEY and SECRET_KEY parameters in Jenkins job configuration.
+        string(name: 'VOLUME_COUNT', defaultValue: '9', description: 'EBS volume', trim: true)
+        string(name: 'VOLUME_SIZE', defaultValue: '10', description: 'EBS volume size', trim: true)
+        string(name: 'INSTANCE_COUNT', defaultValue: '3', description: 'Instance count', trim: true)
+        string(name: 'INSTANCE_TAG_NAME', defaultValue: 'cortx-multinode', description: 'Tag name', trim: true)
+        password(name: 'SECRET_KEY', description: 'secret key for AWS account')
+        password(name: 'ACCESS_KEY', description: 'access key for AWS account')
+        password(name: 'ROOT_PASSWORD', description: 'Root password for EC2 instance')
+
+    // Please configure ROOT_PASSWORD parameter in Jenkins job configuration.
     }
 
-    stages {
+        stages {
 
-        stage('Checkout Script') {
-            steps { 
-                cleanWs()            
-                script {
-                    checkout([$class: 'GitSCM', branches: [[name: "${CORTX_RE_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${CORTX_RE_REPO}"]]])                
+            stage('Checkout Script') {
+                steps {
+                    cleanWs()
+                    script {
+                        checkout([$class: 'GitSCM', branches: [[name: "${CORTX_RE_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${CORTX_RE_REPO}"]]])
+                    }
                 }
             }
-        }
 
-        stage ('Install tools') {
+        stage ('Install Prerequisite tools') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'install tools', script: '''
@@ -49,61 +53,46 @@ pipeline {
                 export SECRET_KEY=${SECRET_KEY}
                 export ACCESS_KEY=${ACCESS_KEY}
                 export KEY_NAME=${KEY_NAME}
-                rm -rvf /usr/local/bin/aws /usr/local/bin/aws_completer /usr/local/aws-cli >/dev/null 2>&1
-                curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && yum install unzip -y && unzip awscliv2.zip
-                ./aws/install
-                aws configure set default.region $REGION; aws configure set aws_access_key_id $ACCESS_KEY; aws configure set aws_secret_access_key $SECRET_KEY
-                pushd solutions/community-deploy/cloud/AWS
-                    ./tool_setup.sh
-                    sed -i 's,os_version          =.*,os_version          = "'"$OS_VERSION"'",g' user.tfvars && sed -i 's,region              =.*,region              = "'"$REGION"'",g' user.tfvars && sed -i 's,security_group_cidr =.*,security_group_cidr = "'"$VM_IP/32"'",g' user.tfvars
-                    echo key_name            = '"'$KEY_NAME'"' | cat >>user.tfvars
-                    cat user.tfvars | tail -4
-                popd
+                export VOLUME_COUNT=${VOLUME_COUNT}
+                export VOLUME_SIZE=${VOLUME_SIZE}
+                export INSTANCE_COUNT=${INSTANCE_COUNT}
+                export INSTANCE_TAG_NAME=${INSTANCE_TAG_NAME}
+                            rm -rvf /usr/local/bin/aws /usr/local/bin/aws_completer /usr/local/aws-cli >/dev/null 2>&1
+                            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && yum install unzip -y && unzip awscliv2.zip
+                            ./aws/install
+                            aws configure set default.region $REGION; aws configure set aws_access_key_id $ACCESS_KEY; aws configure set aws_secret_access_key $SECRET_KEY
+                        pushd solutions/community-deploy/cloud/AWS
+                            ./tool_setup.sh
+                            sed -i 's,os_version          =.*,os_version          = "'"$OS_VERSION"'",g' user.tfvars && sed -i 's,region              =.*,region              = "'"$REGION"'",g' user.tfvars && sed -i 's,security_group_cidr =.*,security_group_cidr = "'"$VM_IP/32"'",g' user.tfvars && sed -i 's,instance_count          =.*,instance_count          = "'"$INSTANCE_COUNT"'",g' user.tfvars && sed -i 's,ebs_volume_count          =.*,ebs_volume_count          = "'"$VOLUME_COUNT"'",g' user.tfvars && sed -i 's,ebs_volume_size          =.*,ebs_volume_size          = "'"$VOLUME_SIZE"'",g' user.tfvars && sed -i 's,tag_name          =.*,tag_name          = "'"$INSTANCE_TAG_NAME"'",g' user.tfvars
+                            echo key_name            = '"'$KEY_NAME'"' | cat >>user.tfvars
+                            cat user.tfvars | tail -4
+                        popd
                 '''
             }
         }
-
-        stage ('Create EC2 instace') {
+        stage ('Create Multi EC2 instances') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Setting up EC2 instance', script: '''
+                sh label: 'Setting up multi EC2 instances', script: '''
                     pushd solutions/community-deploy/cloud/AWS
                         terraform validate && terraform apply -var-file user.tfvars --auto-approve
+                        export PUBLIC_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip_public.txt | tr -d '",[]' | sed '/^$/d')
+                        export PRIVATE_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_ip_addr.value 2>&1 | tee ip_private.txt | tr -d '",[]' | sed '/^$/d')
                     popd
             '''
             }
         }
-
         stage ('Network and storage configuration') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                script {
-                    env.AWS_IP = sh( script: '''
-                    cd solutions/community-deploy/cloud/AWS && terraform show -json terraform.tfstate | jq .values.outputs.cortx_deploy_ip_addr.value | tr -d '"'
-                    ''', returnStdout: true).trim()
-                }
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                 sh label: 'Setting up Network and Storage devices for CORTX. Script will reboot the instance on completion', script: '''
-                pushd solutions/community-deploy/cloud/AWS
-                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${AWS_IP}" sudo bash /home/centos/setup.sh
-                    sleep 240
-                popd
-                '''
-                }
-            }
-        }
-
-        stage ('Execute cortx build script') {
-            steps {
-                script { build_stage = env.STAGE_NAME }
-                sh label: 'executing cortx build image script', script: '''
-                pushd solutions/community-deploy/cloud/AWS
-                    export CORTX_RE_BRANCH=${CORTX_RE_BRANCH}
-                    export CORTX_TAG=${CORTX_TAG}
-                    sleep 120 
-                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${AWS_IP}" "export CORTX_RE_BRANCH=$CORTX_RE_BRANCH; git clone $CORTX_RE_REPO -b $CORTX_RE_BRANCH; pushd /home/centos/cortx-re/solutions/community-deploy; time sudo ./build-cortx.sh -b ${CORTX_TAG}"
-                popd
+                    pushd solutions/community-deploy/cloud/AWS
+                        for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${ip} sudo bash /home/centos/setup.sh;done
+                        sleep 240
+                    popd
             '''
+                }
             }
         }
 
@@ -112,109 +101,61 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Changing root password and creating hosts file', script: '''
                 pushd solutions/community-deploy/cloud/AWS
-                    export ROOT_PASSWORD=${ROOT_PASSWORD}              
-                    ssh -i cortx.pem -o StrictHostKeyChecking=no centos@"${AWS_IP}" "export ROOT_PASSWORD=$ROOT_PASSWORD && echo $ROOT_PASSWORD | sudo passwd --stdin root && pushd /home/centos/cortx-re/solutions/kubernetes && echo "'"hostname=$HOSTNAME,user=root,pass="'" > hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && cat hosts"
-                    popd
-            '''
-            }
-        }
-
-        stage ('Setup K8s cluster on EC2') {
-            steps {
-                script { build_stage = env.STAGE_NAME }
-                sh label: 'setting up K8s cluster on EC2', script: '''
-                pushd solutions/community-deploy/cloud/AWS                
-                    ssh -i cortx.pem -o StrictHostKeyChecking=no centos@"${AWS_IP}" "pushd /home/centos/cortx-re/solutions/kubernetes && sudo ./cluster-setup.sh true"
-                    popd
-                '''
-            }
-        }
-
-        stage ('Deploy 1N cortx cluster') {
-            steps {
-                script { build_stage = env.STAGE_NAME }
-                sh label: 'Deploying 1N cortx cluster on EC2', script: '''
-                pushd solutions/community-deploy/cloud/AWS
-                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${AWS_IP}" 'sudo sed -i 's/cortx-docker.colo.seagate.com/'$HOSTNAME':8080/g' /etc/docker/daemon.json && sudo systemctl restart docker'
-                    sleep 240
-                    ssh -i cortx.pem -o StrictHostKeyChecking=no centos@"${AWS_IP}" 'pushd /home/centos/cortx-re/solutions/kubernetes && 
-                    export SOLUTION_CONFIG_TYPE='automated' && 
-                    export COMMUNITY_USE='yes' && 
-                    export CORTX_SERVER_IMAGE=$HOSTNAME:8080/seagate/cortx-rgw:2.0.0-0 && 
-                    export CORTX_DATA_IMAGE=$HOSTNAME:8080/seagate/cortx-data:2.0.0-0 && 
-                    export CORTX_CONTROL_IMAGE=$HOSTNAME:8080/seagate/cortx-control:2.0.0-0 && 
-                    sudo env SOLUTION_CONFIG_TYPE=${SOLUTION_CONFIG_TYPE} env CORTX_SERVER_IMAGE=${CORTX_SERVER_IMAGE} env CORTX_CONTROL_IMAGE=${CORTX_CONTROL_IMAGE} env CORTX_DATA_IMAGE=${CORTX_DATA_IMAGE} env COMMUNITY_USE=${COMMUNITY_USE} ./cortx-deploy.sh --cortx-cluster'
-                    popd
-            '''
-            }
-        }
-
-        stage ('IO Sanity') {
-            steps {
-                script { build_stage = env.STAGE_NAME }
-                sh label: 'IO Sanity on CORTX Cluster to validate bucket creation and object upload in deployed cluster', script: '''
-                pushd solutions/community-deploy/cloud/AWS
-                    ssh -i cortx.pem -o StrictHostKeyChecking=no centos@"${AWS_IP}" "pushd /home/centos/cortx-re/solutions/kubernetes && sudo ./cortx-deploy.sh --io-sanity"
+                    export ROOT_PASSWORD=${ROOT_PASSWORD}
+                    for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${ip} "export ROOT_PASSWORD=$ROOT_PASSWORD && echo $ROOT_PASSWORD | sudo passwd --stdin root && pushd /home/centos/cortx-re/solutions/kubernetes && echo "'"hostname=$HOSTNAME,user=root,pass="'" > hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && cat hosts"
+                    for ip in $PUBLIC_IP;do rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' cortx.pem ip_public.txt ip_private.txt centos@${ip}:/tmp; done
                 popd
             '''
             }
         }
-    }
 
+        stage ('Creating host file on EC2 Primary node') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'Changing root password and creating hosts file', script: '''
+                pushd solutions/community-deploy/cloud/AWS
+                    for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${ip} "pushd /home/centos/cortx-re/solutions/kubernetes && echo "'"hostname=$HOSTNAME,user=root,pass="'" > hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && cat hosts"
+                popd
+            '''
+            }
+        }
+
+        stage ('Execute cortx build script on Primary node') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'Executing cortx build image script on Primary node', script: '''
+                pushd solutions/community-deploy/cloud/AWS
+                    export CORTX_RE_BRANCH=${CORTX_RE_BRANCH}
+                    PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
+                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${PRIMARY_PUBLIC_IP} "export CORTX_RE_BRANCH=$CORTX_RE_BRANCH; git clone https://github.com/Seagate/cortx-re; pushd /home/centos/cortx-re/solutions/community-deploy; time sudo ./build-cortx.sh -b ${CORTX_RE_BRANCH}"
+                popd
+            '''
+            }
+        }
+
+        stage ('Setup K8s cluster on Primary node') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'setting up K8s cluster on EC2', script: '''
+                pushd solutions/community-deploy/cloud/AWS
+                    PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
+                    ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${PRIMARY_PUBLIC_IP} "pushd /home/centos/cortx-re/solutions/kubernetes && sudo ./cluster-setup.sh true"
+                popd
+            '''
+            }
+        }
+    
     post {
         always {
             retry(count: 3) {
-                    sh label: 'Destroying EC2 instance', script: '''
-                    pushd solutions/community-deploy/cloud/AWS
-                        terraform validate && terraform destroy -var-file user.tfvars --auto-approve
-                    popd
-                    '''
+            script { build_stage = env.STAGE_NAME }
+            sh label: 'destroying EC2 instance', script: '''
+            pushd solutions/community-deploy/cloud/AWS
+                terraform validate && terraform destroy -var-file user.tfvars --auto-approve
+            popd
+        '''
                 }
-
-           script {
-
-            // Jenkins Summary
-            clusterStatus = ""
-            if ( currentBuild.currentResult == "SUCCESS" ) {
-                MESSAGE = "CORTX Community Deploy is Success for the build ${build_id}"
-                ICON = "accept.gif"
-                STATUS = "SUCCESS"
-            } else if ( currentBuild.currentResult == "FAILURE" ) {
-                manager.buildFailure()
-                MESSAGE = "CORTX Community Deploy is Failed for the build ${build_id}"
-                ICON = "error.gif"
-                STATUS = "FAILURE"
-
-            } else {
-                manager.buildUnstable()
-                MESSAGE = "CORTX Community Deploy Setup is Unstable"
-                ICON = "warning.gif"
-                STATUS = "UNSTABLE"
             }
-            
-            clusterStatusHTML = "<pre>${clusterStatus}</pre>"
-
-            manager.createSummary("${ICON}").appendText("<h3>CORTX Community Deploy ${currentBuild.currentResult} </h3><p>Please check <a href=\"${BUILD_URL}/console\">cluster setup logs</a> for more info <h4>Cluster Status:</h4>${clusterStatusHTML}", false, false, false, "red")
-
-            // Email Notification
-            env.build_stage = "${build_stage}"
-            env.cluster_status = "${clusterStatusHTML}"
-
-            def toEmail = ""
-            def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
-            if ( manager.build.result.toString() == "FAILURE" ) {
-                toEmail = "CORTX.DevOps.RE@seagate.com"
-                recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
-            }
-            emailext ( 
-                body: '''${SCRIPT, template="cluster-setup-email.template"}''',
-                mimeType: 'text/html',
-                subject: "[Cortx Community Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
-                attachLog: true,
-                to: toEmail,
-                recipientProviders: recipientProvidersClass
-                )
-           }
         }
     }
 }
