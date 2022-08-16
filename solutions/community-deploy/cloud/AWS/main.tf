@@ -50,7 +50,7 @@ locals {
 }
 
 resource "aws_security_group" "cortx_deploy" {
-  name        = "shailesh-multinode-poc-cortx_deploy"
+  name        = "${var.tag_name}"
   description = "Allow standard ssh, CORTX mangement ports inbound and everything else outbound."
 
   ingress {
@@ -77,7 +77,7 @@ resource "aws_security_group" "cortx_deploy" {
   }
 
   tags = {
-    Name = "shailesh-multinode-poc"
+    Name = "${var.tag_name}"
   }
 }
 
@@ -120,7 +120,7 @@ resource "local_sensitive_file" "pem_file" {
 
 resource "aws_instance" "cortx_deploy" {
   # https://wiki.centos.org/Cloud/AWS
-  count 		 = var.instance_count		
+  count                  = "${var.instance_count}"		
   ami                    = data.aws_ami.centos.id
   instance_type          = "t3a.2xlarge"
   availability_zone      = data.aws_availability_zones.available.names[0]
@@ -132,14 +132,14 @@ resource "aws_instance" "cortx_deploy" {
         systemctl restart sshd
         sed -i 's/SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config
         /sbin/setenforce 0
-        yum install -y yum-utils git firewalld -y
+        yum install -y yum-utils git firewalld epel-release && yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo -y && yum install -y jq docker-ce docker-ce-cli containerd.io docker-compose-plugin && sleep 30 && systemctl start docker && systemctl enable docker
   EOT
   root_block_device {
     volume_size = 90
   }
 
   tags = {
-    Name = "shailesh-multinode-poc-${count.index + 1}"
+    Name = "${var.tag_name}-${count.index + 1}"
   }
 
   provisioner "file" {
@@ -155,12 +155,22 @@ resource "aws_instance" "cortx_deploy" {
   }
 }
 
+output "aws_instance_public_ip_addr" {
+  value       = aws_instance.cortx_deploy.*.public_ip
+  description = "Public IP to connect CORTX server"
+  }
+
+output "aws_instance_private_ip_addr" {
+  value       = aws_instance.cortx_deploy.*.private_ip
+  description = "Private IP to connect to EC2 Instances"
+  }
+
 resource "aws_ebs_volume" "data_vol" {
   count             = var.ebs_volume_count * var.instance_count
   availability_zone = data.aws_availability_zones.available.names[0]
   size              = var.ebs_volume_size
   tags = {
-    Name = "shailesh-multinode-poc-${count.index + 1}"
+    Name = "${var.tag_name}-${count.index + 1}"
   }
 }
 
@@ -170,20 +180,3 @@ resource "aws_volume_attachment" "deploy_server_data" {
   device_name = element(local.ec2_device_names_to_attach, count.index)
   instance_id = element(aws_instance.cortx_deploy.*.id, floor(count.index/var.ebs_volume_count))
 }
-
-/*
-resource "aws_eip" "elastic_ip" {
-  vpc = true
-}
-
-resource "aws_eip_association" "eip_assoc" {
-  count         = var.instance_count
-  instance_id   = element(aws_instance.cortx_deploy.*.id, floor(count.index/var.ebs_volume_count))
-  allocation_id = aws_eip.elastic_ip.id
-}
-
-output "cortx_deploy_ip_addr" {
-  value       = aws_eip_association.eip_assoc.*.public_ip
-  description = "Public IP to connect CORTX server"
-}
-*/

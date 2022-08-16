@@ -63,7 +63,7 @@ function setup_cluster() {
         # Join worker nodes.
         JOIN_WORKER="/var/tmp/cluster-functions.sh --join-worker-nodes $JOIN_COMMAND"
         pdsh -w ^/var/tmp/pdsh-hosts "$JOIN_WORKER"
-
+        
         # Label worker nodes.
         for worker_node in $WORKER_NODES
             do

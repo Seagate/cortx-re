@@ -17,43 +17,49 @@
 #
 variable "security_group_cidr" {
   description = "Value of CIDR block to be used for Security Group. This should be your systems public-ip"
-  type        = string
+  type = string
 }
 
 
 variable "os_version" {
   description = "OS version"
-  type        = string
+  type = string
 }
 
 
 variable "region" {
   description = "Region"
-  type        = string
+  type = string
 }
 
 variable "key_name" {
   description = "SSH key name"
-  type        = string
-  default     = "cortx-key"
+  type = string
+  default = "cortx-key"
 }
 
 variable "instance_count" {
   description = "EC2 instance count"
-  type        = number
-  default     = "1"
+  type = number
+  default = "1"
 }
 
 variable "ebs_volume_count" {
   description = "EBS volumes to attach onto nodes"
-  type        = number
-  default     = "9"
+  type = number
+  default = "9"
 }
 
 variable "ebs_volume_size" {
   description = "EBS volumes size in GB"
-  type        = number
-  default     = "10"
+  type = number
+  default = "10"
+}
+
+variable "tag_name" {
+  description = "TAG name for multi instances"
+  type = string
+  default = "cortx-multinode"
 }
 
 variable "ec2_device_names" {
