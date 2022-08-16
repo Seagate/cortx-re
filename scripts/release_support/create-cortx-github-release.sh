@@ -56,7 +56,7 @@ function getImageTags {
 }
 
 # Fetch tags of given image
-#image_tags=$( getImageTags "cortx-rgw" "2.0.0-895" )
+image_tags=$( getImageTags "cortx-rgw" "2.0.0-895" )
 
 # Set release content
 CHANGESET=$( curl -ks $CHANGESET_URL | tail -n +2 | sed 's/"//g' )
