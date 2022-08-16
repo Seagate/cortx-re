@@ -15,6 +15,11 @@
 # For any questions about this software or licensing,
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
-os_version          = "<OS VERSION>"
-region              = "<AWS REGION>"
+os_version = "<OS VERSION>"
+region = "<AWS REGION>"
 security_group_cidr = "<YOUR PUBLIC IP CIDR>"
+key_name = "<YOUR PEM KEY FILE NAME TO LOGIN TO AWS EC2 INSTANCES>"
+instance_count = "<NUMBER OF EC2 INSTANCES>"
+ebs_volume_count = "<NUMBER OF EBS VOLUMES>"
+ebs_volume_size  = "<EBS VOLUME SIZE>"
+tag_name = "<YOUR TAG NAME FOR EC2 INSTANCES>"
