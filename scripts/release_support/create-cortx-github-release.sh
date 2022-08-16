@@ -51,7 +51,7 @@ function get_container_id {
 function getImageTags {
     image="$1"
     tag="$2"
-    tags=$( curl -s -H "Accept: application/vnd.github+json" -H "Authorization: token ${GH_TOKEN}" "https://api.github.com/orgs/seagate/packages/container/${image}/versions" | jq '.[] | select(.metadata.container.tags[]=="${tag}" | .metadata.container.tags[]' | awk '!/2.0.0-latest/' | tr -d '"' )
+    tags=$( curl -s -H "Accept: application/vnd.github+json" -H "Authorization: token ${GH_TOKEN}" "https://api.github.com/orgs/seagate/packages/container/${image}/versions" | jq '.[] | select(.metadata.container.tags[]=="${tag}") | .metadata.container.tags[]' | awk '!/2.0.0-latest/' | tr -d '"' )
     echo ${tags} | tr ' ' '/'
 }
 
