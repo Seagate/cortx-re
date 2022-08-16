@@ -77,7 +77,7 @@ hostname=cortx-deploy-node3.cortx.com,user=root,pass=<root-password>
 ```
 export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
 ```
-- To execute `cortx-deploy.sh` on AWS to deploy the CORTX stack on your K8s cluster with locally generated images run the following command
+- To execute `cortx-deploy.sh` on AWS cluster to deploy the CORTX stack on your K8s cluster with locally generated images run the following command
 ```
 export SOLUTION_CONFIG_TYPE=automated && export CORTX_SERVER_IMAGE="<AWS instance primarynode hostname>":8080/cortx-rgw:2.0.0-0 && export CORTX_DATA_IMAGE="<AWS instance primarynode hostname>":8080/cortx-data:2.0.0-0 && export CORTX_CONTROL_IMAGE="<AWS instance primarynode hostname>":8080/cortx-control:2.0.0-0 && bash -x ./cortx-deploy.sh --cortx-cluster
 ```
