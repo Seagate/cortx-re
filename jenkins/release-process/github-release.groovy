@@ -34,7 +34,6 @@ pipeline {
                         github_release_info = sh( script: """
                             bash -x scripts/release_support/create-cortx-github-release.sh -t $GIT_TAG -v $SERVICES_VERSION -c $CHANGESET_URL -r $RELEASE_REPO
                         """, returnStdout: true).trim()
-                        echo "${github_release_info}"
                         env.github_release_url = github_release_info.split()[0]
                         env.tags = github_release_info.split()[1]
                     }			
@@ -49,7 +48,7 @@ pipeline {
 
                 // Jenkins Summary
                 if ( currentBuild.currentResult == "SUCCESS" ) { 
-                    MESSAGE = "CORTX Release: ${IMAGE_TAGS} (Available on GitHub)"
+                    MESSAGE = "CORTX Release: ${env.tags} (Available on GitHub)"
                     ICON = "accept.gif"
                     STATUS = "SUCCESS"
                 } else if ( currentBuild.currentResult == "FAILURE" ) {
