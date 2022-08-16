@@ -51,13 +51,13 @@ function get_container_id {
 function getImageTags {
     image="$1"
     tag="$2"
-    tags=$( curl -s -H "Accept: application/vnd.github+json" -H "Authorization: token ${GH_TOKEN}" "https://api.github.com/orgs/seagate/packages/container/${image}/versions" | jq '.[] | select(.metadata.container.tags[]=="${tag}") | .metadata.container.tags[]' | awk '!/2.0.0-latest/' | tr -d '"' )
+    tags=$( curl -s -H "Accept: application/vnd.github+json" -H "Authorization: token ${GH_TOKEN}" "https://api.github.com/orgs/seagate/packages/container/${image}/versions" | jq ".[] | select(.metadata.container.tags[]==\"${tag}\") | .metadata.container.tags[]" | awk '!/2.0.0-latest/' | tr -d '"' )
     echo ${tags} | tr ' ' '/'
 }
 
 # Fetch tags of given image
 image_tags=$(getImageTags "cortx-rgw" "2.0.0-895")
-echo $image_tags
+
 # Set release content
 CHANGESET=$( curl -ks $CHANGESET_URL | tail -n +2 | sed 's/"//g' )
 CORTX_SERVER_IMAGE="[$REGISTRY/cortx-rgw:$TAG](https://github.com/$RELEASE_REPO/pkgs/container/cortx-rgw/$( get_container_id "cortx-rgw" )?tag=$TAG)"
