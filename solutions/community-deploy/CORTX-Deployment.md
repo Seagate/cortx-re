@@ -73,7 +73,7 @@ hostname=cortx-deploy-node3.cortx.com,user=root,pass=<root-password>
 ```
 
 ## Deploy CORTX Stack
-- Execute cortx-deploy.sh to deploy the CORTX stack on your K8s cluster.
+- Execute `cortx-deploy.sh` to deploy the CORTX stack on your K8s cluster.
 ```
 export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
 ```
