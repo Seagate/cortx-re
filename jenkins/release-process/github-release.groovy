@@ -30,7 +30,7 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
-                    withCredentials([string(credentialsId: 'gaurav-github-token', variable: 'GH_TOKEN')]) {
+                    withCredentials([string(credentialsId: 'cortx-admin-token', variable: 'GH_TOKEN')]) {
                         github_release_info = sh( script: """
                             bash -x scripts/release_support/create-cortx-github-release.sh -t $GIT_TAG -v $SERVICES_VERSION -c $CHANGESET_URL -r $RELEASE_REPO
                         """, returnStdout: true).trim()
@@ -69,7 +69,7 @@ pipeline {
                 // Email Notification
                 env.build_stage = "${build_stage}"
 
-                def toEmail = "gaurav.chaudhari@seagate.com"
+                def toEmail = "CORTX.DevOps.RE@seagate.com"
                 def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
                 if ( manager.build.result.toString() == "FAILURE" ) {
                     toEmail = "${toEmail}"
