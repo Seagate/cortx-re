@@ -32,7 +32,7 @@ pipeline {
                 script {
                     withCredentials([string(credentialsId: 'gaurav-github-token', variable: 'GH_TOKEN')]) {
                         github_release_info = sh( script: """
-                            bash scripts/release_support/create-cortx-github-release.sh -t $GIT_TAG -v $SERVICES_VERSION -c $CHANGESET_URL -r $RELEASE_REPO
+                            bash -x scripts/release_support/create-cortx-github-release.sh -t $GIT_TAG -v $SERVICES_VERSION -c $CHANGESET_URL -r $RELEASE_REPO
                         """, returnStdout: true).trim()
                         echo "${github_release_info}"
                         // env.github_release_url = github_release_info.split()[0]
