@@ -5,8 +5,8 @@ pipeline {
         }
     }
 
-    triggers { cron('0 22 * * 1,3,5') }
     
+    triggers { cron('0 22 * * 1,3,5') }
     options {
         timeout(time: 360, unit: 'MINUTES')
         timestamps()
@@ -43,7 +43,7 @@ pipeline {
                 }
             }
 
-        stage ('Install Prerequisite tools') {
+        stage('Install Prerequisite tools') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'install tools', script: '''
@@ -70,7 +70,7 @@ pipeline {
                 '''
             }
         }
-        stage ('Create Multi EC2 instances') {
+        stage('Create Multi EC2 instances') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Setting up multi EC2 instances', script: '''
@@ -82,11 +82,11 @@ pipeline {
             '''
             }
         }
-        stage ('Network and storage configuration') {
+        stage('Network and storage configuration') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                sh label: 'Setting up Network and Storage devices for CORTX. Script will reboot the instance on completion', script: '''
+                    sh label: 'Setting up Network and Storage devices for CORTX. Script will reboot the instance on completion', script: '''
                     pushd solutions/community-deploy/cloud/AWS
                         for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${ip} sudo bash /home/centos/setup.sh;done
                         sleep 240
@@ -96,36 +96,14 @@ pipeline {
             }
         }
 
-        stage ('EC2 connection prerequisites') {
+        stage('EC2 connection prerequisites') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Changing root password', script: '''
+                sh label: 'Changing root password & creating hosts file', script: '''
                 pushd solutions/community-deploy/cloud/AWS
                     export ROOT_PASSWORD=${ROOT_PASSWORD}
                     for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$ip echo '$HOSTNAME';done > ec2_hostname.txt
                     for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${ip} "export ROOT_PASSWORD=$ROOT_PASSWORD && echo $ROOT_PASSWORD | sudo passwd --stdin root && pushd /home/centos/cortx-re/solutions/kubernetes && echo "'"hostname=$HOSTNAME,user=root,pass="'" > hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && cat hosts";done
-                    rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' cortx.pem ip_public.txt ip_private.txt centos@${ip}:/tmp
-                popd
-            '''
-            }
-        }
-
-        stage ('Creating hosts file for K8s cluster') {
-            steps {
-                script { build_stage = env.STAGE_NAME }
-                sh label: 'Creating hosts file', script: '''
-                pushd solutions/community-deploy/cloud/AWS
-                    for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$ip "pushd /home/centos/cortx-re/solutions/kubernetes && echo "'"hostname=$HOSTNAME,user=root,pass="'" > hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && cat hosts";done
-                popd
-            '''
-            }
-        }
-
-        stage ('Copy PEM file to the worker nodes') {
-            steps {
-                script { build_stage = env.STAGE_NAME }
-                sh label: 'Creating hosts file', script: '''
-                pushd solutions/community-deploy/cloud/AWS
                     for ip in $PUBLIC_IP;do rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' cortx.pem ip_public.txt ip_private.txt centos@$ip:/tmp;done
                 popd
             '''
@@ -133,7 +111,7 @@ pipeline {
         }
 
 
-        stage ('Execute cortx build script on Primary node') {
+        stage('Execute cortx build script') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Executing cortx build image script on Primary node', script: '''
@@ -146,8 +124,7 @@ pipeline {
             }
         }
 
-
-        stage ('Setup K8s cluster on Primary node') {
+        stage('Setup K8s cluster') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'setting up K8s cluster on EC2', script: '''
@@ -158,34 +135,5 @@ pipeline {
             '''
             }
         }
-
-        stage ('Deploy multi-node cortx cluster') {
-            steps {
-                script { build_stage = env.STAGE_NAME }
-                sh label: 'Deploying multi-node cortx cluster on EC2 Instances', script: '''
-                pushd solutions/community-deploy/cloud/AWS
-                    export SOLUTION_CONFIG_TYPE="automated"
-                    export CORTX_SERVER_IMAGE="cortx-rgw:2.0.0-0"
-                    export CORTX_DATA_IMAGE="cortx-data:2.0.0-0"
-                    export CORTX_CONTROL_IMAGE="cortx-control:2.0.0-0"
-                    export COMMUNITY_USE=${COMMUNITY_USE}
-                    ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${PRIMARY_PUBLIC_IP} 'pushd /home/centos/cortx-re/solutions/kubernetes && export SOLUTION_CONFIG_TYPE='"${SOLUTION_CONFIG_TYPE}"' && export COMMUNITY_USE='"${COMMUNITY_USE}"' && export CORTX_SERVER_IMAGE='"${CORTX_SERVER_IMAGE}"' && export CORTX_DATA_IMAGE='"${CORTX_DATA_IMAGE}"' && export CORTX_CONTROL_IMAGE='"${CORTX_CONTROL_IMAGE}"' && sudo env SOLUTION_CONFIG_TYPE=${SOLUTION_CONFIG_TYPE} env CORTX_SERVER_IMAGE=${CORTX_SERVER_IMAGE} env CORTX_CONTROL_IMAGE=${CORTX_CONTROL_IMAGE} env CORTX_DATA_IMAGE=${CORTX_DATA_IMAGE} env COMMUNITY_USE=${COMMUNITY_USE} ./cortx-deploy.sh --cortx-cluster'
-                popd
-            '''
-            }
-        }
-            
-       post {
-        always {
-            retry(count: 3) {
-            script { build_stage = env.STAGE_NAME }
-            sh label: 'destroying EC2 instance', script: '''
-            pushd solutions/community-deploy/cloud/AWS
-                terraform validate && terraform destroy -var-file user.tfvars --auto-approve
-            popd
-        '''
-             }
-         }
      }
-  }
 }
