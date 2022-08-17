@@ -131,6 +131,8 @@ pipeline {
                 pushd solutions/community-deploy/cloud/AWS
                     PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
                     ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${PRIMARY_PUBLIC_IP} "pushd /home/centos/cortx-re/solutions/kubernetes && sudo ./cluster-setup.sh true"
+                    WORKER_IP=$(cat ip_public.txt | jq '.[1]','.[2]' | tr -d '",[]')
+                    for worker in $WORKER_IP;do rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' /etc/docker/daemon.json centos@$worker:/tmp;done
                 popd
             '''
             }
