@@ -15,11 +15,11 @@
 # For any questions about this software or licensing,
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
-os_version = "<OS VERSION>"
-region = "<AWS REGION>"
-security_group_cidr = "<YOUR PUBLIC IP CIDR>"
-key_name = "<YOUR PEM KEY FILE NAME TO LOGIN TO AWS EC2 INSTANCES>"
-instance_count = "<NUMBER OF EC2 INSTANCES>"
-ebs_volume_count = "<NUMBER OF EBS VOLUMES>"
-ebs_volume_size  = "<EBS VOLUME SIZE>"
-tag_name = "<YOUR TAG NAME FOR EC2 INSTANCES>"
+os_version          = "CentOS 7.9.2009 x86_64"
+region              = "ap-south-1"
+security_group_cidr = "134.204.222.36/32"
+key_name            = "devops-key"
+instance_count      = "3"
+ebs_volume_count    = "9"
+ebs_volume_size     = "10"
+tag_name            = "cortx-multinode"
