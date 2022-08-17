@@ -15,7 +15,7 @@ pipeline {
     }
 
     parameters {
-        string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX Cluster scripts', trim: true)
+        string(name: 'CORTX_RE_BRANCH', defaultValue: 'f-94l-multinode', description: 'Branch or GitHash for CORTX Cluster scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re/', description: 'Repository for CORTX Cluster scripts', trim: true)
         string(name: 'OS_VERSION', defaultValue: 'CentOS 7.9.2009 x86_64', description: 'Operating system version', trim: true)
         string(name: 'REGION', defaultValue: 'ap-south-1', description: 'AWS region', trim: true)
@@ -99,26 +99,39 @@ pipeline {
         stage ('EC2 connection prerequisites') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Changing root password and creating hosts file', script: '''
+                sh label: 'Changing root password', script: '''
                 pushd solutions/community-deploy/cloud/AWS
                     export ROOT_PASSWORD=${ROOT_PASSWORD}
-                    for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${ip} "export ROOT_PASSWORD=$ROOT_PASSWORD && echo $ROOT_PASSWORD | sudo passwd --stdin root && pushd /home/centos/cortx-re/solutions/kubernetes && echo "'"hostname=$HOSTNAME,user=root,pass="'" > hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && cat hosts"
-                    for ip in $PUBLIC_IP;do rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' cortx.pem ip_public.txt ip_private.txt centos@${ip}:/tmp; done
+                    for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$ip echo '$HOSTNAME';done > ec2_hostname.txt
+                    for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${ip} "export ROOT_PASSWORD=$ROOT_PASSWORD && echo $ROOT_PASSWORD | sudo passwd --stdin root && pushd /home/centos/cortx-re/solutions/kubernetes && echo "'"hostname=$HOSTNAME,user=root,pass="'" > hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && cat hosts";done
+                    rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' cortx.pem ip_public.txt ip_private.txt centos@${ip}:/tmp
                 popd
             '''
             }
         }
 
-        stage ('Creating host file on EC2 Primary node') {
+        stage ('Creating hosts file for K8s cluster') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Changing root password and creating hosts file', script: '''
+                sh label: 'Creating hosts file', script: '''
                 pushd solutions/community-deploy/cloud/AWS
-                    for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${ip} "pushd /home/centos/cortx-re/solutions/kubernetes && echo "'"hostname=$HOSTNAME,user=root,pass="'" > hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && cat hosts"
+                    for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$ip "pushd /home/centos/cortx-re/solutions/kubernetes && echo "'"hostname=$HOSTNAME,user=root,pass="'" > hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && cat hosts";done
                 popd
             '''
             }
         }
+
+        stage ('Copy PEM file to the worker nodes') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'Creating hosts file', script: '''
+                pushd solutions/community-deploy/cloud/AWS
+                    for ip in $PUBLIC_IP;do rsync -avzrP -e 'sudo ssh -i cortx.pem -o StrictHostKeyChecking=no' cortx.pem ip_public.txt ip_private.txt centos@$ip:/tmp;done
+                popd
+            '''
+            }
+        }
+
 
         stage ('Execute cortx build script on Primary node') {
             steps {
@@ -133,6 +146,7 @@ pipeline {
             }
         }
 
+
         stage ('Setup K8s cluster on Primary node') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -144,8 +158,24 @@ pipeline {
             '''
             }
         }
-    
-    post {
+
+        stage ('Deploy multi-node cortx cluster') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'Deploying multi-node cortx cluster on EC2 Instances', script: '''
+                pushd solutions/community-deploy/cloud/AWS
+                    export SOLUTION_CONFIG_TYPE="automated"
+                    export CORTX_SERVER_IMAGE="cortx-rgw:2.0.0-0"
+                    export CORTX_DATA_IMAGE="cortx-data:2.0.0-0"
+                    export CORTX_CONTROL_IMAGE="cortx-control:2.0.0-0"
+                    export COMMUNITY_USE=${COMMUNITY_USE}
+                    ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${PRIMARY_PUBLIC_IP} 'pushd /home/centos/cortx-re/solutions/kubernetes && export SOLUTION_CONFIG_TYPE='"${SOLUTION_CONFIG_TYPE}"' && export COMMUNITY_USE='"${COMMUNITY_USE}"' && export CORTX_SERVER_IMAGE='"${CORTX_SERVER_IMAGE}"' && export CORTX_DATA_IMAGE='"${CORTX_DATA_IMAGE}"' && export CORTX_CONTROL_IMAGE='"${CORTX_CONTROL_IMAGE}"' && sudo env SOLUTION_CONFIG_TYPE=${SOLUTION_CONFIG_TYPE} env CORTX_SERVER_IMAGE=${CORTX_SERVER_IMAGE} env CORTX_CONTROL_IMAGE=${CORTX_CONTROL_IMAGE} env CORTX_DATA_IMAGE=${CORTX_DATA_IMAGE} env COMMUNITY_USE=${COMMUNITY_USE} ./cortx-deploy.sh --cortx-cluster'
+                popd
+            '''
+            }
+        }
+            
+       post {
         always {
             retry(count: 3) {
             script { build_stage = env.STAGE_NAME }
@@ -154,8 +184,7 @@ pipeline {
                 terraform validate && terraform destroy -var-file user.tfvars --auto-approve
             popd
         '''
-                }
-            }
-        }
-    }
+             }
+         }
+     }
 }
