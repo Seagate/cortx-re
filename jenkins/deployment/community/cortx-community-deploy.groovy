@@ -143,7 +143,7 @@ pipeline {
                 pushd solutions/community-deploy/cloud/AWS
                     terraform destroy -var-file user.tfvars --auto-approve
                 popd
-        '''
+            '''
             }
         }    
      }
