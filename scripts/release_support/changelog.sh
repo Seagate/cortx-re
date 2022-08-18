@@ -124,9 +124,9 @@ do
                                 repo_name=$(awk -F"[/.]" '{print $6}' <<< ${COMPONENT_LIST[$component]})
                                 pr_url=$(curl -s -H "Accept: application/json" -H "Authorization: token $ACCESS_TOKEN" https://api.github.com/repos/seagate/"$repo_name"/commits/"$commit"/pulls | jq '.[].html_url' | sed "s/\"//g")
                                 if [ ! -z "$pr_url" ]; then
-                                        echo -e "$filtered_commit_message [$pr_url]($pr_url)\n" >> $report_file
+                                        echo -e "$filtered_commit_message [$pr_url]($pr_url)" >> $report_file
                                 else
-                                        echo -e "$filtered_commit_message\n" >> $report_file
+                                        echo -e "$filtered_commit_message" >> $report_file
                                 fi
                         done
                 else
