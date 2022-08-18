@@ -131,7 +131,7 @@ function run_io_sanity() {
    FILE2="test-obj.bin"
    FILE3="file15mb"
    FILE4="file18mb"
-   FILE5="Parts.json"
+   #FILE5="Parts.json"
 
    add_common_separator "Creating S3 bucket:- '$BUCKET'"
    aws s3 mb s3://$BUCKET
@@ -160,8 +160,8 @@ function run_io_sanity() {
    dd if=/dev/zero of=$FILE3 bs=1M count=15
    echo -e "\nCreating '$FILE4'"
    dd if=/dev/zero of=$FILE4 bs=1M count=18
-   echo -e "\nCreating '$FILE5"
-   touch $FILE5
+   #echo -e "\nCreating '$FILE5"
+   #touch $FILE5
 
    add_common_separator "Uploading '$FILE1' file to '$BUCKET' bucket"
    aws s3 cp $FILE1 s3://$BUCKET/file10MB
@@ -227,48 +227,48 @@ function run_io_sanity() {
    aws s3api delete-objects --bucket $BUCKET2 --delete Objects=[{Key=$FILE3},{Key=$FILE4}]
    check_status "Failed to delete multiple objects from '$BUCKET2'"
    
-   add_common_separator "Multipart upload opearation on '$BUCKET2' bucket"
-   rm -rf /tmp/upload.log
-   aws s3api create-multipart-upload --bucket $BUCKET2 --key multipart >> /tmp/upload.log
-   UPLOAD_ID=$(cat /tmp/upload.log | grep -o "UploadId[\"]:.*" | cut -c12-48)
-   modified="${UPLOAD_ID:1:-1}"
-   echo $modified
-   aws s3api upload-part --bucket $BUCKET2 --key multipart --part-number 1 --body $FILE3 --upload-id $modified  > /tmp/etag1
-   Etag1=$(cat /tmp/etag1 | grep -o "ETag[\"]:.*" | cut -c8-48)
-   echo $Etag1
-   aws s3api upload-part --bucket $BUCKET2 --key multipart --part-number 2 --body $FILE4 --upload-id $modified  > /tmp/etag2
-   Etag2=$(cat /tmp/etag2 | grep -o "ETag[\"]:.*" | cut -c8-48)
-   echo $Etag2
-   echo '
-   {
-   "Parts": [
-   {
-   "ETag": '$Etag1',
-   "PartNumber": 1
-   },
-   {
-   "ETag": '$Etag2',
-   "PartNumber": 2
-   }
-   ]
-   }' > $FILE5
-   check_status "Multipart upload failed to '$BUCKET2'"
+   #add_common_separator "Multipart upload opearation on '$BUCKET2' bucket"
+   #rm -rf /tmp/upload.log
+   #aws s3api create-multipart-upload --bucket $BUCKET2 --key multipart >> /tmp/upload.log
+   #UPLOAD_ID=$(cat /tmp/upload.log | grep -o "UploadId[\"]:.*" | cut -c12-48)
+   #modified="${UPLOAD_ID:1:-1}"
+   #echo $modified
+   #aws s3api upload-part --bucket $BUCKET2 --key multipart --part-number 1 --body $FILE3 --upload-id $modified  > /tmp/etag1
+   #Etag1=$(cat /tmp/etag1 | grep -o "ETag[\"]:.*" | cut -c8-48)
+   #echo $Etag1
+   #aws s3api upload-part --bucket $BUCKET2 --key multipart --part-number 2 --body $FILE4 --upload-id $modified  > /tmp/etag2
+   #Etag2=$(cat /tmp/etag2 | grep -o "ETag[\"]:.*" | cut -c8-48)
+   #echo $Etag2
+   #echo '
+   #{
+   #"Parts": [
+   #{
+   #"ETag": '$Etag1',
+   #"PartNumber": 1
+   #},
+   #{
+   #"ETag": '$Etag2',
+   #"PartNumber": 2
+   #}
+   #]
+   #}' > $FILE5
+   #check_status "Multipart upload failed to '$BUCKET2'"
 
-   add_common_separator "List multipart upload '$BUCKET2' bucket"
-   aws s3api list-multipart-uploads --bucket $BUCKET2
-   check_status "List Multipart upload failed to '$BUCKET2'"
+   #add_common_separator "List multipart upload '$BUCKET2' bucket"
+   #aws s3api list-multipart-uploads --bucket $BUCKET2
+   #check_status "List Multipart upload failed to '$BUCKET2'"
 
-   add_common_separator "List parts '$BUCKET2' bucket"
-   aws s3api list-parts --bucket $BUCKET2 --key multipart --upload-id $modified
-   check_status "List parts failed to '$BUCKET2'"
+   #add_common_separator "List parts '$BUCKET2' bucket"
+   #aws s3api list-parts --bucket $BUCKET2 --key multipart --upload-id $modified
+   #check_status "List parts failed to '$BUCKET2'"
 
-   add_common_separator "Complete Multipart upload '$BUCKET2' bucket"
-   aws s3api complete-multipart-upload --multipart-upload file://$FILE5 --bucket $BUCKET2 --key multipart --upload-id $modified 
-   check_status "Complete Mutipart upload Failed on '$BUCKET2'Bucket"
+   #add_common_separator "Complete Multipart upload '$BUCKET2' bucket"
+   #aws s3api complete-multipart-upload --multipart-upload file://$FILE5 --bucket $BUCKET2 --key multipart --upload-id $modified 
+   #check_status "Complete Mutipart upload Failed on '$BUCKET2'Bucket"
 
-   add_common_separator "Remove all files in '$BUCKET2' bucket"
-   aws s3 rm s3://$BUCKET2 --recursive
-   check_status "Failed to delete all files from '$BUCKET2'"
+   #add_common_separator "Remove all files in '$BUCKET2' bucket"
+   #aws s3 rm s3://$BUCKET2 --recursive
+   #check_status "Failed to delete all files from '$BUCKET2'"
 
    add_common_separator "Remove '$BUCKET' bucket"
    aws s3 rb s3://$BUCKET
