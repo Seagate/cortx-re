@@ -33,8 +33,9 @@ pipeline {
     }
 
         stages {
-          stage('Checkout Script') {
-            steps {
+
+            stage('Checkout Script') {
+                steps {
                     cleanWs()
                     script {
                         checkout([$class: 'GitSCM', branches: [[name: "${CORTX_RE_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${CORTX_RE_REPO}"]]])
@@ -42,7 +43,7 @@ pipeline {
                 }
             }
 
-          stage('Install Prerequisite tools') {
+        stage('Install Prerequisite tools') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'install tools', script: '''
@@ -68,8 +69,7 @@ pipeline {
                         popd
                 '''
             }
-       }
-        
+        }
         stage('Create Multi EC2 instances') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -87,8 +87,7 @@ pipeline {
                     sh label: 'Setting up Network and Storage devices for CORTX. Script will reboot the instance on completion', script: '''
                     pushd solutions/community-deploy/cloud/AWS
                         PUBLIC_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip_public.txt | tr -d '",[]' | sed '/^$/d')
-                        for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${ip} sudo bash /home/centos/setup.sh;done
-                        sleep 240
+                        for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${ip} sudo bash /home/centos/setup.sh && sleep 240;done
                     popd
             '''
                 }
@@ -115,7 +114,7 @@ pipeline {
                 pushd solutions/community-deploy/cloud/AWS
                     export CORTX_RE_BRANCH=${CORTX_RE_BRANCH}
                     PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
-                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${PRIMARY_PUBLIC_IP} "export CORTX_RE_BRANCH=$CORTX_RE_BRANCH; git clone https://github.com/Seagate/cortx-re; pushd /home/centos/cortx-re/solutions/community-deploy; time sudo ./build-cortx.sh -b ${CORTX_RE_BRANCH}"
+                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${PRIMARY_PUBLIC_IP} "export CORTX_RE_BRANCH=$CORTX_RE_BRANCH; git clone https://github.com/mukul-seagate11/cortx-re-1; pushd /home/centos/cortx-re/solutions/community-deploy; time sudo ./build-cortx.sh -b ${CORTX_RE_BRANCH}"
                 popd
             '''
             }
@@ -173,7 +172,7 @@ pipeline {
                     terraform destroy -var-file user.tfvars --auto-approve
                 popd
         '''
-                }
             }
         }
     }
+}
