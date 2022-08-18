@@ -123,8 +123,7 @@ do
                                 filtered_commit_message=$(sed -e 's/([^()]*)//g' <<< $original_commit_message)
                                 repo_name=$(awk -F"[/.]" '{print $6}' <<< ${COMPONENT_LIST[$component]})
                                 pr_url=$(curl -s -H "Accept: application/json" -H "Authorization: token $ACCESS_TOKEN" https://api.github.com/repos/seagate/"$repo_name"/commits/"$commit"/pulls | jq '.[].html_url' | sed "s/\"//g")
-                                pr_number=$(echo "$pr_url" | awk -F[/] '{print $NF}')
-                                if [ "$pr_number" ] && [ "$pr_url" ]; then
+                                if [ ! -z "$pr_url" ]; then
                                         echo -e "$filtered_commit_message [$pr_number]($pr_url)\n" >> $report_file
                                 else
                                         echo -e "$filtered_commit_message\n" >> $report_file
