@@ -31,56 +31,6 @@ provider "aws" {
   region  = var.region
 }
 
-resource "aws_default_vpc" "default" {}
-
-data "aws_availability_zones" "available" {
-  state = "available"
-}
-
-resource "aws_default_subnet" "default" {
-  availability_zone = data.aws_availability_zones.available.names[0]
-}
-
-locals {
-  ec2_device_names_to_attach = slice(var.ec2_device_names, 0, var.ebs_volume_count)
-  common_tags = {
-    "Terraform" = "true",
-    "CORTX"     = "true"
-  }
-}
-
-resource "aws_security_group" "cortx_deploy" {
-  name        = "${var.tag_name}"
-  description = "Allow standard ssh, CORTX mangement ports inbound and everything else outbound."
-
-  ingress {
-    description = "SSH Acces"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = [var.security_group_cidr]
-  }
-
-  ingress {
-    description = "Allow access within security group"
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    self        = true
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "${var.tag_name}"
-  }
-}
-
 data "aws_ami" "centos" {
   most_recent = true
   owners      = ["125523088429"]
@@ -118,6 +68,187 @@ resource "local_sensitive_file" "pem_file" {
   content    = tls_private_key.example.private_key_pem
 }
 
+resource "aws_vpc" "cortx_vpc" {
+  cidr_block           = "192.168.0.0/16"
+  instance_tenancy     = "default"
+  enable_dns_support   = "true"
+  enable_dns_hostnames = "true"
+
+  tags = {
+    Name = "cortx-vpc"
+  }
+}
+
+data "aws_availability_zones" "available" {
+  state = "available"
+}
+
+resource "aws_subnet" "cortx_subnet_1" {
+  vpc_id                  = aws_vpc.cortx_subnet_1.id
+  cidr_block              = "192.168.0.0/24"
+  map_public_ip_on_launch = "true"
+  availability_zone       = "ap-south-1a"
+
+tags = {
+   Name = "cortx-subnet-1"
+  }
+}
+
+resource "aws_subnet" "cortx_subnet_2" {
+  vpc_id                  = aws_vpc.cortx_subnet_2.id
+  cidr_block              = "192.168.1.0/24"
+  availability_zone       = "ap-south-1b"
+
+tags = {
+   Name = "cortx-subnet-2"
+  }
+}
+
+resource "aws_internet_gateway" "cortx_vpc_GW" {
+ vpc_id = aws_vpc.cortx_vpc.id
+ 
+ tags = {
+        Name = "cortx-vpc-GW"
+  }
+}
+
+resource "aws_route_table" "cortx_vpc_route_table" {
+ vpc_id = aws_vpc.cortx_vpc.id
+ 
+ tags = {
+        Name = "cortx-vpc-rt"
+  }
+}
+
+resource "aws_route" "cortx_vpc_internet_access" {
+  route_table_id         = aws_route_table.cortx_vpc_route_table.id
+  destination_cidr_block =  "0.0.0.0/0"
+  gateway_id             = aws_internet_gateway.cortx_vpc_GW.id
+}
+
+resource "aws_route_table_association" "cortx_vpc_association" {
+  subnet_id      = aws_subnet.cortx_vpc.id
+  route_table_id = aws_route_table.cortx_vpc_route_table.id
+}
+
+
+locals {
+  ec2_device_names_to_attach = slice(var.ec2_device_names, 0, var.ebs_volume_count)
+  common_tags = {
+    "Terraform" = "true",
+    "CORTX"     = "true"
+  }
+}
+
+resource "aws_security_group" "cortx_deploy" {
+  depends_on=[aws_subnet.cortx_vpc]
+  name        = "cortx_ssh"
+  vpc_id      =  aws_vpc.cortx_vpc.id
+  description = "Allow standard ssh, CORTX mangement ports inbound and everything else outbound."
+
+  ingress {
+    description = "SSH Access"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = [var.security_group_cidr]
+  }
+
+  ingress {
+    description = "Allow access within security group"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    self        = true
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "cortx-ssh"
+  }
+}
+
+resource "aws_security_group" "cortx_deploy_http" {
+  name        = "cortx_http"
+   vpc_id     = aws_vpc.cortx_vpc.id
+
+ingress {
+    from_port   = 8080
+    to_port     = 8080
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "cortx_http"
+  }
+}
+
+//elastic ip address
+resource "aws_eip" "cortx_eip" {
+  vpc              = true
+  public_ipv4_pool = "amazon"
+
+}
+
+resource "aws_nat_gateway" "cortxgw" {
+  depends_on=[aws_eip.cortx_eip]
+  allocation_id = aws_eip.cortx_eip.id
+  subnet_id     = aws_subnet.cortx_vpc.id
+  
+  tags = {
+    Name = "cortxgw"
+  }
+}
+
+// Route table for SNAT in private subnet
+resource "aws_route_table" "cortx_private_subnet_route_table" {
+      depends_on=[aws_nat_gateway.cortxgw]
+  vpc_id = aws_vpc.cortx_vpc.id
+
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_nat_gateway.cortxgw.id
+  }
+
+  tags = {
+    Name = "cortx_private_subnet_route_table"
+  }
+}
+
+
+resource "aws_route_table_association" "cortx_private_subnet_route_table_association" {
+  depends_on = [aws_route_table.cortx_private_subnet_route_table]
+  subnet_id      = aws_subnet.cortx_vpc_subnet_2.id
+  route_table_id = aws_route_table.cortx_private_subnet_route_table.id
+}
+
+resource "aws_instance" "CORTXBASTION" {
+  ami                    = data.aws_ami.centos.id
+  instance_type          = "t3a.2xlarge"
+  subnet_id = aws_subnet.cortx_vpc.id
+  key_name               = aws_key_pair.cortx_key.key_name
+  vpc_security_group_ids = [aws_security_group.cortx_deploy.id]
+
+  tags = {
+    Name = "cortxbastionhost"
+    }
+}
+
+
 resource "aws_instance" "cortx_deploy" {
   # https://wiki.centos.org/Cloud/AWS
   count                  = "${var.instance_count}"		
@@ -133,7 +264,7 @@ resource "aws_instance" "cortx_deploy" {
         sed -i 's/SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config
         /sbin/setenforce 0
         yum install -y yum-utils git firewalld epel-release && yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo -y && yum install -y jq docker-ce docker-ce-cli containerd.io docker-compose-plugin && sleep 30 && systemctl start docker && systemctl enable docker
-        echo $HOSTNAME >> ec2_hostname.txt
+        echo '$HOSTNAME' > /tmp/ec2_hostname.txt
   EOT
   root_block_device {
     volume_size = 90
