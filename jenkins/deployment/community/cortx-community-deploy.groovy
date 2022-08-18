@@ -68,8 +68,18 @@ pipeline {
                             cat user.tfvars | tail -4
                         popd
                 '''
+                
+        stage('Clean up') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'Destroying EC2 instances', script: '''
+                pushd solutions/community-deploy/cloud/AWS
+                    terraform destroy -var-file user.tfvars --auto-approve
+                popd
+        '''
             }
         }
+        
         stage('Create Multi EC2 instances') {
             steps {
                 script { build_stage = env.STAGE_NAME }
