@@ -31,9 +31,9 @@ pipeline {
                 script {
                     withCredentials([usernamePassword(credentialsId: 'cortx-admin-github', passwordVariable: 'PASSWD', usernameVariable: 'USER_NAME')]) {
                         sh """ 
-                            export CORTX_IMAGE=${CORTX_IMAGE}
-                            export GIT_TAG=${GIT_TAG}
-                            export TAG_MESSAGE=${TAG_MESSAGE}
+                            export CORTX_IMAGE="${CORTX_IMAGE}"
+                            export GIT_TAG="${GIT_TAG}"
+                            export TAG_MESSAGE="${TAG_MESSAGE}"
                             bash scripts/release_support/image-based-commit-tag.sh
                         """
                     }			
