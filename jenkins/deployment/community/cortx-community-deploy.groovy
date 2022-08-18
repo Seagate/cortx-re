@@ -33,9 +33,8 @@ pipeline {
     }
 
         stages {
-
-            stage('Checkout Script') {
-                steps {
+          stage('Checkout Script') {
+            steps {
                     cleanWs()
                     script {
                         checkout([$class: 'GitSCM', branches: [[name: "${CORTX_RE_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${CORTX_RE_REPO}"]]])
@@ -43,7 +42,7 @@ pipeline {
                 }
             }
 
-        stage('Install Prerequisite tools') {
+          stage('Install Prerequisite tools') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'install tools', script: '''
@@ -183,7 +182,8 @@ pipeline {
                     terraform destroy -var-file user.tfvars --auto-approve
                 popd
         '''
+                }
             }
         }
     }
-}
+ }
