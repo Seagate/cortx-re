@@ -119,7 +119,7 @@ do
                 commit_sha="$(git log "$start_hash..$target_hash" --oneline --pretty=format:"%h")";
                 if [ "$commit_sha" ]; then
                         for commit in $commit_sha; do
-                                original_commit_message=$(git log --oneline -n 1 "$commit" --pretty=format:"%s")
+                                original_commit_message=$(git log --oneline -n 1 --abbrev=10 "$commit" --pretty=format:"%s")
                                 filtered_commit_message=$(sed -e 's/([^()]*)//g' <<< $original_commit_message)
                                 repo_name=$(awk -F"[/.]" '{print $6}' <<< ${COMPONENT_LIST[$component]})
                                 pr_url=$(curl -s -H "Accept: application/json" -H "Authorization: token $ACCESS_TOKEN" https://api.github.com/repos/seagate/"$repo_name"/commits/"$commit"/pulls | jq '.[].html_url' | sed "s/\"//g")
