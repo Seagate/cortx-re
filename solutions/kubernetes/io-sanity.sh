@@ -191,37 +191,37 @@ function run_io_sanity() {
    aws s3api list-objects --bucket $BUCKET2
    check_status "Failed to list files in '$BUCKET2'"
 
-   add_common_separator "Download '$FILE1' as 'file10mbDn' and check diff"
-   aws s3 cp s3://$BUCKET/file10MB file10mbDn
-   check_status "Failed to download '$FILE1' as 'file10mbDn' from '$BUCKET'"
-   FILE_DIFF=$(diff $FILE1 file10mbDn)
-   if [[ $FILE_DIFF ]]; then
-      echo -e "\nDIFF Status: $FILE_DIFF"
-   else
-      echo -e "\nDIFF Status: The files $FILE1 and file10mbDn are similar."
-   fi
+   #add_common_separator "Download '$FILE1' as 'file10mbDn' and check diff"
+   #aws s3 cp s3://$BUCKET/file10MB file10mbDn
+   #check_status "Failed to download '$FILE1' as 'file10mbDn' from '$BUCKET'"
+   #FILE_DIFF=$(diff $FILE1 file10mbDn)
+   #if [[ $FILE_DIFF ]]; then
+   #   echo -e "\nDIFF Status: $FILE_DIFF"
+   #else
+   #   echo -e "\nDIFF Status: The files $FILE1 and file10mbDn are similar."
+   #fi
 
-   add_common_separator "Download '$FILE3' as 'file15mbDn' and check diff"
-   aws s3api get-object --bucket $BUCKET2 --key $FILE3 file15mbDn
-   check_status "Failed to download '$FILE3' as 'file15mbDn' from '$BUCKET2'"
-   FILE_DIFF2=$(diff $FILE3 file15mbDn)
-   if [[ $FILE_DIFF2 ]]; then
-      echo -e "\nDIFF Status: $FILE_DIFF2"
-   else
-      echo -e "\nDIFF Status: The files $FILE3 and file15mbDn are similar."
-   fi
+   #add_common_separator "Download '$FILE3' as 'file15mbDn' and check diff"
+   #aws s3api get-object --bucket $BUCKET2 --key $FILE3 file15mbDn
+   #check_status "Failed to download '$FILE3' as 'file15mbDn' from '$BUCKET2'"
+   #FILE_DIFF2=$(diff $FILE3 file15mbDn)
+   #if [[ $FILE_DIFF2 ]]; then
+   #   echo -e "\nDIFF Status: $FILE_DIFF2"
+   #else
+   #   echo -e "\nDIFF Status: The files $FILE3 and file15mbDn are similar."
+   #fi
 
-   add_common_separator "Copy object 'file10MB' from '$BUCKET' bucket to '$BUCKET2' bucket"
-   aws s3api copy-object --copy-source $BUCKET/file10MB --key file10MB --bucket $BUCKET2
-   check_status "Failed to copy object '$FILE1' from '$BUCKET' bucket to '$BUCKET2' bucket"
+   #add_common_separator "Copy object 'file10MB' from '$BUCKET' bucket to '$BUCKET2' bucket"
+   #aws s3api copy-object --copy-source $BUCKET/file10MB --key file10MB --bucket $BUCKET2
+   #check_status "Failed to copy object '$FILE1' from '$BUCKET' bucket to '$BUCKET2' bucket"
 
    add_common_separator "Remove all files in '$BUCKET' bucket"
    aws s3 rm s3://$BUCKET --recursive
    check_status "Failed to delete all files from '$BUCKET'"
    
-   add_common_separator "Delete single object 'file10MB' from '$BUCKET2' bucket"
-   aws s3api delete-object --bucket $BUCKET2 --key file10MB
-   check_status "Failed to delete object 'file10MB' from '$BUCKET2'"
+   #add_common_separator "Delete single object 'file10MB' from '$BUCKET2' bucket"
+   #aws s3api delete-object --bucket $BUCKET2 --key file10MB
+   #check_status "Failed to delete object 'file10MB' from '$BUCKET2'"
 
    add_common_separator "Delete multiple objects from '$BUCKET2' bucket"
    aws s3api delete-objects --bucket $BUCKET2 --delete Objects=[{Key=$FILE3},{Key=$FILE4}]
