@@ -18,7 +18,7 @@ pipeline {
         last_success_build_number = getBuild(JOB_URL)
     }
     parameters {
-        string(name: 'CORTX_RE_BRANCH', defaultValue: 'k8s-v0.9.0', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
+        string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repository for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_SERVER_IMAGE', defaultValue: 'cortx-docker.colo.seagate.com/seagate/cortx-rgw:2.0.0-latest', description: 'CORTX-SERVER image', trim: true)
         string(name: 'CORTX_DATA_IMAGE', defaultValue: 'cortx-docker.colo.seagate.com/seagate/cortx-data:2.0.0-latest', description: 'CORTX-DATA image', trim: true)
