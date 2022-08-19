@@ -64,7 +64,7 @@ pipeline {
                             sed -i 's,os_version          =.*,os_version          = "'"$OS_VERSION"'",g' user.tfvars && sed -i 's,region              =.*,region              = "'"$REGION"'",g' user.tfvars && sed -i 's,security_group_cidr =.*,security_group_cidr = "'"$VM_IP/32"'",g' user.tfvars && sed -i 's,instance_count          =.*,instance_count          = "'"$INSTANCE_COUNT"'",g' user.tfvars && sed -i 's,ebs_volume_count          =.*,ebs_volume_count          = "'"$VOLUME_COUNT"'",g' user.tfvars && sed -i 's,ebs_volume_size          =.*,ebs_volume_size          = "'"$VOLUME_SIZE"'",g' user.tfvars && sed -i 's,tag_name          =.*,tag_name          = "'"$INSTANCE_TAG_NAME"'",g' user.tfvars
                             echo key_name            = '"'$KEY_NAME'"' | cat >>user.tfvars
                             cat user.tfvars | tail -4
-                        popd
+                            popd
                 '''
             }
         }
@@ -74,7 +74,7 @@ pipeline {
                 sh label: 'Setting up multi EC2 instances', script: '''
                     pushd solutions/community-deploy/cloud/AWS
                         terraform validate && terraform apply -var-file user.tfvars --auto-approve
-                    popd
+                        popd
             '''
             }
         }
@@ -86,7 +86,7 @@ pipeline {
                     pushd solutions/community-deploy/cloud/AWS
                         PUBLIC_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip_public.txt | tr -d '",[]' | sed '/^$/d')
                         for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${ip} sudo bash /home/centos/setup.sh && sleep 60;done
-                    popd
+                        popd
             '''
                 }
             }
@@ -103,8 +103,8 @@ pipeline {
                     HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
                     HOST2=$(cat ec2_hostname.txt | jq '.[1]'| tr -d '",[]')
                     HOST3=$(cat ec2_hostname.txt | jq '.[2]'| tr -d '",[]')
-                    for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${ip} "export ROOT_PASSWORD=$ROOT_PASSWORD && echo $ROOT_PASSWORD | sudo passwd --stdin root && git clone https://github.com/mukul-seagate11/cortx-re-1; pushd /home/centos/cortx-re-1/solutions/kubernetes && touch hosts && echo "'"hostname=$HOST1,user=root,pass="'" > hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo "'"hostname=$HOST2,user=root,pass="'" > hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo "'"hostname=$HOST3,user=root,pass="'" > hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && cat hosts && sleep 60";done
-                popd
+                    for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${ip} "export ROOT_PASSWORD=$ROOT_PASSWORD && echo $ROOT_PASSWORD | sudo passwd --stdin root && git clone https://github.com/mukul-seagate11/cortx-re-1; pushd /home/centos/cortx-re-1/solutions/kubernetes && touch hosts && echo "'"hostname=${HOST1},user=root,pass="'" > hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo "'"hostname=${HOST2},user=root,pass="'" > hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo "'"hostname=${HOST3},user=root,pass="'" > hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && cat hosts && sleep 60";done
+                    popd
             '''
             }
         }
@@ -117,7 +117,7 @@ pipeline {
                     export CORTX_RE_BRANCH=${CORTX_RE_BRANCH}
                     PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
                     ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${PRIMARY_PUBLIC_IP} "export CORTX_RE_BRANCH=$CORTX_RE_BRANCH; pushd /home/centos/cortx-re-1/solutions/community-deploy; time sudo ./build-cortx.sh -b ${CORTX_RE_BRANCH}"
-                popd
+                    popd
             '''
             }
         }
@@ -129,10 +129,11 @@ pipeline {
                 pushd solutions/community-deploy/cloud/AWS
                     PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
                     WORKER_IP=$(cat ip_public.txt | jq '.[1]','.[2]' | tr -d '",[]')
-                    EC2HOSTNAME=$(for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$ip echo '$HOSTNAME';done | head -1)
+                    terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_dns.value 2>&1
+                    HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
                     ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${PRIMARY_PUBLIC_IP} "pushd /home/centos/cortx-re/solutions/kubernetes && sudo ./cluster-setup.sh true"
-                    for w in $WORKER_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$w "sudo usermod -aG docker $USER && jq -n '{"insecure-registries": $ARGS.positional}' --args "$EC2HOSTNAME" > /etc/docker/daemon.json && systemctl start docker && systemctl daemon-reload && systemctl enable docker";done
-                popd
+                    for w in $WORKER_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$w "sudo usermod -aG docker $USER && jq -n '{"insecure-registries": $ARGS.positional}' --args "$HOST1" > /etc/docker/daemon.json && systemctl start docker && systemctl daemon-reload && systemctl enable docker";done
+                    popd
             '''
             }
         }
@@ -149,7 +150,7 @@ pipeline {
                     export COMMUNITY_USE=${COMMUNITY_USE}
                     PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
                     ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${PRIMARY_PUBLIC_IP} 'pushd /home/centos/cortx-re/solutions/kubernetes && export SOLUTION_CONFIG_TYPE='"${SOLUTION_CONFIG_TYPE}"' && export COMMUNITY_USE='"${COMMUNITY_USE}"' && export CORTX_SERVER_IMAGE='"${CORTX_SERVER_IMAGE}"' && export CORTX_DATA_IMAGE='"${CORTX_DATA_IMAGE}"' && export CORTX_CONTROL_IMAGE='"${CORTX_CONTROL_IMAGE}"' && sudo env SOLUTION_CONFIG_TYPE=${SOLUTION_CONFIG_TYPE} env CORTX_SERVER_IMAGE=${CORTX_SERVER_IMAGE} env CORTX_CONTROL_IMAGE=${CORTX_CONTROL_IMAGE} env CORTX_DATA_IMAGE=${CORTX_DATA_IMAGE} env COMMUNITY_USE=${COMMUNITY_USE} ./cortx-deploy.sh --cortx-cluster'
-                popd
+                    popd
             '''
             }
         }
@@ -161,7 +162,7 @@ pipeline {
                 pushd solutions/community-deploy/cloud/AWS
                     PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
                     ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${PRIMARY_PUBLIC_IP} "pushd /home/centos/cortx-re/solutions/kubernetes && sudo ./cortx-deploy.sh --io-sanity"
-                popd
+                    popd
             '''
             }
         }
@@ -172,7 +173,7 @@ pipeline {
                 sh label: 'Destroying EC2 instances', script: '''
                 pushd solutions/community-deploy/cloud/AWS
                     terraform destroy -var-file user.tfvars --auto-approve
-                popd
+                    popd
         '''
             }
         }
