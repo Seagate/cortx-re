@@ -132,7 +132,6 @@ pipeline {
                     terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_dns.value 2>&1
                     HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
                     ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${PRIMARY_PUBLIC_IP} "pushd /home/centos/cortx-re/solutions/kubernetes && sudo ./cluster-setup.sh true"
-                    for w in $WORKER_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$w "sudo usermod -aG docker $USER && jq -n '{"insecure-registries": $ARGS.positional}' --args "$HOST1" > /etc/docker/daemon.json && systemctl start docker && systemctl daemon-reload && systemctl enable docker";done
                     popd
             '''
             }
