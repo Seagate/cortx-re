@@ -165,6 +165,11 @@ output "aws_instance_private_ip_addr" {
   description = "Private IP to connect to EC2 Instances"
   }
 
+output "aws_instance_private_dns" {
+  value       = aws_instance.cortx_deploy.*.private_dns
+  description = "Private dns of EC2 Instances"
+  }
+
 resource "aws_ebs_volume" "data_vol" {
   count             = var.ebs_volume_count * var.instance_count
   availability_zone = data.aws_availability_zones.available.names[0]
