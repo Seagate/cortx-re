@@ -26,7 +26,7 @@ SERVICES_VERSION_TITLE="**CORTX Services Release**: "
 CORTX_IMAGE_TITLE="**CORTX Container Images**: "
 CHANGESET_TITLE="**Changeset**: "
 # get args
-while getopts :t:v:c: option
+while getopts :t:v:c:r: option
 do
         case "${option}"
                 in
