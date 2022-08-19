@@ -9,7 +9,7 @@ pipeline {
     options {
         timeout(time: 360, unit: 'MINUTES')
         timestamps()
-        buildDiscarder(logRotator(daysToKeepStr: '10', numToKeepStr: '5'))
+        buildDiscarder(logRotator(daysToKeepStr: '10', numToKeepStr: '1'))
         ansiColor('xterm')
     }
 
@@ -130,8 +130,7 @@ pipeline {
                     PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
                     WORKER_IP=$(cat ip_public.txt | jq '.[1]','.[2]' | tr -d '",[]')
                     terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_dns.value 2>&1
-                    HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
-                    ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${PRIMARY_PUBLIC_IP} "pushd /home/centos/cortx-re/solutions/kubernetes && sudo ./cluster-setup.sh true"
+                    ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${PRIMARY_PUBLIC_IP} "pushd /home/centos/cortx-re-1/solutions/kubernetes && sudo ./cluster-setup.sh true"
                     popd
             '''
             }
@@ -148,7 +147,7 @@ pipeline {
                     export CORTX_CONTROL_IMAGE="cortx-control:2.0.0-0"
                     export COMMUNITY_USE=${COMMUNITY_USE}
                     PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
-                    ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${PRIMARY_PUBLIC_IP} 'pushd /home/centos/cortx-re/solutions/kubernetes && export SOLUTION_CONFIG_TYPE='"${SOLUTION_CONFIG_TYPE}"' && export COMMUNITY_USE='"${COMMUNITY_USE}"' && export CORTX_SERVER_IMAGE='"${CORTX_SERVER_IMAGE}"' && export CORTX_DATA_IMAGE='"${CORTX_DATA_IMAGE}"' && export CORTX_CONTROL_IMAGE='"${CORTX_CONTROL_IMAGE}"' && sudo env SOLUTION_CONFIG_TYPE=${SOLUTION_CONFIG_TYPE} env CORTX_SERVER_IMAGE=${CORTX_SERVER_IMAGE} env CORTX_CONTROL_IMAGE=${CORTX_CONTROL_IMAGE} env CORTX_DATA_IMAGE=${CORTX_DATA_IMAGE} env COMMUNITY_USE=${COMMUNITY_USE} ./cortx-deploy.sh --cortx-cluster'
+                    ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${PRIMARY_PUBLIC_IP} 'pushd /home/centos/cortx-re-1/solutions/kubernetes && export SOLUTION_CONFIG_TYPE='"${SOLUTION_CONFIG_TYPE}"' && export COMMUNITY_USE='"${COMMUNITY_USE}"' && export CORTX_SERVER_IMAGE='"${CORTX_SERVER_IMAGE}"' && export CORTX_DATA_IMAGE='"${CORTX_DATA_IMAGE}"' && export CORTX_CONTROL_IMAGE='"${CORTX_CONTROL_IMAGE}"' && sudo env SOLUTION_CONFIG_TYPE=${SOLUTION_CONFIG_TYPE} env CORTX_SERVER_IMAGE=${CORTX_SERVER_IMAGE} env CORTX_CONTROL_IMAGE=${CORTX_CONTROL_IMAGE} env CORTX_DATA_IMAGE=${CORTX_DATA_IMAGE} env COMMUNITY_USE=${COMMUNITY_USE} ./cortx-deploy.sh --cortx-cluster'
                     popd
             '''
             }
@@ -160,7 +159,7 @@ pipeline {
                 sh label: 'IO Sanity on CORTX Cluster to validate bucket creation and object upload in deployed cluster', script: '''
                 pushd solutions/community-deploy/cloud/AWS
                     PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
-                    ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${PRIMARY_PUBLIC_IP} "pushd /home/centos/cortx-re/solutions/kubernetes && sudo ./cortx-deploy.sh --io-sanity"
+                    ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${PRIMARY_PUBLIC_IP} "pushd /home/centos/cortx-re-1/solutions/kubernetes && sudo ./cortx-deploy.sh --io-sanity"
                     popd
             '''
             }
