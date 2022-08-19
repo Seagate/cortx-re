@@ -51,7 +51,7 @@ function check_params() {
     if [ -z "$SEAGATE_TOOLS_REPO" ]; then echo "SEAGATE-TOOLS Repo not provided. Using default: Seagate/seagate-tools"; SEAGATE_TOOLS_REPO="Seagate/seagate-tools"; fi
     if [ -z "$PERFLINE_WORKLOADS_DIR" ]; then echo "Perfline pre-defined workload directory"; PERFLINE_WORKLOADS_DIR="workload/jenkins"; fi
     if [ -z "$CORTX_SCRIPTS_REPO" ]; then echo "CORTX_SCRIPTS_REPO not provided. Using default: Seagate/cortx-k8s ";CORTX_SCRIPTS_REPO="Seagate/cortx-k8s"; fi
-    if [ -z "$CORTX_SCRIPTS_BRANCH" ]; then echo "CORTX_SCRIPTS_BRANCH not provided. Using default: v0.10.0";CORTX_SCRIPTS_BRANCH="v0.10.0"; fi
+    if [ -z "$CORTX_SCRIPTS_BRANCH" ]; then echo "CORTX_SCRIPTS_BRANCH not provided. Using default: v0.9.0";CORTX_SCRIPTS_BRANCH="v0.9.0"; fi
     if [ -z "$SEAGATE_TOOLS_BRANCH" ]; then echo "PERFLINE_VERSION not provided. Using defautl: perfline_v0.4.0"; SEAGATE_TOOLS_BRANCH="perfline_v0.4.0"; fi
     if [ -z "$CORTX_SERVER_IMAGE" ]; then echo "CORTX_SERVER_IMAGE not provided. Using default : ghcr.io/seagate/cortx-rgw:2.0.0-latest"; CORTX_SERVER_IMAGE=ghcr.io/seagate/cortx-rgw:2.0.0-latest; fi
     if [ -z "$CORTX_DATA_IMAGE" ]; then echo "CORTX_DATA_IMAGE not provided. Using default : ghcr.io/seagate/cortx-data:2.0.0-latest"; CORTX_DATA_IMAGE=ghcr.io/seagate/cortx-data:2.0.0-latest; fi
