@@ -98,11 +98,11 @@ pipeline {
                 sh label: 'Changing root password & creating hosts file', script: '''
                 pushd solutions/community-deploy/cloud/AWS
                     export ROOT_PASSWORD=${ROOT_PASSWORD}
-                    PUBLIC_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip_public.txt | tr -d '",[]' | sed '/^$/d')
+                    export PUBLIC_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip_public.txt | tr -d '",[]' | sed '/^$/d')
                     terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_dns.value 2>&1 | tee ec2_hostname.txt
-                    HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
-                    HOST2=$(cat ec2_hostname.txt | jq '.[1]'| tr -d '",[]')
-                    HOST3=$(cat ec2_hostname.txt | jq '.[2]'| tr -d '",[]')
+                    export HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
+                    export HOST2=$(cat ec2_hostname.txt | jq '.[1]'| tr -d '",[]')
+                    export HOST3=$(cat ec2_hostname.txt | jq '.[2]'| tr -d '",[]')
                     for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${ip} "export ROOT_PASSWORD=$ROOT_PASSWORD && echo $ROOT_PASSWORD | sudo passwd --stdin root && git clone https://github.com/mukul-seagate11/cortx-re-1 && pushd /home/centos/cortx-re-1/solutions/kubernetes && touch hosts && echo hostname=${HOST1},user=root,pass= > hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo hostname=${HOST2},user=root,pass= >> hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo hostname=${HOST3},user=root,pass= > hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && cat hosts && sleep 60";done
                     popd
             '''
