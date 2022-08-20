@@ -22,7 +22,7 @@ pipeline {
         string(name: 'COMMUNITY_USE', defaultValue: 'yes', description: 'Only use during community deployment', trim: true)
         string(name: 'VOLUME_COUNT', defaultValue: '9', description: 'EBS volume', trim: true)
         string(name: 'VOLUME_SIZE', defaultValue: '10', description: 'EBS volume size', trim: true)
-        string(name: 'INSTANCE_COUNT', defaultValue: '3', description: 'Instance count', trim: true)
+        string(name: 'INSTANCE_COUNT', defaultValue: '4', description: 'Instance count', trim: true)
         string(name: 'INSTANCE_TAG_NAME', defaultValue: 'cortx-multinode', description: 'Tag name', trim: true)
         password(name: 'SECRET_KEY', description: 'secret key for AWS account')
         password(name: 'ACCESS_KEY', description: 'access key for AWS account')
