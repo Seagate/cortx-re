@@ -78,7 +78,7 @@ pipeline {
             '''
             }
         }
-        stage('Network and storage configuration') {
+        stage('Configure network and storage') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
