@@ -9,7 +9,7 @@ pipeline {
     options {
         timeout(time: 360, unit: 'MINUTES')
         timestamps()
-        buildDiscarder(logRotator(daysToKeepStr: '10', numToKeepStr: '1'))
+        buildDiscarder(logRotator(daysToKeepStr: '5', numToKeepStr: '1'))
         ansiColor('xterm')
     }
 
@@ -98,7 +98,7 @@ pipeline {
                 sh label: 'Changing root password & creating hosts file', script: '''
                 pushd solutions/community-deploy/cloud/AWS
                     export ROOT_PASSWORD=${ROOT_PASSWORD}
-                    export PUBLIC_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip_public.txt | tr -d '",[]' | sed '/^$/d')
+                    PUBLIC_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip_public.txt | tr -d '",[]' | sed '/^$/d')
                     terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_dns.value 2>&1 | tee ec2_hostname.txt
                     export HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
                     export HOST2=$(cat ec2_hostname.txt | jq '.[1]'| tr -d '",[]')
@@ -112,7 +112,7 @@ pipeline {
         stage('Execute cortx build script') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Executing cortx build image script on Primary node', script: '''
+                sh label: 'Executing cortx build image script on Primary node..........', script: '''
                 pushd solutions/community-deploy/cloud/AWS
                     export CORTX_RE_BRANCH=${CORTX_RE_BRANCH}
                     PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
@@ -125,12 +125,17 @@ pipeline {
         stage('Setup K8s cluster') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'setting up K8s cluster on EC2', script: '''
+                sh label: 'Setting up K8s cluster on EC2......', script: '''
                 pushd solutions/community-deploy/cloud/AWS
                     PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
                     WORKER_IP=$(cat ip_public.txt | jq '.[1]','.[2]' | tr -d '",[]')
-                    terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_dns.value 2>&1
+                    export HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
+                    export CORTX_SERVER_IMAGE="cortx-rgw:2.0.0-0"
+                    export CORTX_DATA_IMAGE="cortx-data:2.0.0-0"
+                    export CORTX_CONTROL_IMAGE="cortx-control:2.0.0-0"
+                    export CORTX_ALL_IMAGE="cortx-all:2.0.0-0"
                     ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${PRIMARY_PUBLIC_IP} "pushd /home/centos/cortx-re-1/solutions/kubernetes && sudo ./cluster-setup.sh true"
+                    for wp in $WORKER_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${wp} "sudo sed -i 's,cortx-docker.colo.seagate.com,${HOST1}:8080,g' /etc/docker/daemon.json && systemctl restart docker && docker pull ${HOST1}:8080/seagate/${CORTX_SERVER_IMAGE} && docker pull ${HOST1}:8080/seagate/${CORTX_DATA_IMAGE} && docker pull ${HOST1}:8080/seagate/${CORTX_CONTROL_IMAGE} && docker pull ${HOST1}:8080/seagate/${CORTX_ALL_IMAGE};done
                     popd
             '''
             }
@@ -139,7 +144,7 @@ pipeline {
         stage('Deploy multi-node cortx cluster') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Deploying multi-node cortx cluster and pull locally generated cortx images on worker nodes', script: '''
+                sh label: 'Deploying multi-node cortx cluster and pull locally generated cortx images on worker nodes......', script: '''
                 pushd solutions/community-deploy/cloud/AWS
                     export SOLUTION_CONFIG_TYPE="automated"
                     export CORTX_SERVER_IMAGE="cortx-rgw:2.0.0-0"
@@ -147,7 +152,7 @@ pipeline {
                     export CORTX_CONTROL_IMAGE="cortx-control:2.0.0-0"
                     export COMMUNITY_USE=${COMMUNITY_USE}
                     PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
-                    ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${PRIMARY_PUBLIC_IP} 'pushd /home/centos/cortx-re-1/solutions/kubernetes && export SOLUTION_CONFIG_TYPE='"${SOLUTION_CONFIG_TYPE}"' && export COMMUNITY_USE='"${COMMUNITY_USE}"' && export CORTX_SERVER_IMAGE='"${CORTX_SERVER_IMAGE}"' && export CORTX_DATA_IMAGE='"${CORTX_DATA_IMAGE}"' && export CORTX_CONTROL_IMAGE='"${CORTX_CONTROL_IMAGE}"' && sudo env SOLUTION_CONFIG_TYPE=${SOLUTION_CONFIG_TYPE} env CORTX_SERVER_IMAGE=${CORTX_SERVER_IMAGE} env CORTX_CONTROL_IMAGE=${CORTX_CONTROL_IMAGE} env CORTX_DATA_IMAGE=${CORTX_DATA_IMAGE} env COMMUNITY_USE=${COMMUNITY_USE} ./cortx-deploy.sh --cortx-cluster'
+                    ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${PRIMARY_PUBLIC_IP} "pushd /home/centos/cortx-re-1/solutions/kubernetes && export SOLUTION_CONFIG_TYPE='"${SOLUTION_CONFIG_TYPE}"' && export COMMUNITY_USE='"${COMMUNITY_USE}"' && export CORTX_SERVER_IMAGE='"${CORTX_SERVER_IMAGE}"' && export CORTX_DATA_IMAGE='"${CORTX_DATA_IMAGE}"' && export CORTX_CONTROL_IMAGE='"${CORTX_CONTROL_IMAGE}"' && sudo env SOLUTION_CONFIG_TYPE=${SOLUTION_CONFIG_TYPE} env CORTX_SERVER_IMAGE=${CORTX_SERVER_IMAGE} env CORTX_CONTROL_IMAGE=${CORTX_CONTROL_IMAGE} env CORTX_DATA_IMAGE=${CORTX_DATA_IMAGE} env COMMUNITY_USE=${COMMUNITY_USE} ./cortx-deploy.sh --cortx-cluster"
                     popd
             '''
             }
@@ -168,7 +173,7 @@ pipeline {
         stage('Clean up') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Destroying EC2 instances', script: '''
+                sh label: 'Destroying EC2 instances........', script: '''
                 pushd solutions/community-deploy/cloud/AWS
                     terraform destroy -var-file user.tfvars --auto-approve
                     popd
