@@ -9,7 +9,7 @@ pipeline {
     options {
         timeout(time: 360, unit: 'MINUTES')
         timestamps()
-        buildDiscarder(logRotator(daysToKeepStr: '5', numToKeepStr: '1'))
+        buildDiscarder(logRotator(daysToKeepStr: '30', numToKeepStr: '5'))
         ansiColor('xterm')
     }
 
