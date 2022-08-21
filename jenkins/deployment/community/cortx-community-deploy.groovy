@@ -44,7 +44,7 @@ pipeline {
         stage('Install Prerequisite tools') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'install tools', script: '''
+                sh label: 'Install prerequisite tools', script: '''
                 VM_IP=$(curl ipinfo.io/ip)
                 export OS_VERSION=${OS_VERSION}
                 export REGION=${REGION}
