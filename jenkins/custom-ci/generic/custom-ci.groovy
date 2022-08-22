@@ -43,6 +43,8 @@ pipeline {
         string(name: 'CORTX_RGW_URL', defaultValue: 'https://github.com/Seagate/cortx-rgw', description: 'CORTX-RGW Repository URL', trim: true)
         string(name: 'CORTX_RGW_INTEGRATION_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX-RGW-INTEGRATION', trim: true)
         string(name: 'CORTX_RGW_INTEGRATION_URL', defaultValue: 'https://github.com/Seagate/cortx-rgw-integration', description: 'CORTX-RGW-INTEGRATION Repository URL', trim: true)
+        string(name: 'CORTX_CC_BRANCH', defaultValue: 'main', description: 'Branch for cortx-cc build')
+        string(name: 'CORTX_CC_URL', defaultValue: 'https://github.com/Seagate/cortx-cc', description: 'Repository URL for cortx-cc build')
         string(name: 'CORTX_UTILS_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX Utils', trim: true)
         string(name: 'CORTX_UTILS_URL', defaultValue: 'https://github.com/Seagate/cortx-utils', description: 'CORTX Utils Repository URL', trim: true)
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX RE', trim: true)
@@ -90,6 +92,12 @@ pipeline {
             name: 'BUILD_LATEST_HARE',
                 choices: ['yes', 'no'],
                 description: 'Build cortx-Hare from latest code or use last-successful build.'
+        )
+
+        choice(
+            name: 'BUILD_LATEST_CORTX_CC',
+                choices: ['yes', 'no'],
+                description: 'Build cortx-cc from latest code or use last-successful build.'
         )
 
         choice(
@@ -158,7 +166,6 @@ pipeline {
                         script { build_stage = env.STAGE_NAME }
                         sh label: 'Installed Dependecies', script: '''
                             yum install -y expect rpm-sign rng-tools genisoimage
-                            #systemctl start rngd
                             '''
                     }
                 }
@@ -178,12 +185,15 @@ pipeline {
                                                         string(name: 'CORTX_RGW_BRANCH', value: "${CORTX_RGW_BRANCH}"),
                                                         string(name: 'HARE_URL', value: "${HARE_URL}"),
                                                         string(name: 'HARE_BRANCH', value: "${HARE_BRANCH}"),
+                                                        string(name: 'CORTX_CC_URL', value: "${CORTX_CC_URL}"),
+                                                        string(name: 'CORTX_CC_BRANCH', value: "${CORTX_CC_BRANCH}"),
                                                         string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}"),
                                                         string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}"),
                                                         string(name: 'CORTX_UTILS_URL', value: "${CORTX_UTILS_URL}"),
                                                         string(name: 'THIRD_PARTY_PYTHON_VERSION', value: "${THIRD_PARTY_PYTHON_VERSION}"),
                                                         string(name: 'BUILD_LATEST_CORTX_RGW', value: "${BUILD_LATEST_CORTX_RGW}"),
-                                                        string(name: 'BUILD_LATEST_HARE', value: "${BUILD_LATEST_HARE}")
+                                                        string(name: 'BUILD_LATEST_HARE', value: "${BUILD_LATEST_HARE}"),
+                                                        string(name: 'BUILD_LATEST_CORTX_CC', value: "${BUILD_LATEST_CORTX_CC}")
                                                     ]
                             } catch (err) {
                                 build_stage = env.STAGE_NAME
@@ -276,9 +286,9 @@ pipeline {
                     RPM_COPY_PATH="/mnt/bigstorage/releases/cortx/components/github/main/$os_version/dev/"
 
                     if [ "$BUILD_MANAGEMENT_PATH_COMPONENTS" == "yes" ]; then
-                        CUSTOM_COMPONENT_NAME="motr|hare|cortx-ha|provisioner|csm-agent|cortx-utils|cortx-rgw|cortx-rgw-integration"
+                        CUSTOM_COMPONENT_NAME="motr|hare|cortx-cc|cortx-ha|provisioner|csm-agent|cortx-utils|cortx-rgw|cortx-rgw-integration"
                     else
-                        CUSTOM_COMPONENT_NAME="motr|hare|cortx-rgw|cortx-rgw-integration"    
+                        CUSTOM_COMPONENT_NAME="motr|hare|cortx-cc|cortx-rgw|cortx-rgw-integration"    
                     fi
 
                     pushd $RPM_COPY_PATH
