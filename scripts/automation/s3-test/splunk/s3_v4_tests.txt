@@ -74,3 +74,4 @@ s3tests.functional.test_s3:test_object_copy_retaining_metadata
 s3tests.functional.test_s3:test_object_copy_bucket_not_found
 s3tests.functional.test_s3:test_object_copy_key_not_found
 s3tests.functional.test_s3:test_object_copy_to_itself
+s3tests.functional.test_s3:test_object_copy_zero_size

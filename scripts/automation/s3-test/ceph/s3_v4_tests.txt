@@ -349,3 +349,4 @@ s3tests_boto3.functional.test_s3:test_copy_object_ifmatch_failed
 s3tests_boto3.functional.test_s3:test_copy_object_ifnonematch_good
 s3tests_boto3.functional.test_s3:test_copy_object_ifnonematch_failed
 s3tests_boto3.functional.test_s3:test_object_copy_to_itself
+s3tests_boto3.functional.test_s3:test_object_copy_zero_size
