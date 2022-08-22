@@ -155,7 +155,7 @@ pipeline {
                     export CORTX_ALL_IMAGE="${HOST1}:8080/seagate/cortx-all:2.0.0-0"
                     PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
                     HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
-                    ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${PRIMARY_PUBLIC_IP} "sudo -- sh -c 'pushd /home/centos/cortx-re-1/solutions/kubernetes && export CORTX_SCRIPTS_BRANCH=v0.9.0 && export SOLUTION_CONFIG_TYPE=${SOLUTION_CONFIG_TYPE} && export COMMUNITY_USE=${COMMUNITY_USE} && export CORTX_SERVER_IMAGE=${CORTX_SERVER_IMAGE} && export CORTX_DATA_IMAGE=${CORTX_DATA_IMAGE} && export CORTX_CONTROL_IMAGE=${CORTX_CONTROL_IMAGE} && env SOLUTION_CONFIG_TYPE=${SOLUTION_CONFIG_TYPE} env CORTX_SERVER_IMAGE=${CORTX_SERVER_IMAGE} env CORTX_CONTROL_IMAGE=${CORTX_CONTROL_IMAGE} env CORTX_DATA_IMAGE=${CORTX_DATA_IMAGE} env COMMUNITY_USE=${COMMUNITY_USE} ./cortx-deploy.sh --cortx-cluster'"
+                    ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${PRIMARY_PUBLIC_IP} "sudo -- sh -c 'pushd /home/centos/cortx-re-1/solutions/kubernetes && export CORTX_SCRIPTS_BRANCH=v0.9.0 && export CORTX_SCRIPTS_REPO=Seagate/cortx-k8s && export SOLUTION_CONFIG_TYPE=${SOLUTION_CONFIG_TYPE} && export COMMUNITY_USE=${COMMUNITY_USE} && export CORTX_SERVER_IMAGE=${CORTX_SERVER_IMAGE} && export CORTX_DATA_IMAGE=${CORTX_DATA_IMAGE} && export CORTX_CONTROL_IMAGE=${CORTX_CONTROL_IMAGE} && env SOLUTION_CONFIG_TYPE=${SOLUTION_CONFIG_TYPE} env CORTX_SERVER_IMAGE=${CORTX_SERVER_IMAGE} env CORTX_CONTROL_IMAGE=${CORTX_CONTROL_IMAGE} env CORTX_DATA_IMAGE=${CORTX_DATA_IMAGE} env COMMUNITY_USE=${COMMUNITY_USE} ./cortx-deploy.sh --cortx-cluster'"
                     popd
             '''
             }
