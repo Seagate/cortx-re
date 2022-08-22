@@ -73,7 +73,7 @@ export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
 
 | Parameter     | Default value     | Description     |
 | :------------- | :----------- | :---------|
-| CORTX_SCRIPTS_BRANCH      | v0.10.0  | If you want to use another cortx-K8s branch then export this variable with your branch. Note: Default value for this variable keeps on changing. Please refer [cortx-k8s tags](https://github.com/Seagate/cortx-k8s/tags) for latest/supported services-version    |
+| CORTX_SCRIPTS_BRANCH      | v0.9.0  | If you want to use another cortx-K8s branch then export this variable with your branch. Note: Default value for this variable keeps on changing. Please refer [cortx-k8s tags](https://github.com/Seagate/cortx-k8s/tags) for latest/supported services-version    |
 | CORTX_SCRIPTS_REPO | Seagate/cortx-k8s | If you want to use another cortx-K8s repo (like your fork), export this variable with your repo. |
 | CORTX_SERVER_IMAGE | ghcr.io/seagate/cortx-rgw:2.0.0-latest | Also, if you want to use different server image then export this variable with new image. Image Reference - [cortx-rgw](https://github.com/Seagate/cortx/pkgs/container/cortx-rgw) |
 | CORTX_DATA_IMAGE | ghcr.io/seagate/cortx-data:2.0.0-latest | Also, if you want to use different data image then export this variable with new image. Image Reference - [cortx-data](https://github.com/Seagate/cortx/pkgs/container/cortx-data) |

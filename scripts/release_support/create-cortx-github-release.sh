@@ -26,7 +26,7 @@ SERVICES_VERSION_TITLE="**CORTX Services Release**: "
 CORTX_IMAGE_TITLE="**CORTX Container Images**: "
 CHANGESET_TITLE="**Changeset**: "
 # get args
-while getopts :t:v:c: option
+while getopts :t:v:c:r: option
 do
         case "${option}"
                 in
@@ -44,7 +44,7 @@ fi
 # function to fetch container id of latest container image
 function get_container_id {
     cortx_container="$1"
-    container_id=$(curl -s -H "Accept: application/vnd.github+json" -H "Authorization: token $GH_TOKEN" https://api.github.com/orgs/seagate/packages/container/$cortx_container/versions | jq '.[] | select(.metadata.container.tags[]=="2.0.0-latest") | .id')
+    container_id=$(curl -s -H "Accept: application/vnd.github+json" -H "Authorization: token $GH_TOKEN" https://api.github.com/orgs/seagate/packages/container/$cortx_container/versions | jq ".[] | select(.metadata.container.tags[]==\"$TAG\") | .id")
     echo "$container_id"
 }
 
