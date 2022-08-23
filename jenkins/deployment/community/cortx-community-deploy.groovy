@@ -2,14 +2,14 @@ pipeline {
     agent {
         node {
             label 'mukul-community-build-multi-node'
+            //label 'community-build-executor'
         }
     }
-
     //triggers { cron('0 22 * * 1,3,5') }
     options {
         timeout(time: 360, unit: 'MINUTES')
         timestamps()
-        buildDiscarder(logRotator(daysToKeepStr: '30', numToKeepStr: '5'))
+        buildDiscarder(logRotator(daysToKeepStr: '30', numToKeepStr: '10'))
         ansiColor('xterm')
     }
 
@@ -71,7 +71,7 @@ pipeline {
         stage('Create Multi EC2 instances') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Setting up multi EC2 instances', script: '''
+                sh label: '........Setting up multi EC2 instances.......', script: '''
                     pushd solutions/community-deploy/cloud/AWS
                         terraform validate && terraform apply -var-file user.tfvars --auto-approve
                         popd
@@ -82,9 +82,9 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                    sh label: 'Setting up Network and Storage devices for CORTX. Script will reboot the instance on completion', script: '''
+                    sh label: '........Setting up Network and Storage devices for CORTX. Script will reboot the instance on completion........', script: '''
                     pushd solutions/community-deploy/cloud/AWS
-                        PUBLIC_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip_public.txt | tr -d '",[]' | sed '/^$/d')
+                        export PUBLIC_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip_public.txt | tr -d '",[]' | sed '/^$/d')
                         for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${ip} sudo bash /home/centos/setup.sh && sleep 240;done
                         popd
             '''
@@ -95,10 +95,9 @@ pipeline {
         stage('EC2 connection prerequisites') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Changing root password & creating hosts file', script: '''
+                sh label: '........Changing root password & creating hosts file........', script: '''
                 pushd solutions/community-deploy/cloud/AWS
                     export ROOT_PASSWORD=${ROOT_PASSWORD}
-                    PUBLIC_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip_public.txt | tr -d '",[]' | sed '/^$/d')
                     terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_dns.value 2>&1 | tee ec2_hostname.txt
                     export HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
                     export HOST2=$(cat ec2_hostname.txt | jq '.[1]'| tr -d '",[]')
@@ -113,10 +112,10 @@ pipeline {
         stage('Execute cortx build script') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: '.......... Executing cortx build image script on Primary node ..........', script: '''
+                sh label: '.........Executing cortx build image script on Primary node.........', script: '''
                 pushd solutions/community-deploy/cloud/AWS
                     export CORTX_RE_BRANCH=${CORTX_RE_BRANCH}
-                    PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
+                    export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
                     ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${PRIMARY_PUBLIC_IP} "export CORTX_RE_BRANCH=$CORTX_RE_BRANCH; pushd /home/centos/cortx-re-1/solutions/community-deploy; time sudo ./build-cortx.sh -b ${CORTX_RE_BRANCH}"
                     popd
             '''
@@ -128,7 +127,6 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: '.........Setting up K8s cluster on EC2.........', script: '''
                 pushd solutions/community-deploy/cloud/AWS
-                    export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
                     WORKER_IP=$(cat ip_public.txt | jq '.[1]','.[2]' | tr -d '",[]')
                     export HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
                     export CORTX_SERVER_IMAGE="${HOST1}:8080/seagate/cortx-rgw:2.0.0-0"
@@ -158,7 +156,7 @@ pipeline {
         stage('IO Sanity') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'IO Sanity on CORTX Cluster to validate bucket creation and object upload in deployed cluster', script: '''
+                sh label: '........IO Sanity on CORTX Cluster to validate bucket creation and object upload in deployed cluster........', script: '''
                 pushd solutions/community-deploy/cloud/AWS
                     ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${PRIMARY_PUBLIC_IP} "pushd /home/centos/cortx-re-1/solutions/kubernetes && sudo ./cortx-deploy.sh --io-sanity"
                     popd
@@ -169,7 +167,7 @@ pipeline {
         stage('Clean up') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Destroying EC2 instances........', script: '''
+                sh label: '........Destroying EC2 instances........', script: '''
                 pushd solutions/community-deploy/cloud/AWS
                     terraform destroy -var-file user.tfvars --auto-approve
                     popd
