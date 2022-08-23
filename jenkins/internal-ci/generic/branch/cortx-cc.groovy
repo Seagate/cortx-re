@@ -51,7 +51,7 @@ pipeline {
                     CORTX_UTILS_REPO_OWNER=$(echo $CORTX_UTILS_URL | cut -d "/" -f4)
                     yum erase python36-PyYAML -y
                     yum install -y gcc python3 python3-pip python3-devel python3-setuptools openssl-devel libffi-devel python3-dbus
-                    pip3 install  --no-cache-dir --trusted-host cortx-storage.colo.seagate.com -i http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/$python_deps/ -r https://raw.githubusercontent.com/Seagate/cortx-utils/${branch}/py-utils/python_requirements.txt -r https://raw.githubusercontent.com/Seagate/cortx-utils/${branch}/py-utils/python_requirements.ext.txt
+                    pip3 install  --no-cache-dir --trusted-host cortx-storage.colo.seagate.com -i http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/python-packages-$version-latest/ -r https://raw.githubusercontent.com/Seagate/cortx-utils/${branch}/py-utils/python_requirements.txt -r https://raw.githubusercontent.com/Seagate/cortx-utils/${branch}/py-utils/python_requirements.ext.txt
                     rm -rf /etc/pip.conf
                 '''
 
