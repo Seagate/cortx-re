@@ -128,9 +128,9 @@ function update_solution_config(){
 
         yq e -i '.solution.common.resource_allocation.consul.server.storage = "10Gi"' solution.yaml
         yq e -i '.solution.common.resource_allocation.consul.server.resources.requests.memory = "1Gi"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.consul.server.resources.requests.cpu = "500m"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.consul.server.resources.limits.memory = "1Gi"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.consul.server.resources.limits.cpu = "1000m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.consul.server.resources.requests.cpu = "300m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.consul.server.resources.limits.memory = "2Gi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.consul.server.resources.limits.cpu = "500m"' solution.yaml
 
         yq e -i '.solution.common.resource_allocation.consul.client.resources.requests.memory = "256Mi"' solution.yaml
         yq e -i '.solution.common.resource_allocation.consul.client.resources.requests.cpu = "200m"' solution.yaml
