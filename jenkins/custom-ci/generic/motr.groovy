@@ -169,7 +169,7 @@ pipeline {
                 stage ("build CORTX-CC") {
                     steps {
                         script { build_stage = env.STAGE_NAME }
-                        build job: '/Release_Engineering/re-workspace/custom-cortx-cc-temp/', wait: true,
+                        build job: '/GitHub-custom-ci-builds/generic/cortx-cc-custom-build/', wait: true,
                         parameters: [
                                     string(name: 'CORTX_CC_URL', value: "${CORTX_CC_URL}"),
                                     string(name: 'CORTX_CC_BRANCH', value: "${CORTX_CC_BRANCH}"),
