@@ -291,3 +291,4 @@ s3tests_boto3.functional.test_s3:test_put_delete_tags
 s3tests_boto3.functional.test_s3:test_post_object_tags_anonymous_request
 s3tests_boto3.functional.test_s3:test_post_object_tags_authenticated_request
 s3tests_boto3.functional.test_s3:test_put_obj_with_tags
+
