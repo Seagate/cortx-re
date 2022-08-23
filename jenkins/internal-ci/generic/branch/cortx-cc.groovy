@@ -66,7 +66,6 @@ pipeline {
         }
 
         stage('Build') {
-            when { expression { params.BUILD_LATEST_CORTX_CC == 'yes' } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Build', returnStatus: true, script: '''
