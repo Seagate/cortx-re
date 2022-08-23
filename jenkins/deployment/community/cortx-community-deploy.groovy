@@ -147,9 +147,9 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: '........ Deploying multi-node cortx cluster and pull locally generated cortx images on worker nodes ......', script: '''
                 pushd solutions/community-deploy/cloud/AWS
-                    PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
-                    HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
-                    ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${PRIMARY_PUBLIC_IP} "sudo -- sh -c 'pushd /home/centos/cortx-re-1/solutions/kubernetes && export SOLUTION_CONFIG_TYPE="automated" && export COMMUNITY_USE=${COMMUNITY_USE} && export CORTX_SERVER_IMAGE=$HOST1:8080/seagate/cortx-rgw:2.0.0-0 && export CORTX_DATA_IMAGE=$HOST1:8080/seagate/cortx-data:2.0.0-0 && export CORTX_CONTROL_IMAGE=$HOST1:8080/seagate/cortx-control:2.0.0-0 && export CORTX_ALL_IMAGE=$HOST1:8080/seagate/cortx-all:2.0.0-0 && env SOLUTION_CONFIG_TYPE=${SOLUTION_CONFIG_TYPE} env CORTX_SERVER_IMAGE=${CORTX_SERVER_IMAGE} env CORTX_CONTROL_IMAGE=${CORTX_CONTROL_IMAGE} env CORTX_DATA_IMAGE=${CORTX_DATA_IMAGE} env COMMUNITY_USE=${COMMUNITY_USE} ./cortx-deploy.sh --cortx-cluster'"
+                    export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
+                    export HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
+                    ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${PRIMARY_PUBLIC_IP} 'pushd /home/centos/cortx-re-1/solutions/kubernetes && export SOLUTION_CONFIG_TYPE="automated" && export COMMUNITY_USE=${COMMUNITY_USE} && export CORTX_SERVER_IMAGE='${HOST1}':8080/seagate/cortx-rgw:2.0.0-0 && export CORTX_DATA_IMAGE='${HOST1}':8080/seagate/cortx-data:2.0.0-0 && export CORTX_CONTROL_IMAGE='${HOST1}':8080/seagate/cortx-control:2.0.0-0 && export CORTX_ALL_IMAGE='${HOST1}':8080/seagate/cortx-all:2.0.0-0 && sudo env SOLUTION_CONFIG_TYPE=${SOLUTION_CONFIG_TYPE} env CORTX_SERVER_IMAGE=${CORTX_SERVER_IMAGE} env CORTX_CONTROL_IMAGE=${CORTX_CONTROL_IMAGE} env CORTX_DATA_IMAGE=${CORTX_DATA_IMAGE} env COMMUNITY_USE=${COMMUNITY_USE} ./cortx-deploy.sh --cortx-cluster'
                     popd
             '''
             }
