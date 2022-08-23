@@ -126,11 +126,11 @@ pipeline {
         stage('Setup K8s cluster') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: '......... Setting up K8s cluster on EC2 .........', script: '''
+                sh label: '.........Setting up K8s cluster on EC2.........', script: '''
                 pushd solutions/community-deploy/cloud/AWS
-                    PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
+                    export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
                     WORKER_IP=$(cat ip_public.txt | jq '.[1]','.[2]' | tr -d '",[]')
-                    HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
+                    export HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
                     export CORTX_SERVER_IMAGE="${HOST1}:8080/seagate/cortx-rgw:2.0.0-0"
                     export CORTX_DATA_IMAGE="${HOST1}:8080/seagate/cortx-data:2.0.0-0"
                     export CORTX_CONTROL_IMAGE="${HOST1}:8080/seagate/cortx-control:2.0.0-0"
@@ -149,13 +149,7 @@ pipeline {
                 pushd solutions/community-deploy/cloud/AWS
                     export SOLUTION_CONFIG_TYPE="automated"
                     export COMMUNITY_USE=${COMMUNITY_USE}
-                    export CORTX_SERVER_IMAGE="cortx-rgw:2.0.0-0"
-                    export CORTX_DATA_IMAGE="cortx-data:2.0.0-0"
-                    export CORTX_CONTROL_IMAGE="cortx-control:2.0.0-0"
-                    export CORTX_ALL_IMAGE="cortx-all:2.0.0-0"
-                    PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
-                    HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
-                    ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${PRIMARY_PUBLIC_IP} "sudo -- sh -c 'pushd /home/centos/cortx-re-1/solutions/kubernetes && export SOLUTION_CONFIG_TYPE=${SOLUTION_CONFIG_TYPE} && export COMMUNITY_USE=${COMMUNITY_USE} && export CORTX_SERVER_IMAGE=${HOST1}:8080/seagate/${CORTX_SERVER_IMAGE} && export CORTX_DATA_IMAGE=${HOST1}:8080/seagate/${CORTX_DATA_IMAGE} && export CORTX_CONTROL_IMAGE=${HOST1}:8080/seagate/${CORTX_CONTROL_IMAGE} && env SOLUTION_CONFIG_TYPE=${SOLUTION_CONFIG_TYPE} env CORTX_SERVER_IMAGE=${CORTX_SERVER_IMAGE} env CORTX_CONTROL_IMAGE=${CORTX_CONTROL_IMAGE} env CORTX_DATA_IMAGE=${CORTX_DATA_IMAGE} env COMMUNITY_USE=${COMMUNITY_USE} ./cortx-deploy.sh --cortx-cluster'"
+                    ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${PRIMARY_PUBLIC_IP} "sudo -- sh -c 'pushd /home/centos/cortx-re-1/solutions/kubernetes && env SOLUTION_CONFIG_TYPE=${SOLUTION_CONFIG_TYPE} env CORTX_SERVER_IMAGE=${CORTX_SERVER_IMAGE} env CORTX_CONTROL_IMAGE=${CORTX_CONTROL_IMAGE} env CORTX_DATA_IMAGE=${CORTX_DATA_IMAGE} env COMMUNITY_USE=${COMMUNITY_USE} ./cortx-deploy.sh --cortx-cluster'"
                     popd
             '''
             }
@@ -166,7 +160,6 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'IO Sanity on CORTX Cluster to validate bucket creation and object upload in deployed cluster', script: '''
                 pushd solutions/community-deploy/cloud/AWS
-                    PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
                     ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${PRIMARY_PUBLIC_IP} "pushd /home/centos/cortx-re-1/solutions/kubernetes && sudo ./cortx-deploy.sh --io-sanity"
                     popd
             '''
