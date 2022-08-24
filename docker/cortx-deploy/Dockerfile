@@ -46,6 +46,7 @@ ENV GIT_HASH $GIT_HASH
 #Add Internal and CORTX uploads repository
 COPY ./${ENVIRONMENT}/$OS.repo /etc/yum.repos.d/
 
+RUN yum remove libmnl -y
 # Install rockylinux opensource-ci dependency
 RUN if [[ "$ENVIRONMENT" = "opensource-ci" ]] && [[ $OS_TYPE == "rockylinux/rockylinux" ]]; then dnf install dnf-plugin-config-manager -y ;dnf config-manager --set-enabled powertools ; rm -rf /etc/yum.repos.d/$OS.repo ;fi
 
