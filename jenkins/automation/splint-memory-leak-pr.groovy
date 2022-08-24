@@ -36,18 +36,14 @@ pipeline {
             }
         }
 
-        stage ('Execute Memory Analysis') {
+        stage ('Memory Leak Analysis: PR') {
+            when { triggeredBy 'GhprbCause' }
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Run sp lint on files', script: """
+                sh label: 'Run sp lint on changed files', script: """
                     yum install splint -y
                     mkdir artifacts
-                    files=""
-                    if [[ ! -z ${ghprbPullLink} ]]; then
-                        files=\$(curl -sH \"Accept: application/vnd.github+json\" -H \"Authorization: token ${GH_TOKEN}\" \"https://api.github.com/repos/${API_REPO}/pulls/${ghprbPullId}/files\" | jq '.[].filename' | tr -d '\"' | grep -e '.*.c\$' -e '.*.h\$' -e '.*.lcl\$' || echo '')
-                    else
-                        files=\$(find $PWD -type f -regextype posix-egrep -regex '.+\\\\.(c|h|lcl)\$')
-                    fi    
+                    files=\$(curl -sH \"Accept: application/vnd.github+json\" -H \"Authorization: token ${GH_TOKEN}\" \"https://api.github.com/repos/${API_REPO}/pulls/${ghprbPullId}/files\" | jq '.[].filename' | tr -d '\"' | grep -e '.*.c\$' -e '.*.h\$' -e '.*.lcl\$' || echo '')
                     if [[ -z \$files ]]; then
                         echo \"INFO:No c/h/lcl files present in pull request #\${ghprbPullId} for memory leak scan\" | tee artifacts/splint-analysis.log
                         exit 0
@@ -56,6 +52,18 @@ pipeline {
                     fi
                 """
             }
+        }
+
+        stage ('Memory Leak Analysis') {
+            when { not { triggeredBy 'GhprbCause' } }
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'Run sp lint on files', returnStatus: true, script: '''
+                    yum install splint -y
+                    mkdir -p artifacts
+                    for file in  $(find $PWD -type f -regextype posix-egrep -regex ".+\\\\.(c|h|lcl)$"); do splint +trytorecover -preproc -warnposix +line-len 100000 $file | sed \'H;1h;$!d;g;s/\\n  */ /g\' >> artifacts/splint-analysis.log ; done || echo "ERROR: Splint execution failed. please check logs for more details"
+                '''
+            }    
         }
     }
 
