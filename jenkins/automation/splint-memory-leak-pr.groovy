@@ -13,17 +13,16 @@ pipeline {
     }
 
     parameters {
-        string(name: 'REPO_URL', defaultValue: 'https://github.com/Seagate/cortx-motr', description: 'Repository for Memory Leak Analysis', trim: true)
-        string(name: 'BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Memory Leak Analysis', trim: true)
+        string(name: 'MOTR_REPO_URL', defaultValue: 'https://github.com/Seagate/cortx-motr', description: 'Repository for Memory Leak Analysis', trim: true)
+        string(name: 'MOTR_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Memory Leak Analysis', trim: true)
     }
 
     environment {
         GPR_REPO = "https://github.com/${ghprbGhRepository}"
-        REPO_URL = "${ghprbGhRepository != null ? GPR_REPO : REPO_URL}"
-        BRANCH = "${sha1 != null ? sha1 : BRANCH}"
+        REPO_URL = "${ghprbGhRepository != null ? GPR_REPO : MOTR_REPO_URL}"
+        BRANCH = "${sha1 != null ? sha1 : MOTR_BRANCH}"
         PR_REFSEPEC = "+refs/pull/${ghprbPullId}/*:refs/remotes/origin/pr/${ghprbPullId}/*"
-        COMPONENT = REPO_URL.split('/')[5]
-        API_REPO = "Seagate/${COMPONENT}"
+        API_REPO = "gauravchaudhari02/motr"
         GH_TOKEN = credentials('cortx-admin-token')
     }
 
