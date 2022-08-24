@@ -126,7 +126,7 @@ pipeline {
         stage('Setup K8s cluster') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: '......... Setting up K8s cluster on EC2 .........', script: '''
+                sh label: 'Setting up K8s cluster on EC2', script: '''
                 pushd solutions/community-deploy/cloud/AWS
                     PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
                     WORKER_IP=$(cat ip_public.txt | jq '.[1]','.[2]' | tr -d '",[]')
@@ -136,7 +136,7 @@ pipeline {
                     export CORTX_CONTROL_IMAGE=$HOST1:8080/seagate/cortx-control:2.0.0-0
                     export CORTX_ALL_IMAGE=$HOST1:8080/seagate/cortx-all:2.0.0-0
                     ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${PRIMARY_PUBLIC_IP} "sudo -- sh -c 'pushd /home/centos/cortx-re-1/solutions/kubernetes && ./cluster-setup.sh true && sed -i 's,cortx-docker.colo.seagate.com,${HOST1},g' /etc/docker/daemon.json && systemctl restart docker && sleep 5'"
-                    for wp in $WORKER_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${wp} "sudo -- sh -c 'sed -i 's,cortx-docker.colo.seagate.com,'${HOST1}':8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 5 && docker pull ${CORTX_SERVER_IMAGE} && docker pull ${CORTX_DATA_IMAGE} && docker pull ${CORTX_CONTROL_IMAGE} && docker pull ${CORTX_ALL_IMAGE}'";done
+                    for wp in $WORKER_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${wp} "sudo -- sh -c 'sed -i 's,cortx-docker.colo.seagate.com,${HOST1}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 5 && docker pull ${CORTX_SERVER_IMAGE} && docker pull ${CORTX_DATA_IMAGE} && docker pull ${CORTX_CONTROL_IMAGE} && docker pull ${CORTX_ALL_IMAGE}'";done
                     popd
             '''
             }
@@ -145,7 +145,7 @@ pipeline {
         stage('Deploy multi-node cortx cluster') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: '........ Deploying multi-node cortx cluster and pull locally generated cortx images on worker nodes ......', script: '''
+                sh label: 'Deploying multi-node cortx cluster and pull locally generated cortx images on worker nodes', script: '''
                 pushd solutions/community-deploy/cloud/AWS
                     export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
                     export HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
