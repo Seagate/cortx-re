@@ -22,7 +22,7 @@ pipeline {
         REPO_URL = "${ghprbGhRepository != null ? GPR_REPO : MOTR_REPO_URL}"
         BRANCH = "${sha1 != null ? sha1 : MOTR_BRANCH}"
         PR_REFSEPEC = "+refs/pull/${ghprbPullId}/*:refs/remotes/origin/pr/${ghprbPullId}/*"
-        API_REPO = "gauravchaudhari02/cortx-motr"
+        API_REPO = "Seagate/cortx-motr"
         GH_TOKEN = credentials('cortx-admin-token')
     }
 
