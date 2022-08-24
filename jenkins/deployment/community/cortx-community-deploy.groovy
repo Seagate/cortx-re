@@ -154,7 +154,8 @@ pipeline {
                     export COMMUNITY_USE='yes' && 
                     export CORTX_SERVER_IMAGE='$HOST1:8080/seagate/cortx-rgw:2.0.0-0' && 
                     export CORTX_DATA_IMAGE='$HOST1:8080/seagate/cortx-data:2.0.0-0' && 
-                    export CORTX_CONTROL_IMAGE='$HOST1:8080/seagate/cortx-control:2.0.0-0' && 
+                    export CORTX_CONTROL_IMAGE='$HOST1:8080/seagate/cortx-control:2.0.0-0' &&
+                    export CORTX_ALL_IMAGE='$HOST1:8080/seagate/cortx-all:2.0.0-0' &&
                     sudo env SOLUTION_CONFIG_TYPE=${SOLUTION_CONFIG_TYPE} env CORTX_SERVER_IMAGE=${CORTX_SERVER_IMAGE} env CORTX_CONTROL_IMAGE=${CORTX_CONTROL_IMAGE} env CORTX_DATA_IMAGE=${CORTX_DATA_IMAGE} env COMMUNITY_USE=${COMMUNITY_USE}' ./cortx-deploy.sh --cortx-cluster'
                     popd
             '''
