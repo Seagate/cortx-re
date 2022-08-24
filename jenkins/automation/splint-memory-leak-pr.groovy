@@ -12,10 +12,18 @@ pipeline {
         ansiColor('xterm')
     }
 
+    parameters {
+        string(name: 'REPO_URL', defaultValue: 'https://github.com/Seagate/cortx-motr', description: 'Repository for Memory Leak Analysis', trim: true)
+        string(name: 'BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Memory Leak Analysis', trim: true)
+    }
+
     environment {
-        CORTX_MOTR_REPO = "https://github.com/${ghprbGhRepository}"
-        CORTX_MOTR_BRANCH = "${sha1}"
-        MOTR_PR_REFSEPEC = "+refs/pull/${ghprbPullId}/*:refs/remotes/origin/pr/${ghprbPullId}/*"
+        GPR_REPO = "https://github.com/${ghprbGhRepository}"
+        REPO_URL = "${ghprbGhRepository != null ? GPR_REPO : REPO_URL}"
+        BRANCH = "${sha1 != null ? sha1 : BRANCH}"
+        PR_REFSEPEC = "+refs/pull/${ghprbPullId}/*:refs/remotes/origin/pr/${ghprbPullId}/*"
+        COMPONENT = "${REPO_URL}".split('/')[5]
+        API_REPO = "Seagate/${COMPONENT}"
         GH_TOKEN = credentials('cortx-admin-token')
     }
 
@@ -24,7 +32,7 @@ pipeline {
             steps {
                 cleanWs()
                 script {
-                    checkout([$class: 'GitSCM', branches: [[name: "${CORTX_MOTR_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${CORTX_MOTR_REPO}",  name: 'origin', refspec: "${MOTR_PR_REFSEPEC}"]]])
+                    checkout([$class: 'GitSCM', branches: [[name: "${BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${REPO_URL}",  name: 'origin', refspec: "${PR_REFSEPEC}"]]])
                 }
             }
         }
@@ -35,7 +43,7 @@ pipeline {
                 sh label: 'Run sp lint on files', script: """
                     yum install splint -y
                     mkdir artifacts
-                    files=\$(curl -sH \"Accept: application/vnd.github+json\" -H \"Authorization: token ${GH_TOKEN}\" \"https://api.github.com/repos/Seagate/cortx-motr/pulls/${ghprbPullId}/files\" | jq '.[].filename' | tr -d '\"' | grep -e '.*.c\$' -e '.*.h\$' -e '.*.lcl\$' || echo '')
+                    files=\$(curl -sH \"Accept: application/vnd.github+json\" -H \"Authorization: token ${GH_TOKEN}\" \"https://api.github.com/repos/${API_REPO}/pulls/${ghprbPullId}/files\" | jq '.[].filename' | tr -d '\"' | grep -e '.*.c\$' -e '.*.h\$' -e '.*.lcl\$' || echo '')
                     if [[ -z \$files ]]; then
                         echo \"INFO:No c/h/lcl files present in pull request #\${ghprbPullId} for memory leak scan\" | tee artifacts/splint-analysis.log
                         exit 0
