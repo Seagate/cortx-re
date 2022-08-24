@@ -127,67 +127,68 @@ function update_solution_config(){
         control_external_nodeport=$CONTROL_EXTERNAL_NODEPORT yq e -i '.solution.common.external_services.control.nodePorts.https = env(control_external_nodeport)' solution.yaml
 
         yq e -i '.solution.common.resource_allocation.consul.server.storage = "10Gi"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.consul.server.resources.requests.memory = "200Mi"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.consul.server.resources.requests.cpu = "200m"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.consul.server.resources.limits.memory = "500Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.consul.server.resources.requests.memory = "1Gi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.consul.server.resources.requests.cpu = "300m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.consul.server.resources.limits.memory = "2Gi"' solution.yaml
         yq e -i '.solution.common.resource_allocation.consul.server.resources.limits.cpu = "500m"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.consul.client.resources.requests.memory = "200Mi"' solution.yaml
+
+        yq e -i '.solution.common.resource_allocation.consul.client.resources.requests.memory = "256Mi"' solution.yaml
         yq e -i '.solution.common.resource_allocation.consul.client.resources.requests.cpu = "200m"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.consul.client.resources.limits.memory = "500Mi"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.consul.client.resources.limits.cpu = "500m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.consul.client.resources.limits.memory = "512Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.consul.client.resources.limits.cpu = "300m"' solution.yaml
 
         yq e -i '.solution.common.resource_allocation.zookeeper.storage_request_size = "8Gi"' solution.yaml
         yq e -i '.solution.common.resource_allocation.zookeeper.data_log_dir_request_size = "8Gi"' solution.yaml
         yq e -i '.solution.common.resource_allocation.zookeeper.resources.requests.memory = "256Mi"' solution.yaml
         yq e -i '.solution.common.resource_allocation.zookeeper.resources.requests.cpu = "250m"' solution.yaml
         yq e -i '.solution.common.resource_allocation.zookeeper.resources.limits.memory = "1Gi"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.zookeeper.resources.limits.cpu = "1000m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.zookeeper.resources.limits.cpu = "300m"' solution.yaml
 
         yq e -i '.solution.common.resource_allocation.kafka.storage_request_size = "8Gi"' solution.yaml
         yq e -i '.solution.common.resource_allocation.kafka.resources.requests.memory = "1Gi"' solution.yaml
         yq e -i '.solution.common.resource_allocation.kafka.resources.requests.cpu = "250m"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.kafka.resources.limits.memory = "3Gi"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.kafka.resources.limits.cpu = "1000m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.kafka.resources.limits.memory = "2Gi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.kafka.resources.limits.cpu = "500m"' solution.yaml
 
-        yq e -i '.solution.common.resource_allocation.hare.hax.resources.requests.memory = "128Mi"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.hare.hax.resources.requests.cpu = "250m"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.hare.hax.resources.limits.memory = "2Gi"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.hare.hax.resources.limits.cpu = "1000m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.hare.hax.resources.requests.memory = "256Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.hare.hax.resources.requests.cpu = "400m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.hare.hax.resources.limits.memory = "768Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.hare.hax.resources.limits.cpu = "800m"' solution.yaml
 
         yq e -i '.solution.common.resource_allocation.data.motr.resources.requests.memory = "1Gi"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.data.motr.resources.requests.cpu = "250m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.data.motr.resources.requests.cpu = "500m"' solution.yaml
         yq e -i '.solution.common.resource_allocation.data.motr.resources.limits.memory = "2Gi"' solution.yaml
         yq e -i '.solution.common.resource_allocation.data.motr.resources.limits.cpu = "1000m"' solution.yaml
 
-        yq e -i '.solution.common.resource_allocation.data.confd.resources.requests.memory = "128Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.data.confd.resources.requests.memory = "256Mi"' solution.yaml
         yq e -i '.solution.common.resource_allocation.data.confd.resources.requests.cpu = "250m"' solution.yaml
         yq e -i '.solution.common.resource_allocation.data.confd.resources.limits.memory = "512Mi"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.data.confd.resources.limits.cpu = "500m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.data.confd.resources.limits.cpu = "400m"' solution.yaml
 
-        yq e -i '.solution.common.resource_allocation.server.rgw.resources.requests.memory = "128Mi"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.server.rgw.resources.requests.cpu = "250m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.server.rgw.resources.requests.memory = "1Gi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.server.rgw.resources.requests.cpu = "500m"' solution.yaml
         yq e -i '.solution.common.resource_allocation.server.rgw.resources.limits.memory = "2Gi"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.server.rgw.resources.limits.cpu = "2000m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.server.rgw.resources.limits.cpu = "1500m"' solution.yaml
 
         yq e -i '.solution.common.resource_allocation.control.agent.resources.requests.memory = "128Mi"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.control.agent.resources.requests.cpu = "250m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.control.agent.resources.requests.cpu = "200m"' solution.yaml
         yq e -i '.solution.common.resource_allocation.control.agent.resources.limits.memory = "256Mi"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.control.agent.resources.limits.cpu = "500m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.control.agent.resources.limits.cpu = "250m"' solution.yaml
 
         yq e -i '.solution.common.resource_allocation.ha.fault_tolerance.resources.requests.memory = "128Mi"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.ha.fault_tolerance.resources.requests.cpu = "250m"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.ha.fault_tolerance.resources.limits.memory = "1Gi"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.ha.fault_tolerance.resources.limits.cpu = "500m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.ha.fault_tolerance.resources.requests.cpu = "200m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.ha.fault_tolerance.resources.limits.memory = "512Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.ha.fault_tolerance.resources.limits.cpu = "250m"' solution.yaml
 
         yq e -i '.solution.common.resource_allocation.ha.health_monitor.resources.requests.memory = "128Mi"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.ha.health_monitor.resources.requests.cpu = "250m"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.ha.health_monitor.resources.limits.memory = "1Gi"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.ha.health_monitor.resources.limits.cpu = "500m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.ha.health_monitor.resources.requests.cpu = "200m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.ha.health_monitor.resources.limits.memory = "512Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.ha.health_monitor.resources.limits.cpu = "250m"' solution.yaml
 
         yq e -i '.solution.common.resource_allocation.ha.k8s_monitor.resources.requests.memory = "128Mi"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.ha.k8s_monitor.resources.requests.cpu = "250m"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.ha.k8s_monitor.resources.limits.memory = "1Gi"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.ha.k8s_monitor.resources.limits.cpu = "500m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.ha.k8s_monitor.resources.requests.cpu = "200m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.ha.k8s_monitor.resources.limits.memory = "512Mi"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.ha.k8s_monitor.resources.limits.cpu = "250m"' solution.yaml
 
         yq e -i '.solution.storage_sets[0].name = "storage-set-1"' solution.yaml
         sns=$SNS_CONFIG yq e -i '.solution.storage_sets[0].durability.sns = env(sns)' solution.yaml
