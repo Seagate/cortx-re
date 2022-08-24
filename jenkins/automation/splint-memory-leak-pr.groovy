@@ -42,7 +42,12 @@ pipeline {
                 sh label: 'Run sp lint on files', script: """
                     yum install splint -y
                     mkdir artifacts
-                    files=\$(curl -sH \"Accept: application/vnd.github+json\" -H \"Authorization: token ${GH_TOKEN}\" \"https://api.github.com/repos/${API_REPO}/pulls/${ghprbPullId}/files\" | jq '.[].filename' | tr -d '\"' | grep -e '.*.c\$' -e '.*.h\$' -e '.*.lcl\$' || echo '')
+                    files=""
+                    if [[ ! -z ${ghprbPullLink} ]]; then
+                        files=\$(curl -sH \"Accept: application/vnd.github+json\" -H \"Authorization: token ${GH_TOKEN}\" \"https://api.github.com/repos/${API_REPO}/pulls/${ghprbPullId}/files\" | jq '.[].filename' | tr -d '\"' | grep -e '.*.c\$' -e '.*.h\$' -e '.*.lcl\$' || echo '')
+                    else
+                        files=\$(find $PWD -type f -regextype posix-egrep -regex '.+\\\\.(c|h|lcl)\$')
+                    fi    
                     if [[ -z \$files ]]; then
                         echo \"INFO:No c/h/lcl files present in pull request #\${ghprbPullId} for memory leak scan\" | tee artifacts/splint-analysis.log
                         exit 0
