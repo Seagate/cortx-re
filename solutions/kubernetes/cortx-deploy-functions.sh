@@ -73,7 +73,7 @@ function download_deploy_script() {
 function install_yq() {
     add_secondary_separator "Installing yq-$YQ_VERSION"
     pip3 show yq && pip3 uninstall yq -y
-    wget https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${YQ_BINARY}.tar.gz -O - | tar xz && mv ${YQ_BINARY} /usr/bin/yq
+    wget -q https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${YQ_BINARY}.tar.gz -O - | tar xz && mv ${YQ_BINARY} /usr/bin/yq
     if [ -f /usr/local/bin/yq ]; then rm -rf /usr/local/bin/yq; fi    
     ln -s /usr/bin/yq /usr/local/bin/yq
 }

@@ -74,7 +74,6 @@ pipeline {
                 sh label: 'Deploy CORTX Components', script: '''
                     pushd solutions/kubernetes/
                         echo $hosts | tr ' ' '\n' > hosts
-                        cat hosts
                         if [ "$(cat hosts | wc -l)" -eq 2 ]
                         then
                            echo "Current configuration does not support 2 node CORTX cluster deployment. Please try with 1 or more than two nodes."
@@ -101,10 +100,10 @@ pipeline {
             }
         }
 
-        stage ('IO Sanity Test') {
+        stage ('Basic I/O Test') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Perform IO Sanity Test', script: '''
+                sh label: 'Perform Basic I/O Test', script: '''
                     pushd solutions/kubernetes/
                         ./cortx-deploy.sh --io-sanity
                     popd
