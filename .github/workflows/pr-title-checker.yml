@@ -12,6 +12,6 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: Seagate/pr-title-checker@v1.3.4
+      - uses: Seagate/pr-title-checker@main
         with:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
