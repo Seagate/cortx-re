@@ -50,8 +50,9 @@ COPY ./${ENVIRONMENT}/$OS.repo /etc/yum.repos.d/
 RUN if [[ "$ENVIRONMENT" = "opensource-ci" ]] && [[ $OS_TYPE == "rockylinux/rockylinux" ]]; then dnf install dnf-plugin-config-manager -y ;dnf config-manager --set-enabled powertools ; rm -rf /etc/yum.repos.d/$OS.repo ;fi
 
 # Install EPEL repo for opensource-ci
-RUN if [ "$ENVIRONMENT" = "opensource-ci" ] ; then yum install epel-release -y ; fi && yum clean all \
-&& rm -rf /var/cache/yum
+RUN yum remove -y libmnl \ 
+    && if [ "$ENVIRONMENT" = "opensource-ci" ] ; then yum install epel-release -y ; fi && yum clean all \
+    && rm -rf /var/cache/yum
 
 RUN yum install yum-utils -y \
     && yum-config-manager --add-repo ${BUILD_URL}/cortx_iso/ \
@@ -78,6 +79,5 @@ RUN yum install --nogpgcheck -y  $(sed 's/#.*//g' /opt/seagate/cortx/cortx-compo
 RUN rm -f /etc/machine-id && ln -s /etc/cortx/config/machine-id /etc/machine-id \
     && bash /opt/seagate/cortx/generate-release-info.sh
 
-RUN yum remove -y libmnl mozjs60 \
-    && rm -rf /etc/yum.repos.d/$(echo $BUILD_URL | awk -F '/' '{print $3}')*.repo /etc/yum.repos.d/$OS.repo \
+RUN rm -rf /etc/yum.repos.d/$(echo $BUILD_URL | awk -F '/' '{print $3}')*.repo /etc/yum.repos.d/$OS.repo \
     && yum clean all && rm -rf /var/cache/yum && rm -rf /root/.cache
