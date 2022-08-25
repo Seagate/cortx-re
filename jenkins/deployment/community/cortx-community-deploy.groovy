@@ -15,10 +15,10 @@ pipeline {
 
     parameters {
         //string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX Cluster scripts', trim: true)
-        string(name: 'CORTX_RE_BRANCH', defaultValue: 'community-build-multinode-auto', description: 'Branch or GitHash for CORTX Cluster scripts', trim: true)
-        string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/mukul-seagate11/cortx-re-1', description: 'Repository for CORTX Cluster scripts', trim: true)
+        string(name: 'CORTX_RE_BRANCH', defaultValue: 'mukul-multinode-automation', description: 'Branch or GitHash for CORTX Cluster scripts', trim: true)
+        string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repository for CORTX Cluster scripts', trim: true)
         //string(name: 'CORTX_TAG', defaultValue: 'main', description: 'Branch or GitHash for generaing CORTX container images', trim: true)
-        //string(name: 'CORTX_TAG', defaultValue: 'community-build-multinode-auto', description: 'Branch or GitHash for generaing CORTX container images', trim: true)
+        //string(name: 'CORTX_TAG', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Branch or GitHash for generaing CORTX container images', trim: true)
         string(name: 'OS_VERSION', defaultValue: 'CentOS 7.9.2009 x86_64', description: 'Operating system version', trim: true)
         string(name: 'REGION', defaultValue: 'ap-south-1', description: 'AWS region', trim: true)
         string(name: 'KEY_NAME', defaultValue: 'devops-key', description: 'Key name', trim: true)
@@ -108,7 +108,7 @@ pipeline {
                     export HOST2=$(cat ec2_hostname.txt | jq '.[1]'| tr -d '",[]')
                     export HOST3=$(cat ec2_hostname.txt | jq '.[2]'| tr -d '",[]')
                     export HOST4=$(cat ec2_hostname.txt | jq '.[3]'| tr -d '",[]')
-                    for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${ip} "export ROOT_PASSWORD=$ROOT_PASSWORD && echo $ROOT_PASSWORD | sudo passwd --stdin root && git clone https://github.com/mukul-seagate11/cortx-re-1 && pushd /home/centos/cortx-re-1/solutions/kubernetes && touch hosts && echo hostname=${HOST1},user=root,pass= > hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo hostname=${HOST2},user=root,pass= >> hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo hostname=${HOST3},user=root,pass= >> hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo hostname=${HOST4},user=root,pass= >> hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && cat hosts && sleep 60";done
+                    for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${ip} "export ROOT_PASSWORD=$ROOT_PASSWORD && echo $ROOT_PASSWORD | sudo passwd --stdin root && git clone https://github.com/Seagate/cortx-re && pushd /home/centos/cortx-re/solutions/kubernetes && touch hosts && echo hostname=${HOST1},user=root,pass= > hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo hostname=${HOST2},user=root,pass= >> hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo hostname=${HOST3},user=root,pass= >> hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo hostname=${HOST4},user=root,pass= >> hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && cat hosts && sleep 60";done
                     popd
             '''
             }
@@ -123,7 +123,7 @@ pipeline {
                     export CORTX_TAG=${CORTX_TAG}
                     sleep 120
                     export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
-                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${PRIMARY_PUBLIC_IP} "export CORTX_RE_BRANCH=$CORTX_RE_BRANCH; git clone $CORTX_RE_REPO -b $CORTX_RE_BRANCH; pushd /home/centos/cortx-re-1/solutions/community-deploy; time sudo ./build-cortx.sh"
+                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${PRIMARY_PUBLIC_IP} "export CORTX_RE_BRANCH=$CORTX_RE_BRANCH; git clone $CORTX_RE_REPO -b $CORTX_RE_BRANCH; pushd /home/centos/cortx-re/solutions/community-deploy; time sudo ./build-cortx.sh"
                     popd
             '''
             }
@@ -140,7 +140,7 @@ pipeline {
                     export CORTX_SERVER_IMAGE=$HOST1:8080/seagate/cortx-rgw:2.0.0-0
                     export CORTX_DATA_IMAGE=$HOST1:8080/seagate/cortx-data:2.0.0-0
                     export CORTX_CONTROL_IMAGE=$HOST1:8080/seagate/cortx-control:2.0.0-0
-                    ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${PRIMARY_PUBLIC_IP} "sudo -- sh -c 'pushd /home/centos/cortx-re-1/solutions/kubernetes && ./cluster-setup.sh true && sed -i 's,cortx-docker.colo.seagate.com,${HOST1}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 120'"
+                    ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${PRIMARY_PUBLIC_IP} "sudo -- sh -c 'pushd /home/centos/cortx-re/solutions/kubernetes && ./cluster-setup.sh true && sed -i 's,cortx-docker.colo.seagate.com,${HOST1}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 120'"
                     for wp in $WORKER_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${wp} "sudo -- sh -c 'sed -i 's,cortx-docker.colo.seagate.com,${HOST1}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 120 && docker pull ${CORTX_SERVER_IMAGE} && docker pull ${CORTX_DATA_IMAGE} && docker pull ${CORTX_CONTROL_IMAGE}'";done
                     popd
             '''
@@ -154,7 +154,7 @@ pipeline {
                 pushd solutions/community-deploy/cloud/AWS
                     export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
                     export HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
-                    ssh -i cortx.pem -o StrictHostKeyChecking=no centos@"${PRIMARY_PUBLIC_IP}" "pushd /home/centos/cortx-re-1/solutions/kubernetes && 
+                    ssh -i cortx.pem -o StrictHostKeyChecking=no centos@"${PRIMARY_PUBLIC_IP}" "pushd /home/centos/cortx-re/solutions/kubernetes && 
                     export SOLUTION_CONFIG_TYPE='automated' &&
                     export COMMUNITY_USE='yes' &&
                     export CORTX_SERVER_IMAGE='$HOST1:8080/seagate/cortx-rgw:2.0.0-0' &&
@@ -172,7 +172,7 @@ pipeline {
                 sh label: 'IO Sanity on CORTX Cluster to validate bucket creation and object upload in deployed cluster', script: '''
                 pushd solutions/community-deploy/cloud/AWS
                     PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
-                    ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${PRIMARY_PUBLIC_IP} 'pushd /home/centos/cortx-re-1/solutions/kubernetes && sudo ./cortx-deploy.sh --io-sanity'
+                    ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${PRIMARY_PUBLIC_IP} 'pushd /home/centos/cortx-re/solutions/kubernetes && sudo ./cortx-deploy.sh --io-sanity'
                     popd
             '''
             }
