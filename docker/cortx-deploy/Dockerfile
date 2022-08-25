@@ -68,7 +68,6 @@ RUN yum install --nogpgcheck -y python3-pip \
     && yum clean all && rm -rf /var/cache/yum
 
 RUN if [[ "${CORTX_IMAGE}" = "cortx-rgw" ]] || [[ "${CORTX_IMAGE}" = "cortx-all" ]] || [[ "${CORTX_IMAGE}" = "cortx-data" ]]; then yum --nogpgcheck -y --disablerepo="EOS_Rocky_8_OS_x86_64_Rocky_8" install libfabric-1.11.2; fi \
-    && yum remove -y libmnl mozjs60 \
     && yum install --nogpgcheck -y  $(while read -r component; do grep "$component" < /opt/seagate/cortx/third-party-rpms.txt; done </opt/seagate/cortx/cortx-component-rpms.txt | sed 's/#.*//g') \
     && yum clean all && rm -rf /var/cache/yum
     
@@ -79,5 +78,6 @@ RUN yum install --nogpgcheck -y  $(sed 's/#.*//g' /opt/seagate/cortx/cortx-compo
 RUN rm -f /etc/machine-id && ln -s /etc/cortx/config/machine-id /etc/machine-id \
     && bash /opt/seagate/cortx/generate-release-info.sh
 
-RUN rm -rf /etc/yum.repos.d/$(echo $BUILD_URL | awk -F '/' '{print $3}')*.repo /etc/yum.repos.d/$OS.repo \
+RUN yum remove -y libmnl mozjs60 \
+    && rm -rf /etc/yum.repos.d/$(echo $BUILD_URL | awk -F '/' '{print $3}')*.repo /etc/yum.repos.d/$OS.repo \
     && yum clean all && rm -rf /var/cache/yum && rm -rf /root/.cache
