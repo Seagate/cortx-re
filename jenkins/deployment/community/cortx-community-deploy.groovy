@@ -1,7 +1,7 @@
 pipeline {
     agent {
         node {
-            label 'community-build-executor'
+            label 'mukul-community-build-multi-node'
         }
     }
     triggers { cron('0 22 * * 1,3,5') }
@@ -14,9 +14,9 @@ pipeline {
     }
 
     parameters {
-        string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX Cluster scripts', trim: true)
+        string(name: 'CORTX_RE_BRANCH', defaultValue: 'mukul-multinode-automation', description: 'Branch or GitHash for CORTX Cluster scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repository for CORTX Cluster scripts', trim: true)
-        string(name: 'CORTX_TAG', defaultValue: 'main', description: 'Branch or GitHash for generaing CORTX container images', trim: true)
+        //string(name: 'CORTX_TAG', defaultValue: 'main', description: 'Branch or GitHash for generaing CORTX container images', trim: true)
         string(name: 'OS_VERSION', defaultValue: 'CentOS 7.9.2009 x86_64', description: 'Operating system version', trim: true)
         string(name: 'REGION', defaultValue: 'ap-south-1', description: 'AWS region', trim: true)
         string(name: 'KEY_NAME', defaultValue: 'devops-key', description: 'Key name', trim: true)
@@ -80,10 +80,15 @@ pipeline {
         stage('Configure network and storage') {
             steps {
                 script { build_stage = env.STAGE_NAME }
+                script {
+                    env.PUBLIC_IP = sh( script: '''
+                    cd solutions/community-deploy/cloud/AWS && terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip_public.txt | tr -d '",[]' | sed '/^$/d'
+                    ''', returnStdout: true).trim()
+                }
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                     sh label: 'Setting up Network and Storage devices for CORTX. Script will reboot the instance on completion', script: '''
                     pushd solutions/community-deploy/cloud/AWS
-                        export PUBLIC_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip_public.txt | tr -d '",[]' | sed '/^$/d')
+                        //export PUBLIC_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip_public.txt | tr -d '",[]' | sed '/^$/d')
                         for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${ip} sudo bash /home/centos/setup.sh && sleep 240;done
                         popd
             '''
@@ -167,7 +172,7 @@ pipeline {
             '''
             }
         }
-        }
+    }
     post {
         always {
             retry(count: 3) {
@@ -207,7 +212,7 @@ pipeline {
             def toEmail = ""
             def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
             if ( manager.build.result.toString() == "FAILURE" ) {
-                toEmail = "CORTX.DevOps.RE@seagate.com"
+                toEmail = "mukul.malhotra@seagate.com"
                 recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
             }
             emailext(
