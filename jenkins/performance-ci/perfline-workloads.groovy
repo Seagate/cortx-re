@@ -17,11 +17,11 @@ pipeline {
 
     parameters {
 
-        string(name: 'SEAGATE_TOOLS_BRANCH', defaultValue: 'perfline_v0.4.0', description: 'Branch or GitHash for Perfline deployment', trim: true )
+        string(name: 'SEAGATE_TOOLS_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Perfline deployment', trim: true )
         string(name: 'SEAGATE_TOOLS_REPO', defaultValue: 'https://github.com/Seagate/seagate-tools.git', description: 'Repository for Perfline Setup scripts', trim: true)
-        string(name: 'PERFLINE_WORKLOADS_DIR', defaultValue: "workloads/jenkins/", description: 'specify the location of your workload directory', trim: true)
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for Cluster Setup scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repository for Cluster Setup scripts', trim: true)
+        string(name: 'CORTX_SCRIPTS_BRANCH', defaultValue: "v0.10.0", description: 'Stable service framework version', trim: true)
         string(name: 'CORTX_SERVER_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-rgw:2.0.0-latest', description: 'CORTX-SERVER image', trim: true)
         string(name: 'CORTX_DATA_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-data:2.0.0-latest', description: 'CORTX-DATA image', trim: true)
         string(name: 'CORTX_CONTROL_IMAGE', defaultValue: 'ghcr.io/seagate/cortx-control:2.0.0-latest', description: 'CORTX-CONTROL image', trim: true)
@@ -42,10 +42,37 @@ pipeline {
             choices: ['NodePort', 'LoadBalancer'],
             description: 'K8s Service to be used to expose RGW Service to outside cluster.'
         )
+        string(name: 'PERFLINE_WORKLOADS_DIR', defaultValue: "/root/perfline/wrapper/workload/jenkins/mini_workload", description: 'specify the location of your workload directory', trim: true)
         string(name: 'SYSTEM_DRIVE', defaultValue: '/dev/sdb', description: 'Provide appropriate system drive for HW and VM LC cluster', trim: true)
     }
 
     stages {
+        stage ("Define Build Variables") {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                script {
+                    env.allhost = sh( script: '''
+                    echo $hosts | tr ' ' '\n' | awk -F["="] '{print $2}'|cut -d',' -f1
+                    ''', returnStdout: true).trim()
+
+                    env.master_node = sh( script: '''
+                    echo $hosts | tr ' ' '\n' | head -1 | awk -F[,] '{print $1}' | cut -d'=' -f2
+                    ''', returnStdout: true).trim()
+
+                    env.hostpasswd = sh( script: '''
+                    echo $hosts | tr ' ' '\n' | head -1 | awk -F["="] '{print $4}'
+                    ''', returnStdout: true).trim()
+
+                    env.numberofnodes = sh( script: '''
+                    echo $hosts | tr ' ' '\n' | tail -n +1 | wc -l
+                    ''', returnStdout: true).trim()
+
+                    env.primarynodes = sh( script: '''
+                    echo $hosts | tr ' ' '\n' | head -1
+                    ''', returnStdout: true).trim()
+                }
+            }
+        }
 
         stage('Checkout Script') {
             steps {
@@ -56,10 +83,10 @@ pipeline {
             }
         }
 
-        stage ('Deploy CORTX Components') {
+        stage ('Install Perfline tool') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Deploy CORTX Components', script: '''
+                sh label: 'Configure Perfline', script: '''
                     pushd scripts/performance/
                         echo $hosts | tr ' ' '\n' > hosts
                         cat hosts
@@ -92,7 +119,7 @@ pipeline {
             }
         }
 
-        stage ('Perfline_workloads') {
+        stage ('Trigger workload') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Perform Pre-defined perfline workloads', script: '''
@@ -101,6 +128,80 @@ pipeline {
                         ./cortx-perfline.sh --perfline-workloads
                     popd
                 '''
+            }
+        }
+
+        stage ('Final Workload Status') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'Check status of perfline workloads', script: '''
+                    pushd scripts/performance/
+                        ./cortx-perfline.sh --final-status
+                    popd
+                '''
+            }
+        }
+    }
+
+    post {
+
+        cleanup {
+            script {
+                    // Archive Deployment artifacts in jenkins build
+                    archiveArtifacts artifacts: "artifacts/*.*", onlyIfSuccessful: false, allowEmptyArchive: true
+                }
+        }
+
+        always {
+
+            sh label: 'Collect Artifacts', script: '''
+                mkdir -p artifacts
+                pushd scripts/performance
+                    HOSTS_FILE=$PWD/hosts
+                    PRIMARY_NODE=$(head -1 "$HOSTS_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
+                    scp -q "$PRIMARY_NODE":/var/tmp/perfline* $WORKSPACE/artifacts/
+                    scp -q "$PRIMARY_NODE":/var/tmp/perfline_task_status.txt /tmp
+                popd
+                '''
+
+            script {
+                // Jenkins Summary
+                clusterStatus = ""
+                if ( fileExists('/tmp/perfline_task_status.txt') && currentBuild.currentResult == "SUCCESS" ) {
+                    clusterStatus = readFile(file: '/tmp/perfline_task_status.txt')
+                    MESSAGE = "Perfline workload performance for ${build_id}, Please find <a href=\"http://${env.master_node}:8005/#!/results\">results</a>"
+                    ICON = "accept.gif"
+                    STATUS = "SUCCESS"
+                } else if ( currentBuild.currentResult == "FAILURE" ) {
+                    manager.buildFailure()
+                    MESSAGE = "Perfline workload Failed for the build ${build_id}, Please find <a href=\"http://${env.master_node}:8005/#!/results\">results</a>"
+                    ICON = "error.gif"
+                    STATUS = "FAILURE"
+
+                } else {
+                    manager.buildUnstable()
+                    MESSAGE = "Perfline execution failed due unstable build, Please find <a href=\"http://${env.master_node}:8005/#!/results\">results</a>"
+                    ICON = "warning.gif"
+                    STATUS = "UNSTABLE"
+                }
+
+                PerflineWorkloadStatusHTML = "<pre>${clusterStatus}</pre>"
+
+                manager.createSummary("${ICON}").appendText("<h3>Perfline worklaods ${currentBuild.currentResult} </h3><p>Please check <a href=\"${BUILD_URL}/console\">perfline logs</a> for more info: <a href=\"http://${env.master_node}:8005/#!/results\">results</a><h4>Pefline task Status:</h4>${PerflineWorkloadStatusHTML}", false, false, false, "red")
+
+                // Email Notification
+                env.build_stage = "${build_stage}"
+                env.cluster_status = "${PerflineWorkloadStatusHTML}"
+                def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
+                mailRecipients = "rahul.kumar@seagate.com"
+                emailext (
+                    body: '''${SCRIPT, template="cluster-setup-email.template"}''',
+                    mimeType: 'text/html',
+                    subject: "[Perfline workloads ${currentBuild.currentResult}] : ${env.JOB_NAME}",
+                    attachLog: true,
+                    to: "${mailRecipients}",
+                    recipientProviders: recipientProvidersClass
+                )
             }
         }
     }
