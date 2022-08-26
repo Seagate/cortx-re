@@ -4,10 +4,12 @@ pipeline {
             label 'community-build-executor'
         }
     }
+
     triggers { cron('0 22 * * 1,3,5') }
     options {
         timeout(time: 360, unit: 'MINUTES')
         timestamps()
+        disableConcurrentBuilds()
         buildDiscarder(logRotator(daysToKeepStr: '30', numToKeepStr: '30'))
         ansiColor('xterm')
     }
@@ -61,7 +63,7 @@ pipeline {
                             ./tool_setup.sh
                             sed -i 's,os_version          =.*,os_version          = "'"$OS_VERSION"'",g' user.tfvars && sed -i 's,region              =.*,region              = "'"$REGION"'",g' user.tfvars && sed -i 's,security_group_cidr =.*,security_group_cidr = "'"$VM_IP/32"'",g' user.tfvars && sed -i 's,instance_count          =.*,instance_count          = "'"$INSTANCE_COUNT"'",g' user.tfvars && sed -i 's,ebs_volume_count          =.*,ebs_volume_count          = "'"$VOLUME_COUNT"'",g' user.tfvars && sed -i 's,ebs_volume_size          =.*,ebs_volume_size          = "'"$VOLUME_SIZE"'",g' user.tfvars && sed -i 's,tag_name          =.*,tag_name          = "'"$INSTANCE_TAG_NAME"'",g' user.tfvars
                             echo key_name            = '"'$KEY_NAME'"' | cat >>user.tfvars
-                            cat user.tfvars | tail -4
+                            cat user.tfvars
                             popd
                 '''
             }
@@ -95,7 +97,6 @@ pipeline {
                 sh label: 'Changing root password & creating hosts file', script: '''
                 pushd solutions/community-deploy/cloud/AWS
                     export ROOT_PASSWORD=${ROOT_PASSWORD}
-                    PUBLIC_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip_public.txt | tr -d '",[]' | sed '/^$/d')
                     terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_dns.value 2>&1 | tee ec2_hostname.txt
                     export HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
                     export HOST2=$(cat ec2_hostname.txt | jq '.[1]'| tr -d '",[]')
@@ -125,9 +126,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Setting up K8s cluster on EC2', script: '''
                 pushd solutions/community-deploy/cloud/AWS
-                    PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
-                    WORKER_IP=$(cat ip_public.txt | jq '.[1]','.[2]' | tr -d '",[]')
-                    export HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
+                    export WORKER_IP=$(cat ip_public.txt | jq '.[1]','.[2]' | tr -d '",[]')
                     export CORTX_SERVER_IMAGE=$HOST1:8080/seagate/cortx-rgw:2.0.0-0
                     export CORTX_DATA_IMAGE=$HOST1:8080/seagate/cortx-data:2.0.0-0
                     export CORTX_CONTROL_IMAGE=$HOST1:8080/seagate/cortx-control:2.0.0-0
@@ -142,38 +141,76 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Deploying multi-node cortx cluster and pull locally generated cortx images on worker nodes', script: '''
                 pushd solutions/community-deploy/cloud/AWS
-                    export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
-                    export HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
                     ssh -i cortx.pem -o StrictHostKeyChecking=no centos@"${PRIMARY_PUBLIC_IP}" 'pushd /home/centos/cortx-re/solutions/kubernetes &&
                     export SOLUTION_CONFIG_TYPE='automated' &&
                     export COMMUNITY_USE='yes' &&
-                    export CORTX_SERVER_IMAGE=$HOST1:8080/seagate/cortx-rgw:2.0.0-0 &&
-                    export CORTX_DATA_IMAGE=$HOST1:8080/seagate/cortx-data:2.0.0-0 &&
-                    export CORTX_CONTROL_IMAGE=$HOST1:8080/seagate/cortx-control:2.0.0-0 &&
+                    export CORTX_SERVER_IMAGE='$HOST1:8080/seagate/cortx-rgw:2.0.0-0' &&
+                    export CORTX_DATA_IMAGE='$HOST1:8080/seagate/cortx-data:2.0.0-0' &&
+                    export CORTX_CONTROL_IMAGE='$HOST1:8080/seagate/cortx-control:2.0.0-0' &&
                     sudo env SOLUTION_CONFIG_TYPE=${SOLUTION_CONFIG_TYPE} env CORTX_SERVER_IMAGE=${CORTX_SERVER_IMAGE} env CORTX_CONTROL_IMAGE=${CORTX_CONTROL_IMAGE} env CORTX_DATA_IMAGE=${CORTX_DATA_IMAGE} env COMMUNITY_USE=${COMMUNITY_USE} ./cortx-deploy.sh --cortx-cluster'
                     popd
             '''
             }
         }
-        stage('IO Sanity') {
+        stage('Basic I/O Test') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'IO Sanity on CORTX Cluster to validate bucket creation and object upload in deployed cluster', script: '''
                 pushd solutions/community-deploy/cloud/AWS
-                    PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
                     ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${PRIMARY_PUBLIC_IP} 'pushd /home/centos/cortx-re/solutions/kubernetes && sudo ./cortx-deploy.sh --io-sanity'
                     popd
             '''
             }
         }
-        stage('Clean up') {
-            steps {
-                script { build_stage = env.STAGE_NAME }
-                sh label: 'Destroying EC2 instances........', script: '''
-                pushd solutions/community-deploy/cloud/AWS
-                    terraform destroy -var-file user.tfvars --auto-approve
+    }
+    post {
+        always {
+            retry(count: 3) {
+                    sh label: 'Destroying EC2 instance', script: '''
+                    pushd solutions/community-deploy/cloud/AWS
+                        terraform validate && terraform destroy -var-file user.tfvars --auto-approve
                     popd
-        '''
+            '''
+            }
+            script {
+                // Jenkins Summary
+                clusterStatus = ''
+                if ( currentBuild.currentResult == 'SUCCESS' ) {
+                    MESSAGE = "CORTX Community Deploy is Success for the build ${build_id}"
+                    ICON = 'accept.gif'
+                    STATUS = 'SUCCESS'
+            } else if ( currentBuild.currentResult == 'FAILURE' ) {
+                    manager.buildFailure()
+                    MESSAGE = "CORTX Community Deploy is Failed for the build ${build_id}"
+                    ICON = 'error.gif'
+                    STATUS = 'FAILURE'
+            } else {
+                    manager.buildUnstable()
+                    MESSAGE = 'CORTX Community Deploy Setup is Unstable'
+                    ICON = 'warning.gif'
+                    STATUS = 'UNSTABLE'
+                }
+                clusterStatusHTML = "<pre>${clusterStatus}</pre>"
+                manager.createSummary("${ICON}").appendText("<h3>CORTX Community Deploy ${currentBuild.currentResult} </h3><p>Please check <a href=\"${BUILD_URL}/console\">cluster setup logs</a> for more info <h4>Cluster Status:</h4>${clusterStatusHTML}", false, false, false, 'red')
+
+                //Email Notification
+                env.build_stage = "${build_stage}"
+                env.cluster_status = "${clusterStatusHTML}"
+
+                def toEmail = ''
+                def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
+                if ( manager.build.result.toString() == 'FAILURE' ) {
+                    toEmail = 'mukul.malhotra@seagate.com'
+                    recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
+                }
+                emailext(
+                body: '''${SCRIPT, template="cluster-setup-email.template"}''',
+                mimeType: 'text/html',
+                subject: "[Cortx Community Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
+                attachLog: true,
+                to: toEmail,
+                recipientProviders: recipientProvidersClass
+                )
             }
         }
     }
