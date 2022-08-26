@@ -21,13 +21,9 @@ PyYAML==5.4.1               #cortx-py-utils
 schematics==2.1.0           #cortx-py-utils
 toml==0.10.0                #cortx-py-utils
 ############################################
-pika==1.1.0                 #cortx-csm_agent
 idna==2.10                  #cortx-csm_agent
-jsonschema==3.0.2           #cortx-csm_agent
 boto3==1.10.27              #cortx-csm_agent
 marshmallow==3.2.1          #cortx-csm_agent
 secure==0.2.1               #cortx-csm_agent
 requests==2.25.1            #cortx-csm_agent
-statsd==3.2.2               #cortx-csm_agent
 urllib3==1.26.8             #cortx-csm_agent
-netifaces==0.10.9           #cortx-csm_agent
