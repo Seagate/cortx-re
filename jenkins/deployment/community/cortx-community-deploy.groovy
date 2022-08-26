@@ -16,7 +16,7 @@ pipeline {
     parameters {
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'mukul-multinode-automation', description: 'Branch or GitHash for CORTX Cluster scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repository for CORTX Cluster scripts', trim: true)
-        string(name: 'CORTX_TAG', defaultValue: 'main', description: 'Branch or GitHash for generaing CORTX container images', trim: true)
+        //string(name: 'CORTX_TAG', defaultValue: 'main', description: 'Branch or GitHash for generaing CORTX container images', trim: true)
         string(name: 'OS_VERSION', defaultValue: 'CentOS 7.9.2009 x86_64', description: 'Operating system version', trim: true)
         string(name: 'REGION', defaultValue: 'ap-south-1', description: 'AWS region', trim: true)
         string(name: 'KEY_NAME', defaultValue: 'devops-key', description: 'Key name', trim: true)
@@ -121,7 +121,7 @@ pipeline {
                     export CORTX_TAG=${CORTX_TAG}
                     sleep 120
                     export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
-                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${PRIMARY_PUBLIC_IP} "export CORTX_RE_BRANCH=$CORTX_RE_BRANCH; git clone $CORTX_RE_REPO -b $CORTX_RE_BRANCH; pushd /home/centos/cortx-re/solutions/community-deploy; time sudo ./build-cortx.sh -b ${CORTX_TAG}"
+                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${PRIMARY_PUBLIC_IP} "export CORTX_RE_BRANCH=$CORTX_RE_BRANCH; git clone $CORTX_RE_REPO -b $CORTX_RE_BRANCH; pushd /home/centos/cortx-re/solutions/community-deploy; time sudo ./build-cortx.sh"
                     popd
             '''
             }
