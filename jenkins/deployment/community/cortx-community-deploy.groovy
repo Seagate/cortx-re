@@ -161,5 +161,17 @@ pipeline {
             '''
             }
         }
+            
+        stage('Clean up') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'Destroying EC2 instances........', script: '''
+                pushd solutions/community-deploy/cloud/AWS
+                    terraform destroy -var-file user.tfvars --auto-approve
+                    rm -rf /mnt/cortx
+                    popd
+        '''
+            }
+        }
     }
 }
