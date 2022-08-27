@@ -4,7 +4,7 @@ pipeline {
             label 'mukul-community-build-multi-node'
         }
     }
-    triggers { cron('0 22 * * 1,3,5') }
+    //triggers { cron('0 22 * * 1,3,5') }
     options {
         timeout(time: 360, unit: 'MINUTES')
         timestamps()
@@ -111,9 +111,8 @@ pipeline {
                 sh label: 'Executing cortx build image script on Primary node', script: '''
                 pushd solutions/community-deploy/cloud/AWS
                     export CORTX_RE_BRANCH=${CORTX_RE_BRANCH}
-                    sleep 120
                     export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
-                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${PRIMARY_PUBLIC_IP} "export CORTX_RE_BRANCH=$CORTX_RE_BRANCH; git clone $CORTX_RE_REPO -b $CORTX_RE_BRANCH; pushd /home/centos/cortx-re/solutions/community-deploy; time sudo ./build-cortx.sh"
+                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${PRIMARY_PUBLIC_IP} "export CORTX_RE_BRANCH=$CORTX_RE_BRANCH; git clone $CORTX_RE_REPO; pushd /home/centos/cortx-re/solutions/community-deploy; time sudo ./build-cortx.sh"
                     popd
             '''
             }
@@ -157,57 +156,6 @@ pipeline {
                     ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${PRIMARY_PUBLIC_IP} 'pushd /home/centos/cortx-re/solutions/kubernetes && sudo ./cortx-deploy.sh --io-sanity'
                     popd
             '''
-            }
-        }
-    }
-    post {
-        always {
-            retry(count: 3) {
-                    sh label: 'Destroying EC2 instance', script: '''
-                    pushd solutions/community-deploy/cloud/AWS
-                        terraform validate && terraform destroy -var-file user.tfvars --auto-approve
-                    popd
-            '''
-            }
-            script {
-                // Jenkins Summary
-                clusterStatus = ''
-                if ( currentBuild.currentResult == 'SUCCESS' ) {
-                    MESSAGE = "CORTX Community Deploy is Success for the build ${build_id}"
-                    ICON = 'accept.gif'
-                    STATUS = 'SUCCESS'
-            } else if ( currentBuild.currentResult == 'FAILURE' ) {
-                    manager.buildFailure()
-                    MESSAGE = "CORTX Community Deploy is Failed for the build ${build_id}"
-                    ICON = 'error.gif'
-                    STATUS = 'FAILURE'
-            } else {
-                    manager.buildUnstable()
-                    MESSAGE = 'CORTX Community Deploy Setup is Unstable'
-                    ICON = 'warning.gif'
-                    STATUS = 'UNSTABLE'
-                }
-                clusterStatusHTML = "<pre>${clusterStatus}</pre>"
-                manager.createSummary("${ICON}").appendText("<h3>CORTX Community Deploy ${currentBuild.currentResult} </h3><p>Please check <a href=\"${BUILD_URL}/console\">cluster setup logs</a> for more info <h4>Cluster Status:</h4>${clusterStatusHTML}", false, false, false, 'red')
-
-                //Email Notification
-                env.build_stage = "${build_stage}"
-                env.cluster_status = "${clusterStatusHTML}"
-
-                def toEmail = ''
-                def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
-                if ( manager.build.result.toString() == 'FAILURE' ) {
-                    toEmail = 'mukul.malhotra@seagate.com'
-                    recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
-                }
-                emailext(
-                body: '''${SCRIPT, template="cluster-setup-email.template"}''',
-                mimeType: 'text/html',
-                subject: "[Cortx Community Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
-                attachLog: true,
-                to: toEmail,
-                recipientProviders: recipientProvidersClass
-                )
             }
         }
     }
