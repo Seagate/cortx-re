@@ -1,7 +1,8 @@
 pipeline {
     agent {
         node {
-            label 'mukul-community-build-multi-node'
+            //label 'mukul-community-build-multi-node'
+            label 'my-community-build-ssc-vm'
         }
     }
     triggers { cron('0 22 * * 1,3,5') }
