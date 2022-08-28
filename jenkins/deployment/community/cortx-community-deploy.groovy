@@ -1,7 +1,8 @@
 pipeline {
     agent {
         node {
-            label 'mukul-community-build-multi-node'
+            //label 'mukul-community-build-multi-node'
+            label 'communitybuild-multinode-ssc-vm'
         }
     }
     //triggers { cron('0 22 * * 1,3,5') }
@@ -112,6 +113,7 @@ pipeline {
                 pushd solutions/community-deploy/cloud/AWS
                     export CORTX_RE_BRANCH=${CORTX_RE_BRANCH}
                     export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
+                    sleep 120
                     ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${PRIMARY_PUBLIC_IP} "export CORTX_RE_BRANCH=$CORTX_RE_BRANCH; git clone $CORTX_RE_REPO; pushd /home/centos/cortx-re/solutions/community-deploy; time sudo ./build-cortx.sh"
                     popd
             '''
