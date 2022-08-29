@@ -1,0 +1,15 @@
+{
+    "LABEL": {
+      "name": "Check Failed - PR Title",
+      "color": "EEEEEE"
+    },
+    "CHECKS": {
+      "prefixes": ["COMMUNITY: "],
+      "regexp": "CORTX-[0-9]{5}: "
+    },
+    "MESSAGES": {
+      "success": "PR Title Verified Successfully",
+      "failure": "Failed to verify PR title",
+      "notice": ""
+    }
+}
