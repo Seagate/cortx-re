@@ -47,10 +47,10 @@ ENV GIT_HASH $GIT_HASH
 COPY ./${ENVIRONMENT}/$OS.repo /etc/yum.repos.d/
 
 # Install rockylinux opensource-ci dependency
-RUN if [[ "$ENVIRONMENT" = "opensource-ci" ]] && [[ $OS_TYPE == "rockylinux/rockylinux" ]]; then dnf install dnf-plugin-config-manager -y ;dnf config-manager --set-enabled powertools ; rm -rf /etc/yum.repos.d/$OS.repo ;fi
+RUN if [[ "$ENVIRONMENT" = "opensource-ci" ]] && [[ $OS_TYPE == "rockylinux/rockylinux" ]]; then dnf install dnf-plugin-config-manager xmlstarlet -y ;dnf config-manager --set-enabled powertools ; rm -rf /etc/yum.repos.d/$OS.repo ;fi
 
 # Install EPEL repo for opensource-ci
-RUN if [ "$ENVIRONMENT" = "opensource-ci" ] ; then yum install epel-release xmlstarlet -y ; fi && yum clean all \
+RUN if [ "$ENVIRONMENT" = "opensource-ci" ] ; then yum install epel-release -y ; fi && yum clean all \
 && rm -rf /var/cache/yum
 
 RUN yum install yum-utils -y \
@@ -68,7 +68,7 @@ RUN yum install --nogpgcheck -y python3-pip \
     && yum clean all && rm -rf /var/cache/yum
 
 RUN if [[ "${CORTX_IMAGE}" = "cortx-rgw" ]] || [[ "${CORTX_IMAGE}" = "cortx-all" ]] || [[ "${CORTX_IMAGE}" = "cortx-data" ]]; then yum --nogpgcheck -y --disablerepo="EOS_Rocky_8_OS_x86_64_Rocky_8" install libfabric-1.11.2; fi \
-    && yum install --nogpgcheck -y  $(while read -r component; do grep "$component" < /opt/seagate/cortx/third-party-rpms.txt; done </opt/seagate/cortx/cortx-component-rpms.txt | sed 's/#.*//g') \
+    && yum install --nogpgcheck xmlstarlet -y  $(while read -r component; do grep "$component" < /opt/seagate/cortx/third-party-rpms.txt; done </opt/seagate/cortx/cortx-component-rpms.txt | sed 's/#.*//g') \
     && yum clean all && rm -rf /var/cache/yum
     
 RUN yum install --nogpgcheck -y  $(sed 's/#.*//g' /opt/seagate/cortx/cortx-component-rpms.txt) \
