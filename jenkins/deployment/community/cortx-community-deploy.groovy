@@ -5,7 +5,6 @@ pipeline {
             label 'communitybuild-multinode-ssc-vm'
         }
     }
-    //triggers { cron('0 22 * * 1,3,5') }
     options {
         timeout(time: 360, unit: 'MINUTES')
         timestamps()
@@ -29,8 +28,8 @@ pipeline {
         password(name: 'ACCESS_KEY', description: 'access key for AWS account')
         password(name: 'ROOT_PASSWORD', description: 'Root password for EC2 instances')
     }
-
-        stage('Execute cortx build script') {
+        stages {
+          stage('Execute cortx build script') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Executing cortx build image script on Primary node', script: '''
