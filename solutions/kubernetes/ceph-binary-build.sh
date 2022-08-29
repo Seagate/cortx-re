@@ -273,7 +273,7 @@ function ceph_build() {
                 add_common_separator "Update repolist cache and install prerequisites"
                 yum makecache && yum install git -y
                 check_status
-                yum install yum-utils epel-release wget bzip2 rpm-build dnf rpmdevtools dnf-plugins-core -y
+                yum install yum-utils epel-release wget bzip2 rpm-build dnf rpmdevtools dnf-plugins-core xmlstarlet -y
                 check_status
                 dnf config-manager --set-enabled powertools
                 pushd "$BUILD_LOCATION"
