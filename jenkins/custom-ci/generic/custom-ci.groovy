@@ -166,7 +166,7 @@ pipeline {
                         script { build_stage = env.STAGE_NAME }
                         sh label: 'Installed Dependecies', script: '''
                             yum install -y expect rpm-sign rng-tools genisoimage
-                            '''
+                        '''
                     }
                 }
 
@@ -557,7 +557,7 @@ pipeline {
 
                 def toEmail = ""
                 if ( manager.build.result.toString() == "FAILURE") {
-                    toEmail = "CORTX.DevOps.RE@seagate.com"
+                    toEmail = "gaurav.chaudhari@seagate.com"
                 }
                 
                 emailext (
