@@ -24,6 +24,8 @@ pipeline {
         string(name: 'CORTX_CC_URL', defaultValue: 'https://github.com/Seagate/cortx-cc/', description: 'Repository URL for cortx-cc build')
         string(name: 'CUSTOM_CI_BUILD_ID', defaultValue: '0', description: 'Custom CI Build Number')
         string(name: 'CORTX_UTILS_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX Utils', trim: true)
+        string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX RE', trim: true)
+        string(name: 'CORTX_RE_URL', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'CORTX RE Repository URL', trim: true)
         string(name: 'CORTX_UTILS_URL', defaultValue: 'https://github.com/Seagate/cortx-utils', description: 'CORTX Utils Repository URL', trim: true)
         string(name: 'THIRD_PARTY_PYTHON_VERSION', defaultValue: 'custom', description: 'Third Party Python Version to use', trim: true)
         // Add os_version parameter in jenkins configuration
@@ -143,8 +145,8 @@ pipeline {
                                     string(name: 'CORTX_RGW_URL', value: "${CORTX_RGW_URL}"),
                                     string(name: 'CUSTOM_CI_BUILD_ID', value: "${CUSTOM_CI_BUILD_ID}"),
                                     string(name: 'BUILD_LATEST_CORTX_RGW', value: "${BUILD_LATEST_CORTX_RGW}"),
-                                    string(name: 'CORTX_RE_REPO', value: "https://github.com/Seagate/cortx-re"),
-                                    string(name: 'CORTX_RE_BRANCH', value: "main")
+                                    string(name: 'CORTX_RE_URL', value: "${CORTX_RE_URL}"),
+                                    string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}")
                                 ]
                     }
                 }
