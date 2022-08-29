@@ -557,7 +557,7 @@ pipeline {
 
                 def toEmail = ""
                 if ( manager.build.result.toString() == "FAILURE") {
-                    toEmail = "gaurav.chaudhari@seagate.com"
+                    toEmail = "CORTX.DevOps.RE@seagate.com"
                 }
                 
                 emailext (
