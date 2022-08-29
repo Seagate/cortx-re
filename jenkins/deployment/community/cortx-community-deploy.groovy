@@ -1,8 +1,7 @@
 pipeline {
     agent {
         node {
-            //label 'mukul-community-build-multi-node'
-            label 'my-community-build-ssc-vm'
+            label 'mukul-community-build-multi-node'
         }
     }
     options {
