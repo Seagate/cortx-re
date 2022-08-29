@@ -287,7 +287,7 @@ function ceph_build() {
                         check_status "Failed to add motr repo"
                         yum-config-manager --add-repo="http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rockylinux/rockylinux-8.4-2.0.0-latest/"
                         check_status "Failed to add motr repo"
-                        yum install cortx-motr{,-devel} -y --nogpgcheck
+                        yum install cortx-motr{,-devel} xmlstarlet -y --nogpgcheck
                         check_status "Failed to install cortx-motr"
                     fi
 
