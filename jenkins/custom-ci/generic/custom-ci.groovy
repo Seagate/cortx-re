@@ -203,16 +203,23 @@ pipeline {
                 stage ("Build CORTX-CC") {
                     steps {
                         script { build_stage = env.STAGE_NAME }
-                        build job: '/GitHub-custom-ci-builds/generic/cortx-cc-custom-build/', wait: true,
-                        parameters: [
-                                    string(name: 'CORTX_CC_URL', value: "${CORTX_CC_URL}"),
-                                    string(name: 'CORTX_CC_BRANCH', value: "${CORTX_CC_BRANCH}"),
-                                    string(name: 'CUSTOM_CI_BUILD_ID', value: "${CUSTOM_CI_BUILD_ID}"),
-                                    string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}"),
-                                    string(name: 'CORTX_UTILS_URL', value: "${CORTX_UTILS_URL}"),
-                                    string(name: 'THIRD_PARTY_PYTHON_VERSION', value: "${THIRD_PARTY_PYTHON_VERSION}"),
-                                    string(name: 'BUILD_LATEST_CORTX_CC', value: "${BUILD_LATEST_CORTX_CC}")   
-                            ]
+                        script {
+                            try {
+                                build job: '/GitHub-custom-ci-builds/generic/cortx-cc-custom-build/', wait: true,
+                                parameters: [
+                                            string(name: 'CORTX_CC_URL', value: "${CORTX_CC_URL}"),
+                                            string(name: 'CORTX_CC_BRANCH', value: "${CORTX_CC_BRANCH}"),
+                                            string(name: 'CUSTOM_CI_BUILD_ID', value: "${CUSTOM_CI_BUILD_ID}"),
+                                            string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}"),
+                                            string(name: 'CORTX_UTILS_URL', value: "${CORTX_UTILS_URL}"),
+                                            string(name: 'THIRD_PARTY_PYTHON_VERSION', value: "${THIRD_PARTY_PYTHON_VERSION}"),
+                                            string(name: 'BUILD_LATEST_CORTX_CC', value: "${BUILD_LATEST_CORTX_CC}")   
+                                    ]
+                            } catch (err) {
+                                build_stage = env.STAGE_NAME
+                                error "Failed to Build CORTX-CC"
+                            }        
+                        }        
                     }
                 }
 
