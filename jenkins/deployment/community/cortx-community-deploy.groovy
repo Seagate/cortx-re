@@ -134,31 +134,5 @@ pipeline {
             '''
             }
         }
-        stage('Deploy multi-node cortx cluster') {
-            steps {
-                script { build_stage = env.STAGE_NAME }
-                sh label: 'Deploying multi-node cortx cluster and pull locally generated cortx images on worker nodes', script: '''
-                pushd solutions/community-deploy/cloud/AWS
-                    ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${PRIMARY_PUBLIC_IP} 'pushd /home/centos/cortx-re/solutions/kubernetes &&
-                    export SOLUTION_CONFIG_TYPE='automated' &&
-                    export COMMUNITY_USE='yes' &&
-                    export CORTX_SERVER_IMAGE='$HOST1:8080/seagate/cortx-rgw:2.0.0-0' &&
-                    export CORTX_DATA_IMAGE='$HOST1:8080/seagate/cortx-data:2.0.0-0' &&
-                    export CORTX_CONTROL_IMAGE='$HOST1:8080/seagate/cortx-control:2.0.0-0' &&
-                    sudo env SOLUTION_CONFIG_TYPE=${SOLUTION_CONFIG_TYPE} env CORTX_SERVER_IMAGE=${CORTX_SERVER_IMAGE} env CORTX_CONTROL_IMAGE=${CORTX_CONTROL_IMAGE} env CORTX_DATA_IMAGE=${CORTX_DATA_IMAGE} env COMMUNITY_USE=${COMMUNITY_USE} ./cortx-deploy.sh --cortx-cluster'
-                    popd
-            '''
-            }
-        }
-        stage('Basic I/O Test') {
-            steps {
-                script { build_stage = env.STAGE_NAME }
-                sh label: 'IO Sanity on CORTX Cluster to validate bucket creation and object upload in deployed cluster', script: '''
-                pushd solutions/community-deploy/cloud/AWS
-                    ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${PRIMARY_PUBLIC_IP} 'pushd /home/centos/cortx-re/solutions/kubernetes && sudo ./cortx-deploy.sh --io-sanity'
-                    popd
-            '''
-            }
-        }
     }
 }
