@@ -193,7 +193,7 @@ _cortx-rgw_prereq:
 		mkdir -p /root/rpmbuild/RPMS/x86_64/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS} && \
 		mv ceph*.tar.bz2 /root/rpmbuild/RPMS/x86_64/SOURCES/ && \
 		tar --strip-components=1 -C /root/rpmbuild/RPMS/x86_64/SPECS/ --no-anchored -xvjf /root/rpmbuild/RPMS/x86_64/SOURCES/ceph*.tar.bz2 "ceph.spec" && \
-		yum install xmlstarlet -y && yum localinstall -y ${RPM_DIR}/cortx-motr-[0-9]*.rpm ${RPM_DIR}/cortx-motr-devel-[0-9]*.rpm && \
+		yum localinstall -y ${RPM_DIR}/cortx-motr-[0-9]*.rpm ${RPM_DIR}/cortx-motr-devel-[0-9]*.rpm && yum install ftp://ftp.pbone.net/mirror/vault.centos.org/8.4.2105/storage/x86_64/ceph-octopus/Packages/x/xmlstarlet-1.6.1-13.el8.x86_64.rpm  -y && \
 	popd || (echo "ERROR: cortx-rgw source code is not available in cortx-workspace. Exiting..."; exit 1)
 
 _cortx-rgw_build:
