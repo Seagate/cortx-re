@@ -43,7 +43,7 @@ pipeline {
 
                 sh label: 'Install cortx-cc pre-requisites', script: '''
                     yum -y install python3 python3-devel facter yum-utils
-                    yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rockylinux/rockylinux-8.4-$version-latest/
+                    yum-config-manager --nogpgcheck --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rockylinux/rockylinux-8.4-$version-latest/
                     yum -y install consul-1.9.1
                 '''
 
