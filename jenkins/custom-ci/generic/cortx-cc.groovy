@@ -29,7 +29,7 @@ pipeline {
         release_tag = "custom-build-$CUSTOM_CI_BUILD_ID"
         build_upload_dir = "$release_dir/github/integration-custom-ci/$os_version/$release_tag/cortx_iso"
         python_deps = "${THIRD_PARTY_PYTHON_VERSION == 'cortx-2.0' ? "python-packages-2.0.0-latest" : THIRD_PARTY_PYTHON_VERSION == 'custom' ?  "python-packages-2.0.0-custom" : "python-packages-2.0.0-stable"}"
-        third_party_rpm_version = "${THIRD_PARTY_RPM_VERSION == 'cortx-2.0' ? "$os_version-2.0.0-latest" : THIRD_PARTY_RPM_VERSION == 'cortx-2.0-k8' ?  "$os_version-2.0.0-k8" : "$os_version-custom"}"
+        third_party_rpm_repo = "${THIRD_PARTY_RPM_VERSION == 'cortx-2.0' ? "$os_version-2.0.0-latest" : THIRD_PARTY_RPM_VERSION == 'cortx-2.0-k8' ?  "$os_version-2.0.0-k8" : "$os_version-custom"}"
     }
     
     
@@ -59,7 +59,7 @@ pipeline {
 
                 sh label: 'Install cortx-cc pre-requisites', script: '''
                     yum -y install python3 python3-devel facter yum-utils
-                    yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rockylinux/$third_party_rpm_version/
+                    yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rockylinux/$third_party_rpm_repo/
                     yum -y install consul-1.9.1 --nogpgcheck
                 '''
 
