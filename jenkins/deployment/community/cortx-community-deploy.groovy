@@ -1,7 +1,7 @@
 pipeline {
     agent {
         node {
-            label 'my-community-build-multi-node'
+            label 'community-build-executor'
         }
     }
     //triggers { cron('0 22 * * 1,3,5') }
@@ -164,5 +164,26 @@ pipeline {
             '''
             }
        }
+        stage('Basic I/O Test') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'IO Sanity on CORTX Cluster to validate bucket creation and object upload in deployed cluster', script: '''
+                pushd solutions/community-deploy/cloud/AWS
+                    ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${PRIMARY_PUBLIC_IP} 'pushd /home/centos/cortx-re/solutions/kubernetes && sudo ./cortx-deploy.sh --io-sanity'
+                    popd
+            '''
+            }
+        }
+    }
+    post {
+        always {
+            retry(count: 3) {
+                    sh label: 'Destroying EC2 instance', script: '''
+                    pushd solutions/community-deploy/cloud/AWS
+                        terraform validate && terraform destroy -var-file user.tfvars --auto-approve
+                    popd
+            '''
+            }
+        }
     }
 }
