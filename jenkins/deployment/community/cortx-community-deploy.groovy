@@ -29,7 +29,7 @@ pipeline {
         password(name: 'ROOT_PASSWORD', description: 'Root password for EC2 instances')
     }
 
-        stages {
+        /*stages {
             stage('Checkout Script') {
                 steps {
                     cleanWs()
@@ -108,7 +108,7 @@ pipeline {
             }
         }
 
-        /*stage('Execute cortx build script') {
+        stage('Execute cortx build script') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Executing cortx build image script on Primary node', script: '''
