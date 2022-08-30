@@ -29,8 +29,8 @@ pipeline {
         password(name: 'ROOT_PASSWORD', description: 'Root password for EC2 instances')
     }
 
-        /*stages {
-            stage('Checkout Script') {
+        stages {
+            /*stage('Checkout Script') {
                 steps {
                     cleanWs()
                     script {
@@ -152,16 +152,5 @@ pipeline {
                     popd
             '''
             }
-        }
-        stage('Basic I/O Test') {
-            steps {
-                script { build_stage = env.STAGE_NAME }
-                sh label: 'IO Sanity on CORTX Cluster to validate bucket creation and object upload in deployed cluster', script: '''
-                pushd solutions/community-deploy/cloud/AWS
-                    ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${PRIMARY_PUBLIC_IP} 'pushd /home/centos/cortx-re/solutions/kubernetes && sudo ./cortx-deploy.sh --io-sanity'
-                    popd
-            '''
-            }
-        }
-    }
+       }
 }
