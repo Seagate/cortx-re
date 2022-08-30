@@ -30,7 +30,7 @@ pipeline {
     }
 
         stages {
-            /*stage('Checkout Script') {
+            stage('Checkout Script') {
                 steps {
                     cleanWs()
                     script {
@@ -108,7 +108,7 @@ pipeline {
             }
         }
 
-        stage('Execute cortx build script') {
+        /*stage('Execute cortx build script') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Executing cortx build image script on Primary node', script: '''
