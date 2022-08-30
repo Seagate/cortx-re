@@ -151,6 +151,8 @@ pipeline {
                 sh label: 'Deploying multi-node cortx cluster and pull locally generated cortx images on worker nodes', script: '''
                 pushd solutions/community-deploy/cloud/AWS
                     export WORKER_IP=$(cat ip_public.txt | jq '.[1]','.[2]' | tr -d '",[]')
+                    export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
+                    export HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
                     ssh -i cortx.pem -o StrictHostKeyChecking=no centos@"${PRIMARY_PUBLIC_IP}" 'pushd /home/centos/cortx-re/solutions/kubernetes &&
                     export SOLUTION_CONFIG_TYPE='automated' &&
                     export COMMUNITY_USE='yes' &&
