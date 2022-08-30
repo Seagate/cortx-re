@@ -138,7 +138,7 @@ pipeline {
                     export HOST4=$(cat ec2_hostname.txt | jq '.[3]'| tr -d '",[]')
                     export WORKER_IP=$(cat ip_public.txt | jq '.[1]','.[2]' | tr -d '",[]')
                     export CORTX_SERVER_IMAGE=${HOST1}:8080/seagate/cortx-rgw:2.0.0-0
-                    export CORTX_DATA_IMAGE=${HOST1}:8080/seagate/cortx-data:2.0.0-
+                    export CORTX_DATA_IMAGE=${HOST1}:8080/seagate/cortx-data:2.0.0-0
                     export CORTX_CONTROL_IMAGE=${HOST1}:8080/seagate/cortx-control:2.0.0-0
                     for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${ip} "export ROOT_PASSWORD=$ROOT_PASSWORD && echo $ROOT_PASSWORD | sudo passwd --stdin root && git clone https://github.com/Seagate/cortx-re && pushd /home/centos/cortx-re/solutions/kubernetes && touch hosts && echo hostname=${HOST1},user=root,pass= > hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo hostname=${HOST2},user=root,pass= >> hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo hostname=${HOST3},user=root,pass= >> hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo hostname=${HOST4},user=root,pass= >> hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && cat hosts && sleep 120";done
                     ssh -i cortx.pem -o StrictHostKeyChecking=no centos@${PRIMARY_PUBLIC_IP} "sudo -- sh -c 'pushd /home/centos/cortx-re/solutions/kubernetes && ./cluster-setup.sh true && sed -i 's,cortx-docker.colo.seagate.com,${HOST1}:8080,g' /etc/docker/daemon.json && systemctl restart docker'"
