@@ -20,8 +20,6 @@ pipeline {
         string(name: 'CORTX_RGW_BRANCH', defaultValue: 'main', description: 'Branch for CORTX-RGW')
         string(name: 'HARE_URL', defaultValue: 'https://github.com/Seagate/cortx-hare', description: 'Branch to be used for Hare build.')
         string(name: 'HARE_BRANCH', defaultValue: 'main', description: 'Branch to be used for Hare build.')
-        string(name: 'CORTX_CC_BRANCH', defaultValue: 'main', description: 'Branch for cortx-cc build')
-        string(name: 'CORTX_CC_URL', defaultValue: 'https://github.com/Seagate/cortx-cc/', description: 'Repository URL for cortx-cc build')
         string(name: 'CUSTOM_CI_BUILD_ID', defaultValue: '0', description: 'Custom CI Build Number')
         string(name: 'CORTX_UTILS_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX Utils', trim: true)
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX RE', trim: true)
@@ -49,11 +47,6 @@ pipeline {
             name: 'BUILD_LATEST_HARE',
                 choices: ['yes', 'no'],
                 description: 'Build cortx-Hare from latest code or use last-successful build.'
-        )
-        choice(
-            name: 'BUILD_LATEST_CORTX_CC',
-                choices: ['yes', 'no'],
-                description: 'Build cortx-cc from latest code or use last-successful build.'
         )
     }    
 
