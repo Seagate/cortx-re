@@ -113,7 +113,8 @@ pinentry \
 kernel-abi-whitelists \
 libmodulemd \
 redhat-lsb && dnf clean all \
-&& rm -rf /var/cache/yum ; fi
+&& rm -rf /var/cache/yum ; fi \
+&& python3 -m pip install -U pip setuptools
 
 # enable Git from SLC repo (it's more up to date version)
 RUN if [[ $OS_TYPE == "centos" ]]; then ln -nsf /opt/rh/sclo-git212/root/bin/* /usr/local/bin/ && \
