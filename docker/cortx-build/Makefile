@@ -274,8 +274,8 @@ _cortx-py-utils_build:
 _cortx-py-utils_install:
 	@echo "***************  Installing cortx-py-utils package *********************"
 	pushd cortx-workspace/cortx-utils/py-utils && \
-		yum install python3-pip gcc python3-devel -y && \
-		if [[ $$(cat /etc/redhat-release) =~ "Rocky" ]]; then yum erase python3-PyYAML -y ;else yum erase python36-PyYAML -y ; fi && && pip3 cache purge && pip3 install -U pip setuptools && \
+		yum install python3-pip gcc python3-devel -y && pip3 cache purge && pip install --upgrade pip && pip3 install -U pip setuptools && \
+		if [[ $$(cat /etc/redhat-release) =~ "Rocky" ]]; then yum erase python3-PyYAML -y ;else yum erase python36-PyYAML -y ; fi && \
 		pip3 install -r python_requirements.txt && \
 		pip3 install -r python_requirements.ext.txt && \
 		yum localinstall -y ${RPM_DIR}/cortx-py-utils*noarch.rpm && \
