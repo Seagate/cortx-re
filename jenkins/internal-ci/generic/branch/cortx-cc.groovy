@@ -43,12 +43,11 @@ pipeline {
 
                 sh label: 'Install cortx-cc pre-requisites', script: '''
                     yum -y install python3 python3-devel facter yum-utils
-                    yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
+                    yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rockylinux/rockylinux-8.4-$version-latest/
                     yum -y install consul-1.9.1
                 '''
 
                 sh label: 'Install cortx-prereq', script: '''
-                    CORTX_UTILS_REPO_OWNER=$(echo $CORTX_UTILS_URL | cut -d "/" -f4)
                     yum erase python36-PyYAML -y
                     yum install -y gcc python3 python3-pip python3-devel python3-setuptools openssl-devel libffi-devel python3-dbus
                     pip3 install  --no-cache-dir --trusted-host cortx-storage.colo.seagate.com -i http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/python-packages-$version-latest/ -r https://raw.githubusercontent.com/Seagate/cortx-utils/${branch}/py-utils/python_requirements.txt -r https://raw.githubusercontent.com/Seagate/cortx-utils/${branch}/py-utils/python_requirements.ext.txt

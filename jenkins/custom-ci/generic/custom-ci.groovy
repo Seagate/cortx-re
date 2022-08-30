@@ -170,12 +170,12 @@ pipeline {
                     }
                 }
 
-                stage ("Build Motr, RGW, Hare") {
+                stage ("Build Motr, RGW, Hare and CORTX-CC") {
                     steps {
                         script { build_stage = env.STAGE_NAME }
                         script {
                             try {
-                                def motrbuild = build job: '/GitHub-custom-ci-builds/generic/motr-custom-build/', wait: true,
+                                def motrbuild = build job: 'Release_Engineering/re-workspace/motr-custom-build/', wait: true,
                                         parameters: [
                                                         string(name: 'MOTR_URL', value: "${MOTR_URL}"),
                                                         string(name: 'MOTR_BRANCH', value: "${MOTR_BRANCH}"),
@@ -185,43 +185,24 @@ pipeline {
                                                         string(name: 'CORTX_RGW_BRANCH', value: "${CORTX_RGW_BRANCH}"),
                                                         string(name: 'HARE_URL', value: "${HARE_URL}"),
                                                         string(name: 'HARE_BRANCH', value: "${HARE_BRANCH}"),
+                                                        string(name: 'CORTX_CC_URL', value: "${CORTX_CC_URL}"),
+                                                        string(name: 'CORTX_CC_BRANCH', value: "${CORTX_CC_BRANCH}"),
                                                         string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}"),
                                                         string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}"),
                                                         string(name: 'CORTX_UTILS_URL', value: "${CORTX_UTILS_URL}"),
                                                         string(name: 'CORTX_RE_URL', value: "${CORTX_RE_URL}"),
                                                         string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
                                                         string(name: 'THIRD_PARTY_PYTHON_VERSION', value: "${THIRD_PARTY_PYTHON_VERSION}"),
+                                                        string(name: 'THIRD_PARTY_RPM_VERSION', value: "${THIRD_PARTY_RPM_VERSION}"),
                                                         string(name: 'BUILD_LATEST_CORTX_RGW', value: "${BUILD_LATEST_CORTX_RGW}"),
-                                                        string(name: 'BUILD_LATEST_HARE', value: "${BUILD_LATEST_HARE}")
+                                                        string(name: 'BUILD_LATEST_HARE', value: "${BUILD_LATEST_HARE}"),
+                                                        string(name: 'BUILD_LATEST_CORTX_CC', value: "${BUILD_LATEST_CORTX_CC}")
                                                     ]
                             } catch (err) {
                                 build_stage = env.STAGE_NAME
-                                error "Failed to Build Motr, Hare and S3Server"
+                                error "Failed to Build Motr, RGW, Hare and CORTX-CC"
                             }
                         }
-                    }
-                }
-
-                stage ("Build CORTX-CC") {
-                    steps {
-                        script { build_stage = env.STAGE_NAME }
-                        script {
-                            try {
-                                def ccbuild = build job: '/GitHub-custom-ci-builds/generic/cortx-cc-custom-build/', wait: true,
-                                parameters: [
-                                    string(name: 'CORTX_CC_URL', value: "${CORTX_CC_URL}"),
-                                    string(name: 'CORTX_CC_BRANCH', value: "${CORTX_CC_BRANCH}"),
-                                    string(name: 'CUSTOM_CI_BUILD_ID', value: "${BUILD_NUMBER}"),
-                                    string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}"),
-                                    string(name: 'CORTX_UTILS_URL', value: "${CORTX_UTILS_URL}"),
-                                    string(name: 'THIRD_PARTY_PYTHON_VERSION', value: "${THIRD_PARTY_PYTHON_VERSION}"),
-                                    string(name: 'BUILD_LATEST_CORTX_CC', value: "${BUILD_LATEST_CORTX_CC}")
-                                ]
-                            } catch (err) {
-                                build_stage = env.STAGE_NAME
-                                error "Failed to Build CORTX-CC"
-                            }        
-                        }        
                     }
                 }
 

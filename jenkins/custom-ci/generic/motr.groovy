@@ -20,12 +20,15 @@ pipeline {
         string(name: 'CORTX_RGW_BRANCH', defaultValue: 'main', description: 'Branch for CORTX-RGW')
         string(name: 'HARE_URL', defaultValue: 'https://github.com/Seagate/cortx-hare', description: 'Branch to be used for Hare build.')
         string(name: 'HARE_BRANCH', defaultValue: 'main', description: 'Branch to be used for Hare build.')
+        string(name: 'CORTX_CC_URL', defaultValue: 'https://github.com/Seagate/cortx-cc', description: 'Repository URL for cortx-cc build')
+        string(name: 'CORTX_CC_BRANCH', defaultValue: 'main', description: 'Branch for cortx-cc build')
         string(name: 'CUSTOM_CI_BUILD_ID', defaultValue: '0', description: 'Custom CI Build Number')
         string(name: 'CORTX_UTILS_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX Utils', trim: true)
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX RE', trim: true)
         string(name: 'CORTX_RE_URL', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'CORTX RE Repository URL', trim: true)
         string(name: 'CORTX_UTILS_URL', defaultValue: 'https://github.com/Seagate/cortx-utils', description: 'CORTX Utils Repository URL', trim: true)
         string(name: 'THIRD_PARTY_PYTHON_VERSION', defaultValue: 'custom', description: 'Third Party Python Version to use', trim: true)
+        string(name: 'THIRD_PARTY_RPM_VERSION', defaultValue: 'custom', description: 'Third Party RPM packages Version to use', trim: true)
         // Add os_version parameter in jenkins configuration
 
         choice(
@@ -47,6 +50,11 @@ pipeline {
             name: 'BUILD_LATEST_HARE',
                 choices: ['yes', 'no'],
                 description: 'Build cortx-Hare from latest code or use last-successful build.'
+        )
+        choice(
+            name: 'BUILD_LATEST_CORTX_CC',
+                choices: ['yes', 'no'],
+                description: 'Build cortx-cc from latest code or use last-successful build.'
         )
     }    
 
@@ -128,7 +136,7 @@ pipeline {
     
         stage ("Trigger Downstream Jobs") {
             parallel {
-                stage ("build CORTX-RGW") {
+                stage ("Build CORTX-RGW") {
                     steps {
                         script { build_stage = env.STAGE_NAME }
                         build job: '/GitHub-custom-ci-builds/generic/cortx-rgw-custom-build/', wait: true,
@@ -144,7 +152,7 @@ pipeline {
                     }
                 }
 
-                stage ("build Hare") {
+                stage ("Build Hare") {
                     steps {
                         script { build_stage = env.STAGE_NAME }
                         build job: '/GitHub-custom-ci-builds/generic/hare-custom-build/', wait: true,
@@ -158,6 +166,30 @@ pipeline {
                                     string(name: 'THIRD_PARTY_PYTHON_VERSION', value: "${THIRD_PARTY_PYTHON_VERSION}"),
                                     string(name: 'BUILD_LATEST_HARE', value: "${BUILD_LATEST_HARE}")   
                             ]
+                    }
+                }
+
+                stage ("Build CORTX-CC") {
+                    steps {
+                        script { build_stage = env.STAGE_NAME }
+                        script {
+                            try {
+                                def ccbuild = build job: '/GitHub-custom-ci-builds/generic/cortx-cc-custom-build/', wait: true,
+                                parameters: [
+                                    string(name: 'CORTX_CC_URL', value: "${CORTX_CC_URL}"),
+                                    string(name: 'CORTX_CC_BRANCH', value: "${CORTX_CC_BRANCH}"),
+                                    string(name: 'CUSTOM_CI_BUILD_ID', value: "${CUSTOM_CI_BUILD_ID}"),
+                                    string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}"),
+                                    string(name: 'CORTX_UTILS_URL', value: "${CORTX_UTILS_URL}"),
+                                    string(name: 'THIRD_PARTY_PYTHON_VERSION', value: "${THIRD_PARTY_PYTHON_VERSION}"),
+                                    string(name: 'THIRD_PARTY_RPM_VERSION', value: "${THIRD_PARTY_RPM_VERSION}"),
+                                    string(name: 'BUILD_LATEST_CORTX_CC', value: "${BUILD_LATEST_CORTX_CC}")
+                                ]
+                            } catch (err) {
+                                build_stage = env.STAGE_NAME
+                                error "Failed to Build CORTX-CC"
+                            }        
+                        }        
                     }
                 }
             }

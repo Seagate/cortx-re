@@ -12,12 +12,13 @@ pipeline {
         string(name: 'CORTX_UTILS_URL', defaultValue: 'https://github.com/Seagate/cortx-utils', description: 'CORTX Utils Repository URL', trim: true)
         string(name: 'CORTX_UTILS_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX Utils', trim: true)
         string(name: 'THIRD_PARTY_PYTHON_VERSION', defaultValue: 'custom', description: 'Third Party Python Version to use', trim: true)
+        string(name: 'THIRD_PARTY_RPM_VERSION', defaultValue: 'custom', description: 'Third Party RPM packages Version to use', trim: true)
         string(name: 'CUSTOM_CI_BUILD_ID', defaultValue: '0', description: 'Custom CI Build Number')
         choice(
             name: 'BUILD_LATEST_CORTX_CC',
                 choices: ['yes', 'no'],
                 description: 'Build cortx-cc from latest code or use last-successful build.'
-            )
+        )
         // Add os_version parameter in jenkins configuration    
     }
     
@@ -28,6 +29,7 @@ pipeline {
         release_tag = "custom-build-$CUSTOM_CI_BUILD_ID"
         build_upload_dir = "$release_dir/github/integration-custom-ci/$os_version/$release_tag/cortx_iso"
         python_deps = "${THIRD_PARTY_PYTHON_VERSION == 'cortx-2.0' ? "python-packages-2.0.0-latest" : THIRD_PARTY_PYTHON_VERSION == 'custom' ?  "python-packages-2.0.0-custom" : "python-packages-2.0.0-stable"}"
+        third_party_rpm_version = "${THIRD_PARTY_RPM_VERSION == 'cortx-2.0' ? "$os_version-2.0.0-latest" : THIRD_PARTY_RPM_VERSION == 'cortx-2.0-k8' ?  "$os_version-2.0.0-k8" : "$os_version-custom"}"
     }
     
     
@@ -57,7 +59,7 @@ pipeline {
 
                 sh label: 'Install cortx-cc pre-requisites', script: '''
                     yum -y install python3 python3-devel facter yum-utils
-                    yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
+                    yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rockylinux/$third_party_rpm_version/
                     yum -y install consul-1.9.1
                 '''
 
