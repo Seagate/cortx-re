@@ -35,7 +35,7 @@ variable "region" {
 variable "key_name" {
   description = "SSH key name"
   type = string
-  default = "cortx-key"
+  default = "cortx-key-mukul"
 }
 
 variable "instance_count" {
@@ -59,7 +59,7 @@ variable "ebs_volume_size" {
 variable "tag_name" {
   description = "TAG name for multi instances"
   type = string
-  default = "cortx-multinode"
+  default = "cortx-multinode-mukul"
 }
 
 variable "ec2_device_names" {
