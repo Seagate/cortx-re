@@ -78,11 +78,7 @@ pipeline {
         }
         stage('Configure network and storage') {
             steps {
-                script {
-                    env.PRIMARY_PUBLIC_IP = sh( script: '''
-                    cd solutions/community-deploy/cloud/AWS && terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip_public.txt | jq '.[0]'| tr -d '",[]'
-                    ''', returnStdout: true).trim()
-                }
+                script { build_stage = env.STAGE_NAME }
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                     sh label: 'Setting up Network and Storage devices for CORTX. Script will reboot the instance on completion', script: '''
                     pushd solutions/community-deploy/cloud/AWS
@@ -116,6 +112,7 @@ pipeline {
                 sh label: 'Executing cortx build image script on Primary node', script: '''
                 pushd solutions/community-deploy/cloud/AWS
                     export CORTX_RE_BRANCH=${CORTX_RE_BRANCH}
+                    export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
                     ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" "export CORTX_RE_BRANCH=$CORTX_RE_BRANCH; git clone $CORTX_RE_REPO -b $CORTX_RE_BRANCH; pushd /home/centos/cortx-re/solutions/community-deploy; time sudo ./build-cortx.sh"
                     popd
             '''
@@ -126,6 +123,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Setting up K8s cluster on EC2', script: '''
                 pushd solutions/community-deploy/cloud/AWS
+                    export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
                     export WORKER_IP=$(cat ip_public.txt | jq '.[1]','.[2]' | tr -d '",[]')
                     export HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
                     export CORTX_SERVER_IMAGE=$HOST1:8080/seagate/cortx-rgw:2.0.0-latest
@@ -143,6 +141,7 @@ pipeline {
                 sh label: 'Deploying multi-node cortx cluster and pull locally generated cortx images on worker nodes', script: '''
                 pushd solutions/community-deploy/cloud/AWS
                     export HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
+                    export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
                     ssh -i cortx.pem -o StrictHostKeyChecking=no centos@"${PRIMARY_PUBLIC_IP}" 'pushd /home/centos/cortx-re/solutions/kubernetes &&
                     export SOLUTION_CONFIG_TYPE='automated' &&
                     export COMMUNITY_USE='yes' &&
@@ -159,6 +158,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'IO Sanity on CORTX Cluster to validate bucket creation and object upload in deployed cluster', script: '''
                 pushd solutions/community-deploy/cloud/AWS
+                    export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
                     ssh -i cortx.pem -o StrictHostKeyChecking=no centos@"${PRIMARY_PUBLIC_IP}" 'pushd /home/centos/cortx-re/solutions/kubernetes && sudo ./cortx-deploy.sh --io-sanity'
                     popd
             '''
