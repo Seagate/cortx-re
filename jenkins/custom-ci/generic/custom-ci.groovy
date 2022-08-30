@@ -175,7 +175,7 @@ pipeline {
                         script { build_stage = env.STAGE_NAME }
                         script {
                             try {
-                                def motrbuild = build job: 'Release_Engineering/re-workspace/motr-custom-build/', wait: true,
+                                def motrbuild = build job: 'GitHub-custom-ci-builds/generic/motr-custom-build/', wait: true,
                                         parameters: [
                                                         string(name: 'MOTR_URL', value: "${MOTR_URL}"),
                                                         string(name: 'MOTR_BRANCH', value: "${MOTR_BRANCH}"),
