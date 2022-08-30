@@ -96,7 +96,7 @@ pipeline {
 
         choice(
             name: 'BUILD_LATEST_CORTX_CC',
-                choices: ['yes', 'no'],
+                choices: ['no', 'yes'],
                 description: 'Build cortx-cc from latest code or use last-successful build.'
         )
 
