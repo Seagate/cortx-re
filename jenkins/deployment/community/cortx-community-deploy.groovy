@@ -107,30 +107,20 @@ pipeline {
             '''
             }
         }
-        
-        stage('Generate locally build images') {
+
+        /*stage('Execute cortx build script') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Executing cortx build image script on Primary node', script: '''
                 pushd solutions/community-deploy/cloud/AWS
-                export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
-                    ssh -tt -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${PRIMARY_PUBLIC_IP}
-                    sudo su
-                    docker pull ghcr.io/seagate/cortx-rgw:2.0.0-latest
-                    docker pull ghcr.io/seagate/cortx-data:2.0.0-latest
-                    docker pull ghcr.io/seagate/cortx-control:2.0.0-latest
-                    docker run -d -e REGISTRY_HTTP_ADDR=0.0.0.0:8080 -p 5000:5000 -p 8080:8080 --restart=always --name local-registry registry:2 &&
-                    jq -n '{"insecure-registries": $ARGS.positional}' --args "$HOSTNAME:8080" > /etc/docker/daemon.json &&
-                    systemctl restart docker && sleep 120 &&
-                    docker image tag ghcr.io/seagate/cortx-rgw:2.0.0-latest $HOSTNAME:8080/cortx-rgw:2.0.0-latest &&
-                    docker image tag ghcr.io/seagate/cortx-data:2.0.0-latest $HOSTNAME:8080/cortx-data:2.0.0-latest &&
-                    docker image tag ghcr.io/seagate/cortx-control:2.0.0-latest $HOSTNAME:8080/cortx-control:2.0.0-latest &&
-                    docker image push $HOSTNAME:8080/cortx-rgw:2.0.0-latest && docker image push $HOSTNAME:8080/cortx-data:2.0.0-latest && docker image push $HOSTNAME:8080/cortx-control:2.0.0-latest"
-                    
+                    export CORTX_RE_BRANCH=${CORTX_RE_BRANCH}
+                    sleep 120
+                    export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
+                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${PRIMARY_PUBLIC_IP} "export CORTX_RE_BRANCH=$CORTX_RE_BRANCH; git clone $CORTX_RE_REPO -b $CORTX_RE_BRANCH; pushd /home/centos/cortx-re/solutions/community-deploy; time sudo ./build-cortx.sh"
                     popd
             '''
             }
-        }
+        }*/
             
         stage('Setup K8s cluster') {
             steps {
