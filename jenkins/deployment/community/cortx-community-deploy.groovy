@@ -131,6 +131,7 @@ pipeline {
                     export CORTX_RE_BRANCH=${CORTX_RE_BRANCH}
                     export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
                     terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_dns.value 2>&1 | tee ec2_hostname.txt
+                    export PUBLIC_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip_public.txt | tr -d '",[]' | sed '/^$/d')
                     export HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
                     export HOST2=$(cat ec2_hostname.txt | jq '.[1]'| tr -d '",[]')
                     export HOST3=$(cat ec2_hostname.txt | jq '.[2]'| tr -d '",[]')
