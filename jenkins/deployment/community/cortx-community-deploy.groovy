@@ -118,8 +118,7 @@ pipeline {
                     docker pull ghcr.io/seagate/cortx-data:2.0.0-latest &&
                     docker pull ghcr.io/seagate/cortx-control:2.0.0-latest &&
                     docker run -d -e REGISTRY_HTTP_ADDR=0.0.0.0:8080 -p 5000:5000 -p 8080:8080 --restart=always --name local-registry registry:2 &&
-                    jq -n '{"insecure-registries": $ARGS.positional}' --args "$HOSTNAME:8080" > /etc/docker/daemon.json &&
-                    systemctl restart docker && sleep 120 &&
+                    jq -n '{"insecure-registries": $ARGS.positional}' --args "$HOSTNAME:8080" > /etc/docker/daemon.json && systemctl restart docker && sleep 120 &&
                     docker image tag ghcr.io/seagate/cortx-rgw:2.0.0-latest $HOSTNAME:8080/cortx-rgw:2.0.0-latest &&
                     docker image tag ghcr.io/seagate/cortx-data:2.0.0-latest $HOSTNAME:8080/cortx-data:2.0.0-latest &&
                     docker image tag ghcr.io/seagate/cortx-control:2.0.0-latest $HOSTNAME:8080/cortx-control:2.0.0-latest &&
