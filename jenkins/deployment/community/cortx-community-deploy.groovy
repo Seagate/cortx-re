@@ -1,10 +1,10 @@
 pipeline {
     agent {
         node {
-            label 'my-community-build-multi-node'
+            label 'mukul-community-build-multi-node'
         }
     }
-    triggers { cron('0 22 * * 1,3,5') }
+    //triggers { cron('0 22 * * 1,3,5') }
     options {
         timeout(time: 360, unit: 'MINUTES')
         timestamps()
