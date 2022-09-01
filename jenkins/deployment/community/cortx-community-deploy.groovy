@@ -2,10 +2,6 @@ pipeline {
     agent {
         node {
             label 'mukul-community-build-multi-node'
-        }
-     environment {
-	  HOST1 = "${cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]'}"
-    	}
     }
     
     //triggers { cron('0 22 * * 1,3,5') }
@@ -131,9 +127,9 @@ pipeline {
                     export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
                     export WORKER_IP=$(cat ip_public.txt | jq '.[1]','.[2]' | tr -d '",[]')
                     export HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
-                    export CORTX_SERVER_IMAGE='${env.HOST1}:8080/seagate/cortx-rgw:2.0.0-0'
-                    export CORTX_DATA_IMAGE='${env.HOST1}:8080/seagate/cortx-data:2.0.0-0'
-                    export CORTX_CONTROL_IMAGE='${env.HOST1}:8080/seagate/cortx-control:2.0.0-0'
+                    export CORTX_SERVER_IMAGE="${HOST1}:8080/seagate/cortx-rgw:2.0.0-0"
+                    export CORTX_DATA_IMAGE="${HOST1}:8080/seagate/cortx-data:2.0.0-0"
+                    export CORTX_CONTROL_IMAGE="${HOST1}:8080/seagate/cortx-control:2.0.0-0"
                     ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" "sudo -- sh -c 'pushd /home/centos/cortx-re/solutions/kubernetes && ./cluster-setup.sh true && sed -i 's,cortx-docker.colo.seagate.com,${HOST1}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 240'"
                     for wp in $WORKER_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${wp} "sudo -- sh -c 'sed -i 's,cortx-docker.colo.seagate.com,${HOST1}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 240 && docker pull ${CORTX_SERVER_IMAGE} && docker pull ${CORTX_DATA_IMAGE} && docker pull ${CORTX_CONTROL_IMAGE}'";done
                     popd
@@ -143,11 +139,12 @@ pipeline {
         stage('Deploy multi-node cortx cluster') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                    sh "CORTX_SERVER_IMAGE=${env.HOST1}:8080/seagate/cortx-rgw:2.0.0-0"
-                    sh "CORTX_DATA_IMAGE=${env.HOST1}:8080/seagate/cortx-data:2.0.0-0"
-                    sh "CORTX_CONTROL_IMAGE=${env.HOST1}:8080/seagate/cortx-control:2.0.0-0"
                     sh label: 'Deploying multi-node cortx cluster and pull locally generated cortx images on worker nodes', script: '''
-                pushd solutions/community-deploy/cloud/AWS
+                    sh "CORTX_SERVER_IMAGE=${HOST1}:8080/seagate/cortx-rgw:2.0.0-0"
+                    sh "CORTX_DATA_IMAGE=${HOST1}:8080/seagate/cortx-data:2.0.0-0"
+                    sh "CORTX_CONTROL_IMAGE=${HOST1}:8080/seagate/cortx-control:2.0.0-0"
+		pushd solutions/community-deploy/cloud/AWS
+		    export HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
                     export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
                     export CORTX_SERVER_IMAGE="${HOST1}:8080/seagate/cortx-rgw:2.0.0-0"
                     export CORTX_DATA_IMAGE="${HOST1}:8080/seagate/cortx-data:2.0.0-0"
