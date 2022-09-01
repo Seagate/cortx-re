@@ -5,6 +5,7 @@ pipeline {
     }
     environment {
 	    HOST1 = "${cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]'}"
+    	}
     }
     //triggers { cron('0 22 * * 1,3,5') }
     options {
