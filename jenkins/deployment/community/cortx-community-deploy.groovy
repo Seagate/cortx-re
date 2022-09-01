@@ -9,7 +9,7 @@ pipeline {
         timeout(time: 360, unit: 'MINUTES')
         timestamps()
         disableConcurrentBuilds()
-        buildDiscarder(logRotator(daysToKeepStr: '30', numToKeepStr: '10'))
+        buildDiscarder(logRotator(daysToKeepStr: '30', numToKeepStr: '20'))
         ansiColor('xterm')
     }
 
@@ -162,7 +162,7 @@ pipeline {
             '''
             }
         }
-        }
+    }
     post {
         always {
             retry(count: 3) {
@@ -171,26 +171,6 @@ pipeline {
                         terraform validate && terraform destroy -var-file user.tfvars --auto-approve
                     popd
             '''
-            }
-            script {
-                // Email Notification
-                env.build_stage = "${build_stage}"
-                env.cluster_status = "${clusterStatusHTML}"
-
-                def toEmail = ''
-                def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
-                if ( manager.build.result.toString() == 'FAILURE' ) {
-                    toEmail = 'CORTX.DevOps.RE@seagate.com'
-                    recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
-                }
-                emailext(
-                body: '''${SCRIPT, template="cluster-setup-email.template"}''',
-                mimeType: 'text/html',
-                subject: "[Cortx Community Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
-                attachLog: true,
-                to: toEmail,
-                recipientProviders: recipientProvidersClass
-                )
             }
         }
     }
