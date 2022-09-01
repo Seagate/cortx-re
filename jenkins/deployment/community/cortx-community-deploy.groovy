@@ -4,7 +4,7 @@ pipeline {
             label 'mukul-community-build-multi-node'
     }
     environment {
-        HOST1 = "cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]'
+	    HOST1 = "${cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]'}"
     }
     //triggers { cron('0 22 * * 1,3,5') }
     options {
