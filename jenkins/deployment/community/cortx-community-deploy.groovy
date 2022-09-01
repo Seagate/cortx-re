@@ -28,9 +28,6 @@ pipeline {
         password(name: 'SECRET_KEY', description: 'secret key for AWS account')
         password(name: 'ACCESS_KEY', description: 'access key for AWS account')
         password(name: 'ROOT_PASSWORD', description: 'Root password for EC2 instances')
-        string(name: 'CORTX_SERVER_IMAGE', defaultValue: "${HOST1}:8080/seagate/cortx-rgw:2.0.0-0", description: 'CORTX server image', trim: true)
-        string(name: 'CORTX_DATA_IMAGE', defaultValue: "${HOST1}:8080/seagate/cortx-data:2.0.0-0", description: 'CORTX data image', trim: true)
-        string(name: 'CORTX_CONTROL_IMAGE', defaultValue: "${HOST1}:8080/seagate/cortx-control:2.0.0-0", description: 'CORTX control image', trim: true)
     }
 
         stages {
