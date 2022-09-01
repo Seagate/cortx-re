@@ -16,7 +16,7 @@ pipeline {
     parameters {
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'mukul-multinode-automation', description: 'Branch or GitHash for CORTX Cluster scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repository for CORTX Cluster scripts', trim: true)
-        string(name: 'CORTX_TAG', defaultValue: 'mukul-multinode-automation', description: 'Branch or GitHash for generaing CORTX container images', trim: true)
+        //string(name: 'CORTX_TAG', defaultValue: 'mukul-multinode-automation', description: 'Branch or GitHash for generaing CORTX container images', trim: true)
         string(name: 'OS_VERSION', defaultValue: 'CentOS 7.9.2009 x86_64', description: 'Operating system version', trim: true)
         string(name: 'REGION', defaultValue: 'ap-south-1', description: 'AWS region', trim: true)
         string(name: 'KEY_NAME', defaultValue: 'devops-key', description: 'Key name', trim: true)
@@ -114,7 +114,7 @@ pipeline {
                 pushd solutions/community-deploy/cloud/AWS
                     export CORTX_RE_BRANCH=${CORTX_RE_BRANCH}
                     export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
-                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" "export CORTX_RE_BRANCH=$CORTX_RE_BRANCH; git clone $CORTX_RE_REPO -b $CORTX_RE_BRANCH; pushd /home/centos/cortx-re/solutions/community-deploy; time sudo ./build-cortx.sh"
+                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" "export CORTX_RE_BRANCH=$CORTX_RE_BRANCH; git clone $CORTX_RE_REPO -b $CORTX_RE_BRANCH; pushd /home/centos/cortx-re/solutions/community-deploy; time sudo ./build-cortx.sh -b ${CORTX_TAG}"
                     popd
             '''
             }
@@ -126,7 +126,7 @@ pipeline {
                 pushd solutions/community-deploy/cloud/AWS
                     export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
                     export WORKER_IP=$(cat ip_public.txt | jq '.[1]','.[2]' | tr -d '",[]')
-                    export HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
+                    HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
                     export CORTX_SERVER_IMAGE="${HOST1}:8080/seagate/cortx-rgw:2.0.0-0"
                     export CORTX_DATA_IMAGE="${HOST1}:8080/seagate/cortx-data:2.0.0-0"
                     export CORTX_CONTROL_IMAGE="${HOST1}:8080/seagate/cortx-control:2.0.0-0"
@@ -138,10 +138,10 @@ pipeline {
         }
         stage('Deploy multi-node cortx cluster') {
             steps {
-                script {
-                    sh label: 'Deploying multi-node cortx cluster and pull locally generated cortx images on worker nodes', script: '''
-		pushd solutions/community-deploy/cloud/AWS
-		    HOST1="$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')"
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'Deploying multi-node cortx cluster and pull locally generated cortx images on worker nodes', script: '''
+                pushd solutions/community-deploy/cloud/AWS
+                    HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
                     export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
                     export CORTX_SERVER_IMAGE="${HOST1}:8080/seagate/cortx-rgw:2.0.0-0"
                     export CORTX_DATA_IMAGE="${HOST1}:8080/seagate/cortx-data:2.0.0-0"
@@ -162,7 +162,7 @@ pipeline {
             '''
             }
         }
-    }
+        }
     post {
         always {
             retry(count: 3) {
@@ -170,31 +170,9 @@ pipeline {
                     pushd solutions/community-deploy/cloud/AWS
                         terraform validate && terraform destroy -var-file user.tfvars --auto-approve
                     popd
-                    '''
+            '''
             }
-
             script {
-                // Jenkins Summary
-                clusterStatus = ''
-                if ( currentBuild.currentResult == 'SUCCESS' ) {
-                    MESSAGE = "CORTX Community Deploy is Success for the build ${build_id}"
-                    ICON = 'accept.gif'
-                    STATUS = 'SUCCESS'
-            } else if ( currentBuild.currentResult == 'FAILURE' ) {
-                    manager.buildFailure()
-                    MESSAGE = "CORTX Community Deploy is Failed for the build ${build_id}"
-                    ICON = 'error.gif'
-                    STATUS = 'FAILURE'
-            } else {
-                    manager.buildUnstable()
-                    MESSAGE = 'CORTX Community Deploy Setup is Unstable'
-                    ICON = 'warning.gif'
-                    STATUS = 'UNSTABLE'
-                }
-                clusterStatusHTML = "<pre>${clusterStatus}</pre>"
-
-                manager.createSummary("${ICON}").appendText("<h3>CORTX Community Deploy ${currentBuild.currentResult} </h3><p>Please check <a href=\"${BUILD_URL}/console\">cluster setup logs</a> for more info <h4>Cluster Status:</h4>${clusterStatusHTML}", false, false, false, 'red')
-
                 // Email Notification
                 env.build_stage = "${build_stage}"
                 env.cluster_status = "${clusterStatusHTML}"
@@ -202,7 +180,7 @@ pipeline {
                 def toEmail = ''
                 def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
                 if ( manager.build.result.toString() == 'FAILURE' ) {
-                    toEmail = 'mukul.malhotra@seagate.com'
+                    toEmail = 'CORTX.DevOps.RE@seagate.com'
                     recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
                 }
                 emailext(
