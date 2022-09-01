@@ -3,7 +3,9 @@ pipeline {
         node {
             label 'mukul-community-build-multi-node'
     }
-    
+    environment {
+        HOST1 = "$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')"
+    }
     //triggers { cron('0 22 * * 1,3,5') }
     options {
         timeout(time: 360, unit: 'MINUTES')
@@ -138,11 +140,8 @@ pipeline {
         }
         stage('Deploy multi-node cortx cluster') {
             steps {
-                script { build_stage = env.STAGE_NAME }
+                script {
                     sh label: 'Deploying multi-node cortx cluster and pull locally generated cortx images on worker nodes', script: '''
-                    sh "CORTX_SERVER_IMAGE=${HOST1}:8080/seagate/cortx-rgw:2.0.0-0"
-                    sh "CORTX_DATA_IMAGE=${HOST1}:8080/seagate/cortx-data:2.0.0-0"
-                    sh "CORTX_CONTROL_IMAGE=${HOST1}:8080/seagate/cortx-control:2.0.0-0"
 		pushd solutions/community-deploy/cloud/AWS
 		    export HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
                     export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
