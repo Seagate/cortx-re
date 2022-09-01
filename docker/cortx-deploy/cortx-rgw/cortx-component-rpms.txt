@@ -1,5 +1,6 @@
 cortx-motr
 cortx-hare
+cortx-cc
 cortx-py-utils
 cortx-provisioner
 cortx-rgw-integration
