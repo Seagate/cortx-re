@@ -163,4 +163,15 @@ pipeline {
             }
         }
     }
+    post {
+        always {
+            retry(count: 3) {
+                    sh label: 'Destroying EC2 instance', script: '''
+                    pushd solutions/community-deploy/cloud/AWS
+                        terraform validate && terraform destroy -var-file user.tfvars --auto-approve
+                    popd
+            '''
+            }
+        }
+    }
 }
