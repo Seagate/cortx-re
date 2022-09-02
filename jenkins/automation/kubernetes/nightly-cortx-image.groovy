@@ -16,7 +16,7 @@ pipeline {
         string(name: 'COMPONENT_BRANCH', defaultValue: 'kubernetes', description: 'Component Branch.')
 
         choice (
-            choices: ['ALL','DEVOPS'],
+            choices: ['ALL', 'DEVOPS'],
             description: 'Email Notification Recipients ',
             name: 'EMAIL_RECIPIENTS'
         )
