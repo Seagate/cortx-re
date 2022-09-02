@@ -139,9 +139,12 @@ pipeline {
         stage('Deploy multi-node cortx cluster') {
             steps {
                 script { build_stage = env.STAGE_NAME }
+                script {
+                    env.HOST1 = sh( script: cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]'
+                             returnStdout: true).trim()
+                       }
                 sh label: 'Deploying multi-node cortx cluster and pull locally generated cortx images on worker nodes', script: '''
                 pushd solutions/community-deploy/cloud/AWS
-                    HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
                     export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
                     export CORTX_SERVER_IMAGE="${HOST1}:8080/seagate/cortx-rgw:2.0.0-0"
                     export CORTX_DATA_IMAGE="${HOST1}:8080/seagate/cortx-data:2.0.0-0"
