@@ -201,7 +201,7 @@ EOF
 
 				def toEmail = ""
 				def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
-				if( manager.build.result.toString() == "FAILURE" ) {
+				if ( manager.build.result.toString() == "FAILURE" ) {
 					toEmail = "CORTX.Hare@seagate.com,shailesh.vaidya@seagate.com"
 					recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'],[$class: 'RequesterRecipientProvider']]
 				}

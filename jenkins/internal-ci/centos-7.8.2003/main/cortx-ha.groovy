@@ -194,7 +194,7 @@ EOF
                 
                 def toEmail = ""
                 def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
-                if( manager.build.result.toString() == "FAILURE") {
+                if ( manager.build.result.toString() == "FAILURE") {
                     toEmail = "CORTX.HA@seagate.com,shailesh.vaidya@seagate.com"
                 }
                 emailext (
