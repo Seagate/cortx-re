@@ -185,10 +185,10 @@ pipeline {
                     manager.buildUnstable()
                 }
 
-                if( currentBuild.rawBuild.getCause(hudson.triggers.SCMTrigger$SCMTriggerCause) ) {
+                if (currentBuild.rawBuild.getCause(hudson.triggers.SCMTrigger$SCMTriggerCause) ) {
                     def toEmail = "nilesh.govande@seagate.com, basavaraj.kirunge@seagate.com, rajesh.nambiar@seagate.com, ajinkya.dhumal@seagate.com, amit.kumar@seagate.com"
                     def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
-                    if( manager.build.result.toString() == "FAILURE") {
+                    if ( manager.build.result.toString() == "FAILURE") {
                         toEmail = "CORTX.s3@seagate.com"
                     }
                     emailext (
