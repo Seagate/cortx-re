@@ -114,7 +114,6 @@ pipeline {
                 pushd solutions/community-deploy/cloud/AWS
                     export CORTX_RE_BRANCH=${CORTX_RE_BRANCH}
                     export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
-                    sleep 120
                     ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" "git clone $CORTX_RE_REPO -b $CORTX_RE_BRANCH; pushd /home/centos/cortx-re/solutions/community-deploy; time sudo ./build-cortx.sh"
                     popd
             '''
