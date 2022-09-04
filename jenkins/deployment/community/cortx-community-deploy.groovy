@@ -1,7 +1,7 @@
 pipeline {
     agent {
         node {
-            label 'community-build-executor'
+            label 'mukul-community-build-multi-node'
         }
     }
     //triggers { cron('0 22 * * 1,3,5') }
@@ -9,13 +9,14 @@ pipeline {
         timeout(time: 360, unit: 'MINUTES')
         timestamps()
         disableConcurrentBuilds()
-        buildDiscarder(logRotator(daysToKeepStr: '30', numToKeepStr: '30'))
+        buildDiscarder(logRotator(daysToKeepStr: '30', numToKeepStr: '20'))
         ansiColor('xterm')
     }
 
     parameters {
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'mukul-multinode-automation', description: 'Branch or GitHash for CORTX Cluster scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repository for CORTX Cluster scripts', trim: true)
+        //string(name: 'CORTX_TAG', defaultValue: 'mukul-multinode-automation', description: 'Branch or GitHash for generaing CORTX container images', trim: true)
         string(name: 'OS_VERSION', defaultValue: 'CentOS 7.9.2009 x86_64', description: 'Operating system version', trim: true)
         string(name: 'REGION', defaultValue: 'ap-south-1', description: 'AWS region', trim: true)
         string(name: 'KEY_NAME', defaultValue: 'devops-key', description: 'Key name', trim: true)
@@ -66,7 +67,6 @@ pipeline {
                 '''
             }
         }
-        
         stage('Create Multi EC2 instances') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -77,7 +77,6 @@ pipeline {
             '''
             }
         }
-            
         stage('Configure network and storage') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -97,56 +96,47 @@ pipeline {
                 sh label: 'Changing root password & creating hosts file', script: '''
                 pushd solutions/community-deploy/cloud/AWS
                     export ROOT_PASSWORD=${ROOT_PASSWORD}
+                    export PUBLIC_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip_public.txt | tr -d '",[]' | sed '/^$/d')
                     terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_dns.value 2>&1 | tee ec2_hostname.txt
                     export HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
                     export HOST2=$(cat ec2_hostname.txt | jq '.[1]'| tr -d '",[]')
                     export HOST3=$(cat ec2_hostname.txt | jq '.[2]'| tr -d '",[]')
                     export HOST4=$(cat ec2_hostname.txt | jq '.[3]'| tr -d '",[]')
-                    for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${ip} "export ROOT_PASSWORD=$ROOT_PASSWORD && echo $ROOT_PASSWORD | sudo passwd --stdin root && git clone https://github.com/Seagate/cortx-re && pushd /home/centos/cortx-re/solutions/kubernetes && touch hosts && echo hostname=${HOST1},user=root,pass= > hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo hostname=${HOST2},user=root,pass= >> hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo hostname=${HOST3},user=root,pass= >> hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo hostname=${HOST4},user=root,pass= >> hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && cat hosts && sleep 240";done
+                    for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${ip}" "export ROOT_PASSWORD=$ROOT_PASSWORD && echo $ROOT_PASSWORD | sudo passwd --stdin root && git clone https://github.com/Seagate/cortx-re && pushd /home/centos/cortx-re/solutions/kubernetes && touch hosts && echo hostname=${HOST1},user=root,pass= > hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo hostname=${HOST2},user=root,pass= >> hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo hostname=${HOST3},user=root,pass= >> hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo hostname=${HOST4},user=root,pass= >> hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && cat hosts && sleep 120";done
                     popd
             '''
             }
         }
-
-        stage('Generate locally build images') {
+        stage('Generate locally build cortx images') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Executing cortx build image script on Primary node', script: '''
+                sh label: 'Generate locally build cortx images', script: '''
                 pushd solutions/community-deploy/cloud/AWS
                     export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
-                    ssh -tt -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${PRIMARY_PUBLIC_IP} "sudo docker pull ghcr.io/seagate/cortx-rgw:2.0.0-latest &&
-                    docker pull ghcr.io/seagate/cortx-data:2.0.0-latest &&
-                    docker pull ghcr.io/seagate/cortx-control:2.0.0-latest &&
+                    export HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
+                    export CORTX_SERVER_IMAGE="${HOST1}:8080/seagate/cortx-rgw:2.0.0-latest"
+                    export CORTX_DATA_IMAGE="${HOST1}:8080/seagate/cortx-data:2.0.0-latest"
+                    export CORTX_CONTROL_IMAGE="${HOST1}:8080/seagate/cortx-control:2.0.0-latest"
+                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" "sudo touch /etc/docker/daemon.json && jq -n '{"insecure-registries": $ARGS.positional}' --args "$HOSTNAME:8080" > /etc/docker/daemon.json && systemctl restart docker && sleep 240 &&
                     docker run -d -e REGISTRY_HTTP_ADDR=0.0.0.0:8080 -p 5000:5000 -p 8080:8080 --restart=always --name local-registry registry:2 &&
-                    jq -n '{"insecure-registries": $ARGS.positional}' --args "$HOSTNAME:8080" > /etc/docker/daemon.json && systemctl restart docker && sleep 120 &&
-                    docker image tag ghcr.io/seagate/cortx-rgw:2.0.0-latest $HOSTNAME:8080/cortx-rgw:2.0.0-latest &&
-                    docker image tag ghcr.io/seagate/cortx-data:2.0.0-latest $HOSTNAME:8080/cortx-data:2.0.0-latest &&
-                    docker image tag ghcr.io/seagate/cortx-control:2.0.0-latest $HOSTNAME:8080/cortx-control:2.0.0-latest &&
-                    docker image push $HOSTNAME:8080/cortx-rgw:2.0.0-latest && docker image push $HOSTNAME:8080/cortx-data:2.0.0-latest && docker image push $HOSTNAME:8080/cortx-control:2.0.0-latest"
-                    popd
-            '''
+                    docker pull ghcr.io/seagate/cortx-control:2.0.0-latest && docker pull ghcr.io/seagate/cortx-data:2.0.0-latest && docker pull ghcr.io/seagate/cortx-rgw:2.0.0-latest &&
+                    docker tag ghcr.io/seagate/cortx-control:2.0.0-latest '${CORTX_CONTROL_IMAGE}' && docker tag ghcr.io/seagate/cortx-data:2.0.0-latest '${CORTX_DATA_IMAGE}' && docker tag ghcr.io/seagate/cortx-rgw:2.0.0-latest '${CORTX_SERVER_IMAGE}' &&
+                    docker push '${CORTX_SERVER_IMAGE}' && docker push '${CORTX_DATA_IMAGE}' && docker push '${CORTX_CONTROL_IMAGE}'"
+                 '''
             }
         }
-            
         stage('Setup K8s cluster') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Setting up K8s cluster on EC2', script: '''
                 pushd solutions/community-deploy/cloud/AWS
-                    export ROOT_PASSWORD=${ROOT_PASSWORD}
-                    export CORTX_RE_BRANCH=${CORTX_RE_BRANCH}
-                    terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_dns.value 2>&1 | tee ec2_hostname.txt
-                    export PUBLIC_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip_public.txt | tr -d '",[]' | sed '/^$/d')
                     export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
+                    export WORKER_IP=$(cat ip_public.txt | jq '.[1]','.[2]' | tr -d '",[]')
                     export HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
-                    export HOST2=$(cat ec2_hostname.txt | jq '.[1]'| tr -d '",[]')
-                    export HOST3=$(cat ec2_hostname.txt | jq '.[2]'| tr -d '",[]')
-                    export HOST4=$(cat ec2_hostname.txt | jq '.[3]'| tr -d '",[]')
-                    export CORTX_SERVER_IMAGE=$HOST1:8080/seagate/cortx-rgw:2.0.0-latest
-                    export CORTX_DATA_IMAGE=$HOST1:8080/seagate/cortx-data:2.0.0-latest
-                    export CORTX_CONTROL_IMAGE=$HOST1:8080/seagate/cortx-control:2.0.0-latest
-                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" "sudo -- sh -c 'pushd /home/centos/cortx-re/solutions/kubernetes && ./cluster-setup.sh true && sed -i 's,cortx-docker.colo.seagate.com,${HOST1}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 240'"
-                    for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${ip}" "export ROOT_PASSWORD=$ROOT_PASSWORD && echo $ROOT_PASSWORD | sudo passwd --stdin root && git clone https://github.com/Seagate/cortx-re && pushd /home/centos/cortx-re/solutions/kubernetes && touch hosts && echo hostname=${HOST1},user=root,pass= > hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo hostname=${HOST2},user=root,pass= >> hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo hostname=${HOST3},user=root,pass= >> hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo hostname=${HOST4},user=root,pass= >> hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && cat hosts";done
+                    export CORTX_SERVER_IMAGE="${HOST1}:8080/seagate/cortx-rgw:2.0.0-latest"
+                    export CORTX_DATA_IMAGE="${HOST1}:8080/seagate/cortx-data:2.0.0-latest"
+                    export CORTX_CONTROL_IMAGE="${HOST1}:8080/seagate/cortx-control:2.0.0-latest"
+                    for wp in $WORKER_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${wp} "sudo touch /etc/docker/daemon.json && jq -n '{"insecure-registries": $ARGS.positional}' --args "${HOST1}:8080" > /etc/docker/daemon.json && systemctl restart docker && sleep 240 && docker pull '${CORTX_SERVER_IMAGE}' && docker pull '${CORTX_DATA_IMAGE}' && docker pull '${CORTX_CONTROL_IMAGE}'";done
                     popd
             '''
             }
@@ -156,19 +146,17 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Deploying multi-node cortx cluster and pull locally generated cortx images on worker nodes', script: '''
                 pushd solutions/community-deploy/cloud/AWS
-                    export WORKER_IP=$(cat ip_public.txt | jq '.[1]','.[2]' | tr -d '",[]')
+                    export SOLUTION_CONFIG_TYPE='automated'
+                    export COMMUNITY_USE='yes'
                     export HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
                     export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
-                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" 'pushd /home/centos/cortx-re/solutions/kubernetes &&
-                    export SOLUTION_CONFIG_TYPE='automated' &&
-                    export COMMUNITY_USE='yes' &&
-                    export CORTX_SERVER_IMAGE=$HOST1:8080/seagate/cortx-rgw:2.0.0-latest &&
-                    export CORTX_DATA_IMAGE=$HOST1:8080/seagate/cortx-data:2.0.0-latest &&
-                    export CORTX_CONTROL_IMAGE=$HOST1:8080/seagate/cortx-control:2.0.0-latest &&
-                    sudo env SOLUTION_CONFIG_TYPE=${SOLUTION_CONFIG_TYPE} env CORTX_SERVER_IMAGE=${CORTX_SERVER_IMAGE} env CORTX_CONTROL_IMAGE=${CORTX_CONTROL_IMAGE} env CORTX_DATA_IMAGE=${CORTX_DATA_IMAGE} env COMMUNITY_USE=${COMMUNITY_USE} ./cortx-deploy.sh --cortx-cluster'
+                    export CORTX_SERVER_IMAGE="${HOST1}:8080/seagate/cortx-rgw:2.0.0-latest"
+                    export CORTX_DATA_IMAGE="${HOST1}:8080/seagate/cortx-data:2.0.0-latest"
+                    export CORTX_CONTROL_IMAGE="${HOST1}:8080/seagate/cortx-control:2.0.0-latest"
+                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" 'pushd /home/centos/cortx-re/solutions/kubernetes && export CORTX_SERVER_IMAGE='${CORTX_SERVER_IMAGE}' && export CORTX_DATA_IMAGE='${CORTX_DATA_IMAGE}' && export CORTX_CONTROL_IMAGE='${CORTX_CONTROL_IMAGE}' && sudo env SOLUTION_CONFIG_TYPE='${SOLUTION_CONFIG_TYPE}' env CORTX_SERVER_IMAGE='${CORTX_SERVER_IMAGE}' env CORTX_CONTROL_IMAGE='${CORTX_CONTROL_IMAGE}' env CORTX_DATA_IMAGE='${CORTX_DATA_IMAGE}' env COMMUNITY_USE='${COMMUNITY_USE}' ./cortx-deploy.sh --cortx-cluster'
                     popd
             '''
             }
-       }
+        }
     }
 }
