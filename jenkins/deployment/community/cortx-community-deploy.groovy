@@ -116,8 +116,7 @@ pipeline {
                     export CORTX_SERVER_IMAGE="${HOST1}:8080/seagate/cortx-rgw:2.0.0-latest"
                     export CORTX_DATA_IMAGE="${HOST1}:8080/seagate/cortx-data:2.0.0-latest"
                     export CORTX_CONTROL_IMAGE="${HOST1}:8080/seagate/cortx-control:2.0.0-latest"
-                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" "sudo touch /etc/docker/daemon.json && jq -n '{"insecure-registries": $ARGS.positional}' --args "$HOSTNAME:8080" > /etc/docker/daemon.json && systemctl restart docker && sleep 240 &&
-                    docker run -d -e REGISTRY_HTTP_ADDR=0.0.0.0:8080 -p 5000:5000 -p 8080:8080 --restart=always --name local-registry registry:2 &&
+                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" "sudo docker run -d -e REGISTRY_HTTP_ADDR=0.0.0.0:8080 -p 5000:5000 -p 8080:8080 --restart=always --name local-registry registry:2 &&
                     docker pull ghcr.io/seagate/cortx-control:2.0.0-latest && docker pull ghcr.io/seagate/cortx-data:2.0.0-latest && docker pull ghcr.io/seagate/cortx-rgw:2.0.0-latest &&
                     docker tag ghcr.io/seagate/cortx-control:2.0.0-latest '${CORTX_CONTROL_IMAGE}' && docker tag ghcr.io/seagate/cortx-data:2.0.0-latest '${CORTX_DATA_IMAGE}' && docker tag ghcr.io/seagate/cortx-rgw:2.0.0-latest '${CORTX_SERVER_IMAGE}' &&
                     docker push '${CORTX_SERVER_IMAGE}' && docker push '${CORTX_DATA_IMAGE}' && docker push '${CORTX_CONTROL_IMAGE}'"
@@ -135,7 +134,7 @@ pipeline {
                     export CORTX_SERVER_IMAGE="${HOST1}:8080/seagate/cortx-rgw:2.0.0-latest"
                     export CORTX_DATA_IMAGE="${HOST1}:8080/seagate/cortx-data:2.0.0-latest"
                     export CORTX_CONTROL_IMAGE="${HOST1}:8080/seagate/cortx-control:2.0.0-latest"
-                    for wp in $WORKER_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${wp} "sudo touch /etc/docker/daemon.json && jq -n '{"insecure-registries": $ARGS.positional}' --args "${HOST1}:8080" > /etc/docker/daemon.json && systemctl restart docker && sleep 240 && docker pull '${CORTX_SERVER_IMAGE}' && docker pull '${CORTX_DATA_IMAGE}' && docker pull '${CORTX_CONTROL_IMAGE}'";done
+                    for wp in $WORKER_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${wp} "sudo docker pull '${CORTX_SERVER_IMAGE}' && docker pull '${CORTX_DATA_IMAGE}' && docker pull '${CORTX_CONTROL_IMAGE}'";done
                     popd
             '''
             }
