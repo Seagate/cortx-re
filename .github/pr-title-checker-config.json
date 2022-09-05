@@ -1,6 +1,6 @@
 {
     "LABEL": {
-      "name": "Check Failed - PR Title",
+      "name": "Check Failed - Invalid PR Title Prefix",
       "color": "EEEEEE"
     },
     "CHECKS": {
@@ -9,7 +9,7 @@
     },
     "MESSAGES": {
       "success": "PR Title Verified Successfully",
-      "failure": "Failed to verify PR title",
+      "failure": "PR Title prefix is not valid. for open source contributors prefix PR title in format `COMMUNITY: <PR Title>`, for Seagate employees, prefix PR title with Jira ID in format `CORTX-<% digit JIRA ID>: <PR Title>`",
       "notice": ""
     }
 }
