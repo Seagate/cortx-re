@@ -97,16 +97,16 @@ flex  \
 dbus-devel \
 expect \
 rpm-sign \
-genisoimage ; if [[ $OS_TYPE == "centos" ]]; then yum -y install python3{,-{devel,pip,setuptools}} \
+genisoimage ; if [[ $OS_TYPE == "centos" ]]; then yum -y install python38{,-{devel,pip,setuptools}} \
 sclo-git212 \
-python-Levenshtein \
-python-pep8 \
+python38-Levenshtein \
+python38-pep8 \
 yum-priorities \
 redhat-ls && yum clean all \
-&& rm -rf /var/cache/yum ; elif [[ $OS_TYPE == "rockylinux" ]]; then dnf -y install python3{,-{devel,pip,setuptools}} \
+&& rm -rf /var/cache/yum ; elif [[ $OS_TYPE == "rockylinux" ]]; then dnf -y install python38{,-{devel,pip,setuptools}} \
 yum-utils \
-python3-Levenshtein \
-python3-pycodestyle \
+python38-Levenshtein \
+python38-pycodestyle \
 glibc-langpack-en \
 glibc-locale-source \
 pinentry \

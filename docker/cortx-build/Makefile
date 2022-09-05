@@ -262,7 +262,7 @@ _cortx-posix_build:
 _cortx-py-utils_build:
 	@echo "***************  Building cortx-py-utils package *********************"
 	pushd cortx-workspace/cortx-utils/ && \
-		yum install python36-devel -y && \
+		yum install python38-devel -y && \
 		./jenkins/build.sh -v ${RELEASE_VERSION} -b ${BUILD_ID} && \
 		./statsd-utils/jenkins/build.sh -b ${BUILD_ID} && \
 		rm -rf ${RPM_DIR}/cortx-py-utils*.rpm && \
@@ -274,8 +274,8 @@ _cortx-py-utils_build:
 _cortx-py-utils_install:
 	@echo "***************  Installing cortx-py-utils package *********************"
 	pushd cortx-workspace/cortx-utils/py-utils && \
-		yum install python3-pip gcc python3-devel -y && \
-		if [[ $$(cat /etc/redhat-release) =~ "Rocky" ]]; then yum erase python3-PyYAML -y ;else yum erase python36-PyYAML -y ; fi && \
+		yum install python38-pip gcc python38-devel -y && \
+		if [[ $$(cat /etc/redhat-release) =~ "Rocky" ]]; then yum erase python38-PyYAML -y ;else yum erase python38-PyYAML -y ; fi && \
 		pip3 install -r python_requirements.txt && \
 		pip3 install -r python_requirements.ext.txt && \
 		yum localinstall -y ${RPM_DIR}/cortx-py-utils*noarch.rpm && \
@@ -291,7 +291,7 @@ _cortx-py-utils_install:
 _cortx-management-portal_prereq:
 	@echo "***************  Installing cortx-management-portal Prereqsites *********************"
 	pushd cortx-workspace/cortx-management-portal && \
-		if [[ $$(cat /etc/redhat-release) =~ "Rocky" ]]; then yum localinstall -y ${RPM_DIR}/cortx-provisioner*.noarch.rpm ;else yum localinstall ${RPM_DIR}/cortx-prvsnr*.rpm ${RPM_DIR}/python36-cortx-prvsnr*.rpm ; fi && \
+		if [[ $$(cat /etc/redhat-release) =~ "Rocky" ]]; then yum localinstall -y ${RPM_DIR}/cortx-provisioner*.noarch.rpm ;else yum localinstall ${RPM_DIR}/cortx-prvsnr*.rpm ${RPM_DIR}/python38-cortx-prvsnr*.rpm ; fi && \
         pip3.6 install pyinstaller==3.5 && \
 	popd || (echo "ERROR: cortx-management-portal source code is not available in cortx-workspace. Exiting..."; exit 1)
 
@@ -319,7 +319,7 @@ _cortx-manager_prereq:
 	@echo "***************  Installing cortx-manager Prereqsites *********************"
 
 	pushd cortx-workspace/cortx-manager && \
-		if [[ $$(cat /etc/redhat-release) =~ "Rocky" ]]; then yum localinstall -y ${RPM_DIR}/cortx-provisioner*.noarch.rpm ;else yum localinstall -y ${RPM_DIR}/cortx-prvsnr*.rpm ${RPM_DIR}/python36-cortx-prvsnr*.rpm ; fi && \
+		if [[ $$(cat /etc/redhat-release) =~ "Rocky" ]]; then yum localinstall -y ${RPM_DIR}/cortx-provisioner*.noarch.rpm ;else yum localinstall -y ${RPM_DIR}/cortx-prvsnr*.rpm ${RPM_DIR}/python38-cortx-prvsnr*.rpm ; fi && \
         pip3.6 install pyinstaller==3.5 && \
 	popd || (echo "ERROR: cortx-manager source code is not available in cortx-workspace. Exiting..."; exit 1)
 
@@ -346,14 +346,14 @@ _prvsnr_prereq:
 	@echo "***************  Installing cortx-prvsnr Prereqsites *********************"
 
 	pushd cortx-workspace/cortx-prvsnr/ && \
-		if [[ $$(cat /etc/redhat-release) =~ "Rocky" ]]; then yum install -y python3 ;else yum install -y python ; fi && \
+		if [[ $$(cat /etc/redhat-release) =~ "Rocky" ]]; then yum install -y python38 ;else yum install -y python ; fi && \
 	popd || (echo "ERROR: cortx-prvsnr codebase is not available in cortx-workspace.Exiting..."; exit 1)
 
 _prvsnr_build:
 	@echo "***************  Building cortx-prvsnr RPMS *********************"
 	
 	pushd cortx-workspace/cortx-prvsnr/ && \
-		rm -rf dist/*.rpm ${RPM_DIR}/cortx-pr*.rpm ${RPM_DIR}/python36-cortx-prvsnr*.rpm ${RPM_DIR}/python36-cortx-setup*.rpm && \
+		rm -rf dist/*.rpm ${RPM_DIR}/cortx-pr*.rpm ${RPM_DIR}/python38-cortx-prvsnr*.rpm ${RPM_DIR}/python38-cortx-setup*.rpm && \
 		if [[ $$(cat /etc/redhat-release) =~ "Rocky" ]]; then \
 			if [ -f ./jenkins/build.sh ]; then bash ./jenkins/build.sh -v ${RELEASE_VERSION} -b ${BUILD_ID} && mv ./dist/cortx-provisioner*.rpm ${RPM_DIR} ; fi ; else sh ./devops/rpms/buildrpm.sh -g "$$(git rev-parse --short HEAD)" -e ${RELEASE_VERSION} -b "${BUILD_ID}" && \
 			sh ./cli/buildrpm.sh -g "$$(git rev-parse --short HEAD)" -e ${RELEASE_VERSION} -b "${BUILD_ID}" && \
@@ -405,7 +405,7 @@ _ha_prereq:
 	
 	pushd "cortx-workspace/cortx-ha" && \
 		yum clean all;rm -rf /var/cache/yum && \
-		yum erase python36-PyYAML -y && \
+		yum erase python38-PyYAML -y && \
 		bash ./jenkins/cicd/cortx-ha-dep.sh  && \
 		pip3 install numpy && \
 	popd || (echo "ERROR: cortx-ha source code is not available in cortx-workspace. Exiting..."; exit 1)
