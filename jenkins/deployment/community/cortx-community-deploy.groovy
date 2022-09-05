@@ -9,7 +9,7 @@ pipeline {
         timeout(time: 360, unit: 'MINUTES')
         timestamps()
         disableConcurrentBuilds()
-        buildDiscarder(logRotator(daysToKeepStr: '30', numToKeepStr: '20'))
+        buildDiscarder(logRotator(daysToKeepStr: '30', numToKeepStr: '10'))
         ansiColor('xterm')
     }
 
@@ -126,7 +126,22 @@ pipeline {
                 pushd solutions/community-deploy/cloud/AWS
                     export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
                     export HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
-                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" "sudo -- sh -c 'pushd /home/centos/cortx-re/solutions/kubernetes && ./cluster-setup.sh true && sed -i 's,cortx-docker.colo.seagate.com,${HOST1}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 240'"
+                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" "sudo -- sh -c 'pushd /home/centos/cortx-re/solutions/kubernetes && ./cluster-setup.sh true && sed -i 's,cortx-docker.colo.seagate.com,${HOST1}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 120'"
+                    popd
+            '''
+            }
+        }
+        stage('Generate locally build cortx images') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'Generate locally build cortx images on worker nodes', script: '''
+                pushd solutions/community-deploy/cloud/AWS
+                    export WORKER_IP=$(cat ip_public.txt | jq '.[1]','.[2]' | tr -d '",[]')
+                    export HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
+                    export CORTX_SERVER_IMAGE="${HOST1}:8080/seagate/cortx-rgw:2.0.0-latest"
+                    export CORTX_DATA_IMAGE="${HOST1}:8080/seagate/cortx-data:2.0.0-latest"
+                    export CORTX_CONTROL_IMAGE="${HOST1}:8080/seagate/cortx-control:2.0.0-latest"
+                    for wp in $WORKER_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${wp} "sudo sed -i 's,cortx-docker.colo.seagate.com,${HOST1}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 240 && docker pull '${CORTX_SERVER_IMAGE}' && docker pull '${CORTX_DATA_IMAGE}' && docker pull '${CORTX_CONTROL_IMAGE}'";done
                     popd
             '''
             }
@@ -134,9 +149,8 @@ pipeline {
         stage('Deploy multi-node cortx cluster') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Deploying multi-node cortx cluster by locally generating images on worker nodes', script: '''
+                sh label: 'Deploying multi-node cortx cluster by locally generating images', script: '''
                 pushd solutions/community-deploy/cloud/AWS
-                    export WORKER_IP=$(cat ip_public.txt | jq '.[1]','.[2]' | tr -d '",[]')
                     export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
                     export HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
                     export SOLUTION_CONFIG_TYPE='automated'
@@ -144,7 +158,6 @@ pipeline {
                     export CORTX_SERVER_IMAGE="${HOST1}:8080/seagate/cortx-rgw:2.0.0-latest"
                     export CORTX_DATA_IMAGE="${HOST1}:8080/seagate/cortx-data:2.0.0-latest"
                     export CORTX_CONTROL_IMAGE="${HOST1}:8080/seagate/cortx-control:2.0.0-latest"
-                    for wp in $WORKER_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${wp} "sudo -- sh -c 'sed -i 's,cortx-docker.colo.seagate.com,${HOST1}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 240 && docker pull ${CORTX_SERVER_IMAGE} && docker pull ${CORTX_DATA_IMAGE} && docker pull ${CORTX_CONTROL_IMAGE}'";done
                     ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" 'pushd /home/centos/cortx-re/solutions/kubernetes && export CORTX_SERVER_IMAGE='${CORTX_SERVER_IMAGE}' && export CORTX_DATA_IMAGE='${CORTX_DATA_IMAGE}' && export CORTX_CONTROL_IMAGE='${CORTX_CONTROL_IMAGE}' && sudo env SOLUTION_CONFIG_TYPE='${SOLUTION_CONFIG_TYPE}' env CORTX_SERVER_IMAGE='${CORTX_SERVER_IMAGE}' env CORTX_CONTROL_IMAGE='${CORTX_CONTROL_IMAGE}' env CORTX_DATA_IMAGE='${CORTX_DATA_IMAGE}' env COMMUNITY_USE='${COMMUNITY_USE}' ./cortx-deploy.sh --cortx-cluster'
                     popd
             '''
