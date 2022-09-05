@@ -141,7 +141,7 @@ pipeline {
                     export CORTX_SERVER_IMAGE="${HOST1}:8080/seagate/cortx-rgw:2.0.0-0"
                     export CORTX_DATA_IMAGE="${HOST1}:8080/seagate/cortx-data:2.0.0-0"
                     export CORTX_CONTROL_IMAGE="${HOST1}:8080/seagate/cortx-control:2.0.0-0"
-                    for wp in $WORKER_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${wp} "sudo -- sh -c 'sed -i 's,cortx-docker.colo.seagate.com,${HOST1}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 240 && docker pull '${CORTX_SERVER_IMAGE}' && docker pull '${CORTX_DATA_IMAGE}' && docker pull '${CORTX_CONTROL_IMAGE}''";done
+                    for wp in $WORKER_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${wp} "sudo -- sh -c 'sed -i 's,cortx-docker.colo.seagate.com,${HOST1}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 240 && docker pull ${CORTX_SERVER_IMAGE} && docker pull ${CORTX_DATA_IMAGE} && docker pull ${CORTX_CONTROL_IMAGE}'";done
                     popd
             '''
             }
@@ -158,7 +158,7 @@ pipeline {
                     export CORTX_SERVER_IMAGE="${HOST1}:8080/seagate/cortx-rgw:2.0.0-0"
                     export CORTX_DATA_IMAGE="${HOST1}:8080/seagate/cortx-data:2.0.0-0"
                     export CORTX_CONTROL_IMAGE="${HOST1}:8080/seagate/cortx-control:2.0.0-0"
-                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" 'pushd /home/centos/cortx-re/solutions/kubernetes && export CORTX_SERVER_IMAGE='${CORTX_SERVER_IMAGE}' && export CORTX_DATA_IMAGE='${CORTX_DATA_IMAGE}' && export CORTX_CONTROL_IMAGE='${CORTX_CONTROL_IMAGE}' && sudo env SOLUTION_CONFIG_TYPE='${SOLUTION_CONFIG_TYPE}' env CORTX_SERVER_IMAGE='${CORTX_SERVER_IMAGE}' env CORTX_CONTROL_IMAGE='${CORTX_CONTROL_IMAGE}' env CORTX_DATA_IMAGE='${CORTX_DATA_IMAGE}' env COMMUNITY_USE='${COMMUNITY_USE}' ./cortx-deploy.sh --cortx-cluster'
+                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" 'pushd /home/centos/cortx-re/solutions/kubernetes && export CORTX_SERVER_IMAGE=${CORTX_SERVER_IMAGE} && export CORTX_DATA_IMAGE=${CORTX_DATA_IMAGE} && export CORTX_CONTROL_IMAGE=${CORTX_CONTROL_IMAGE} && sudo env SOLUTION_CONFIG_TYPE='${SOLUTION_CONFIG_TYPE}' env CORTX_SERVER_IMAGE=${CORTX_SERVER_IMAGE} env CORTX_CONTROL_IMAGE=${CORTX_CONTROL_IMAGE} env CORTX_DATA_IMAGE=${CORTX_DATA_IMAGE} env COMMUNITY_USE='${COMMUNITY_USE}' ./cortx-deploy.sh --cortx-cluster'
                     popd
             '''
             }
