@@ -137,7 +137,7 @@ pipeline {
         stage('Deploy multi-node cortx cluster') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Deploying multi-node cortx cluster and pull locally generated cortx images on worker nodes', script: '''
+                sh label: 'Deploying multi-node cortx cluster by locally generating images on worker nodes', script: '''
                 pushd solutions/community-deploy/cloud/AWS
                     export WORKER_IP=$(cat ip_public.txt | jq '.[1]','.[2]' | tr -d '",[]')
                     export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
