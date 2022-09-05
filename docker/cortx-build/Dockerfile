@@ -99,14 +99,14 @@ expect \
 rpm-sign \
 genisoimage ; if [[ $OS_TYPE == "centos" ]]; then yum -y install python38{,-{devel,pip,setuptools}} \
 sclo-git212 \
-python38-Levenshtein \
-python38-pep8 \
+python3-Levenshtein \
+python3-pep8 \
 yum-priorities \
 redhat-ls && yum clean all \
 && rm -rf /var/cache/yum ; elif [[ $OS_TYPE == "rockylinux" ]]; then dnf -y install python38{,-{devel,pip,setuptools}} \
 yum-utils \
-python38-Levenshtein \
-python38-pycodestyle \
+python3-Levenshtein \
+python3-pycodestyle \
 glibc-langpack-en \
 glibc-locale-source \
 pinentry \
