@@ -276,8 +276,8 @@ _cortx-py-utils_install:
 	pushd cortx-workspace/cortx-utils/py-utils && \
 		yum install python38-pip gcc python38-devel -y && \
 		if [[ $$(cat /etc/redhat-release) =~ "Rocky" ]]; then yum erase python38-PyYAML -y ;else yum erase python38-PyYAML -y ; fi && \
-		pip3 install -r python_requirements.txt && \
-		pip3 install -r python_requirements.ext.txt && \
+		pip3.8 install -r python_requirements.txt && \
+		pip3.8 install -r python_requirements.ext.txt && \
 		yum localinstall -y ${RPM_DIR}/cortx-py-utils*noarch.rpm && \
 	popd || (echo "ERROR: Failed to install cortx-utils package. Exiting..."; exit 1) 	
 
@@ -292,7 +292,7 @@ _cortx-management-portal_prereq:
 	@echo "***************  Installing cortx-management-portal Prereqsites *********************"
 	pushd cortx-workspace/cortx-management-portal && \
 		if [[ $$(cat /etc/redhat-release) =~ "Rocky" ]]; then yum localinstall -y ${RPM_DIR}/cortx-provisioner*.noarch.rpm ;else yum localinstall ${RPM_DIR}/cortx-prvsnr*.rpm ${RPM_DIR}/python38-cortx-prvsnr*.rpm ; fi && \
-        pip3.6 install pyinstaller==3.5 && \
+        pip3.8 install pyinstaller==3.5 && \
 	popd || (echo "ERROR: cortx-management-portal source code is not available in cortx-workspace. Exiting..."; exit 1)
 
 _cortx-management-portal_build:
@@ -320,7 +320,7 @@ _cortx-manager_prereq:
 
 	pushd cortx-workspace/cortx-manager && \
 		if [[ $$(cat /etc/redhat-release) =~ "Rocky" ]]; then yum localinstall -y ${RPM_DIR}/cortx-provisioner*.noarch.rpm ;else yum localinstall -y ${RPM_DIR}/cortx-prvsnr*.rpm ${RPM_DIR}/python38-cortx-prvsnr*.rpm ; fi && \
-        pip3.6 install pyinstaller==3.5 && \
+        pip3.8 install pyinstaller==3.5 && \
 	popd || (echo "ERROR: cortx-manager source code is not available in cortx-workspace. Exiting..."; exit 1)
 
 _cortx-manager_build:
@@ -407,7 +407,7 @@ _ha_prereq:
 		yum clean all;rm -rf /var/cache/yum && \
 		yum erase python38-PyYAML -y && \
 		bash ./jenkins/cicd/cortx-ha-dep.sh  && \
-		pip3 install numpy && \
+		pip3.8 install numpy && \
 	popd || (echo "ERROR: cortx-ha source code is not available in cortx-workspace. Exiting..."; exit 1)
 
 _ha_build:
