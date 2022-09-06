@@ -217,7 +217,7 @@ pipeline {
                 def toEmail = ''
                 def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
                 if ( manager.build.result.toString() == 'FAILURE' ) {
-                    toEmail = 'mukul.malhotra@seagate.com'
+                    toEmail = 'CORTX.DevOps.RE@seagate.com'
                     recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
                 }
                 emailext(
