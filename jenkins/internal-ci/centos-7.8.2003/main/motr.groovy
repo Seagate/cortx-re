@@ -110,7 +110,7 @@ pipeline {
                             try {
 							    def s3Build = build job: 'S3server', wait: true
 							    env.S3_BUILD_NUMBER = s3Build.number
-                            }catch (err) {
+                            } catch (err) {
                                 build_stage = env.STAGE_NAME
                                 error "Failed to Build S3Server"
                             }
@@ -203,7 +203,7 @@ pipeline {
 
 	post {
 		always {
-			script{    	
+			script {    	
 				echo 'Cleanup Workspace.'
 				deleteDir() /* clean up our workspace */
 
@@ -219,7 +219,7 @@ pipeline {
 
 				def toEmail = ""
 				def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
-				if( manager.build.result.toString() == "FAILURE" ) {
+				if ( manager.build.result.toString() == "FAILURE" ) {
 					toEmail = "cortx.motr@seagate.com,shailesh.vaidya@seagate.com"
 					recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
 				}
