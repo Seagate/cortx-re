@@ -101,7 +101,7 @@ pipeline {
 						  cp ../alexignore .alexignore
 						  #cp /root/alexrc .alexrc
 						  #echo 'CORVault, lyve cloud.' >foo.txt
-						  repo_list=`echo ''' + words +'''`
+						  repo_list=`echo ''' + words + '''`
 						  scan_words=`echo ''' + scan_list + '''`						  
 						  repo_list=${repo_list//,/\\\\|}
 						  scan_words=${scan_words//,/\\\\|}
