@@ -33,10 +33,11 @@ SCRIPT_DIR="${SCRIPT_PATH%/*}"
 
 function usage() {
     cat << HEREDOC
-Usage : $0 [--deploy-perfline, --perfline-workloads]
+Usage : $0 [--deploy-perfline, --perfline-workloads, --final-status]
 where,
-    --deploy-perfline - Deploy Perfline on provided nodes.
+    --deploy-perfline    - Deploy Perfline on provided nodes.
     --perfline-workloads - Perform pre-defined perfline workloads.
+    --final-status       - Final status of perfline workloads.
 HEREDOC
 }
 
@@ -49,10 +50,10 @@ fi
 
 function check_params() {
     if [ -z "$SEAGATE_TOOLS_REPO" ]; then echo "SEAGATE-TOOLS Repo not provided. Using default: Seagate/seagate-tools"; SEAGATE_TOOLS_REPO="Seagate/seagate-tools"; fi
-    if [ -z "$PERFLINE_WORKLOADS_DIR" ]; then echo "Perfline pre-defined workload directory"; PERFLINE_WORKLOADS_DIR="workload/jenkins"; fi
+    if [ -z "$PERFLINE_WORKLOADS_DIR" ]; then echo "Perfline pre-defined workload directory"; PERFLINE_WORKLOADS_DIR="/root/perfline/wrapper/workload/jenkins/mini_workload"; fi
     if [ -z "$CORTX_SCRIPTS_REPO" ]; then echo "CORTX_SCRIPTS_REPO not provided. Using default: Seagate/cortx-k8s ";CORTX_SCRIPTS_REPO="Seagate/cortx-k8s"; fi
     if [ -z "$CORTX_SCRIPTS_BRANCH" ]; then echo "CORTX_SCRIPTS_BRANCH not provided. Using default: v0.12.0";CORTX_SCRIPTS_BRANCH="v0.12.0"; fi
-    if [ -z "$SEAGATE_TOOLS_BRANCH" ]; then echo "PERFLINE_VERSION not provided. Using defautl: perfline_v0.4.0"; SEAGATE_TOOLS_BRANCH="perfline_v0.4.0"; fi
+    if [ -z "$SEAGATE_TOOLS_BRANCH" ]; then echo "PERFLINE_VERSION not provided. Using defautl: main"; SEAGATE_TOOLS_BRANCH="main"; fi
     if [ -z "$CORTX_SERVER_IMAGE" ]; then echo "CORTX_SERVER_IMAGE not provided. Using default : ghcr.io/seagate/cortx-rgw:2.0.0-latest"; CORTX_SERVER_IMAGE=ghcr.io/seagate/cortx-rgw:2.0.0-latest; fi
     if [ -z "$CORTX_DATA_IMAGE" ]; then echo "CORTX_DATA_IMAGE not provided. Using default : ghcr.io/seagate/cortx-data:2.0.0-latest"; CORTX_DATA_IMAGE=ghcr.io/seagate/cortx-data:2.0.0-latest; fi
     if [ -z "$CORTX_CONTROL_IMAGE" ]; then echo "CORTX_CONTROL_IMAGE not provided. Using default : ghcr.io/seagate/cortx-control:2.0.0-latest"; CORTX_CONTROL_IMAGE=ghcr.io/seagate/cortx-control:2.0.0-latest; fi
@@ -123,9 +124,9 @@ function setup_cluster() {
     cortx_deployment_type
 
     pushd $SCRIPT_DIR/../../solutions/kubernetes
-    scp_all_nodes  cortx-deploy-functions.sh functions.sh $SOLUTION_CONFIG
+    scp_all_nodes  cortx-deploy-functions.sh functions.sh
     popd
-    scp_all_nodes install-perfline.sh $SOLUTION_CONFIG
+    scp_all_nodes install-perfline.sh $HOST_FILE $SOLUTION_CONFIG
 
     add_secondary_separator "Setup primary node $PRIMARY_NODE"
     ssh_primary_node "
@@ -161,12 +162,11 @@ function setup_cluster() {
     export WORKLOADS_DIR=$PERFLINE_WORKLOADS_DIR &&
     /var/tmp/install-perfline.sh --install-perfline"
 
+
     add_primary_separator "\tPrint Perfline Status"
-    rm -rf /var/tmp/perfline-status.txt
-    ssh_primary_node "systemctl status perfline" | tee /var/tmp/perfline-status.txt
+    ssh_primary_node "systemctl status perfline" > /var/tmp/perfline-status.txt
     add_primary_separator "\tPrint Perfline-ui Status"
-    rm -rf /var/tmp/perfline-ui-status.txt
-    ssh_primary_node "systemctl status perfline-ui" | tee /var/tmp/perfline-ui-status.txt
+    ssh_primary_node "systemctl status perfline-ui" > /var/tmp/perfline-ui-status.txt
 }
 
 function perfline-workloads() {
@@ -183,6 +183,11 @@ function perfline-workloads() {
 
 }
 
+function check_perfline_status() {
+    add_primary_separator "Status of perfline workloads"
+    ssh_primary_node "/var/tmp/install-perfline.sh --final-status"
+}
+
 case $ACTION in
     --deploy-perfline)
         check_params
@@ -190,6 +195,9 @@ case $ACTION in
     ;;
     --perfline-workloads)
         perfline-workloads
+    ;;
+    --final-status)
+        check_perfline_status
     ;;
     *)
         echo "ERROR : Please provide a valid option"
