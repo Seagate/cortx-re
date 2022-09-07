@@ -65,7 +65,6 @@ pipeline {
 
                 sh label: 'Install cortx-prereq', script: '''
                     CORTX_UTILS_REPO_OWNER=$(echo $CORTX_UTILS_URL | cut -d "/" -f4)
-                    yum erase python36-PyYAML -y
                     yum install -y gcc python3 python3-pip python3-devel python3-setuptools openssl-devel libffi-devel python3-dbus
                     pip3 install  --no-cache-dir --trusted-host cortx-storage.colo.seagate.com -i http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/$python_deps/ -r https://raw.githubusercontent.com/${CORTX_UTILS_REPO_OWNER}/cortx-utils/${CORTX_UTILS_BRANCH}/py-utils/python_requirements.txt -r https://raw.githubusercontent.com/${CORTX_UTILS_REPO_OWNER}/cortx-utils/${CORTX_UTILS_BRANCH}/py-utils/python_requirements.ext.txt
                     rm -rf /etc/pip.conf

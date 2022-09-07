@@ -64,7 +64,6 @@ pipeline {
 
                 sh label: 'Install cortx-prereq', script: '''
                     CORTX_UTILS_REPO_OWNER=$(echo $CORTX_UTILS_URL | cut -d "/" -f4)
-                    yum erase python36-PyYAML -y
                     cat <<EOF >>/etc/pip.conf
 [global]
 timeout: 60
