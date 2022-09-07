@@ -111,6 +111,17 @@ pipeline {
                 '''
             }
         }
+
+        stage ('Basic Management Path Check') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'Basic Management Path Check', script: '''
+                    pushd solutions/kubernetes/
+                        ./cortx-deploy.sh --mangement-health-check
+                    popd
+                '''
+            }
+        }
     }
 
     post {
