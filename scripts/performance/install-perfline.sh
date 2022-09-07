@@ -20,21 +20,24 @@
 set -euo pipefail
 source /var/tmp/functions.sh
 
-HOST_FILE=$(pwd)/hosts
+HOST_FILE=/var/tmp/hosts
 SSH_KEY_FILE=/root/.ssh/id_rsa
 ALL_NODES=$(cat "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
 PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
 PASSWORD=$(head -1 "$HOST_FILE" | awk -F[,] '{print $3}' | cut -d'=' -f2)
+PERFLINE_LOG="/var/log/perfline.log"
 
-Installed_Perfline_Dir="/root/perfline/wrapper"
-temp_task="/tmp/task_list.txt"
+INSTALLED_PERFLINE_DIR="/root/perfline/wrapper"
+temp_task="/var/tmp/perfline_task_list.txt"
+task_status="/var/tmp/perfline_task_status.txt"
 
 function usage() {
     cat << HEREDOC
-Usage : $0 [--install-perfline, --run-workloads]
+Usage : $0 [--install-perfline, --run-workloads, --final-status]
 where,
     --install-perfline - Deploy Perfline on provided nodes.
-    --run-workloads - Perform pre-defined workloads.
+    --run-workloads    - Perform pre-defined workloads.
+    --final-status     - Final status for perfline.
 HEREDOC
 }
 
@@ -52,7 +55,7 @@ function update_inventory_host()
     COUNTER=1
     for node in $ALL_NODES;
     do
-        sed -i "/\[nodes\]/a srvnode-$COUNTER ansible_host=$node" $host_file
+        sed -i "/\[client\]/i srvnode-$COUNTER ansible_host=$node" $host_file
         COUNTER=$((COUNTER+1))
     done
     sed -i "s/client-1.*/client-1 ansible_host=$PRIMARY_NODE/g" $host_file
@@ -77,10 +80,14 @@ function install_perfline()
 
 function trigger_workloads()
 {
-    rm -rf "$temp_task"
+    if [ -f "$temp_task" ]
+    then
+        rm -f "$temp_task"
+    fi
+
     for workload_file in $(ssh_primary_node ls "$WORKLOADS_DIR")
     do
-        ssh_primary_node "cd $Installed_Perfline_Dir; ./perfline.py -a < $WORKLOADS_DIR/$workload_file" >> "$temp_task"
+        ssh_primary_node "cd $INSTALLED_PERFLINE_DIR; ./perfline.py -a < $WORKLOADS_DIR/$workload_file" >> "$temp_task"
     done
     while read -r line; do
         local task_id=$(echo -e "$line" | awk -F ' ' '{ print $2}' | tr -d "\"|}|,")
@@ -89,12 +96,59 @@ function trigger_workloads()
 
 }
 
+function waiting_for_task_completion()
+{
+    while read -r line; do
+        local task_id=$(echo -e "$line" | awk -F ' ' '{ print $2}' | tr -d "\"|}|,")
+        local flag=true
+        while "$flag"
+        do
+           local task_list=$(ssh "$PRIMARY_NODE" "cd $INSTALLED_PERFLINE_DIR; ./perfline.py -l")
+           sed "/tasks.worker_task: $task_id p=1 executed/q" <(tail -f /var/log/perfline.log )
+           if [ $(grep -c "$task_id" <<< "$task_list") -ne 1 ]
+           then
+               echo -e "Task completed for Task_ID: $task_id"
+               flag=false
+           fi
+        done
+
+    done <"$temp_task"
+}
+
+# Check the status of task
+function check_task_status()
+{
+    if [ -f "$task_status" ]
+    then
+        rm -f "$task_status"
+    fi
+    touch "$task_status"
+    while read -r line; do
+        local task_id=$(echo -e "$line" | awk -F ' ' '{ print $2}' | tr -d "\"|}|,")
+        local task_detail=$(ssh "$PRIMARY_NODE" "cd $INSTALLED_PERFLINE_DIR; ./perfline.py -r" | grep "$task_id")
+        if [ $(grep -c '"status": "SUCCESS"' <<< "$task_detail") -eq 1 ]
+        then
+            echo "$task_id               : SUCCESS" >> "$task_status"
+        fi
+    done <"$temp_task"
+    if [ -f "$task_status" ]
+    then
+        cat "$task_status"
+    else
+        exit 1
+    fi
+}
+
 case "$ACTION" in
     --install-perfline)
         install_perfline
     ;;
     --run-workloads)
         trigger_workloads
+        waiting_for_task_completion
+    ;;
+    --final-status)
+        check_task_status
     ;;
     *)
         echo "ERROR : Please provide a valid option"
