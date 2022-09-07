@@ -52,9 +52,7 @@ function docker_check() {
         else
                 add_common_separator "Docker is not installed. Installing Docker engine"
                 rm -rf /etc/yum.repos.d/download.docker.com_linux_centos_7_x86_64_stable_.repo docker-ce.repo
-                yum install -y yum-utils && yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo -y && yum install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
-                sleep 30
-                systemctl start docker
+                yum install -y yum-utils && yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo -y && yum install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin && sleep 30 && systemctl start docker && systemctl enable docker
         fi
 }
 docker_check
