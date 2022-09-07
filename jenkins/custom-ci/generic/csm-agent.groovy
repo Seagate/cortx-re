@@ -38,6 +38,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 script { build_stage = env.STAGE_NAME }
+                sh 'python3 --version'
                 dir('cortx-manager') {
                     checkout([$class: 'GitSCM', branches: [[name: "${CSM_AGENT_BRANCH}"]], doGenerateSubmoduleConfigurations: false,  extensions: [[$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${CSM_AGENT_URL}"]]])
                 }

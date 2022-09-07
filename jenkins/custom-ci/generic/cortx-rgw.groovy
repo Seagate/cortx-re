@@ -48,6 +48,7 @@ pipeline {
             when { expression { params.BUILD_LATEST_CORTX_RGW == 'yes' } }
             steps {
                 cleanWs()
+                sh 'python3 --version'
                 script {
                     checkout([$class: 'GitSCM', branches: [[name: "${CORTX_RE_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${CORTX_RE_URL}"]]])
                 }

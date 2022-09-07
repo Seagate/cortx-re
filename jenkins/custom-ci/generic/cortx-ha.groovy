@@ -37,6 +37,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 script { build_stage = env.STAGE_NAME }
+                sh 'python3 --version'
                 dir ('cortx-ha') {
                     checkout([$class: 'GitSCM', branches: [[name: "$HA_BRANCH"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: false, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "$HA_URL"]]])
                 }

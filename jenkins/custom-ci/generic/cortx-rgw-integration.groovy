@@ -42,7 +42,8 @@ pipeline {
         stage('Checkout') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                    checkout([$class: 'GitSCM', branches: [[name: "${CORTX_RGW_INTEGRATION_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${CORTX_RGW_INTEGRATION_URL}"]]])
+                sh 'python3 --version'
+                checkout([$class: 'GitSCM', branches: [[name: "${CORTX_RGW_INTEGRATION_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${CORTX_RGW_INTEGRATION_URL}"]]])
             }
         }
 

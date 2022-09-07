@@ -123,6 +123,7 @@ pipeline {
         stage ("Build CORTX Utils") {
             steps {
                 script { build_stage = env.STAGE_NAME }
+                sh 'python3 --version'
                 script {
                     try {
                         def cortx_utils_build = build job: '/GitHub-custom-ci-builds/generic/custom-cortx-py-utils', wait: true,

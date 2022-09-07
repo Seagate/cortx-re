@@ -34,6 +34,7 @@ pipeline {
         stage('Checkout py-utils') {
             steps {
                 script { build_stage = env.STAGE_NAME }
+                sh 'python3 --version'
                 checkout([$class: 'GitSCM', branches: [[name: "${CORTX_UTILS_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${CORTX_UTILS_URL}"]]])
             }
         }
