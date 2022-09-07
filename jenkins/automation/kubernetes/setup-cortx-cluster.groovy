@@ -101,10 +101,10 @@ pipeline {
             }
         }
 
-        stage ('Basic I/O Test') {
+        stage ('Basic I/O Path Check') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Basic I/O Test', script: '''
+                sh label: 'Basic I/O Path Check', script: '''
                     pushd solutions/kubernetes/
                         ./cortx-deploy.sh --io-sanity
                     popd
