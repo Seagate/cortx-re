@@ -27,16 +27,17 @@ CORTX_MANAGER_PORT="8081"
 CORTX_MANAGER_ENDPOINT="https://$CORTX_MANAGER_IP:$CORTX_MANAGER_PORT"
 MANAGEMENT_CHECK_STATUS="management-path-status.txt"
 
-rm -f $MANAGEMENT_CHECK_STATUS
-
+#Function to execute API queries using curl
 function run_curl_query() {
-add_secondary_separator "Executing $1" | tee -a $MANAGEMENT_CHECK_STATUS
-HTTP_RESPONSE=$(curl -k -s -w "%{http_code}" $CORTX_MANAGER_ENDPOINT/$1 -o output.json)
-jq . output.json | tee -a $MANAGEMENT_CHECK_STATUS
-[ "$HTTP_RESPONSE" == "200" ] || (add_common_separator "ERROR: $1 execution failed. Exiting"; exit 1)
+    add_secondary_separator "Executing $1" | tee -a $MANAGEMENT_CHECK_STATUS
+    HTTP_RESPONSE=$(curl -k -s -w "%{http_code}" $CORTX_MANAGER_ENDPOINT/$1 -o output.json)
+    jq . output.json | tee -a $MANAGEMENT_CHECK_STATUS
+    [ "$HTTP_RESPONSE" == "200" ] || (add_common_separator "ERROR: $1 execution failed. Exiting"; exit 1)
 } 
 
+#Cleanup
+rm -f $MANAGEMENT_CHECK_STATUS
+
+#Execute API queries
 run_curl_query "api/v2/system/topology/nodes"
 run_curl_query "api/v2/system/topology/storage_sets"
-
-
