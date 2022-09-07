@@ -201,8 +201,8 @@ function update_solution_config(){
         yq e -i '.solution.storage_sets[0].storage[0].devices.metadata[0].size = "25Gi"' solution.yaml
         yq e -i '.solution.storage_sets[0].storage[0].devices.data[0].path = "/dev/sdd"' solution.yaml
         yq e -i '.solution.storage_sets[0].storage[0].devices.data[0].size = "25Gi"' solution.yaml
-        yq e -i '.solution.storage_sets[0].storage[0].devices.data[1].path = "/dev/sde"' solution.yaml
-        yq e -i '.solution.storage_sets[0].storage[0].devices.data[1].size = "25Gi"' solution.yaml
+        yq e -i '.solution.storage_sets[0].storage[0].devices.log[0].path = "/dev/sde"' solution.yaml
+        yq e -i '.solution.storage_sets[0].storage[0].devices.log[0].size = "25Gi"' solution.yaml
        
         yq e -i '.solution.storage_sets[0].storage[1].name = "cvg-02"' solution.yaml
         yq e -i '.solution.storage_sets[0].storage[1].type = "ios"' solution.yaml
@@ -210,8 +210,8 @@ function update_solution_config(){
         yq e -i '.solution.storage_sets[0].storage[1].devices.metadata[0].size = "25Gi"' solution.yaml
         yq e -i '.solution.storage_sets[0].storage[1].devices.data[0].path = "/dev/sdg"' solution.yaml
         yq e -i '.solution.storage_sets[0].storage[1].devices.data[0].size = "25Gi"' solution.yaml
-        yq e -i '.solution.storage_sets[0].storage[1].devices.data[1].path = "/dev/sdh"' solution.yaml
-        yq e -i '.solution.storage_sets[0].storage[1].devices.data[1].size = "25Gi"' solution.yaml
+        yq e -i '.solution.storage_sets[0].storage[1].devices.log[0].path = "/dev/sdh"' solution.yaml
+        yq e -i '.solution.storage_sets[0].storage[1].devices.log[0].size = "25Gi"' solution.yaml
     popd
 }        
 
