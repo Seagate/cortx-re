@@ -113,7 +113,8 @@ pinentry \
 kernel-abi-whitelists \
 libmodulemd \
 redhat-lsb && dnf clean all \
-&& rm -rf /var/cache/yum ; fi
+&& rm -rf /var/cache/yum ; fi \
+&& python3 -m pip install -U pip setuptools
 
 # enable Git from SLC repo (it's more up to date version)
 RUN if [[ $OS_TYPE == "centos" ]]; then ln -nsf /opt/rh/sclo-git212/root/bin/* /usr/local/bin/ && \
@@ -140,12 +141,6 @@ RUN bash /opt/install-node.sh v12.13.0 \
 RUN sh /opt/systemctl-replacement.sh \
 && rm -f /opt/systemctl-replacement.sh \
 && rm -f systemctl.py
-
-# For Provisioner
-RUN bash /opt/setup_fpm.sh ${OS_TYPE} \
-&& rm -f /opt/setup_fpm.sh && yum clean all \
-&& rm -rf /var/cache/yum \
-&& rm -rf rh-ruby23.sh
 
 # yum repo from GitHub Release 
 RUN bash /opt/set-githubrelease-repo.sh \
