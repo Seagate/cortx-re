@@ -192,7 +192,7 @@ function io-sanity() {
 function management-path-check() {
     add_primary_separator "\tSetting up Management Path Health Check"
     scp_primary_node management-path-check.sh
-    ssh_primary_node "/var/tmp/cortx-deploy-functions.sh --mangement-health-check"
+    ssh_primary_node "/var/tmp/cortx-deploy-functions.sh --mangement-health-check" | tee /var/tmp/management-path-status.txt
 }
 
 case $ACTION in

@@ -184,7 +184,7 @@ pipeline {
                 [ -f /var/tmp/cortx-cluster-status.txt ] && cp /var/tmp/cortx-cluster-status.txt $WORKSPACE/artifacts/
                 [ -f /var/tmp/management-path-status.txt ] && cp /var/tmp/management-path-status.txt $WORKSPACE/artifacts/
                 scp -q "$PRIMARY_NODE":/root/deploy-scripts/k8_cortx_cloud/solution.yaml $WORKSPACE/artifacts/
-            popd    
+            popd
             '''
             script {
                 // Archive Deployment artifacts in jenkins build
