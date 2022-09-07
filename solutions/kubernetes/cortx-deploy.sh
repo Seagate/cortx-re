@@ -36,7 +36,7 @@ where,
     --cortx-cluster - Deploy CORTX Cluster on provided nodes.
     --destroy-cluster  - Destroy CORTX cluster.
     --io-sanity - Perform IO sanity test.
-    ---mangement-health-check - Perform Management path health check.
+    --mangement-health-check - Perform Management path health check.
     --support-bundle - Collect support bundle logs.
 HEREDOC
 }
@@ -206,7 +206,7 @@ case $ACTION in
     --io-sanity)
         io-sanity
     ;;
-    ---mangement-health-check)
+    --mangement-health-check)
         management-path-check
     ;;
     --support-bundle)
