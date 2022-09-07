@@ -30,14 +30,14 @@ SOLUTION_CONFIG="/var/tmp/solution.yaml"
 
 function usage() {
     cat << HEREDOC
-Usage : $0 [--cortx-cluster, --setup-primary, --setup-worker, --status, --io-sanity, --destroy, --generate-logs]
+Usage : $0 [--cortx-cluster, --setup-primary, --setup-worker, --status, --io-sanity, --mangement-health-check, --destroy, --generate-logs]
 where,
     --cortx-cluster - Deploy Third-Party and CORTX components.
     --setup-primary - Setup k8 primary node for CORTX deployment.
     --setup-worker - Setup k8 worker node for CORTX deployment.
     --status - Print CORTX cluster status.
     --io-sanity - Perform IO sanity test.
-    ---mangement-health-check - Perform Management path health check.
+    --mangement-health-check - Perform Management path health check.
     --destroy - Destroy CORTX Cluster.
     --generate-logs - Generate support bundle logs. 
 HEREDOC
