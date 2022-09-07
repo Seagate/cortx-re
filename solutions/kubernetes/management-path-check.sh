@@ -25,19 +25,26 @@ source /var/tmp/functions.sh
 CORTX_MANAGER_IP=$(kubectl get svc | grep cortx-control-loadbal-svc | awk '{ print $3}')
 CORTX_MANAGER_PORT="8081"
 CORTX_MANAGER_ENDPOINT="https://$CORTX_MANAGER_IP:$CORTX_MANAGER_PORT"
-MANAGEMENT_CHECK_STATUS="management-path-status.txt"
+
+function validate_packages() {
+PACKAGE_LIST=$*
+for package in $PACKAGE_LIST; do rpm -q $package || yum install $package -y || (add_common_separator "Failed to install $package. Existing"; exit 1); done
+}
+
 
 #Function to execute API queries using curl
 function run_curl_query() {
-    add_secondary_separator "Executing $1" | tee -a $MANAGEMENT_CHECK_STATUS
+    add_secondary_separator "Executing $1"
     HTTP_RESPONSE=$(curl -k -s -w "%{http_code}" $CORTX_MANAGER_ENDPOINT/$1 -o output.json)
-    jq . output.json | tee -a $MANAGEMENT_CHECK_STATUS
+    jq . output.json
     [ "$HTTP_RESPONSE" == "200" ] || (add_common_separator "ERROR: $1 execution failed. Exiting"; exit 1)
 } 
 
 #Cleanup
 rm -f $MANAGEMENT_CHECK_STATUS
 
+#Validate and install required packages
+validate_packages jq curl
+
 #Execute API queries
-run_curl_query "api/v2/system/topology/nodes"
-run_curl_query "api/v2/system/topology/storage_sets"
+run_curl_query "api/v2/system/topology"
