@@ -188,7 +188,7 @@ function io-sanity() {
     ssh_primary_node "export CEPH_DEPLOYMENT=$CEPH_DEPLOYMENT && export DEPLOYMENT_METHOD=$DEPLOYMENT_METHOD && /var/tmp/cortx-deploy-functions.sh --io-sanity"
 }
 
-function  management-path-check() {
+function management-path-check() {
     add_primary_separator "\tSetting up Management Path Health Check"
     scp_primary_node management-path-check.sh
     ssh_primary_node "/var/tmp/cortx-deploy-functions.sh --mangement-health-check"
@@ -204,6 +204,9 @@ case $ACTION in
     ;;
     --io-sanity)
         io-sanity
+    ;;
+    ---mangement-health-check)
+        management-path-check
     ;;
     --support-bundle)
         support_bundle
