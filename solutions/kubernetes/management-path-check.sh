@@ -22,8 +22,8 @@ set -eo pipefail
 
 source /var/tmp/functions.sh
 
-CORTX_MANAGER_IP=$(kubectl get svc | grep cortx-control-loadbal-svc | awk '{ print $3}')
-CORTX_MANAGER_PORT="8081"
+CORTX_MANAGER_IP=$(kubectl get svc cortx-control -o=jsonpath='{.spec.clusterIP}')
+CORTX_MANAGER_PORT=$(kubectl get svc cortx-control -o=jsonpath='{.spec.ports[?(@.name=="control-https")].port}')
 CORTX_MANAGER_ENDPOINT="https://$CORTX_MANAGER_IP:$CORTX_MANAGER_PORT"
 
 function validate_packages() {
