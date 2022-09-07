@@ -151,9 +151,9 @@ function update_solution_config(){
         yq e -i '.solution.common.resource_allocation.kafka.resources.limits.cpu = "500m"' solution.yaml
 
         yq e -i '.solution.common.resource_allocation.hare.hax.resources.requests.memory = "256Mi"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.hare.hax.resources.requests.cpu = "400m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.hare.hax.resources.requests.cpu = "300m"' solution.yaml
         yq e -i '.solution.common.resource_allocation.hare.hax.resources.limits.memory = "768Mi"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.hare.hax.resources.limits.cpu = "800m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.hare.hax.resources.limits.cpu = "500m"' solution.yaml
 
         yq e -i '.solution.common.resource_allocation.data.motr.resources.requests.memory = "1Gi"' solution.yaml
         yq e -i '.solution.common.resource_allocation.data.motr.resources.requests.cpu = "500m"' solution.yaml
@@ -161,9 +161,9 @@ function update_solution_config(){
         yq e -i '.solution.common.resource_allocation.data.motr.resources.limits.cpu = "1000m"' solution.yaml
 
         yq e -i '.solution.common.resource_allocation.data.confd.resources.requests.memory = "256Mi"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.data.confd.resources.requests.cpu = "250m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.data.confd.resources.requests.cpu = "200m"' solution.yaml
         yq e -i '.solution.common.resource_allocation.data.confd.resources.limits.memory = "512Mi"' solution.yaml
-        yq e -i '.solution.common.resource_allocation.data.confd.resources.limits.cpu = "400m"' solution.yaml
+        yq e -i '.solution.common.resource_allocation.data.confd.resources.limits.cpu = "300m"' solution.yaml
 
         yq e -i '.solution.common.resource_allocation.server.rgw.resources.requests.memory = "1Gi"' solution.yaml
         yq e -i '.solution.common.resource_allocation.server.rgw.resources.requests.cpu = "500m"' solution.yaml
