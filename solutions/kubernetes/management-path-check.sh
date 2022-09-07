@@ -18,6 +18,8 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
+set -eo pipefail
+
 source /var/tmp/functions.sh
 
 CORTX_MANAGER_IP=$(kubectl get svc | grep cortx-control-loadbal-svc | awk '{ print $3}')
@@ -28,18 +30,13 @@ MANAGEMENT_CHECK_STATUS="management-path-status.txt"
 rm -f $MANAGEMENT_CHECK_STATUS
 
 function run_curl_query() {
-add_secondary_separator $1
-curl -k -s $CORTX_MANAGER_ENDPOINT/$2 | jq | tee -a $MANAGEMENT_CHECK_STATUS
-check_status "$1 execution failed. Exiting"
+add_secondary_separator "Executing $1" | tee -a $MANAGEMENT_CHECK_STATUS
+HTTP_RESPONSE=$(curl -k -s -w "%{http_code}" $CORTX_MANAGER_ENDPOINT/$1 -o output.json)
+jq . output.json | tee -a $MANAGEMENT_CHECK_STATUS
+[ "$HTTP_RESPONSE" == "200" ] || (add_common_separator "ERROR: $1 execution failed. Exiting"; exit 1)
 } 
 
-#add_secondary_separator "Deployment Query"
-#time curl -k -s $CORTX_MANAGER_ENDPOINT/api/v2/system/topology/nodes | jq 
-
-#add_secondary_separator "Storage Set Query"
-#time curl -k -s $CORTX_MANAGER_ENDPOINT/api/v2/system/topology/storage_sets | jq
-
-run_curl_query "Deployment Query" "api/v2/system/topology/nodes"
-run_curl_query "Storage Set Query" "api/v2/system/topology/storage_sets"
+run_curl_query "api/v2/system/topology/nodes"
+run_curl_query "api/v2/system/topology/storage_sets"
 
 
