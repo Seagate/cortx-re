@@ -49,7 +49,7 @@ cortx-all-rockylinux-image: validation cortx-motr cortx-hare cortx-prvsnr cortx-
 control-path: cortx-prvsnr cortx-monitor cortx-manager cortx-management-portal cortx-ha
 
 ## io-path: generate io-path packages. cortx-motr, cortx-s3server and cortx-hare.
-io-path: cortx-motr cortx-s3server cortx-hare
+io-path: cortx-motr cortx-hare
 
 ## cortx-motr: generate cortx-motr packages.
 cortx-motr: _cortx-motr_prereq _cortx-motr_build
