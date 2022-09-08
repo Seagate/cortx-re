@@ -73,7 +73,7 @@ for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"$
 ```
 ./cluster-setup.sh true
 ```
-- To execute `cluster-setup.sh` to setup K8s cluster on your AWS instances which modify `/etc/docker/daemon.json` on all the nodes and then restart docker deamon.
+- To execute `cluster-setup.sh` to setup K8s cluster, you should modify `/etc/docker/daemon.json` on all the nodes and then restart docker deamon.
 
 **For Example:**
 ```
