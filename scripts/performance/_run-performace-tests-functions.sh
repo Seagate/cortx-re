@@ -143,7 +143,7 @@ function generate_perf_stats() {
    grep -i '\[S3Bench\] Running' $ANIBLE_LOG_FILE | grep -vi TASK | sed -e 's/-//g' -e 's/^ //g' -e 's/*//g' | cut -d':' -f4 | sed 's/^ //g' | sort -n | tee -a $PERF_STATS_FILE
    add_secondary_separator "Performance Stats" | tee -a $PERF_STATS_FILE
    /usr/bin/python3  /root/PerfProBenchmark/s3bench/s3bench_summary.py /root/PerfProBenchmark/sanity_results/ | tee -a $PERF_STATS_FILE
-   RUN_ID=$(grep -E 'run_ID.*JENKINS|JENKINS.*run_ID' /var/tmp/perf_sanity_run.log | awk -F'(' '{print $2}' | awk -F')' '{print $1}' | sed s/\'//g)
+   RUN_ID=$(grep -E 'run_ID.*JENKINS|JENKINS.*run_ID' $ANIBLE_LOG_FILE | awk -F'(' '{print $2}' | awk -F')' '{print $1}' | sed s/\'//g)
    add_secondary_separator "Performance Comparison with Baseline" | tee -a $PERF_STATS_FILE
    echo "$PERF_UI_ENDPOINT?run_id=$RUN_ID" | tee -a $PERF_STATS_FILE
 }
