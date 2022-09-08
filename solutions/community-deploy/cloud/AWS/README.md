@@ -19,7 +19,7 @@ git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/comm
 ```
 aws sts get-caller-identity
 ```
-- Modify `user.tfvars` file with your AWS details.
+- Modify user.tfvars file on local host with your AWS details.
 ```
 vi user.tfvars
 ```
