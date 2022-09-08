@@ -62,7 +62,7 @@ hostname=cortx-deploy-node2.cortx.com,user=root,pass=<root-password>
 hostname=cortx-deploy-node3.cortx.com,user=root,pass=<root-password>
 hostname=cortx-deploy-node4.cortx.com,user=root,pass=<root-password>
 ```
-- Following command will modify the `hosts` file for all the nodes on your AWS EC2 instances
+- Following command will modify the `hosts` file for all the nodes
 **Note:** You can provide your password for the root user
 ```
 export ROOT_PASSWORD=<YOUR_ROOT_PASSWORD>
