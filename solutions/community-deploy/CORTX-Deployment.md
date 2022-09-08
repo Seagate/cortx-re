@@ -55,30 +55,15 @@ reboot
 git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/kubernetes
 ```
 - Create the hosts file in the current directory to add entries for all the nodes with same format in hosts file.
-
 ```
 hostname=cortx-deploy-node1.cortx.com,user=root,pass=<root-password>
 hostname=cortx-deploy-node2.cortx.com,user=root,pass=<root-password>
 hostname=cortx-deploy-node3.cortx.com,user=root,pass=<root-password>
 hostname=cortx-deploy-node4.cortx.com,user=root,pass=<root-password>
 ```
-- Following command will modify the `hosts` file for all the nodes
-
-**Note:** You can provide your password for the root user
-```
-export ROOT_PASSWORD=<YOUR_ROOT_PASSWORD>
-for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${ip}" "git clone https://github.com/Seagate/cortx-re && pushd /home/centos/cortx-re/solutions/kubernetes && touch hosts && echo hostname=${HOST1},user=root,pass= > hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo hostname=${HOST2},user=root,pass= >> hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo hostname=${HOST3},user=root,pass= >> hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo hostname=${HOST4},user=root,pass= >> hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && cat hosts";done
-```
-- To allow the PODs creation on primary node, pass the first input parameter for cluster-setup.sh script as true. Please note you must pass the input parameter as true for multi-node setup.
+- To allow the PODs creation on primary node, pass the first input parameter for cluster-setup.sh script as true. Please note you must pass the input parameter as true for multi-node setup on primary node.
 ```
 ./cluster-setup.sh true
-```
-- To execute `cluster-setup.sh` to setup K8s cluster, you should modify `/etc/docker/daemon.json` on all the nodes and then restart docker deamon.
-
-**For Example:**
-```
-ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" "sudo -- sh -c 'pushd /home/centos/cortx-re/solutions/kubernetes && ./cluster-setup.sh true && sed -i 's,cortx-docker.colo.seagate.com,${HOST1}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 120'"
-for wp in $WORKER_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$"{wp}" "sudo -- sh -c 'sed -i 's,cortx-docker.colo.seagate.com,${HOST1}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 120'";done
 ```
 
 ## Deploy CORTX Stack
