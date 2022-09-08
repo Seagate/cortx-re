@@ -83,15 +83,13 @@ for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$i
 export PRIMARY_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
 ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$PRIMARY_IP "git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/community-deploy && time bash -x ./build-cortx.sh"
 ```
-- Clone cortx-re repository from required branch/tag. If you do not provide `-b <branch/tag>`, then it will use default `main` branch    
-  :warning: Tag based build is supported after including tag [2.0.0-940](https://github.com/Seagate/cortx-re/releases/tag/2.0.0-940)
-
-**For example:**
+- Clone cortx-re repository from required branch/tag. If you do not provide `-b <branch/tag>`, then it will use default main branch    
+  :warning: Tag based build is supported after including tag [2.0.0-879](https://github.com/Seagate/cortx-re/releases/tag/2.0.0-879)
+  
+**Note:** If you had cloned cortx-re repo earlier based on above instructions then remove it before following with `branch/tag`
 ```
-git clone https://github.com/Seagate/cortx-re -b 2.0.0-940 && cd $PWD/cortx-re/solutions/community-deploy
-sudo time bash -x ./build-cortx.sh -b 2.0.0-940
+git clone https://github.com/Seagate/cortx-re -b <branch/tag> && cd $PWD/cortx-re/solutions/community-deploy
 ```
-**Note:** You can refer the tags based on stable build in https://github.com/Seagate/cortx-re/tags
 
 ### CORTX Deployment
 - After CORTX build is ready, follow [CORTX Deployment](https://github.com/Seagate/cortx-re/blob/main/solutions/community-deploy/CORTX-Deployment.md) to deploy CORTX on AWS instances.   
