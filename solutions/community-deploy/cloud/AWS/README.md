@@ -58,12 +58,6 @@ terraform validate && terraform apply -var-file user.tfvars --auto-approve
 - Execute the following commands as environment variables which will be used later the deployment
 ```
 export PUBLIC_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip_public.txt | tr -d '",[]' | sed '/^$/d')
-export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
-export WORKER_IP=$(cat ip_public.txt | tr -d '",[]' | sed '/^$/d')
-export HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
-export HOST2=$(cat ec2_hostname.txt | jq '.[1]'| tr -d '",[]')
-export HOST3=$(cat ec2_hostname.txt | jq '.[2]'| tr -d '",[]')
-export HOST4=$(cat ec2_hostname.txt | jq '.[3]'| tr -d '",[]')
 ```
 - Execute the following commands on all the nodes which will perform the following actions:
   - Setup network and storage devices for CORTX.
