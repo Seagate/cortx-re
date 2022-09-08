@@ -51,8 +51,8 @@ pipeline {
                 export SECRET_KEY=${SECRET_KEY}
                 export ACCESS_KEY=${ACCESS_KEY}
                 export KEY_NAME=${KEY_NAME}
-                export VOLUME_COUNT=${VOLUME_COUNT}
-                export VOLUME_SIZE=${VOLUME_SIZE}
+                export VOLUME_COUNT=${EBS_VOLUME_COUNT}
+                export VOLUME_SIZE=${EBS_VOLUME_SIZE}
                 export INSTANCE_COUNT=${INSTANCE_COUNT}
                 export INSTANCE_TAG_NAME=${INSTANCE_TAG_NAME}
                     rm -rvf /usr/local/bin/aws /usr/local/bin/aws_completer /usr/local/aws-cli >/dev/null 2>&1
