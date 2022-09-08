@@ -55,9 +55,15 @@ tag_name            = "cortx-multinode"
 ```
 terraform validate && terraform apply -var-file user.tfvars --auto-approve
 ```
-- Execute the following command as environment variable
+- Execute the following command to store AWS instance public IP addresses in PUBLIC_IP variable
 ```
 export PUBLIC_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip_public.txt | tr -d '",[]' | sed '/^$/d')
+export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
+export WORKER_IP=$(cat ip_public.txt | tr -d '",[]' | sed '/^$/d')
+export HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
+export HOST2=$(cat ec2_hostname.txt | jq '.[1]'| tr -d '",[]')
+export HOST3=$(cat ec2_hostname.txt | jq '.[2]'| tr -d '",[]')
+export HOST4=$(cat ec2_hostname.txt | jq '.[3]'| tr -d '",[]')
 ```
 - Execute the following commands on all the nodes which will perform the following actions:
   - Setup network and storage devices for CORTX.
@@ -71,8 +77,6 @@ for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$i
 ### CORTX Build
 - We will use [cortx-build](https://github.com/Seagate/cortx/pkgs/container/cortx-build) docker image to compile entire CORTX stack.
 - Execute `build-cortx.sh` from primary node using public ip address which will generate CORTX container images from `main` of CORTX components
-
-**Note:** Become the **root** user after logged in to the primary node by running `sudo su` command.
 ```
 export PRIMARY_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
 ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$PRIMARY_IP "git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/community-deploy && time bash -x ./build-cortx.sh"
@@ -86,7 +90,24 @@ git clone https://github.com/Seagate/cortx-re -b <branch/tag> && cd $PWD/cortx-r
 ```
 
 ### CORTX Deployment
-- After CORTX build is ready, follow [CORTX Deployment](https://github.com/Seagate/cortx-re/blob/main/solutions/community-deploy/CORTX-Deployment.md) to deploy CORTX on AWS instances.   
+- After CORTX build is ready, follow [CORTX Deployment](https://github.com/Seagate/cortx-re/blob/main/solutions/community-deploy/CORTX-Deployment.md) to deploy CORTX on any deployment platform.
+
+- Follow below command to modify the `hosts` file for all the nodes on your AWS EC2 instances
+
+**Note:** You can provide your password for the root user and switch to `$PWD/cortx-re/solutions/community-deploy/cloud/AWS` directory
+
+```
+export ROOT_PASSWORD=<YOUR_ROOT_PASSWORD>
+for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${ip}" "git clone https://github.com/Seagate/cortx-re && pushd /home/centos/cortx-re/solutions/kubernetes && touch hosts && echo hostname=${HOST1},user=root,pass= > hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo hostname=${HOST2},user=root,pass= >> hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo hostname=${HOST3},user=root,pass= >> hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo hostname=${HOST4},user=root,pass= >> hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && cat hosts";done
+```
+
+- Execute following command to modify `/etc/docker/daemon.json` on all the nodes and then restart docker deamon to generate CORTX images locally,
+
+```
+ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" "sudo -- sh -c 'pushd /home/centos/cortx-re/solutions/kubernetes && ./cluster-setup.sh true && sed -i 's,cortx-docker.colo.seagate.com,${HOST1}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 120'"
+for wp in $WORKER_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$"{wp}" "sudo -- sh -c 'sed -i 's,cortx-docker.colo.seagate.com,${HOST1}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 120'";done
+```
+
 - Please exclude SELINUX and Hostname setup steps.
 
 ### Cleanup
