@@ -21,8 +21,8 @@ pipeline {
         string(name: 'REGION', defaultValue: 'ap-south-1', description: 'AWS region', trim: true)
         string(name: 'KEY_NAME', defaultValue: 'devops-key', description: 'Key name', trim: true)
         string(name: 'COMMUNITY_USE', defaultValue: 'yes', description: 'Only use during community deployment', trim: true)
-        string(name: 'VOLUME_COUNT', defaultValue: '9', description: 'EBS volume', trim: true)
-        string(name: 'VOLUME_SIZE', defaultValue: '10', description: 'EBS volume size', trim: true)
+        string(name: 'EBS_VOLUME_COUNT', defaultValue: '9', description: 'EBS volume count', trim: true)
+        string(name: 'EBS_VOLUME_SIZE', defaultValue: '10', description: 'EBS volume size', trim: true)
         string(name: 'INSTANCE_COUNT', defaultValue: '4', description: 'Instance count', trim: true)
         string(name: 'INSTANCE_TAG_NAME', defaultValue: 'cortx-multinode', description: 'Tag name', trim: true)
         password(name: 'SECRET_KEY', description: 'secret key for AWS account')
@@ -50,8 +50,8 @@ pipeline {
                 export SECRET_KEY=${SECRET_KEY}
                 export ACCESS_KEY=${ACCESS_KEY}
                 export KEY_NAME=${KEY_NAME}
-                export VOLUME_COUNT=${VOLUME_COUNT}
-                export VOLUME_SIZE=${VOLUME_SIZE}
+                export VOLUME_COUNT=${EBS_VOLUME_COUNT}
+                export VOLUME_SIZE=${EBS_VOLUME_SIZE}
                 export INSTANCE_COUNT=${INSTANCE_COUNT}
                 export INSTANCE_TAG_NAME=${INSTANCE_TAG_NAME}
                     rm -rvf /usr/local/bin/aws /usr/local/bin/aws_completer /usr/local/aws-cli >/dev/null 2>&1
