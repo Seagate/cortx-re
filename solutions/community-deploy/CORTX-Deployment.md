@@ -63,6 +63,7 @@ hostname=cortx-deploy-node3.cortx.com,user=root,pass=<root-password>
 hostname=cortx-deploy-node4.cortx.com,user=root,pass=<root-password>
 ```
 - Following command will modify the `hosts` file for all the nodes
+
 **Note:** You can provide your password for the root user
 ```
 export ROOT_PASSWORD=<YOUR_ROOT_PASSWORD>
@@ -72,7 +73,7 @@ for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"$
 ```
 ./cluster-setup.sh true
 ```
-- To execute `cluster-setup.sh` to setup K8s cluster on your AWS EC2 instances which modify `/etc/docker/daemon.json` on all the nodes and then restart docker deamon.
+- To execute `cluster-setup.sh` to setup K8s cluster on your AWS instances which modify `/etc/docker/daemon.json` on all the nodes and then restart docker deamon.
 
 **For Example:**
 ```
