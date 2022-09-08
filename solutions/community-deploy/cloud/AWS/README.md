@@ -86,7 +86,7 @@ ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$PRIMARY_IP "git clone htt
 - Clone cortx-re repository from required branch/tag. If you do not provide `-b <branch/tag>`, then it will use default main branch    
   :warning: Tag based build is supported after including tag [2.0.0-879](https://github.com/Seagate/cortx-re/releases/tag/2.0.0-879)
   
-**Note:** If you had cloned cortx-re repo earlier based on above instructions then remove it before following with `branch/tag`
+**Note:** If you had cloned cortx-re repo earlier based on above instructions then remove it before following with `branch/tag` and to use the latest release from https://github.com/Seagate/cortx/releases
 ```
 git clone https://github.com/Seagate/cortx-re -b <branch/tag> && cd $PWD/cortx-re/solutions/community-deploy
 ```
