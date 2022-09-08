@@ -9,7 +9,7 @@
     },
     "MESSAGES": {
       "success": "PR Title Verified Successfully",
-      "failure": "PR Title prefix is not valid. for open source contributors prefix PR title in format `COMMUNITY: <PR Title>`, for Seagate employees, prefix PR title with Jira ID in format `CORTX-<% digit JIRA ID>: <PR Title>`",
+      "failure": "PR Title prefix is not valid. For Open source contributors prefix PR title with 'COMMUNITY', E.g. 'COMMUNITY: <PR Title>' For Seagate Employees, prefix PR title with 'Jira ID' e.g. `CORTX-12345: <PR Title>`",
       "notice": ""
     }
 }
