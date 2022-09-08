@@ -42,6 +42,7 @@ resource "aws_default_subnet" "default" {
 }
 
 locals {
+  ec2_device_names_to_attach = slice(var.ec2_device_names, 0, var.ebs_volume_count)
   common_tags = {
     "Terraform" = "true",
     "CORTX"     = "true"
@@ -49,7 +50,7 @@ locals {
 }
 
 resource "aws_security_group" "cortx_deploy" {
-  name        = "cortx_deploy"
+  name        = "${var.tag_name}"
   description = "Allow standard ssh, CORTX mangement ports inbound and everything else outbound."
 
   ingress {
@@ -61,11 +62,11 @@ resource "aws_security_group" "cortx_deploy" {
   }
 
   ingress {
-    description = "CORTX UI Access"
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = [var.security_group_cidr]
+    description = "Allow access within security group"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    self        = true
   }
 
   egress {
@@ -75,7 +76,9 @@ resource "aws_security_group" "cortx_deploy" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = local.common_tags
+  tags = {
+    Name = "${var.tag_name}"
+  }
 }
 
 data "aws_ami" "centos" {
@@ -96,7 +99,6 @@ data "aws_ami" "centos" {
     name   = "root-device-type"
     values = ["ebs"]
   }
-
 }
 
 resource "tls_private_key" "example" {
@@ -118,6 +120,7 @@ resource "local_sensitive_file" "pem_file" {
 
 resource "aws_instance" "cortx_deploy" {
   # https://wiki.centos.org/Cloud/AWS
+  count                  = "${var.instance_count}"		
   ami                    = data.aws_ami.centos.id
   instance_type          = "t3a.2xlarge"
   availability_zone      = data.aws_availability_zones.available.names[0]
@@ -129,14 +132,14 @@ resource "aws_instance" "cortx_deploy" {
         systemctl restart sshd
         sed -i 's/SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config
         /sbin/setenforce 0
-        yum install -y yum-utils git firewalld -y
+        yum install -y yum-utils git firewalld epel-release && yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo -y && yum install -y jq docker-ce docker-ce-cli containerd.io docker-compose-plugin && sleep 30 && systemctl start docker && systemctl enable docker
   EOT
   root_block_device {
     volume_size = 90
   }
 
   tags = {
-    Name = "deployment-poc"
+    Name = "${var.tag_name}-${count.index + 1}"
   }
 
   provisioner "file" {
@@ -150,69 +153,30 @@ resource "aws_instance" "cortx_deploy" {
       host        = self.public_dns
     }
   }
-
 }
+
+output "aws_instance_public_ip_addr" {
+  value       = aws_instance.cortx_deploy.*.public_ip
+  description = "Public IP to connect CORTX server"
+  }
+
+output "aws_instance_private_ip_addr" {
+  value       = aws_instance.cortx_deploy.*.private_ip
+  description = "Private IP to connect to EC2 Instances"
+  }
 
 resource "aws_ebs_volume" "data_vol" {
-  count             = 9
+  count             = var.ebs_volume_count * var.instance_count
   availability_zone = data.aws_availability_zones.available.names[0]
-  size              = 10
-
-  tags = local.common_tags
-}
-
-variable "ec2_device_names" {
-  default = [
-    "/dev/sdb",
-    "/dev/sdc",
-    "/dev/sdd",
-    "/dev/sde",
-    "/dev/sdf",
-    "/dev/sdg",
-    "/dev/sdh",
-    "/dev/sdi",
-    "/dev/sdj",
-  ]
+  size              = var.ebs_volume_size
+  tags = {
+    Name = "${var.tag_name}-${count.index + 1}"
+  }
 }
 
 resource "aws_volume_attachment" "deploy_server_data" {
-  count       = 9
+  count       = var.ebs_volume_count * var.instance_count
   volume_id   = aws_ebs_volume.data_vol.*.id[count.index]
-  device_name = element(var.ec2_device_names, count.index)
-  instance_id = aws_instance.cortx_deploy.id
+  device_name = element(local.ec2_device_names_to_attach, count.index)
+  instance_id = element(aws_instance.cortx_deploy.*.id, floor(count.index/var.ebs_volume_count))
 }
-
-resource "aws_network_interface" "network_interface_1" {
-  security_groups = [aws_security_group.cortx_deploy.id]
-  subnet_id       = aws_default_subnet.default.id
-
-  attachment {
-    instance     = aws_instance.cortx_deploy.id
-    device_index = 1
-  }
-}
-
-resource "aws_network_interface" "network_interface_2" {
-  security_groups = [aws_security_group.cortx_deploy.id]
-  subnet_id       = aws_default_subnet.default.id
-
-  attachment {
-    instance     = aws_instance.cortx_deploy.id
-    device_index = 2
-  }
-}
-
-resource "aws_eip" "elastic_ip" {
-  vpc = true
-}
-
-resource "aws_eip_association" "eip_assoc" {
-  instance_id   = aws_instance.cortx_deploy.id
-  allocation_id = aws_eip.elastic_ip.id
-}
-
-output "cortx_deploy_ip_addr" {
-  value       = aws_eip_association.eip_assoc.public_ip
-  description = "Public IP to connect CORTX server"
-}
-

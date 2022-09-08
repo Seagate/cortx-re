@@ -23,10 +23,11 @@ pipeline {
         string(name: 'OS_VERSION', defaultValue: 'CentOS 7.9.2009 x86_64', description: 'Operating system version', trim: true)
         string(name: 'REGION', defaultValue: 'ap-south-1', description: 'AWS region', trim: true)
         string(name: 'KEY_NAME', defaultValue: 'automation-key', description: 'Key name', trim: true)
+        string(name: 'EBS_VOLUME_COUNT', defaultValue: '9', description: 'EBS volumes to attach onto nodes. Currently maximum 25 disks are supported', trim: true)
+        string(name: 'EBS_VOLUME_SIZE', defaultValue: '10', description: 'EBS volume size in GB to attach onto nodes', trim: true)
         string(name: 'COMMUNITY_USE', defaultValue: 'yes', description: 'Only use during community deployment', trim: true)
         
         // Please configure ROOT_PASSWORD, ACCESS_KEY and SECRET_KEY parameters in Jenkins job configuration.
-    }
 
     stages {
 
@@ -39,31 +40,34 @@ pipeline {
             }
         }
 
-        stage ('Install tools') {
+        stage ('Install Tools') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'install tools', script: '''
+                sh label: 'Install tools', script: '''
                 VM_IP=$(curl ipinfo.io/ip)
                 export OS_VERSION=${OS_VERSION}
                 export REGION=${REGION}
                 export SECRET_KEY=${SECRET_KEY}
                 export ACCESS_KEY=${ACCESS_KEY}
                 export KEY_NAME=${KEY_NAME}
+                export EBS_VOLUME_COUNT=${EBS_VOLUME_COUNT}
+                export EBS_VOLUME_SIZE=${EBS_VOLUME_SIZE}
+
                 rm -rvf /usr/local/bin/aws /usr/local/bin/aws_completer /usr/local/aws-cli >/dev/null 2>&1
                 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && yum install unzip -y && unzip awscliv2.zip
                 ./aws/install
                 aws configure set default.region $REGION; aws configure set aws_access_key_id $ACCESS_KEY; aws configure set aws_secret_access_key $SECRET_KEY
                 pushd solutions/community-deploy/cloud/AWS
                     ./tool_setup.sh
-                    sed -i 's,os_version          =.*,os_version          = "'"$OS_VERSION"'",g' user.tfvars && sed -i 's,region              =.*,region              = "'"$REGION"'",g' user.tfvars && sed -i 's,security_group_cidr =.*,security_group_cidr = "'"$VM_IP/32"'",g' user.tfvars
-                    echo key_name            = '"'$KEY_NAME'"' | cat >>user.tfvars
-                    cat user.tfvars | tail -4
+                    sed -i 's,os_version =.*,os_version = "'"$OS_VERSION"'",g' user.tfvars && sed -i 's,region =.*,region = "'"$REGION"'",g' user.tfvars && sed -i 's,security_group_cidr =.*,security_group_cidr = "'"$VM_IP/32"'",g' user.tfvars && sed -i 's,ebs_volume_count =.*,ebs_volume_count = "'"$EBS_VOLUME_COUNT"'",g' user.tfvars && sed -i 's,ebs_volume_size =.*,ebs_volume_size = "'"$EBS_VOLUME_SIZE"'",g' user.tfvars
+                    echo key_name = '"'$KEY_NAME'"' | cat >>user.tfvars
+                    cat user.tfvars | tail -6
                 popd
                 '''
             }
         }
 
-        stage ('Create EC2 instace') {
+                stage ('Create EC2 instace') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Setting up EC2 instance', script: '''
