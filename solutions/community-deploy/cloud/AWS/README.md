@@ -55,7 +55,7 @@ tag_name            = "cortx-multinode"
 ```
 terraform validate && terraform apply -var-file user.tfvars --auto-approve
 ```
-- Execute the following commands as environment variables which will be used later the deployment
+- Execute the following command as environment variable
 ```
 export PUBLIC_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip_public.txt | tr -d '",[]' | sed '/^$/d')
 ```
