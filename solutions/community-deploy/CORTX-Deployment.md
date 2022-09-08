@@ -114,5 +114,5 @@ export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
 
 Tested by:
 
-* August 14, 2022: Mukul Malhotra (mukul.malhotra@seagate.com) - AWS EC2, CentOS 7.9 Linux
+* August 14, 2022: Mukul Malhotra (mukul.malhotra@seagate.com) - AWS, CentOS 7.9 Linux
 * May 06, 2022: Rahul Shenoy (rahul.shenoy@seagate.com) - Windows , VMware Workstation 16 , CentOS 7.9 Linux
