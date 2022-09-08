@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (c) 2021 Seagate Technology LLC and/or its Affiliates
+# Copyright (c) 2022 Seagate Technology LLC and/or its Affiliates
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,8 +27,8 @@ CORTX_MANAGER_PORT=$(kubectl get svc cortx-control -o=jsonpath='{.spec.ports[?(@
 CORTX_MANAGER_ENDPOINT="https://$CORTX_MANAGER_IP:$CORTX_MANAGER_PORT"
 
 function validate_packages() {
-PACKAGE_LIST=$*
-for package in $PACKAGE_LIST; do rpm -q $package || yum install $package -y || (add_common_separator "Failed to install $package. Existing"; exit 1); done
+    PACKAGE_LIST=$*
+    for package in $PACKAGE_LIST; do rpm -q $package || yum install $package -y || (add_common_separator "Failed to install $package. Exiting.."; exit 1); done
 }
 
 
@@ -39,9 +39,6 @@ function run_curl_query() {
     jq . output.json
     [ "$HTTP_RESPONSE" == "200" ] || (add_common_separator "ERROR: $1 execution failed. Exiting"; exit 1)
 } 
-
-#Cleanup
-rm -f $MANAGEMENT_CHECK_STATUS
 
 #Validate and install required packages
 validate_packages jq curl
