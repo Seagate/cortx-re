@@ -4,15 +4,7 @@ This document discusses the procedure to compile the CORTX Stack and deploy on A
 
 **Prerequisites:**
 
- - Install Prerequisite tools by executing following commands:
- ```
- curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && yum install unzip -y && unzip awscliv2.zip && ./aws/install
- ```
- - Execute following command as during tools installation, you will be prompted to enter your AWS Access and Secret key so ensure that you have an AWS account with Secret Key and Access Key.
- ```
- aws configure
- ``` 
- For more details, refer [AWS CLI Configuration](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-config).
+During tools installation, you will be prompted to enter your AWS Access and Secret key so ensure that you have an AWS account with Secret Key and Access Key. For more details, refer [AWS CLI Configuration](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-config).
 
 ## Procedure
 - Clone the `cortx-re` repository and then change the directory to `cortx-re/solutions/community-deploy/cloud/AWS`
