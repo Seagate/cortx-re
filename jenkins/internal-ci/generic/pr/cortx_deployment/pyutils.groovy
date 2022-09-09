@@ -16,7 +16,7 @@ pipeline {
     }
 
     parameters {  
-	    string(name: 'PY_UTILS_URL', defaultValue: 'https://github.com/Seagate/cortx-utils', description: 'Repo for Py-Utils Agent')
+        string(name: 'PY_UTILS_URL', defaultValue: 'https://github.com/Seagate/cortx-utils', description: 'Repo for Py-Utils Agent')
         string(name: 'PY_UTILS_BRANCH', defaultValue: 'main', description: 'Branch for Py-Utils Agent')
         string(name: 'CORTX_RE_URL', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repo for cortx-re')
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch for cortx-re')
@@ -55,10 +55,10 @@ pipeline {
 
         OS_FAMILY = sh(script: "echo '${OS_VERSION}' | cut -d '-' -f1", returnStdout: true).trim()
         BUILD_TRIGGER_BY = "${currentBuild.getBuildCauses()[0].shortDescription}"
-		
-	    // Artifacts root location
-		
-	    DESTINATION_RELEASE_LOCATION = "/mnt/bigstorage/releases/cortx/github/pr-build/${BRANCH}/${COMPONENT_NAME}/${BUILD_NUMBER}"
+        
+        // Artifacts root location
+        
+        DESTINATION_RELEASE_LOCATION = "/mnt/bigstorage/releases/cortx/github/pr-build/${BRANCH}/${COMPONENT_NAME}/${BUILD_NUMBER}"
         CORTX_BUILD = "http://cortx-storage.colo.seagate.com/releases/cortx/github/pr-build/${BRANCH}/${COMPONENT_NAME}/${BUILD_NUMBER}"
         PYTHON_DEPS = "/mnt/bigstorage/releases/cortx/third-party-deps/python-deps/python-packages-2.0.0-latest"
         THIRD_PARTY_DEPS = "/mnt/bigstorage/releases/cortx/third-party-deps/${OS_FAMILY}/${THIRD_PARTY_VERSION}/"
@@ -68,7 +68,7 @@ pipeline {
         CORTX_ISO_LOCATION = "${DESTINATION_RELEASE_LOCATION}/cortx_iso"
         THIRD_PARTY_LOCATION = "${DESTINATION_RELEASE_LOCATION}/3rd_party"
         PYTHON_LIB_LOCATION = "${DESTINATION_RELEASE_LOCATION}/python_deps"
-		
+        
         build_id = sh(script: "echo ${CORTX_BUILD} | rev | cut -d '/' -f2,3 | rev", returnStdout: true).trim()
         STAGE_DEPLOY = "yes"
         NODE_HOST = sh( script: '''
@@ -87,7 +87,7 @@ pipeline {
         // Build py_utils fromm PR source code
         stage('Build') {
             steps {
-				script { build_stage = env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
                 script { manager.addHtmlBadge("&emsp;<b>Target Branch : ${BRANCH}</b>&emsp;<br />") }
 
                 sh """
@@ -116,7 +116,7 @@ pipeline {
         // Release cortx deployment stack
         stage('Release') {
             steps {
-				script { build_stage = env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
                 echo "Creating Provisioner Release"
                 dir('cortx-re') {
                     checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 1, honorRefspec: true, noTags: true, reference: '', shallow: true], [$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
@@ -167,7 +167,7 @@ pipeline {
                         yum install -y createrepo
                         createrepo .
                     popd
-                '''	
+                '''    
 
                 sh label: 'Generate RELEASE.INFO', script: '''
                     echo -e "Creating release information files"
@@ -179,9 +179,9 @@ pipeline {
                     cp "${THIRD_PARTY_LOCATION}/THIRD_PARTY_RELEASE.INFO" "${DESTINATION_RELEASE_LOCATION}"
                     cp "${CORTX_ISO_LOCATION}/RELEASE.INFO" "${DESTINATION_RELEASE_LOCATION}"
                     cp "${CORTX_ISO_LOCATION}/RELEASE.INFO" .
-                '''	
+                '''    
 
-                archiveArtifacts artifacts: "RELEASE.INFO", onlyIfSuccessful: false, allowEmptyArchive: true	
+                archiveArtifacts artifacts: "RELEASE.INFO", onlyIfSuccessful: false, allowEmptyArchive: true    
             }
 
         }
@@ -210,7 +210,7 @@ pipeline {
                         env.image = buildCortxAllImage.buildVariables.image
                     } catch (err) {
                         build_stage = env.STAGE_NAME
-                        error "Failed to Build CORTX-ALL image"
+                        error "Failed to Build CORTX Images"
                     }
                 }
             }
@@ -240,21 +240,21 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 script {
                     sh '''
- 	                    yum install -y sshpass
- 	                    sshpass -p $NODE_PASS ssh -o StrictHostKeyChecking=no $NODE_USER@$NODE_HOST env TEST_PLAN="$TEST_PLAN" BUILD_NUMBER="$BUILD_NUMBER" 'bash -s' <<'EOF'
+                         yum install -y sshpass
+                         sshpass -p $NODE_PASS ssh -o StrictHostKeyChecking=no $NODE_USER@$NODE_HOST env TEST_PLAN="$TEST_PLAN" BUILD_NUMBER="$BUILD_NUMBER" 'bash -s' <<'EOF'
                         kubectl exec $(kubectl get pods | awk '/cortx-data/{print $1; exit}') --container cortx-hax -- sh -c "yum install -y wget yum-utils \
                             && yum-config-manager --add-repo http://cortx-storage.colo.seagate.com/releases/cortx/github/pr-build/main/cortx-utils/$BUILD_NUMBER/cortx_iso \
                             && yum install --nogpgcheck -y cortx-py-utils-test-* \
                             && /opt/seagate/cortx/utils/bin/utils_setup test --config yaml:///etc/cortx/cluster.conf --plan $TEST_PLAN"
                         kubectl exec $(kubectl get pods | awk '/cortx-data/{print $1; exit}') --container cortx-hax -- bash -c 'cat /tmp/py_utils_test_report.html' | tee py_utils_test_report.html    
 EOF
-	 	            '''
-	 	            def remote = getRemoteMachine(NODE_HOST, NODE_USER, NODE_PASS)
+                     '''
+                     def remote = getRemoteMachine(NODE_HOST, NODE_USER, NODE_PASS)
                     sshGet remote: remote, from: '/root/py_utils_test_report.html', into: 'py_utils_test_report.html', override: true
                 }
             }
         }
-	}
+    }
 
     post {
         always {
