@@ -65,6 +65,9 @@ export PRIVATE_HOSTNAME=$(cat ec2_hostname.txt | tr -d '",[]' | sed '/^$/d')
 export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
 export WORKER_IP=$(cat ip_public.txt | tr -d '",[]' | sed '/^$/d')
 export HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
+export CORTX_SERVER_IMAGE="${HOST1}:8080/seagate/cortx-rgw:2.0.0-0"
+export CORTX_DATA_IMAGE="${HOST1}:8080/seagate/cortx-data:2.0.0-0"
+export CORTX_CONTROL_IMAGE="${HOST1}:8080/seagate/cortx-control:2.0.0-0"
 ```
 
 ## Network and Storage Configuration
@@ -109,6 +112,10 @@ for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$i
 - Execute following command to modify `/etc/docker/daemon.json` on all the nodes and then restart docker deamon to generate CORTX images locally
 ```
 for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@ip "sudo -- sh -c 'pushd /home/centos/cortx-re/solutions/kubernetes && sed -i 's,cortx-docker.colo.seagate.com,${HOST1}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 120'";done
+```
+- Execute following command to pull images build locally on worker nodes
+```
+for wp in $WORKER_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$wp "sudo docker pull '${CORTX_SERVER_IMAGE}' && sudo docker pull '${CORTX_DATA_IMAGE}' && sudo docker pull '${CORTX_CONTROL_IMAGE}'";done
 ```
 
 ### Cleanup
