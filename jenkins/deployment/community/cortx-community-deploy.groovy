@@ -141,7 +141,7 @@ pipeline {
                     export CORTX_SERVER_IMAGE="${BUILD_NODE}:8080/seagate/cortx-rgw:2.0.0-0"
                     export CORTX_DATA_IMAGE="${BUILD_NODE}:8080/seagate/cortx-data:2.0.0-0"
                     export CORTX_CONTROL_IMAGE="${BUILD_NODE}:8080/seagate/cortx-control:2.0.0-0"
-                    for wp in $WORKER_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$"{wp}" "sudo docker pull '${CORTX_SERVER_IMAGE}' && sudo docker pull '${CORTX_DATA_IMAGE}' && sudo docker pull '${CORTX_CONTROL_IMAGE}'";done
+                    for wp in $WORKER_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${wp} "sudo docker pull '${CORTX_SERVER_IMAGE}' && sudo docker pull '${CORTX_DATA_IMAGE}' && sudo docker pull '${CORTX_CONTROL_IMAGE}'";done
                     popd
             '''
             }
