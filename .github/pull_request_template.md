@@ -24,7 +24,10 @@
 
 # Review Checklist 
   Checklist for Author
-- [ ] JIRA number/GitHub Issue added to PR
+- [ ] Jira ID/ COMMUNITY is prefixed in PR title
+      Prefix Syntax - 
+        `CORTX-<5 digit JIRA ID>: <PR Title>` - for Seagate Employees
+        `COMMUNITY: <PR Title>`  - for open source contributors
 - [ ] PR is self reviewed
 - [ ] Jira and state/status is updated and JIRA is updated with PR link
 - [ ] Check if the description is clear and explained
