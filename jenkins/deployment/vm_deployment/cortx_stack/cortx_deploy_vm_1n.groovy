@@ -248,7 +248,7 @@ pipeline {
                         try {
                             deployment_status_log = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/deployment_status.log').trim()
                             failed_component_stage = readFile(file: 'artifacts/srvnode1/cortx_deployment/log/failed_component.log').trim()
-                            failed_component_stage = failed_component_stage.trim().replaceAll("'","")
+                            failed_component_stage = failed_component_stage.trim().replaceAll("'", "")
 
                             // Failed Component from Failed Stage
                             component_info_map = getComponentInfo(failed_component_stage)
