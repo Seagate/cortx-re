@@ -35,7 +35,7 @@ Following parameter/s are passed when the cluster deployment command executes. I
 | key_name | devops-key | You can pass .pem key file name to login to aws EC2 instance in `key_name`. |
 | ebs_volume_count | 9 |  You can select the number of EBS volumes |
 | ebs_volume_size | 10 |  You can select the EBS volume size |
-| instance_count | 3  | You can select the number of EC2 instances |
+| instance_count | 4  | You can select the number of EC2 instances |
 | tag_name | cortx-multinode | You can assign your tag name to the EC2 Instances |
 
 - Contents of `user.tfvars` file should display as follows:
@@ -46,7 +46,7 @@ os_version          = "CentOS 7.9.2009 x86_64"
 region              = "ap-south-1"
 security_group_cidr = "134.204.222.36/32"
 key_name            = "devops-key"
-instance_count      = "3"
+instance_count      = "4"
 ebs_volume_count    = "9"
 ebs_volume_size     = "10"
 tag_name            = "cortx-multinode"
@@ -99,6 +99,7 @@ git clone https://github.com/Seagate/cortx-re -b <branch/tag> && cd $PWD/cortx-r
 **Note:**
 You should provide your root password which was changed in earlier steps and switch to `$PWD/cortx-re/solutions/community-deploy/cloud/AWS`
 directory to execute the following command
+- In case of AWS exclude SELINUX and Hostname setup steps and execute below steps
 
 ```
 export ROOT_PASSWORD=<YOUR_ROOT_PASSWORD>
@@ -109,7 +110,6 @@ for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$i
 ```
 for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@ip "sudo -- sh -c 'pushd /home/centos/cortx-re/solutions/kubernetes && sed -i 's,cortx-docker.colo.seagate.com,${HOST1}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 120'";done
 ```
-- Please exclude SELINUX and Hostname setup steps.
 
 ### Cleanup
 - You can clean-up the AWS infrastructure created using following command
