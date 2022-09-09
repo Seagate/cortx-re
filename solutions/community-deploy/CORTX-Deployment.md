@@ -13,7 +13,7 @@ Following are the minimum system specifications required to set up the K8s clust
 ## Deploy the CORTX Stack on K8s cluster
 This section enlists the commands to deploy the CORTX Stack on K8s cluster. 
 
-### Make sure your VM(virtual machine) has following drives available on it:
+### Make sure your VM (virtual machine) has following drives available on it:
 ```
 ls /dev/sd*
 ```
@@ -55,19 +55,13 @@ reboot
 git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/kubernetes
 ```
 - Create the hosts file in the current directory to add entries for all the nodes with same format in hosts file.
-
-**For Example:** 
-`hosts` file for multi-node setup is as below,
 ```
 hostname=cortx-deploy-node1.cortx.com,user=root,pass=<root-password>
 hostname=cortx-deploy-node2.cortx.com,user=root,pass=<root-password>
 hostname=cortx-deploy-node3.cortx.com,user=root,pass=<root-password>
+hostname=cortx-deploy-node4.cortx.com,user=root,pass=<root-password>
 ```
-- To execute `cluster-setup.sh` to setup K8s cluster on your AWS EC2 instances for multi-node deployment follow,
-   - copy `/tmp/daemon.json` file from primary node to all the worker nodes in `/etc/docker/daemon.json` path either by `rsync` command or vi editor or,
-   - copy `/etc/docker/daemon.json` file content from primary node to worker nodes on same target path to update the local registry node.
-   - Then restart docker service on all the worker nodes by running, `systemctl restart docker`
-- To allow the PODs creation on primary node, pass the first input parameter for cluster-setup.sh script as true. Please note you must pass the input parameter as true for multi-node setup.
+- To allow the PODs creation on primary node, pass the first input parameter for cluster-setup.sh script as true. Please note you must pass the input parameter as true for multi-node setup on primary node.
 ```
 ./cluster-setup.sh true
 ```
@@ -77,16 +71,8 @@ hostname=cortx-deploy-node3.cortx.com,user=root,pass=<root-password>
 ```
 export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
 ```
-- To execute `cortx-deploy.sh` on AWS cluster to deploy the CORTX stack on your K8s cluster with locally generated images run the following command
-```
-export SOLUTION_CONFIG_TYPE=automated && export CORTX_SERVER_IMAGE="<AWS instance primarynode hostname>":8080/cortx-rgw:2.0.0-0 && export CORTX_DATA_IMAGE="<AWS instance primarynode hostname>":8080/cortx-data:2.0.0-0 && export CORTX_CONTROL_IMAGE="<AWS instance primarynode hostname>":8080/cortx-control:2.0.0-0 && bash -x ./cortx-deploy.sh --cortx-cluster
-```
-**For example:**
-```
-export SOLUTION_CONFIG_TYPE=automated && export SOLUTION_CONFIG_TYPE=automated && export CORTX_SERVER_IMAGE=ip-172-31-43-44.ap-south-1.compute.internal:8080/seagate/cortx-rgw:2.0.0-0 && export CORTX_DATA_IMAGE=ip-172-31-43-44.ap-south-1.compute.internal:8080/seagate/cortx-data:2.0.0-0 && export CORTX_CONTROL_IMAGE=ip-172-31-43-44.ap-south-1.compute.internal:8080/seagate/cortx-control:2.0.0-0 && bash -x ./cortx-deploy.sh --cortx-cluster
-```
 
-**Note:**  
+**Note:**
 - Following parameter/s are passed when the cluster deployment command executes. If no parameter is passed, the default ones are chosen.
 
 | Parameter     | Default value     | Description     |
@@ -113,5 +99,5 @@ export SOLUTION_CONFIG_TYPE=automated && export SOLUTION_CONFIG_TYPE=automated &
 
 Tested by:
 
-* August 14, 2022: Mukul Malhotra (mukul.malhotra@seagate.com) - AWS EC2, CentOS 7.9 Linux
+* August 14, 2022: Mukul Malhotra (mukul.malhotra@seagate.com) - AWS, CentOS 7.9 Linux
 * May 06, 2022: Rahul Shenoy (rahul.shenoy@seagate.com) - Windows , VMware Workstation 16 , CentOS 7.9 Linux
