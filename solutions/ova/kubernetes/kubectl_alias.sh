@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (c) 2020 Seagate Technology LLC and/or its Affiliates
+# Copyright (c) 2022 Seagate Technology LLC and/or its Affiliates
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,57 +17,9 @@
 # For any questions about this software or licensing,
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
-function login-pod {
-        kubectl exec -it $1 ${2:-bash}
-}
-
-function stop-pod {
-        kubectl delete pod $1
-}
-
-function delete-deply {
-        kubectl delete deployment $1
-}
-
-function describe-pod {
-        kubectl describe pod $1
-}
-
-function describe-all-pod {
-        kubectl describe pods
-}
 
 function hctl {
-        kubectl exec -it $(kubectl get pods | awk '/server-cortx/{print $1; exit}') -c cortx-hax -- hctl $1
+      kubectl exec -it $(kubectl get pods -n cortx | awk '/cortx-data-g0-0/{print $1; exit}') -n cortx -c cortx-hax -- hctl $1
 }
-
-
-function list-pods {
-        kubectl get pods
-}
-
-function logs {
-        kubectl logs $1
-}
-
-function pods {
-        kubectl get pods
-}
-
-alias login-pod=login-pod
-
-alias stop-pod=stop-pod
-
-alias delete-deply=delete-deply
-
-alias describe-pod=describe-pod
-
-alias describe-all-pod=describe-all-pod
 
 alias hctl=hctl $1
-
-alias list-pods=list-pods
-
-alias logs=logs
-
-alias pods=pods
