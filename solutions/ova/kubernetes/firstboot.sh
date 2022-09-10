@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (c) 2020 Seagate Technology LLC and/or its Affiliates
+# Copyright (c) 2022 Seagate Technology LLC and/or its Affiliates
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,10 +28,10 @@ function check_hctl_status {
         kubectl taint nodes $(hostname) node-role.kubernetes.io/master- &>> /var/tmp/firstboot-execute.log
 
         while [[ SECONDS -lt 1200 ]] ; do
-            if /usr/bin/kubectl exec -it $(/usr/bin/kubectl get pods | awk '/cortx-data-pod/{print $1; exit}') -c cortx-motr-hax -- hctl status &>> /var/tmp/firstboot-execute.log ; then
-                if ! kubectl exec -it $(kubectl get pods | awk '/cortx-data-pod/{print $1; exit}') -c cortx-motr-hax -- hctl status| grep -q -E 'unknown|offline|failed'; then
+            if /usr/bin/kubectl exec -it $(/usr/bin/kubectl get pods -n cortx | awk '/cortx-data-g0-0/{print $1; exit}') -n cortx -c cortx-hax -- hctl status &>> /var/tmp/firstboot-execute.log ; then
+                if ! kubectl exec -it $(kubectl get pods -n cortx | awk '/cortx-data-g0-0/{print $1; exit}') -n cortx -c cortx-hax -- hctl status| grep -q -E 'unknown|offline|failed'; then
                         echo "All CORTX pods are up" &>> /var/tmp/firstboot-execute.log
-                        kubectl exec -it $(/usr/bin/kubectl get pods | awk '/cortx-data-pod/{print $1; exit}') -c cortx-motr-hax -- hctl status >> /var/tmp/firstboot-execute.log
+                        kubectl exec -it $(/usr/bin/kubectl get pods -n cortx | awk '/cortx-data-g0-0/{print $1; exit}') -n cortx -c cortx-hax -- hctl status >> /var/tmp/firstboot-execute.log
                         mv /var/tmp/firstboot.sh /var/tmp/first-boot-executed.sh
                         set_s3_instance
                 else
@@ -49,7 +49,7 @@ function check_hctl_status {
 function set_s3_instance {
 
         # set cortx-data pod ip in hosts file
-        CORTX_IO_SVC=$(/usr/bin/kubectl get pods -o wide | grep cortx-data-pod | awk '{print $6}' | head -1)
+        CORTX_IO_SVC=$(/usr/bin/kubectl get pods -n cortx -o wide | grep cortx-data-g0 | awk '{print $8}')
         echo $CORTX_IO_SVC  &>> /var/tmp/firstboot-execute.log
         echo "${CORTX_IO_SVC} s3.seagate.com iam.seagate.com" >> /etc/hosts
 
@@ -68,7 +68,6 @@ echo "setup kubernetes" &>> /var/tmp/firstboot-execute.log
 
 # Backup Kubernetes and kubelet
 mv -f /etc/kubernetes /etc/kubernetes-backup
-#mv -f /var/lib/kubelet /var/lib/kubelet-backup
 
 # Keep the certs we need
 mkdir -p /etc/kubernetes
@@ -83,9 +82,6 @@ cp /etc/kubernetes/admin.conf ~/.kube/config
 
 systemctl stop kubelet docker
 systemctl start docker kubelet
-
-# Verify resutl
-# kubectl cluster-info
 
 # Check Pod status
 check_hctl_status
