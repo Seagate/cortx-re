@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (c) 2021 Seagate Technology LLC and/or its Affiliates
+# Copyright (c) 2022 Seagate Technology LLC and/or its Affiliates
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,11 +31,12 @@ CEPH_DEPLOYMENT="false"
 
 function usage() {
     cat << HEREDOC
-Usage : $0 [--cortx-cluster, --destroy-cluster, --io-sanity, --support-bundle]
+Usage : $0 [--cortx-cluster, --destroy-cluster, --io-sanity, --mangement-health-check, --support-bundle]
 where,
     --cortx-cluster - Deploy CORTX Cluster on provided nodes.
     --destroy-cluster  - Destroy CORTX cluster.
     --io-sanity - Perform IO sanity test.
+    --mangement-health-check - Perform Management path health check.
     --support-bundle - Collect support bundle logs.
 HEREDOC
 }
@@ -183,9 +184,15 @@ function io-sanity() {
         if [ -f '$SOLUTION_CONFIG' ]; then echo "file $SOLUTION_CONFIG not available..."; exit 1; fi
     fi
 
-    add_primary_separator "\tSetting up IO Sanity Testing"
+    add_primary_separator "\tSetting up IO Path Health Check"
     scp_primary_node io-sanity.sh
     ssh_primary_node "export CEPH_DEPLOYMENT=$CEPH_DEPLOYMENT && export DEPLOYMENT_METHOD=$DEPLOYMENT_METHOD && /var/tmp/cortx-deploy-functions.sh --io-sanity"
+}
+
+function management-path-check() {
+    add_primary_separator "\tSetting up Management Path Health Check"
+    scp_primary_node management-path-check.sh
+    ssh_primary_node "/var/tmp/cortx-deploy-functions.sh --mangement-health-check" | tee /var/tmp/management-path-status.txt
 }
 
 case $ACTION in
@@ -198,6 +205,9 @@ case $ACTION in
     ;;
     --io-sanity)
         io-sanity
+    ;;
+    --mangement-health-check)
+        management-path-check
     ;;
     --support-bundle)
         support_bundle
