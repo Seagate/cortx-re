@@ -133,7 +133,7 @@ pipeline {
                                     string(name: 'branch', value: "${branch}")
                                 ]
                                 env.S3_BUILD_NUMBER = s3Build.number
-                            }catch (err) {
+                            } catch (err) {
                                 build_stage = env.STAGE_NAME
                                 error "Failed to Build S3Server"
                             }

@@ -194,7 +194,7 @@ pipeline {
                         to: toEmail,
                         recipientProviders: recipientProvidersClass
                     )
-                }else {
+                } else {
                    echo 'Skipping Notification....' 
                 }
             }
