@@ -488,7 +488,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 script {
                     try {
-                        def build_cortx_all_image = build job: 'GitHub-custom-ci-builds/generic/cortx-all-docker-image/', wait: true,
+                        def build_cortx_images = build job: 'GitHub-custom-ci-builds/generic/cortx-all-docker-image/', wait: true,
                                     parameters: [
                                         string(name: 'CORTX_RE_URL', value: "${CORTX_RE_URL}"),
                                         string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
@@ -499,7 +499,7 @@ pipeline {
                                         string(name: 'OS', value: "${os_version}"),
                                         string(name: 'EMAIL_RECIPIENTS', value: "DEBUG")
                                         ]
-                    env.cortx_all_image = build_cortx_all_image.buildVariables.image
+                    env.cortx_images = build_cortx_images.buildVariables.image
                     } catch (err) {
                         build_stage = env.STAGE_NAME
                         error "Failed to Build CORTX images"
@@ -516,7 +516,7 @@ pipeline {
                 echo "Custom Release Build is available at,"
                 echo "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/$os_version/$release_tag/"
                 echo "CORTX images are available at,"
-                echo "${cortx_all_image}"
+                echo "${cortx_images}"
                 '''
             }
         }
