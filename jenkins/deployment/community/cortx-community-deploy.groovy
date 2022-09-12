@@ -71,7 +71,7 @@ pipeline {
         stage('Create EC2 instances') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Setting up multi EC2 instances', script: '''
+                sh label: 'Setting up EC2 instances', script: '''
                     pushd solutions/community-deploy/cloud/AWS
                         terraform validate && terraform apply -var-file user.tfvars --auto-approve
                         popd
