@@ -69,6 +69,7 @@ pipeline {
     stages {
     
         stage('Install Prerequisite Packages: Ubuntu') {
+            when { expression { params.os_version == 'ubuntu-22.04' } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'install ubuntu packages', script: '''
