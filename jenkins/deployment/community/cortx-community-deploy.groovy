@@ -22,9 +22,9 @@ pipeline {
         string(name: 'KEY_NAME', defaultValue: 'devops-key', description: 'Key name', trim: true)
         string(name: 'COMMUNITY_USE', defaultValue: 'yes', description: 'Only use during community deployment', trim: true)
         string(name: 'EBS_VOLUME_COUNT', defaultValue: '9', description: 'EBS volume count', trim: true)
-        string(name: 'EBS_VOLUME_SIZE', defaultValue: '10', description: 'EBS volume size', trim: true)
+        string(name: 'EBS_VOLUME_SIZE', defaultValue: '10', description: 'EBS volume size in GB', trim: true)
         string(name: 'INSTANCE_COUNT', defaultValue: '4', description: 'Instance count', trim: true)
-        string(name: 'INSTANCE_TAG_NAME', defaultValue: 'cortx-multinode', description: 'Tag name', trim: true)
+        string(name: 'AWS_INSTANCE_TAG_NAME', defaultValue: 'cortx-multinode', description: 'Tag name for EC2 instances', trim: true)
         password(name: 'SECRET_KEY', description: 'secret key for AWS account')
         password(name: 'ACCESS_KEY', description: 'access key for AWS account')
         password(name: 'ROOT_PASSWORD', description: 'Root password for EC2 instances')
@@ -53,15 +53,15 @@ pipeline {
                 export VOLUME_COUNT=${EBS_VOLUME_COUNT}
                 export VOLUME_SIZE=${EBS_VOLUME_SIZE}
                 export INSTANCE_COUNT=${INSTANCE_COUNT}
-                export INSTANCE_TAG_NAME=${INSTANCE_TAG_NAME}
+                export INSTANCE_TAG_NAME=${AWS_INSTANCE_TAG_NAME}
                     rm -rvf /usr/local/bin/aws /usr/local/bin/aws_completer /usr/local/aws-cli >/dev/null 2>&1
                     curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && yum install unzip -y && unzip awscliv2.zip
                     ./aws/install
                     aws configure set default.region $REGION; aws configure set aws_access_key_id $ACCESS_KEY; aws configure set aws_secret_access_key $SECRET_KEY
                 pushd solutions/community-deploy/cloud/AWS
                     ./tool_setup.sh
-                    sed -i 's,os_version          =.*,os_version          = "'"$OS_VERSION"'",g' user.tfvars && sed -i 's,region              =.*,region              = "'"$REGION"'",g' user.tfvars && sed -i 's,security_group_cidr =.*,security_group_cidr = "'"$VM_IP/32"'",g' user.tfvars && sed -i 's,instance_count          =.*,instance_count          = "'"$INSTANCE_COUNT"'",g' user.tfvars && sed -i 's,ebs_volume_count          =.*,ebs_volume_count          = "'"$VOLUME_COUNT"'",g' user.tfvars && sed -i 's,ebs_volume_size          =.*,ebs_volume_size          = "'"$VOLUME_SIZE"'",g' user.tfvars && sed -i 's,tag_name          =.*,tag_name          = "'"$INSTANCE_TAG_NAME"'",g' user.tfvars
-                    echo key_name            = '"'$KEY_NAME'"' | cat >>user.tfvars
+                    sed -i 's,os_version =.*,os_version = "'"$OS_VERSION"'",g' user.tfvars && sed -i 's,region =.*,region = "'"$REGION"'",g' user.tfvars && sed -i 's,security_group_cidr =.*,security_group_cidr = "'"$VM_IP/32"'",g' user.tfvars && sed -i 's,instance_count =.*,instance_count = "'"$INSTANCE_COUNT"'",g' user.tfvars && sed -i 's,ebs_volume_count =.*,ebs_volume_count = "'"$VOLUME_COUNT"'",g' user.tfvars && sed -i 's,ebs_volume_size =.*,ebs_volume_size = "'"$VOLUME_SIZE"'",g' user.tfvars && sed -i 's,tag_name =.*,tag_name = "'"$INSTANCE_TAG_NAME"'",g' user.tfvars
+                    echo key_name = '"'$KEY_NAME'"' | cat >>user.tfvars
                     cat user.tfvars
                     popd
                 '''
@@ -70,7 +70,7 @@ pipeline {
         stage('Create EC2 instances') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Setting up multi EC2 instances', script: '''
+                sh label: 'Setting up EC2 instances', script: '''
                     pushd solutions/community-deploy/cloud/AWS
                         terraform validate && terraform apply -var-file user.tfvars --auto-approve
                         popd
@@ -112,7 +112,7 @@ pipeline {
                 pushd solutions/community-deploy/cloud/AWS
                     export CORTX_RE_BRANCH=${CORTX_RE_BRANCH}
                     export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
-                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" "export CORTX_RE_BRANCH=$CORTX_RE_BRANCH; git clone $CORTX_RE_REPO -b $CORTX_RE_BRANCH; pushd /home/centos/cortx-re/solutions/community-deploy; time sudo ./build-cortx.sh"
+                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" "export CORTX_RE_BRANCH=$CORTX_RE_BRANCH; git clone $CORTX_RE_REPO -b $CORTX_RE_BRANCH; pushd /home/centos/cortx-re/solutions/community-deploy; time sudo ./build-cortx.sh -b ${CORTX_TAG}"
                     popd
             '''
             }
@@ -124,40 +124,40 @@ pipeline {
                 pushd solutions/community-deploy/cloud/AWS
                     export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
                     export WORKER_IP=$(cat ip_public.txt | jq '.[0]','.[1]','.[2]','.[3]' | tr -d '",[]')
-                    export HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
-                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" "sudo -- sh -c 'pushd /home/centos/cortx-re/solutions/kubernetes && ./cluster-setup.sh true && sed -i 's,cortx-docker.colo.seagate.com,${HOST1}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 120'"
-                    for wp in $WORKER_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${wp}" "sudo -- sh -c 'sed -i 's,cortx-docker.colo.seagate.com,${HOST1}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 120'";done
+                    export BUILD_NODE=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
+                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" "sudo -- sh -c 'pushd /home/centos/cortx-re/solutions/kubernetes && ./cluster-setup.sh true && sed -i 's,cortx-docker.colo.seagate.com,${BUILD_NODE}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 120'"
+                    for wp in $WORKER_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${wp} "sudo -- sh -c 'sed -i 's,cortx-docker.colo.seagate.com,${BUILD_NODE}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 120'";done
                     popd
             '''
             }
         }
-        stage('Generate locally build cortx images') {
+        stage('Pull locally generated images') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Generate locally build cortx images on worker nodes', script: '''
                 pushd solutions/community-deploy/cloud/AWS
                     export WORKER_IP=$(cat ip_public.txt | jq '.[0]','.[1]','.[2]','.[3]' | tr -d '",[]')
-                    export HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
-                    export CORTX_SERVER_IMAGE="${HOST1}:8080/seagate/cortx-rgw:2.0.0-0"
-                    export CORTX_DATA_IMAGE="${HOST1}:8080/seagate/cortx-data:2.0.0-0"
-                    export CORTX_CONTROL_IMAGE="${HOST1}:8080/seagate/cortx-control:2.0.0-0"
-                    for wp in $WORKER_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${wp}" "sudo docker pull '${CORTX_SERVER_IMAGE}' && sudo docker pull '${CORTX_DATA_IMAGE}' && sudo docker pull '${CORTX_CONTROL_IMAGE}'";done
+                    export BUILD_NODE=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
+                    export CORTX_SERVER_IMAGE="${BUILD_NODE}:8080/seagate/cortx-rgw:2.0.0-0"
+                    export CORTX_DATA_IMAGE="${BUILD_NODE}:8080/seagate/cortx-data:2.0.0-0"
+                    export CORTX_CONTROL_IMAGE="${BUILD_NODE}:8080/seagate/cortx-control:2.0.0-0"
+                    for wp in $WORKER_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${wp} "sudo docker pull '${CORTX_SERVER_IMAGE}' && sudo docker pull '${CORTX_DATA_IMAGE}' && sudo docker pull '${CORTX_CONTROL_IMAGE}'";done
                     popd
             '''
             }
         }
-        stage('Deploy multi-node cortx cluster') {
+        stage('Deploy CORTX cluster') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Deploying multi-node cortx cluster by locally generating images', script: '''
                 pushd solutions/community-deploy/cloud/AWS
                     export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
-                    export HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
+                    export BUILD_NODE=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
                     export SOLUTION_CONFIG_TYPE='automated'
                     export COMMUNITY_USE='yes'
-                    export CORTX_SERVER_IMAGE="${HOST1}:8080/seagate/cortx-rgw:2.0.0-0"
-                    export CORTX_DATA_IMAGE="${HOST1}:8080/seagate/cortx-data:2.0.0-0"
-                    export CORTX_CONTROL_IMAGE="${HOST1}:8080/seagate/cortx-control:2.0.0-0"
+                    export CORTX_SERVER_IMAGE="${BUILD_NODE}:8080/seagate/cortx-rgw:2.0.0-0"
+                    export CORTX_DATA_IMAGE="${BUILD_NODE}:8080/seagate/cortx-data:2.0.0-0"
+                    export CORTX_CONTROL_IMAGE="${BUILD_NODE}:8080/seagate/cortx-control:2.0.0-0"
                     ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" 'pushd /home/centos/cortx-re/solutions/kubernetes && export CORTX_SERVER_IMAGE='${CORTX_SERVER_IMAGE}' && export CORTX_DATA_IMAGE='${CORTX_DATA_IMAGE}' && export CORTX_CONTROL_IMAGE='${CORTX_CONTROL_IMAGE}' && sudo env SOLUTION_CONFIG_TYPE='${SOLUTION_CONFIG_TYPE}' env CORTX_SERVER_IMAGE='${CORTX_SERVER_IMAGE}' env CORTX_CONTROL_IMAGE='${CORTX_CONTROL_IMAGE}' env CORTX_DATA_IMAGE='${CORTX_DATA_IMAGE}' env COMMUNITY_USE='${COMMUNITY_USE}' ./cortx-deploy.sh --cortx-cluster'
                     popd
             '''
@@ -172,6 +172,17 @@ pipeline {
                     ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" 'pushd /home/centos/cortx-re/solutions/kubernetes && sudo ./cortx-deploy.sh --io-sanity'
                     popd
             '''
+            }
+        }
+        stage('Basic Management Path Check') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'Basic Management Path Check', script: '''
+                pushd solutions/community-deploy/cloud/AWS
+                    export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
+                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" 'pushd /home/centos/cortx-re/solutions/kubernetes && sudo ./cortx-deploy.sh --mangement-health-check'
+                    popd
+                '''
             }
         }
     }
@@ -203,10 +214,6 @@ pipeline {
                     ICON = 'warning.gif'
                     STATUS = 'UNSTABLE'
                 }
-
-                clusterStatusHTML = "<pre>${clusterStatus}</pre>"
-
-                manager.createSummary("${ICON}").appendText("<h3>CORTX Community Deploy ${currentBuild.currentResult} </h3><p>Please check <a href=\"${BUILD_URL}/console\">cluster setup logs</a> for more info <h4>Cluster Status:</h4>${clusterStatusHTML}", false, false, false, 'red')
 
                 // Email Notification
                 env.build_stage = "${build_stage}"
