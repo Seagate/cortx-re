@@ -68,6 +68,16 @@ pipeline {
 
     stages {
     
+        stage('Install Prerequisite Packages: Ubuntu') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'install ubuntu packages', script: '''
+                    apt update
+                    apt install git wget python3-distutils python3-dev libfabric1 libfabric-bin devscripts equivs -y
+                '''
+            }
+        }
+
         stage('Checkout') {
             steps {
                 step([$class: 'WsCleanup'])
@@ -76,28 +86,30 @@ pipeline {
         }
     
     
-    stage('Install Dependencies') {
+        stage('Install Dependencies') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: '', script: '''
-                    yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rockylinux/rockylinux-8.4-2.0.0-latest/
-                    yum --nogpgcheck -y --disablerepo="EOS_Rocky_8_OS_x86_64_Rocky_8" install libfabric-1.11.2 libfabric-devel-1.11.2
-                    '''
 
                 sh label: '', script: '''
-                        export build_number=${BUILD_ID}
-                        kernel_src=$(ls -1rd /lib/modules/*/build | head -n1)
-                        cp cortx-motr.spec.in cortx-motr.spec
-                        sed -i "/BuildRequires.*kernel*/d" cortx-motr.spec
-                        sed -i "/BuildRequires.*%{lustre_devel}/d" cortx-motr.spec
-                        sed -i 's/@BUILD_DEPEND_LIBFAB@//g' cortx-motr.spec
-                        sed -i 's/@.*@/111/g' cortx-motr.spec
-                        yum-builddep -y --nogpgcheck cortx-motr.spec
+                        if [ "${os_version}" == "rockylinux-8.4" ]; then
+                            yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rockylinux/rockylinux-8.4-2.0.0-latest/
+                            yum --nogpgcheck -y --disablerepo="EOS_Rocky_8_OS_x86_64_Rocky_8" install libfabric-1.11.2 libfabric-devel-1.11.2
+                            export build_number=${BUILD_ID}
+                            kernel_src=$(ls -1rd /lib/modules/*/build | head -n1)
+                            cp cortx-motr.spec.in cortx-motr.spec
+                            sed -i "/BuildRequires.*kernel*/d" cortx-motr.spec
+                            sed -i "/BuildRequires.*%{lustre_devel}/d" cortx-motr.spec
+                            sed -i 's/@BUILD_DEPEND_LIBFAB@//g' cortx-motr.spec
+                            sed -i 's/@.*@/111/g' cortx-motr.spec
+                            yum-builddep -y --nogpgcheck cortx-motr.spec
+                        else
+                            sudo mk-build-deps --install debian/control
+                        fi        
                     '''    
             }
         }
 
-        stage('Build') {
+        stage('Build RPM Packages') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                         sh label: '', script: '''
@@ -118,81 +130,85 @@ pipeline {
                             fi
                         fi
                         export build_number=${CUSTOM_CI_BUILD_ID}
-                        make rpms
+                        if [ "${os_version}" == "rockylinux-8.4" ]; then
+                            make rpms
+                        else
+                            make deb
+                        fi            
                     '''
             }
         }
-        
-        stage ('Copy RPMS') {
-            steps {
-                script { build_stage = env.STAGE_NAME }
-                sh label: 'Copy RPMS', script: '''
-                    mkdir -p $build_upload_dir
-                    cp /root/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir
-                    createrepo -v --update $build_upload_dir
-                '''
-            }
-        }
+
+        // stage ('Copy RPMS') {
+        //     steps {
+        //         script { build_stage = env.STAGE_NAME }
+        //         sh label: 'Copy RPMS', script: '''
+        //             mkdir -p $build_upload_dir
+        //             cp /root/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir
+        //             createrepo -v --update $build_upload_dir
+        //         '''
+        //     }
+        // }
     
-        stage ("Trigger Downstream Jobs") {
-            parallel {
-                stage ("Build CORTX-RGW") {
-                    steps {
-                        script { build_stage = env.STAGE_NAME }
-                        build job: '/GitHub-custom-ci-builds/generic/cortx-rgw-custom-build/', wait: true,
-                        parameters: [
-                                    string(name: 'CORTX_RGW_BRANCH', value: "${CORTX_RGW_BRANCH}"),
-                                    string(name: 'MOTR_BRANCH', value: "custom-ci"),
-                                    string(name: 'CORTX_RGW_URL', value: "${CORTX_RGW_URL}"),
-                                    string(name: 'CUSTOM_CI_BUILD_ID', value: "${CUSTOM_CI_BUILD_ID}"),
-                                    string(name: 'BUILD_LATEST_CORTX_RGW', value: "${BUILD_LATEST_CORTX_RGW}"),
-                                    string(name: 'CORTX_RE_URL', value: "${CORTX_RE_URL}"),
-                                    string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}")
-                                ]
-                    }
-                }
+        // stage ("Trigger Downstream Jobs") {
+        //     parallel {
+        //         stage ("Build CORTX-RGW") {
+        //             steps {
+        //                 script { build_stage = env.STAGE_NAME }
+        //                 build job: '/GitHub-custom-ci-builds/generic/cortx-rgw-custom-build/', wait: true,
+        //                 parameters: [
+        //                             string(name: 'CORTX_RGW_BRANCH', value: "${CORTX_RGW_BRANCH}"),
+        //                             string(name: 'MOTR_BRANCH', value: "custom-ci"),
+        //                             string(name: 'CORTX_RGW_URL', value: "${CORTX_RGW_URL}"),
+        //                             string(name: 'CUSTOM_CI_BUILD_ID', value: "${CUSTOM_CI_BUILD_ID}"),
+        //                             string(name: 'BUILD_LATEST_CORTX_RGW', value: "${BUILD_LATEST_CORTX_RGW}"),
+        //                             string(name: 'CORTX_RE_URL', value: "${CORTX_RE_URL}"),
+        //                             string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}")
+        //                         ]
+        //             }
+        //         }
 
-                stage ("Build Hare") {
-                    steps {
-                        script { build_stage = env.STAGE_NAME }
-                        build job: '/GitHub-custom-ci-builds/generic/hare-custom-build/', wait: true,
-                        parameters: [
-                                    string(name: 'HARE_BRANCH', value: "${HARE_BRANCH}"),
-                                    string(name: 'MOTR_BRANCH', value: "custom-ci"),
-                                    string(name: 'HARE_URL', value: "${HARE_URL}"),
-                                    string(name: 'CUSTOM_CI_BUILD_ID', value: "${CUSTOM_CI_BUILD_ID}"),
-                                    string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}"),
-                                    string(name: 'CORTX_UTILS_URL', value: "${CORTX_UTILS_URL}"),
-                                    string(name: 'THIRD_PARTY_PYTHON_VERSION', value: "${THIRD_PARTY_PYTHON_VERSION}"),
-                                    string(name: 'BUILD_LATEST_HARE', value: "${BUILD_LATEST_HARE}")   
-                            ]
-                    }
-                }
+        //         stage ("Build Hare") {
+        //             steps {
+        //                 script { build_stage = env.STAGE_NAME }
+        //                 build job: '/GitHub-custom-ci-builds/generic/hare-custom-build/', wait: true,
+        //                 parameters: [
+        //                             string(name: 'HARE_BRANCH', value: "${HARE_BRANCH}"),
+        //                             string(name: 'MOTR_BRANCH', value: "custom-ci"),
+        //                             string(name: 'HARE_URL', value: "${HARE_URL}"),
+        //                             string(name: 'CUSTOM_CI_BUILD_ID', value: "${CUSTOM_CI_BUILD_ID}"),
+        //                             string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}"),
+        //                             string(name: 'CORTX_UTILS_URL', value: "${CORTX_UTILS_URL}"),
+        //                             string(name: 'THIRD_PARTY_PYTHON_VERSION', value: "${THIRD_PARTY_PYTHON_VERSION}"),
+        //                             string(name: 'BUILD_LATEST_HARE', value: "${BUILD_LATEST_HARE}")   
+        //                     ]
+        //             }
+        //         }
 
-                stage ("Build CORTX-CC") {
-                    steps {
-                        script { build_stage = env.STAGE_NAME }
-                        script {
-                            try {
-                                def ccbuild = build job: '/GitHub-custom-ci-builds/generic/cortx-cc-custom-build/', wait: true,
-                                parameters: [
-                                    string(name: 'CORTX_CC_URL', value: "${CORTX_CC_URL}"),
-                                    string(name: 'CORTX_CC_BRANCH', value: "${CORTX_CC_BRANCH}"),
-                                    string(name: 'CUSTOM_CI_BUILD_ID', value: "${CUSTOM_CI_BUILD_ID}"),
-                                    string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}"),
-                                    string(name: 'CORTX_UTILS_URL', value: "${CORTX_UTILS_URL}"),
-                                    string(name: 'THIRD_PARTY_PYTHON_VERSION', value: "${THIRD_PARTY_PYTHON_VERSION}"),
-                                    string(name: 'THIRD_PARTY_RPM_VERSION', value: "${THIRD_PARTY_RPM_VERSION}"),
-                                    string(name: 'BUILD_LATEST_CORTX_CC', value: "${BUILD_LATEST_CORTX_CC}")
-                                ]
-                            } catch (err) {
-                                build_stage = env.STAGE_NAME
-                                error "Failed to Build CORTX-CC"
-                            }        
-                        }        
-                    }
-                }
-            }
-        }
+        //         stage ("Build CORTX-CC") {
+        //             steps {
+        //                 script { build_stage = env.STAGE_NAME }
+        //                 script {
+        //                     try {
+        //                         def ccbuild = build job: '/GitHub-custom-ci-builds/generic/cortx-cc-custom-build/', wait: true,
+        //                         parameters: [
+        //                             string(name: 'CORTX_CC_URL', value: "${CORTX_CC_URL}"),
+        //                             string(name: 'CORTX_CC_BRANCH', value: "${CORTX_CC_BRANCH}"),
+        //                             string(name: 'CUSTOM_CI_BUILD_ID', value: "${CUSTOM_CI_BUILD_ID}"),
+        //                             string(name: 'CORTX_UTILS_BRANCH', value: "${CORTX_UTILS_BRANCH}"),
+        //                             string(name: 'CORTX_UTILS_URL', value: "${CORTX_UTILS_URL}"),
+        //                             string(name: 'THIRD_PARTY_PYTHON_VERSION', value: "${THIRD_PARTY_PYTHON_VERSION}"),
+        //                             string(name: 'THIRD_PARTY_RPM_VERSION', value: "${THIRD_PARTY_RPM_VERSION}"),
+        //                             string(name: 'BUILD_LATEST_CORTX_CC', value: "${BUILD_LATEST_CORTX_CC}")
+        //                         ]
+        //                     } catch (err) {
+        //                         build_stage = env.STAGE_NAME
+        //                         error "Failed to Build CORTX-CC"
+        //                     }        
+        //                 }        
+        //             }
+        //         }
+        //     }
+        // }
     }
 }
