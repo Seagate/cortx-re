@@ -175,6 +175,17 @@ pipeline {
             '''
             }
         }
+        stage('Basic Management Path Check') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'Basic Management Path Check', script: '''
+                pushd solutions/community-deploy/cloud/AWS
+                    export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
+                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" 'pushd /home/centos/cortx-re/solutions/kubernetes && sudo ./cortx-deploy.sh --mangement-health-check'
+                    popd
+                '''
+            }
+        }
     }
     post {
         always {
