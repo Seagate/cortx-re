@@ -125,7 +125,7 @@ pipeline {
                             try {
 							    def hareBuild = build job: 'Hare', wait: true
 							    env.HARE_BUILD_NUMBER = hareBuild.number
-                            }catch (err){
+                            } catch (err) {
                                 build_stage = env.STAGE_NAME
                                 error "Failed to Build Hare"
                             }
