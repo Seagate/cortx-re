@@ -80,7 +80,9 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 dir ('motr') {
                     sh label: '', script: '''
-                        if [ "${os_version}" == "rockylinux-8.4" ]; then
+                        if [ "${os_version}" == "ubuntu-22.04" ]; then
+                            yes | mk-build-deps --install debian/control
+                        else
                             yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rockylinux/rockylinux-8.4-2.0.0-latest/
                             yum --nogpgcheck -y --disablerepo="EOS_Rocky_8_OS_x86_64_Rocky_8" install libfabric-1.11.2 libfabric-devel-1.11.2
                             export build_number=${BUILD_ID}
@@ -90,8 +92,6 @@ pipeline {
                             sed -i 's/@BUILD_DEPEND_LIBFAB@//g' cortx-motr.spec
                             sed -i 's/@.*@/111/g' cortx-motr.spec
                             yum-builddep -y --nogpgcheck cortx-motr.spec
-                        else
-                            yes | mk-build-deps --install debian/control
                         fi    
                     ''' 
                 }
@@ -107,10 +107,10 @@ pipeline {
                         ./autogen.sh
                         ./configure --with-user-mode-only
                         export build_number=${BUILD_ID}
-                        if [ "${os_version}" == "rockylinux-8.4" ]; then
-                            make rpms
-                        else
+                        if [ "${os_version}" == "ubuntu-22.04" ]; then
                             make deb
+                        else
+                            make rpms
                         fi    
                     '''
                 }    
@@ -118,6 +118,7 @@ pipeline {
         }
         
         stage ('Upload') {
+            when { expression { params.os_version != 'ubuntu-22.04' } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Copy RPMS', script: '''
@@ -133,6 +134,7 @@ pipeline {
         }
         
         stage ('Set Current Build') {
+            when { expression { params.os_version != 'ubuntu-22.04' } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Tag last_successful', script: '''
@@ -145,6 +147,7 @@ pipeline {
         }
         
         stage ("build Hare") {
+            when { expression { params.os_version != 'ubuntu-22.04' } }
             steps {
                     script { build_stage = env.STAGE_NAME }
                     script {
@@ -164,6 +167,7 @@ pipeline {
 
 
         stage ('Tag last_successful') {
+            when { expression { params.os_version != 'ubuntu-22.04' } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Tag last_successful', script: '''pushd $build_upload_dir/
@@ -187,6 +191,7 @@ pipeline {
         }
 
         stage ("Release") {
+            when { expression { params.os_version != 'ubuntu-22.04' } }
             when { triggeredBy 'SCMTrigger' }
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -199,6 +204,7 @@ pipeline {
             }
         }
         stage('Update Jira') {
+            when { expression { params.os_version != 'ubuntu-22.04' } }
             when { expression { return env.release_build != null } }
             steps {
                 script { build_stage = env.STAGE_NAME }
