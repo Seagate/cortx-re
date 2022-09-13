@@ -92,7 +92,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
 
                 sh label: '', script: '''
-                        if [ "${os_version}" == "ubuntu-22.04" ]; then
+                        if [ "${os_version}" = "ubuntu-22.04" ]; then
                             yes | mk-build-deps --install debian/control
                         else
                             yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rockylinux/rockylinux-8.4-2.0.0-latest/
@@ -131,7 +131,7 @@ pipeline {
                             fi
                         fi
                         export build_number=${CUSTOM_CI_BUILD_ID}
-                        if [ "${os_version}" == "ubuntu-22.04" ]; then
+                        if [ "${os_version}" = "ubuntu-22.04" ]; then
                             make deb
                         else
                             make rpms
