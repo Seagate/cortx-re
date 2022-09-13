@@ -213,7 +213,7 @@ EOF
                         env.cortx_control_image = buildCortxAllImage.buildVariables.cortx_control_image
                     } catch (err) {
                         build_stage = env.STAGE_NAME
-                        error "Failed to Build CORTX-ALL image"
+                        error "Failed to Build CORTX Images"
                     }
                 }
             }
