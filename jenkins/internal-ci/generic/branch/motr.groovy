@@ -191,8 +191,7 @@ pipeline {
         }
 
         stage ("Release") {
-            when { expression { params.os_version != 'ubuntu-22.04' } }
-            when { triggeredBy 'SCMTrigger' }
+            when { allOf { expression { params.os_version != 'ubuntu-22.04' }; triggeredBy 'SCMTrigger' } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
@@ -204,8 +203,7 @@ pipeline {
             }
         }
         stage('Update Jira') {
-            when { expression { params.os_version != 'ubuntu-22.04' } }
-            when { expression { return env.release_build != null } }
+            when { allOf { expression { params.os_version != 'ubuntu-22.04' }; expression { return env.release_build != null } } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                     script {
