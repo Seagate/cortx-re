@@ -91,7 +91,7 @@ pipeline {
                             sed -i 's/@.*@/111/g' cortx-motr.spec
                             yum-builddep -y --nogpgcheck cortx-motr.spec
                         else
-                            sudo mk-build-deps --install debian/control
+                            yes | mk-build-deps --install debian/control
                         fi    
                     ''' 
                 }
