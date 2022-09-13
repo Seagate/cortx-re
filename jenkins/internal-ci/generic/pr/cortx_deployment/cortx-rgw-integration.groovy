@@ -14,7 +14,7 @@ pipeline {
     }
 
     parameters {  
-	    string(name: 'RGW_INTEGRATION_URL', defaultValue: 'https://github.com/Seagate/cortx-rgw-integration', description: 'Repo for rgw-integration')
+        string(name: 'RGW_INTEGRATION_URL', defaultValue: 'https://github.com/Seagate/cortx-rgw-integration', description: 'Repo for rgw-integration')
         string(name: 'RGW_INTEGRATION_BRANCH', defaultValue: 'main', description: 'Branch for rgw-integration')
         string(name: 'CORTX_RE_URL', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repo for cortx-re')
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch for cortx-re')
@@ -24,7 +24,7 @@ pipeline {
             description: 'CORTX Image to be built. Defaults to all images ',
             name: 'CORTX_IMAGE'
         )
-	}
+    }
 
     environment {
 
@@ -75,7 +75,7 @@ pipeline {
         // Build rgw-integration from PR source code
         stage('Build') {
             steps {
-				script { build_stage = env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
                 script { manager.addHtmlBadge("&emsp;<b>Target Branch : ${BRANCH}</b>&emsp;<br />") }
 
                  sh """
@@ -112,7 +112,7 @@ pipeline {
         // Release cortx deployment stack
         stage('Release') {
             steps {
-				script { build_stage = env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
 
                 dir('cortx-re') {
                     checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 1, honorRefspec: true, noTags: true, reference: '', shallow: true], [$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
@@ -158,7 +158,7 @@ pipeline {
                         yum install -y createrepo
                         createrepo .
                     popd
-                '''	
+                '''    
 
                 sh label: 'Generate RELEASE.INFO', script: '''
                     pushd cortx-re/scripts/release_support
@@ -169,7 +169,7 @@ pipeline {
                     cp "${THIRD_PARTY_LOCATION}/THIRD_PARTY_RELEASE.INFO" "${DESTINATION_RELEASE_LOCATION}"
                     cp "${CORTX_ISO_LOCATION}/RELEASE.INFO" "${DESTINATION_RELEASE_LOCATION}"
                     cp "${CORTX_ISO_LOCATION}/RELEASE.INFO" .
-                '''	
+                '''    
 
                 archiveArtifacts artifacts: "RELEASE.INFO", onlyIfSuccessful: false, allowEmptyArchive: true
             }
@@ -200,7 +200,7 @@ pipeline {
                         env.cortx_control_image = buildCortxAllImage.buildVariables.cortx_control_image
                     } catch (err) {
                         build_stage = env.STAGE_NAME
-                        error "Failed to Build CORTX-ALL image"
+                        error "Failed to Build CORTX Images"
                     }
                 }
             }
