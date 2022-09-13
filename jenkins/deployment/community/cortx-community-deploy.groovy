@@ -1,7 +1,7 @@
 pipeline {
     agent {
         node {
-            label 'mukul-community-build-multi-node'
+            label 'community-build-executor'
         }
     }
 
