@@ -24,7 +24,7 @@ parameters {
         string(name: 'EBS_VOLUME_COUNT', defaultValue: '9', description: 'EBS volume count', trim: true)
         string(name: 'EBS_VOLUME_SIZE', defaultValue: '10', description: 'EBS volume size in GB', trim: true)
         string(name: 'INSTANCE_COUNT', defaultValue: '4', description: 'EC2 instance count', trim: true)
-        string(name: 'AWS_INSTANCE_TAG_NAME', defaultValue: 'cortx-multinode', description: 'Tag name for EC2 instances', trim: true)
+        string(name: 'INSTANCE_TAG_NAME', defaultValue: 'cortx-multinode', description: 'Tag name for EC2 instances', trim: true)
         password(name: 'SECRET_KEY', description: 'secret key for AWS account')
         password(name: 'ACCESS_KEY', description: 'access key for AWS account')
         password(name: 'ROOT_PASSWORD', description: 'Root password for EC2 instances')
@@ -53,14 +53,14 @@ parameters {
                 export EBS_VOLUME_COUNT=${EBS_VOLUME_COUNT}
                 export EBS_VOLUME_SIZE=${EBS_VOLUME_SIZE}
                 export INSTANCE_COUNT=${INSTANCE_COUNT}
-                export AWS_INSTANCE_TAG_NAME=${AWS_INSTANCE_TAG_NAME}
+                export INSTANCE_TAG_NAME=${INSTANCE_TAG_NAME}
                     rm -rvf /usr/local/bin/aws /usr/local/bin/aws_completer /usr/local/aws-cli >/dev/null 2>&1
                     curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && yum install unzip -y && unzip awscliv2.zip
                     ./aws/install
                     aws configure set default.region $REGION; aws configure set aws_access_key_id $ACCESS_KEY; aws configure set aws_secret_access_key $SECRET_KEY
                 pushd solutions/community-deploy/cloud/AWS
                     ./tool_setup.sh
-                    sed -i 's,os_version =.*,os_version = "'"$OS_VERSION"'",g' user.tfvars && sed -i 's,region =.*,region = "'"$REGION"'",g' user.tfvars && sed -i 's,security_group_cidr =.*,security_group_cidr = "'"$VM_IP/32"'",g' user.tfvars && sed -i 's,instance_count =.*,instance_count = "'"$INSTANCE_COUNT"'",g' user.tfvars && sed -i 's,ebs_volume_count =.*,ebs_volume_count = "'"$EBS_VOLUME_COUNT"'",g' user.tfvars && sed -i 's,ebs_volume_size =.*,ebs_volume_size = "'"$EBS_VOLUME_SIZE"'",g' user.tfvars && sed -i 's,tag_name =.*,tag_name = "'"$AWS_INSTANCE_TAG_NAME"'",g' user.tfvars
+                    sed -i 's,os_version =.*,os_version = "'"$OS_VERSION"'",g' user.tfvars && sed -i 's,region =.*,region = "'"$REGION"'",g' user.tfvars && sed -i 's,security_group_cidr =.*,security_group_cidr = "'"$VM_IP/32"'",g' user.tfvars && sed -i 's,instance_count =.*,instance_count = "'"$INSTANCE_COUNT"'",g' user.tfvars && sed -i 's,ebs_volume_count =.*,ebs_volume_count = "'"$EBS_VOLUME_COUNT"'",g' user.tfvars && sed -i 's,ebs_volume_size =.*,ebs_volume_size = "'"$EBS_VOLUME_SIZE"'",g' user.tfvars && sed -i 's,tag_name =.*,tag_name = "'"$INSTANCE_TAG_NAME"'",g' user.tfvars
                     echo key_name = '"'$KEY_NAME'"' | cat >>user.tfvars
                     cat user.tfvars
                     popd
@@ -194,45 +194,6 @@ parameters {
                         terraform validate && terraform destroy -var-file user.tfvars --auto-approve
                     popd
                     '''
-            }
-
-            script {
-                // Jenkins Summary
-                clusterStatus = ''
-                if ( currentBuild.currentResult == 'SUCCESS' ) {
-                    MESSAGE = "CORTX Community Deploy is Success for the build ${build_id}"
-                    ICON = 'accept.gif'
-                    STATUS = 'SUCCESS'
-            } else if ( currentBuild.currentResult == 'FAILURE' ) {
-                    manager.buildFailure()
-                    MESSAGE = "CORTX Community Deploy is Failed for the build ${build_id}"
-                    ICON = 'error.gif'
-                    STATUS = 'FAILURE'
-            } else {
-                    manager.buildUnstable()
-                    MESSAGE = 'CORTX Community Deploy Setup is Unstable'
-                    ICON = 'warning.gif'
-                    STATUS = 'UNSTABLE'
-                }
-
-                // Email Notification
-                env.build_stage = "${build_stage}"
-                env.cluster_status = "${clusterStatusHTML}"
-
-                def toEmail = ''
-                def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
-                if ( manager.build.result.toString() == 'FAILURE' ) {
-                    toEmail = 'CORTX.DevOps.RE@seagate.com'
-                    recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
-                }
-                emailext(
-                body: '''${SCRIPT, template="cluster-setup-email.template"}''',
-                mimeType: 'text/html',
-                subject: "[Cortx Community Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
-                attachLog: true,
-                to: toEmail,
-                recipientProviders: recipientProvidersClass
-                )
             }
         }
     }
