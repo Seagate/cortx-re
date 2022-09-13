@@ -73,7 +73,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Setting up EC2 instances', script: '''
                     pushd solutions/community-deploy/cloud/AWS
-                        terraform validate && terraform apply -var-file user.tfvars --auto-approve
+                        terraform validate && terraform apply --auto-approve
                         popd
             '''
             }
@@ -192,7 +192,7 @@ pipeline {
             retry(count: 3) {
                     sh label: 'Destroying EC2 instance', script: '''
                     pushd solutions/community-deploy/cloud/AWS
-                        terraform validate && terraform destroy -var-file user.tfvars --auto-approve
+                        terraform validate && terraform destroy --auto-approve
                     popd
                     '''
             }
