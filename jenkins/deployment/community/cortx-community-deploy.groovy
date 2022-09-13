@@ -16,7 +16,7 @@ pipeline {
 parameters {
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'mukul-multinode-automation', description: 'Branch or GitHash for CORTX Cluster scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repository for CORTX Cluster scripts', trim: true)
-        string(name: 'CORTX_TAG', defaultValue: 'mukul-multinode-automation', description: 'Branch or GitHash for generaing CORTX container images', trim: true)
+        string(name: 'CORTX_TAG', defaultValue: '2.0.0-940', description: 'Branch or GitHash for generaing CORTX container images', trim: true)
         string(name: 'OS_VERSION', defaultValue: 'CentOS 7.9.2009 x86_64', description: 'Operating system version', trim: true)
         string(name: 'REGION', defaultValue: 'ap-south-1', description: 'AWS region', trim: true)
         string(name: 'KEY_NAME', defaultValue: 'dev-key', description: 'Key name', trim: true)
