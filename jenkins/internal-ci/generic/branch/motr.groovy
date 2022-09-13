@@ -38,6 +38,18 @@ pipeline {
     }
 
     stages {
+        
+        stage('Install Prerequisite Packages: Ubuntu') {
+            when { expression { params.os_version == 'ubuntu-22.04' } }
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'install ubuntu packages', script: '''
+                    apt update
+                    apt install git wget python3-distutils python3-dev libfabric1 libfabric-bin devscripts equivs -y
+                '''
+            }
+        }
+        
         stage('Checkout') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -47,7 +59,7 @@ pipeline {
             }
         }
         
-    stage('Check TRANSPORT module') {
+        stage('Check TRANSPORT module') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 dir ('motr') {
@@ -57,7 +69,7 @@ pipeline {
                         else
                             sed -i '/libfabric/d' cortx-motr.spec.in
                             echo "Removed libfabric from spec file as we are going to use $TRANSPORT"
-                         fi
+                        fi    
                     '''
                 }
             }
@@ -67,20 +79,20 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 dir ('motr') {
-                    
                     sh label: '', script: '''
-                    yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rockylinux/rockylinux-8.4-2.0.0-latest/
-                    yum --nogpgcheck -y --disablerepo="EOS_Rocky_8_OS_x86_64_Rocky_8" install libfabric-1.11.2 libfabric-devel-1.11.2
-                    '''
-
-                    sh label: '', script: '''
-                        export build_number=${BUILD_ID}
-                        cp cortx-motr.spec.in cortx-motr.spec
-                        sed -i "/BuildRequires.*kernel*/d" cortx-motr.spec
-                        sed -i "/BuildRequires.*%{lustre_devel}/d" cortx-motr.spec
-                        sed -i 's/@BUILD_DEPEND_LIBFAB@//g' cortx-motr.spec
-                        sed -i 's/@.*@/111/g' cortx-motr.spec
-                        yum-builddep -y --nogpgcheck cortx-motr.spec
+                        if [ "${os_version}" == "rockylinux-8.4" ]; then
+                            yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rockylinux/rockylinux-8.4-2.0.0-latest/
+                            yum --nogpgcheck -y --disablerepo="EOS_Rocky_8_OS_x86_64_Rocky_8" install libfabric-1.11.2 libfabric-devel-1.11.2
+                            export build_number=${BUILD_ID}
+                            cp cortx-motr.spec.in cortx-motr.spec
+                            sed -i "/BuildRequires.*kernel*/d" cortx-motr.spec
+                            sed -i "/BuildRequires.*%{lustre_devel}/d" cortx-motr.spec
+                            sed -i 's/@BUILD_DEPEND_LIBFAB@//g' cortx-motr.spec
+                            sed -i 's/@.*@/111/g' cortx-motr.spec
+                            yum-builddep -y --nogpgcheck cortx-motr.spec
+                        else
+                            sudo mk-build-deps --install debian/control
+                        fi    
                     ''' 
                 }
             }
@@ -95,7 +107,11 @@ pipeline {
                         ./autogen.sh
                         ./configure --with-user-mode-only
                         export build_number=${BUILD_ID}
-                        make rpms
+                        if [ "${os_version}" == "rockylinux-8.4" ]; then
+                            make rpms
+                        else
+                            make deb
+                        fi    
                     '''
                 }    
             }
