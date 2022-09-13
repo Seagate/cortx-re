@@ -110,7 +110,7 @@ pipeline {
             }
         }
 
-        stage('Build RPM Packages') {
+        stage('Build') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                         sh label: '', script: '''
