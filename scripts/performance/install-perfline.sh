@@ -20,12 +20,13 @@
 set -euo pipefail
 source /var/tmp/functions.sh
 
-HOST_FILE=/var/tmp/hosts
-SSH_KEY_FILE=/root/.ssh/id_rsa
+HOST_FILE="/var/tmp/hosts"
+SSH_KEY_FILE="/root/.ssh/id_rsa"
 ALL_NODES=$(cat "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
 PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
 PASSWORD=$(head -1 "$HOST_FILE" | awk -F[,] '{print $3}' | cut -d'=' -f2)
 PERFLINE_LOG="/var/log/perfline.log"
+SCRIPT_LOCATION="/root/seagate-tools"
 
 INSTALLED_PERFLINE_DIR="/root/perfline/wrapper"
 temp_task="/var/tmp/perfline_task_list.txt"
@@ -66,12 +67,38 @@ function update_inventory_host()
     echo -e "Successfully Updated Perfline inventory host file"
 }
 
+function pre_requisites()
+{
+    if [ $(ls /var/tmp/perfline* | wc -l) -ne 0 ]
+    then
+        for perfline_file in $(ls /var/tmp/perfline*)
+        do
+            rm -f $perfline_file
+        done
+    fi
+
+    if [ -d "$SCRIPT_LOCATION" ]
+    then
+        rm -rf "$SCRIPT_LOCATION"
+    fi
+
+    if [ $(rpm -qa ansible) ]
+    then
+        echo "Ansible is already installed";
+    else
+        yum install -y ansible
+    fi
+}
+
 function install_perfline()
 {
     local host_file="inventories/perfline_hosts/hosts"
-    rm -rf seagate-tools
-    git clone --recursive "$SEAGATE_TOOLS_REPO" -b $SEAGATE_TOOLS_BRANCH
-    PERFLINE_DIR="seagate-tools/performance/PerfLine"
+    git clone "$SEAGATE_TOOLS_REPO" "$SCRIPT_LOCATION"
+    pushd $SCRIPT_LOCATION
+    git checkout $SEAGATE_TOOLS_BRANCH
+    popd
+
+    PERFLINE_DIR="${SCRIPT_LOCATION}/performance/PerfLine"
     pushd "$PERFLINE_DIR"
     update_inventory_host "$host_file"
     ansible-playbook -i "$host_file" run_perfline.yml -v
@@ -80,59 +107,48 @@ function install_perfline()
 
 function trigger_workloads()
 {
-    if [ -f "$temp_task" ]
-    then
-        rm -f "$temp_task"
-    fi
-
     for workload_file in $(ssh_primary_node ls "$WORKLOADS_DIR")
     do
         ssh_primary_node "cd $INSTALLED_PERFLINE_DIR; ./perfline.py -a < $WORKLOADS_DIR/$workload_file" >> "$temp_task"
     done
-    while read -r line; do
-        local task_id=$(echo -e "$line" | awk -F ' ' '{ print $2}' | tr -d "\"|}|,")
-        add_primary_separator "\n http://$PRIMARY_NODE:8005/artifacts/$task_id"
-    done <"$temp_task"
 
 }
 
 function waiting_for_task_completion()
 {
-    while read -r line; do
-        local task_id=$(echo -e "$line" | awk -F ' ' '{ print $2}' | tr -d "\"|}|,")
-        local flag=true
-        while "$flag"
-        do
-           local task_list=$(ssh "$PRIMARY_NODE" "cd $INSTALLED_PERFLINE_DIR; ./perfline.py -l")
-           sed "/tasks.worker_task: $task_id p=1 executed/q" <(tail -f /var/log/perfline.log )
-           if [ $(grep -c "$task_id" <<< "$task_list") -ne 1 ]
-           then
-               echo -e "Task completed for Task_ID: $task_id"
-               flag=false
-           fi
-        done
-
-    done <"$temp_task"
+    for task_id in $(cat "$temp_task" | awk -F ' ' '{ print $2}' | tr -d "\"|}|,")
+    do
+        task_list=$(ssh "$PRIMARY_NODE" "cd $INSTALLED_PERFLINE_DIR; ./perfline.py -l")
+        sed "/tasks.worker_task: $task_id p=1 executed/q" <(tail -f "$PERFLINE_LOG" )
+        if [ $(grep -c "$task_id" <<< "$task_list") -ne 1 ]
+        then
+            echo -e "Task completed for Task_ID: $task_id"
+        fi
+    done
 }
 
 # Check the status of task
 function check_task_status()
 {
-    if [ -f "$task_status" ]
-    then
-        rm -f "$task_status"
-    fi
-    touch "$task_status"
-    while read -r line; do
-        local task_id=$(echo -e "$line" | awk -F ' ' '{ print $2}' | tr -d "\"|}|,")
-        local task_detail=$(ssh "$PRIMARY_NODE" "cd $INSTALLED_PERFLINE_DIR; ./perfline.py -r" | grep "$task_id")
+    for task_id in $(cat "$temp_task" | awk -F ' ' '{ print $2}' | tr -d "\"|}|,")
+    do
+        task_detail=$(ssh "$PRIMARY_NODE" "cd $INSTALLED_PERFLINE_DIR; ./perfline.py -r" | grep "$task_id")
         if [ $(grep -c '"status": "SUCCESS"' <<< "$task_detail") -eq 1 ]
         then
-            echo "$task_id               : SUCCESS" >> "$task_status"
+            echo -e "\n\t $task_id               : SUCCESS" >> "$task_status"
         fi
-    done <"$temp_task"
+    done
+
     if [ -f "$task_status" ]
     then
+        for task_id in $(cat "$temp_task" | awk -F ' ' '{ print $2}' | tr -d "\"|}|,")
+        do
+            echo -e "\n\t <b>Result artifacts</b>: http://$PRIMARY_NODE:8005/#!/artifacts/$task_id \n" >> "$task_status"
+        done
+        echo -e "\n\t <b>systemctl status perfline</b>" >> "$task_status"
+        ssh "$PRIMARY_NODE" systemctl status perfline >> "$task_status"
+        echo -e "\n\n\t <b>systemctl status perfline-ui</b>" >> "$task_status"
+        ssh "$PRIMARY_NODE" systemctl status perfline-ui >> "$task_status"
         cat "$task_status"
     else
         exit 1
@@ -141,6 +157,7 @@ function check_task_status()
 
 case "$ACTION" in
     --install-perfline)
+        pre_requisites
         install_perfline
     ;;
     --run-workloads)
