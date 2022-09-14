@@ -55,6 +55,7 @@ parameters {
                 export INSTANCE_COUNT=${INSTANCE_COUNT}
                 export AWS_INSTANCE_TAG_NAME=${AWS_INSTANCE_TAG_NAME}
                     rm -rvf /usr/local/bin/aws /usr/local/bin/aws_completer /usr/local/aws-cli >/dev/null 2>&1
+                    systemctl start docker && systemctl enable docker
                     curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && yum install unzip -y && unzip awscliv2.zip
                     ./aws/install
                     aws configure set default.region $REGION; aws configure set aws_access_key_id $ACCESS_KEY; aws configure set aws_secret_access_key $SECRET_KEY
