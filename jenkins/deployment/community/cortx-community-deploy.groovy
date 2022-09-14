@@ -53,7 +53,7 @@ parameters {
                 export EBS_VOLUME_COUNT=${EBS_VOLUME_COUNT}
                 export EBS_VOLUME_SIZE=${EBS_VOLUME_SIZE}
                 export INSTANCE_COUNT=${INSTANCE_COUNT}
-                export INSTANCE_TAG_NAME=${AWS_INSTANCE_TAG_NAME}
+                export AWS_INSTANCE_TAG_NAME=${AWS_INSTANCE_TAG_NAME}
                     rm -rvf /usr/local/bin/aws /usr/local/bin/aws_completer /usr/local/aws-cli >/dev/null 2>&1
                     curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && yum install unzip -y && unzip awscliv2.zip
                     ./aws/install
