@@ -60,7 +60,7 @@ parameters {
                     aws configure set default.region $REGION; aws configure set aws_access_key_id $ACCESS_KEY; aws configure set aws_secret_access_key $SECRET_KEY
                 pushd solutions/community-deploy/cloud/AWS
                     ./tool_setup.sh
-                    sed -i 's,os_version =.*,os_version = "'"$OS_VERSION"'",g' user.tfvars && sed -i 's,region =.*,region = "'"$REGION"'",g' user.tfvars && sed -i 's,security_group_cidr =.*,security_group_cidr = "'"$VM_IP/32"'",g' user.tfvars && sed -i 's,instance_count.*,instance_count  = '"$INSTANCE_COUNT"',g' user.tfvars && sed -i 's,ebs_volume_count.*,ebs_volume_count = '"$EBS_VOLUME_COUNT"',g' user.tfvars && sed -i 's,ebs_volume_size.*,ebs_volume_size = '"$EBS_VOLUME_SIZE"',g' user.tfvars && sed -i 's,tag_name =.*,tag_name = $AWS_INSTANCE_TAG_NAME,g' user.tfvars
+                    sed -i 's,os_version =.*,os_version = "'"$OS_VERSION"'",g' user.tfvars && sed -i 's,region =.*,region = "'"$REGION"'",g' user.tfvars && sed -i 's,security_group_cidr =.*,security_group_cidr = "'"$VM_IP/32"'",g' user.tfvars && sed -i 's,instance_count.*,instance_count  = '"$INSTANCE_COUNT"',g' user.tfvars && sed -i 's,ebs_volume_count.*,ebs_volume_count = '"$EBS_VOLUME_COUNT"',g' user.tfvars && sed -i 's,ebs_volume_size.*,ebs_volume_size = '"$EBS_VOLUME_SIZE"',g' user.tfvars && sed -i 's,tag_name.*,tag_name = '"$AWS_INSTANCE_TAG_NAME"',g' user.tfvars
                     echo key_name = '"'$KEY_NAME'"' | cat >>user.tfvars
                     cat user.tfvars
                     popd
