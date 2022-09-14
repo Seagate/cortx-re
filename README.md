@@ -1,4 +1,5 @@
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/f20f5b6fe8aa4efabb629cf8f62a5d73)](https://www.codacy.com/gh/Seagate/cortx-re/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Seagate/cortx-re&amp;utm_campaign=Badge_Grade)
+[![DCO Check](https://github.com/Seagate/cortx-re/actions/workflows/dco-check.yml/badge.svg)](https://github.com/Seagate/cortx-re/actions/workflows/dco-check.yml)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://github.com/Seagate/cortx-re/blob/main/LICENSE)
 [![YouTube Badge](https://img.shields.io/badge/Video-YouTube-red)](https://cortx.link/videos )
 [![Slack](https://img.shields.io/badge/chat-on%20Slack-blue")](https://cortx.link/join-slack)
