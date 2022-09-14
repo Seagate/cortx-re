@@ -16,7 +16,7 @@ pipeline {
     }
 
     parameters {  
-	    string(name: 'HARE_URL', defaultValue: 'https://github.com/Seagate/cortx-hare', description: 'Repo for Hare')
+        string(name: 'HARE_URL', defaultValue: 'https://github.com/Seagate/cortx-hare', description: 'Repo for Hare')
         string(name: 'HARE_BRANCH', defaultValue: 'main', description: 'Branch for Hare')     
         string(name: 'CORTX_RE_URL', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repo for cortx-re')
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch for cortx-re')
@@ -77,7 +77,7 @@ pipeline {
         // Build hare fromm PR source code
         stage('Build') {
             steps {
-				script { build_stage = env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
                 script { manager.addHtmlBadge("&emsp;<b>Target Branch : ${BRANCH}</b>&emsp;<br />") } 
 
                 sh """
@@ -94,16 +94,16 @@ pipeline {
                     checkout([$class: 'GitSCM', branches: [[name: "${HARE_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 0, noTags: false, reference: '', shallow: false, timeout: 15], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false, timeout: 15]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${HARE_URL}",  name: 'origin', refspec: "${HARE_PR_REFSPEC}"]]])
 
                     sh label: '', script: '''
-					yum erase python36-PyYAML -y
+                    yum erase python36-PyYAML -y
                     cat <<EOF >>/etc/pip.conf
 [global]
 timeout: 60
 index-url: http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/python-packages-2.0.0-latest/
 trusted-host: cortx-storage.colo.seagate.com
 EOF
-					pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/$BRANCH/py-utils/python_requirements.txt
+                    pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/$BRANCH/py-utils/python_requirements.txt
                     pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/$BRANCH/py-utils/python_requirements.ext.txt
-					rm -rf /etc/pip.conf
+                    rm -rf /etc/pip.conf
                     '''
 
                     sh label: 'prepare build env', script: """
@@ -118,7 +118,7 @@ EOF
                         echo "Executing build script"
                         export build_number=${BUILD_NUMBER}
                         make VERSION=$VERSION rpm
-                    '''	
+                    '''    
                 }
             }
         }
@@ -126,7 +126,7 @@ EOF
         // Release cortx deployment stack
         stage('Release') {
             steps {
-				script { build_stage = env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
 
                 dir('cortx-re') {
                     checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 1, honorRefspec: true, noTags: true, reference: '', shallow: true], [$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
@@ -173,7 +173,7 @@ EOF
                         yum install -y createrepo
                         createrepo .
                     popd
-                '''	
+                '''    
 
                 sh label: 'Generate RELEASE.INFO', script: '''
                     pushd cortx-re/scripts/release_support
@@ -186,7 +186,7 @@ EOF
                     cp "${CORTX_ISO_LOCATION}/RELEASE.INFO" .
                 '''
 
-                archiveArtifacts artifacts: "RELEASE.INFO", onlyIfSuccessful: false, allowEmptyArchive: true			
+                archiveArtifacts artifacts: "RELEASE.INFO", onlyIfSuccessful: false, allowEmptyArchive: true            
             }
 
         }
@@ -213,7 +213,7 @@ EOF
                         env.cortx_control_image = buildCortxAllImage.buildVariables.cortx_control_image
                     } catch (err) {
                         build_stage = env.STAGE_NAME
-                        error "Failed to Build CORTX-ALL image"
+                        error "Failed to Build CORTX Images"
                     }
                 }
             }
@@ -260,7 +260,7 @@ EOF
                 }
              }
         }
-	}
+    }
 
     post {
         always {

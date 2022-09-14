@@ -16,7 +16,7 @@ pipeline {
     }
 
     parameters {  
-	    string(name: 'MOTR_URL', defaultValue: 'https://github.com/Seagate/cortx-motr', description: 'Repo for Motr')
+        string(name: 'MOTR_URL', defaultValue: 'https://github.com/Seagate/cortx-motr', description: 'Repo for Motr')
         string(name: 'MOTR_BRANCH', defaultValue: 'main', description: 'Branch for Motr')
         choice(name: 'DEPLOY_BUILD_ON_NODES', choices: ["Both", "1node", "3node" ], description: '''<pre>If you select Both then build will be deploy on 1 node as well as 3 node. If you select 1 node then build will be deploy on 1 node only. If you select 3 node then build will be deploy on 3 node only. 
 </pre>''')
@@ -28,7 +28,7 @@ pipeline {
             description: 'CORTX Image to be built. Defaults to all images ',
             name: 'CORTX_IMAGE'
         )
-	}
+    }
 
     environment {
 
@@ -79,7 +79,7 @@ pipeline {
         // Build motr fromm PR source code
         stage('Build') {
             steps {
-				script { build_stage = env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
                 script { manager.addHtmlBadge("&emsp;<b>Target Branch : ${BRANCH}</b>&emsp;<br />") }
 
                  sh """
@@ -108,15 +108,15 @@ pipeline {
                         sed -i 's/@BUILD_DEPEND_LIBFAB@//g' cortx-motr.spec  
                         sed -i 's/@.*@/111/g' cortx-motr.spec
                         yum-builddep -y --nogpgcheck cortx-motr.spec
-					'''
+                    '''
 
                     sh label: '', script: '''
-						rm -rf /root/rpmbuild/RPMS/x86_64/*.rpm
-						./autogen.sh
-						./configure --with-user-mode-only
-						export build_number=${BUILD_ID}
-						make rpms
-					'''
+                        rm -rf /root/rpmbuild/RPMS/x86_64/*.rpm
+                        ./autogen.sh
+                        ./configure --with-user-mode-only
+                        export build_number=${BUILD_ID}
+                        make rpms
+                    '''
 
                     sh label: 'Copy RPMS', script: '''
                         mkdir -p "/root/build_rpms"  
@@ -157,7 +157,7 @@ EOF
                             echo "Executing build script"
                             export build_number=${BUILD_NUMBER}
                             make VERSION=$VERSION rpm
-                        '''	
+                        '''    
                         sh label: 'Copy RPMS', script: '''
                             cp /root/rpmbuild/RPMS/x86_64/*.rpm /root/build_rpms
                         '''
@@ -170,7 +170,7 @@ EOF
         // Release cortx deployment stack
         stage('Release') {
             steps {
-				script { build_stage = env.STAGE_NAME }
+                script { build_stage = env.STAGE_NAME }
 
                 dir('cortx-re') {
                     checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', depth: 1, honorRefspec: true, noTags: true, reference: '', shallow: true], [$class: 'AuthorInChangelog']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: 'https://github.com/Seagate/cortx-re']]])
@@ -216,7 +216,7 @@ EOF
                         yum install -y createrepo
                         createrepo .
                     popd
-                '''	
+                '''    
 
                 sh label: 'Generate RELEASE.INFO', script: '''
                     pushd cortx-re/scripts/release_support
@@ -227,7 +227,7 @@ EOF
                     cp "${THIRD_PARTY_LOCATION}/THIRD_PARTY_RELEASE.INFO" "${DESTINATION_RELEASE_LOCATION}"
                     cp "${CORTX_ISO_LOCATION}/RELEASE.INFO" "${DESTINATION_RELEASE_LOCATION}"
                     cp "${CORTX_ISO_LOCATION}/RELEASE.INFO" .
-                '''	
+                '''    
 
                 archiveArtifacts artifacts: "RELEASE.INFO", onlyIfSuccessful: false, allowEmptyArchive: true
             }
@@ -257,12 +257,12 @@ EOF
                         env.cortx_control_image = buildCortxAllImage.buildVariables.cortx_control_image
                     } catch (err) {
                         build_stage = env.STAGE_NAME
-                        error "Failed to Build CORTX-ALL image"
+                        error "Failed to Build CORTX Images"
                     }
                 }
             }
         }
-	stage ('Deploy Cortx Cluster') {
+    stage ('Deploy Cortx Cluster') {
              parallel {
                   stage ("Deploy 1Node") {
                        when { expression { params.DEPLOY_BUILD_ON_NODES ==~ /Both|1node/ } }
