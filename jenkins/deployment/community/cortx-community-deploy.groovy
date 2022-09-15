@@ -122,13 +122,20 @@ parameters {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Setting up K8s cluster on EC2', script: '''
-                pushd solutions/community-deploy/cloud/AWS
-                    export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
-                    export WORKER_IP=$(cat ip_public.txt | jq '.[0]','.[1]','.[2]','.[3]' | tr -d '",[]')
-                    export BUILD_NODE=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
+                INSTANCE_COUNT=1
+                export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
+                export WORKER_IP=$(cat ip_public.txt | jq '.[0]','.[1]','.[2]','.[3]' | tr -d '",[]')
+                export BUILD_NODE=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
+                if [ "$INSTANCE_COUNT" -eq 1 ]; then
+                    pushd solutions/community-deploy/cloud/AWS
                     ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" "sudo -- sh -c 'pushd /home/centos/cortx-re/solutions/kubernetes && ./cluster-setup.sh true && sed -i 's,cortx-docker.colo.seagate.com,${BUILD_NODE}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 120'"
+                    popd
+                else
+                    pushd solutions/community-deploy/cloud/AWS
                     for wp in $WORKER_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${wp} "sudo -- sh -c 'sed -i 's,cortx-docker.colo.seagate.com,${BUILD_NODE}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 120'";done
                     popd
+                    fi
+                fi
             '''
             }
         }
