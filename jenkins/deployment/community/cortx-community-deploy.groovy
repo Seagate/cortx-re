@@ -143,14 +143,17 @@ parameters {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Generate locally build cortx images on worker nodes', script: '''
+                INSTANCE_COUNT=1
+                export WORKER_IP=$(cat ip_public.txt | jq '.[0]','.[1]','.[2]','.[3]' | tr -d '",[]')
+                export BUILD_NODE=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
+                export CORTX_SERVER_IMAGE="${BUILD_NODE}:8080/seagate/cortx-rgw:2.0.0-0"
+                export CORTX_DATA_IMAGE="${BUILD_NODE}:8080/seagate/cortx-data:2.0.0-0"
+                export CORTX_CONTROL_IMAGE="${BUILD_NODE}:8080/seagate/cortx-control:2.0.0-0"
+                if [ "$INSTANCE_COUNT" -gt 1 ]; then
                 pushd solutions/community-deploy/cloud/AWS
-                    export WORKER_IP=$(cat ip_public.txt | jq '.[0]','.[1]','.[2]','.[3]' | tr -d '",[]')
-                    export BUILD_NODE=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
-                    export CORTX_SERVER_IMAGE="${BUILD_NODE}:8080/seagate/cortx-rgw:2.0.0-0"
-                    export CORTX_DATA_IMAGE="${BUILD_NODE}:8080/seagate/cortx-data:2.0.0-0"
-                    export CORTX_CONTROL_IMAGE="${BUILD_NODE}:8080/seagate/cortx-control:2.0.0-0"
                     for wp in $WORKER_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${wp} "sudo docker pull '${CORTX_SERVER_IMAGE}' && sudo docker pull '${CORTX_DATA_IMAGE}' && sudo docker pull '${CORTX_CONTROL_IMAGE}'";done
                     popd
+                    fi
             '''
             }
         }
