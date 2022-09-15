@@ -289,10 +289,12 @@ function setup_primary_node() {
     else
         add_secondary_separator "\nExecuting community deploy script.No cleaning required."
     fi
+
     #Third-party images are downloaded from GitHub container registry. 
     download_deploy_script
     install_yq
 
+    #Copying manually provided solution.yaml for manual solution config 
     if [ "$SOLUTION_CONFIG_TYPE" == "manual" ]; then
         add_secondary_separator "Copying provided solution.yaml to $SCRIPT_LOCATION"
         copy_solution_config "$SOLUTION_CONFIG" "$SCRIPT_LOCATION/k8_cortx_cloud"
