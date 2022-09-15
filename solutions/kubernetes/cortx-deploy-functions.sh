@@ -300,7 +300,7 @@ function setup_primary_node() {
         update_solution_config
     fi
 
-    if [ "$CUSTOM_SSL_CERT" == yes ]; then
+    if [ "$CUSTOM_SSL_CERT" == "yes" ]; then
         kubectl create secret generic my-ssl-cert --from-file=cortx.pem=$CUSTOM_SSL_CERT_KEY -n $NAMESPACE
         yq e -i '.solution.common.ssl.external_secret = "my-ssl-cert"' $SCRIPT_LOCATION/k8_cortx_cloud/solution.yaml
     fi    
