@@ -27,6 +27,7 @@ SCRIPT_LOCATION="/root/deploy-scripts"
 YQ_VERSION=v4.25.1
 YQ_BINARY=yq_linux_386
 SOLUTION_CONFIG="/var/tmp/solution.yaml"
+CUSTOM_SSL_CERT_KEY="/var/tmp/cortx.pem"
 
 function usage() {
     cat << HEREDOC
@@ -299,6 +300,11 @@ function setup_primary_node() {
         update_solution_config
     fi
 
+    if [ "$CUSTOM_SSL_CERT" == yes ]; then
+        kubectl create secret generic my-ssl-cert --from-file=cortx.pem=$CUSTOM_SSL_CERT_KEY -n $NAMESPACE
+        yq e -i '.solution.common.ssl.external_secret = "my-ssl-cert"' $SCRIPT_LOCATION/k8_cortx_cloud/solution.yaml
+    fi    
+        
     if [ "$(kubectl get  nodes $HOSTNAME  -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints}" | grep -o NoSchedule)" == "" ]; then
         execute_prereq
     fi
