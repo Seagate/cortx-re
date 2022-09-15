@@ -56,14 +56,15 @@ tag_name            = "cortx-multinode"
 - Execute terraform code (as shown below) to create AWS instances for CORTX Build and Deployment
 - The command will display public-ip and private hostname on completion or use below environment variables. Use this public-ip to connect AWS instance using SSH Protocol
 ```
+terraform init
 terraform validate && terraform apply -var-file user.tfvars --auto-approve
 ```
 - Execute the following command to store environment variables for AWS instances which can used for public ipaddress and private hostname i.e. PUBLIC_IP and PRIVATE_HOSTNAME respectively
 ```
 export PUBLIC_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip_public.txt | tr -d '",[]' | sed '/^$/d')
-export PRIVATE_HOSTNAME=$(cat ec2_hostname.txt | tr -d '",[]' | sed '/^$/d')
+export PRIVATE_HOSTNAME=$(terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_dns.value 2>&1 | tee ec2_hostname.txt | tr -d '",[]' | sed '/^$/d')
 export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
-export WORKER_IP=$(cat ip_public.txt | tr -d '",[]' | sed '/^$/d')
+export WORKER_IP=$(cat ip_public.txt | jq '.[0]','.[1]','.[2]','.[3]' | tr -d '",[]')
 export HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
 export CORTX_SERVER_IMAGE="${HOST1}:8080/seagate/cortx-rgw:2.0.0-0"
 export CORTX_DATA_IMAGE="${HOST1}:8080/seagate/cortx-data:2.0.0-0"
@@ -84,7 +85,7 @@ for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$i
 - We will use [cortx-build](https://github.com/Seagate/cortx/pkgs/container/cortx-build) docker image to compile entire CORTX stack
 - Execute `build-cortx.sh` on primary node using public ip address which will generate CORTX container images from `main` of CORTX components
 ```
-ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$PRIMARY_PUBLIC_IP "git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/community-deploy && time bash -x ./build-cortx.sh"
+ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$PRIMARY_PUBLIC_IP "sudo -- sh -c 'git clone https://github.com/Seagate/cortx-re && cd /home/centos/cortx-re/solutions/community-deploy && yum install time -y && time bash -x ./build-cortx.sh'"
 ```
 - Clone cortx-re repository from required branch/tag. If you do not provide `-b <branch/tag>`, then it will use default main branch    
   :warning: Tag based build is supported after including tag [2.0.0-879](https://github.com/Seagate/cortx-re/releases/tag/2.0.0-879)
@@ -111,9 +112,9 @@ for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$i
 - Make sure `hosts` file entries include all the AWS Instances added, If they are not same then add the node entries according to multi-node
 - Execute following command to modify `/etc/docker/daemon.json` on all the nodes and then restart docker deamon to generate CORTX images locally
 ```
-for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@ip "sudo -- sh -c 'pushd /home/centos/cortx-re/solutions/kubernetes && sed -i 's,cortx-docker.colo.seagate.com,${HOST1}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 120'";done
+for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$ip "sudo -- sh -c 'pushd /home/centos/cortx-re/solutions/kubernetes && sed -i 's,cortx-docker.colo.seagate.com,${HOST1}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 120'";done
 ```
-- Execute following command to pull images build locally on worker nodes
+- For multinode execute the following command to pull images build locally on worker nodes
 ```
 for wp in $WORKER_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$wp "sudo docker pull '${CORTX_SERVER_IMAGE}' && sudo docker pull '${CORTX_DATA_IMAGE}' && sudo docker pull '${CORTX_CONTROL_IMAGE}'";done
 ```
