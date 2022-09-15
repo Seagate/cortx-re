@@ -272,7 +272,7 @@ function execute_prereq() {
         CORTX_DATA_IMAGE=$(pull_image "$CORTX_DATA_IMAGE")
         CORTX_CONTROL_IMAGE=$(pull_image "$CORTX_CONTROL_IMAGE")
     else
-        echo -e "\nExecuting community deploy script.Ignoring image pull."
+        add_secondary_separator "\nExecuting community deploy script.Ignoring image pull."
     fi
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         add_secondary_separator "Un-mounting $SYSTEM_DRIVE partition if already mounted"
@@ -287,13 +287,14 @@ function setup_primary_node() {
     if [ "${COMMUNITY_USE}" == "no" ]; then
         cleanup
     else
-        echo -e "\nExecuting community deploy script.No cleaning required."
+        add_secondary_separator "\nExecuting community deploy script.No cleaning required."
     fi
     #Third-party images are downloaded from GitHub container registry. 
     download_deploy_script
     install_yq
 
     if [ "$SOLUTION_CONFIG_TYPE" == "manual" ]; then
+        add_secondary_separator "Copying provided solution.yaml to $SCRIPT_LOCATION"
         copy_solution_config "$SOLUTION_CONFIG" "$SCRIPT_LOCATION/k8_cortx_cloud"
         NAMESPACE=$(yq e '.solution.namespace' "$SCRIPT_LOCATION/k8_cortx_cloud/solution.yaml")
     else
@@ -301,10 +302,8 @@ function setup_primary_node() {
     fi
 
     if [ "$CUSTOM_SSL_CERT" == "yes" ]; then
-        echo CUSTOM_SSL_CERT_KEY: $CUSTOM_SSL_CERT_KEY
-        echo NAMESPACE: $NAMESPACE
+        add_secondary_separator "Creating kubernetes secret from provided key file for custom certificate"
         kubectl create secret generic my-ssl-cert --from-file=cortx.pem=$CUSTOM_SSL_CERT_KEY -n $NAMESPACE
-        kubectl get secret -A
         yq e -i '.solution.common.ssl.external_secret = "my-ssl-cert"' $SCRIPT_LOCATION/k8_cortx_cloud/solution.yaml
     fi    
         
