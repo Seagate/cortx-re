@@ -294,7 +294,7 @@ function setup_primary_node() {
     download_deploy_script
     install_yq
 
-    #Copying manually provided solution.yaml for manual solution config 
+    #Copy manually provided solution.yaml for manual solution config 
     if [ "$SOLUTION_CONFIG_TYPE" == "manual" ]; then
         add_secondary_separator "Copying provided solution.yaml to $SCRIPT_LOCATION"
         copy_solution_config "$SOLUTION_CONFIG" "$SCRIPT_LOCATION/k8_cortx_cloud"
@@ -303,8 +303,10 @@ function setup_primary_node() {
         update_solution_config
     fi
 
+    #Create kubernetes secret from provided key file
     if [ "$CUSTOM_SSL_CERT" == "yes" ]; then
         add_secondary_separator "Creating kubernetes secret from provided key file for custom certificate"
+        if kubectl get secret my-ssl-cert ; then kubectl delete secret my-ssl-cert; fi
         kubectl create secret generic my-ssl-cert --from-file=cortx.pem=$CUSTOM_SSL_CERT_KEY -n $NAMESPACE
         yq e -i '.solution.common.ssl.external_secret = "my-ssl-cert"' $SCRIPT_LOCATION/k8_cortx_cloud/solution.yaml
     fi    
