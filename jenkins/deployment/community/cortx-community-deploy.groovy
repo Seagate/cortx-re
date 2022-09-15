@@ -128,10 +128,12 @@ parameters {
                 export BUILD_NODE=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
                 if [ "$INSTANCE_COUNT" -eq 1 ]; then
                     pushd solutions/community-deploy/cloud/AWS
+                    echo -n "Setting up K8s cluster on EC2 for 1N ...."
                     ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" "sudo -- sh -c 'pushd /home/centos/cortx-re/solutions/kubernetes && ./cluster-setup.sh true && sed -i 's,cortx-docker.colo.seagate.com,${BUILD_NODE}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 120'"
                     popd
                 else
                     pushd solutions/community-deploy/cloud/AWS
+                    echo -n "Setting up K8s cluster on EC2 for multinode ...."
                     for wp in $WORKER_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${wp} "sudo -- sh -c 'sed -i 's,cortx-docker.colo.seagate.com,${BUILD_NODE}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 120'";done
                     popd
                     fi
