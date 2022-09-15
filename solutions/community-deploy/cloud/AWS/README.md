@@ -85,7 +85,7 @@ for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$i
 - We will use [cortx-build](https://github.com/Seagate/cortx/pkgs/container/cortx-build) docker image to compile entire CORTX stack
 - Execute `build-cortx.sh` on primary node using public ip address which will generate CORTX container images from `main` of CORTX components
 ```
-ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$PRIMARY_PUBLIC_IP "git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/community-deploy && time bash -x ./build-cortx.sh"
+ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$PRIMARY_PUBLIC_IP "sudo -- sh -c 'git clone https://github.com/Seagate/cortx-re && cd /home/centos/cortx-re/solutions/community-deploy && yum install time -y && time bash -x ./build-cortx.sh'"
 ```
 - Clone cortx-re repository from required branch/tag. If you do not provide `-b <branch/tag>`, then it will use default main branch    
   :warning: Tag based build is supported after including tag [2.0.0-879](https://github.com/Seagate/cortx-re/releases/tag/2.0.0-879)
