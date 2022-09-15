@@ -56,14 +56,15 @@ tag_name            = "cortx-multinode"
 - Execute terraform code (as shown below) to create AWS instances for CORTX Build and Deployment
 - The command will display public-ip and private hostname on completion or use below environment variables. Use this public-ip to connect AWS instance using SSH Protocol
 ```
+terraform init
 terraform validate && terraform apply -var-file user.tfvars --auto-approve
 ```
 - Execute the following command to store environment variables for AWS instances which can used for public ipaddress and private hostname i.e. PUBLIC_IP and PRIVATE_HOSTNAME respectively
 ```
 export PUBLIC_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip_public.txt | tr -d '",[]' | sed '/^$/d')
-export PRIVATE_HOSTNAME=$(cat ec2_hostname.txt | tr -d '",[]' | sed '/^$/d')
+export PRIVATE_HOSTNAME=$(terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_dns.value 2>&1 | tee ec2_hostname.txt | tr -d '",[]' | sed '/^$/d')
 export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
-export WORKER_IP=$(cat ip_public.txt | tr -d '",[]' | sed '/^$/d')
+export WORKER_IP=$(cat ip_public.txt | jq '.[0]','.[1]','.[2]','.[3]' | tr -d '",[]')
 export HOST1=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
 export CORTX_SERVER_IMAGE="${HOST1}:8080/seagate/cortx-rgw:2.0.0-0"
 export CORTX_DATA_IMAGE="${HOST1}:8080/seagate/cortx-data:2.0.0-0"
