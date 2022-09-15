@@ -132,7 +132,7 @@ function setup_cluster() {
     add_secondary_separator "Setup primary node $PRIMARY_NODE"
     ssh_primary_node "
     export SOLUTION_CONFIG_TYPE=$SOLUTION_CONFIG_TYPE &&
-    export CUSTOM_SSL_CERT = $CUSTOM_SSL_CERT &&
+    export CUSTOM_SSL_CERT=$CUSTOM_SSL_CERT &&
     export CORTX_SERVER_IMAGE=$CORTX_SERVER_IMAGE &&
     export CORTX_DATA_IMAGE=$CORTX_DATA_IMAGE &&
     export CORTX_CONTROL_IMAGE=$CORTX_CONTROL_IMAGE &&
