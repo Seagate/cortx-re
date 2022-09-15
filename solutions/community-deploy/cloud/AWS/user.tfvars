@@ -1,4 +1,4 @@
-# Copyright (c) 2021 Seagate Technology LLC and/or its Affiliates
+# Copyright (c) 2022 Seagate Technology LLC and/or its Affiliates
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@
 os_version = "<OS VERSION>"
 region = "<AWS REGION>"
 security_group_cidr = "<YOUR PUBLIC IP CIDR>"
-key_name = "<YOUR PEM KEY FILE NAME TO LOGIN TO AWS EC2 INSTANCES>"
 instance_count = "<NUMBER OF EC2 INSTANCES>"
 ebs_volume_count = "<NUMBER OF EBS VOLUMES>"
 ebs_volume_size  = "<EBS VOLUME SIZE>"
