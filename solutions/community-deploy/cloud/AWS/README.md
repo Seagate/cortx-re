@@ -112,7 +112,7 @@ for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$i
 - Make sure `hosts` file entries include all the AWS Instances added, If they are not same then add the node entries according to multi-node
 - Execute following command to modify `/etc/docker/daemon.json` on all the nodes and then restart docker deamon to generate CORTX images locally
 ```
-for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@ip "sudo -- sh -c 'pushd /home/centos/cortx-re/solutions/kubernetes && sed -i 's,cortx-docker.colo.seagate.com,${HOST1}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 120'";done
+for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$ip "sudo -- sh -c 'pushd /home/centos/cortx-re/solutions/kubernetes && sed -i 's,cortx-docker.colo.seagate.com,${HOST1}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 120'";done
 ```
 - For multinode execute the following command to pull images build locally on worker nodes
 ```
