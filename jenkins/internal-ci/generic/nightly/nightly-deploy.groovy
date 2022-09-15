@@ -8,7 +8,7 @@ pipeline {
     options {
         timeout(time: 600, unit: 'MINUTES')
         timestamps()
-        buildDiscarder(logRotator(daysToKeepStr: '20', numToKeepStr: '20'))
+        buildDiscarder(logRotator(daysToKeepStr: '35', numToKeepStr: '35'))
         disableConcurrentBuilds()
     }
     environment {
@@ -96,12 +96,6 @@ pipeline {
                    docker pull $CORTX_SERVER_IMAGE
                    docker pull $CORTX_DATA_IMAGE
                    docker pull $CORTX_CONTROL_IMAGE
-
-                   echo "\n RPM Build URL used for Nightly Image"
-                   docker inspect $CORTX_SERVER_IMAGE | jq -r '.[] | (.ContainerConfig.Cmd)' | grep 'BUILD_URL='
-                   docker inspect $CORTX_DATA_IMAGE | jq -r '.[] | (.ContainerConfig.Cmd)' | grep 'BUILD_URL='
-                   docker inspect $CORTX_CONTROL_IMAGE | jq -r '.[] | (.ContainerConfig.Cmd)' | grep 'BUILD_URL='
-                   #Update VERSION details in RELEASE.INFO file
 
                    docker commit $(docker run -d ${CORTX_SERVER_IMAGE} sed -i /VERSION/s/\\"2.0.0.*\\"/\\"${VERSION}-${BUILD_NUMBER}\\"/ /opt/seagate/cortx/RELEASE.INFO) ghcr.io/seagate/cortx-rgw:${VERSION}-${BUILD_NUMBER}
                    docker commit $(docker run -d ${CORTX_DATA_IMAGE} sed -i /VERSION/s/\\"2.0.0.*\\"/\\"${VERSION}-${BUILD_NUMBER}\\"/ /opt/seagate/cortx/RELEASE.INFO) ghcr.io/seagate/cortx-data:${VERSION}-${BUILD_NUMBER}
