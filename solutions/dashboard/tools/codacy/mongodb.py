@@ -1,6 +1,9 @@
-from const import CODACY_METADATA_INDEX_IDENTIFIER, CODACY_REPOSITORY_INDEX_IDENTIFIER, MONGODB_DB_NAME, MONGODB_CODACY_REPOSITORIES_COLLECTION_NAME, MONGODB_CODACY_METADATA_COLLECTION_NAME
+from const import CODACY_METADATA_INDEX_IDENTIFIER, CODACY_REPOSITORY_INDEX_IDENTIFIER, MONGODB_DB_NAME
+from const import MONGODB_CODACY_REPOSITORIES_COLLECTION_NAME, MONGODB_CODACY_METADATA_COLLECTION_NAME
 from pymongo import MongoClient
 from datetime import date, datetime
+
+
 class MongoDB:
     def __init__(self) -> None:
         self.mongo_client = None
@@ -15,7 +18,8 @@ class MongoDB:
         self.initialize_mongodb()
 
     def create_connection_url(self, credentials: dict, connection_url):
-        prefix = "mongodb://%s:%s" % (credentials['username'], credentials['password'])
+        prefix = "mongodb://%s:%s" % (credentials['username'],
+                                      credentials['password'])
         self.connection_url = prefix + "@" + connection_url
 
     def initialize_mongodb(self):
@@ -26,11 +30,12 @@ class MongoDB:
 
             # Setting Database
             self.db = self.mongo_client[MONGODB_DB_NAME]
-            # Setting Collection 
+            # Setting Collection
             self.repository_collection = self.db[MONGODB_CODACY_REPOSITORIES_COLLECTION_NAME]
             self.metadata_collection = self.db[MONGODB_CODACY_METADATA_COLLECTION_NAME]
 
-            print("\nServer Configurations: {}".format(self.mongo_client.server_info()))
+            print("\nServer Configurations: {}".format(
+                self.mongo_client.server_info()))
             print("\nMongoDB Initialized Successfully!")
         except Exception as err:
             print("\nMongo Exception: ", err)
@@ -77,30 +82,32 @@ class MongoDB:
 
         # Inserting Metadata Document
         try:
-            self.create_document(data=metadata_document,collection=self.metadata_collection)
+            self.create_document(data=metadata_document,
+                                 collection=self.metadata_collection)
         except Exception as err:
             print("Initialization Document Insertion Error: ", err)
-        
+
         # Inserting Repositories Document
         try:
-            self.create_document(data=repositories_document,collection=self.repository_collection)
+            self.create_document(data=repositories_document,
+                                 collection=self.repository_collection)
         except Exception as err:
             print("Initialization Document Insertion Error: ", err)
 
     def read_collection(self, collection):
         try:
             print("\nReading Collection: ")
-            resp = collection.find({},{"_id": True})
+            resp = collection.find({}, {"_id": True})
 
             if resp is None:
                 print("Document Not Found")
                 return False
-            
+
             for record in resp:
                 print("Record -> {}".format(record))
                 self.document_id = record["_id"]
                 return True
-            
+
             print("Document Not Found")
             return False
         except Exception as err:
@@ -112,14 +119,15 @@ class MongoDB:
             print("\nCreating MongoDB Document: ")
             resp = collection.insert_one(data)
             print("Response - ", resp.inserted_id)
-            self.document_id =  resp.inserted_id
+            self.document_id = resp.inserted_id
         except Exception as err:
             print("Insert Document Exception: ", err)
-    
+
     def update_document(self, data, collection):
         try:
             print("\nUpdating MongoDB Document: ")
-            resp = collection.update_one({"_id": self.document_id}, update={"$set": data})
+            resp = collection.update_one(
+                {"_id": self.document_id}, update={"$set": data})
             print("Response - ", resp, " -> ", resp.acknowledged)
         except Exception as err:
             print("Update Document Exception: ", err)

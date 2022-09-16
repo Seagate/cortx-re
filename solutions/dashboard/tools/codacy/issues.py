@@ -3,8 +3,9 @@ from mongodb import MongoDB
 from const import CODACY_REPOSITORY_INDEX_IDENTIFIER, CODACY_METADATA_INDEX_IDENTIFIER, PROVIDER, ORGANIZATION
 import requests
 
+
 class Issues:
-    def __init__(self, repositories, mongodb:MongoDB, headers: dict):
+    def __init__(self, repositories, mongodb: MongoDB, headers: dict):
         self.repositories = repositories
         self.mongodb = mongodb
 
@@ -25,10 +26,11 @@ class Issues:
         categories = []
         issues_count = 0
 
-        try: 
+        try:
             resp = requests.get(
-                'https://app.codacy.com/api/v3/analysis/organizations/%s/%s/repositories/%s/category-overviews' % (PROVIDER, ORGANIZATION, repository), 
-                params={}, 
+                'https://app.codacy.com/api/v3/analysis/organizations/%s/%s/repositories/%s/category-overviews' % (
+                    PROVIDER, ORGANIZATION, repository),
+                params={},
                 headers=self.headers)
 
             resp = resp.json()
@@ -37,7 +39,8 @@ class Issues:
                 if item['totalResults'] > 0:
                     issues_count += item['totalResults']
                     category_data = {}
-                    category_data[item['category']['categoryType']] = item['totalResults']
+                    category_data[item['category']
+                                  ['categoryType']] = item['totalResults']
                     categories.append(category_data)
 
             self.all_category_total_issues += issues_count
@@ -45,7 +48,7 @@ class Issues:
             repo_category_data = {
                 "repository_total_issues": issues_count,
                 "categories": categories
-            }            
+            }
         except Exception as err:
             print("Search Issues Categories Exception: ", err)
 
@@ -58,13 +61,14 @@ class Issues:
         major = 0
         critical = 0
 
-        params = {} # cursor will dynamically added
+        params = {}  # cursor will dynamically added
         repository_security_data = {}
         try:
             while True:
                 resp = requests.post(
-                    'https://app.codacy.com/api/v3/analysis/organizations/%s/%s/repositories/%s/issues/search' % (PROVIDER, ORGANIZATION, repository), 
-                    params=params, 
+                    'https://app.codacy.com/api/v3/analysis/organizations/%s/%s/repositories/%s/issues/search' % (
+                        PROVIDER, ORGANIZATION, repository),
+                    params=params,
                     json={
                         "categories": [
                             "Security"
@@ -73,17 +77,17 @@ class Issues:
                     headers=self.headers)
 
                 resp = resp.json()
-                
+
                 # Looping through issues to find counts
                 for issue in resp['data']:
                     severityLevel = issue['patternInfo']['severityLevel']
 
-                    if severityLevel == 'Info': # Minor
-                        minor+=1
-                    elif severityLevel == 'Warning': # Major
-                        major+=1
-                    elif severityLevel == 'Error': # Critical
-                        critical+=1
+                    if severityLevel == 'Info':  # Minor
+                        minor += 1
+                    elif severityLevel == 'Warning':  # Major
+                        major += 1
+                    elif severityLevel == 'Error':  # Critical
+                        critical += 1
 
                 # Check if next is there or not
                 if "cursor" in resp['pagination']:
@@ -91,7 +95,7 @@ class Issues:
                     print("Going to page-", resp['pagination']['cursor'])
                 else:
                     break
-            
+
             # Collecting all data
             repository_security_data = {
                 "issues": minor+major+critical,
@@ -103,7 +107,7 @@ class Issues:
             self.total_security_issues += minor+major+critical
             self.total_security_minor += minor
             self.total_security_major += major
-            self.total_security_critical += critical           
+            self.total_security_critical += critical
         except Exception as err:
             print("Search Issues Exception: ", err)
 
@@ -111,14 +115,16 @@ class Issues:
 
     def handle_issues(self):
         repo_curr_index = 1
-        
+
         today = date.today()
         today = today.strftime("%d-%b-%Y")
-        
+
         for repository in self.repositories:
-            print("\n(" + str(repo_curr_index) + "/" + str(len(self.repositories)) + ")")
+            print("\n(" + str(repo_curr_index) + "/" +
+                  str(len(self.repositories)) + ")")
             print("Repository: {}".format(repository))
-            category_issues = self.getRepositoryIssuesCategories(repository=repository)
+            category_issues = self.getRepositoryIssuesCategories(
+                repository=repository)
             security_issues = self.getSecurityIssues(repository=repository)
 
             repositories_document = {
@@ -135,9 +141,10 @@ class Issues:
             }
 
             print("Repository Document: {}".format(repositories_document))
-            self.mongodb.create_document(data=repositories_document,collection=self.mongodb.repository_collection)
+            self.mongodb.create_document(
+                data=repositories_document, collection=self.mongodb.repository_collection)
             print("")
-            repo_curr_index+=1
+            repo_curr_index += 1
 
         metadata_document = {
             "all_categories": [{
@@ -154,7 +161,8 @@ class Issues:
             "created_date": today,
             "created_at": datetime.now(),
         }
-        
+
         print("Metadata Document: {}".format(metadata_document))
-        self.mongodb.create_document(data=metadata_document,collection=self.mongodb.metadata_collection)
+        self.mongodb.create_document(
+            data=metadata_document, collection=self.mongodb.metadata_collection)
         print("")

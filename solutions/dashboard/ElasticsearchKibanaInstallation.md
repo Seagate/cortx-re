@@ -1,23 +1,27 @@
 ## Elasticsearch and Kibana Installation
 
 ### Elastic Cloud on Kubernetes Installation:
+
 Install custom resource definitions:
 
-    kubectl create -f https://download.elastic.co/downloads/eck/2.4.0/crds.yaml
-
+```
+kubectl create -f https://download.elastic.co/downloads/eck/2.4.0/crds.yaml
+```
 
 Install the operator with its RBAC rules:
 
-
-    kubectl apply -f https://download.elastic.co/downloads/eck/2.4.0/operator.yaml
-
+```
+kubectl apply -f https://download.elastic.co/downloads/eck/2.4.0/operator.yaml
+```
 
 ### Deploy an Elasticsearch Cluster:
 
 **Apply Elasticsearch Specification**
+
 - Do not delete the **version** attribute from the YAML
 - Do not change the **volumeClaimTemplates** name
 - Replace **storageClassName** to storage class like **local-path**
+
 ```
 cat <<EOF | kubectl apply -f -
 apiVersion: elasticsearch.k8s.elastic.co/v1
@@ -53,39 +57,53 @@ EOF
 ```
 
 **Monitor Cluster Health and Creation Process**
-    
-    kubectl get elasticsearch
+
+```
+kubectl get elasticsearch
+```
 
 **Check Elasticsearch Pod Logs**
 
-    kubectl logs -f cortx-elasticsearch-es-default-0
+```
+kubectl logs -f cortx-elasticsearch-es-default-0
+```
 
 **Get Elasticsearch Service**
 Note the NodePort from the service
-        
-    kubectl get service cortx-elasticsearch-es-http
+
+```
+kubectl get service cortx-elasticsearch-es-http
+```
 
 **Get Nodes**
-Note Master node INTERNAL-IP
+Note Primary node INTERNAL-IP
 
-    kubectl get nodes -o wide
+```
+kubectl get nodes -o wide
+```
 
 **Open Web Browser**
-Go to the following address 
+Go to the following address
 
-    http://<master_node_internal_ip>:<node_port>
+```
+http://<master_node_internal_ip>:<node_port>
+```
 
 Enter username and password:
-- Username: **elastic**
-- Password: 
-    Run below command to get password
 
-        PASSWORD=$(kubectl get secret cortx-elasticsearch-es-elastic-user -o go-template='{{.data.elastic | base64decode}}')
-        echo $PASSWORD
+- Username: **elastic**
+- Password:
+  Run below command to get password
+
+```
+PASSWORD=$(kubectl get secret cortx-elasticsearch-es-elastic-user -o go-template='{{.data.elastic | base64decode}}')
+echo $PASSWORD
+```
 
 ### Deploy Kibana Instance
 
 **Apply Kibana Specification**
+
 - Do not delete the version attribute from the YAML
 
 ```
@@ -112,29 +130,40 @@ EOF
 
 **Monitor Cluster Health and Creation Process**
 
-    kubectl get kibana
+```
+kubectl get kibana
+```
 
 **Get Kibana Service**
 Note the NodePort from the service
 
-    kubectl get service cortx-kibana-kb-http
+```
+kubectl get service cortx-kibana-kb-http
+```
 
 **Get Nodes**
-Note Master node INTERNAL-IP
+Note Primary node INTERNAL-IP
 
-    kubectl get nodes -o wide
+```
+kubectl get nodes -o wide
+```
 
 **Open Web Browser**
 Go to the following address
 
-    http://<master_node_internal_ip>:<node_port>
+```
+http://<master_node_internal_ip>:<node_port>
+```
 
 Enter username and password:
+
 - Username: **elastic**
 - Password:
-    Run below command to get password
+  Run below command to get password
 
-        PASSWORD=$(kubectl get secret cortx-elasticsearch-es-elastic-user -o go-template='{{.data.elastic | base64decode}}')
-        echo $PASSWORD
+```
+PASSWORD=$(kubectl get secret cortx-elasticsearch-es-elastic-user -o go-template='{{.data.elastic | base64decode}}')
+echo $PASSWORD
+```
 
 You can click on **Explore on my own** after successful login.

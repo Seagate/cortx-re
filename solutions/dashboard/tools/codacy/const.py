@@ -1,11 +1,13 @@
 HEADERS = {
-  'Content-Type': 'application/json',
-  'Accept': 'application/json',
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
 }
 
 PROVIDER = "gh"
 
 ORGANIZATION = "Seagate"
+
+NAMESPACE = "cortx"
 
 # MongoDB
 MONGODB_DB_NAME = "codacy"
@@ -17,7 +19,3 @@ MONGODB_CONNECTION_URL = "cortx-port-scanner-mongodb.cortx.svc.cluster.local:270
 # Logstash
 CODACY_REPOSITORY_INDEX_IDENTIFIER = "codacy.repositories"
 CODACY_METADATA_INDEX_IDENTIFIER = "codacy.metadata"
-
-# Secret Name
-CODACY_SECRET_NAME = "cortx-codacy"
-NAMESPACE = "cortx"

@@ -21,15 +21,16 @@ CONFIGMAP_NAME = "cortx-port-scanner"
 # Headless Service
 HEADLESS_SERVICE_NAME = "cortx-port-scanner-mongodb"
 
-# Statefulset 
+# Statefulset
 STATEFULSET_NAME = "cortx-port-scanner-mongodb"
-STATEFULSET_VOLUME_NAME = "data" # Pod name will append to this
+STATEFULSET_VOLUME_NAME = "data"  # Pod name will append to this
 
 # MongoDB
 MONGODB_DB_NAME = "cortxportscanner"
 MONGODB_COLLECTION_NAME = "operator"
 MONGODB_PORT = 27017
-MONGODB_CONNECTION_URL = "cortx-port-scanner-mongodb.cortx.svc.cluster.local:" + str(MONGODB_PORT) + "/" + MONGODB_DB_NAME + "?authSource=admin"
+MONGODB_CONNECTION_URL = "cortx-port-scanner-mongodb.cortx.svc.cluster.local:" + \
+    str(MONGODB_PORT) + "/" + MONGODB_DB_NAME + "?authSource=admin"
 
 # Logstash
 INDEX_IDENTIFIER = "cortxportscanner.operator"

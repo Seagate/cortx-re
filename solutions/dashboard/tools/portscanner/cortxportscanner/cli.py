@@ -1,6 +1,7 @@
 from argparse import ArgumentParser
 from cortxportscanner.main import Main
 
+
 def handle_cli():
     """
     Application's entry point.

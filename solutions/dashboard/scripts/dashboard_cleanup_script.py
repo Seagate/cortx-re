@@ -33,7 +33,7 @@ os.system("kubectl delete configmaps cortx-port-scanner")
 print("")
 
 
-''' CODACY CLEANUP '''
+# CODACY CLEANUP
 
 print("\n\nCodacy Cleanup")
 
@@ -42,7 +42,7 @@ os.system("kubectl delete deployments cortx-codacy")
 print("")
 
 
-''' LOGSTASH CLEANUP '''
+# LOGSTASH CLEANUP
 
 print("\n\nLogstash Cleanup")
 
@@ -54,7 +54,7 @@ print("")
 os.system("kubectl delete configmap cortx-logstash")
 print("")
 
-''' MongoDB Cleanup '''
+# MongoDB Cleanup
 
 print("\n\nMongoDB Cleanup")
 
@@ -67,9 +67,9 @@ os.system("kubectl delete services cortx-port-scanner-mongodb")
 print("")
 
 
-''' CLEANUP CREDENTIAL SECRET '''
+# CLEANUP CREDENTIAL SECRET
 
-print("\n\Configs Cleanup")
+print("\nConfigs Cleanup")
 
 # Credential Secret
 os.system("kubectl delete secret dashboard-secret")

@@ -1,5 +1,7 @@
 from cortxportscanner.common.const import HEADLESS_SERVICE_NAME, STATEFULSET_NAME, STATEFULSET_VOLUME_NAME, SECRET_NAME
 from kubernetes import client
+
+
 class StatefulSet:
     def __init__(self, client: client, apps_api: client.AppsV1Api, specs) -> None:
         self.client = client
@@ -14,7 +16,8 @@ class StatefulSet:
         statefulset_body = self.create_statefulset_body()
 
         try:
-            self.apps_api.create_namespaced_stateful_set(namespace=self.specs['namespace'], body=statefulset_body)
+            self.apps_api.create_namespaced_stateful_set(
+                namespace=self.specs['namespace'], body=statefulset_body)
             print("\n\nStatefulset Created")
         except Exception as err:
             print("\n\nStatefulset Exception: \n", err)
@@ -28,7 +31,7 @@ class StatefulSet:
             ports=[self.client.V1ContainerPort(container_port=27017)],
             env=[
                 self.client.V1EnvVar(
-                    name="MONGO_INITDB_ROOT_USERNAME", 
+                    name="MONGO_INITDB_ROOT_USERNAME",
                     value_from=self.client.V1EnvVarSource(
                         secret_key_ref=self.client.V1SecretKeySelector(
                             name=SECRET_NAME, key="mongodb_username"
@@ -36,7 +39,7 @@ class StatefulSet:
                     )
                 ),
                 self.client.V1EnvVar(
-                    name="MONGO_INITDB_ROOT_PASSWORD", 
+                    name="MONGO_INITDB_ROOT_PASSWORD",
                     value_from=self.client.V1EnvVarSource(
                         secret_key_ref=self.client.V1SecretKeySelector(
                             name=SECRET_NAME, key="mongodb_password"
@@ -55,15 +58,15 @@ class StatefulSet:
         # Pod Template
         template = self.client.V1PodTemplateSpec(
             metadata=self.client.V1ObjectMeta(
-                labels={"name": STATEFULSET_NAME}, 
+                labels={"name": STATEFULSET_NAME},
                 namespace=self.specs['namespace']
             ),
             spec=self.client.V1PodSpec(
-                containers=[mongo_container], 
+                containers=[mongo_container],
                 termination_grace_period_seconds=10,
             )
         )
-        
+
         # Claim name is 'data' because after creating PVC it will suffixed by pod name
         volume_claim_tamplate = self.client.V1PersistentVolumeClaim(
             api_version='v1',
@@ -81,7 +84,7 @@ class StatefulSet:
                 )
             )
         )
-        
+
         # Spec
         spec = self.client.V1StatefulSetSpec(
             replicas=1,
@@ -92,12 +95,13 @@ class StatefulSet:
             template=template,
             volume_claim_templates=[volume_claim_tamplate]
         )
- 
+
         # StatefulSet
         body = self.client.V1StatefulSet(
             api_version="apps/v1",
             kind="StatefulSet",
-            metadata=self.client.V1ObjectMeta(name=STATEFULSET_NAME, namespace=self.specs['namespace']),
+            metadata=self.client.V1ObjectMeta(
+                name=STATEFULSET_NAME, namespace=self.specs['namespace']),
             spec=spec
         )
 
@@ -120,12 +124,12 @@ class StatefulSet:
             print("Checking Ready Replicas: ")
             ready_replicas_cnt = 0 if resp.status.ready_replicas is None else resp.status.ready_replicas
             print("Replicas: {}/{}".format(ready_replicas_cnt, resp.spec.replicas))
-            
+
             # While will run until all the replicas are not ready
             while resp.status.ready_replicas != resp.spec.replicas:
                 resp = self.read_statefulset()
 
-                ready_replicas_cnt = 0 if resp.status.ready_replicas is None else resp.status.ready_replicas                    
+                ready_replicas_cnt = 0 if resp.status.ready_replicas is None else resp.status.ready_replicas
                 # print("Replicas: {}/{}".format(ready_replicas_cnt, resp.spec.replicas))
 
             ready_replicas_cnt = 0 if resp.status.ready_replicas is None else resp.status.ready_replicas
@@ -137,5 +141,6 @@ class StatefulSet:
             print("Statefulset Status Check Exception: ", err)
 
     def read_statefulset(self):
-        resp = self.apps_api.read_namespaced_stateful_set(name=STATEFULSET_NAME, namespace=self.specs['namespace'])
+        resp = self.apps_api.read_namespaced_stateful_set(
+            name=STATEFULSET_NAME, namespace=self.specs['namespace'])
         return resp

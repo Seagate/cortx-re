@@ -1,6 +1,7 @@
 from kubernetes import client
 from cortxportscanner.common.const import CRD_GROUP, CRD_VERSION, CRD_PLURAL
 
+
 class CR:
     def __init__(self, client: client, namespace, cr_name):
         self.client = client
@@ -24,6 +25,10 @@ class CR:
                 plural=CRD_PLURAL,
                 name=self.cr_name,
             )
-            return {"namespace": cr['spec']['namespace'], "scanObject": cr['spec']['scanObject'], "connectionUrl": cr['spec']['connectionUrl'], "allowedPorts": cr['spec']['allowedPorts']}
+            return {
+                "namespace": cr['spec']['namespace'],
+                "scanObject": cr['spec']['scanObject'],
+                "connectionUrl": cr['spec']['connectionUrl'],
+                "allowedPorts": cr['spec']['allowedPorts']}
         except Exception as err:
-            print("Exception while fetching CR: {}".format(err))        
+            print("Exception while fetching CR: {}".format(err))
