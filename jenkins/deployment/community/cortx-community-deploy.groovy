@@ -14,15 +14,7 @@ pipeline {
     }
     
     environment {
-        INSTANCE_COUNT=1
-        export CORTX_RE_BRANCH=${CORTX_RE_BRANCH}
-        export ROOT_PASSWORD=${ROOT_PASSWORD}
-        export PUBLIC_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip_public.txt | tr -d '",[]' | sed '/^$/d')
-        export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
-        export BUILD_NODE=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
-        export HOST2=$(cat ec2_hostname.txt | jq '.[1]'| tr -d '",[]')
-        export HOST3=$(cat ec2_hostname.txt | jq '.[2]'| tr -d '",[]')
-        export HOST4=$(cat ec2_hostname.txt | jq '.[3]'| tr -d '",[]')
+        INSTANCE_COUNT = 1
     }
 
     parameters {
