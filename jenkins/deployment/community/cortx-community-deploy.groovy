@@ -100,7 +100,7 @@ parameters {
                     terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_dns.value 2>&1 | tee ec2_hostname.txt
                     export BUILD_NODE=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]') && export HOST2=$(cat ec2_hostname.txt | jq '.[1]'| tr -d '",[]')
                     export HOST3=$(cat ec2_hostname.txt | jq '.[2]'| tr -d '",[]') && export HOST4=$(cat ec2_hostname.txt | jq '.[3]'| tr -d '",[]')
-                    for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${ip}" "sudo -- sh -c 'export ROOT_PASSWORD=$ROOT_PASSWORD && echo $ROOT_PASSWORD | sudo passwd --stdin root && git clone https://github.com/Seagate/cortx-re && pushd /home/centos/cortx-re/solutions/kubernetes && touch hosts && echo hostname=${BUILD_NODE},user=root,pass= > hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo hostname=${HOST2},user=root,pass= >> hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo hostname=${HOST3},user=root,pass= >> hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo hostname=${HOST4},user=root,pass= >> hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && cat hosts && systemctl start docker && sleep 240'";done
+                    for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${ip}" "sudo -- sh -c 'export ROOT_PASSWORD=$ROOT_PASSWORD && echo $ROOT_PASSWORD | sudo passwd --stdin root && git clone https://github.com/Seagate/cortx-re && pushd /home/centos/cortx-re/solutions/kubernetes && touch hosts && echo hostname=${BUILD_NODE},user=root,pass= > hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo hostname=${HOST2},user=root,pass= >> hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo hostname=${HOST3},user=root,pass= >> hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo hostname=${HOST4},user=root,pass= >> hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && cat hosts'";done
                     sleep 120
                     popd
             '''
@@ -128,7 +128,7 @@ parameters {
                         echo -n "..... Setting up K8s cluster on EC2 for 1N ....."
                         export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
                         export BUILD_NODE=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
-                        for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${ip}" "sudo -- sh -c 'pushd /home/centos/cortx-re/solutions/kubernetes && sed '1!d' hosts && ./cluster-setup.sh true && sed -i 's,cortx-docker.colo.seagate.com,${BUILD_NODE}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 120'"
+                        for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${ip}" "sudo -- sh -c 'pushd /home/centos/cortx-re/solutions/kubernetes && sed '1!d' hosts && ./cluster-setup.sh true && sed -i 's,cortx-docker.colo.seagate.com,${BUILD_NODE}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 240'"
                         popd
                 else
                     pushd solutions/community-deploy/cloud/AWS
