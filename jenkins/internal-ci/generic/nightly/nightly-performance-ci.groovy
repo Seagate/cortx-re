@@ -184,7 +184,7 @@ pipeline {
                 manager.createSummary("${ICON}").appendText("<h3>Nightly CORTX Performance CI ${currentBuild.currentResult} </h3><p>Please check <a href=\"${BUILD_URL}/console\">Performance Sanity Execution logs</a> for more info <h4>Sanity Execution Logs:</h4>${clusterStatusHTML}", false, false, false, "red")
 
                 // Email Notification
-                if ( params.EMAIL_RECIPIENTS == "ALL" && currentBuild.result == "SUCCESS" ) {
+                if ( params.EMAIL_RECIPIENTS == "ALL" ) {
                     mailRecipients = "Cortx.Perf@seagate.com, CORTX.DevOps.RE@seagate.com, rajesh.deshmukh@seagate.com, sampada.petkar@seagate.com"
                 }
                 else if ( params.EMAIL_RECIPIENTS == "DEBUG" ) {
