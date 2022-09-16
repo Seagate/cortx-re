@@ -125,17 +125,17 @@ parameters {
                 INSTANCE_COUNT=1
                 if [ "$INSTANCE_COUNT" -eq 1 ]; then
                     pushd solutions/community-deploy/cloud/AWS
+                        echo -n "..... Setting up K8s cluster on EC2 for 1N ....."
                         export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
                         export BUILD_NODE=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
-                        echo -n "Setting up K8s cluster on EC2 for 1N ...."
-                        ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" "sudo -- sh -c 'pushd /home/centos/cortx-re/solutions/kubernetes && sed '1!d' hosts && ./cluster-setup.sh true && sed -i 's,cortx-docker.colo.seagate.com,${BUILD_NODE}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 120'"
+                        for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${ip}" "sudo -- sh -c 'pushd /home/centos/cortx-re/solutions/kubernetes && sed '1!d' hosts && ./cluster-setup.sh true && sed -i 's,cortx-docker.colo.seagate.com,${BUILD_NODE}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 120'"
                         popd
                 else
                     pushd solutions/community-deploy/cloud/AWS
+                        echo -n "..... Setting up K8s cluster on EC2 for multinode ....."
                         export WORKER_IP=$(cat ip_public.txt | jq '.[0]','.[1]','.[2]','.[3]' | tr -d '",[]')
                         export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
                         export BUILD_NODE=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
-                        echo -n "Setting up K8s cluster on EC2 for multinode ...."
                         ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" "sudo -- sh -c 'pushd /home/centos/cortx-re/solutions/kubernetes && ./cluster-setup.sh true && sed -i 's,cortx-docker.colo.seagate.com,${BUILD_NODE}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 120'"
                         for wp in $WORKER_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${wp}" "sudo -- sh -c 'sed -i 's,cortx-docker.colo.seagate.com,${BUILD_NODE}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 120'";done
                         popd
@@ -159,7 +159,7 @@ parameters {
                     for wp in $WORKER_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${wp} "sudo docker pull '${CORTX_SERVER_IMAGE}' && sudo docker pull '${CORTX_DATA_IMAGE}' && sudo docker pull '${CORTX_CONTROL_IMAGE}'";done
                     popd
                 else
-                    echo -n "Deployment for 1N continues ...."
+                    echo -n ".... Deployment for 1N continues ...."
                     fi
                 fi
             '''
