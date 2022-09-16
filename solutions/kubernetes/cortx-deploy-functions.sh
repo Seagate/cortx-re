@@ -28,6 +28,7 @@ YQ_VERSION=v4.25.1
 YQ_BINARY=yq_linux_386
 SOLUTION_CONFIG="/var/tmp/solution.yaml"
 CUSTOM_SSL_CERT_KEY="/var/tmp/cortx.pem"
+CUSTOM_SSL_SECRET="custom-cortx-cert"
 
 function usage() {
     cat << HEREDOC
@@ -305,10 +306,10 @@ function setup_primary_node() {
 
     #Create kubernetes secret from provided key file
     if [ "$CUSTOM_SSL_CERT" == "yes" ]; then
-        add_secondary_separator "Creating kubernetes secret from provided key file for custom certificate"
-        if kubectl get secret my-ssl-cert ; then kubectl delete secret my-ssl-cert; fi
-        kubectl create secret generic my-ssl-cert --from-file=cortx.pem=$CUSTOM_SSL_CERT_KEY -n $NAMESPACE
-        yq e -i '.solution.common.ssl.external_secret = "my-ssl-cert"' $SCRIPT_LOCATION/k8_cortx_cloud/solution.yaml
+        add_secondary_separator "Creating kubernetes secret from provided key file"
+        if kubectl get secret $CUSTOM_SSL_SECRET ; then kubectl delete secret $CUSTOM_SSL_SECRET; fi
+        kubectl create secret generic $CUSTOM_SSL_SECRET --from-file=cortx.pem=$CUSTOM_SSL_CERT_KEY -n "$NAMESPACE"
+        CUSTOM_SSL_SECRET=$CUSTOM_SSL_SECRET yq e -i '.solution.common.ssl.external_secret = env(CUSTOM_SSL_SECRET)' $SCRIPT_LOCATION/k8_cortx_cloud/solution.yaml
     fi    
         
     if [ "$(kubectl get nodes $HOSTNAME -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints}" | grep -o NoSchedule)" == "" ]; then
