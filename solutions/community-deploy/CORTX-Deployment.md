@@ -86,6 +86,7 @@ export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
 | DIX_CONFIG | 1+0+0 | DIX configuration for deployment. Please select value based on disks available on nodes. |
 | NAMESPACE  | default | Kubernetes cluster Namespace for CORTX deployments. |
 | SOLUTION_CONFIG_TYPE | manual | There are two config types for solution.yaml file; manual and automated. In automated type the solution.yaml is created by script if VM is created as per standard specification. In manual type the user needs to create solution.yaml with required disks, image details etc.; place it at script location and configure SOLUTION_CONFIG_TYPE variable as manual. |
+| CUSTOM_SSL_CERT | no | You can use custom SSL certificate in Deployment. Please provide this option as yes and upload key file at script location. By default, CORTX is installed with a self-signed SSL certificate.  |
 
 **For example:**
 ```
