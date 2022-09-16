@@ -160,7 +160,6 @@ parameters {
                     popd
                 else
                     echo -n ".... Deployment for 1N continues ...."
-                    fi
                 fi
             '''
             }
@@ -211,7 +210,7 @@ parameters {
                     sh label: 'Destroying EC2 instance', script: '''
                     pushd solutions/community-deploy/cloud/AWS
                         terraform validate && terraform destroy -var-file user.tfvars --auto-approve
-                    popd
+                        popd
                     '''
             }
         }
