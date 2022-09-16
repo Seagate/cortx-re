@@ -131,8 +131,8 @@ parameters {
                         for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${ip}" "sudo -- sh -c 'pushd /home/centos/cortx-re/solutions/kubernetes && echo $hosts | tr ' ' '\n' > hosts'"
                         ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" "sudo -- sh -c 'pushd /home/centos/cortx-re/solutions/kubernetes && ./cluster-setup.sh true && sed -i 's,cortx-docker.colo.seagate.com,${BUILD_NODE}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 240'"
                         popd
-                else
-                    pushd solutions/community-deploy/cloud/AWS
+                 else
+                        pushd solutions/community-deploy/cloud/AWS
                         echo -n "..... Setting up K8s cluster on EC2 for multinode ....."
                         export WORKER_IP=$(cat ip_public.txt | jq '.[0]','.[1]','.[2]','.[3]' | tr -d '",[]')
                         export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
