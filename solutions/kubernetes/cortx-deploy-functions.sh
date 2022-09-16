@@ -27,6 +27,8 @@ SCRIPT_LOCATION="/root/deploy-scripts"
 YQ_VERSION=v4.25.1
 YQ_BINARY=yq_linux_386
 SOLUTION_CONFIG="/var/tmp/solution.yaml"
+CUSTOM_SSL_CERT_KEY="/var/tmp/cortx.pem"
+CUSTOM_SSL_SECRET="custom-cortx-cert"
 
 function usage() {
     cat << HEREDOC
@@ -271,7 +273,7 @@ function execute_prereq() {
         CORTX_DATA_IMAGE=$(pull_image "$CORTX_DATA_IMAGE")
         CORTX_CONTROL_IMAGE=$(pull_image "$CORTX_CONTROL_IMAGE")
     else
-        echo -e "\nExecuting community deploy script.Ignoring image pull."
+        add_secondary_separator "\nExecuting community deploy script.Ignoring image pull."
     fi
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         add_secondary_separator "Un-mounting $SYSTEM_DRIVE partition if already mounted"
@@ -286,20 +288,31 @@ function setup_primary_node() {
     if [ "${COMMUNITY_USE}" == "no" ]; then
         cleanup
     else
-        echo -e "\nExecuting community deploy script.No cleaning required."
+        add_secondary_separator "\nExecuting community deploy script.No cleaning required."
     fi
+
     #Third-party images are downloaded from GitHub container registry. 
     download_deploy_script
     install_yq
 
+    #Copy manually provided solution.yaml for manual solution config 
     if [ "$SOLUTION_CONFIG_TYPE" == "manual" ]; then
+        add_secondary_separator "Copying provided solution.yaml to $SCRIPT_LOCATION"
         copy_solution_config "$SOLUTION_CONFIG" "$SCRIPT_LOCATION/k8_cortx_cloud"
         NAMESPACE=$(yq e '.solution.namespace' "$SCRIPT_LOCATION/k8_cortx_cloud/solution.yaml")
     else
         update_solution_config
     fi
 
-    if [ "$(kubectl get  nodes $HOSTNAME  -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints}" | grep -o NoSchedule)" == "" ]; then
+    #Create kubernetes secret from provided key file
+    if [ "$CUSTOM_SSL_CERT" == "yes" ]; then
+        add_secondary_separator "Creating kubernetes secret from provided key file"
+        if kubectl get secret $CUSTOM_SSL_SECRET ; then kubectl delete secret $CUSTOM_SSL_SECRET; fi
+        kubectl create secret generic $CUSTOM_SSL_SECRET --from-file=cortx.pem=$CUSTOM_SSL_CERT_KEY -n "$NAMESPACE"
+        CUSTOM_SSL_SECRET=$CUSTOM_SSL_SECRET yq e -i '.solution.common.ssl.external_secret = env(CUSTOM_SSL_SECRET)' $SCRIPT_LOCATION/k8_cortx_cloud/solution.yaml
+    fi    
+        
+    if [ "$(kubectl get nodes $HOSTNAME -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints}" | grep -o NoSchedule)" == "" ]; then
         execute_prereq
     fi
     
