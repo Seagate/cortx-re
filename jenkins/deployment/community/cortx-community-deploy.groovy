@@ -90,8 +90,7 @@ pipeline {
                     export PUBLIC_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip_public.txt | tr -d '",[]' | sed '/^$/d')
                     export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
                     if [ "$INSTANCE_COUNT" -eq 1 ]; then
-                        ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" "sudo bash /home/centos/setup.sh && sleep 800"
-                    
+                        ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" "sudo bash /home/centos/setup.sh && sleep 900"
                     elif [ "$INSTANCE_COUNT" -gt 1 ]; then
                         for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${ip}" "sudo bash /home/centos/setup.sh && sleep 240";done
                     popd
@@ -130,7 +129,7 @@ pipeline {
                 sh label: 'Executing cortx build image script on Primary node', script: '''
                 pushd solutions/community-deploy/cloud/AWS
                     export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
-                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" "sudo -- sh -c 'pushd /home/centos/cortx-re/solutions/community-deploy && systemctl start docker && sleep 120 && time ./build-cortx.sh'"
+                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" "sudo -- sh -c 'pushd /home/centos/cortx-re/solutions/community-deploy && systemctl start docker && sleep 120 && time ./build-cortx.sh -b ${CORTX_TAG}'"
                 popd
             '''
             }
