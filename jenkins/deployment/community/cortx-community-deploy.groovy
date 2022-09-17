@@ -91,7 +91,7 @@ pipeline {
                     export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
                     if [ "$INSTANCE_COUNT" -eq 1 ]; then
                         ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" "sudo bash /home/centos/setup.sh && sleep 1m"
-                    
+
                     elif [ "$INSTANCE_COUNT" -gt 1 ]; then
                         for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${ip}" "sudo bash /home/centos/setup.sh && sleep 240";done
                     popd
@@ -100,16 +100,16 @@ pipeline {
                 }
             }
         }
-    post {
-        always {
-            retry(count: 3) {
+        post {
+            always {
+                retry(count: 3) {
                     sh label: 'Destroying EC2 instance', script: '''
                     pushd solutions/community-deploy/cloud/AWS
                         terraform validate && terraform destroy -var-file user.tfvars --auto-approve
                         popd
                     '''
+                }
             }
         }
     }
-}
 }
