@@ -12,10 +12,6 @@ pipeline {
         buildDiscarder(logRotator(daysToKeepStr: '30', numToKeepStr: '10'))
         ansiColor('xterm')
     }
-    
-    environment {
-        INSTANCE_COUNT = 1
-    }
 
     parameters {
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'mukul-multinode-automation', description: 'Branch or GitHash for CORTX Cluster scripts', trim: true)
