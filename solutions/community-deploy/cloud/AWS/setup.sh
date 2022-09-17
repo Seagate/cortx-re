@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (c) 2021 Seagate Technology LLC and/or its Affiliates
+# Copyright (c) 2022 Seagate Technology LLC and/or its Affiliates
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,24 +24,9 @@ if [ $(whoami) != root ];then
 	exit
 fi
 
-#Configure Elastic Network cards
-echo "Configuring Elastic NIC"
-for nic in eth1 eth2
-do
-   MAC=$(ifconfig $nic | grep -o -E '([[:xdigit:]]{2}:){5}[[:xdigit:]]{2}')
-   cp /etc/sysconfig/network-scripts/ifcfg-eth0 /etc/sysconfig/network-scripts/ifcfg-$nic
-   sed -i "s/eth0/$nic/g" /etc/sysconfig/network-scripts/ifcfg-$nic
-   sed -i -e '/HWADDR/d' /etc/sysconfig/network-scripts/ifcfg-$nic
-   sed -i "5 a HWADDR=$MAC" /etc/sysconfig/network-scripts/ifcfg-$nic
-   echo -e "SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", ATTR{address}==\"$MAC\", NAME=\"$nic\"" >> /etc/udev/rules.d/70-persistent-net.rules
-done
-
-echo "GATEWAYDEV=eth0" >> /etc/sysconfig/network
-echo "Restarting Network Service"
-systemctl restart network
-
-echo "All networks should have ip address assigned" 
-/sbin/ip a 
+#Install packages & start service
+yum -y remove docker* && yum install -y yum-utils git firewalld epel-release && yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo -y && yum install -y jq docker-ce docker-ce-cli containerd.io docker-compose-plugin
+systemctl start docker && systemctl enable docker
 
 #Setup udev rules for ESB volumes. Refer- https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html#ec2-nitro-instances 
 echo "Mapping Nitro EBS volumes"
