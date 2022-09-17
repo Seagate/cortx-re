@@ -1,7 +1,7 @@
 pipeline {
     agent {
         node {
-            label ''
+            label 'mukul-multinode-5n'
         }
     }
     //triggers { cron('0 22 * * 1,3,5') }
