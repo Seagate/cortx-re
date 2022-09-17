@@ -22,7 +22,7 @@
 echo -e "-------------------------[ Installing Terraform ]----------------------------------------" 
 yum install -y yum-utils unzip git firewalld epel-release
 yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-yum -y remove docker && yum -y install terraform jq docker-ce docker-ce-cli containerd.io docker-compose-plugin
+yum -y remove docker* && yum -y install terraform jq docker-ce docker-ce-cli containerd.io docker-compose-plugin
 systemctl start docker && systemctl enable docker
 sleep 30
 
