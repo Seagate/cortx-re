@@ -1,7 +1,7 @@
 pipeline {
     agent {
         node {
-            label 'mukul-community-build-multi-node'
+            label 'my-community-build-ssc-vm'
         }
     }
     //triggers { cron('0 22 * * 1,3,5') }
@@ -9,7 +9,7 @@ pipeline {
         timeout(time: 360, unit: 'MINUTES')
         timestamps()
         disableConcurrentBuilds()
-        buildDiscarder(logRotator(daysToKeepStr: '30', numToKeepStr: '10'))
+        buildDiscarder(logRotator(daysToKeepStr: '30', numToKeepStr: '5'))
         ansiColor('xterm')
     }
 
