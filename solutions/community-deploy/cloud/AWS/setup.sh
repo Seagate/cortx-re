@@ -40,4 +40,3 @@ done
 echo "Rebooting system....."
 #System reboot
 reboot
-sleep 240
