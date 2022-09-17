@@ -1,7 +1,7 @@
 pipeline {
     agent {
         node {
-            label 'my-community-build-ssc-vm'
+            label ''
         }
     }
     //triggers { cron('0 22 * * 1,3,5') }
@@ -14,7 +14,7 @@ pipeline {
     }
 
     parameters {
-        string(name: 'CORTX_RE_BRANCH', defaultValue: 'communitybuild-multi-deployment', description: 'Branch or GitHash for CORTX Cluster scripts', trim: true)
+        string(name: 'CORTX_RE_BRANCH', defaultValue: 'mukul-multinode-5N', description: 'Branch or GitHash for CORTX Cluster scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repository for CORTX Cluster scripts', trim: true)
         string(name: 'CORTX_TAG', defaultValue: '2.0.0-940', description: 'Branch or GitHash for generaing CORTX container images', trim: true)
         string(name: 'OS_VERSION', defaultValue: 'CentOS 7.9.2009 x86_64', description: 'Operating system version', trim: true)
