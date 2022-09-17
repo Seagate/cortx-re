@@ -4,23 +4,26 @@ pipeline {
             label 'mukul-community-build-multi-node'
         }
     }
-
     //triggers { cron('0 22 * * 1,3,5') }
     options {
         timeout(time: 360, unit: 'MINUTES')
         timestamps()
         disableConcurrentBuilds()
-        buildDiscarder(logRotator(daysToKeepStr: '30', numToKeepStr: '10'))
+        buildDiscarder(logRotator(daysToKeepStr: '30', numToKeepStr: '5'))
         ansiColor('xterm')
     }
 
+    environment {
+        INSTANCE_COUNT = 1
+    }
+
     parameters {
-        string(name: 'CORTX_RE_BRANCH', defaultValue: 'communitybuild-multi-deployment', description: 'Branch or GitHash for CORTX Cluster scripts', trim: true)
+        string(name: 'CORTX_RE_BRANCH', defaultValue: 'mukul-multinode-automation', description: 'Branch or GitHash for CORTX Cluster scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repository for CORTX Cluster scripts', trim: true)
-        //string(name: 'CORTX_TAG', defaultValue: '2.0.0-940', description: 'Branch or GitHash for generaing CORTX container images', trim: true)
+        string(name: 'CORTX_TAG', defaultValue: '2.0.0-940', description: 'Branch or GitHash for generaing CORTX container images', trim: true)
         string(name: 'OS_VERSION', defaultValue: 'CentOS 7.9.2009 x86_64', description: 'Operating system version', trim: true)
         string(name: 'REGION', defaultValue: 'ap-south-1', description: 'AWS region', trim: true)
-        string(name: 'KEY_NAME', defaultValue: 'mukul-key', description: 'Key name', trim: true)
+        string(name: 'KEY_NAME', defaultValue: 'dev-key', description: 'Key name', trim: true)
         string(name: 'COMMUNITY_USE', defaultValue: 'yes', description: 'Only use during community deployment', trim: true)
         string(name: 'EBS_VOLUME_COUNT', defaultValue: '9', description: 'EBS volume count', trim: true)
         string(name: 'EBS_VOLUME_SIZE', defaultValue: '10', description: 'EBS volume size in GB', trim: true)
@@ -62,7 +65,7 @@ pipeline {
                 pushd solutions/community-deploy/cloud/AWS
                     ./tool_setup.sh
                     sed -i 's,os_version          =.*,os_version = "'"$OS_VERSION"'",g' user.tfvars && sed -i 's,region              =.*,region = "'"$REGION"'",g' user.tfvars && sed -i 's,security_group_cidr =.*,security_group_cidr = "'"$VM_IP/32"'",g' user.tfvars && sed -i 's,instance_count      =.*,instance_count  = '"$INSTANCE_COUNT"',g' user.tfvars && sed -i 's,ebs_volume_count    =.*,ebs_volume_count = '"$EBS_VOLUME_COUNT"',g' user.tfvars && sed -i 's,ebs_volume_size     =.*,ebs_volume_size = '"$EBS_VOLUME_SIZE"',g' user.tfvars && sed -i 's,tag_name            =.*,tag_name = "'"$AWS_INSTANCE_TAG_NAME"'",g' user.tfvars
-                    echo key_name = '"'$KEY_NAME'"' | cat >> user.tfvars
+                    echo key_name = '"'$KEY_NAME'"' | cat >>user.tfvars
                     cat user.tfvars
                     popd
                 '''
@@ -76,6 +79,35 @@ pipeline {
                         terraform validate && terraform apply -var-file user.tfvars --auto-approve
                         popd
             '''
+            }
+        }
+        stage('Configure network and storage') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    sh label: 'Setting up Network and Storage devices for CORTX. Script will reboot the instance on completion', script: '''
+                    pushd solutions/community-deploy/cloud/AWS
+                    export PUBLIC_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip_public.txt | tr -d '",[]' | sed '/^$/d')
+                    export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
+                    if [ "$INSTANCE_COUNT" -eq 1 ]; then
+                        ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" "sudo bash /home/centos/setup.sh && sleep 1m"
+                    
+                    elif [ "$INSTANCE_COUNT" -gt 1 ]; then
+                        for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${ip}" "sudo bash /home/centos/setup.sh && sleep 240";done
+                    popd
+                    fi
+            '''
+                }
+            }
+        }
+    post {
+        always {
+            retry(count: 3) {
+                    sh label: 'Destroying EC2 instance', script: '''
+                    pushd solutions/community-deploy/cloud/AWS
+                        terraform validate && terraform destroy -var-file user.tfvars --auto-approve
+                        popd
+                    '''
             }
         }
     }
