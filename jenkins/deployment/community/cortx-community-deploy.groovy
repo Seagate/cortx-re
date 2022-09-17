@@ -112,7 +112,6 @@ pipeline {
                 export HOST2=$(cat ec2_hostname.txt | jq '.[1]'| tr -d '",[]')
                 export HOST3=$(cat ec2_hostname.txt | jq '.[2]'| tr -d '",[]')
                 export HOST4=$(cat ec2_hostname.txt | jq '.[3]'| tr -d '",[]')
-                sleep 120
                 if [ "$INSTANCE_COUNT" -eq 1 ]; then
                     ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" "sudo -- sh -c 'export ROOT_PASSWORD=$ROOT_PASSWORD && echo $ROOT_PASSWORD | sudo passwd --stdin root && git clone https://github.com/Seagate/cortx-re && pushd /home/centos/cortx-re/solutions/kubernetes && touch hosts && echo hostname=${BUILD_NODE},user=root,pass= > hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && cat hosts && sleep 240'"
                 
