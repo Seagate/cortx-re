@@ -24,7 +24,7 @@ if [ $(whoami) != root ];then
 	exit
 fi
 
-#Install Packages
+#Install packages & start service
 yum -y remove docker* && yum install -y yum-utils git firewalld epel-release && yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo -y && yum install -y jq docker-ce docker-ce-cli containerd.io docker-compose-plugin
 systemctl start docker && systemctl enable docker
 
@@ -40,3 +40,4 @@ done
 echo "Rebooting system....."
 #System reboot
 reboot
+sleep 240
