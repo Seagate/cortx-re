@@ -13,10 +13,6 @@ pipeline {
         ansiColor('xterm')
     }
 
-    environment {
-        INSTANCE_COUNT = 1
-    }
-
     parameters {
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'communitybuild-multi-deployment', description: 'Branch or GitHash for CORTX Cluster scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repository for CORTX Cluster scripts', trim: true)
