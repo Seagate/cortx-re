@@ -142,7 +142,7 @@ pipeline {
                         ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" "sudo -- sh -c 'pushd /home/centos/cortx-re/solutions/kubernetes && ./cluster-setup.sh true && sed -i 's,cortx-docker.colo.seagate.com,${BUILD_NODE}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 240'"
                         popd
                     
-                    elif [ "$INSTANCE_COUNT" -gt 1 ]; then
+                    else
                         ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" "sudo -- sh -c 'pushd /home/centos/cortx-re/solutions/kubernetes && ./cluster-setup.sh true && sed -i 's,cortx-docker.colo.seagate.com,${BUILD_NODE}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 240'"
                         for wp in $WORKER_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${wp}" "sudo -- sh -c 'sed -i 's,cortx-docker.colo.seagate.com,${BUILD_NODE}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 120'";done
                         popd
