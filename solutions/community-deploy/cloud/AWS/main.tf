@@ -140,7 +140,6 @@ resource "aws_instance" "cortx_deploy" {
         systemctl restart sshd
         sed -i 's/SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config
         /sbin/setenforce 0
-        yum install -y yum-utils git firewalld epel-release && yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo -y && yum install -y jq docker-ce docker-ce-cli containerd.io docker-compose-plugin && sleep 30 && systemctl start docker && systemctl enable docker
   EOT
   root_block_device {
     volume_size = 90
