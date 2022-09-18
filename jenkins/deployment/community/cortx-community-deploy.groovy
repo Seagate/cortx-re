@@ -88,7 +88,8 @@ pipeline {
 
                     if [ "$INSTANCE_COUNT" -eq 1 ]; then
                         echo -n "Setting up Network and Storage devices on 1N Deployment  ........."
-                        ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" sudo bash /home/centos/setup.sh && sleep 360
+                        ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" sudo bash /home/centos/setup.sh
+                        sleep 640
 
                     elif [ "$INSTANCE_COUNT" -gt 1 ]; then
                         echo -n "Setting up Network and Storage devices for multinode Deployment  ........."
