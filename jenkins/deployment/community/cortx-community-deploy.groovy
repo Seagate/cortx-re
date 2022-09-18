@@ -68,7 +68,6 @@ pipeline {
                 '''
             }
         }
-
         stage('Create EC2 instances') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -79,7 +78,6 @@ pipeline {
             '''
             }
         }
-
         stage('Configure network and storage') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -88,10 +86,13 @@ pipeline {
                     pushd solutions/community-deploy/cloud/AWS
                     export PUBLIC_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip_public.txt | tr -d '",[]' | sed '/^$/d')
                     export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
+
                     if [ "$INSTANCE_COUNT" -eq 1 ]; then
+                        echo -n "Setting up Network and Storage devices on 1N Deployment  ........."
                         ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" sudo bash /home/centos/setup.sh && sleep 360
 
-                    else
+                    elif [ "$INSTANCE_COUNT" -gt 1 ]; then
+                        echo -n "Setting up Network and Storage devices for multinode Deployment  ........."
                         for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${ip}" sudo bash /home/centos/setup.sh && sleep 240;done
                     popd
                     fi
@@ -99,7 +100,6 @@ pipeline {
                 }
             }
         }
-
         stage('EC2 connection prerequisites') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -113,17 +113,25 @@ pipeline {
                 export HOST2=$(cat ec2_hostname.txt | jq '.[1]'| tr -d '",[]')
                 export HOST3=$(cat ec2_hostname.txt | jq '.[2]'| tr -d '",[]')
                 export HOST4=$(cat ec2_hostname.txt | jq '.[3]'| tr -d '",[]')
+                export HOST5=$(cat ec2_hostname.txt | jq '.[4]'| tr -d '",[]')
+
                 if [ "$INSTANCE_COUNT" -eq 1 ]; then
+                    echo -n "Changing root password & creating hosts file on 1N Deployment  ........."
                     ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" "sudo -- sh -c 'export ROOT_PASSWORD=$ROOT_PASSWORD && echo $ROOT_PASSWORD | sudo passwd --stdin root && git clone https://github.com/Seagate/cortx-re && pushd /home/centos/cortx-re/solutions/kubernetes && touch hosts && echo hostname=${BUILD_NODE},user=root,pass= > hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && cat hosts && sleep 240'"
 
-                else
-                    for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${ip}" "sudo -- sh -c 'export ROOT_PASSWORD=$ROOT_PASSWORD && echo $ROOT_PASSWORD | sudo passwd --stdin root && git clone https://github.com/Seagate/cortx-re && pushd /home/centos/cortx-re/solutions/kubernetes && touch hosts && echo hostname=${BUILD_NODE},user=root,pass= > hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo hostname=${HOST2},user=root,pass= >> hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo hostname=${HOST3},user=root,pass= >> hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo hostname=${HOST4},user=root,pass= >> hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && cat hosts && sleep 240'";done
+                elif [ "$INSTANCE_COUNT" -eq 3 ]; then
+                    echo -n "Changing root password & creating hosts file on 3N Deployment  ........."
+                    for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${ip}" "sudo -- sh -c 'export ROOT_PASSWORD=$ROOT_PASSWORD && echo $ROOT_PASSWORD | sudo passwd --stdin root && git clone https://github.com/Seagate/cortx-re && pushd /home/centos/cortx-re/solutions/kubernetes && touch hosts && echo hostname=${BUILD_NODE},user=root,pass= > hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo hostname=${HOST2},user=root,pass= >> hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo hostname=${HOST3},user=root,pass= >> hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && cat hosts && sleep 240'";done
+                    popd
+
+                elif [ "$INSTANCE_COUNT" -eq 5 ]; then
+                    echo -n "Changing root password & creating hosts file on 5N Deployment  ........."
+                    for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${ip}" "sudo -- sh -c 'export ROOT_PASSWORD=$ROOT_PASSWORD && echo $ROOT_PASSWORD | sudo passwd --stdin root && git clone https://github.com/Seagate/cortx-re && pushd /home/centos/cortx-re/solutions/kubernetes && touch hosts && echo hostname=${BUILD_NODE},user=root,pass= > hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo hostname=${HOST2},user=root,pass= >> hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo hostname=${HOST3},user=root,pass= >> hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo hostname=${HOST4},user=root,pass= >> hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo hostname=${HOST5},user=root,pass= >> hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && cat hosts && sleep 240'";done
                     popd
                 fi
             '''
             }
         }
-
         stage('Execute cortx build script') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -135,7 +143,6 @@ pipeline {
             '''
             }
         }
-
         stage('Setup K8s cluster') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -143,40 +150,58 @@ pipeline {
                     pushd solutions/community-deploy/cloud/AWS
                     export BUILD_NODE=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
                     export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
-                    export WORKER_IP=$(cat ip_public.txt | jq '.[0]','.[1]','.[2]','.[3]' | tr -d '",[]')
+                    export WORKER_IP3=$(cat ip_public.txt | jq '.[0]','.[1]','.[2]' | tr -d '",[]')
+                    export WORKER_IP5=$(cat ip_public.txt | jq '.[0]','.[1]','.[2]','.[3]','.[4]' | tr -d '",[]')
+
                     if [ "$INSTANCE_COUNT" -eq 1 ]; then
+                        echo -n "Setting up K8s cluster on 1N Deployment  ........."
                         ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" "sudo -- sh -c 'pushd /home/centos/cortx-re/solutions/kubernetes && ./cluster-setup.sh true && sed -i 's,cortx-docker.colo.seagate.com,${BUILD_NODE}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 240'"
                         popd
 
-                    else
+                    elif [ "$INSTANCE_COUNT" -eq 3 ]; then
+                        echo -n "Setting up K8s cluster on 3N Deployment  ........."
                         ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" "sudo -- sh -c 'pushd /home/centos/cortx-re/solutions/kubernetes && ./cluster-setup.sh true && sed -i 's,cortx-docker.colo.seagate.com,${BUILD_NODE}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 240'"
-                        for wp in $WORKER_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${wp}" "sudo -- sh -c 'sed -i 's,cortx-docker.colo.seagate.com,${BUILD_NODE}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 120'";done
+                        for wp3 in $WORKER_IP3;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${wp3}" "sudo -- sh -c 'sed -i 's,cortx-docker.colo.seagate.com,${BUILD_NODE}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 120'";done
+                        popd
+
+                    elif [ "$INSTANCE_COUNT" -eq 5 ]; then
+                        echo -n "Setting up K8s cluster on 5N Deployment  ........."
+                        ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" "sudo -- sh -c 'pushd /home/centos/cortx-re/solutions/kubernetes && ./cluster-setup.sh true && sed -i 's,cortx-docker.colo.seagate.com,${BUILD_NODE}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 240'"
+                        for wp5 in $WORKER_IP5;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${wp5}" "sudo -- sh -c 'sed -i 's,cortx-docker.colo.seagate.com,${BUILD_NODE}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 120'";done
                         popd
                     fi
             '''
             }
         }
-
         stage('Pull locally generated images') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Generate locally build cortx images on worker nodes', script: '''
-                export WORKER_IP=$(cat ip_public.txt | jq '.[0]','.[1]','.[2]','.[3]' | tr -d '",[]')
+                export WORKER_IP3=$(cat ip_public.txt | jq '.[0]','.[1]','.[2]' | tr -d '",[]')
+                export WORKER_IP5=$(cat ip_public.txt | jq '.[0]','.[1]','.[2]','.[3]','.[4]' | tr -d '",[]')
                 export BUILD_NODE=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]')
                 export CORTX_SERVER_IMAGE="${BUILD_NODE}:8080/seagate/cortx-rgw:2.0.0-0"
                 export CORTX_DATA_IMAGE="${BUILD_NODE}:8080/seagate/cortx-data:2.0.0-0"
                 export CORTX_CONTROL_IMAGE="${BUILD_NODE}:8080/seagate/cortx-control:2.0.0-0"
                 pushd solutions/community-deploy/cloud/AWS
-                if [ "$INSTANCE_COUNT" -gt 1 ]; then
-                    for wp in $WORKER_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@${wp} "sudo docker pull '${CORTX_SERVER_IMAGE}' && sudo docker pull '${CORTX_DATA_IMAGE}' && sudo docker pull '${CORTX_CONTROL_IMAGE}'";done
+
+                if [ "$INSTANCE_COUNT" -eq 1 ]; then
+                    echo -n "Continue Single Node Deployment ........."
+
+                elif [ "$INSTANCE_COUNT" -eq 3 ]; then
+                    echo -n "Generate locally build cortx images on 3N Deployment  ........."
+                    for wp3 in $WORKER_IP3;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$"{wp3}" "sudo docker pull '${CORTX_SERVER_IMAGE}' && sudo docker pull '${CORTX_DATA_IMAGE}' && sudo docker pull '${CORTX_CONTROL_IMAGE}'";done
                     popd
-                else
-                    echo -n "Continue 1N Deployment ........."
+
+                elif [ "$INSTANCE_COUNT" -eq 5 ]; then
+                    echo -n "Generate locally build cortx images on 5N Deployment  ........."
+                    for wp5 in $WORKER_IP5;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$"{wp5}" "sudo docker pull '${CORTX_SERVER_IMAGE}' && sudo docker pull '${CORTX_DATA_IMAGE}' && sudo docker pull '${CORTX_CONTROL_IMAGE}'";done
+                    popd
+
                 fi
             '''
             }
         }
-
         stage('Deploy CORTX cluster') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -194,7 +219,6 @@ pipeline {
             '''
             }
         }
-
         stage('Basic I/O Test') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -206,7 +230,6 @@ pipeline {
             '''
             }
         }
-
         stage('Basic Management Path Check') {
             steps {
                 script { build_stage = env.STAGE_NAME }
