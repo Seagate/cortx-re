@@ -29,7 +29,7 @@ pipeline {
         password(name: 'ACCESS_KEY', description: 'access key for AWS account')
         password(name: 'ROOT_PASSWORD', description: 'Root password for EC2 instances')
     }
-    
+
         stages {
             stage('Checkout Script') {
                 steps {
@@ -88,7 +88,7 @@ pipeline {
 
                     if [ "$INSTANCE_COUNT" -eq 1 ]; then
                         echo -n "Setting up Network and Storage devices on 1N Deployment  ........."
-                        ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" sudo bash /home/centos/setup.sh; sleep 240
+                        ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" sudo bash /home/centos/setup.sh && sleep 360
 
                     elif [ "$INSTANCE_COUNT" -gt 1 ]; then
                         echo -n "Setting up Network and Storage devices for multinode Deployment  ........."
@@ -240,7 +240,7 @@ pipeline {
                 '''
             }
         }
-    }
+        }
     post {
         always {
             retry(count: 3) {
@@ -253,8 +253,8 @@ pipeline {
 
             script {
                 // Jenkins Summary
-                clusterStatus = ''
-                if ( currentBuild.currentResult == 'SUCCESS' ) {
+            clusterStatus = ''
+            if ( currentBuild.currentResult == 'SUCCESS' ) {
                     MESSAGE = "CORTX Community Deploy is Success for the build ${build_id}"
                     ICON = 'accept.gif'
                     STATUS = 'SUCCESS'
@@ -274,18 +274,21 @@ pipeline {
                 env.build_stage = "${build_stage}"
                 env.cluster_status = "${clusterStatusHTML}"
 
-                def toEmail = ''
-                def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
-                if ( manager.build.result.toString() == 'FAILURE' ) {
+                def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
+                if ( currentBuild.result == 'SUCCESS' ) {
                     toEmail = 'CORTX.DevOps.RE@seagate.com'
-                    recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
                 }
+
+                else {
+                    mailRecipients = 'CORTX.DevOps.RE@seagate.com'
+                }
+
                 emailext(
                 body: '''${SCRIPT, template="cluster-setup-email.template"}''',
                 mimeType: 'text/html',
-                subject: "[Cortx Community Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
+                subject: "[Cortx Community Build Deployment ${currentBuild.currentResult}] : ${env.JOB_NAME}",
                 attachLog: true,
-                to: toEmail,
+                to: "${mailRecipients}",
                 recipientProviders: recipientProvidersClass
                 )
             }
