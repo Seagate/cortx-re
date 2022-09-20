@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: cortx-port-scanner
-          image: docker.io/sanket02092001/port-scanner:latest
+          image: docker.io/sanket02092001/port-scanner:1.0.0
           imagePullPolicy: Always
           env:
             - name: MONGODB_USERNAME
@@ -28,4 +28,18 @@ spec:
                 secretKeyRef:
                   key: mongodb_password
                   name: dashboard-secret
+          resources:
+            limits:
+              memory: "768Mi"
+              cpu: "2500m"
+            requests:
+              memory: "256Mi"
+              cpu: "800m"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - NET_RAW
+                - ALL
       serviceAccountName: cortx-port-scanner

@@ -21,6 +21,7 @@ spec:
               "-c",
               "bin/logstash-plugin install logstash-input-mongodb && bin/logstash",
             ]
+          imagePullPolicy: Always
           env:
             - name: LOGSTASH_PW
               valueFrom:
@@ -65,11 +66,17 @@ spec:
               mountPath: /usr/share/logstash/pipeline
           resources:
             limits:
-              memory: "4Gi"
-              cpu: "2500m"
+              memory: "2048Mi"
+              cpu: "5000m"
             requests:
-              memory: "4Gi"
-              cpu: "800m"
+              memory: "256Mi"
+              cpu: "200m"
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - NET_RAW
+                - ALL
       volumes:
         - name: config-volume
           configMap:

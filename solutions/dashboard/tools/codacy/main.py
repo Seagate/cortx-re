@@ -37,9 +37,14 @@ class Main:
 
         # Repositories
         while True:
-            repos = Repositories(headers=headers)
-            repositories = repos.getRepositories()
-            repositories.sort()
+            # Getting repositories list from CODACY
+            # repos = Repositories(headers=headers)
+            # repositories = repos.getRepositories()
+            # repositories.sort()
+
+            repositories = ['cortx', 'cortx-ha', 'cortx-hare', 'cortx-k8s', 'cortx-manager',
+                            'cortx-mio', 'cortx-motr', 'cortx-motr-apps', 'cortx-prvsnr', 'cortx-re', 'cortx-rgw',
+                            'cortx-rgw-integration', 'cortx-test']
             print(repositories)
 
             # issues
