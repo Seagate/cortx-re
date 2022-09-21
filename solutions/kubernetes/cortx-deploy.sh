@@ -50,12 +50,13 @@ fi
 
 function check_params() {
     if [ -z "$CORTX_SCRIPTS_REPO" ]; then echo "CORTX_SCRIPTS_REPO not provided. Using default: Seagate/cortx-k8s ";CORTX_SCRIPTS_REPO="Seagate/cortx-k8s"; fi
-    if [ -z "$CORTX_SCRIPTS_BRANCH" ]; then echo "CORTX_SCRIPTS_BRANCH not provided. Using default: v0.12.0";CORTX_SCRIPTS_BRANCH="v0.12.0"; fi
+    if [ -z "$CORTX_SCRIPTS_BRANCH" ]; then echo "CORTX_SCRIPTS_BRANCH not provided. Using default: v0.13.0";CORTX_SCRIPTS_BRANCH="v0.13.0"; fi
     if [ -z "$CORTX_SERVER_IMAGE" ]; then echo "CORTX_SERVER_IMAGE not provided. Using default : ghcr.io/seagate/cortx-rgw:2.0.0-latest"; CORTX_SERVER_IMAGE=ghcr.io/seagate/cortx-rgw:2.0.0-latest; fi
     if [ -z "$CORTX_DATA_IMAGE" ]; then echo "CORTX_DATA_IMAGE not provided. Using default : ghcr.io/seagate/cortx-data:2.0.0-latest"; CORTX_DATA_IMAGE=ghcr.io/seagate/cortx-data:2.0.0-latest; fi
     if [ -z "$CORTX_CONTROL_IMAGE" ]; then echo "CORTX_CONTROL_IMAGE not provided. Using default : ghcr.io/seagate/cortx-control:2.0.0-latest"; CORTX_CONTROL_IMAGE=ghcr.io/seagate/cortx-control:2.0.0-latest; fi
     if [ -z "$DEPLOYMENT_METHOD" ]; then echo "DEPLOYMENT_METHOD not provided. Using default : standard"; DEPLOYMENT_METHOD=standard; fi
     if [ -z "$SOLUTION_CONFIG_TYPE" ]; then echo "SOLUTION_CONFIG_TYPE not provided. Using default : manual"; SOLUTION_CONFIG_TYPE=manual; fi
+    if [ -z "$CUSTOM_SSL_CERT" ]; then echo "CUSTOM_SSL_CERT not provided. Using default : no"; CUSTOM_SSL_CERT=no; fi
     if [ -z "$SNS_CONFIG" ]; then SNS_CONFIG="1+0+0"; fi
     if [ -z "$DIX_CONFIG" ]; then DIX_CONFIG="1+0+0"; fi
     if [ -z "$EXTERNAL_EXPOSURE_SERVICE" ]; then EXTERNAL_EXPOSURE_SERVICE="NodePort"; fi
@@ -74,6 +75,7 @@ function check_params() {
    echo -e "# CORTX_CONTROL_IMAGE        : $CORTX_CONTROL_IMAGE                 "
    echo -e "# DEPLOYMENT_METHOD          : $DEPLOYMENT_METHOD                   "
    echo -e "# SOLUTION_CONFIG_TYPE       : $SOLUTION_CONFIG_TYPE                "
+   echo -e "# CUSTOM_SSL_CERT            : $CUSTOM_SSL_CERT                     "
    echo -e "# SNS_CONFIG                 : $SNS_CONFIG                          "
    echo -e "# DIX_CONFIG                 : $DIX_CONFIG                          "
    echo -e "# EXTERNAL_EXPOSURE_SERVICE  : $EXTERNAL_EXPOSURE_SERVICE           "
@@ -112,6 +114,12 @@ function setup_cluster() {
         if [ ! -f "$SOLUTION_CONFIG" ]; then echo -e "ERROR:$SOLUTION_CONFIG file is not available..."; exit 1; fi
     fi
 
+    add_secondary_separator "Using SSL Certfication option as $CUSTOM_SSL_CERT"
+    if [ "$CUSTOM_SSL_CERT" == yes ]; then
+        CUSTOM_SSL_CERT_KEY="$PWD/cortx.pem"
+        if [ ! -f "$CUSTOM_SSL_CERT_KEY" ]; then echo -e "ERROR:$PWD/cortx.pem file is not available..."; exit 1; fi
+    fi
+
     validation
     generate_rsa_key
     nodes_setup
@@ -119,11 +127,12 @@ function setup_cluster() {
 
     TARGET=$1
 
-    scp_all_nodes cortx-deploy-functions.sh functions.sh $SOLUTION_CONFIG
+    scp_all_nodes cortx-deploy-functions.sh functions.sh $SOLUTION_CONFIG $CUSTOM_SSL_CERT_KEY
 
     add_secondary_separator "Setup primary node $PRIMARY_NODE"
     ssh_primary_node "
-    export SOLUTION_CONFIG_TYPE=$SOLUTION_CONFIG_TYPE && 
+    export SOLUTION_CONFIG_TYPE=$SOLUTION_CONFIG_TYPE &&
+    export CUSTOM_SSL_CERT=$CUSTOM_SSL_CERT &&
     export CORTX_SERVER_IMAGE=$CORTX_SERVER_IMAGE &&
     export CORTX_DATA_IMAGE=$CORTX_DATA_IMAGE &&
     export CORTX_CONTROL_IMAGE=$CORTX_CONTROL_IMAGE &&

@@ -73,7 +73,7 @@ export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
 
 | Parameter     | Default value     | Description     |
 | :------------- | :----------- | :---------|
-| CORTX_SCRIPTS_BRANCH      | v0.12.0  | If you want to use another cortx-K8s branch then export this variable with your branch. Note: Default value for this variable keeps on changing. Please refer [cortx-k8s tags](https://github.com/Seagate/cortx-k8s/tags) for latest/supported services-version    |
+| CORTX_SCRIPTS_BRANCH      | v0.13.0  | If you want to use another cortx-K8s branch then export this variable with your branch. Note: Default value for this variable keeps on changing. Please refer [cortx-k8s tags](https://github.com/Seagate/cortx-k8s/tags) for latest/supported services-version    |
 | CORTX_SCRIPTS_REPO | Seagate/cortx-k8s | If you want to use another cortx-K8s repo (like your fork), export this variable with your repo. |
 | CORTX_SERVER_IMAGE | ghcr.io/seagate/cortx-rgw:2.0.0-latest | Also, if you want to use different server image then export this variable with new image. Image Reference - [cortx-rgw](https://github.com/Seagate/cortx/pkgs/container/cortx-rgw) |
 | CORTX_DATA_IMAGE | ghcr.io/seagate/cortx-data:2.0.0-latest | Also, if you want to use different data image then export this variable with new image. Image Reference - [cortx-data](https://github.com/Seagate/cortx/pkgs/container/cortx-data) |
@@ -85,7 +85,8 @@ export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
 | SNS_CONFIG | 1+0+0 | SNS configuration for deployment. Please select value based on disks available on nodes. |
 | DIX_CONFIG | 1+0+0 | DIX configuration for deployment. Please select value based on disks available on nodes. |
 | NAMESPACE  | default | Kubernetes cluster Namespace for CORTX deployments. |
-| SOLUTION_CONFIG_TYPE | manual | There are two config types for solution.yaml file; manual and automated. In automated type the solution.yaml is created by script if VM is created as per standard specification. In manual type the user needs to create solution.yaml with required disks, image details etc.; place it at script location and configure SOLUTION_CONFIG_TYPE variable as manual. |
+| SOLUTION_CONFIG_TYPE | manual | There are two config types for solution.yaml file; manual and automated. In automated type the solution.yaml is created by script if VM is created as per standard specification. In manual type the user needs to create solution.yaml with required disks, image details etc.; place it at script location i.e. `$PWD/cortx-re/solutions/kubernetes` and configure SOLUTION_CONFIG_TYPE variable as manual. |
+| CUSTOM_SSL_CERT | no | You can use custom SSL certificate in Deployment. Please provide this option as yes and upload key file at script location i.e. `$PWD/cortx-re/solutions/kubernetes`. By default, CORTX is installed with a self-signed SSL certificate.  |
 
 **For example:**
 ```
