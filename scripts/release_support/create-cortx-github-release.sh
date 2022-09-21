@@ -36,8 +36,8 @@ do
                 r) RELEASE_REPO="$OPTARG";;
         esac
 done
-if [[ -z "$TAG" || -z "$SERVICES_VERSION" || -z "$CHANGESET_URL" ]]; then
-        echo "Usage: git-release [-t <tag>] [-v <services-version>] [-c <changeset file url>]"
+if [[ -z "$TAG" || -z "$SERVICES_VERSION" || -z "$CHANGESET_URL" || -z "$RELEASE_REPO" ]]; then
+        echo "Usage: git-release [-t <tag>] [-v <services-version>] [-c <changeset file url>] [-r <org/repo>]"
         exit 1
 fi
 
