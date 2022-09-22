@@ -3,7 +3,6 @@ import asyncio
 from issues import Issues
 from const import MONGODB_CONNECTION_URL
 from mongodb import MongoDB
-from repositories import Repositories
 
 
 class Main:

@@ -76,12 +76,12 @@ class MongoDB:
             print("Update Document Exception: ", err)
 
     def manage_document(
-            self, actual_ports: list = [],
-            allowed_ports: list = [],
-            non_compliance_ports: list = [],
-            non_compliance_services: list = [],
-            is_healthy: bool = True,
-            is_healthy_int: int = 1):
+            self, actual_ports: list,
+            allowed_ports: list,
+            non_compliance_ports: list,
+            non_compliance_services: list,
+            is_healthy: bool,
+            is_healthy_int: int):
         try:
             data = {
                 "identifier": INDEX_IDENTIFIER,
