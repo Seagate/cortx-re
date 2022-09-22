@@ -255,6 +255,7 @@ function execute_deploy_script() {
     local SCRIPT_NAME=$1
         pushd $SCRIPT_LOCATION/k8_cortx_cloud
         chmod +x *.sh
+        echo CORTX_DEPLOY_HA_TIMEOUT:$CORTX_DEPLOY_HA_TIMEOUT
         ./$SCRIPT_NAME
         if [ $? -eq 0 ] 
         then 
