@@ -4,5 +4,6 @@ metadata:
   name: dashboard-configmap
   namespace: cortx
 data:
+  secret_name: "dashboard-secret"
   master_node_internal_ip: "<master_node_internal_ip>"
   elasticsearch_nodeport: "<elasticsearch_nodeport>"

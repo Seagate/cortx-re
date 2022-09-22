@@ -28,13 +28,18 @@ spec:
                 secretKeyRef:
                   key: mongodb_password
                   name: dashboard-secret
+            - name: SECRET_NAME
+              valueFrom:
+                configMapKeyRef:
+                  key: secret_name
+                  name: dashboard-configmap
           resources:
             limits:
               memory: "768Mi"
-              cpu: "2500m"
+              cpu: "5000m"
             requests:
               memory: "256Mi"
-              cpu: "800m"
+              cpu: "300m"
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true

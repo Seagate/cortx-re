@@ -37,7 +37,7 @@ class Operator:
             non_compliance_services=["none"],
             is_healthy=False,
             is_healthy_int=0)
-       
+
         self.mongodb.manage_document(
             actual_ports=[-1],
             allowed_ports=[-1],

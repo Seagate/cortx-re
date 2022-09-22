@@ -12,9 +12,6 @@ LIST_TYPES_MAP = {
 # Allowed events
 ALLOWED_EVENT_TYPES = {'ADDED', 'DELETED'}
 
-# Secret
-SECRET_NAME = "dashboard-secret"
-
 # ConfigMap
 CONFIGMAP_NAME = "cortx-port-scanner"
 

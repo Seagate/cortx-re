@@ -1,5 +1,6 @@
-from cortxportscanner.common.const import HEADLESS_SERVICE_NAME, STATEFULSET_NAME, STATEFULSET_VOLUME_NAME, SECRET_NAME
+from cortxportscanner.common.const import HEADLESS_SERVICE_NAME, STATEFULSET_NAME, STATEFULSET_VOLUME_NAME
 from kubernetes import client
+import os
 
 
 class StatefulSet:
@@ -23,6 +24,8 @@ class StatefulSet:
             print("\n\nStatefulset Exception: \n", err)
 
     def create_statefulset_body(self):
+        SECRET_NAME = os.environ.get("SECRET_NAME")
+
         # Container Template
         mongo_container = self.client.V1Container(
             name=STATEFULSET_NAME,
