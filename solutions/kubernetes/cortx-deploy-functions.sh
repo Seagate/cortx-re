@@ -255,7 +255,7 @@ function execute_deploy_script() {
     local SCRIPT_NAME=$1
         pushd $SCRIPT_LOCATION/k8_cortx_cloud
         chmod +x *.sh
-        export CORTX_DEPLOY_NO_WAIT="true" && ./$SCRIPT_NAME
+        ./$SCRIPT_NAME
         if [ $? -eq 0 ] 
         then 
            echo -e "\nSuccessfully executed $SCRIPT_NAME." 
