@@ -24,6 +24,13 @@ if [ $(whoami) != root ];then
 	exit
 fi
 
+#Set root password
+echo "Setting root password for instance"
+ROOT_PASS=$1
+ROOT_PASS=${ROOT_PASS:-Seagate}
+echo "Setting up root user password as $ROOT_PASS"
+echo -e "root:$ROOT_PASS" | sudo chpasswd
+
 #Setup udev rules for ESB volumes. Refer- https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html#ec2-nitro-instances 
 echo "Mapping Nitro EBS volumes"
 declare -a device_list
