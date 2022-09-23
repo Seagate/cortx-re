@@ -157,7 +157,7 @@ function setup_cluster() {
     fi
 
     # Deploy CORTX CLuster (deploy-cortx-cloud.sh) :
-    ssh_primary_node "/var/tmp/cortx-deploy-functions.sh --$TARGET"
+    ssh_primary_node "export CORTX_DEPLOY_HA_TIMEOUT=$CORTX_DEPLOY_HA_TIMEOUT && /var/tmp/cortx-deploy-functions.sh --$TARGET"
     add_primary_separator "\tPrint Cluster Status"
     rm -rf /var/tmp/cortx-cluster-status.txt
     ssh_primary_node "export DEPLOYMENT_METHOD=$DEPLOYMENT_METHOD && /var/tmp/cortx-deploy-functions.sh --status" | tee /var/tmp/cortx-cluster-status.txt
