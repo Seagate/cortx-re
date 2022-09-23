@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cortx-codacy
+  namespace: cortx
+  labels:
+    app: cortx-codacy
+spec:
+  selector:
+    matchLabels:
+      app: cortx-codacy
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: cortx-codacy
+    spec:
+      containers:
+        - name: cortx-codacy
+          image: docker.io/sanket02092001/scs:1.0.0
+          imagePullPolicy: Always
+          env:
+            - name: MONGODB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  key: mongodb_username
+                  name: dashboard-secret
+            - name: MONGODB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: mongodb_password
+                  name: dashboard-secret
+            - name: CODACY_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  key: codacy_api_token
+                  name: dashboard-secret
+          resources:
+            limits:
+              memory: "768Mi"
+              cpu: "768Mi"
+            requests:
+              memory: "256Mi"
+              cpu: "300m"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - NET_RAW
+                - ALL
