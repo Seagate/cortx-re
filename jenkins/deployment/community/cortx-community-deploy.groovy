@@ -74,23 +74,47 @@ pipeline {
                 sh label: 'Setting up EC2 instances', script: '''
                     pushd solutions/community-deploy/cloud/AWS
                         terraform validate && terraform apply -var-file user.tfvars --auto-approve
-                        popd
-            '''
+                    popd
+                '''
             }
         }
         stage('Configure network and storage') {
             steps {
                 script { build_stage = env.STAGE_NAME }
+                script {
+                    env.PUBLIC_IP = sh( script: '''
+                    cd solutions/community-deploy/cloud/AWS && terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value | jq .[] | tr -d '"'
+                    ''', returnStdout: true).trim()
+                    env.PRIMARY_PUBLIC_IP = sh( script: '''
+                    cd solutions/community-deploy/cloud/AWS && terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value | jq .[] | tr -d '"' | cut -d' ' -f1
+                    ''', returnStdout: true).trim()
+                }
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                     sh label: 'Setting up Network and Storage devices for CORTX. Script will reboot the instance on completion', script: '''
                     pushd solutions/community-deploy/cloud/AWS
-                        export PUBLIC_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip_public.txt | tr -d '",[]' | sed '/^$/d')
                         for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${ip}" sudo bash /home/centos/setup.sh && sleep 240;done
                         popd
-            '''
+                    '''
                 }
             }
         }
+
+
+        stage('Execute cortx build script') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'Executing cortx build image script on Primary node', script: '''
+                pushd solutions/community-deploy/cloud/AWS
+                    export CORTX_RE_BRANCH=${CORTX_RE_BRANCH}
+                    export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
+                    sleep 120
+                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" "export CORTX_RE_BRANCH=$CORTX_RE_BRANCH; git clone $CORTX_RE_REPO -b $CORTX_RE_BRANCH; pushd /home/centos/cortx-re/solutions/community-deploy; time sudo ./build-cortx.sh -b ${CORTX_TAG}"
+                    popd
+            '''
+            }
+        }
+
+        
         stage('EC2 connection prerequisites') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -106,19 +130,9 @@ pipeline {
             '''
             }
         }
-        stage('Execute cortx build script') {
-            steps {
-                script { build_stage = env.STAGE_NAME }
-                sh label: 'Executing cortx build image script on Primary node', script: '''
-                pushd solutions/community-deploy/cloud/AWS
-                    export CORTX_RE_BRANCH=${CORTX_RE_BRANCH}
-                    export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
-                    sleep 120
-                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" "export CORTX_RE_BRANCH=$CORTX_RE_BRANCH; git clone $CORTX_RE_REPO -b $CORTX_RE_BRANCH; pushd /home/centos/cortx-re/solutions/community-deploy; time sudo ./build-cortx.sh -b ${CORTX_TAG}"
-                    popd
-            '''
-            }
-        }
+ 
+
+
         stage('Setup K8s cluster') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -224,7 +238,7 @@ pipeline {
                 def toEmail = ''
                 def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
                 if ( manager.build.result.toString() == 'FAILURE' ) {
-                    toEmail = 'CORTX.DevOps.RE@seagate.com'
+                    toEmail = 'shailesh.vaidya@seagate.com'
                     recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
                 }
                 emailext(
