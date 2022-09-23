@@ -1,4 +1,4 @@
-# Copyright (c) 2021 Seagate Technology LLC and/or its Affiliates
+# Copyright (c) 2022 Seagate Technology LLC and/or its Affiliates
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ resource "aws_security_group" "cortx_deploy" {
   description = "Allow standard ssh, CORTX mangement ports inbound and everything else outbound."
 
   ingress {
-    description = "SSH Acces"
+    description = "SSH Access"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
@@ -67,6 +67,14 @@ resource "aws_security_group" "cortx_deploy" {
     to_port     = 0
     protocol    = "-1"
     self        = true
+  }
+
+  ingress {
+    description = "Http"
+    from_port   = 8080
+    to_port     = 8080
+    protocol    = "tcp"
+    cidr_blocks = [var.security_group_cidr]
   }
 
   egress {
@@ -163,6 +171,11 @@ output "aws_instance_public_ip_addr" {
 output "aws_instance_private_ip_addr" {
   value       = aws_instance.cortx_deploy.*.private_ip
   description = "Private IP to connect to EC2 Instances"
+  }
+
+output "aws_instance_private_dns" {
+  value       = aws_instance.cortx_deploy.*.private_dns
+  description = "Hostname of EC2 Instances"
   }
 
 resource "aws_ebs_volume" "data_vol" {

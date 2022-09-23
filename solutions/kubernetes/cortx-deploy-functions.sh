@@ -27,16 +27,19 @@ SCRIPT_LOCATION="/root/deploy-scripts"
 YQ_VERSION=v4.25.1
 YQ_BINARY=yq_linux_386
 SOLUTION_CONFIG="/var/tmp/solution.yaml"
+CUSTOM_SSL_CERT_KEY="/var/tmp/cortx.pem"
+CUSTOM_SSL_SECRET="custom-cortx-cert"
 
 function usage() {
     cat << HEREDOC
-Usage : $0 [--cortx-cluster, --setup-primary, --setup-worker, --status, --io-sanity, --destroy, --generate-logs]
+Usage : $0 [--cortx-cluster, --setup-primary, --setup-worker, --status, --io-sanity, --mangement-health-check, --destroy, --generate-logs]
 where,
     --cortx-cluster - Deploy Third-Party and CORTX components.
     --setup-primary - Setup k8 primary node for CORTX deployment.
     --setup-worker - Setup k8 worker node for CORTX deployment.
     --status - Print CORTX cluster status.
     --io-sanity - Perform IO sanity test.
+    --mangement-health-check - Perform Management path health check.
     --destroy - Destroy CORTX Cluster.
     --generate-logs - Generate support bundle logs. 
 HEREDOC
@@ -201,8 +204,8 @@ function update_solution_config(){
         yq e -i '.solution.storage_sets[0].storage[0].devices.metadata[0].size = "25Gi"' solution.yaml
         yq e -i '.solution.storage_sets[0].storage[0].devices.data[0].path = "/dev/sdd"' solution.yaml
         yq e -i '.solution.storage_sets[0].storage[0].devices.data[0].size = "25Gi"' solution.yaml
-        yq e -i '.solution.storage_sets[0].storage[0].devices.data[1].path = "/dev/sde"' solution.yaml
-        yq e -i '.solution.storage_sets[0].storage[0].devices.data[1].size = "25Gi"' solution.yaml
+        yq e -i '.solution.storage_sets[0].storage[0].devices.log[0].path = "/dev/sde"' solution.yaml
+        yq e -i '.solution.storage_sets[0].storage[0].devices.log[0].size = "4Gi"' solution.yaml
        
         yq e -i '.solution.storage_sets[0].storage[1].name = "cvg-02"' solution.yaml
         yq e -i '.solution.storage_sets[0].storage[1].type = "ios"' solution.yaml
@@ -210,8 +213,8 @@ function update_solution_config(){
         yq e -i '.solution.storage_sets[0].storage[1].devices.metadata[0].size = "25Gi"' solution.yaml
         yq e -i '.solution.storage_sets[0].storage[1].devices.data[0].path = "/dev/sdg"' solution.yaml
         yq e -i '.solution.storage_sets[0].storage[1].devices.data[0].size = "25Gi"' solution.yaml
-        yq e -i '.solution.storage_sets[0].storage[1].devices.data[1].path = "/dev/sdh"' solution.yaml
-        yq e -i '.solution.storage_sets[0].storage[1].devices.data[1].size = "25Gi"' solution.yaml
+        yq e -i '.solution.storage_sets[0].storage[1].devices.log[0].path = "/dev/sdh"' solution.yaml
+        yq e -i '.solution.storage_sets[0].storage[1].devices.log[0].size = "4Gi"' solution.yaml
     popd
 }        
 
@@ -270,7 +273,7 @@ function execute_prereq() {
         CORTX_DATA_IMAGE=$(pull_image "$CORTX_DATA_IMAGE")
         CORTX_CONTROL_IMAGE=$(pull_image "$CORTX_CONTROL_IMAGE")
     else
-        echo -e "\nExecuting community deploy script.Ignoring image pull."
+        add_secondary_separator "\nExecuting community deploy script.Ignoring image pull."
     fi
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
         add_secondary_separator "Un-mounting $SYSTEM_DRIVE partition if already mounted"
@@ -285,20 +288,31 @@ function setup_primary_node() {
     if [ "${COMMUNITY_USE}" == "no" ]; then
         cleanup
     else
-        echo -e "\nExecuting community deploy script.No cleaning required."
+        add_secondary_separator "\nExecuting community deploy script.No cleaning required."
     fi
+
     #Third-party images are downloaded from GitHub container registry. 
     download_deploy_script
     install_yq
 
+    #Copy manually provided solution.yaml for manual solution config 
     if [ "$SOLUTION_CONFIG_TYPE" == "manual" ]; then
+        add_secondary_separator "Copying provided solution.yaml to $SCRIPT_LOCATION"
         copy_solution_config "$SOLUTION_CONFIG" "$SCRIPT_LOCATION/k8_cortx_cloud"
         NAMESPACE=$(yq e '.solution.namespace' "$SCRIPT_LOCATION/k8_cortx_cloud/solution.yaml")
     else
         update_solution_config
     fi
 
-    if [ "$(kubectl get  nodes $HOSTNAME  -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints}" | grep -o NoSchedule)" == "" ]; then
+    #Create kubernetes secret from provided key file
+    if [ "$CUSTOM_SSL_CERT" == "yes" ]; then
+        add_secondary_separator "Creating kubernetes secret from provided key file"
+        if kubectl get secret $CUSTOM_SSL_SECRET ; then kubectl delete secret $CUSTOM_SSL_SECRET; fi
+        kubectl create secret generic $CUSTOM_SSL_SECRET --from-file=cortx.pem=$CUSTOM_SSL_CERT_KEY -n "$NAMESPACE"
+        CUSTOM_SSL_SECRET=$CUSTOM_SSL_SECRET yq e -i '.solution.common.ssl.external_secret = env(CUSTOM_SSL_SECRET)' $SCRIPT_LOCATION/k8_cortx_cloud/solution.yaml
+    fi    
+        
+    if [ "$(kubectl get nodes $HOSTNAME -o jsonpath="{range .items[*]}{.metadata.name} {.spec.taints}" | grep -o NoSchedule)" == "" ]; then
         execute_prereq
     fi
     
@@ -411,6 +425,13 @@ function io_exec() {
     popd
 }
 
+function management_path_exec() {
+    pushd /var/tmp/
+        ./management-path-check.sh
+        check_status
+    popd
+}
+
 function logs_generation() {
     add_secondary_separator "Generating CORTX Support Bundle Logs..."
     pushd $SCRIPT_LOCATION/k8_cortx_cloud
@@ -439,6 +460,9 @@ case $ACTION in
     ;;
     --io-sanity)
         io_exec
+    ;;
+    --mangement-health-check)
+        management_path_exec
     ;;
     --destroy)
         destroy

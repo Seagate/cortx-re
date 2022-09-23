@@ -67,7 +67,7 @@ RUN yum install --nogpgcheck -y python3-pip \
     && pip3 install  --no-cache-dir --trusted-host $(echo $BUILD_URL | awk -F '/' '{print $3}') -i $BUILD_URL/python_deps -r /opt/seagate/cortx/requirements.txt -r /opt/seagate/cortx/requirements.ext.txt \
     && yum clean all && rm -rf /var/cache/yum
 
-RUN if [[ "${CORTX_IMAGE}" = "cortx-rgw" ]] || [[ "${CORTX_IMAGE}" = "cortx-all" ]] || [[ "${CORTX_IMAGE}" = "cortx-data" ]]; then yum --nogpgcheck -y --disablerepo="EOS_Rocky_8_OS_x86_64_Rocky_8" install libfabric-1.11.2; fi \
+RUN if [[ "${CORTX_IMAGE}" = "cortx-rgw" ]] || [[ "${CORTX_IMAGE}" = "cortx-data" ]]; then yum --nogpgcheck -y --disablerepo="EOS_Rocky_8_OS_x86_64_Rocky_8" install libfabric-1.11.2; fi \
     && yum install --nogpgcheck -y  $(while read -r component; do grep "$component" < /opt/seagate/cortx/third-party-rpms.txt; done </opt/seagate/cortx/cortx-component-rpms.txt | sed 's/#.*//g') \
     && yum clean all && rm -rf /var/cache/yum
     

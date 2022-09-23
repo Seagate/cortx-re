@@ -88,7 +88,7 @@ function setup_awscli() {
       secret_key=$(kubectl get secrets/cortx-secret  --template={{.data.s3_auth_admin_secret}} | base64 -d)
 
       # Set endpoint url.
-      endpoint_url="http://""$(kubectl get svc | grep cortx-io | awk '{ print $3 }')"":80"
+      endpoint_url="http://$(kubectl get svc cortx-server-0 -o=jsonpath='{.spec.clusterIP}'):80"
    fi
 
    add_common_separator "AWS keys-:"

@@ -13,7 +13,7 @@ Following are the minimum system specifications required to set up the K8s clust
 ## Deploy the CORTX Stack on K8s cluster
 This section enlists the commands to deploy the CORTX Stack on K8s cluster. 
 
-### Make sure your VM(virtual machine) has following drives available on it:
+### Make sure your VM (virtual machine) has following drives available on it:
 ```
 ls /dev/sd*
 ```
@@ -55,19 +55,13 @@ reboot
 git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/kubernetes
 ```
 - Create the hosts file in the current directory to add entries for all the nodes with same format in hosts file.
-
-**For Example:** 
-`hosts` file for multi-node setup is as below,
 ```
 hostname=cortx-deploy-node1.cortx.com,user=root,pass=<root-password>
 hostname=cortx-deploy-node2.cortx.com,user=root,pass=<root-password>
 hostname=cortx-deploy-node3.cortx.com,user=root,pass=<root-password>
+hostname=cortx-deploy-node4.cortx.com,user=root,pass=<root-password>
 ```
-- To execute `cluster-setup.sh` to setup K8s cluster on your AWS EC2 instances for multi-node deployment follow,
-   - copy `/tmp/daemon.json` file from primary node to all the worker nodes in `/etc/docker/daemon.json` path either by `rsync` command or vi editor or,
-   - copy `/etc/docker/daemon.json` file content from primary node to worker nodes on same target path to update the local registry node.
-   - Then restart docker service on all the worker nodes by running, `systemctl restart docker`
-- To allow the PODs creation on primary node, pass the first input parameter for cluster-setup.sh script as true. Please note you must pass the input parameter as true for multi-node setup.
+- To allow the PODs creation on primary node, pass the first input parameter for cluster-setup.sh script as true. Please note you must pass the input parameter as true for multi-node setup on primary node.
 ```
 ./cluster-setup.sh true
 ```
@@ -77,21 +71,13 @@ hostname=cortx-deploy-node3.cortx.com,user=root,pass=<root-password>
 ```
 export SOLUTION_CONFIG_TYPE=automated && ./cortx-deploy.sh --cortx-cluster
 ```
-- To execute `cortx-deploy.sh` on AWS cluster to deploy the CORTX stack on your K8s cluster with locally generated images run the following command
-```
-export SOLUTION_CONFIG_TYPE=automated && export CORTX_SERVER_IMAGE="<AWS instance primarynode hostname>":8080/cortx-rgw:2.0.0-0 && export CORTX_DATA_IMAGE="<AWS instance primarynode hostname>":8080/cortx-data:2.0.0-0 && export CORTX_CONTROL_IMAGE="<AWS instance primarynode hostname>":8080/cortx-control:2.0.0-0 && bash -x ./cortx-deploy.sh --cortx-cluster
-```
-**For example:**
-```
-export SOLUTION_CONFIG_TYPE=automated && export SOLUTION_CONFIG_TYPE=automated && export CORTX_SERVER_IMAGE=ip-172-31-43-44.ap-south-1.compute.internal:8080/seagate/cortx-rgw:2.0.0-0 && export CORTX_DATA_IMAGE=ip-172-31-43-44.ap-south-1.compute.internal:8080/seagate/cortx-data:2.0.0-0 && export CORTX_CONTROL_IMAGE=ip-172-31-43-44.ap-south-1.compute.internal:8080/seagate/cortx-control:2.0.0-0 && bash -x ./cortx-deploy.sh --cortx-cluster
-```
 
-**Note:**  
+**Note:**
 - Following parameter/s are passed when the cluster deployment command executes. If no parameter is passed, the default ones are chosen.
 
 | Parameter     | Default value     | Description     |
 | :------------- | :----------- | :---------|
-| CORTX_SCRIPTS_BRANCH      | v0.12.0  | If you want to use another cortx-K8s branch then export this variable with your branch. Note: Default value for this variable keeps on changing. Please refer [cortx-k8s tags](https://github.com/Seagate/cortx-k8s/tags) for latest/supported services-version    |
+| CORTX_SCRIPTS_BRANCH      | v0.13.0  | If you want to use another cortx-K8s branch then export this variable with your branch. Note: Default value for this variable keeps on changing. Please refer [cortx-k8s tags](https://github.com/Seagate/cortx-k8s/tags) for latest/supported services-version    |
 | CORTX_SCRIPTS_REPO | Seagate/cortx-k8s | If you want to use another cortx-K8s repo (like your fork), export this variable with your repo. |
 | CORTX_SERVER_IMAGE | ghcr.io/seagate/cortx-rgw:2.0.0-latest | Also, if you want to use different server image then export this variable with new image. Image Reference - [cortx-rgw](https://github.com/Seagate/cortx/pkgs/container/cortx-rgw) |
 | CORTX_DATA_IMAGE | ghcr.io/seagate/cortx-data:2.0.0-latest | Also, if you want to use different data image then export this variable with new image. Image Reference - [cortx-data](https://github.com/Seagate/cortx/pkgs/container/cortx-data) |
@@ -103,7 +89,8 @@ export SOLUTION_CONFIG_TYPE=automated && export SOLUTION_CONFIG_TYPE=automated &
 | SNS_CONFIG | 1+0+0 | SNS configuration for deployment. Please select value based on disks available on nodes. |
 | DIX_CONFIG | 1+0+0 | DIX configuration for deployment. Please select value based on disks available on nodes. |
 | NAMESPACE  | default | Kubernetes cluster Namespace for CORTX deployments. |
-| SOLUTION_CONFIG_TYPE | manual | There are two config types for solution.yaml file; manual and automated. In automated type the solution.yaml is created by script if VM is created as per standard specification. In manual type the user needs to create solution.yaml with required disks, image details etc.; place it at script location and configure SOLUTION_CONFIG_TYPE variable as manual. |
+| SOLUTION_CONFIG_TYPE | manual | There are two config types for solution.yaml file; manual and automated. In automated type the solution.yaml is created by script if VM is created as per standard specification. In manual type the user needs to create solution.yaml with required disks, image details etc.; place it at script location i.e. `$PWD/cortx-re/solutions/kubernetes` and configure SOLUTION_CONFIG_TYPE variable as manual. |
+| CUSTOM_SSL_CERT | no | You can use custom SSL certificate in Deployment. Please provide this option as yes and upload key file at script location i.e. `$PWD/cortx-re/solutions/kubernetes`. By default, CORTX is installed with a self-signed SSL certificate.  |
 
 ## Sanity test 
 - Run IO Sanity on your CORTX Cluster to validate bucket creation and object upload in deployed cluster.
@@ -113,5 +100,5 @@ export SOLUTION_CONFIG_TYPE=automated && export SOLUTION_CONFIG_TYPE=automated &
 
 Tested by:
 
-* August 14, 2022: Mukul Malhotra (mukul.malhotra@seagate.com) - AWS EC2, CentOS 7.9 Linux
+* August 14, 2022: Mukul Malhotra (mukul.malhotra@seagate.com) - AWS, CentOS 7.9 Linux
 * May 06, 2022: Rahul Shenoy (rahul.shenoy@seagate.com) - Windows , VMware Workstation 16 , CentOS 7.9 Linux

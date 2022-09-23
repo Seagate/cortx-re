@@ -95,18 +95,30 @@ pipeline {
                         export S3_EXTERNAL_HTTP_NODEPORT=${S3_EXTERNAL_HTTP_NODEPORT}
                         export S3_EXTERNAL_HTTPS_NODEPORT=${S3_EXTERNAL_HTTPS_NODEPORT}
                         export NAMESPACE=${NAMESPACE}
+                        export CORTX_DEPLOY_HA_TIMEOUT="480s"
                         ./cortx-deploy.sh --cortx-cluster
                     popd
                 '''
             }
         }
 
-        stage ('IO Sanity Test') {
+        stage ('Basic I/O Path Check') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Perform IO Sanity Test', script: '''
+                sh label: 'Basic I/O Path Check', script: '''
                     pushd solutions/kubernetes/
                         ./cortx-deploy.sh --io-sanity
+                    popd
+                '''
+            }
+        }
+
+        stage ('Basic Management Path Check') {
+            steps {
+                script { build_stage = env.STAGE_NAME }
+                sh label: 'Basic Management Path Check', script: '''
+                    pushd solutions/kubernetes/
+                        ./cortx-deploy.sh --mangement-health-check
                     popd
                 '''
             }
@@ -171,11 +183,9 @@ pipeline {
                 HOST_FILE=$PWD/hosts
                 PRIMARY_NODE=$(head -1 "$HOST_FILE" | awk -F[,] '{print $1}' | cut -d'=' -f2)
                 [ -f /var/tmp/cortx-cluster-status.txt ] && cp /var/tmp/cortx-cluster-status.txt $WORKSPACE/artifacts/
+                [ -f /var/tmp/management-path-status.txt ] && cp /var/tmp/management-path-status.txt $WORKSPACE/artifacts/
                 scp -q "$PRIMARY_NODE":/root/deploy-scripts/k8_cortx_cloud/solution.yaml $WORKSPACE/artifacts/
-                if [ -f /var/tmp/cortx-cluster-status.txt ]; then
-                    cp /var/tmp/cortx-cluster-status.txt $WORKSPACE/artifacts/
-                fi
-            popd    
+            popd
             '''
             script {
                 // Archive Deployment artifacts in jenkins build

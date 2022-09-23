@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (c) 2021 Seagate Technology LLC and/or its Affiliates
+# Copyright (c) 2022 Seagate Technology LLC and/or its Affiliates
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,11 +31,12 @@ CEPH_DEPLOYMENT="false"
 
 function usage() {
     cat << HEREDOC
-Usage : $0 [--cortx-cluster, --destroy-cluster, --io-sanity, --support-bundle]
+Usage : $0 [--cortx-cluster, --destroy-cluster, --io-sanity, --mangement-health-check, --support-bundle]
 where,
     --cortx-cluster - Deploy CORTX Cluster on provided nodes.
     --destroy-cluster  - Destroy CORTX cluster.
     --io-sanity - Perform IO sanity test.
+    --mangement-health-check - Perform Management path health check.
     --support-bundle - Collect support bundle logs.
 HEREDOC
 }
@@ -49,12 +50,13 @@ fi
 
 function check_params() {
     if [ -z "$CORTX_SCRIPTS_REPO" ]; then echo "CORTX_SCRIPTS_REPO not provided. Using default: Seagate/cortx-k8s ";CORTX_SCRIPTS_REPO="Seagate/cortx-k8s"; fi
-    if [ -z "$CORTX_SCRIPTS_BRANCH" ]; then echo "CORTX_SCRIPTS_BRANCH not provided. Using default: v0.12.0";CORTX_SCRIPTS_BRANCH="v0.12.0"; fi
+    if [ -z "$CORTX_SCRIPTS_BRANCH" ]; then echo "CORTX_SCRIPTS_BRANCH not provided. Using default: v0.13.0";CORTX_SCRIPTS_BRANCH="v0.13.0"; fi
     if [ -z "$CORTX_SERVER_IMAGE" ]; then echo "CORTX_SERVER_IMAGE not provided. Using default : ghcr.io/seagate/cortx-rgw:2.0.0-latest"; CORTX_SERVER_IMAGE=ghcr.io/seagate/cortx-rgw:2.0.0-latest; fi
     if [ -z "$CORTX_DATA_IMAGE" ]; then echo "CORTX_DATA_IMAGE not provided. Using default : ghcr.io/seagate/cortx-data:2.0.0-latest"; CORTX_DATA_IMAGE=ghcr.io/seagate/cortx-data:2.0.0-latest; fi
     if [ -z "$CORTX_CONTROL_IMAGE" ]; then echo "CORTX_CONTROL_IMAGE not provided. Using default : ghcr.io/seagate/cortx-control:2.0.0-latest"; CORTX_CONTROL_IMAGE=ghcr.io/seagate/cortx-control:2.0.0-latest; fi
     if [ -z "$DEPLOYMENT_METHOD" ]; then echo "DEPLOYMENT_METHOD not provided. Using default : standard"; DEPLOYMENT_METHOD=standard; fi
     if [ -z "$SOLUTION_CONFIG_TYPE" ]; then echo "SOLUTION_CONFIG_TYPE not provided. Using default : manual"; SOLUTION_CONFIG_TYPE=manual; fi
+    if [ -z "$CUSTOM_SSL_CERT" ]; then echo "CUSTOM_SSL_CERT not provided. Using default : no"; CUSTOM_SSL_CERT=no; fi
     if [ -z "$SNS_CONFIG" ]; then SNS_CONFIG="1+0+0"; fi
     if [ -z "$DIX_CONFIG" ]; then DIX_CONFIG="1+0+0"; fi
     if [ -z "$EXTERNAL_EXPOSURE_SERVICE" ]; then EXTERNAL_EXPOSURE_SERVICE="NodePort"; fi
@@ -73,6 +75,7 @@ function check_params() {
    echo -e "# CORTX_CONTROL_IMAGE        : $CORTX_CONTROL_IMAGE                 "
    echo -e "# DEPLOYMENT_METHOD          : $DEPLOYMENT_METHOD                   "
    echo -e "# SOLUTION_CONFIG_TYPE       : $SOLUTION_CONFIG_TYPE                "
+   echo -e "# CUSTOM_SSL_CERT            : $CUSTOM_SSL_CERT                     "
    echo -e "# SNS_CONFIG                 : $SNS_CONFIG                          "
    echo -e "# DIX_CONFIG                 : $DIX_CONFIG                          "
    echo -e "# EXTERNAL_EXPOSURE_SERVICE  : $EXTERNAL_EXPOSURE_SERVICE           "
@@ -111,6 +114,12 @@ function setup_cluster() {
         if [ ! -f "$SOLUTION_CONFIG" ]; then echo -e "ERROR:$SOLUTION_CONFIG file is not available..."; exit 1; fi
     fi
 
+    add_secondary_separator "Using SSL Certfication option as $CUSTOM_SSL_CERT"
+    if [ "$CUSTOM_SSL_CERT" == yes ]; then
+        CUSTOM_SSL_CERT_KEY="$PWD/cortx.pem"
+        if [ ! -f "$CUSTOM_SSL_CERT_KEY" ]; then echo -e "ERROR:$PWD/cortx.pem file is not available..."; exit 1; fi
+    fi
+
     validation
     generate_rsa_key
     nodes_setup
@@ -118,11 +127,12 @@ function setup_cluster() {
 
     TARGET=$1
 
-    scp_all_nodes cortx-deploy-functions.sh functions.sh $SOLUTION_CONFIG
+    scp_all_nodes cortx-deploy-functions.sh functions.sh $SOLUTION_CONFIG $CUSTOM_SSL_CERT_KEY
 
     add_secondary_separator "Setup primary node $PRIMARY_NODE"
     ssh_primary_node "
-    export SOLUTION_CONFIG_TYPE=$SOLUTION_CONFIG_TYPE && 
+    export SOLUTION_CONFIG_TYPE=$SOLUTION_CONFIG_TYPE &&
+    export CUSTOM_SSL_CERT=$CUSTOM_SSL_CERT &&
     export CORTX_SERVER_IMAGE=$CORTX_SERVER_IMAGE &&
     export CORTX_DATA_IMAGE=$CORTX_DATA_IMAGE &&
     export CORTX_CONTROL_IMAGE=$CORTX_CONTROL_IMAGE &&
@@ -147,7 +157,7 @@ function setup_cluster() {
     fi
 
     # Deploy CORTX CLuster (deploy-cortx-cloud.sh) :
-    ssh_primary_node "/var/tmp/cortx-deploy-functions.sh --$TARGET"
+    ssh_primary_node "export CORTX_DEPLOY_HA_TIMEOUT=$CORTX_DEPLOY_HA_TIMEOUT && /var/tmp/cortx-deploy-functions.sh --$TARGET"
     add_primary_separator "\tPrint Cluster Status"
     rm -rf /var/tmp/cortx-cluster-status.txt
     ssh_primary_node "export DEPLOYMENT_METHOD=$DEPLOYMENT_METHOD && /var/tmp/cortx-deploy-functions.sh --status" | tee /var/tmp/cortx-cluster-status.txt
@@ -183,9 +193,15 @@ function io-sanity() {
         if [ -f '$SOLUTION_CONFIG' ]; then echo "file $SOLUTION_CONFIG not available..."; exit 1; fi
     fi
 
-    add_primary_separator "\tSetting up IO Sanity Testing"
+    add_primary_separator "\tSetting up IO Path Health Check"
     scp_primary_node io-sanity.sh
     ssh_primary_node "export CEPH_DEPLOYMENT=$CEPH_DEPLOYMENT && export DEPLOYMENT_METHOD=$DEPLOYMENT_METHOD && /var/tmp/cortx-deploy-functions.sh --io-sanity"
+}
+
+function management-path-check() {
+    add_primary_separator "\tSetting up Management Path Health Check"
+    scp_primary_node management-path-check.sh
+    ssh_primary_node "/var/tmp/cortx-deploy-functions.sh --mangement-health-check" | tee /var/tmp/management-path-status.txt
 }
 
 case $ACTION in
@@ -198,6 +214,9 @@ case $ACTION in
     ;;
     --io-sanity)
         io-sanity
+    ;;
+    --mangement-health-check)
+        management-path-check
     ;;
     --support-bundle)
         support_bundle

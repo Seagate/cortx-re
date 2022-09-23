@@ -104,4 +104,5 @@ export DB_USER=$DB_USER &&
 export DB_PASSWD=$DB_PASSWD &&
 export DB_NAME=$DB_NAME &&
 export DB_DATABASE=$DB_DATABASE &&
+export BUILD_ID=$BUILD_ID &&
 /var/tmp/_run-performace-tests-functions.sh --execute-perf-sanity"
