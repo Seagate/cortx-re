@@ -45,7 +45,7 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Install prerequisite tools', script: '''
-                VM_IP=$(curl ipinfo.io/ip)
+                CIDR=$(curl -s ipinfo.io/ip | sed 's/$/\/32/')
                 export OS_VERSION=${OS_VERSION}
                 export REGION=${REGION}
                 export SECRET_KEY=${SECRET_KEY}
@@ -55,16 +55,12 @@ pipeline {
                 export EBS_VOLUME_SIZE=${EBS_VOLUME_SIZE}
                 export INSTANCE_COUNT=${INSTANCE_COUNT}
                 export AWS_INSTANCE_TAG_NAME=${AWS_INSTANCE_TAG_NAME}
-                    rm -rvf /usr/local/bin/aws /usr/local/bin/aws_completer /usr/local/aws-cli >/dev/null 2>&1
-                    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && yum install unzip -y && unzip awscliv2.zip
-                    ./aws/install
-                    aws configure set default.region $REGION; aws configure set aws_access_key_id $ACCESS_KEY; aws configure set aws_secret_access_key $SECRET_KEY
+                rm -rvf /usr/local/bin/aws /usr/local/bin/aws_completer /usr/local/aws-cli >/dev/null 2>&1
                 pushd solutions/community-deploy/cloud/AWS
                     ./tool_setup.sh
-                    sed -i 's,os_version          =.*,os_version = "'"$OS_VERSION"'",g' user.tfvars && sed -i 's,region              =.*,region = "'"$REGION"'",g' user.tfvars && sed -i 's,security_group_cidr =.*,security_group_cidr = "'"$VM_IP/32"'",g' user.tfvars && sed -i 's,instance_count      =.*,instance_count  = '"$INSTANCE_COUNT"',g' user.tfvars && sed -i 's,ebs_volume_count    =.*,ebs_volume_count = '"$EBS_VOLUME_COUNT"',g' user.tfvars && sed -i 's,ebs_volume_size     =.*,ebs_volume_size = '"$EBS_VOLUME_SIZE"',g' user.tfvars && sed -i 's,tag_name            =.*,tag_name = "'"$AWS_INSTANCE_TAG_NAME"'",g' user.tfvars
-                    echo key_name = '"'$KEY_NAME'"' | cat >>user.tfvars
+                    sed -e "/os_version/s/<OS VERSION>/$OS_VERSION/g" -e "s|<YOUR PUBLIC IP CIDR>|$CIDR|g" user.tfvars
                     cat user.tfvars
-                    popd
+                popd
                 '''
             }
         }
