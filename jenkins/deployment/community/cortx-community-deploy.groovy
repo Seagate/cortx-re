@@ -58,7 +58,7 @@ pipeline {
                 rm -rvf /usr/local/bin/aws /usr/local/bin/aws_completer /usr/local/aws-cli >/dev/null 2>&1
                 pushd solutions/community-deploy/cloud/AWS
                     ./tool_setup.sh
-                    sed -i -e "/os_version/s/<OS VERSION>/$OS_VERSION/g" -e "s|<YOUR PUBLIC IP CIDR>|$CIDR|g" user.tfvars -e sed "/region/s/<AWS REGION>/$REGION/g" user.tfvars -e sed "/ebs_volume_count/s/<AWS REGION>/$EBS_VOLUME_COUNT/g" user.tfvars -e sed "/ebs_volume_size/s/<AWS REGION>/$EBS_VOLUME_SIZE/g" user.tfvars -e sed "/instance_count/s/<AWS REGION>/$INSTANCE_COUNT/g" user.tfvars -e sed "/region/s/<AWS REGION>/$AWS_INSTANCE_TAG_NAME/g" user.tfvars
+                    sed -i -e "/os_version/s/<OS VERSION>/$OS_VERSION/g" -e "s|<YOUR PUBLIC IP CIDR>|$CIDR|g" user.tfvars -e sed "/region/s/<AWS REGION>/$REGION/g" user.tfvars -e sed "/ebs_volume_count/s/<NUMBER OF EBS VOLUMES>/$EBS_VOLUME_COUNT/g" user.tfvars -e sed "/ebs_volume_size/s/<EBS VOLUME SIZE>/$EBS_VOLUME_SIZE/g" user.tfvars -e sed "/instance_count/s/<NUMBER OF EC2 INSTANCES>/$INSTANCE_COUNT/g" user.tfvars -e sed "/tag_name/s/<YOUR TAG NAME FOR EC2 INSTANCES>/$AWS_INSTANCE_TAG_NAME/g" user.tfvars
                     cat user.tfvars
                 popd
                 '''
