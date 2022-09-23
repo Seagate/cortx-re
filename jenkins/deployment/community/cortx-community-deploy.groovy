@@ -45,7 +45,7 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Install prerequisite tools', script: '''
-                CIDR=$(curl -s ipinfo.io/ip | sed 's/$/\/32/')
+                CIDR=$(curl -s ipinfo.io/ip | sed 's/$/\\/32/')
                 export OS_VERSION=${OS_VERSION}
                 export REGION=${REGION}
                 export SECRET_KEY=${SECRET_KEY}
