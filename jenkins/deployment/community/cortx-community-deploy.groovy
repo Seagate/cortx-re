@@ -89,13 +89,13 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
-                    env.PUBLIC_IP = sh( script: '''
+                    env.PUBLIC_IP_LIST = sh( script: '''
                     cd solutions/community-deploy/cloud/AWS && terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value | jq .[] | tr -d '"'
                     ''', returnStdout: true).trim()
                     env.PRIMARY_PUBLIC_IP = sh( script: '''
                     cd solutions/community-deploy/cloud/AWS && terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value | jq .[0] | tr -d '"'
                     ''', returnStdout: true).trim()
-                    env.PRIVATE_HOSTNAME = sh( script: '''
+                    env.PRIVATE_HOSTNAME_LIST = sh( script: '''
                     cd solutions/community-deploy/cloud/AWS && terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_dns.value | jq .[] | tr -d '"'
                     ''', returnStdout: true).trim()
                     env.PRIMARY_PRIVATE_HOSTNAME = sh( script: '''
@@ -106,7 +106,7 @@ pipeline {
                     sh label: 'Setting up Network and Storage devices for CORTX. Script will reboot the instance on completion', script: '''
                     pushd solutions/community-deploy/cloud/AWS
                         export ROOT_PASSWORD=${ROOT_PASSWORD}
-                        for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${ip}" sudo bash /home/centos/setup.sh $ROOT_PASSWORD && sleep 300;done
+                        for ip in $PUBLIC_IP_LIST;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${ip}" sudo bash /home/centos/setup.sh $ROOT_PASSWORD && sleep 300;done
                     popd
                     '''
                 }
@@ -120,7 +120,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Executing cortx build image script on Primary node', script: '''
                 pushd solutions/community-deploy/cloud/AWS
-                    echo ${PUBLIC_IP}
+                    echo ${PUBLIC_IP_LIST}
                     echo ${PRIMARY_PUBLIC_IP}
                     ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" "export CORTX_RE_BRANCH=$CORTX_RE_BRANCH; git clone $CORTX_RE_REPO -b $CORTX_RE_BRANCH; pushd /home/centos/cortx-re/solutions/community-deploy; time sudo ./build-cortx.sh -b ${CORTX_TAG}"
                     popd
@@ -136,7 +136,7 @@ pipeline {
                 pushd solutions/community-deploy/cloud/AWS
                     export ROOT_PASSWORD=${ROOT_PASSWORD}
                     ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$PRIMARY_PUBLIC_IP "rm -f /home/centos/cortx-re/solutions/kubernetes/hosts"
-                    for ip in $PRIVATE_HOSTNAME;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$PRIMARY_PUBLIC_IP "pushd /home/centos/cortx-re/solutions/kubernetes && echo hostname="${ip}",user=root,pass='${ROOT_PASSWORD}' >> hosts && cat hosts";done
+                    for ip in $PRIVATE_HOSTNAME_LIST;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$PRIMARY_PUBLIC_IP "pushd /home/centos/cortx-re/solutions/kubernetes && echo hostname="${ip}",user=root,pass='${ROOT_PASSWORD}' >> hosts && cat hosts";done
                 popd
             '''
             }
@@ -158,7 +158,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Generate locally build cortx images on worker nodes', script: '''
                 pushd solutions/community-deploy/cloud/AWS
-                    for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${ip}" "sudo -- sh -c 'sed -i 's,cortx-docker.colo.seagate.com,${PRIMARY_PRIVATE_HOSTNAME}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 120'";done
+                    for ip in $PUBLIC_IP_LIST;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${ip}" "sudo -- sh -c 'sed -i 's,cortx-docker.colo.seagate.com,${PRIMARY_PRIVATE_HOSTNAME}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 120'";done
                 popd
             '''
             }
