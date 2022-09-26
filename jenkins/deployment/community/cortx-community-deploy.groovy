@@ -33,7 +33,7 @@ pipeline {
 
         stages {
             stage('Checkout Script') {
-                when { expression { false } }
+                
                 steps {
                     cleanWs()
                     script {
@@ -43,7 +43,7 @@ pipeline {
             }
 
         stage('Install Prerequisite tools') {
-            when { expression { false } }
+            
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Install prerequisite tools', script: '''
@@ -74,7 +74,7 @@ pipeline {
             }
         }
         stage('Create EC2 instances') {
-            when { expression { false } }
+            
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Setting up EC2 instances', script: '''
@@ -111,7 +111,7 @@ pipeline {
 
 
         stage('Execute cortx build script') {
-            when { expression { false } }
+            
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Executing cortx build image script on Primary node', script: '''
@@ -143,7 +143,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Setting up K8s cluster on EC2', script: '''
                 pushd solutions/community-deploy/cloud/AWS
-                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" "pushd /home/centos/cortx-re/solutions/kubernetes && sudo ./cluster-setup.sh true"
+                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" "pushd /home/centos/cortx-re/solutions/kubernetes && sudo ./cluster-setup.sh"
                 popd
             '''
             }
