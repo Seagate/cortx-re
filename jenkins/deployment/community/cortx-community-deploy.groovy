@@ -236,11 +236,11 @@ pipeline {
                     STATUS = 'UNSTABLE'
                 }
 
-                CommunityBuildStatusHTML = "<pre>${CommunityBuildStatus}</pre>"
+                clusterStatusHTML  = "<pre>${CommunityBuildStatus}</pre>"
 
                 // Email Notification
                 env.build_stage = "${build_stage}"
-                env.cluster_status = "${CommunityBuildStatusHTML}"
+                env.cluster_status = "${clusterStatusHTML }"
 
                 def toEmail = ''
                 def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
