@@ -113,7 +113,6 @@ pipeline {
             }
         }
 
-
         stage('Execute cortx build script') {
             when { expression { false } }
             steps {
@@ -127,7 +126,6 @@ pipeline {
                 '''
             }
         }
-
 
         stage('EC2 connection prerequisites') {
             steps {
@@ -147,7 +145,11 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Setting up K8s cluster on EC2', script: '''
                 pushd solutions/community-deploy/cloud/AWS
-                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" "pushd /home/centos/cortx-re/solutions/kubernetes && sudo ./cluster-setup.sh"
+                    if [ ${INSTANCE_COUNT} == 1 ]; then
+                        ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" "pushd /home/centos/cortx-re/solutions/kubernetes && sudo ./cluster-setup.sh true"
+                    else
+                        ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" "pushd /home/centos/cortx-re/solutions/kubernetes && sudo ./cluster-setup.sh"
+                    fi
                 popd
             '''
             }
