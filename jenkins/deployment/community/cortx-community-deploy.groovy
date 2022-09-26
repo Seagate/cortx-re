@@ -108,6 +108,8 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Executing cortx build image script on Primary node', script: '''
                 pushd solutions/community-deploy/cloud/AWS
+                    echo ${PUBLIC_IP}
+                    echo ${PRIMARY_PUBLIC_IP}
                     ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" "export CORTX_RE_BRANCH=$CORTX_RE_BRANCH; git clone $CORTX_RE_REPO -b $CORTX_RE_BRANCH; pushd /home/centos/cortx-re/solutions/community-deploy; time sudo ./build-cortx.sh -b ${CORTX_TAG}"
                     popd
                 '''
@@ -207,7 +209,7 @@ pipeline {
             retry(count: 3) {
                     sh label: 'Destroying EC2 instance', script: '''
                     pushd solutions/community-deploy/cloud/AWS
-                        terraform validate && terraform destroy -var-file user.tfvars --auto-approve
+                        #terraform validate && terraform destroy -var-file user.tfvars --auto-approve
                     popd
                     '''
             }
