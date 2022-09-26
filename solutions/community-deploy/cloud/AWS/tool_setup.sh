@@ -34,7 +34,11 @@ rm -rf /opt/aws-cli/aws
 
 #Trigger AWS CLI configuration
 echo -e "-------------------------[ AWS CLI configuration ]----------------------------------------" 
+if [ -z "$ACCESS_KEY" ] && [ -z $SECRET_KEY ]; then
 aws configure
+else
+aws configure set aws_access_key_id $ACCESS_KEY; aws configure set aws_secret_access_key $SECRET_KEY
+fi
 
 #Initiate Terraform workspace
 echo -e "------------------------[ Terraform Workspace init ]----------------------------------------" 
