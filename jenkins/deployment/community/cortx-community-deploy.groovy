@@ -23,7 +23,7 @@ pipeline {
         string(name: 'KEY_NAME', defaultValue: 'automation-key', description: 'Key name', trim: true)
         string(name: 'COMMUNITY_USE', defaultValue: 'yes', description: 'Only use during community deployment', trim: true)
         string(name: 'EBS_VOLUME_COUNT', defaultValue: '9', description: 'EBS volume count', trim: true)
-        string(name: 'EBS_VOLUME_SIZE', defaultValue: '10', description: 'EBS volume size in GB', trim: true)
+        string(name: 'EBS_VOLUME_SIZE', defaultValue: '25', description: 'EBS volume size in GB', trim: true)
         string(name: 'INSTANCE_COUNT', defaultValue: '4', description: 'EC2 instance count', trim: true)
         string(name: 'AWS_INSTANCE_TAG_NAME', defaultValue: 'cortx-multinode', description: 'Tag name for EC2 instances', trim: true)
         password(name: 'SECRET_KEY', description: 'secret key for AWS account')
@@ -33,7 +33,7 @@ pipeline {
 
         stages {
         stage('Checkout Script') {
-            when { expression { false } }
+            
             steps {
                 cleanWs()
                 script {
@@ -43,7 +43,7 @@ pipeline {
         }
 
         stage('Install Prerequisite tools') {
-            when { expression { false } }
+            
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Install prerequisite tools', script: '''
@@ -74,7 +74,7 @@ pipeline {
             }
         }
         stage('Create EC2 instances') {
-            when { expression { false } }
+            
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Setting up EC2 instances', script: '''
@@ -106,7 +106,7 @@ pipeline {
                     sh label: 'Setting up Network and Storage devices for CORTX. Script will reboot the instance on completion', script: '''
                     pushd solutions/community-deploy/cloud/AWS
                         export ROOT_PASSWORD=${ROOT_PASSWORD}
-                        for ip in $PUBLIC_IP_LIST;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${ip}" sudo bash /home/centos/setup.sh $ROOT_PASSWORD && sleep 300;done
+                        for ip in $PUBLIC_IP_LIST;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${ip}"sudo bash /home/centos/setup.sh $ROOT_PASSWORD && sleep 300;done
                     popd
                     '''
                 }
@@ -114,7 +114,7 @@ pipeline {
         }
 
         stage('Execute cortx build script') {
-            when { expression { false } }
+            
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Executing cortx build image script on Primary node', script: '''
