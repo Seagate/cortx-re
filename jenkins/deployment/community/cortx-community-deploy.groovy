@@ -32,18 +32,18 @@ pipeline {
     }
 
         stages {
-            stage('Checkout Script') {
-                
-                steps {
-                    cleanWs()
-                    script {
-                        checkout([$class: 'GitSCM', branches: [[name: "${CORTX_RE_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${CORTX_RE_REPO}"]]])
-                    }
+        stage('Checkout Script') {
+            when { expression { false } }
+            steps {
+                cleanWs()
+                script {
+                    checkout([$class: 'GitSCM', branches: [[name: "${CORTX_RE_BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'cortx-admin-github', url: "${CORTX_RE_REPO}"]]])
                 }
             }
+        }
 
         stage('Install Prerequisite tools') {
-            
+            when { expression { false } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Install prerequisite tools', script: '''
@@ -74,7 +74,7 @@ pipeline {
             }
         }
         stage('Create EC2 instances') {
-            
+            when { expression { false } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Setting up EC2 instances', script: '''
@@ -85,6 +85,7 @@ pipeline {
             }
         }
         stage('Configure network and storage') {
+
             steps {
                 script { build_stage = env.STAGE_NAME }
                 script {
@@ -96,6 +97,9 @@ pipeline {
                     ''', returnStdout: true).trim()
                     env.PRIVATE_HOSTNAME = sh( script: '''
                     cd solutions/community-deploy/cloud/AWS && terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_dns.value | jq .[] | tr -d '"'
+                    ''', returnStdout: true).trim()
+                    env.PRIMARY_PRIVATE_HOSTNAME = sh( script: '''
+                    cd solutions/community-deploy/cloud/AWS && terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_dns.value | jq .[0] | tr -d '"'
                     ''', returnStdout: true).trim()
                 }
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
@@ -111,7 +115,7 @@ pipeline {
 
 
         stage('Execute cortx build script') {
-            
+            when { expression { false } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Executing cortx build image script on Primary node', script: '''
@@ -154,7 +158,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Generate locally build cortx images on worker nodes', script: '''
                 pushd solutions/community-deploy/cloud/AWS
-                    for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${ip}" "sudo -- sh -c 'sed -i 's,cortx-docker.colo.seagate.com,${PRIMARY_PUBLIC_IP}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 120'";done
+                    for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${ip}" "sudo -- sh -c 'sed -i 's,cortx-docker.colo.seagate.com,${PRIMARY_PRIVATE_HOSTNAME}:8080,g' /etc/docker/daemon.json && systemctl restart docker && sleep 120'";done
                 popd
             '''
             }
@@ -167,9 +171,9 @@ pipeline {
                 pushd solutions/community-deploy/cloud/AWS
                     export SOLUTION_CONFIG_TYPE='automated'
                     export COMMUNITY_USE='yes'
-                    export CORTX_SERVER_IMAGE="${PRIMARY_PUBLIC_IP}:8080/seagate/cortx-rgw:2.0.0-0"
-                    export CORTX_DATA_IMAGE="${PRIMARY_PUBLIC_IP}:8080/seagate/cortx-data:2.0.0-0"
-                    export CORTX_CONTROL_IMAGE="${PRIMARY_PUBLIC_IP}:8080/seagate/cortx-control:2.0.0-0"
+                    export CORTX_SERVER_IMAGE="${PRIMARY_PRIVATE_HOSTNAME}:8080/seagate/cortx-rgw:2.0.0-0"
+                    export CORTX_DATA_IMAGE="${PRIMARY_PRIVATE_HOSTNAME}:8080/seagate/cortx-data:2.0.0-0"
+                    export CORTX_CONTROL_IMAGE="${PRIMARY_PRIVATE_HOSTNAME}:8080/seagate/cortx-control:2.0.0-0"
                     ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" 'pushd /home/centos/cortx-re/solutions/kubernetes &&
                     export CORTX_SERVER_IMAGE='${CORTX_SERVER_IMAGE}' &&
                     export CORTX_DATA_IMAGE='${CORTX_DATA_IMAGE}' &&
