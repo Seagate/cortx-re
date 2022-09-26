@@ -33,6 +33,7 @@ pipeline {
 
         stages {
             stage('Checkout Script') {
+                when { expression { false } }
                 steps {
                     cleanWs()
                     script {
@@ -42,6 +43,7 @@ pipeline {
             }
 
         stage('Install Prerequisite tools') {
+            when { expression { false } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Install prerequisite tools', script: '''
@@ -72,6 +74,7 @@ pipeline {
             }
         }
         stage('Create EC2 instances') {
+            when { expression { false } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Setting up EC2 instances', script: '''
@@ -89,7 +92,7 @@ pipeline {
                     cd solutions/community-deploy/cloud/AWS && terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value | jq .[] | tr -d '"'
                     ''', returnStdout: true).trim()
                     env.PRIMARY_PUBLIC_IP = sh( script: '''
-                    cd solutions/community-deploy/cloud/AWS && terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value | jq .[] | tr -d '"' | cut -d' ' -f1
+                    cd solutions/community-deploy/cloud/AWS && terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value | jq .[0] | tr -d '"'
                     ''', returnStdout: true).trim()
                 }
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
