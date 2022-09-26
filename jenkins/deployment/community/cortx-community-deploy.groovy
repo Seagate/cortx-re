@@ -215,7 +215,7 @@ pipeline {
 
             script {
                 // Jenkins Summary
-                clusterStatus = ''
+                CommunityBuildStatus = ''
                 if ( currentBuild.currentResult == 'SUCCESS' ) {
                     MESSAGE = "CORTX Community Deploy is Success for the build ${build_id}"
                     ICON = 'accept.gif'
@@ -232,9 +232,11 @@ pipeline {
                     STATUS = 'UNSTABLE'
                 }
 
+                CommunityBuildStatusHTML = "<pre>${CommunityBuildStatus}</pre>"
+
                 // Email Notification
                 env.build_stage = "${build_stage}"
-                env.cluster_status = "${clusterStatusHTML}"
+                env.cluster_status = "${CommunityBuildStatusHTML}"
 
                 def toEmail = ''
                 def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
