@@ -106,7 +106,7 @@ pipeline {
                     sh label: 'Setting up Network and Storage devices for CORTX. Script will reboot the instance on completion', script: '''
                     pushd solutions/community-deploy/cloud/AWS
                         export ROOT_PASSWORD=${ROOT_PASSWORD}
-                        for ip in $PUBLIC_IP_LIST;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${ip}"sudo bash /home/centos/setup.sh $ROOT_PASSWORD && sleep 300;done
+                        for ip in $PUBLIC_IP_LIST;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${ip}" sudo bash /home/centos/setup.sh $ROOT_PASSWORD && sleep 300;done
                     popd
                     '''
                 }
