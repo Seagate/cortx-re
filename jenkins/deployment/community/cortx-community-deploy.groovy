@@ -111,6 +111,7 @@ pipeline {
 
 
         stage('Execute cortx build script') {
+            when { expression { false } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Executing cortx build image script on Primary node', script: '''
