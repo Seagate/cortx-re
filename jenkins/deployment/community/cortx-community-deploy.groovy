@@ -94,11 +94,15 @@ pipeline {
                     env.PRIMARY_PUBLIC_IP = sh( script: '''
                     cd solutions/community-deploy/cloud/AWS && terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value | jq .[0] | tr -d '"'
                     ''', returnStdout: true).trim()
+                    env.PRIVATE_IP = sh( script: '''
+                    cd solutions/community-deploy/cloud/AWS && terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_ip_addr.value | jq .[] | tr -d '"'
+                    ''', returnStdout: true).trim()
                 }
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                     sh label: 'Setting up Network and Storage devices for CORTX. Script will reboot the instance on completion', script: '''
                     pushd solutions/community-deploy/cloud/AWS
-                        for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${ip}" sudo bash /home/centos/setup.sh && sleep 240;done
+                        export ROOT_PASSWORD=${ROOT_PASSWORD}
+                        for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${ip}" sudo bash /home/centos/setup.sh $ROOT_PASSWORD && sleep 240;done
                     popd
                     '''
                 }
@@ -126,17 +130,11 @@ pipeline {
                 sh label: 'Changing root password & creating hosts file', script: '''
                 pushd solutions/community-deploy/cloud/AWS
                     export ROOT_PASSWORD=${ROOT_PASSWORD}
-                    export PUBLIC_IP=$(terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value 2>&1 | tee ip_public.txt | tr -d '",[]' | sed '/^$/d')
-                    terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_dns.value 2>&1 | tee ec2_hostname.txt
-                    export BUILD_NODE=$(cat ec2_hostname.txt | jq '.[0]'| tr -d '",[]') && export HOST2=$(cat ec2_hostname.txt | jq '.[1]'| tr -d '",[]')
-                    export HOST3=$(cat ec2_hostname.txt | jq '.[2]'| tr -d '",[]') && export HOST4=$(cat ec2_hostname.txt | jq '.[3]'| tr -d '",[]')
-                    for ip in $PUBLIC_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${ip}" "export ROOT_PASSWORD=$ROOT_PASSWORD && echo $ROOT_PASSWORD | sudo passwd --stdin root && git clone https://github.com/Seagate/cortx-re && pushd /home/centos/cortx-re/solutions/kubernetes && touch hosts && echo hostname=${BUILD_NODE},user=root,pass= > hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo hostname=${HOST2},user=root,pass= >> hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo hostname=${HOST3},user=root,pass= >> hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && echo hostname=${HOST4},user=root,pass= >> hosts && sed -i 's,pass=.*,pass=$ROOT_PASSWORD,g' hosts && cat hosts && sleep 240";done
-                    popd
+                    for ip in $PRIVATE_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$PRIMARY_PUBLIC_IP "pushd /home/centos/cortx-re/solutions/kubernetes && echo hostname="${ip}",user=root,pass='${ROOT_PASSWORD}' >> hosts && cat hosts";done
+                popd    
             '''
             }
         }
- 
-
 
         stage('Setup K8s cluster') {
             steps {
