@@ -58,14 +58,14 @@ pipeline {
                 rm -rvf /usr/local/bin/aws /usr/local/bin/aws_completer /usr/local/aws-cli >/dev/null 2>&1
                 pushd solutions/community-deploy/cloud/AWS
                     ./tool_setup.sh
-                    sed \
-                    -e '/os_version/s/<OS VERSION>/CentOS 7.9.2009 x86_64/g' \
-                    -e 's|<YOUR PUBLIC IP CIDR>|134.204.222.36/32|g' \
-                    -e '/region/s/<AWS REGION>/ap-south-1/g' \
-                    -e '/ebs_volume_count/s/<NUMBER OF EBS VOLUMES>/9/g' \
-                    -e '/ebs_volume_size/s/<EBS VOLUME SIZE>/10/g' \
-                    -e '/instance_count/s/<NUMBER OF EC2 INSTANCES>/4/g' \
-                    -e '/tag_name/s/<YOUR TAG NAME FOR EC2 INSTANCES>/cortx-multinode/g' user.tfvars
+                    sed -i \
+                    -e "/os_version/s/<OS VERSION>/$OS_VERSION/g" \
+                    -e "s|<YOUR PUBLIC IP CIDR>|$CIDR/32|g" \
+                    -e "/region/s/<AWS REGION>/$REGION/g" \
+                    -e "/ebs_volume_count/s/<NUMBER OF EBS VOLUMES>/$EBS_VOLUME_COUNT/g" \
+                    -e "/ebs_volume_size/s/<EBS VOLUME SIZE>/$EBS_VOLUME_SIZE/g" \
+                    -e "/instance_count/s/<NUMBER OF EC2 INSTANCES>/$INSTANCE_COUNT/g" \
+                    -e "/tag_name/s/<YOUR TAG NAME FOR EC2 INSTANCES>/cortx-multinode/g" user.tfvars
                     cat user.tfvars
                 popd
                 '''
