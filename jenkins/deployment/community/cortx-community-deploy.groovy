@@ -60,7 +60,7 @@ pipeline {
                     ./tool_setup.sh
                     sed -i \
                     -e "/os_version/s/<OS VERSION>/$OS_VERSION/g" \
-                    -e "s|<YOUR PUBLIC IP CIDR>|$CIDR/32|g" \
+                    -e "s|<YOUR PUBLIC IP CIDR>|$CIDR|g" \
                     -e "/region/s/<AWS REGION>/$REGION/g" \
                     -e "/ebs_volume_count/s/<NUMBER OF EBS VOLUMES>/$EBS_VOLUME_COUNT/g" \
                     -e "/ebs_volume_size/s/<EBS VOLUME SIZE>/$EBS_VOLUME_SIZE/g" \
