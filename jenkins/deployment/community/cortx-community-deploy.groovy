@@ -94,8 +94,8 @@ pipeline {
                     env.PRIMARY_PUBLIC_IP = sh( script: '''
                     cd solutions/community-deploy/cloud/AWS && terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_public_ip_addr.value | jq .[0] | tr -d '"'
                     ''', returnStdout: true).trim()
-                    env.PRIVATE_IP = sh( script: '''
-                    cd solutions/community-deploy/cloud/AWS && terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_ip_addr.value | jq .[] | tr -d '"'
+                    env.PRIVATE_HOSTNAME = sh( script: '''
+                    cd solutions/community-deploy/cloud/AWS && terraform show -json terraform.tfstate | jq .values.outputs.aws_instance_private_dns.value | jq .[] | tr -d '"'
                     ''', returnStdout: true).trim()
                 }
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
@@ -132,7 +132,7 @@ pipeline {
                 pushd solutions/community-deploy/cloud/AWS
                     export ROOT_PASSWORD=${ROOT_PASSWORD}
                     ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$PRIMARY_PUBLIC_IP "rm -f /home/centos/cortx-re/solutions/kubernetes/hosts"
-                    for ip in $PRIVATE_IP;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$PRIMARY_PUBLIC_IP "pushd /home/centos/cortx-re/solutions/kubernetes && echo hostname="${ip}",user=root,pass='${ROOT_PASSWORD}' >> hosts && cat hosts";done
+                    for ip in $PRIVATE_HOSTNAME;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$PRIMARY_PUBLIC_IP "pushd /home/centos/cortx-re/solutions/kubernetes && echo hostname="${ip}",user=root,pass='${ROOT_PASSWORD}' >> hosts && cat hosts";done
                 popd    
             '''
             }
