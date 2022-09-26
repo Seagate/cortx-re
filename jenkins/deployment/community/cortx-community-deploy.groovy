@@ -124,7 +124,7 @@ pipeline {
             }
         }
 
-        
+
         stage('EC2 connection prerequisites') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -133,7 +133,7 @@ pipeline {
                     export ROOT_PASSWORD=${ROOT_PASSWORD}
                     ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$PRIMARY_PUBLIC_IP "rm -f /home/centos/cortx-re/solutions/kubernetes/hosts"
                     for ip in $PRIVATE_HOSTNAME;do ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@$PRIMARY_PUBLIC_IP "pushd /home/centos/cortx-re/solutions/kubernetes && echo hostname="${ip}",user=root,pass='${ROOT_PASSWORD}' >> hosts && cat hosts";done
-                popd    
+                popd
             '''
             }
         }
@@ -159,7 +159,7 @@ pipeline {
             '''
             }
         }
-        
+
         stage('Deploy CORTX cluster') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -170,10 +170,10 @@ pipeline {
                     export CORTX_SERVER_IMAGE="${PRIMARY_PUBLIC_IP}:8080/seagate/cortx-rgw:2.0.0-0"
                     export CORTX_DATA_IMAGE="${PRIMARY_PUBLIC_IP}:8080/seagate/cortx-data:2.0.0-0"
                     export CORTX_CONTROL_IMAGE="${PRIMARY_PUBLIC_IP}:8080/seagate/cortx-control:2.0.0-0"
-                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" 'pushd /home/centos/cortx-re/solutions/kubernetes && 
-                    export CORTX_SERVER_IMAGE='${CORTX_SERVER_IMAGE}' && 
-                    export CORTX_DATA_IMAGE='${CORTX_DATA_IMAGE}' && 
-                    export CORTX_CONTROL_IMAGE='${CORTX_CONTROL_IMAGE}' && 
+                    ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" 'pushd /home/centos/cortx-re/solutions/kubernetes &&
+                    export CORTX_SERVER_IMAGE='${CORTX_SERVER_IMAGE}' &&
+                    export CORTX_DATA_IMAGE='${CORTX_DATA_IMAGE}' &&
+                    export CORTX_CONTROL_IMAGE='${CORTX_CONTROL_IMAGE}' &&
                     sudo env SOLUTION_CONFIG_TYPE='${SOLUTION_CONFIG_TYPE}' env CORTX_SERVER_IMAGE='${CORTX_SERVER_IMAGE}' env CORTX_CONTROL_IMAGE='${CORTX_CONTROL_IMAGE}' env CORTX_DATA_IMAGE='${CORTX_DATA_IMAGE}' env COMMUNITY_USE='${COMMUNITY_USE}' ./cortx-deploy.sh --cortx-cluster'
                 popd
                 '''
@@ -185,7 +185,6 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'IO Sanity on CORTX Cluster to validate bucket creation and object upload in deployed cluster', script: '''
                 pushd solutions/community-deploy/cloud/AWS
-                    export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
                     ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" 'pushd /home/centos/cortx-re/solutions/kubernetes && sudo ./cortx-deploy.sh --io-sanity'
                 popd
             '''
@@ -197,9 +196,8 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Basic Management Path Check', script: '''
                 pushd solutions/community-deploy/cloud/AWS
-                    export PRIMARY_PUBLIC_IP=$(cat ip_public.txt | jq '.[0]'| tr -d '",[]')
                     ssh -i cortx.pem -o 'StrictHostKeyChecking=no' centos@"${PRIMARY_PUBLIC_IP}" 'pushd /home/centos/cortx-re/solutions/kubernetes && sudo ./cortx-deploy.sh --mangement-health-check'
-                    popd
+                popd
                 '''
             }
         }
@@ -210,7 +208,7 @@ pipeline {
             retry(count: 3) {
                     sh label: 'Destroying EC2 instance', script: '''
                     pushd solutions/community-deploy/cloud/AWS
-                        #terraform validate && terraform destroy -var-file user.tfvars --auto-approve
+                        terraform validate && terraform destroy -var-file user.tfvars --auto-approve
                     popd
                     '''
             }
@@ -222,12 +220,12 @@ pipeline {
                     MESSAGE = "CORTX Community Deploy is Success for the build ${build_id}"
                     ICON = 'accept.gif'
                     STATUS = 'SUCCESS'
-            } else if ( currentBuild.currentResult == 'FAILURE' ) {
+                } else if ( currentBuild.currentResult == 'FAILURE' ) {
                     manager.buildFailure()
                     MESSAGE = "CORTX Community Deploy is Failed for the build ${build_id}"
                     ICON = 'error.gif'
                     STATUS = 'FAILURE'
-            } else {
+                } else {
                     manager.buildUnstable()
                     MESSAGE = 'CORTX Community Deploy Setup is Unstable'
                     ICON = 'warning.gif'
