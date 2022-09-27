@@ -1,8 +1,8 @@
 apiVersion: elasticsearch.k8s.elastic.co/v1
 kind: Elasticsearch
 metadata:
-  name: cortx-elasticsearch
-  namespace: cortx
+  name: elasticsearch
+  namespace: elasticsearch
 spec:
   version: 8.4.1
   http:
