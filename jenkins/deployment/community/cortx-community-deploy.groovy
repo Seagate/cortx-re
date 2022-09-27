@@ -1,4 +1,5 @@
 pipeline {
+    
     agent {
         node {
             label 'community-build-executor'
@@ -6,6 +7,7 @@ pipeline {
     }
 
     triggers { cron('0 22 * * 1,3,5') }
+   
     options {
         timeout(time: 360, unit: 'MINUTES')
         timestamps()
@@ -31,7 +33,7 @@ pipeline {
         password(name: 'ROOT_PASSWORD', description: 'Root password for EC2 instances')
     }
 
-        stages {
+    stages {
         stage('Checkout Script') {
             
             steps {
@@ -214,7 +216,7 @@ pipeline {
             retry(count: 3) {
                     sh label: 'Destroying EC2 instance', script: '''
                     pushd solutions/community-deploy/cloud/AWS
-                        terraform validate && terraform destroy -var-file user.tfvars --auto-approve
+                        #terraform validate && terraform destroy -var-file user.tfvars --auto-approve
                     popd
                     '''
             }
