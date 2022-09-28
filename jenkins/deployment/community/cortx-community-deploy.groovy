@@ -69,7 +69,7 @@ pipeline {
                     -e "/ebs_volume_count/s/<NUMBER OF EBS VOLUMES>/$EBS_VOLUME_COUNT/g" \
                     -e "/ebs_volume_size/s/<EBS VOLUME SIZE>/$EBS_VOLUME_SIZE/g" \
                     -e "/instance_count/s/<NUMBER OF EC2 INSTANCES>/$INSTANCE_COUNT/g" \
-                    -e "/tag_name/s/<YOUR TAG NAME FOR EC2 INSTANCES>/cortx-multinode/g" user.tfvars
+                    -e "/tag_name/s/<YOUR TAG NAME FOR EC2 INSTANCES>/$AWS_INSTANCE_TAG_NAME/g" user.tfvars
                     cat user.tfvars
                 popd
                 '''
@@ -249,7 +249,7 @@ pipeline {
                 def toEmail = ''
                 def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
                 if ( manager.build.result.toString() == 'FAILURE' ) {
-                    toEmail = 'shailesh.vaidya@seagate.com'
+                    toEmail = 'CORTX.DevOps.RE@seagate.com'
                     recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
                 }
                 emailext(
