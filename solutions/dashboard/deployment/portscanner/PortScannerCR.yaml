@@ -1,0 +1,28 @@
+apiVersion: seagate.com/v1
+kind: CortxPortScanner
+metadata:
+  name: cortx-port-scanner
+  namespace: cortx
+  labels:
+    module: cortxportscanner
+spec:
+  namespace: cortx
+  scanObject: service
+  connectionUrl: cortx-port-scanner-mongodb.cortx.svc.cluster.local:27017/cortxportscanner?authSource=admin
+  allowedPorts:
+    [
+      53,
+      80,
+      443,
+      2181,
+      2888,
+      3888,
+      5601,
+      8081,
+      9092,
+      9200,
+      22003,
+      29000,
+      29001,
+      29002,
+    ]
