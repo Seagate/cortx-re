@@ -8,7 +8,7 @@ metadata:
 spec:
   namespace: dashboard
   scanObject: service
-  connectionUrl: cortx-port-scanner-mongodb.cortx.svc.cluster.local:27017/cortxportscanner?authSource=admin
+  connectionUrl: cortx-port-scanner-mongodb.dashboard.svc.cluster.local:27017/cortxportscanner?authSource=admin
   allowedPorts:
     [
       53,
