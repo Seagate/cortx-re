@@ -244,7 +244,7 @@ pipeline {
 
                 // Email Notification
                 env.build_stage = "${build_stage}"
-                env.cluster_status = "${clusterStatusHTML }"
+                env.cluster_status = "${clusterStatusHTML}"
 
                 def toEmail = ''
                 def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
