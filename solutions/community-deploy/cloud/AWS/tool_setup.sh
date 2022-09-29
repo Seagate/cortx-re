@@ -24,7 +24,6 @@ yum install -y yum-utils unzip
 yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
 yum -y install terraform
 
-
 #Install AWS CLI
 echo -e "-------------------------[ Installing  AWS CLI   ]----------------------------------------" 
 mkdir -p /opt/aws-cli/
@@ -35,10 +34,12 @@ rm -rf /opt/aws-cli/aws
 
 #Trigger AWS CLI configuration
 echo -e "-------------------------[ AWS CLI configuration ]----------------------------------------" 
+if [ -z "$ACCESS_KEY" ] && [ -z $SECRET_KEY ]; then
 aws configure
-
+else
+aws configure set aws_access_key_id $ACCESS_KEY; aws configure set aws_secret_access_key $SECRET_KEY
+fi
 
 #Initiate Terraform workspace
 echo -e "------------------------[ Terraform Workspace init ]----------------------------------------" 
 terraform init
-
