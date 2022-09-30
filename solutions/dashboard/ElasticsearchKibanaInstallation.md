@@ -14,21 +14,28 @@ Install the operator with its RBAC rules:
 kubectl apply -f https://download.elastic.co/downloads/eck/2.4.0/operator.yaml
 ```
 
+### Creating Namespace:
+
+For the elasticsearch and kibana we need to use **elastic** namespace. To create the elastic namespace please use the following command:
+
+```
+kubectl create namespace elastic
+```
+
 ### Deploy an Elasticsearch Cluster:
 
 **Apply Elasticsearch Specification**
 
 - Do not delete the **version** attribute from the YAML
 - Do not change the **volumeClaimTemplates** name
-- Replace **storageClassName** to storage class like **local-path**
 
 ```
 cat <<EOF | kubectl apply -f -
 apiVersion: elasticsearch.k8s.elastic.co/v1
 kind: Elasticsearch
 metadata:
-  name: cortx-elasticsearch
-  namespace: cortx
+  name: dashboard-elasticsearch
+  namespace: elastic
 spec:
   version: 8.4.1
   http:
@@ -52,27 +59,27 @@ spec:
         resources:
           requests:
             storage: 5Gi
-        storageClassName: <storageClassName>
+        storageClassName: local-path
 EOF
 ```
 
 **Monitor Cluster Health and Creation Process**
 
 ```
-kubectl get elasticsearch
+kubectl get elasticsearch -n elastic
 ```
 
 **Check Elasticsearch Pod Logs**
 
 ```
-kubectl logs -f cortx-elasticsearch-es-default-0
+kubectl logs -f dashboard-elasticsearch-es-default-0 -n elastic
 ```
 
 **Get Elasticsearch Service**
 Note the NodePort from the service
 
 ```
-kubectl get service cortx-elasticsearch-es-http
+kubectl get service dashboard-elasticsearch-es-http -n elastic
 ```
 
 **Get Nodes**
@@ -96,7 +103,7 @@ Enter username and password:
   Run below command to get password
 
 ```
-PASSWORD=$(kubectl get secret cortx-elasticsearch-es-elastic-user -o go-template='{{.data.elastic | base64decode}}')
+PASSWORD=$(kubectl get secret dashboard-elasticsearch-es-elastic-user -o go-template='{{.data.elastic | base64decode}}' -n elastic)
 echo $PASSWORD
 ```
 
@@ -111,13 +118,13 @@ cat <<EOF | kubectl apply -f -
 apiVersion: kibana.k8s.elastic.co/v1
 kind: Kibana
 metadata:
-  name: cortx-kibana
-  namespace: cortx
+  name: dashboard-kibana
+  namespace: elastic
 spec:
   version: 8.4.1
   count: 1
   elasticsearchRef:
-    name: cortx-elasticsearch
+    name: dashboard-elasticsearch
   http:
     service:
       spec:
@@ -131,14 +138,14 @@ EOF
 **Monitor Cluster Health and Creation Process**
 
 ```
-kubectl get kibana
+kubectl get kibana -n elastic
 ```
 
 **Get Kibana Service**
 Note the NodePort from the service
 
 ```
-kubectl get service cortx-kibana-kb-http
+kubectl get service dashboard-kibana-kb-http -n elastic
 ```
 
 **Get Nodes**
@@ -162,7 +169,7 @@ Enter username and password:
   Run below command to get password
 
 ```
-PASSWORD=$(kubectl get secret cortx-elasticsearch-es-elastic-user -o go-template='{{.data.elastic | base64decode}}')
+PASSWORD=$(kubectl get secret dashboard-elasticsearch-es-elastic-user -o go-template='{{.data.elastic | base64decode}}' -n elastic)
 echo $PASSWORD
 ```
 

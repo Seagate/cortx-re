@@ -9,4 +9,4 @@ RUN pip3 install -e .
 
 ENV PYTHONUNBUFFERED=1
 
-ENTRYPOINT ["cortxportscanner", "--namespace", "cortx", "--cr-name", "cortx-port-scanner"]
+ENTRYPOINT ["dashboardportscanner", "--namespace", "dashboard", "--cr-name", "dashboard-port-scanner"]

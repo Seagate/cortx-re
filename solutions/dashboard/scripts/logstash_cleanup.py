@@ -3,9 +3,9 @@ import os
 print("----------------- Logstash -----------------")
 
 # Deployment
-os.system("kubectl delete deployments cortx-logstash")
+os.system("kubectl delete deployments dashboard-logstash -n dashboard")
 print("")
 
 # Configmap
-os.system("kubectl delete configmap cortx-logstash")
+os.system("kubectl delete configmap dashboard-logstash -n dashboard")
 print("")

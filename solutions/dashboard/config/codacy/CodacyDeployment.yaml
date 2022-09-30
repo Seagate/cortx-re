@@ -1,22 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: cortx-codacy
-  namespace: cortx
+  name: dashboard-codacy
+  namespace: dashboard
   labels:
-    app: cortx-codacy
+    app: dashboard-codacy
 spec:
   selector:
     matchLabels:
-      app: cortx-codacy
+      app: dashboard-codacy
   replicas: 1
   template:
     metadata:
       labels:
-        app: cortx-codacy
+        app: dashboard-codacy
     spec:
       containers:
-        - name: cortx-codacy
+        - name: dashboard-codacy
           image: docker.io/sanket02092001/scs:1.0.0
           imagePullPolicy: Always
           env:
@@ -30,6 +30,11 @@ spec:
                 secretKeyRef:
                   key: mongodb_password
                   name: dashboard-secret
+            - name: MONGODB_CONNECTION_URL
+              valueFrom:
+                configMapKeyRef:
+                  key: mongodb_connection_url
+                  name: dashboard-configmap
             - name: CODACY_API_TOKEN
               valueFrom:
                 secretKeyRef:
@@ -38,7 +43,7 @@ spec:
           resources:
             limits:
               memory: "768Mi"
-              cpu: "768Mi"
+              cpu: "5000m"
             requests:
               memory: "256Mi"
               cpu: "300m"

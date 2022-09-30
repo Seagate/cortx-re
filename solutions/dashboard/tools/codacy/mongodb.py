@@ -20,7 +20,7 @@ class MongoDB:
     def create_connection_url(self, credentials: dict, connection_url):
         prefix = "mongodb://%s:%s" % (credentials['username'],
                                       credentials['password'])
-        self.connection_url = prefix + "@" + connection_url
+        self.connection_url = prefix + "@" + connection_url + "/codacy?authSource=admin"
 
     def initialize_mongodb(self):
         try:

@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: cortx-logstash
-  namespace: cortx
+  name: dashboard-logstash
+  namespace: dashboard
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: cortx-logstash
+      app: dashboard-logstash
   template:
     metadata:
       labels:
-        app: cortx-logstash
+        app: dashboard-logstash
     spec:
       containers:
-        - name: cortx-logstash
+        - name: dashboard-logstash
           command:
             [
               "/bin/bash",
@@ -33,6 +33,11 @@ spec:
                 secretKeyRef:
                   key: mongodb_username
                   name: dashboard-secret
+            - name: MONGODB_CONNECTION_URL
+              valueFrom:
+                configMapKeyRef:
+                  key: mongodb_connection_url
+                  name: dashboard-configmap
             - name: MONGODB_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -80,7 +85,7 @@ spec:
       volumes:
         - name: config-volume
           configMap:
-            name: cortx-logstash
+            name: dashboard-logstash
             items:
               - key: logstash.yml
                 path: logstash.yml
@@ -92,7 +97,7 @@ spec:
                 path: startup.options
         - name: logstash-pipeline-volume
           configMap:
-            name: cortx-logstash
+            name: dashboard-logstash
             items:
               - key: logstash.conf
                 path: logstash.conf
