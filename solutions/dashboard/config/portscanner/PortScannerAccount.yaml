@@ -1,20 +1,20 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: cortx-port-scanner
-  namespace: cortx
+  name: dashboard-port-scanner
+  namespace: dashboard
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: cortx-port-scanner
-  namespace: cortx
+  name: dashboard-port-scanner
+  namespace: dashboard
 rules:
   - apiGroups:
       - seagate.com
     resources:
-      - cortxportscanners
+      - dashboardportscanners
     verbs:
       - "*"
   - apiGroups:
@@ -52,12 +52,12 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: cortx-port-scanner
-  namespace: cortx
+  name: dashboard-port-scanner
+  namespace: dashboard
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: cortx-port-scanner
+  name: dashboard-port-scanner
 subjects:
   - kind: ServiceAccount
-    name: cortx-port-scanner
+    name: dashboard-port-scanner

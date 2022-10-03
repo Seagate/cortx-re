@@ -2,8 +2,9 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: dashboard-configmap
-  namespace: cortx
+  namespace: dashboard
 data:
   secret_name: "dashboard-secret"
   master_node_internal_ip: "<master_node_internal_ip>"
   elasticsearch_nodeport: "<elasticsearch_nodeport>"
+  mongodb_connection_url: "dashboard-mongodb.dashboard.svc.cluster.local:27017"

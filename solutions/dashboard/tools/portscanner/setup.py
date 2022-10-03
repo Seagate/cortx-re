@@ -7,7 +7,7 @@ if version_info[:2] < (3, 5):
         'Unsupported python version %s.' % '.'.join(version_info)
     )
 
-_NAME = 'cortxportscanner'
+_NAME = 'dashboardportscanner'
 setup(
     name=_NAME,
     version='1.0.0',

@@ -1,8 +1,8 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: cortx-logstash
-  namespace: cortx
+  name: dashboard-logstash
+  namespace: dashboard
 data:
   logstash.yml: |
     http.host: "0.0.0.0"
@@ -160,7 +160,7 @@ data:
   logstash.conf: |
     input {
       mongodb {
-        uri => 'mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@cortx-port-scanner-mongodb.cortx.svc.cluster.local:27017/cortxportscanner?authSource=admin'
+        uri => 'mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_CONNECTION_URL}/portscanner?authSource=admin'
         placeholder_db_dir => '/opt/logstash/'
         placeholder_db_name => 'logstash_sqlite.db'
         collection => 'operator'
@@ -168,7 +168,7 @@ data:
         parse_method => 'simple'
       }
       mongodb {
-        uri => 'mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@cortx-port-scanner-mongodb.cortx.svc.cluster.local:27017/codacy?authSource=admin'
+        uri => 'mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_CONNECTION_URL}/codacy?authSource=admin'
         placeholder_db_dir => '/opt/logstash/'
         placeholder_db_name => 'logstash_sqlite.db'
         collection => 'repositories'
@@ -176,17 +176,25 @@ data:
         parse_method => 'simple'
       }
       mongodb {
-        uri => 'mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@cortx-port-scanner-mongodb.cortx.svc.cluster.local:27017/codacy?authSource=admin'
+        uri => 'mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_CONNECTION_URL}/codacy?authSource=admin'
         placeholder_db_dir => '/opt/logstash/'
         placeholder_db_name => 'logstash_sqlite.db'
         collection => 'metadata'
         batch_size => 5000
         parse_method => 'simple'
       }
+      mongodb {
+        uri => 'mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_CONNECTION_URL}/codacy?authSource=admin'
+        placeholder_db_dir => '/opt/logstash/'
+        placeholder_db_name => 'logstash_sqlite.db'
+        collection => 'weekly_analysis'
+        batch_size => 5000
+        parse_method => 'simple'
+      }
     }
 
     filter {
-      if ([identifier] == "cortxportscanner.operator") {
+      if ([identifier] == "portscanner.operator") {
         mutate {
           rename => { "[_id]" => "mongo_id" }
           remove_field => [ "_id" ]
@@ -204,12 +212,34 @@ data:
           rename => { "[_id]" => "mongo_id" }
           remove_field => [ "_id" ]
         }
+
+        date {
+          match => ["created_date", "dd-MMM-yyyy"]
+          target => "created_date"
+        }
       }  
 
       if ([identifier] == "codacy.metadata") {
         mutate {
           rename => { "[_id]" => "mongo_id" }
           remove_field => [ "_id" ]
+        }
+
+        date {
+          match => ["created_date", "dd-MMM-yyyy"]
+          target => "created_date"
+        }
+      }  
+
+      if ([identifier] == "codacy.weekly_analysis") {
+        mutate {
+          rename => { "[_id]" => "mongo_id" }
+          remove_field => [ "_id" ]
+        }
+
+        date {
+          match => ["created_date", "dd-MMM-yyyy"]
+          target => "created_date"
         }
       }  
     }
@@ -218,9 +248,9 @@ data:
       stdout {
         codec => rubydebug
       }
-      if ([identifier] == "cortxportscanner.operator") {
+      if ([identifier] == "portscanner.operator") {
         elasticsearch {
-          index => "portscanner_operator"
+          index => "dashboard_portscanner_operator"
           hosts => ["http://${MASTER_NODE_INTERNAL_IP}:${ELASTICSEARCH_PORT}"]
           user => "${ELASTICSEARCH_USERNAME}"
           password => "${ELASTICSEARCH_PASSWORD}"
@@ -229,7 +259,7 @@ data:
 
       if ([identifier] == "codacy.repositories") {
         elasticsearch {
-          index => "codacy_repositories"
+          index => "dashboard_codacy_repositories"
           hosts => ["http://${MASTER_NODE_INTERNAL_IP}:${ELASTICSEARCH_PORT}"]
           user => "${ELASTICSEARCH_USERNAME}"
           password => "${ELASTICSEARCH_PASSWORD}"
@@ -238,7 +268,16 @@ data:
 
       if ([identifier] == "codacy.metadata") {
         elasticsearch {
-          index => "codacy_metadata"
+          index => "dashboard_codacy_metadata"
+          hosts => ["http://${MASTER_NODE_INTERNAL_IP}:${ELASTICSEARCH_PORT}"]
+          user => "${ELASTICSEARCH_USERNAME}"
+          password => "${ELASTICSEARCH_PASSWORD}"
+        }
+      }   
+      
+      if ([identifier] == "codacy.weekly_analysis") {
+        elasticsearch {
+          index => "dashboard_codacy_weekly_analysis"
           hosts => ["http://${MASTER_NODE_INTERNAL_IP}:${ELASTICSEARCH_PORT}"]
           user => "${ELASTICSEARCH_USERNAME}"
           password => "${ELASTICSEARCH_PASSWORD}"

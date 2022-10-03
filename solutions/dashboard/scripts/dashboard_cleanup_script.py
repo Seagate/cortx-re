@@ -5,31 +5,31 @@ print("----------------- CLEANING DASHBOARD COMPONENTS -----------------")
 print("\n\nPort Scanner Cleanup")
 
 # PortScanner Deployment
-os.system("kubectl delete deployment cortx-port-scanner")
+os.system("kubectl delete deployment dashboard-port-scanner -n dashboard")
 print("")
 
 # Service Account
-os.system("kubectl delete serviceaccounts cortx-port-scanner")
+os.system("kubectl delete serviceaccounts dashboard-port-scanner -n dashboard")
 print("")
 
 # Role
-os.system("kubectl delete roles cortx-port-scanner")
+os.system("kubectl delete roles dashboard-port-scanner -n dashboard")
 print("")
 
 # Role Binding
-os.system("kubectl delete rolebindings cortx-port-scanner")
+os.system("kubectl delete rolebindings dashboard-port-scanner -n dashboard")
 print("")
 
 # CR
-os.system("kubectl delete cortxportscanners cortx-port-scanner")
+os.system("kubectl delete dashboardportscanners dashboard-port-scanner -n dashboard")
 print("")
 
 # CRD
-os.system("kubectl delete crd cortxportscanners.seagate.com")
+os.system("kubectl delete crd dashboardportscanners.seagate.com")
 print("")
 
 # Configmap
-os.system("kubectl delete configmaps cortx-port-scanner")
+os.system("kubectl delete configmaps dashboard-port-scanner -n dashboard")
 print("")
 
 
@@ -38,7 +38,7 @@ print("")
 print("\n\nCodacy Cleanup")
 
 # Deployment
-os.system("kubectl delete deployments cortx-codacy")
+os.system("kubectl delete deployments dashboard-codacy -n dashboard")
 print("")
 
 
@@ -47,11 +47,11 @@ print("")
 print("\n\nLogstash Cleanup")
 
 # Deployment
-os.system("kubectl delete deployments cortx-logstash")
+os.system("kubectl delete deployments dashboard-logstash -n dashboard")
 print("")
 
 # Configmap
-os.system("kubectl delete configmap cortx-logstash")
+os.system("kubectl delete configmap dashboard-logstash -n dashboard")
 print("")
 
 # MongoDB Cleanup
@@ -59,11 +59,11 @@ print("")
 print("\n\nMongoDB Cleanup")
 
 # MongoDB Statefulset
-os.system("kubectl delete statefulset cortx-port-scanner-mongodb")
+os.system("kubectl delete statefulset dashboard-mongodb -n dashboard")
 print("")
 
 # MongoDB Headless Service
-os.system("kubectl delete services cortx-port-scanner-mongodb")
+os.system("kubectl delete services dashboard-mongodb -n dashboard")
 print("")
 
 
@@ -72,9 +72,9 @@ print("")
 print("\nConfigs Cleanup")
 
 # Credential Secret
-os.system("kubectl delete secret dashboard-secret")
+os.system("kubectl delete secret dashboard-secret -n dashboard")
 print("")
 
 # Configmap
-os.system("kubectl delete configmap dashboard-configmap")
+os.system("kubectl delete configmap dashboard-configmap -n dashboard")
 print("")

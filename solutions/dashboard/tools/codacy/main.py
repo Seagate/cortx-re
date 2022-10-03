@@ -1,7 +1,6 @@
 import os
 import asyncio
 from issues import Issues
-from const import MONGODB_CONNECTION_URL
 from mongodb import MongoDB
 
 
@@ -17,11 +16,12 @@ class Main:
             "password": os.environ.get("MONGODB_PASSWORD")
         }
         codacy_api_token = os.environ.get("CODACY_API_TOKEN")
+        mongodb_connection_url = os.environ.get("MONGODB_CONNECTION_URL")
 
         # MongoDB
         mongodb = MongoDB()
         mongodb.create_connection_url(
-            credentials=mongodb_credentials, connection_url=MONGODB_CONNECTION_URL)
+            credentials=mongodb_credentials, connection_url=mongodb_connection_url)
         mongodb.handle_mongodb()
         # Create Initialization Documents
         # Because Logstash uses first document from mongodb for initialization

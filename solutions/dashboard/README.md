@@ -30,8 +30,16 @@ This directory contains the creation and cleanup scripts. The cleanup script doe
 For this use the Elastic Cloud on Kubernetes (ECK). By using this we can install Elasticsearch and Kibana on Kubernetes.
 Please use **8.4.1** version of Elasticsearch and Kibana. We also need to access them from internet.
 
-Please open **ELASTICSEARCH_KIBANA_INSTALLATION.md** for installation steps.
-Reference Link: https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-quickstart.html
+Please open **ElasticsearchKibanaInstallation.md** for installation steps.
+Link: https://github.com/Seagate/cortx-re/blob/dashboard/solutions/dashboard/ElasticsearchKibanaInstallation.md
+
+### Creating Namespace:
+
+For the dashboard we need to have **dashboard** namespace. To create the dashboard namespace use the following command:
+
+```
+kubectl create namespace dashboard
+```
 
 ### Creating Dashboard Secret and Configmap:
 
@@ -45,13 +53,15 @@ For the secret, you need to provide **base64** values. For converting plain text
 echo -n plain_text | base64
 ```
 
+You can also use **base64conversion.py** file in **dashboard/scripts** folder. You need to replace the **\<data>** with the appropriate **plain_text**. Then run the file.
+
 **Note**:
 While setting MongoDB **username** and **password**. If you have not cleaned old PVC of mongodb **data-cortx-port-scanner-mongodb-0** then please set the same old password in base64 format.
 
 For **elasticsearch** credentials, the username will be **elastic** but you need to take password using following commands:
 
 ```
-PASSWORD=$(kubectl get secret cortx-elasticsearch-es-elastic-user -o go-template='{{.data.elastic | base64decode}}')
+PASSWORD=$(kubectl get secret dashboard-elasticsearch-es-elastic-user -o go-template='{{.data.elastic | base64decode}}' -n elastic)
 echo $PASSWORD
 ```
 
@@ -59,7 +69,7 @@ You need to convert this password into **base64** format
 
 #### Configmap:
 
-Configmap is used to store the configuration data. You need to enter the configuration data in **DashboardConfigmap.yaml** file located in **dashboard/config** directory. Do not convert data into base64 format and add it in plain text.
+Configmap is used to store the configuration data. You need to enter the configuration data in **DashboardConfigmap.yaml** file located in **dashboard/config** directory. For configmap, do not convert data into base64 format and add it in plain text.
 
 **Configmap Fields:**
 
@@ -74,12 +84,12 @@ kubectl get nodes -o wide
   You can find the nodeport using following command:
 
 ```
-kubectl get service cortx-elasticsearch-es-http
+kubectl get service dashboard-elasticsearch-es-http -n elastic
 ```
 
 #### Creation
 
-You can create the Secret and Configmap in 2 ways:
+You can create the Secret and Configmap in 2 ways (You can use any one way):
 
 - Goto **dashboard/config** directory
 
@@ -96,6 +106,25 @@ kubectl create -f DashboardConfigmap.yaml
 python3 dashboard_configs_creation.py
 ```
 
+### Creating the MongoDB:
+
+For creating the MongoDB goto **dashboard/scripts** directory and run the following command:
+
+```
+python3 mongodb_creation.py
+```
+
+After executing this command, you will see the MongoDB statefulset and the headless service.
+The MongoDB statefulset will try to provision Persistent Volume (PV) for it.
+
+You can exec into mongodb pod using following command:
+Please replace \<username> by your mongodb_username value in plain text.
+
+```
+kubectl exec -it pod/dashboard-mongodb-0 -n dashboard -- /bin/bash
+mongosh --username=<username>
+```
+
 ### Creating Port Scanner:
 
 For creating port scanner goto **dashboard/scripts** directory and run the following command:
@@ -104,28 +133,14 @@ For creating port scanner goto **dashboard/scripts** directory and run the follo
 python3 portscanner_creation.py
 ```
 
-The portscanner operator wrote in such a way that it will create the required components such as ConfigMap, MongoDB by itself.
-
 Once the port scanner started you can verify the logs of the pod. For that you can use following command:
 Please replace <pod_name> here by actual pod name
 
 ```
-kubectl logs -f po/<pod_name>
+kubectl logs -f pod/<pod_name> -n dashbaord
 ```
 
-From there you can find whether the MongoDB connection is made or not and whether documents are inserted into mongodb or not.
-
-**MongoDB:**
-You will also see the MongoDB statefulset and the headless service.
-The MongoDB statefulset will try to provision Persistent Volume (PV) for it.
-
-You can exec into mongodb pod using following command:
-Please replace \<username> by your mongodb_username value in plain text.
-
-```
-kubectl exec -it po/cortx-port-scanner-mongodb-0 -- sh
-mongosh --username=<username>
-```
+From the logs you can find whether the MongoDB connection is made or not and whether documents are inserted into mongodb or not.
 
 **Note on Port Scanner Logs**
 You will find below exception in logs.
@@ -152,7 +167,7 @@ You can check the codacy logs using following command:
 Please replcae <pod_name> by actual pod name
 
 ```
-kubectl logs -f po/<pod_name>
+kubectl logs -f pod/<pod_name> -n dashboard
 ```
 
 The codacy script should connect with mongodb and start fetching the issues data from codacy. The script will pause after fetching all data and restarts after every 24 hours. This will not cause the pod to restart.
@@ -172,7 +187,7 @@ You can check logstash logs using following command:
 Please replcae <pod_name> by actual pod name
 
 ```
-kubectl logs -f po/<pod_name>
+kubectl logs -f pod/<pod_name> -n dashboard
 ```
 
 The logstash should start installing **logstash-input-mongodb** plugin and should start the pipeline. After this, you should be able to see the mongodb documents in lostash logs, and in the Kibana GUI, you should be able to see indices.
@@ -183,5 +198,4 @@ To check indices in Kibana,
 - Open left side menu
 - Goto Management > Stack Management
 - Click on **Index Management** in left menu.
-  You should be able to see codacy_metadata, codacy_repositories and
-  portscanner_operator indices.
+  You should be able to see the indices.
