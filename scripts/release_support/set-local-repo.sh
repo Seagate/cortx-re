@@ -23,6 +23,7 @@ set -euf -o pipefail
 for package in epel-release jq python3-pip createrepo yum-utils; do rpm -q $package || yum install $package -y; done
 export LC_ALL=en_US.utf-8 && export LANG=en_US.utf-8
 export LC_ALL=C.UTF-8 && export LANG=C.UTF-8
+yum-config-manager --set-enabled powertools
 
 pip3 show githubrelease || (pip3 install click==7.1.2 && pip3 install githubrelease==1.5.8)
 
