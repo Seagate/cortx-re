@@ -17,7 +17,7 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 #!/bin/bash
-set -euf -o pipefail
+set -eu -o pipefail
 
 #Install required packages
 yum install libmodulemd -y
@@ -40,7 +40,7 @@ echo -e "### RELEASE=$RELEASE"
 echo -e "################################################################################\n"
 rm -rf "$RELEASE_REPO_LOCATION" && mkdir "$RELEASE_REPO_LOCATION" || exit
 pushd "$RELEASE_REPO_LOCATION" || exit
-        githubrelease asset "$REPO" download "$RELEASE" && /bin/createrepo -v . || exit
+        /usr/local/bin/githubrelease asset "$REPO" download "$RELEASE" && /bin/createrepo -v . || exit
 popd || exit
 
 #Setup yum repository
@@ -48,3 +48,11 @@ rm -f $RELEASE_REPO_FILE
 yum-config-manager --add-repo file://"$RELEASE_REPO_LOCATION"
 echo "gpgcheck=0" >> "$RELEASE_REPO_FILE"
 yum clean all; rm -rf /var/cache/yum
+
+#Setup Python repository and install required packages
+mkdir -p "$RELEASE_REPO_LOCATION"/python-deps && tar -xzf "$RELEASE_REPO_LOCATION"/python-deps-*tar.gz -C "$RELEASE_REPO_LOCATION"/python-deps --strip-components=1
+
+#Install cortx-utils dependencies
+pip3 install -i file:///"$RELEASE_REPO_LOCATION"/python-deps -r https://raw.githubusercontent.com/Seagate/cortx-utils/main/py-utils/python_requirements.ext.txt
+pip3 install -i file:///"$RELEASE_REPO_LOCATION"/python-deps -r https://raw.githubusercontent.com/Seagate/cortx-utils/main/py-utils/python_requirements.txt
+
