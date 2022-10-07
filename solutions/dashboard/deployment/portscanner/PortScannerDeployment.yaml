@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: cortx-port-scanner
+  name: dashboard-port-scanner
   namespace: dashboard
 spec:
   replicas: 1
   selector:
     matchLabels:
-      name: cortx-port-scanner
+      name: dashboard-port-scanner
   template:
     metadata:
       labels:
-        name: cortx-port-scanner
+        name: dashboard-port-scanner
     spec:
       containers:
-        - name: cortx-port-scanner
-          image: docker.io/sanket02092001/test-port-scanner:1.0.0
+        - name: dashboard-port-scanner
+          image: docker.io/sanket02092001/port-scanner:1.0.0
           imagePullPolicy: Always
           env:
             - name: MONGODB_USERNAME
@@ -28,6 +28,11 @@ spec:
                 secretKeyRef:
                   key: mongodb_password
                   name: dashboard-secret
+            - name: MONGODB_CONNECTION_URL
+              valueFrom:
+                configMapKeyRef:
+                  key: mongodb_connection_url
+                  name: dashboard-configmap
             - name: SECRET_NAME
               valueFrom:
                 configMapKeyRef:
@@ -47,4 +52,4 @@ spec:
               drop:
                 - NET_RAW
                 - ALL
-      serviceAccountName: cortx-port-scanner
+      serviceAccountName: dashboard-port-scanner
