@@ -7,6 +7,7 @@ metadata:
     module: portscanner
 spec:
   namespace: dashboard
+  scanNamespace: cortx
   scanObject: service
   allowedPorts:
     [

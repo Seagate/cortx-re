@@ -57,7 +57,7 @@ class Operator:
         # Get the method to watch the objects
         method = getattr(
             self.core_api, LIST_TYPES_MAP[self.specs['scanObject']])
-        func = partial(method, self.specs['namespace'])
+        func = partial(method, self.specs['scanNamespace'])
 
         while True:
 
@@ -74,7 +74,7 @@ class Operator:
                     # As we haven't passed resource_version
                     # it will always give most recent resource version
                     res = self.core_api.list_namespaced_service(
-                        namespace=self.specs['namespace'])
+                        namespace=self.specs['scanNamespace'])
                     print("Response: {}".format(res.metadata))
                     self.resource_version = res.metadata.resource_version
                     self.fetchList = False

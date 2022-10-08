@@ -9,11 +9,11 @@ os.system("kubectl delete serviceaccounts dashboard-port-scanner -n dashboard")
 print("")
 
 # Role
-os.system("kubectl delete roles dashboard-port-scanner -n dashboard")
+os.system("kubectl delete clusterrole dashboard-port-scanner")
 print("")
 
 # Role Binding
-os.system("kubectl delete rolebindings dashboard-port-scanner -n dashboard")
+os.system("kubectl delete clusterrolebinding dashboard-port-scanner")
 print("")
 
 # CR
