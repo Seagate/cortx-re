@@ -6,5 +6,5 @@ metadata:
 data:
   secret_name: "dashboard-secret"
   master_node_internal_ip: "10.237.64.216"
-  elasticsearch_nodeport: "30080"
+  elasticsearch_nodeport: "30470"
   mongodb_connection_url: "dashboard-mongodb.dashboard.svc.cluster.local:27017"
