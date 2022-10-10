@@ -24,6 +24,8 @@ spec:
               properties:
                 namespace:
                   type: string
+                scanNamespace:
+                  type: string
                 scanObject:
                   type: string
                 allowedPorts:
@@ -32,6 +34,7 @@ spec:
                     type: integer
               required:
                 - namespace
+                - scanNamespace
                 - scanObject
                 - allowedPorts
 ---
@@ -45,6 +48,7 @@ metadata:
     module: portscanner
 spec:
   namespace: dashboard
+  scanNamespace: cortx
   scanObject: service
   allowedPorts:
     [
@@ -74,10 +78,9 @@ metadata:
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
+kind: ClusterRole
 metadata:
   name: dashboard-port-scanner
-  namespace: dashboard
 rules:
   - apiGroups:
       - seagate.com
@@ -118,17 +121,17 @@ rules:
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
+kind: ClusterRoleBinding
 metadata:
   name: dashboard-port-scanner
-  namespace: dashboard
 roleRef:
   apiGroup: rbac.authorization.k8s.io
-  kind: Role
+  kind: ClusterRole
   name: dashboard-port-scanner
 subjects:
   - kind: ServiceAccount
     name: dashboard-port-scanner
+    namespace: dashboard
 
 ---
 
@@ -149,7 +152,7 @@ spec:
     spec:
       containers:
         - name: dashboard-port-scanner
-          image: docker.io/sanket02092001/scs:1.0.0
+          image: docker.io/sanket02092001/port-scanner:1.0.0
           imagePullPolicy: Always
           env:
             - name: MONGODB_USERNAME
