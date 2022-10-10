@@ -27,6 +27,7 @@ class CR:
             )
             return {
                 "namespace": cr['spec']['namespace'],
+                "scanNamespace": cr['spec']['scanNamespace'],
                 "scanObject": cr['spec']['scanObject'],
                 "allowedPorts": cr['spec']['allowedPorts']}
         except Exception as err:

@@ -16,8 +16,8 @@ def handle_cli():
     parser.add_argument(
         '--namespace',
         type=str,
-        default='cortx',
-        help='Operator Namespace, default: cortx'
+        default='dashboard',
+        help='Operator Namespace, default: dashboard'
     )
     parser.add_argument(
         '--cr-name',
