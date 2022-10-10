@@ -1,0 +1,15 @@
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  creationTimestamp: null
+  name: dashboard-elasticsearch-es-elastic-user
+  namespace: elastic
+spec:
+  encryptedData:
+    elastic: AgDDPS7PRua3ycKEaAyhZ4qLma83t6B0TbZYb7hPJR5C6Fc/VxPm5UlHkfoBspElijFrAKCUfRzYn8wnuv1Ge6DkwYliEBbA+HL7rE0igJWoMe0LfEJ4IqZ55PKWe7UcQTVVhDxEYffq8zDA43br1QKaSTvcLGTGVCFwAYCzXIj4uEMffLLj7XKPSgT+pPqPQjRKDiLpXhp+lVLBJB6LLKW885oteLv0kiSI0KdicO+v1Bn3CW70TjasqDCU8w96vCMtbENHW5cRniihRSDgPnjmOEryQwILi+IGbkwKfvROzwxn0ECmYHUtDLCvtxqcyPoXqxFYQJITM18lhgxp3EKl1wqy0SsRnqAkBr5JMVgAoSEVGXGlqOHUKGoDnDwW/YIiwTgjtSEB8qNyXEyBGmikEMZfm01xJwGRpmd8aQqj5WLFCO8y+Lff4VMwABkK28E+dBqLXWYxuoVnxPVNSYWeFYdwcX0C8yIOdhIRtH4t3UrWeYPHUfC2OVd9iNSTtASjY2z+yaCv5k83XPmul4a3vZR21EXXIF/HyGjKWQ8Mbt6pYUyXxcNj9pdytYvoEyTZHzaA3fBM0uSXpsM9nf6d99cBhJw0CHUqJ2+VJqC9GvjDUmuHusA6JdrysTPC9O2swOWKUdIyrXvmrMmxtcBMLmjXgyI9TbNdUnQMj9KNkf8i/XajSqzlsay6pDDYjE/UpsrmG2B8xqEGLw==
+  template:
+    metadata:
+      creationTimestamp: null
+      name: dashboard-elasticsearch-es-elastic-user
+      namespace: elastic
+
