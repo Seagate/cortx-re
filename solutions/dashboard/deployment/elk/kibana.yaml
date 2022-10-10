@@ -1,13 +1,13 @@
 apiVersion: kibana.k8s.elastic.co/v1
 kind: Kibana
 metadata:
-  name: kibana
-  namespace: elasticsearch
+  name: dashboard-kibana
+  namespace: elastic
 spec:
   version: 8.4.1
   count: 1
   elasticsearchRef:
-    name: elasticsearch
+    name: dashboard-elasticsearch
   http:
     service:
       spec:
@@ -15,3 +15,4 @@ spec:
     tls:
       selfSignedCertificate:
         disabled: true
+

@@ -1,17 +1,14 @@
 apiVersion: elasticsearch.k8s.elastic.co/v1
 kind: Elasticsearch
 metadata:
-  name: elasticsearch
-  namespace: elasticsearch
+  name: dashboard-elasticsearch
+  namespace: elastic
 spec:
   version: 8.4.1
   http:
     service:
       spec:
         type: NodePort
-        ports:
-          - port: 9200
-            nodePort: 30080
     tls:
       selfSignedCertificate:
         disabled: true
