@@ -8,10 +8,15 @@ spec:
   count: 1
   elasticsearchRef:
     name: dashboard-elasticsearch
+    serviceName: dashboard-elasticsearch-es-internal-http
   http:
     service:
       spec:
         type: NodePort
+        ports:
+          - port: 5601
+            targetPort: 5601
+            nodePort: 30081
     tls:
       selfSignedCertificate:
         disabled: true

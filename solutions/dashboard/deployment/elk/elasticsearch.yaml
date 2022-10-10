@@ -9,6 +9,10 @@ spec:
     service:
       spec:
         type: NodePort
+        ports:
+          - port: 9200
+            targetPort: 9200
+            nodePort: 30080
     tls:
       selfSignedCertificate:
         disabled: true
