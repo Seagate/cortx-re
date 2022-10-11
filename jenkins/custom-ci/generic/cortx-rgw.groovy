@@ -10,7 +10,7 @@ pipeline {
         BUILD_LOCATION = "/var/log/custom-ci-jenkins/cortx-rgw-build/${BUILD_NUMBER}"
         BUILD_OS = "${os_version}"
         VM_BUILD = false
-        CORTX_RGW_OPTIMIZED_BUILD = false
+        CORTX_RGW_OPTIMIZED_BUILD = true
         INSTALL_MOTR = true
 
         component = "cortx-rgw"
