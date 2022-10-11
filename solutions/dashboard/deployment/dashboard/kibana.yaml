@@ -1,0 +1,23 @@
+apiVersion: kibana.k8s.elastic.co/v1
+kind: Kibana
+metadata:
+  name: dashboard-kibana
+  namespace: elastic
+spec:
+  version: 8.4.1
+  count: 1
+  elasticsearchRef:
+    name: dashboard-elasticsearch
+    serviceName: dashboard-elasticsearch-es-internal-http
+  http:
+    service:
+      spec:
+        type: NodePort
+        ports:
+          - port: 5601
+            targetPort: 5601
+            nodePort: 30081
+    tls:
+      selfSignedCertificate:
+        disabled: true
+
