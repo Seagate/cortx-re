@@ -207,6 +207,7 @@ pipeline {
         always {
             script {
                 junit allowEmptyResults: true, testResults: '*report.xml'
+                qaSanity_status = "SKIPPED"
                 echo "${env.cortxCluster_status}"
                 echo "${env.qaSanity_status}"
                 env.changeset_log_url = sh( script: "echo ${env.changeset_log_url}artifact/CHANGESET.md/*view*/", returnStdout: true)
@@ -240,6 +241,13 @@ pipeline {
                     env.deployment_result = "SUCCESS"
                     env.sanity_result = "UNSTABLE"
                     currentBuild.result = "UNSTABLE"
+                } else if ( "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "SKIPPED" ) {
+                    MESSAGE = "K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=Passed, SanityTest=${env.Sanity_status}, Regression=${env.Regression_overall_status}"
+                    ICON = "unstable.gif"
+                    STATUS = "UNSTABLE"
+                    env.deployment_result = "SUCCESS"
+                    env.sanity_result = "SKIPPED"
+                    currentBuild.result = "UNSTABLE"    
                 } else {
                     MESSAGE = "K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=unstable, SanityTest=unstable, Regression=unstable"
                     ICON = "unstable.gif"
