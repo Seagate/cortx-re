@@ -208,6 +208,8 @@ pipeline {
             script {
                 junit allowEmptyResults: true, testResults: '*report.xml'
                 env.qaSanity_status = "SKIPPED"
+                env.Sanity_status = "SKIPPED"
+                env.Regression_overall_status = "SKIPPED"
                 echo "${env.cortxCluster_status}"
                 echo "${env.qaSanity_status}"
                 env.changeset_log_url = sh( script: "echo ${env.changeset_log_url}artifact/CHANGESET.md/*view*/", returnStdout: true)
