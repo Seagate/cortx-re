@@ -34,7 +34,7 @@ pipeline {
         // OS_VERSION, singlenode_host, threenode_hosts, COMPONENTS_BRANCH and CORTX_SCRIPTS_BRANCH are manually created parameters in jenkins job.
         BUILD_LOCATION = "/var/log/pr-build/cortx-rgw-build/${BUILD_NUMBER}"
         BUILD_OS = "${OS_VERSION}"
-        CORTX_RGW_OPTIMIZED_BUILD = false
+        CORTX_RGW_OPTIMIZED_BUILD = true
         INSTALL_MOTR = true
         PR_BUILD = true
         PR_ID = "${ghprbPullId}"
