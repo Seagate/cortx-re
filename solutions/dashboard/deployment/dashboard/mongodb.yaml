@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: dashboard-mongodb
+  namespace: dashboard
+spec:
+  selector:
+    matchLabels:
+      name: dashboard-mongodb
+  serviceName: dashboard-mongodb
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: dashboard-mongodb
+        namespace: dashboard
+    spec:
+      containers:
+        - name: dashboard-mongodb
+          image: mongo:6.0.2
+          imagePullPolicy: Always
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  key: mongodb_username
+                  name: dashboard-secret
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: mongodb_password
+                  name: dashboard-secret
+          ports:
+            - containerPort: 27017
+              name: mongo
+          volumeMounts:
+            - name: data
+              mountPath: /data/db
+          resources:
+            limits:
+              memory: "768Mi"
+              cpu: "5000m"
+            requests:
+              memory: "256Mi"
+              cpu: "300m"
+          securityContext:
+            allowPrivilegeEscalation: false
+      terminationGracePeriodSeconds: 10
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: local-path
+        resources:
+          requests:
+            storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dashboard-mongodb
+  namespace: dashboard
+spec:
+  selector:
+    name: dashboard-mongodb
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - port: 27017
+      targetPort: 27017
+      protocol: TCP
