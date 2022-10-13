@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020 Seagate Technology LLC and/or its Affiliates
+# Copyright (c) 2022 Seagate Technology LLC and/or its Affiliates
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,52 +17,42 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 #!/bin/bash
+set -eu -o pipefail
 
-REPO="seagate/cortx"
-ISO_LOCATION="/root/ISO"
+#Install required packages
+yum install libmodulemd -y
+for package in epel-release jq python3-pip createrepo yum-utils; do rpm -q $package || yum install $package -y; done
+export LC_ALL=C.UTF-8 && export LANG=C.UTF-8
+yum-config-manager --set-enabled powertools
+
+pip3 show githubrelease || (pip3 install click==7.1.2 && pip3 install githubrelease==1.5.8)
+
+REPO=${1:-seagate/cortx-motr}
+REPO_LATEST_RELEASE=$(curl -s https://api.github.com/repos/"$REPO"/releases/latest  | jq ".. .tag_name? // empty" | tr -d '"')
+RELEASE=${2:-$REPO_LATEST_RELEASE}
 RELEASE_REPO_LOCATION="/var/tmp/$RELEASE"
-UPLOADS_REPO_LOCATION="/var/tmp/uploads"
-RELEASE_REPO_FILE="$RELEASE.repo"
+RELEASE_REPO_FILE="/etc/yum.repos.d/$(echo "$RELEASE_REPO_LOCATION" | sed -e 's/\///' -e 's/\//_/g').repo"
 
+#Download packages from GitHub Release
+echo -e "\n################################################################################"
+echo -e "### REPO=$REPO"
+echo -e "### RELEASE=$RELEASE"
+echo -e "################################################################################\n"
+rm -rf "$RELEASE_REPO_LOCATION" && mkdir "$RELEASE_REPO_LOCATION" || exit
+pushd "$RELEASE_REPO_LOCATION" || exit
+        /usr/local/bin/githubrelease asset "$REPO" download "$RELEASE" && /bin/createrepo -v . || exit
+popd || exit
 
-function _create_local_repo () {
-        REPO_LOCATION=$1
-        DOWNLOAD_RELEASE=$2
-        ISO_DIR=$ISO_LOCATION/$(echo $REPO_LOCATION | awk -F'/' '{print $NF}')
-        mount | grep $REPO_LOCATION && umount -f $REPO_LOCATION
-        rm -rf $REPO_LOCATION
-        mkdir $REPO_LOCATION
-        mkdir -p $ISO_DIR && pushd $ISO_DIR
-        githubrelease --github-token $GITHUB_TOKEN asset $REPO download $DOWNLOAD_RELEASE
-        mount -o loop *.iso $REPO_LOCATION || exit
-        popd
-}
-
-function _create_local_repo_file () {
-rm -rf $RELEASE_REPO_FILE
-cat << EOF >> $RELEASE_REPO_FILE
-[releases_$RELEASE]
-name=Cortx $RELEASE  Repository
-baseurl=file://$RELEASE_REPO_LOCATION
-gpgkey=file://$RELEASE_REPO_LOCATION/RPM-GPG-KEY-Seagate
-gpgcheck=1
-enabled=1
-
-[uploads]
-name=Cortx Uploads Repository
-baseurl=file://$UPLOADS_REPO_LOCATION
-gpgcheck=0
-enabled=1
-EOF
-}
-
-function _setup_local_repo () {
-cp -f $RELEASE_REPO_FILE /etc/yum.repos.d/
+#Setup yum repository
+rm -f $RELEASE_REPO_FILE
+yum-config-manager --add-repo file://"$RELEASE_REPO_LOCATION"
+echo "gpgcheck=0" >> "$RELEASE_REPO_FILE"
 yum clean all; rm -rf /var/cache/yum
-}
 
+#Setup Python repository and install required packages
+mkdir -p "$RELEASE_REPO_LOCATION"/python-deps && tar -xzf "$RELEASE_REPO_LOCATION"/python-deps-*tar.gz -C "$RELEASE_REPO_LOCATION"/python-deps --strip-components=1
 
-_create_local_repo $RELEASE_REPO_LOCATION $RELEASE
-_create_local_repo $UPLOADS_REPO_LOCATION $UPLOADS
-_create_local_repo_file
-_setup_local_repo
+#Install cortx-utils dependencies
+pip3 install -i file:///"$RELEASE_REPO_LOCATION"/python-deps -r https://raw.githubusercontent.com/Seagate/cortx-utils/main/py-utils/python_requirements.ext.txt
+pip3 install -i file:///"$RELEASE_REPO_LOCATION"/python-deps -r https://raw.githubusercontent.com/Seagate/cortx-utils/main/py-utils/python_requirements.txt
+
