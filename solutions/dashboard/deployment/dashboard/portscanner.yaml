@@ -52,8 +52,6 @@ spec:
   scanObject: service
   allowedPorts:
     [
-      53,
-      80,
       443,
       2181,
       2888,
