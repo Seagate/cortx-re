@@ -279,10 +279,10 @@ pipeline {
                     //mailRecipients = "cortx.sme@seagate.com, manoj.management.team@seagate.com, CORTX.SW.Architecture.Team@seagate.com, CORTX.DevOps.RE@seagate.com"
                 }
                 else if ( params.EMAIL_RECIPIENTS == "ALL" && currentBuild.result == "UNSTABLE" ) {
-                    mailRecipients = "Cortx.Perf@seagate.com, cortx-cicd@seagate.com"
+                    mailRecipients = "Cortx.Perf@seagate.com,  CORTX.DevOps.RE@seagate.com"
                 }
                 else if ( params.EMAIL_RECIPIENTS == "ALL" && currentBuild.result == "FAILURE" ) {
-                    mailRecipients = "cortx-cicd@seagate.com"
+                    mailRecipients = " CORTX.DevOps.RE@seagate.com"
                 }
                 else if ( params.EMAIL_RECIPIENTS == "DEVOPS" && currentBuild.result == "SUCCESS" ) {
                     mailRecipients = "CORTX.All@seagate.com, CORTX.DevOps.RE@seagate.com"
