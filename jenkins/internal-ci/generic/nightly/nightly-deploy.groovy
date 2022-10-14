@@ -246,13 +246,13 @@ pipeline {
                 } else if ( "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "SKIPPED" ) {
                     MESSAGE = "K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=Passed, SanityTest=${env.Sanity_status}, Regression=${env.Regression_overall_status}"
                     ICON = "unstable.gif"
-                    STATUS = "UNSTABLE"
+                    STATUS = "SUCCESS"
                     env.deployment_result = "SUCCESS"
                     env.sanity_result = "SKIPPED"
-                    currentBuild.result = "UNSTABLE"    
+                    currentBuild.result = "SUCCESS"    
                 } else {
                     MESSAGE = "K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=unstable, SanityTest=unstable, Regression=unstable"
-                    ICON = "unstable.gif"
+                    ICON = "accept.gif"
                     STATUS = "UNSTABLE"
                     env.sanity_result = "UNSTABLE"
                     env.deployment_result = "UNSTABLE"
