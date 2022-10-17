@@ -1,5 +1,4 @@
 import os
-import asyncio
 from issues import Issues
 from mongodb import MongoDB
 
@@ -8,7 +7,7 @@ class Main:
     def __init__(self):
         pass
 
-    async def main(self):
+    def main(self):
 
         # Base64
         mongodb_credentials = {
@@ -23,9 +22,19 @@ class Main:
         mongodb.create_connection_url(
             credentials=mongodb_credentials, connection_url=mongodb_connection_url)
         mongodb.handle_mongodb()
-        # Create Initialization Documents
+
+        # Read MongoDB Collections
+        # and Create Initialization Documents
         # Because Logstash uses first document from mongodb for initialization
-        mongodb.insertInitializationDocuments()
+        if not mongodb.read_collection(mongodb.repository_collection):
+            mongodb.insertRepositoryInitializationDocuments()
+        else:
+            print("Not initializing repository document as data found in it")
+
+        if not mongodb.read_collection(mongodb.metadata_collection):
+            mongodb.insertMetadataInitializationDocuments()
+        else:
+            print("Not initializing metadata document as data found in it")
 
         # Headers
         headers = {
@@ -35,28 +44,23 @@ class Main:
         }
 
         # Repositories
-        while True:
-            # Getting repositories list from CODACY
-            # repos = Repositories(headers=headers)
-            # repositories = repos.getRepositories()
-            # repositories.sort()
 
-            repositories = ['cortx', 'cortx-ha', 'cortx-hare', 'cortx-k8s', 'cortx-manager',
-                            'cortx-mio', 'cortx-motr', 'cortx-motr-apps', 'cortx-prvsnr', 'cortx-re', 'cortx-rgw',
-                            'cortx-rgw-integration', 'cortx-test']
-            print(repositories)
+        # Getting repositories list from CODACY
+        # repos = Repositories(headers=headers)
+        # repositories = repos.getRepositories()
+        # repositories.sort()
 
-            # issues
-            issues = Issues(repositories=repositories,
-                            mongodb=mongodb, headers=headers)
-            issues.handle_issues()
+        repositories = ['cortx', 'cortx-ha', 'cortx-hare', 'cortx-k8s', 'cortx-manager',
+                        'cortx-mio', 'cortx-motr', 'cortx-motr-apps', 'cortx-prvsnr', 'cortx-re', 'cortx-rgw',
+                        'cortx-rgw-integration', 'cortx-test']
+        print(repositories)
 
-            await asyncio.sleep(86400)
+        # issues
+        issues = Issues(repositories=repositories,
+                        mongodb=mongodb, headers=headers)
+        issues.handle_issues()
 
 
 if __name__ == "__main__":
     main = Main()
-
-    loop = asyncio.get_event_loop()
-    loop.create_task(main.main())
-    loop.run_forever()
+    main.main()
