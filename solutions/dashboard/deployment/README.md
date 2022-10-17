@@ -42,6 +42,17 @@ Username: admin
 Password:
 'admin:login' logged in successfully
 ```
+- Create ElasticSearch Application using CLI
+```
+argocd app create elasticsearch \
+--repo https://github.com/shailesh-vaidya/cortx-re \
+--revision argo-codacy \
+--path ./solutions/dashboard/deployment/elasticsearch \
+--dest-namespace elastic \
+--dest-server https://kubernetes.default.svc \
+--directory-recurse \
+--sync-policy auto
+```
 - Create Dashboard application using CLI
 ```
 argocd app create dashboard \
@@ -50,13 +61,12 @@ argocd app create dashboard \
 --path ./solutions/dashboard/deployment/dashboard \
 --dest-namespace dashboard \
 --dest-server https://kubernetes.default.svc \
---directory-recurse
+--directory-recurse \
+--sync-policy auto
 ```
-- Sync Application with Git State
-```
-argocd app sync dashboard
-```
-- Visit Kibana Dashboad at `http://<VM IP>:<NodePort>` and login using username as `elastic`. Use below command to fetch password. 
+
+- Validate that both `elasticsearch` and `dashboard` applications are healthy in Argo CD UI at `http://<VM IP>:<Argo CD NodePort>`
+- Visit Kibana Dashboad at `http://<VM IP>:30081` and login using username as `elastic`. Use below command to fetch password. 
 ```
 kubectl get secret dashboard-elasticsearch-es-elastic-user -o go-template='{{.data.elastic | base64decode}}' -n elastic
 ```
