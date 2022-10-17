@@ -40,25 +40,9 @@ class MongoDB:
         except Exception as err:
             print("\nMongo Exception: ", err)
 
-    def insertInitializationDocuments(self):
+    def insertRepositoryInitializationDocuments(self):
         today = date.today()
         today = today.strftime("%d-%b-%Y")
-
-        metadata_document = {
-            "all_categories": [{
-                "total_issues": -1
-            }],
-            "security": [{
-                "total_issues": -1,
-                "minor_issues": -1,
-                "major_issues": -1,
-                "critical_issues": -1,
-            }],
-            "codacy_link": "none",
-            "identifier": CODACY_METADATA_INDEX_IDENTIFIER,
-            "created_date": today,
-            "created_at": datetime.now(),
-        }
 
         repositories_document = {
             "repository": "none",
@@ -80,17 +64,39 @@ class MongoDB:
             "created_at": datetime.now(),
         }
 
-        # Inserting Metadata Document
-        try:
-            self.create_document(data=metadata_document,
-                                 collection=self.metadata_collection)
-        except Exception as err:
-            print("Initialization Document Insertion Error: ", err)
-
         # Inserting Repositories Document
         try:
             self.create_document(data=repositories_document,
                                  collection=self.repository_collection)
+            print("Repositories Document Initialized Successfully!")
+        except Exception as err:
+            print("Initialization Document Insertion Error: ", err)
+
+    def insertMetadataInitializationDocuments(self):
+        today = date.today()
+        today = today.strftime("%d-%b-%Y")
+
+        metadata_document = {
+            "all_categories": [{
+                "total_issues": -1
+            }],
+            "security": [{
+                "total_issues": -1,
+                "minor_issues": -1,
+                "major_issues": -1,
+                "critical_issues": -1,
+            }],
+            "codacy_link": "none",
+            "identifier": CODACY_METADATA_INDEX_IDENTIFIER,
+            "created_date": today,
+            "created_at": datetime.now(),
+        }
+
+        # Inserting Metadata Document
+        try:
+            self.create_document(data=metadata_document,
+                                 collection=self.metadata_collection)
+            print("Metadata Collection Initialized Successfully!")
         except Exception as err:
             print("Initialization Document Insertion Error: ", err)
 
@@ -103,12 +109,12 @@ class MongoDB:
                 print("Document Not Found")
                 return False
 
-            for record in resp:
-                print("Record -> {}".format(record))
-                self.document_id = record["_id"]
+            # If cursor is not empty then return true
+            resp = list(resp)
+            print(resp)
+            if len(resp) > 0:
                 return True
 
-            print("Document Not Found")
             return False
         except Exception as err:
             print("Read Document Exception: ", err)
