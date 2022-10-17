@@ -136,6 +136,7 @@ pipeline {
         }
 
         stage ("K8s QA Sanity") {
+            when { expression { false } }
             steps {
                 script {
                     catchError(stageResult: 'FAILURE') {
@@ -206,6 +207,9 @@ pipeline {
         always {
             script {
                 junit allowEmptyResults: true, testResults: '*report.xml'
+                env.qaSanity_status = "SKIPPED"
+                env.Sanity_status = "SKIPPED"
+                env.Regression_overall_status = "SKIPPED"
                 echo "${env.cortxCluster_status}"
                 echo "${env.qaSanity_status}"
                 env.changeset_log_url = sh( script: "echo ${env.changeset_log_url}artifact/CHANGESET.md/*view*/", returnStdout: true)
@@ -239,9 +243,16 @@ pipeline {
                     env.deployment_result = "SUCCESS"
                     env.sanity_result = "UNSTABLE"
                     currentBuild.result = "UNSTABLE"
+                } else if ( "${env.cortxCluster_status}" == "SUCCESS" && "${env.qaSanity_status}" == "SKIPPED" ) {
+                    MESSAGE = "K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=Passed, SanityTest=${env.Sanity_status}, Regression=${env.Regression_overall_status}"
+                    ICON = "unstable.gif"
+                    STATUS = "SUCCESS"
+                    env.deployment_result = "SUCCESS"
+                    env.sanity_result = "SKIPPED"
+                    currentBuild.result = "SUCCESS"    
                 } else {
                     MESSAGE = "K8s Build#${build_id} ${env.numberofnodes}Node Deployment Deployment=unstable, SanityTest=unstable, Regression=unstable"
-                    ICON = "unstable.gif"
+                    ICON = "accept.gif"
                     STATUS = "UNSTABLE"
                     env.sanity_result = "UNSTABLE"
                     env.deployment_result = "UNSTABLE"
@@ -268,10 +279,10 @@ pipeline {
                     //mailRecipients = "cortx.sme@seagate.com, manoj.management.team@seagate.com, CORTX.SW.Architecture.Team@seagate.com, CORTX.DevOps.RE@seagate.com"
                 }
                 else if ( params.EMAIL_RECIPIENTS == "ALL" && currentBuild.result == "UNSTABLE" ) {
-                    mailRecipients = "Cortx.Perf@seagate.com, cortx-cicd@seagate.com"
+                    mailRecipients = "Cortx.Perf@seagate.com,  CORTX.DevOps.RE@seagate.com"
                 }
                 else if ( params.EMAIL_RECIPIENTS == "ALL" && currentBuild.result == "FAILURE" ) {
-                    mailRecipients = "cortx-cicd@seagate.com"
+                    mailRecipients = " CORTX.DevOps.RE@seagate.com"
                 }
                 else if ( params.EMAIL_RECIPIENTS == "DEVOPS" && currentBuild.result == "SUCCESS" ) {
                     mailRecipients = "CORTX.All@seagate.com, CORTX.DevOps.RE@seagate.com"
