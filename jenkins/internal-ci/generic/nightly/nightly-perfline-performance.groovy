@@ -140,7 +140,7 @@ pipeline {
                     mailRecipients = "Motr4-Scrum-Team@seagate.com, CORTX.DevOps.RE@seagate.com"
                 }
                 else if ( params.EMAIL_RECIPIENTS == "DEBUG" ) {
-                    mailRecipients = "rahul.kumar@seagate.com"
+                    mailRecipients = "CORTX.DevOps.RE@seagate.com"
                 }
                 env.build_stage = "${build_stage}"
                 env.cluster_status = "${PerflineWorkloadStatusHTML}"
