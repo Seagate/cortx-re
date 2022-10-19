@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: dashboard-codacy
-          image: docker.io/sanket02092001/scs:1.0.0
+          image: docker.io/sanket02092001/dev-scs:1.0.0
           imagePullPolicy: Always
           env:
             - name: MONGODB_USERNAME

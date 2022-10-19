@@ -1,171 +1,210 @@
-from datetime import date, datetime
-from mongodb import MongoDB
-from const import CODACY_REPOSITORY_INDEX_IDENTIFIER, CODACY_METADATA_INDEX_IDENTIFIER, PROVIDER, ORGANIZATION
 import requests
+from const import CODACY_REPOSITORY_INDEX_IDENTIFIER, CODACY_METADATA_INDEX_IDENTIFIER, PROVIDER, ORGANIZATION
+from datetime import date
+from mongodb import MongoDB
+from repositories import Repositories
 
 
 class Issues:
-    def __init__(self, repositories, mongodb: MongoDB, headers: dict):
+    def __init__(self, repositories: list, mongodb: MongoDB, main_date: date, headers: dict):
         self.repositories = repositories
+        self.main_date = main_date
         self.mongodb = mongodb
-
-        self.all_category_total_issues = 0
-
-        self.total_security_issues = 0
-        self.total_security_minor = 0
-        self.total_security_major = 0
-        self.total_security_critical = 0
-
         self.headers = headers
 
-    def getRepositoryIssuesCategories(self, repository):
-        print("Getting all category issues")
-
-        resp = None
-        repo_category_data = {}
-        categories = []
-        issues_count = 0
-
-        try:
-            resp = requests.get(
-                'https://app.codacy.com/api/v3/analysis/organizations/%s/%s/repositories/%s/category-overviews' % (
-                    PROVIDER, ORGANIZATION, repository),
-                params={},
-                headers=self.headers)
-
-            resp = resp.json()
-
-            for item in resp['data']:
-                if item['totalResults'] > 0:
-                    issues_count += item['totalResults']
-                    category_data = {}
-                    category_data[item['category']
-                                  ['categoryType']] = item['totalResults']
-                    categories.append(category_data)
-
-            self.all_category_total_issues += issues_count
-
-            repo_category_data = {
-                "repository_total_issues": issues_count,
-                "categories": categories
-            }
-        except Exception as err:
-            print("Search Issues Categories Exception: ", err)
-
-        return repo_category_data
-
-    def getSecurityIssues(self, repository):
-        print("Getting security issues")
-
-        minor = 0
-        major = 0
-        critical = 0
-
-        params = {}  # cursor will dynamically added
-        repository_security_data = {}
-        try:
-            while True:
-                resp = requests.post(
-                    'https://app.codacy.com/api/v3/analysis/organizations/%s/%s/repositories/%s/issues/search' % (
-                        PROVIDER, ORGANIZATION, repository),
-                    params=params,
-                    json={
-                        "categories": [
-                            "Security"
-                        ]
-                    },
-                    headers=self.headers)
-
-                resp = resp.json()
-
-                # Looping through issues to find counts
-                for issue in resp['data']:
-                    severityLevel = issue['patternInfo']['severityLevel']
-
-                    if severityLevel == 'Info':  # Minor
-                        minor += 1
-                    elif severityLevel == 'Warning':  # Major
-                        major += 1
-                    elif severityLevel == 'Error':  # Critical
-                        critical += 1
-
-                # Check if next is there or not
-                if "cursor" in resp['pagination']:
-                    params['cursor'] = resp['pagination']['cursor']
-                    print("Going to page-", resp['pagination']['cursor'])
-                else:
-                    break
-
-            # Collecting all data
-            repository_security_data = {
-                "issues": minor+major+critical,
-                "minor": minor,
-                "medium": major,
-                "critical": critical
-            }
-
-            self.total_security_issues += minor+major+critical
-            self.total_security_minor += minor
-            self.total_security_major += major
-            self.total_security_critical += critical
-        except Exception as err:
-            print("Search Issues Exception: ", err)
-
-        return repository_security_data
-
-    def handle_issues(self):
-        repo_curr_index = 1
-
-        today = date.today()
-        complete_date = today.strftime("%d-%b-%Y")
-        month_year = today.strftime("%b-%Y")
-
-        for repository in self.repositories:
-            print("\n(" + str(repo_curr_index) + "/" +
-                  str(len(self.repositories)) + ")")
-            print("Repository: {}".format(repository))
-            category_issues = self.getRepositoryIssuesCategories(
-                repository=repository)
-            security_issues = self.getSecurityIssues(repository=repository)
-
-            repositories_document = {
-                "repository": repository,
-                "categories": category_issues['categories'],
-                "all_categories": [{
-                    "total_issues": category_issues['repository_total_issues']
-                }],
-                "security": [security_issues],
-                "codacy_repository_link": "https://app.codacy.com/gh/Seagate/" + repository + "/issues",
-                "identifier": CODACY_REPOSITORY_INDEX_IDENTIFIER,
-                "created_date": complete_date,
-                "created_month_year": month_year,
-                "created_at": datetime.now(),
-            }
-
-            print("Repository Document: {}".format(repositories_document))
-            self.mongodb.create_document(
-                data=repositories_document, collection=self.mongodb.repository_collection)
-            print("")
-            repo_curr_index += 1
-
-        metadata_document = {
-            "all_categories": [{
-                "total_issues": self.all_category_total_issues
-            }],
-            "security": [{
-                "total_issues": self.total_security_issues,
-                "minor_issues": self.total_security_minor,
-                "major_issues": self.total_security_major,
-                "critical_issues": self.total_security_critical,
-            }],
-            "codacy_link": "https://app.codacy.com/gh/Seagate/",
-            "identifier": CODACY_METADATA_INDEX_IDENTIFIER,
-            "created_date": complete_date,
-            "created_month_year": month_year,
-            "created_at": datetime.now(),
+        self.levelMap = {
+            "Info": "Minor",
+            "Warning": "Medium",
+            "Error": "Critical"
+        }
+        self.metadata_categories = {
+            "Security": 0,
+            "ErrorProne": 0,
+            "Performance": 0,
+            "CodeStyle": 0,
+            "Compatibility": 0,
+            "CodeComplexity": 0,
+            "Documentation": 0,
+            "UnusedCode": 0
+        }
+        self.metadata_levels_security = {
+            "All": 0,
+            "Minor": 0,
+            "Medium": 0,
+            "Critical": 0
+        }
+        self.metadata_levels_all = {
+            "All": 0,
+            "Minor": 0,
+            "Medium": 0,
+            "Critical": 0
         }
 
-        print("Metadata Document: {}".format(metadata_document))
-        self.mongodb.create_document(
-            data=metadata_document, collection=self.mongodb.metadata_collection)
+    def getRepoIssuesData(self, repository_name, params, body):
+        resp = requests.post('https://app.codacy.com/api/v3/analysis/organizations/%s/%s/repositories/%s/issues/search'
+                             % (PROVIDER, ORGANIZATION, repository_name),
+                             params=params,
+                             json=body,
+                             headers=self.headers)
+
+        # Get json data
+        json_resp = resp.json()
+        return json_resp
+
+    def extractDataFromIssues(self, issues: list, categories: dict, levels_all: dict, levels_security: dict):
+
+        # All issues Count
+        levels_all["All"] += len(issues)
+
+        # Iterate over issues
+        for issue in issues:
+            pattern_info = issue['patternInfo']
+
+            # Categories
+            categories[pattern_info['category']] += 1
+
+            # Levels All
+            levels_all[self.levelMap[pattern_info['level']]] += 1
+
+            # Levels Security
+            if pattern_info['category'] == "Security":
+                levels_security["All"] += 1
+                levels_security[self.levelMap[pattern_info['level']]] += 1
+
+    def getIssues(self):
+        repo_cnt = 1
+
+        # Iterate over repositories
+        for repository in self.repositories:
+            print("\n\n(" + str(repo_cnt) + "/" +
+                  str(len(self.repositories)) + ")")
+            print("Repository: ", repository['repository']['name'])
+
+            repo_cnt += 1
+
+            # Setting up variables
+            params = {}
+
+            body = {
+                "branchName": repository['repository']['defaultBranch']['name']
+            }
+
+            categories = {
+                "Security": 0,
+                "ErrorProne": 0,
+                "Performance": 0,
+                "CodeStyle": 0,
+                "Compatibility": 0,
+                "CodeComplexity": 0,
+                "Documentation": 0,
+                "UnusedCode": 0
+            }
+
+            levels_security = {
+                "All": 0,
+                "Minor": 0,
+                "Medium": 0,
+                "Critical": 0
+            }
+
+            levels_all = {
+                "All": 0,
+                "Minor": 0,
+                "Medium": 0,
+                "Critical": 0
+            }
+
+            # To get all issues
+            while True:
+                if "cursor" in params:
+                    print("Page: ", params['cursor'])
+
+                try:
+                    # Get Issues
+                    json_resp = self.getRepoIssuesData(
+                        repository['repository']['name'], params, body)
+                except Exception as err:
+                    print("Exception: ", err)
+                    raise
+
+                # Extract data from issues response
+                issues_data = json_resp['data']
+                pagination = json_resp['pagination']
+
+                # Extract data from issues
+                self.extractDataFromIssues(issues=issues_data, categories=categories,
+                                           levels_all=levels_all, levels_security=levels_security)
+
+                # Pagination
+                if "cursor" not in pagination:
+                    break
+
+                params['cursor'] = pagination['cursor']
+
+            # Creating Final Repository Object
+            report = {
+                "coverage": repository['coverage']
+            }
+
+            if "grade" in repository:
+                report["grade"] = repository["grade"]
+
+            if "gradeLetter" in repository:
+                report["gradeLetter"] = repository["gradeLetter"]
+
+            repository_object = {
+                "repository": [{
+                    "id": repository['repository']['repositoryId'],
+                    "name": repository['repository']['name'],
+                    "visibility": repository['repository']['visibility'],
+                    "lastUpdated": repository['repository']['lastUpdated']
+                }],
+                "branch": [{
+                    "id": repository['repository']['defaultBranch']['id'],
+                    "name": repository['repository']['defaultBranch']['name'],
+                }],
+                "report": [report],
+                "categories": [categories],
+                "all_issues_levels": [levels_all],
+                "security_issues_levels": [levels_security],
+                "created_date": self.main_date,
+                "identifier": CODACY_REPOSITORY_INDEX_IDENTIFIER
+            }
+
+            print(repository_object)
+            # Updating Metadata
+            for key in categories:
+                self.metadata_categories[key] += categories[key]
+
+            for key in levels_all:
+                self.metadata_levels_all[key] += levels_all[key]
+
+            for key in levels_security:
+                self.metadata_levels_security[key] += levels_security[key]
+
+            # Inserting document in MongoDB
+            print("")
+            self.mongodb.create_document(
+                data=repository_object, collection=self.mongodb.repository_collection)
+            print("DONE")
+
+        # Final Clanup - Metadata
+        metadata_object = {
+            "metadata_categories": [self.metadata_categories],
+            "metadata_all_issues_levels": [self.metadata_levels_all],
+            "metadata_security_issues_levels": [self.metadata_levels_security],
+            "total_repositories": len(self.repositories),
+            "created_date": self.main_date,
+            "identifier": CODACY_METADATA_INDEX_IDENTIFIER,
+        }
+
+        print("\n\nMetadata: ", metadata_object)
+
         print("")
+        self.mongodb.create_document(
+            data=metadata_object, collection=self.mongodb.metadata_collection)
+
+
+if __name__ == "__main__":
+    repository = Repositories()
+    repos = repository.getRepositories()
