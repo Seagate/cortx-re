@@ -117,7 +117,7 @@ pipeline {
 
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
                 
-                def mailRecipients = "shailesh.vaidya@seagate.com"
+                def mailRecipients = "CORTX.DevOps.RE@seagate.com"
                 emailext ( 
                     body: '''${SCRIPT, template="release-email.template"}''',
                     mimeType: 'text/html',
