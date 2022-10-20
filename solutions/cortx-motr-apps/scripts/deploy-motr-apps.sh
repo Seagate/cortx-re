@@ -32,17 +32,20 @@ YQ_VERSION=v4.25.1
 YQ_BINARY=yq_linux_386
 DATA_INTERFACE=ens3
 
+source ../../kubernetes/functions.sh
+
 # Install yq 4.13.3
 
 function install_yq() {
-#    add_secondary_separator "Installing yq-$YQ_VERSION"
+    add_secondary_separator "Installing yq-$YQ_VERSION"
     pip3 show yq && pip3 uninstall yq -y
-    wget https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${YQ_BINARY}.tar.gz -O - | tar xz && mv ${YQ_BINARY} /usr/bin/yq
+    wget -q https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${YQ_BINARY}.tar.gz -O - | tar xz && mv ${YQ_BINARY} /usr/bin/yq
     if [ -f /usr/local/bin/yq ]; then rm -rf /usr/local/bin/yq; fi    
     ln -s /usr/bin/yq /usr/local/bin/yq
 }
 
 function create_disks() {
+	add_secondary_separator "Create Disks"
 	dest="$HOME/var/motr"
 	mkdir -p "$dest" 
 	for i in {0..9}; do 
@@ -51,21 +54,31 @@ function create_disks() {
 }
 
 function setup_cluster() {
+	add_secondary_separator "Install CORTX Packages"
 	yum install cortx-motr cortx-motr-devel cortx-hare -y
+	
+	add_secondary_separator "Create CDF file from template and update Disk and interface details"
 	cp /opt/seagate/cortx/hare/share/cfgen/examples/singlenode.yaml singlenode.yaml
 	
 	for i in {0..9}; do
-	echo $dest/disk$i.img
-	sed -i 's|/dev/loop'$i'|'$dest'/disk'$i'.img|' singlenode.yaml
+		echo $dest/disk$i.img
+		sed -i 's|/dev/loop'$i'|'$dest'/disk'$i'.img|' singlenode.yaml
 	done        
 	
 	interface=$DATA_INTERFACE yq e -i '.nodes[0].data_iface = env(interface)' singlenode.yaml
+
+	add_secondary_separator "Bootstrap Cluster"
 	hctl bootstrap --mkfs singlenode.yaml
+
+	add_secondary_separator "Print Cluster Status"
 	hctl status
 }
 
 function install_motr_apps() {
+	add_secondary_separator "Install requird package for motr-apps"
 	yum install castxml autoconf automake gcc make cmake -y
+
+	add_secondary_separator "Build and Test motr-apps"
 	git clone https://github.com/Seagate/cortx-motr-apps && cd cortx-motr-apps
 	./autogen.sh
 	./configure
@@ -79,8 +92,12 @@ function remove_cluster() {
 	yum remove -y cortx-py-utils cortx-hare cortx-motr cortx-motr-devel
 }
 
+
 install_yq
+add_primary_separator "Remove existing Cluster"
 remove_cluster
+add_primary_separator "Setup CORTX Cluster"
 create_disks
 setup_cluster
+add_primary_separator "Deploy Motr Apps"
 install_motr_apps
