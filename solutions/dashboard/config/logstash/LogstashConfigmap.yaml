@@ -183,14 +183,6 @@ data:
         batch_size => 5000
         parse_method => 'simple'
       }
-      mongodb {
-        uri => 'mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_CONNECTION_URL}/codacy?authSource=admin'
-        placeholder_db_dir => '/opt/logstash/'
-        placeholder_db_name => 'logstash_sqlite.db'
-        collection => 'weekly_analysis'
-        batch_size => 5000
-        parse_method => 'simple'
-      }
     }
 
     filter {
@@ -230,18 +222,6 @@ data:
           target => "created_date"
         }
       }  
-
-      if ([identifier] == "codacy.weekly_analysis") {
-        mutate {
-          rename => { "[_id]" => "mongo_id" }
-          remove_field => [ "_id" ]
-        }
-
-        date {
-          match => ["created_date", "dd-MMM-yyyy"]
-          target => "created_date"
-        }
-      }  
     }
 
     output {
@@ -269,15 +249,6 @@ data:
       if ([identifier] == "codacy.metadata") {
         elasticsearch {
           index => "dashboard_codacy_metadata"
-          hosts => ["http://${MASTER_NODE_INTERNAL_IP}:${ELASTICSEARCH_PORT}"]
-          user => "${ELASTICSEARCH_USERNAME}"
-          password => "${ELASTICSEARCH_PASSWORD}"
-        }
-      }   
-      
-      if ([identifier] == "codacy.weekly_analysis") {
-        elasticsearch {
-          index => "dashboard_codacy_weekly_analysis"
           hosts => ["http://${MASTER_NODE_INTERNAL_IP}:${ELASTICSEARCH_PORT}"]
           user => "${ELASTICSEARCH_USERNAME}"
           password => "${ELASTICSEARCH_PASSWORD}"
