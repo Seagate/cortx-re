@@ -52,30 +52,35 @@ function create_disks() {
 
 function setup_cluster() {
 	yum install cortx-motr cortx-motr-devel cortx-hare -y
-
-cp /opt/seagate/cortx/hare/share/cfgen/examples/singlenode.yaml singlenode.yaml
-for i in {0..9}; do
-echo $dest/disk$i.img
-sed -i 's|/dev/loop'$i'|'$dest'/disk'$i'.img|' singlenode.yaml
-done        
-interface=$DATA_INTERFACE yq e -i '.nodes[0].data_iface = env(interface)' singlenode.yaml
-hctl bootstrap --mkfs singlenode.yaml
-hctl status
+	cp /opt/seagate/cortx/hare/share/cfgen/examples/singlenode.yaml singlenode.yaml
+	
+	for i in {0..9}; do
+	echo $dest/disk$i.img
+	sed -i 's|/dev/loop'$i'|'$dest'/disk'$i'.img|' singlenode.yaml
+	done        
+	
+	interface=$DATA_INTERFACE yq e -i '.nodes[0].data_iface = env(interface)' singlenode.yaml
+	hctl bootstrap --mkfs singlenode.yaml
+	hctl status
 }
 
 function install_motr_apps() {
-yum install castxml autoconf automake gcc make cmake -y
-git clone https://github.com/Seagate/cortx-motr-apps && cd cortx-motr-apps
-./autogen.sh
-./configure
-make
-make vmrcf
-make test
+	yum install castxml autoconf automake gcc make cmake -y
+	git clone https://github.com/Seagate/cortx-motr-apps && cd cortx-motr-apps
+	./autogen.sh
+	./configure
+	make
+	make vmrcf
+	make test
+}
 
-
+function remove_cluster() {
+	hctl shutdown
+	yum remove -y cortx-py-utils cortx-hare cortx-motr cortx-motr-devel
 }
 
 install_yq
+remove_cluster
 create_disks
 setup_cluster
 install_motr_apps
