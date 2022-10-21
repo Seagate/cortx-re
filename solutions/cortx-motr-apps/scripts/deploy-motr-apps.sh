@@ -30,7 +30,7 @@ set -eo pipefail
 
 YQ_VERSION=v4.25.1
 YQ_BINARY=yq_linux_386
-DATA_INTERFACE=ens3
+DATA_INTERFACE=$(route -n | awk '$1 == "0.0.0.0" {print $8}' | head -1)
 
 source ../../kubernetes/functions.sh
 
