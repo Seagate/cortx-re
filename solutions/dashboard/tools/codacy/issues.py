@@ -2,7 +2,6 @@ import requests
 from const import CODACY_REPOSITORY_INDEX_IDENTIFIER, CODACY_METADATA_INDEX_IDENTIFIER, PROVIDER, ORGANIZATION
 from datetime import date
 from mongodb import MongoDB
-from repositories import Repositories
 
 
 class Issues:
@@ -203,8 +202,3 @@ class Issues:
         print("")
         self.mongodb.create_document(
             data=metadata_object, collection=self.mongodb.metadata_collection)
-
-
-if __name__ == "__main__":
-    repository = Repositories()
-    repos = repository.getRepositories()

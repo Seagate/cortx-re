@@ -2,7 +2,7 @@ import os
 from issues import Issues
 from mongodb import MongoDB
 from repositories import Repositories
-from datetime import date, datetime
+from datetime import date
 
 
 class Main:
