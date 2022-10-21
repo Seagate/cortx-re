@@ -5,7 +5,7 @@ pipeline {
         }
     }
     
-    triggers { cron('0 22 * * 3') }
+    triggers { cron('TZ=Asia/Calcutta\n20 12 * * 5') }
 
     environment {
         GITHUB_CRED = credentials('shailesh-github')
