@@ -76,7 +76,7 @@ function setup_cluster() {
 
 function install_motr_apps() {
 	add_secondary_separator "Install requird package for motr-apps"
-	yum install castxml autoconf automake gcc make cmake openssl openssl-devel perl-XML-LibXML -y
+	yum install castxml autoconf automake gcc make cmake openssl openssl-devel perl-XML-LibXML perl-File-Slurp -y
 
 	add_secondary_separator "Build and Test motr-apps"
 	git clone https://github.com/Seagate/cortx-motr-apps && cd cortx-motr-apps
