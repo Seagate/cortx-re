@@ -88,7 +88,7 @@ function install_motr_apps() {
 }
 
 function remove_cluster() {
-	hctl shutdown
+	[[ -f /usr/bin/hctl ]] && hctl shutdown || add_secondary_separator "hctl command not available"
 	yum remove -y cortx-py-utils cortx-hare cortx-motr cortx-motr-devel
 }
 
