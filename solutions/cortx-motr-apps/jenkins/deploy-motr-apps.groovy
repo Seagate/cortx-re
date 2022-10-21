@@ -39,7 +39,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Setup CORTX rpm packages repository', script: '''
                     pushd scripts/release_support
-                        ./set-local-repo.sh $CORTX_MOTR_REPO $CORTX_MOTR_RELEASE
+                        export GITHUB_TOKEN=${GITHUB_CRED_PSW} && ./set-local-repo.sh $CORTX_MOTR_REPO $CORTX_MOTR_RELEASE
                     popd
                 '''
             }
