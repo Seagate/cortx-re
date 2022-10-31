@@ -275,22 +275,16 @@ pipeline {
                 env.CORTX_DOCKER_IMAGE = "ghcr.io/seagate/cortx-rgw:${VERSION}-${BUILD_NUMBER}"
 
                 if ( params.EMAIL_RECIPIENTS == "ALL" && currentBuild.result == "SUCCESS" ) {
-                    mailRecipients = "CORTX.All@seagate.com"
+                    mailRecipients = "john.forgan@seagate.com, sai.narasimhamurthy@seagate.com, ganesan.umanesan@seagate.com, nagakishore.kommuri@seagate.com, mandar.sawant@seagate.com, shashank.parulekar@seagate.com, CORTX.DevOps.RE@seagate.com"
                     //mailRecipients = "cortx.sme@seagate.com, manoj.management.team@seagate.com, CORTX.SW.Architecture.Team@seagate.com, CORTX.DevOps.RE@seagate.com"
                 }
                 else if ( params.EMAIL_RECIPIENTS == "ALL" && currentBuild.result == "UNSTABLE" ) {
-                    mailRecipients = "Cortx.Perf@seagate.com,  CORTX.DevOps.RE@seagate.com"
+                    mailRecipients = "john.forgan@seagate.com, sai.narasimhamurthy@seagate.com, ganesan.umanesan@seagate.com, nagakishore.kommuri@seagate.com, mandar.sawant@seagate.com, shashank.parulekar@seagate.com, CORTX.DevOps.RE@seagate.com"
                 }
                 else if ( params.EMAIL_RECIPIENTS == "ALL" && currentBuild.result == "FAILURE" ) {
-                    mailRecipients = " CORTX.DevOps.RE@seagate.com"
+                    mailRecipients = "john.forgan@seagate.com, sai.narasimhamurthy@seagate.com, ganesan.umanesan@seagate.com, nagakishore.kommuri@seagate.com, mandar.sawant@seagate.com, shashank.parulekar@seagate.com, CORTX.DevOps.RE@seagate.com"
                 }
-                else if ( params.EMAIL_RECIPIENTS == "DEVOPS" && currentBuild.result == "SUCCESS" ) {
-                    mailRecipients = "CORTX.All@seagate.com, CORTX.DevOps.RE@seagate.com"
-                }
-                else if ( params.EMAIL_RECIPIENTS == "DEVOPS" && currentBuild.result == "UNSTABLE" ) {
-                     mailRecipients = "Cortx.Perf@seagate.com, CORTX.DevOps.RE@seagate.com"
-                }
-                else if ( params.EMAIL_RECIPIENTS == "DEVOPS" && currentBuild.result == "FAILURE" ) {
+                else if ( params.EMAIL_RECIPIENTS == "DEVOPS" ) {
                     mailRecipients = "CORTX.DevOps.RE@seagate.com"
                 }
                 else if ( params.EMAIL_RECIPIENTS == "DEBUG" ) {

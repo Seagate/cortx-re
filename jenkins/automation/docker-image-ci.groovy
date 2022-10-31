@@ -1,11 +1,13 @@
 pipeline {
     agent {
         node {
-           label "docker-image-builder-${OS_VERSION}"
+           label "docker-image-builder-centos-7.9.2009"
         }
     }
     
-       environment {
+    triggers { cron('TZ=Asia/Calcutta\n20 12 * * 5') }
+
+    environment {
         GITHUB_CRED = credentials('shailesh-github')
         SERVICE_NAME = "${ENVIRONMENT == 'internal-ci' ? "cortx-build-internal-$OS_VERSION" : "cortx-build-$OS_VERSION"}"
         REPO_NAME = "${ENVIRONMENT == 'internal-ci' ? "ghcr.io/seagate/cortx-re" : "ghcr.io/seagate"}"
@@ -27,7 +29,7 @@ pipeline {
 
         choice (
             name: 'OS_VERSION', 
-            choices: ['centos-7.9.2009', 'centos-7.8.2003'],
+            choices: ['rockylinux-8.4', 'centos-7.9.2009', 'centos-7.8.2003'],
             description: 'OS Version'
         )
 
@@ -71,10 +73,13 @@ pipeline {
             }
 
         stage ('Validation') {
+            when {
+                expression { params.GITHUB_PUSH == 'yes' }
+            }
             steps {
                 script { build_stage = env.STAGE_NAME }
                                
-                checkout changelog: false, poll: false, scm: [$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: '/mnt/workspace/'], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: false, recursiveSubmodules: true, reference: '', shallow: true, trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/Seagate/cortx']]]
+                checkout changelog: false, poll: false, scm: [$class: 'GitSCM', branches: [[name: 'main']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: '/mnt/workspace/'], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: false, recursiveSubmodules: true, reference: '', shallow: true, trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/Seagate/cortx', credentialsId: 'shailesh-github']]]
 
                 sh label: 'Validate Docker image', script: '''
                 IMAGE_NAME=$(echo $SERVICE_NAME | sed 's/-c/:c/g')
@@ -109,6 +114,7 @@ pipeline {
 
         always {
             script {
+
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
                 
                 def mailRecipients = "CORTX.DevOps.RE@seagate.com"
