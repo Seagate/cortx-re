@@ -54,6 +54,8 @@ function create_disks() {
 }
 
 function setup_cluster() {
+	add_secondary_separator "Deploying Cluster on  $(</etc/redhat-release)"
+	
 	add_secondary_separator "Install CORTX Packages"
 	yum install cortx-motr cortx-motr-devel cortx-hare -y
 	
