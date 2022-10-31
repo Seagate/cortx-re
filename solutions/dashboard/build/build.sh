@@ -99,8 +99,8 @@ for SERVICE_NAME in $SERVICE
 do
 if [ "$TAG_LATEST" == "yes" ];then
         echo "Tagging generated image as latest"
-	docker tag "$(docker images $REGISTRY/$PROJECT/$SERVICE_NAME --format='{{.Repository}}:{{.Tag}}' | head -1)" $REGISTRY/$PROJECT/$SERVICE_NAME:"${TAG//$DOCKER_BUILD_BUILD/latest}"        
-	docker push $REGISTRY/$PROJECT/$SERVICE_NAME:"${TAG//$DOCKER_BUILD_BUILD/latest}"
+	docker tag "$(docker images $REGISTRY/$PROJECT/$SERVICE_NAME --format='{{.Repository}}:{{.Tag}}' | head -1)" $REGISTRY/$PROJECT/$SERVICE_NAME:"${TAG//$BUILD/latest}"        
+	docker push $REGISTRY/$PROJECT/$SERVICE_NAME:"${TAG//$BUILD/latest}"
 else
         echo "Latest tag creation skipped"
 fi
