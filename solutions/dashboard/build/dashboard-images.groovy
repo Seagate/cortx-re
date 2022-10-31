@@ -19,13 +19,13 @@ pipeline {
     }
 
     parameters {  
-        string(name: 'CORTX_RE_URL', defaultValue: 'https://github.com/Seagate/cortx-re.git', description: 'Repository URL for cortx images build.')
-        string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch for cortx images build.')
+        string(name: 'CORTX_RE_URL', defaultValue: 'https://github.com/Seagate/cortx-re.git', description: 'Repository URL for Dashboard images build.')
+        string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch for Dashboard images build.')
         
         choice (
-            choices: ['all', 'cortx-rgw', 'cortx-data', 'cortx-control'],
-            description: 'CORTX Image to be built. Defaults to all images ',
-            name: 'CORTX_IMAGE'
+            choices: ['all', 'codacy', 'portscanner'],
+            description: 'Dashboard Image to be built. Defaults to all images ',
+            name: 'DASHBOARD_IMAGE'
         )
 
         choice (
@@ -89,14 +89,14 @@ pipeline {
         stage('Build & push Image') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh encoding: 'utf-8', label: 'Build cortx docker images', script: """
+                sh encoding: 'utf-8', label: 'Build Dasboard docker images', script: """
                     pushd ./solutions/dashboard/build/
                         if [ $GITHUB_PUSH == yes ] && [ $TAG_LATEST == yes ];then
-                                sh ./build.sh -b $BUILD_NUMBER -p yes -t yes -r $DOCKER_REGISTRY -e internal-ci  -s $CORTX_IMAGE
+                                sh ./build.sh -b $BUILD_NUMBER -p yes -t yes -r $DOCKER_REGISTRY -e internal-ci  -s $DASHBOARD_IMAGE
                         elif [ $GITHUB_PUSH == yes ] && [ $TAG_LATEST == no ]; then
-                                sh ./build.sh -b $BUILD_NUMBER -p yes -t no -r $DOCKER_REGISTRY -e internal-ci  -s $CORTX_IMAGE
+                                sh ./build.sh -b $BUILD_NUMBER -p yes -t no -r $DOCKER_REGISTRY -e internal-ci  -s $DASHBOARD_IMAGE
                         else
-                                sh ./build.sh -b $BUILD_NUMBER -p no -e internal-ci  -s $CORTX_IMAGE
+                                sh ./build.sh -b $BUILD_NUMBER -p no -e internal-ci  -s $DASHBOARD_IMAGE
                         fi
                     popd
                     docker logout  
