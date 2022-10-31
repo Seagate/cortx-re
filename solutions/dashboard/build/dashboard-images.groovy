@@ -60,8 +60,8 @@ pipeline {
                 sh encoding: 'utf-8', label: 'Validate Docker pre-requisite', script: """
                    systemctl status docker
                    /usr/local/bin/docker-compose --version
+                   if docker images --format "{{.Repository}}:{{.Tag}}" | grep -E '*dashboard.*:1.0.0*' -q; then docker rmi --force \$(docker images --filter=reference='*/dashboard/*:[0-9]*' --filter=reference='*codacy*:[0-9]*' --filter=reference='*portscanner*:[0-9]*' -q); fi
                    echo 'y' | docker image prune
-                   if docker images --format "{{.Repository}}:{{.Tag}}"| grep -E '*cortx-.*:2.0.0*' -q; then docker rmi --force \$(docker images --filter=reference='*/*/cortx*:[0-9]*' --filter=reference='*cortx*:[0-9]*' -q); fi
                 """
             }
         }
