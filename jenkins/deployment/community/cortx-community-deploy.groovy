@@ -6,7 +6,7 @@ pipeline {
         }
     }
 
-    triggers { cron('0 22 * * 1,3,5') }
+    triggers { cron('TZ=Asia/Calcutta\n20 12 * * 1') }
    
     options {
         timeout(time: 360, unit: 'MINUTES')
