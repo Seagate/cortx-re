@@ -6,7 +6,7 @@ pipeline {
             label "docker-${OS_VERSION}-node"
         }
     }
-    triggers { cron('30 18 * * *') }
+    
     options { 
         skipDefaultCheckout()
         timeout(time: 180, unit: 'MINUTES')
