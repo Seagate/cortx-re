@@ -1,6 +1,8 @@
 import os
 from issues import Issues
 from mongodb import MongoDB
+from repositories import Repositories
+from datetime import date
 
 
 class Main:
@@ -43,22 +45,22 @@ class Main:
             'api-token': codacy_api_token
         }
 
-        # Repositories
-
         # Getting repositories list from CODACY
-        # repos = Repositories(headers=headers)
-        # repositories = repos.getRepositories()
-        # repositories.sort()
+        repos = Repositories(headers=headers)
+        repositories = repos.getRepositories()
 
-        repositories = ['cortx', 'cortx-ha', 'cortx-hare', 'cortx-k8s', 'cortx-manager',
-                        'cortx-mio', 'cortx-motr', 'cortx-motr-apps', 'cortx-prvsnr', 'cortx-re', 'cortx-rgw',
-                        'cortx-rgw-integration', 'cortx-test']
-        print(repositories)
+        print("Repositories: ", repositories)
+
+        # Date and time
+        today = date.today()
+        main_date = today.strftime("%d-%b-%Y")
 
         # issues
         issues = Issues(repositories=repositories,
-                        mongodb=mongodb, headers=headers)
-        issues.handle_issues()
+                        mongodb=mongodb,
+                        main_date=main_date,
+                        headers=headers)
+        issues.getIssues()
 
 
 if __name__ == "__main__":

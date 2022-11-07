@@ -12,15 +12,14 @@ class Repositories:
 
         try:
             resp = requests.get(
-                'https://app.codacy.com/api/v3/organizations/%s/%s/repositories' % (
+                'https://app.codacy.com/api/v3/analysis/organizations/%s/%s/repositories' % (
                     PROVIDER, ORGANIZATION),
-                params={
-                },
+                params={},
                 headers=self.headers)
 
             resp = resp.json()
             for repository in resp['data']:
-                self.repositories.append(repository['name'])
+                self.repositories.append(repository)
 
         except Exception as err:
             print("Repositories List Exception: ", err)
