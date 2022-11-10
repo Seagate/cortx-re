@@ -1,6 +1,6 @@
 # Jenkins As Continuous Integration Tool
 
-We use Jenkins as Continuous Integration tool. This document explains Jenkins deployment architecture and associated used cases.  
+We use Jenkins as Continuous Integration tool. This document explains Jenkins deployment architecture and associated use cases.  
 
 ## Overview 
 
