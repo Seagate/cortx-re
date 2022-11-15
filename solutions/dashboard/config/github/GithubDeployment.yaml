@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dashboard-github
+  namespace: dashboard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dashboard-github
+  template:
+    metadata:
+      labels:
+        app: dashboard-github
+    spec:
+      containers:
+        - name: dashboard-github
+          imagePullPolicy: Always
+          env:
+            - name: MONGODB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  key: mongodb_username
+                  name: dashboard-secret
+            - name: MONGODB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: mongodb_password
+                  name: dashboard-secret
+            - name: GITHUB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  key: github_token
+                  name: dashboard-secret
+            - name: MONGODB_CONNECTION_URL
+              valueFrom:
+                configMapKeyRef:
+                  key: mongodb_connection_url
+                  name: dashboard-configmap
+            - name: GITHUB_API_BASEURL
+              valueFrom:
+                configMapKeyRef:
+                  key: github_api_baseurl
+                  name: dashboard-configmap
+          image: docker.io/sanket02092001/dev-git:1.0.0
+          resources:
+            limits:
+              memory: "2048Mi"
+              cpu: "5000m"
+            requests:
+              memory: "256Mi"
+              cpu: "200m"
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - NET_RAW
+                - ALL

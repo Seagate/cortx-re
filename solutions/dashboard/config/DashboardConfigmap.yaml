@@ -8,3 +8,4 @@ data:
   master_node_internal_ip: "<master_node_internal_ip>"
   elasticsearch_nodeport: "<elasticsearch_nodeport>"
   mongodb_connection_url: "dashboard-mongodb.dashboard.svc.cluster.local:27017"
+  github_api_baseurl: "https://api.github.com"
