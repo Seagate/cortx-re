@@ -1,12 +1,11 @@
 from rate_limit_check import RateLimitCheck
-from branch import Branch
 import os
 import asyncio
 from const import GITHUB_METADATA_INDEX_IDENTIFIER
 from repositories import Repositories
 from issues_and_pulls import IssuesAndPulls
 from mongodb import MongoDB
-from datetime import date, datetime
+from datetime import datetime
 
 
 class Main:

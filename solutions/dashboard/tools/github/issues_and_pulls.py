@@ -7,7 +7,7 @@ class IssuesAndPulls:
     def __init__(self, headers, github_api_url, rateLimit=RateLimitCheck):
         self.headers = headers
         self.rateLimit = rateLimit
-        self.github_api_url=github_api_url
+        self.github_api_url = github_api_url
 
     async def getIssuesAndPulls(self, repository):
         print("Get Issues and Pulls")

@@ -83,7 +83,7 @@ class Branch:
                 await asyncio.sleep(rateLimitResp['timeToWait'])
 
             resp = requests.get(
-                self.github_api_url +"/repos/%s/%s/branches/%s" % (ORGANIZATION, self.repository, branch), headers=self.headers, params={
+                self.github_api_url + "/repos/%s/%s/branches/%s" % (ORGANIZATION, self.repository, branch), headers=self.headers, params={
                 })
 
             if (resp.status_code != 200):
