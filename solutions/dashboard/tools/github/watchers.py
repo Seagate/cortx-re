@@ -20,7 +20,7 @@ class Watchers:
 
                 while True:
                     rateLimitResp = self.rateLimit.checkRateLimit()
-                    if rateLimitResp['status'] == True:
+                    if rateLimitResp['status'] is True:
                         break
 
                     print("Limit Exceeded...waiting for ",

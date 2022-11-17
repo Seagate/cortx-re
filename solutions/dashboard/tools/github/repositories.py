@@ -62,7 +62,7 @@ class Repositories:
 
                 while True:
                     rateLimitResp = self.rateLimit.checkRateLimit()
-                    if rateLimitResp['status'] == True:
+                    if rateLimitResp['status'] is True:
                         break
 
                     print("Limit Exceeded...waiting for ",
@@ -92,11 +92,11 @@ class Repositories:
                     print("Repository: ", repo["name"])
 
                     # Get Attributes
-                    license = "none"
+                    local_license = "none"
                     language = "none"
 
-                    if (repo["license"] != None):
-                        license = repo["license"]["spdx_id"]
+                    if (repo["license"] is not None):
+                        local_license = repo["license"]["spdx_id"]
 
                     if ("language" in repo):
                         language = repo["language"]
@@ -157,7 +157,7 @@ class Repositories:
                         "watchers_count": watchersObject.watchers,
                         "issues": issuesPulls["issues"],
                         "pulls": issuesPulls["pulls"],
-                        "license": license,
+                        "license": local_license,
                         "language": language,
                         "branches": branchObject.branch_meta,
                         "contributors": contributorObject.contributors_meta,
@@ -231,15 +231,15 @@ class Repositories:
                 self.metadata["contributors"][key] = repository["contributors"][key]
 
         # Archived
-        if (repository["archived"] == True):
+        if (repository["archived"] is True):
             self.metadata["archived"] += 1
 
         # Disabled
-        if (repository["disabled"] == True):
+        if (repository["disabled"] is True):
             self.metadata["disabled"] += 1
 
         # Allow Forking
-        if (repository["allow_forking"] == True):
+        if (repository["allow_forking"] is True):
             self.metadata["allow_forking"] += 1
 
         print("\n\nMetadata Document: ", self.metadata)
