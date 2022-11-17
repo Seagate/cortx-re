@@ -13,6 +13,7 @@ def main():
         "mongodb_username": "<data>",
         "mongodb_password": "<data>",
         "codacy_api_token": "<data>",
+        "github_token": "<data>",
         "elasticsearch_username": "<data>",
         "elasticsearch_password": "<data>",
         "logstash_password": "<data>"

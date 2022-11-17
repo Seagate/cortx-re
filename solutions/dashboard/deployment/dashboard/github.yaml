@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: dashboard-codacy
+  name: dashboard-github
   namespace: dashboard
 spec:
   schedule: "0 0 * * 6"
@@ -12,8 +12,8 @@ spec:
       template:
         spec:
           containers:
-            - name: dashboard-codacy
-              image: docker.io/sanket02092001/scs:1.0.0
+            - name: dashboard-github
+              image: docker.io/sanket02092001/git:1.0.0
               imagePullPolicy: Always
               env:
                 - name: MONGODB_USERNAME
@@ -31,18 +31,23 @@ spec:
                     configMapKeyRef:
                       key: mongodb_connection_url
                       name: dashboard-configmap
-                - name: CODACY_API_TOKEN
+                - name: GITHUB_TOKEN
                   valueFrom:
                     secretKeyRef:
-                      key: codacy_api_token
+                      key: github_token
                       name: dashboard-secret
+                - name: GITHUB_API_BASEURL
+                  valueFrom:
+                    configMapKeyRef:
+                      key: github_api_baseurl
+                      name: dashboard-configmap
               resources:
                 limits:
-                  memory: "768Mi"
+                  memory: "2048Mi"
                   cpu: "5000m"
                 requests:
                   memory: "256Mi"
-                  cpu: "300m"
+                  cpu: "200m"
               securityContext:
                 allowPrivilegeEscalation: false
                 readOnlyRootFilesystem: true

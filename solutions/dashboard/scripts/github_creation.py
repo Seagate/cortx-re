@@ -2,5 +2,5 @@ import os
 
 print("----------------- Codacy -----------------")
 
-os.system("kubectl create -f ../config/codacy/CodacyCronjob.yaml")
+os.system("kubectl create -f ../config/github/GithubCronjob.yaml")
 print("")
