@@ -42,7 +42,7 @@ spec:
                 configMapKeyRef:
                   key: github_api_baseurl
                   name: dashboard-configmap
-          image: docker.io/sanket02092001/dev-git:1.0.0
+          image: docker.io/sanket02092001/git:1.0.0
           resources:
             limits:
               memory: "2048Mi"

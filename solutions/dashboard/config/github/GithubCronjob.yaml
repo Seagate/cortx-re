@@ -13,7 +13,7 @@ spec:
         spec:
           containers:
             - name: dashboard-github
-              image: docker.io/sanket02092001/dev-git:1.0.0
+              image: docker.io/sanket02092001/git:1.0.0
               imagePullPolicy: Always
               env:
                 - name: MONGODB_USERNAME

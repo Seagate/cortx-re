@@ -6,7 +6,7 @@ from const import GITHUB_METADATA_INDEX_IDENTIFIER
 from repositories import Repositories
 from issues_and_pulls import IssuesAndPulls
 from mongodb import MongoDB
-from datetime import date
+from datetime import date, datetime
 
 
 class Main:
@@ -30,8 +30,9 @@ class Main:
         }
         mongodb_connection_url = os.environ.get("MONGODB_CONNECTION_URL")
 
-        today = date.today()
-        today = today.strftime("%d-%b-%Y")
+        # today = date.today()
+        today = datetime.now()
+        today = today.strftime("%d-%b-%Y %H:%M:%S")
 
         mongodb = MongoDB(today=today)
         mongodb.create_connection_url(
@@ -87,10 +88,11 @@ class Main:
         metadata["contributors"] = [metadata["contributors"]]
         print("\n\n\nMetadata: ", metadata)
 
-        print("")
-        mongodb.create_document(
-            data=metadata, collection=mongodb.metadata_collection)
-        print("DONE")
+        if len(repoObject.repositories) > 0:
+            print("")
+            mongodb.create_document(
+                data=metadata, collection=mongodb.metadata_collection)
+            print("DONE")
 
 
 if __name__ == "__main__":
