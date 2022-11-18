@@ -2,6 +2,5 @@ import os
 
 print("----------------- Codacy -----------------")
 
-# Deployment
-os.system("kubectl delete deployments dashboard-codacy -n dashboard")
+os.system("kubectl delete cronjob dashboard-codacy -n dashboard")
 print("")

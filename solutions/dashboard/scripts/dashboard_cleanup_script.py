@@ -36,8 +36,16 @@ print("")
 
 print("\n\nCodacy Cleanup")
 
-# Deployment
-os.system("kubectl delete deployments dashboard-codacy -n dashboard")
+# Cronjob
+os.system("kubectl delete cronjob dashboard-codacy -n dashboard")
+print("")
+
+# GITHUB CLEANUP
+
+print("\n\nGitHub Cleanup")
+
+# Cronjob
+os.system("kubectl delete cronjob dashboard-github -n dashboard")
 print("")
 
 

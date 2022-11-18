@@ -4,7 +4,7 @@ metadata:
   name: dashboard-codacy
   namespace: dashboard
 spec:
-  schedule: "0 0 * * *"
+  schedule: "0 0 * * 6"
   successfulJobsHistoryLimit: 1
   failedJobsHistoryLimit: 1
   jobTemplate:

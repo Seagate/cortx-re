@@ -153,14 +153,16 @@ This exception will raise after every 60 seconds when the operator is idle. This
 
 ### Creating Codacy:
 
-**Note:**
-Currently, we are creating mongodb from the port scanner itself. So, the pre-requisite for codacy is portscanner should be created and mongodb instance should be running.
-
-**Creation**
 For creating codacy goto **dashboard/scripts** directory and run the following command:
 
 ```
 python3 codacy_creation.py
+```
+
+The Codacy cronjob will schedule on every Saturday at 00:00. If you wanted to the job immediately after starting the cronjob use the following command:
+
+```
+kubectl create job --from=cronjob/dashboard-cronjob dashboard-codacy-manual-001 -n dashboard
 ```
 
 You can check the codacy logs using following command:
@@ -170,7 +172,30 @@ Please replcae <pod_name> by actual pod name
 kubectl logs -f pod/<pod_name> -n dashboard
 ```
 
-The codacy script should connect with mongodb and start fetching the issues data from codacy. The script will pause after fetching all data and restarts after every 24 hours. This will not cause the pod to restart.
+The codacy script should connect with mongodb and start fetching the data from codacy.
+
+### Creating GitHub:
+
+For creating github goto **dashboard/scripts** directory and run the following command:
+
+```
+python3 github_creation.py
+```
+
+The Github cronjob will schedule on every Saturday at 00:00. If you wanted to the job immediately after starting the cronjob use the following command:
+
+```
+kubectl create job --from=cronjob/dashboard-github dashboard-github-manual-001 -n dashboard
+```
+
+You can check the github logs using following command:
+Please replcae <pod_name> by actual pod name
+
+```
+kubectl logs -f pod/<pod_name> -n dashboard
+```
+
+The github script should connect with mongodb and start fetching the data from github.
 
 ### Creating Logstash:
 
