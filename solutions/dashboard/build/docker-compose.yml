@@ -30,3 +30,8 @@ services:
     build:
       context: ../tools/portscanner/
       dockerfile: ./Dockerfile
+  github:
+    image: github:$TAG
+    build:
+      context: ../tools/github/
+      dockerfile: ./Dockerfile
