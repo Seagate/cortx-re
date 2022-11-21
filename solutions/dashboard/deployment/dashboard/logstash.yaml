@@ -184,10 +184,34 @@ data:
         parse_method => 'simple'
       }
       mongodb {
-        uri => 'mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_CONNECTION_URL}/codacy?authSource=admin'
+        uri => 'mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_CONNECTION_URL}/github?authSource=admin'
         placeholder_db_dir => '/opt/logstash/'
         placeholder_db_name => 'logstash_sqlite.db'
-        collection => 'weekly_analysis'
+        collection => 'github_repo'
+        batch_size => 5000
+        parse_method => 'simple'
+      }
+      mongodb {
+        uri => 'mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_CONNECTION_URL}/github?authSource=admin'
+        placeholder_db_dir => '/opt/logstash/'
+        placeholder_db_name => 'logstash_sqlite.db'
+        collection => 'github_meta'
+        batch_size => 5000
+        parse_method => 'simple'
+      }
+      mongodb {
+        uri => 'mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_CONNECTION_URL}/github?authSource=admin'
+        placeholder_db_dir => '/opt/logstash/'
+        placeholder_db_name => 'logstash_sqlite.db'
+        collection => 'github_branches'
+        batch_size => 5000
+        parse_method => 'simple'
+      }
+      mongodb {
+        uri => 'mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_CONNECTION_URL}/github?authSource=admin'
+        placeholder_db_dir => '/opt/logstash/'
+        placeholder_db_name => 'logstash_sqlite.db'
+        collection => 'github_contributors'
         batch_size => 5000
         parse_method => 'simple'
       }
@@ -218,7 +242,7 @@ data:
           target => "created_date"
         }
       }  
-
+      
       if ([identifier] == "codacy.metadata") {
         mutate {
           rename => { "[_id]" => "mongo_id" }
@@ -230,15 +254,51 @@ data:
           target => "created_date"
         }
       }  
-
-      if ([identifier] == "codacy.weekly_analysis") {
+     
+      if ([identifier] == "github_repo") {
         mutate {
           rename => { "[_id]" => "mongo_id" }
           remove_field => [ "_id" ]
         }
 
         date {
-          match => ["created_date", "dd-MMM-yyyy"]
+          match => ["created_date", "dd-MMM-yyyy HH:mm:ss"]
+          target => "created_date"
+        }
+      }  
+      
+      if ([identifier] == "github_meta") {
+        mutate {
+          rename => { "[_id]" => "mongo_id" }
+          remove_field => [ "_id" ]
+        }
+
+        date {
+          match => ["created_date", "dd-MMM-yyyy HH:mm:ss"]
+          target => "created_date"
+        }
+      }  
+      
+      if ([identifier] == "github_branches") {
+        mutate {
+          rename => { "[_id]" => "mongo_id" }
+          remove_field => [ "_id" ]
+        }
+
+        date {
+          match => ["created_date", "dd-MMM-yyyy HH:mm:ss"]
+          target => "created_date"
+        }
+      }  
+     
+      if ([identifier] == "github_contributors") {
+        mutate {
+          rename => { "[_id]" => "mongo_id" }
+          remove_field => [ "_id" ]
+        }
+
+        date {
+          match => ["created_date", "dd-MMM-yyyy HH:mm:ss"]
           target => "created_date"
         }
       }  
@@ -274,10 +334,33 @@ data:
           password => "${ELASTICSEARCH_PASSWORD}"
         }
       }   
-      
-      if ([identifier] == "codacy.weekly_analysis") {
+      if ([identifier] == "github_repo") {
         elasticsearch {
-          index => "dashboard_codacy_weekly_analysis"
+          index => "github_repo"
+          hosts => ["http://${MASTER_NODE_INTERNAL_IP}:${ELASTICSEARCH_PORT}"]
+          user => "${ELASTICSEARCH_USERNAME}"
+          password => "${ELASTICSEARCH_PASSWORD}"
+        }
+      }   
+      if ([identifier] == "github_meta") {
+        elasticsearch {
+          index => "github_meta"
+          hosts => ["http://${MASTER_NODE_INTERNAL_IP}:${ELASTICSEARCH_PORT}"]
+          user => "${ELASTICSEARCH_USERNAME}"
+          password => "${ELASTICSEARCH_PASSWORD}"
+        }
+      }   
+      if ([identifier] == "github_branches") {
+        elasticsearch {
+          index => "github_branches"
+          hosts => ["http://${MASTER_NODE_INTERNAL_IP}:${ELASTICSEARCH_PORT}"]
+          user => "${ELASTICSEARCH_USERNAME}"
+          password => "${ELASTICSEARCH_PASSWORD}"
+        }
+      }   
+      if ([identifier] == "github_contributors") {
+        elasticsearch {
+          index => "github_contributors"
           hosts => ["http://${MASTER_NODE_INTERNAL_IP}:${ELASTICSEARCH_PORT}"]
           user => "${ELASTICSEARCH_USERNAME}"
           password => "${ELASTICSEARCH_PASSWORD}"
@@ -286,7 +369,6 @@ data:
     }
 
 ---
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
