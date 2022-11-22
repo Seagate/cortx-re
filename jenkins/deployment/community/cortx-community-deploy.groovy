@@ -6,7 +6,7 @@ pipeline {
         }
     }
 
-    triggers { cron('0 22 * * 1,3,5') }
+    triggers { cron('TZ=Asia/Calcutta\n20 12 * * 1') }
    
     options {
         timeout(time: 360, unit: 'MINUTES')
@@ -20,7 +20,7 @@ pipeline {
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for CORTX Cluster scripts', trim: true)
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repository for CORTX Cluster scripts', trim: true)
         string(name: 'CORTX_TAG', defaultValue: 'main', description: 'Branch or GitHash for generaing CORTX container images', trim: true)
-        string(name: 'OS_VERSION', defaultValue: 'CentOS 7.9.2009 x86_64', description: 'Operating system version', trim: true)
+        string(name: 'OS_VERSION', defaultValue: 'CentOS Linux 7 x86_64 - 2211', description: 'Operating system version', trim: true)
         string(name: 'REGION', defaultValue: 'ap-south-1', description: 'AWS region', trim: true)
         string(name: 'KEY_NAME', defaultValue: 'automation-key', description: 'Key name', trim: true)
         string(name: 'COMMUNITY_USE', defaultValue: 'yes', description: 'Only use during community deployment', trim: true)
@@ -28,9 +28,7 @@ pipeline {
         string(name: 'EBS_VOLUME_SIZE', defaultValue: '25', description: 'EBS volume size in GB', trim: true)
         string(name: 'INSTANCE_COUNT', defaultValue: '4', description: 'EC2 instance count', trim: true)
         string(name: 'AWS_INSTANCE_TAG_NAME', defaultValue: 'cortx-multinode', description: 'Tag name for EC2 instances', trim: true)
-        password(name: 'SECRET_KEY', description: 'secret key for AWS account')
-        password(name: 'ACCESS_KEY', description: 'access key for AWS account')
-        password(name: 'ROOT_PASSWORD', description: 'Root password for EC2 instances')
+        // Please configure ROOT_PASSWORD, ACCESS_KEY and SECRET_KEY parameters in Jenkins job configuration.
     }
 
     stages {
