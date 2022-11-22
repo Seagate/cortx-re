@@ -89,7 +89,7 @@ pipeline {
                     def releaseBuild = build job: 'Release', propagate: true
                      env.release_build = releaseBuild.number
                     env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/${env.release_build}"
-                    env.cortx_images = releaseBuild.buildVariables.cortx_all_image +"\n" +releaseBuild.buildVariables.cortx_rgw_image +"\n" +releaseBuild.buildVariables.cortx_data_image +"\n" +releaseBuild.buildVariables.cortx_control_image
+                    env.cortx_images = releaseBuild.buildVariables.cortx_all_image + "\n" + releaseBuild.buildVariables.cortx_rgw_image + "\n" + releaseBuild.buildVariables.cortx_data_image +"\n" + releaseBuild.buildVariables.cortx_control_image
                 }
             }
         }

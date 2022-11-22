@@ -11,7 +11,7 @@ pipeline {
 	string(name: 'MGMT_VIP', defaultValue: '', description: 'Management VIP', trim: true)
         string(name: 'HOST', defaultValue: '' , description: 'HW Deploy Host', trim: true)
         string(name: 'CONFIG', defaultValue: '' , description: 'HW config file raw file path', trim: true)
-        choice(name: 'DEPLOY_TYPE', choices: [ 'DEPLOY-WITH-REIMAGE','DEPLOY-WITHOUT-REIMAGE','REIMAGE' ], description: 'Deployment Type')
+        choice(name: 'DEPLOY_TYPE', choices: [ 'DEPLOY-WITH-REIMAGE', 'DEPLOY-WITHOUT-REIMAGE', 'REIMAGE' ], description: 'Deployment Type')
     }
 
 	environment {
