@@ -112,7 +112,7 @@ pipeline {
             script {
 
             if ( params.GITHUB_PUSH == "yes" ) {
-                env.image = sh( script: " docker images --format='{{.Repository}}:{{.Tag}}' --filter=reference='*/dashboard/*:[0-9]*' | grep -v 1.0.0-latest | head -2", returnStdout: true).trim()
+                env.image = sh( script: " docker images --format='{{.Repository}}:{{.Tag}}' --filter=reference='*/dashboard/*:[0-9]*' | grep -v 1.0.0-latest | head -3", returnStdout: true).trim()
                 println "${env.image}"
 
             }
