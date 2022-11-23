@@ -25,7 +25,7 @@ git clone https://github.com/Seagate/cortx-re/ -b dashboard && cd ./cortx-re/sol
 ```
 
 - Define Elastissearch credentails and create Kubernetes secret from them
-``
+```
 export ELASTIC_USER=elastic && export ELASTIC_PASSWD=Seagate123
 kubectl create ns elastic
 kubectl create secret generic dashboard-elasticsearch-es-elastic-user --from-literal=$ELASTIC_USER=$ELASTIC_PASSWD -n elastic
