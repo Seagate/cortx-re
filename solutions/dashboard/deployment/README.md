@@ -27,7 +27,7 @@ git clone https://github.com/Seagate/cortx-re/ -b dashboard && cd ./cortx-re/sol
 - Define Elastissearch credentails and create Kubernetes secret from them
 ```
 kubectl create ns elastic && kubectl create secret generic dashboard-elasticsearch-es-elastic-user \
---from-literal=elastic=Seagate123 -n elastic
+--from-literal=<ElasticSearch User>=<ElasticSearch Password> -n elastic
 ```
 
 - Deploy Elasticsearch and Kibana stack.
@@ -52,11 +52,11 @@ dashboard-elasticsearch   green     3       8.4.1     Ready             38s
 - Define credentails and Application token to be used in Dashbaord applicaion and create Kubernets Secret. 
 ```
  kubectl create ns dashboard && kubectl create secret generic dashboard-secret -n dashboard \
-	--from-literal=mongodb_username=admin \
-	--from-literal=mongodb_password=admin123 \
-	--from-literal=elasticsearch_username=elastic \
-	--from-literal=elasticsearch_password=Seagate123 \
-	--from-literal=logstash_password=logstash \
+	--from-literal=mongodb_username=<MongoDB Username> \
+	--from-literal=mongodb_password=<MongoDB Password> \
+	--from-literal=elasticsearch_username=<ElasticSearch User> \
+	--from-literal=elasticsearch_password=<ElasticSearch Password> \
+	--from-literal=logstash_password=<Logstash Password> \
 	--from-literal=github_token=<GITHUB TOKEN> \
 	--from-literal=codacy_api_token=<CODACY TOKEN>
 ```
