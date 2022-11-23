@@ -13,7 +13,7 @@ Following are the minimum system specifications required to set up the K8s clust
 
 ## Kubernetes Cluster Setup
 
--  Please follow steps from [Kubernetes Installation](../../solutions/community-deploy/CORTX-Deployment.md#install-k8s-cluster) to setup Kubernetes cluster. 
+-  Please follow steps from [Kubernetes Installation](../../community-deploy/CORTX-Deployment.md#install-k8s-cluster) to setup Kubernetes cluster. 
 
 ## Argocd
 
