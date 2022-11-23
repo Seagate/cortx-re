@@ -26,9 +26,7 @@ git clone https://github.com/Seagate/cortx-re/ -b dashboard && cd ./cortx-re/sol
 
 - Define Elastissearch credentails and create Kubernetes secret from them
 ```
-export ELASTIC_USER=elastic && export ELASTIC_PASSWD=Seagate123
-kubectl create ns elastic
-kubectl create secret generic dashboard-elasticsearch-es-elastic-user --from-literal=$ELASTIC_USER=$ELASTIC_PASSWD -n elastic
+kubectl create ns elastic && kubectl create secret generic dashboard-elasticsearch-es-elastic-user --from-literal=elastic=Seagate123 -n elastic
 ```
 
 - Deploy Elasticsearch and Kibana stack.
@@ -38,7 +36,7 @@ pushd elasticsearch && kubectl apply -f . -R && popd
 
 - Validate that Elasticsearch and Kibana stack deployed without any issues. Use below command and wait till Health column is showing green.
 ```
-[root@ssc-cicd-3176 deployment]#  kubectl get elasticsearch -n elastic -w
+[root@dashboard deployment]#  kubectl get elasticsearch -n elastic -w
 NAME                      HEALTH    NODES   VERSION   PHASE             AGE
 dashboard-elasticsearch   unknown           8.4.1     ApplyingChanges   11s
 dashboard-elasticsearch   unknown   1       8.4.1     ApplyingChanges   29s
@@ -50,9 +48,38 @@ dashboard-elasticsearch   unknown   3       8.4.1     ApplyingChanges   37s
 dashboard-elasticsearch   green     3       8.4.1     Ready             38s
 ```
 
+- Define credentails and Application token to be used in Dashbaord applicaion and create Kubernets Secret. 
+```
+ kubectl create ns dashboard && kubectl create secret generic dashboard-secret -n dashboard \
+	--from-literal=mongodb_username=admin \
+	--from-literal=mongodb_password=admin123 \
+	--from-literal=elasticsearch_username=elastic \
+	--from-literal=elasticsearch_password=Seagate123 \
+	--from-literal=logstash_password=logstash \
+	--from-literal=github_token=<GITHUB TOKEN> \
+	--from-literal=codacy_api_token=<CODACY TOKEN>
+```
+
 - Deploy Dashboard Application 
 ```
-kubectl create ns dashboard &&  pushd dashboard && kubectl apply -f . -R && popd
+pushd dashboard && kubectl apply -f . -R && popd
+```
+
+- Create jobs to fetch GitHub and Codacy data. 
+```
+kubectl create job --from=cronjob/dashboard-codacy dashboard-codacy-manual-001 -n dashboard
+kubectl create job --from=cronjob/dashboard-github dashboard-github-manual-001 -n dashboard
+```
+
+- Validate that all PODs are in running state in dashboard namespace
+```
+[root@dashboard deployment]# kubectl get po -n dashboard
+NAME                                      READY   STATUS    RESTARTS   AGE
+dashboard-codacy-manual-001-cvzwk         1/1     Running   0          29s
+dashboard-github-manual-001-rm2nj         1/1     Running   0          28s
+dashboard-logstash-5d6457c998-h2nfw       1/1     Running   0          2m44s
+dashboard-mongodb-0                       1/1     Running   0          2m44s
+dashboard-port-scanner-85bd58f6b9-lvcxf   1/1     Running   0          2m44s
 ```
 
 ## Deploy Dashboard Application on Kubernetes Cluster using Argocd
