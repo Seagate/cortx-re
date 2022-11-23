@@ -26,7 +26,8 @@ git clone https://github.com/Seagate/cortx-re/ -b dashboard && cd ./cortx-re/sol
 
 - Define Elastissearch credentails and create Kubernetes secret from them
 ```
-kubectl create ns elastic && kubectl create secret generic dashboard-elasticsearch-es-elastic-user --from-literal=elastic=Seagate123 -n elastic
+kubectl create ns elastic && kubectl create secret generic dashboard-elasticsearch-es-elastic-user \
+--from-literal=elastic=Seagate123 -n elastic
 ```
 
 - Deploy Elasticsearch and Kibana stack.
