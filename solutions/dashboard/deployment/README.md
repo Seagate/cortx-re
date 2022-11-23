@@ -27,7 +27,7 @@ git clone https://github.com/Seagate/cortx-re/ -b dashboard && cd ./cortx-re/sol
 - Define Elastissearch credentails and create Kubernetes secret from them
 ```
 kubectl create ns elastic && kubectl create secret generic dashboard-elasticsearch-es-elastic-user \
---from-literal=<ElasticSearch User>=<ElasticSearch Password> -n elastic
+--from-literal=elastic=<ElasticSearch Password> -n elastic
 ```
 
 - Deploy Elasticsearch and Kibana stack.
@@ -54,7 +54,7 @@ dashboard-elasticsearch   green     3       8.4.1     Ready             38s
  kubectl create ns dashboard && kubectl create secret generic dashboard-secret -n dashboard \
 	--from-literal=mongodb_username=<MongoDB Username> \
 	--from-literal=mongodb_password=<MongoDB Password> \
-	--from-literal=elasticsearch_username=<ElasticSearch User> \
+	--from-literal=elasticsearch_username=elastic \
 	--from-literal=elasticsearch_password=<ElasticSearch Password> \
 	--from-literal=logstash_password=<Logstash Password> \
 	--from-literal=github_token=<GITHUB TOKEN> \
@@ -82,6 +82,12 @@ dashboard-logstash-5d6457c998-h2nfw       1/1     Running   0          2m44s
 dashboard-mongodb-0                       1/1     Running   0          2m44s
 dashboard-port-scanner-85bd58f6b9-lvcxf   1/1     Running   0          2m44s
 ```
+
+- Visit Kibana Dashboad at `http://<VM IP>:30081` and login using username as `elastic`. Use below command to fetch password. 
+```
+kubectl get secret dashboard-elasticsearch-es-elastic-user -o go-template='{{.data.elastic | base64decode}}' -n elastic
+```
+
 
 ## Deploy Dashboard Application on Kubernetes Cluster using Argocd
 
