@@ -19,38 +19,41 @@ Following are the minimum system specifications required to set up the K8s clust
 
 ### Execute following commands to deploy Dashbaord application on Kubernetes cluster using kubectl CLI
 
-- Install sealed secrets controller to use encrypted secrets to fetch data from DevOps tools. 
-```
-kubectl apply -f https://github.com/bitnami-labs/sealed-secrets/releases/download/v0.18.5/controller.yaml
-```
-
 - Clone cortx-re repository and change directory to cortx-re/solutions/kubernetes
 ```
 git clone https://github.com/Seagate/cortx-re/ -b dashboard && cd ./cortx-re/solutions/dashboard/deployment/
 ```
+
+- Define Elastissearch credentails and create Kubernetes secret from them
+``
+export ELASTIC_USER=elastic && export ELASTIC_PASSWD=Seagate123
+kubectl create ns elastic
+kubectl create secret generic dashboard-elasticsearch-es-elastic-user --from-literal=$ELASTIC_USER=$ELASTIC_PASSWD -n elastic
+``
 
 - Deploy Elasticsearch and Kibana stack.
 ```
 pushd elasticsearch && kubectl apply -f . -R && popd
 ```
 
-- Validate that Elasticsearch and Kibana stack deployed without any issues. 
+- Validate that Elasticsearch and Kibana stack deployed without any issues. Use below command and wait till Health column is showing green.
 ```
-[root@dashboard elasticsearch]# kubectl get kibana -n elastic && kubectl get kibana -n elastic
-NAME               HEALTH   NODES   VERSION   AGE
-dashboard-kibana   green    1       8.4.1     4m24s
-NAME               HEALTH   NODES   VERSION   AGE
-dashboard-kibana   green    1       8.4.1     4m24s
-[root@dashboard elasticsearch]#
+[root@ssc-cicd-3176 deployment]#  kubectl get elasticsearch -n elastic -w
+NAME                      HEALTH    NODES   VERSION   PHASE             AGE
+dashboard-elasticsearch   unknown           8.4.1     ApplyingChanges   11s
+dashboard-elasticsearch   unknown   1       8.4.1     ApplyingChanges   29s
+dashboard-elasticsearch   unknown   2       8.4.1     ApplyingChanges   30s
+dashboard-elasticsearch   unknown   3       8.4.1     ApplyingChanges   31s
+dashboard-elasticsearch   unknown   3       8.4.1     ApplyingChanges   36s
+dashboard-elasticsearch   unknown   3       8.4.1     ApplyingChanges   36s
+dashboard-elasticsearch   unknown   3       8.4.1     ApplyingChanges   37s
+dashboard-elasticsearch   green     3       8.4.1     Ready             38s
 ```
 
 - Deploy Dashboard Application 
 ```
 kubectl create ns dashboard &&  pushd dashboard && kubectl apply -f . -R && popd
 ```
-
-
-
 
 ## Deploy Dashboard Application on Kubernetes Cluster using Argocd
 
