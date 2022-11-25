@@ -122,7 +122,7 @@ pipeline {
               script {
                 echo "Get the scanned alex file."
                 sh "ls *.alex > listAlexFiles"
-                def files = readFile( "listAlexFiles" ).split( "\\r?\\n" );
+                def files = readFile( "listAlexFiles" ).split( "\\r?\\n" )
                 files.each { item ->
                    sh ''' cat ''' + item
                    sh ''' export DATE_NOW=$(date +"%Y-%m-%d %T") && python3 alex.py -f ''' + item
