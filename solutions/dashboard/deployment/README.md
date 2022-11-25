@@ -32,7 +32,7 @@ kubectl create ns elastic && kubectl create secret generic dashboard-elasticsear
 
 - Deploy Elasticsearch and Kibana stack.
 ```
-pushd elasticsearch && kubectl apply -f . -R && popd
+pushd elasticsearch && kubectl apply -f operator.yaml -f crds.yaml && kubectl apply -f . -R && popd
 ```
 
 - Validate that Elasticsearch and Kibana stack deployed without any issues. Use below command and wait till Health column is showing green.
