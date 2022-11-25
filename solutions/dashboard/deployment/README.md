@@ -63,7 +63,7 @@ dashboard-elasticsearch   green     3       8.4.1     Ready             38s
 
 - Deploy Dashboard Application 
 ```
-pushd dashboard && kubectl apply -f . -R && popd
+pushd dashboard && kubectl apply -f portscannercrd.yaml && kubectl apply -f . -R && popd
 ```
 
 - Create jobs to fetch GitHub and Codacy data. 
