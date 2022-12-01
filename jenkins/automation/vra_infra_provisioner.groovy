@@ -21,22 +21,22 @@ pipeline {
         string(name: 'VM_NAMES', defaultValue: '', description: 'list of VM names need to be procured. (comma separated list of VM names)', trim: true)
         choice(
             name: 'VM_CPU',
-            choices: ['4','2','6','8'],
+            choices: ['4', '2', '6', '8'],
             description: 'Number of vCPU required for VM'
         )
         choice(
             name: 'VM_MEMORY',
-            choices: ['4096','2048','8192','16384'],
+            choices: ['4096', '2048', '8192', '16384'],
             description: 'Memory required for VM'
         )
         choice(
             name: 'VM_DISKCOUNT',
-            choices: ['4','1','2','3','5','6','8','9','10'],
+            choices: ['4', '1', '2', '3', '5', '6', '8', '9', '10'],
             description: 'Number of Disks required for VM'
         )
         choice(
             name: 'VM_DISKSIZE',
-            choices: ['50','25','100','150','200','250','300'],
+            choices: ['50', '25', '100', '150', '200', '250', '300'],
             description: 'Memory required for disks (In GB)'
         )
     }    
