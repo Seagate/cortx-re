@@ -31,11 +31,6 @@ variable "vm_names" {
   type = list(string)
 }
 
-variable "catalog_item_version" {
-  type = number
-  default = 5
-}
-
 variable "vm_image" {
   type = string
   default = "Rocky-8-Library-VMs"
