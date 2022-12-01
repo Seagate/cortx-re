@@ -65,9 +65,9 @@ function terraform_variables_config() {
 
 function validate_terraform_config() {
     terraform validate
-    check_status "ERROR: Terraform Validation Failed!!"
+    check_status "Terraform Validation Failed!!"
     terraform plan
-    check_status "ERROR: Terraform Plan Failed!!"
+    check_status "Terraform Plan Failed!!"
 }
 
 
@@ -82,7 +82,7 @@ case $ACTION in
     --config)
         cleanup
         terraform init
-        check_status "ERROR: Terraform Init Failed!!"
+        check_status "Terraform Init Failed!!"
         terraform_variables_config
     ;;
     --validate)
@@ -90,10 +90,10 @@ case $ACTION in
     ;;
     --provision-resources)
         terraform apply -auto-approve
-        check_status "ERROR: Infrastructure Provisioning Failed!!"
+        check_status "Infrastructure Provisioning Failed!!"
     ;;
     *)
-        echo "ERROR : Please provide a valid option"
+        echo "Please provide a valid option"
         usage
         exit 1
     ;;
