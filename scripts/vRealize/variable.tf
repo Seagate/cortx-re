@@ -31,13 +31,32 @@ variable "vm_names" {
   type = list(string)
 }
 
-variable "vm_resources" {
-  type = map
-  default = {
-      "image" = "Rocky-8-Library-VMs"
-      "cpu" = 4
-      "memory" = 2048
-      "disk_size" = 10
-      "disk_count" = 4
-  }
+variable "catalog_item_version" {
+  type = number
+  default = 5
+}
+
+variable "vm_image" {
+  type = string
+  default = "Rocky-8-Library-VMs"
+}
+
+variable "vm_cpu" {
+  type = number
+  default = 4
+}
+
+variable "vm_memory" {
+  type = number
+  default = 2048
+}
+
+variable "vm_disk_size" {
+  type = number
+  default = 10
+}
+
+variable "vm_disk_count" {
+  type = number
+  default = 4
 }
