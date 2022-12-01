@@ -54,13 +54,13 @@ function set_variable() {
 
 function terraform_variables_config() {
 
-    if [ -z "$USERNAME" ] && [ -z "$PASSWORD" ]; then echo "USERNAME/PASSWORD not provided. Please provide vra username/password" && exit 1; fi
+    if [ -z "$VRA_USERNAME" ] && [ -z "$VRA_PASSWORD" ]; then echo "USERNAME/PASSWORD not provided. Please provide vra username/password" && exit 1; fi
     if [ -z "$VM_NAMES" ]; then echo "VM_NAMES not provided. Please provide VM names/names" && exit 1; else set_variable "vm_names = [\"$VM_NAMES\"]"; fi
     if [ -z "$VM_CPU" ]; then echo "VM_CPU not provided. Using default: 4"; else set_variable "vm_resources.cpu = $VM_CPU"; fi
     if [ -z "$VM_MEMORY" ]; then echo "VM_MEMORY not provided. Using default: 2048"; else set_variable "vm_resources.memory = $VM_MEMORY"; fi
     if [ -z "$VM_DISKCOUNT" ]; then echo "VM_DISKCOUNT not provided. Using default : 4"; else set_variable "vm_resources.disk_count = $VM_DISKCOUNT"; fi
     if [ -z "$VM_DISKSIZE" ]; then echo "VM_DISKSIZE not provided. Using default : 10"; else set_variable "vm_resources.disk_size = $VM_DISKSIZE"; fi
-    REFRESH_TOKEN=$(get_token $USERNAME $PASSWORD) && set_variable "vra_refresh_token = \"$REFRESH_TOKEN\""
+    REFRESH_TOKEN=$(get_token $VRA_USERNAME $VRA_PASSWORD) && set_variable "vra_refresh_token = \"$REFRESH_TOKEN\""
 }
 
 function validate_terraform_config() {
