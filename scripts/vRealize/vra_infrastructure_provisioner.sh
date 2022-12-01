@@ -53,9 +53,9 @@ function set_variable() {
 }
 
 function terraform_variables_config() {
-
+    QUOTED_VM_NAMES=$(jq -cR '. | gsub("^ +| +$"; "") | split(" *, *"; "")' <<< $VM_NAMES)
     if [ -z "$VRA_USERNAME" ] && [ -z "$VRA_PASSWORD" ]; then echo "USERNAME/PASSWORD not provided. Please provide vra username/password" && exit 1; fi
-    if [ -z "$VM_NAMES" ]; then echo "VM_NAMES not provided. Please provide VM names/names" && exit 1; else set_variable "vm_names = [\"$VM_NAMES\"]"; fi
+    if [ -z "$VM_NAMES" ]; then echo "VM_NAMES not provided. Please provide VM names/names" && exit 1; else set_variable "vm_names = $QUOTED_VM_NAMES"; fi
     if [ -z "$VM_CPU" ]; then echo "VM_CPU not provided. Using default: 4"; else set_variable "vm_cpu = $VM_CPU"; fi
     if [ -z "$VM_MEMORY" ]; then echo "VM_MEMORY not provided. Using default: 2048"; else set_variable "vm_memory = $VM_MEMORY"; fi
     if [ -z "$VM_DISKCOUNT" ]; then echo "VM_DISKCOUNT not provided. Using default : 4"; else set_variable "vm_disk_count = $VM_DISKCOUNT"; fi
