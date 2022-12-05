@@ -31,7 +31,7 @@ pipeline {
         )
         choice(
             name: 'VM_DISKCOUNT',
-            choices: ['4', '1', '2', '3', '5', '6', '8', '9', '10'],
+            choices: ['4', '1', '2', '3', '5', '6'],
             description: 'Number of Disks required for VM'
         )
         choice(
