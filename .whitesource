@@ -1,7 +1,8 @@
 {
   "scanSettings": {
-    "configMode": "AUTO",
-	"configExternalURL": "",
+    "configMode": "LOCAL",
+	"enableLicenseViolations": "true",
+  "configExternalURL": "",
 	"projectToken": "",
 	"baseBranches": []
   },
