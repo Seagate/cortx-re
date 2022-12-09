@@ -16,8 +16,7 @@ pipeline {
     parameters {
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repository for VRA infra provisioner script', trim: true)
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for VRA infra provisioner script', trim: true)
-        string(name: 'VRA_USERNAME', defaultValue: '', description: 'User ID used to login VRA console', trim: true)
-        password(name: 'VRA_PASSWORD', description: 'Password used to login VRA console')
+        password(name: 'VRA_TOKEN', description: 'Token used to perform VRA operations. Refer link to generate token - https://seagate-systems.atlassian.net/wiki/spaces/PRIVATECOR/pages/1052672633/Access+Token+for+the+vRealize+Automation+VRA+API#1.-Refresh-Token')
         string(name: 'VM_NAMES', defaultValue: '', description: 'list of VM names need to be procured. (comma separated list of VM names)', trim: true)
         choice(
             name: 'VM_CPU',
@@ -57,14 +56,16 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: '', script: '''
                     pushd scripts/vRealize/
-                        export VRA_USERNAME=${VRA_USERNAME}
-                        export VRA_PASSWORD=${VRA_PASSWORD}
-                        export VM_NAMES=${VM_NAMES}
-                        export VM_CPU=${VM_CPU}
-                        export VM_MEMORY=${VM_MEMORY}
-                        export VM_DISKCOUNT=${VM_DISKCOUNT}
-                        export VM_DISKSIZE=${VM_DISKSIZE}
-                        ./vra_infrastructure_provisioner.sh --config
+                        rm -rf .terraform .terraform.lock.hcl terraform.tfstate terraform.tfstate.backup terraform.tfvars
+                        terraform init
+                        if [ "$?" -ne 0 ]; then echo -e '\nERROR: Terraform Initialization Failed!!\n'; else echo -e '\n---SUCCESS---\n'; fi
+                        QUOTED_VM_NAMES=$(jq -cR '. | gsub("^ +| +$"; "") | split(" *, *"; "")' <<< $VM_NAMES)
+                        echo "vra_refresh_token = \\"$VRA_TOKEN\\"" >> terraform.tfvars
+                        echo "vm_names = $QUOTED_VM_NAMES" >> terraform.tfvars
+                        echo "vm_cpu = $VM_CPU" >> terraform.tfvars
+                        echo "vm_memory = $VM_MEMORY" >> terraform.tfvars
+                        echo "vm_disk_size = $VM_DISKCOUNT" >> terraform.tfvars
+                        echo "vm_disk_count = $VM_DISKSIZE" >> terraform.tfvars
                     popd
                 '''    
             }
@@ -75,7 +76,10 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: '', script: '''
                     pushd scripts/vRealize/
-                        ./vra_infrastructure_provisioner.sh --validate
+                        terraform validate
+                        if [ "$?" -ne 0 ]; then echo -e '\nERROR: Validation Failed!!\n'; else echo -e '\n---SUCCESS---\n'; fi
+                        terraform plan
+                        if [ "$?" -ne 0 ]; then echo -e '\nERROR: Plan Failed!!\n'; else echo -e '\n---SUCCESS---\n'; fi
                     popd
                 '''
             }
@@ -86,7 +90,8 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: '', script: '''
                     pushd scripts/vRealize/
-                        ./vra_infrastructure_provisioner.sh --provision-resources
+                        terraform apply --auto-approve
+                        if [ "$?" -ne 0 ]; then echo -e '\nERROR: Infra Provision Failed!!\n'; else echo -e '\n---SUCCESS---\n'; fi
                     popd
                 '''
             }
