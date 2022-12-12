@@ -65,8 +65,8 @@ pipeline {
                         QUOTED_VM_NAMES=$(jq -cR '. | gsub("^ +| +$"; "") | split(" *, *"; "")' <<< $VM_NAMES)
                         echo "vra_refresh_token = \\"$VRA_TOKEN\\"" >> terraform.tfvars
                         echo "vm_names = $QUOTED_VM_NAMES" >> terraform.tfvars
-                        echo "vra_project = $VRA_PROJECT" >> terraform.tfvars
-                        echo "vra_catalog_item = $VRA_CATALOG_ITEM" >> terraform.tfvars
+                        echo "vra_project = \\"$VRA_PROJECT\\"" >> terraform.tfvars
+                        echo "vra_catalog_item = \\"$VRA_CATALOG_ITEM\\"" >> terraform.tfvars
                         echo "catalog_item_version = $VRA_CATALOG_ITEM_VERSION" >> terraform.tfvars
                         echo "vm_cpu = $VM_CPU" >> terraform.tfvars
                         echo "vm_memory = $VM_MEMORY" >> terraform.tfvars
