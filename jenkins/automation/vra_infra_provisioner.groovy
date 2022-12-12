@@ -58,7 +58,7 @@ pipeline {
             steps {             
                 script { build_stage = env.STAGE_NAME }
                 sh label: '', script: '''
-                    pushd scripts/vRealize/
+                    pushd solutions/vmware/terraform/
                         rm -rf .terraform .terraform.lock.hcl terraform.tfstate terraform.tfstate.backup terraform.tfvars
                         terraform init
                         if [ "$?" -ne 0 ]; then echo -e '\nERROR: Terraform Initialization Failed!!\n'; else echo -e '\n---SUCCESS---\n'; fi
@@ -81,7 +81,7 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: '', script: '''
-                    pushd scripts/vRealize/
+                    pushd solutions/vmware/terraform/
                         terraform validate
                         if [ "$?" -ne 0 ]; then echo -e '\nERROR: Validation Failed!!\n'; else echo -e '\n---SUCCESS---\n'; fi
                         terraform plan
@@ -95,7 +95,7 @@ pipeline {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: '', script: '''
-                    pushd scripts/vRealize/
+                    pushd solutions/vmware/terraform/
                         terraform apply --auto-approve
                         if [ "$?" -ne 0 ]; then echo -e '\nERROR: Infra Provision Failed!!\n'; else echo -e '\n---SUCCESS---\n'; fi
                     popd
@@ -103,4 +103,13 @@ pipeline {
             }
         }
     }
+
+    post {
+        always {
+            script {
+                // Archive tfstate artifacts in jenkins build
+                archiveArtifacts artifacts: "solutions/vmware/terraform//*.tfstate", onlyIfSuccessful: false, allowEmptyArchive: true
+            }
+        }
+    }    
 }
