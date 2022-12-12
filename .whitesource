@@ -1,7 +1,7 @@
 {
   "scanSettings": {
     "configMode": "LOCAL",
-	"enableLicenseViolations": "true",
+	"enableLicenseViolations": "false",
   	"configExternalURL": "",
 	"projectToken": "",
 	"baseBranches": []
