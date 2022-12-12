@@ -18,6 +18,9 @@ pipeline {
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch or GitHash for VRA infra provisioner script', trim: true)
         password(name: 'VRA_TOKEN', description: 'Token used to perform VRA operations. Refer link to generate token - https://seagate-systems.atlassian.net/wiki/spaces/PRIVATECOR/pages/1052672633/Access+Token+for+the+vRealize+Automation+VRA+API#1.-Refresh-Token')
         string(name: 'VM_NAMES', defaultValue: '', description: 'list of VM names need to be procured. (comma separated list of VM names)', trim: true)
+        string(name: 'VRA_PROJECT', defaultValue: 'SSC-CICD', description: 'VRA Project under which deployment will be provisioned.', trim: true)
+        string(name: 'VRA_CATALOG_ITEM', defaultValue: 'ssc-cicd-rocky', description: 'OS id required for VM', trim: true)
+        string(name: 'VRA_CATALOG_ITEM_VERSION', defaultValue: '5', description: 'Version of OS id. Refer link to get version for catalog - https://seagate-systems.atlassian.net/wiki/spaces/PRIVATECOR/pages/1058210438/Create+VMs+Deployments#2.-List-the-available-versions', trim: true)
         choice(
             name: 'VM_CPU',
             choices: ['4', '2', '6', '8'],
@@ -62,6 +65,9 @@ pipeline {
                         QUOTED_VM_NAMES=$(jq -cR '. | gsub("^ +| +$"; "") | split(" *, *"; "")' <<< $VM_NAMES)
                         echo "vra_refresh_token = \\"$VRA_TOKEN\\"" >> terraform.tfvars
                         echo "vm_names = $QUOTED_VM_NAMES" >> terraform.tfvars
+                        echo "vra_project = $VRA_PROJECT" >> terraform.tfvars
+                        echo "vra_catalog_item = $VRA_CATALOG_ITEM" >> terraform.tfvars
+                        echo "catalog_item_version = $VRA_CATALOG_ITEM_VERSION" >> terraform.tfvars
                         echo "vm_cpu = $VM_CPU" >> terraform.tfvars
                         echo "vm_memory = $VM_MEMORY" >> terraform.tfvars
                         echo "vm_disk_size = $VM_DISKCOUNT" >> terraform.tfvars

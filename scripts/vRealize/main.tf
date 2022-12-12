@@ -21,7 +21,7 @@ data "vra_catalog_item" "this" {
 
 resource "vra_deployment" "names" {
   count           = length(var.vm_names)
-  name            = "CICD-${var.vm_names[count.index]}"
+  name            = "${var.vm_names[count.index]}"
   owner           = var.owner_account
   catalog_item_id = data.vra_catalog_item.this.id
   project_id = data.vra_project.this.id
