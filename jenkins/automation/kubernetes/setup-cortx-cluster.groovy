@@ -95,7 +95,7 @@ pipeline {
                         export S3_EXTERNAL_HTTP_NODEPORT=${S3_EXTERNAL_HTTP_NODEPORT}
                         export S3_EXTERNAL_HTTPS_NODEPORT=${S3_EXTERNAL_HTTPS_NODEPORT}
                         export NAMESPACE=${NAMESPACE}
-                        export CORTX_DEPLOY_HA_TIMEOUT="600s"
+                        export CORTX_DEPLOY_HA_TIMEOUT="900s"
                         ./cortx-deploy.sh --cortx-cluster
                     popd
                 '''
