@@ -16,6 +16,8 @@ Terraform Installation Reference - https://developer.hashicorp.com/terraform/dow
     
     * How to get project name and catalog item -
     
+    ![](vRealize_project_catalog.PNG)
+    
     * How to get catalog item version - https://seagate-systems.atlassian.net/wiki/spaces/PRIVATECOR/pages/1058210438/Create+VMs+Deployments#2.-List-the-available-versions
 
     ```
