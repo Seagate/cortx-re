@@ -12,13 +12,13 @@ Terraform Installation Reference - https://developer.hashicorp.com/terraform/dow
     git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/vmware/terraform
     ```
 * Update `terraform.tfvars` file with required values as per your infrastructure requirements.
-    * How to get refresh token - https://seagate-systems.atlassian.net/wiki/spaces/PRIVATECOR/pages/1058210438/Create+VMs+Deployments#1.-Getting-an-API-Token/Refresh-Token
+  * How to get refresh token - https://seagate-systems.atlassian.net/wiki/spaces/PRIVATECOR/pages/1058210438/Create+VMs+Deployments#1.-Getting-an-API-Token/Refresh-Token
     
-    * How to get project name and catalog item -
+  * How to get project name and catalog item -
     
-    ![](vRealize_project_catalog.PNG)
+  ![](vRealize_project_catalog.PNG)
     
-    * How to get catalog item version - https://seagate-systems.atlassian.net/wiki/spaces/PRIVATECOR/pages/1058210438/Create+VMs+Deployments#2.-List-the-available-versions
+  * How to get catalog item version - https://seagate-systems.atlassian.net/wiki/spaces/PRIVATECOR/pages/1058210438/Create+VMs+Deployments#2.-List-the-available-versions
 
     ```
     vi terraform.tfvars
