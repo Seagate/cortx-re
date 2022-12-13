@@ -64,10 +64,10 @@ pipeline {
                         if [ "$?" -ne 0 ]; then echo -e '\nERROR: Terraform Initialization Failed!!\n'; else echo -e '\n---SUCCESS---\n'; fi
                         QUOTED_VM_NAMES=$(jq -cR '. | gsub("^ +| +$"; "") | split(" *, *"; "")' <<< $VM_NAMES)
                         sed -i \
-                        -e "s|<REFRESH_TOKEN>|$VRA_TOKEN|g" \
+                        -e "s|<REFRESH_TOKEN>|\\"$VRA_TOKEN\\"|g" \
                         -e "s|<VM_NAMES>|$QUOTED_VM_NAMES|g" \
-                        -e "s|<VRA_PROJECT>|$VRA_PROJECT|g" \
-                        -e "s|<VRA_CATALOG_ITEM>|$VRA_CATALOG_ITEM|g" \
+                        -e "s|<VRA_PROJECT>|\\"$VRA_PROJECT\\"|g" \
+                        -e "s|<VRA_CATALOG_ITEM>|\\"$VRA_CATALOG_ITEM\\"|g" \
                         -e "s|<CATALOG_ITEM_VERSION>|$VRA_CATALOG_ITEM_VERSION|g" \
                         -e "s|<VM_CPU>|$VM_CPU|g" \
                         -e "s|<VM_MEMORY>|$VM_MEMORY|g" \
