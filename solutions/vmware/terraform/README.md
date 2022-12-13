@@ -20,7 +20,7 @@ Terraform Installation Reference - https://developer.hashicorp.com/terraform/dow
     
   * How to get project name and catalog item -
     
-  ![](vRealize_project_catalog.PNG)
+  ![](project_catalog.PNG)
     
   * How to get catalog item version -
     * Get Access Token
