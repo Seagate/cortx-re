@@ -8,9 +8,9 @@ Terraform Installation Reference - https://developer.hashicorp.com/terraform/dow
 ## Procedure
 * Clone `cortx-re` repository and go to directory `solutions/vmware/terraform`. 
     
-    ```
-    git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/vmware/terraform
-    ```
+  ```
+  git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/vmware/terraform
+  ```
 * Update `terraform.tfvars` file with required values as per your infrastructure requirements.
   * How to get refresh token - https://seagate-systems.atlassian.net/wiki/spaces/PRIVATECOR/pages/1058210438/Create+VMs+Deployments#1.-Getting-an-API-Token/Refresh-Token
     
