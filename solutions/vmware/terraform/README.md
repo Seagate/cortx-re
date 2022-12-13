@@ -15,11 +15,11 @@ git clone https://github.com/Seagate/cortx-re && cd $PWD/cortx-re/solutions/vmwa
 vi terraform.tfvars
 ```
     
-    * How to get refresh token - https://seagate-systems.atlassian.net/wiki/spaces/PRIVATECOR/pages/1058210438/Create+VMs+Deployments#1.-Getting-an-API-Token/Refresh-Token
+        * How to get refresh token - https://seagate-systems.atlassian.net/wiki/spaces/PRIVATECOR/pages/1058210438/Create+VMs+Deployments#1.-Getting-an-API-Token/Refresh-Token
     
-    * How to get Project name and Catalog item -
+        * How to get Project name and Catalog item -
     
-    * How to get Catalog item version - https://seagate-systems.atlassian.net/wiki/spaces/PRIVATECOR/pages/1058210438/Create+VMs+Deployments#2.-List-the-available-versions
+        * How to get Catalog item version - https://seagate-systems.atlassian.net/wiki/spaces/PRIVATECOR/pages/1058210438/Create+VMs+Deployments#2.-List-the-available-versions
 
 * Initialize a terraform working directory.  
 ```
