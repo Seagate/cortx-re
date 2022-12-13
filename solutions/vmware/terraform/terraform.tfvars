@@ -1,3 +1,4 @@
+vra_url = <VRA_URL>
 vra_refresh_token = <REFRESH_TOKEN> 
 vm_names = <VM_NAMES> // VM names is a string list. e.g. ["VM1","VM2"]
 vra_project = <VRA_PROJECT> // Project name is a string. e.g. "SSC-CICD"

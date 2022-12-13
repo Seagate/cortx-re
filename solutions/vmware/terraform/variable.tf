@@ -5,7 +5,6 @@ variable "owner_account" {
 
 variable "vra_url" {
   type = string
-  default = "https://ssc-vra.colo.seagate.com"
 }
 
 variable "vra_project" {

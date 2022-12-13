@@ -12,6 +12,10 @@ pipeline {
         ansiColor('xterm')
     }
 
+    environment {
+        VRA_URL = "https://ssc-vra.colo.seagate.com"
+    }
+
 
     parameters {
         string(name: 'CORTX_RE_REPO', defaultValue: 'https://github.com/Seagate/cortx-re', description: 'Repository for VRA infra provisioner script', trim: true)
@@ -64,6 +68,7 @@ pipeline {
                         if [ "$?" -ne 0 ]; then echo -e '\nERROR: Terraform Initialization Failed!!\n'; else echo -e '\n---SUCCESS---\n'; fi
                         QUOTED_VM_NAMES=$(jq -cR '. | gsub("^ +| +$"; "") | split(" *, *"; "")' <<< $VM_NAMES)
                         sed -i \
+                        -e "s|<VRA_URL>|\\"$VRA_URL\\"|g" \
                         -e "s|<REFRESH_TOKEN>|\\"$VRA_TOKEN\\"|g" \
                         -e "s|<VM_NAMES>|$QUOTED_VM_NAMES|g" \
                         -e "s|<VRA_PROJECT>|\\"$VRA_PROJECT\\"|g" \
