@@ -20,26 +20,26 @@ Terraform Installation Reference - https://developer.hashicorp.com/terraform/dow
     
   * How to get catalog item version - https://seagate-systems.atlassian.net/wiki/spaces/PRIVATECOR/pages/1058210438/Create+VMs+Deployments#2.-List-the-available-versions
 
-    ```
-    vi terraform.tfvars
-    ```
+  ```
+  vi terraform.tfvars
+  ```
 * Initialize a terraform working directory.  
 
-    ```
-    terraform init
-    ```
+  ```
+  terraform init
+  ```
 * Validate the terraform configuration files(verify whether a configuration is syntactically valid and internally consistent, regardless of any provided variables or existing state) in a directory.
 
-    ```
-    terraform validate
-    ```
+  ```
+  terraform validate
+  ```
 * Preview and approve the changes that Terraform plans to make to your infrastructure.
 
-    ```
-    terraform plan
-    ```
+  ```
+  terraform plan
+  ```
 * Execute the actions proposed in a Terraform plan
 
-    ```
-    terraform apply
-    ```
+  ```
+  terraform apply
+  ```
