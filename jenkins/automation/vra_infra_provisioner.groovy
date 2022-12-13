@@ -59,7 +59,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: '', script: '''
                     pushd solutions/vmware/terraform/
-                        rm -rf .terraform .terraform.lock.hcl terraform.tfstate terraform.tfstate.backup terraform.tfvars
+                        rm -rf .terraform .terraform.lock.hcl terraform.tfstate terraform.tfstate.backup
                         terraform init
                         if [ "$?" -ne 0 ]; then echo -e '\nERROR: Terraform Initialization Failed!!\n'; else echo -e '\n---SUCCESS---\n'; fi
                         QUOTED_VM_NAMES=$(jq -cR '. | gsub("^ +| +$"; "") | split(" *, *"; "")' <<< $VM_NAMES)
@@ -73,6 +73,7 @@ pipeline {
                         -e "s|<VM_MEMORY>|$VM_MEMORY|g" \
                         -e "s|<VM_DISKSIZE>|$VM_DISKCOUNT|g" \
                         -e "s|<VM_DISKCOUNT>|$VM_DISKSIZE|g" terraform.tfvars
+                        cat terraform.tfvars
                     popd
                 '''    
             }
