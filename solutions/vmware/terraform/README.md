@@ -23,15 +23,20 @@ Terraform Installation Reference - https://developer.hashicorp.com/terraform/dow
   ![](vRealize_project_catalog.PNG)
     
   * How to get catalog item version -
-    1. Get catalog item
+    * Get Access Token
+
+    ```
+    curl -k -X POST https://<vra-fqdn>/iaas/api/login -H 'Content-Type: application/json' -s -d '{ "refreshToken": "<REFRESH_TOKEN>" }'
+    ```
+    * Get catalog item
     
     ```
-    curl -k -X GET https://<vra-fqdn>/catalog/api/items -H "Authorization: Bearer <TOKEN>"
+    curl -k -X GET https://<vra-fqdn>/catalog/api/items -H "Authorization: Bearer <ACCESS_TOKEN>"
     ```
-    2. Get required catalog item version
+    * Get required catalog item version
     
     ```
-    curl -k -X GET https://<vra-fqdn>/catalog/api/items/<Catalog-Item-ID>/versions -H "Authorization: Bearer <TOKEN>"  
+    curl -k -X GET https://<vra-fqdn>/catalog/api/items/<Catalog-Item-ID>/versions -H "Authorization: Bearer <ACCESS_TOKEN>"  
     ```
 * Initialize a terraform working directory.  
 
