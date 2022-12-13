@@ -63,15 +63,16 @@ pipeline {
                         terraform init
                         if [ "$?" -ne 0 ]; then echo -e '\nERROR: Terraform Initialization Failed!!\n'; else echo -e '\n---SUCCESS---\n'; fi
                         QUOTED_VM_NAMES=$(jq -cR '. | gsub("^ +| +$"; "") | split(" *, *"; "")' <<< $VM_NAMES)
-                        echo "vra_refresh_token = \\"$VRA_TOKEN\\"" >> terraform.tfvars
-                        echo "vm_names = $QUOTED_VM_NAMES" >> terraform.tfvars
-                        echo "vra_project = \\"$VRA_PROJECT\\"" >> terraform.tfvars
-                        echo "vra_catalog_item = \\"$VRA_CATALOG_ITEM\\"" >> terraform.tfvars
-                        echo "catalog_item_version = $VRA_CATALOG_ITEM_VERSION" >> terraform.tfvars
-                        echo "vm_cpu = $VM_CPU" >> terraform.tfvars
-                        echo "vm_memory = $VM_MEMORY" >> terraform.tfvars
-                        echo "vm_disk_size = $VM_DISKCOUNT" >> terraform.tfvars
-                        echo "vm_disk_count = $VM_DISKSIZE" >> terraform.tfvars
+                        sed -i \
+                        -e "s|<REFRESH_TOKEN>|$VRA_TOKEN|g" \
+                        -e "s|<VM_NAMES>|$QUOTED_VM_NAMES|g" \
+                        -e "s|<VRA_PROJECT>|$VRA_PROJECT|g" \
+                        -e "s|<VRA_CATALOG_ITEM>|$VRA_CATALOG_ITEM|g" \
+                        -e "s|<CATALOG_ITEM_VERSION>|$VRA_CATALOG_ITEM_VERSION|g" \
+                        -e "s|<VM_CPU>|$VM_CPU|g" \
+                        -e "s|<VM_MEMORY>|$VM_MEMORY|g" \
+                        -e "s|<VM_DISKSIZE>|$VM_DISKCOUNT|g" \
+                        -e "s|<VM_DISKCOUNT>|$VM_DISKSIZE|g" terraform.tfvars
                     popd
                 '''    
             }

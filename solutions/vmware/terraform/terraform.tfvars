@@ -1,0 +1,9 @@
+vra_refresh_token = <REFRESH_TOKEN> 
+vm_names = <VM_NAMES> // VM names is a string list. e.g. ["VM1","VM2"]
+vra_project = <VRA_PROJECT> // Project name is a string. e.g. "SSC-CICD"
+vra_catalog_item = <VRA_CATALOG_ITEM> // catalog item is a string. e.g "ssc-cicd-rocky"
+catalog_item_version = <CATALOG_ITEM_VERSION>
+vm_cpu = <VM_CPU>
+vm_memory = <VM_MEMORY>
+vm_disk_size = <VM_DISKSIZE>
+vm_disk_count = <VM_DISKCOUNT>
