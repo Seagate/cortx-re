@@ -1,4 +1,4 @@
-setuptools==36.0.1          #cortx-ha
+setuptools==65.5.1          #cortx-ha
 argparse==1.4.0             #cortx-ha
 dataclasses==0.7            #cortx-ha
 pathlib==1.0.1              #cortx-ha
