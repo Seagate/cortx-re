@@ -1,0 +1,25 @@
+---
+- name: Fetch installed packages information
+  shell: rpm -qa | sed "s/.*/$HOSTNAME,&,yes/"
+  register: packages_info
+
+- name: Fetch installed services infromation
+  shell: systemctl --type=service --state=running  --no-legend | cut -d " " -f1 | sed "s/.*/$HOSTNAME,&,yes/" 
+  register: services_info
+
+- name: cleanup metadata file
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - /tmp/packages_info.csv
+    - /tmp/services_info.csv
+
+- name: copy packages info to a local file
+  shell: echo "{{ packages_info.stdout }}" >> /tmp/packages_info.csv
+  delegate_to: localhost
+
+- name: copy services info to a local file
+  shell: echo "{{ services_info.stdout }}" >> /tmp/services_info.csv
+  delegate_to: localhost
+

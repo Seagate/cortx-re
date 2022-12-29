@@ -1,0 +1,10 @@
+---
+- name: Read CSV file and return a list of packages
+  read_csv:
+    path: /tmp/packages_info.csv
+    fieldnames: hostname,package_name,default
+  register: packages_info
+  delegate_to: localhost
+
+- name: Install packages
+  shell: yum install -y "{{ packages_info.list | map(attribute='package_name') | join(',') }}" --skip-broken

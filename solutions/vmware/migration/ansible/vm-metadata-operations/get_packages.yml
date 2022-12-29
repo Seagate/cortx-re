@@ -1,0 +1,6 @@
+---
+ - hosts: cloudform-vms
+   gather_facts: True
+   become: true
+   roles:
+      - get_metadata
