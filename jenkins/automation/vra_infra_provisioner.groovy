@@ -115,7 +115,7 @@ pipeline {
         always {
             script {
                 // Archive tfstate artifacts in jenkins build
-                archiveArtifacts artifacts: "solutions/vmware/terraform//*.tfstate", onlyIfSuccessful: false, allowEmptyArchive: true
+                archiveArtifacts artifacts: "solutions/vmware/terraform//*.tfstate,solutions/vmware/terraform//*.tfvars", onlyIfSuccessful: false, allowEmptyArchive: true
             }
         }
     }    
