@@ -76,8 +76,8 @@ pipeline {
                         -e "s|<CATALOG_ITEM_VERSION>|$VRA_CATALOG_ITEM_VERSION|g" \
                         -e "s|<VM_CPU>|$VM_CPU|g" \
                         -e "s|<VM_MEMORY>|$VM_MEMORY|g" \
-                        -e "s|<VM_DISKSIZE>|$VM_DISKCOUNT|g" \
-                        -e "s|<VM_DISKCOUNT>|$VM_DISKSIZE|g" terraform.tfvars
+                        -e "s|<VM_DISKSIZE>|$VM_DISKSIZE|g" \
+                        -e "s|<VM_DISKCOUNT>|$VM_DISKCOUNT|g" terraform.tfvars
                         cat terraform.tfvars
                     popd
                 '''    
