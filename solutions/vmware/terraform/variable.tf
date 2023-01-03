@@ -46,7 +46,7 @@ variable "vm_memory" {
 }
 
 variable "vm_disk_size" {
-  type = number
+  type = string
   default = 10
 }
 
