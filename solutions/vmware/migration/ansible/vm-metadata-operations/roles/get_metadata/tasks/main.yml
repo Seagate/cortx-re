@@ -1,19 +1,19 @@
----
 - name: Fetch installed packages information
-  shell: rpm -qa | sed "s/.*/$HOSTNAME,&,yes/"
+  shell: yum list installed -q | sed "1d" | cut -d" " -f1 | sed -e "s/.x86_64//g" -e "s/.noarch//g" -e "s/-[[:digit:]].el7_9//g" -e "s/-[[:digit:]].el[[:digit:]]//g" | awk "NF" | sed "s/.*/$HOSTNAME,&,yes/"
   register: packages_info
 
 - name: Fetch installed services infromation
-  shell: systemctl --type=service --state=running  --no-legend | cut -d " " -f1 | sed "s/.*/$HOSTNAME,&,yes/" 
+  shell: systemctl --type=service --state=running  --no-legend | cut -d " " -f1 | sed "s/.*/$HOSTNAME,&,yes/"
   register: services_info
 
 - name: cleanup metadata file
   file:
-    path: "{{ item }}"
     state: absent
+    path: "{{ item }}"
   with_items:
-    - /tmp/packages_info.csv
-    - /tmp/services_info.csv
+    - "/tmp/packages_info.csv"
+    - "/tmp/services_info.csv"
+  delegate_to: localhost
 
 - name: copy packages info to a local file
   shell: echo "{{ packages_info.stdout }}" >> /tmp/packages_info.csv
@@ -22,4 +22,3 @@
 - name: copy services info to a local file
   shell: echo "{{ services_info.stdout }}" >> /tmp/services_info.csv
   delegate_to: localhost
-

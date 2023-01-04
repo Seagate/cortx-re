@@ -7,4 +7,12 @@
   delegate_to: localhost
 
 - name: Install packages
-  shell: yum install -y "{{ packages_info.list | map(attribute='package_name') | join(',') }}" --skip-broken
+  shell: "yum install -y {{ packages_info.list | map(attribute='package_name') | join(' ') }} --skip-broken --nogpgcheck"
+
+#- name: Check docker service installation
+#  shell: systemctl status docker
+#  register: docker_status
+#  when: "'docker' in {{ packages_info.list.package_name }}"
+
+#- include: install_docker.yml
+#  when: "{{ docker_status.rc }} != 0"
