@@ -1,7 +1,7 @@
 pipeline {
     agent {
         node {
-            label 'terraform-node'
+            label 'docker-rockylinux-8.4-vmware-node'
         }
     }
     
@@ -63,6 +63,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: '', script: '''
                     pushd solutions/vmware/terraform/
+                        yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo && yum -y install terraform
                         rm -rf .terraform .terraform.lock.hcl terraform.tfstate terraform.tfstate.backup
                         terraform init
                         if [ "$?" -ne 0 ]; then echo -e '\nERROR: Terraform Initialization Failed!!\n'; else echo -e '\n---SUCCESS---\n'; fi
