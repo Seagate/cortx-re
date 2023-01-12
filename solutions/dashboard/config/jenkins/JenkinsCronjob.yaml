@@ -1,0 +1,63 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: dashboard-jenkins
+  namespace: dashboard
+spec:
+  schedule: "0 0 * * 6"
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: dashboard-jenkins
+              image: docker.io/sanket02092001/jenkins:1.0.0
+              imagePullPolicy: Always
+              env:
+                - name: MONGODB_USERNAME
+                  valueFrom:
+                    secretKeyRef:
+                      key: mongodb_username
+                      name: dashboard-secret
+                - name: MONGODB_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      key: mongodb_password
+                      name: dashboard-secret
+                - name: MONGODB_CONNECTION_URL
+                  valueFrom:
+                    configMapKeyRef:
+                      key: mongodb_connection_url
+                      name: dashboard-configmap
+                - name: JENKINS_SERVER_URL
+                  valueFrom:
+                    configMapKeyRef:
+                      key: jenkins_server_url
+                      name: dashboard-configmap
+                - name: JENKINS_USERNAME
+                  valueFrom:
+                    secretKeyRef:
+                      key: jenkins_username
+                      name: dashboard-secret
+                - name: JENKINS_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      key: jenkins_token
+                      name: dashboard-secret
+              resources:
+                limits:
+                  memory: "2048Mi"
+                  cpu: "5000m"
+                requests:
+                  memory: "256Mi"
+                  cpu: "200m"
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop:
+                    - NET_RAW
+                    - ALL
+          restartPolicy: OnFailure
