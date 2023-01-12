@@ -122,11 +122,11 @@ pipeline {
                 archiveArtifacts artifacts: "solutions/vmware/terraform/*.*", onlyIfSuccessful: false, allowEmptyArchive: true
 
                 // Send email notification
-                env.image = sh( script: "cat solutions/vmware/terraform/vm_details.txt", returnStdout: true).trim()
+                env.vmnames = sh( script: "cat solutions/vmware/terraform/vm_details.txt", returnStdout: true).trim()
                 def toEmail = ""
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
                 emailext ( 
-                    body: '''${SCRIPT, template="docker-image-email.template"}''',
+                    body: '''${SCRIPT, template="vmware-node-email.template"}''',
                     mimeType: 'text/html',
                     subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
                     attachLog: true,
