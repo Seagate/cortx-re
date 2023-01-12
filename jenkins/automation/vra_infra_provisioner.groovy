@@ -106,7 +106,7 @@ pipeline {
                     pushd solutions/vmware/terraform/
                         terraform apply --auto-approve
                         if [ "$?" -ne 0 ]; then echo -e '\nERROR: Infra Provision Failed!!\n'; else echo -e '\n---SUCCESS---\n'; fi
-                        VM_HOSTNAMES=$(terraform show -json terraform.tfstate.multinode | jq .values.root_module.resources[].values.resources | jq -c '[ .[] | select( .type | contains("Cloud.vSphere.Machine")) ]' | tr ',' '\n' | awk -F '\' '/cloudConfig/ { print $8}' | sed 's/nfqdn: //g')
+                        VM_HOSTNAMES=$(terraform show -json terraform.tfstate | jq .values.root_module.resources[].values.resources | jq -c '[ .[] | select( .type | contains("Cloud.vSphere.Machine")) ]' | tr ',' '\n' | awk -F '\' '/cloudConfig/ { print $8}' | sed 's/nfqdn: //g')
                         echo "Following VM's are created"
                         echo $VM_HOSTNAMES | tee vm_details.txt
                     popd
