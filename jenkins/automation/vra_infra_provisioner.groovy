@@ -106,6 +106,9 @@ pipeline {
                     pushd solutions/vmware/terraform/
                         terraform apply --auto-approve
                         if [ "$?" -ne 0 ]; then echo -e '\nERROR: Infra Provision Failed!!\n'; else echo -e '\n---SUCCESS---\n'; fi
+                        VM_HOSTNAMES=$(terraform show -json terraform.tfstate.multinode | jq .values.root_module.resources[].values.resources | jq -c '[ .[] | select( .type | contains("Cloud.vSphere.Machine")) ]' | tr ',' '\n' | awk -F '\' '/cloudConfig/ { print $8}' | sed 's/nfqdn: //g')
+                        echo "Following VM's are created"
+                        echo $VM_HOSTNAMES | tee vm_details.txt
                     popd
                 '''
             }
@@ -117,6 +120,19 @@ pipeline {
             script {
                 // Archive tfstate artifacts in jenkins build
                 archiveArtifacts artifacts: "solutions/vmware/terraform/*.*", onlyIfSuccessful: false, allowEmptyArchive: true
+
+                // Send email notification
+                env.image = sh( script: "cat solutions/vmware/terraform/vm_details.txt", returnStdout: true).trim()
+                def toEmail = ""
+                def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
+                emailext ( 
+                    body: '''${SCRIPT, template="docker-image-email.template"}''',
+                    mimeType: 'text/html',
+                    subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
+                    attachLog: true,
+                    to: toEmail,
+                    recipientProviders: recipientProvidersClass
+                )
             }
         }
     }    
