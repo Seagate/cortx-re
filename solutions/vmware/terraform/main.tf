@@ -26,6 +26,6 @@ resource "vra_deployment" "names" {
   catalog_item_id = data.vra_catalog_item.this.id
   project_id = data.vra_project.this.id
   inputs = {
-    ComputeInfra   = jsonencode({ "cpu" = var.vm_cpu, "image" = var.vm_image, "memory" = var.vm_memory, "disksize" = var.vm_disk_size, "disk_count" = var.vm_disk_count })
+    ComputeInfra   = jsonencode({ "cpu" = var.vm_cpu, "image" = var.vm_image, "memory" = var.vm_memory, "diskSize" = var.vm_disk_size, "diskCount" = var.vm_disk_count })
   }
 }
