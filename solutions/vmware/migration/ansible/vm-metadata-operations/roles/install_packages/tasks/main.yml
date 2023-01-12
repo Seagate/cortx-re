@@ -1,18 +1,21 @@
 ---
 - name: Read CSV file and return a list of packages
   read_csv:
-    path: /tmp/packages_info.csv
-    fieldnames: hostname,package_name,default
+    path: /tmp/rocky_non_default_packages.csv
+    fieldnames: hostname,package_name
   register: packages_info
   delegate_to: localhost
 
 - name: Install packages
-  shell: "yum install -y {{ packages_info.list | map(attribute='package_name') | join(' ') }} --skip-broken --nogpgcheck"
+  shell: "yum install -y {{ packages_info.list | map(attribute='package_name') | list | unique | join(' ') }} --skip-broken --nogpgcheck"
 
-#- name: Check docker service installation
-#  shell: systemctl status docker
-#  register: docker_status
-#  when: "'docker' in {{ packages_info.list.package_name }}"
+- name: Install the packages from a remote repo
+  ansible.builtin.yum:
+    name: "{{ item }}"
+    state: present
+    disable_gpg_check: true
+  with_items:
+    - https://vault.centos.org/centos/8/PowerTools/x86_64/os/Packages/hamcrest-core-1.3-23.module_el8.0.0+30+832da3a1.noarch.rpm
+    - https://vault.centos.org/centos/8/PowerTools/x86_64/os/Packages/junit-4.12-9.module_el8.0.0+30+832da3a1.noarch.rpm
+    - https://rpm.nodesource.com/pub_10.x/el/8/x86_64/nodesource-release-el8-1.noarch.rpm
 
-#- include: install_docker.yml
-#  when: "{{ docker_status.rc }} != 0"

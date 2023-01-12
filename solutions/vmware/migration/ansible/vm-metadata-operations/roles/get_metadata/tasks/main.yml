@@ -1,24 +1,57 @@
+---
+- name: Fetch OS details
+  shell: cat /etc/os-release | grep 'PRETTY_NAME' | cut -d '"' -f2
+  register: os_family
+
+- name: Print OS details
+  debug:
+    msg: "{{ os_family.stdout }}"
+
+- name: Fetch default packages information - Rocky Linux
+  shell: yum list installed -q | sed "1d" | cut -d" " -f1 | sed -e "s/.x86_64//g" -e "s/.noarch//g" -e "s/-[[:digit:]].el7_9//g" -e "s/-[[:digit:]].el[[:digit:]]//g" | awk "NF"
+  register: rocky_default_packages_info
+  when: "'Rocky' in os_family.stdout"
+  delegate_to: <Fresh Rocky Linux Cloudform VM>
+
+#- name: Fetch default packages information - CentOS
+#  shell: yum list installed -q | sed "1d" | cut -d" " -f1 | sed -e "s/.x86_64//g" -e "s/.noarch//g" -e "s/-[[:digit:]].el7_9//g" -e "s/-[[:digit:]].el[[:digit:]]//g" | awk "NF"
+#  register: centos_default_packages_info
+#  when: "'CentOS' in os_family.stdout"
+#  delegate_to: <Fresh CentOS Cloudform VM>
+
 - name: Fetch installed packages information
-  shell: yum list installed -q | sed "1d" | cut -d" " -f1 | sed -e "s/.x86_64//g" -e "s/.noarch//g" -e "s/-[[:digit:]].el7_9//g" -e "s/-[[:digit:]].el[[:digit:]]//g" | awk "NF" | sed "s/.*/$HOSTNAME,&,yes/"
-  register: packages_info
+  shell: yum list installed -q | sed "1d" | cut -d" " -f1 | sed -e "s/.x86_64//g" -e "s/.noarch//g" -e "s/-[[:digit:]].el7_9//g" -e "s/-[[:digit:]].el[[:digit:]]//g" | awk "NF"
+  register: installed_packages_info
 
 - name: Fetch installed services infromation
-  shell: systemctl --type=service --state=running  --no-legend | cut -d " " -f1 | sed "s/.*/$HOSTNAME,&,yes/"
-  register: services_info
+  shell: systemctl --type=service --state=running  --no-legend | cut -d " " -f1
+  register: installed_services_info
 
 - name: cleanup metadata file
   file:
     state: absent
     path: "{{ item }}"
   with_items:
-    - "/tmp/packages_info.csv"
-    - "/tmp/services_info.csv"
+    - "/tmp/rocky_non_default_packages.csv"
+    - "/tmp/centos_non_default_packages.csv"
   delegate_to: localhost
 
-- name: copy packages info to a local file
-  shell: echo "{{ packages_info.stdout }}" >> /tmp/packages_info.csv
+- name: List non-default packages - Rocky Linux
+  shell: echo "{{ installed_packages_info.stdout_lines | difference( rocky_default_packages_info.stdout_lines ) | to_yaml }}" | tr -d '[]' | tr , '\n' | tr -d ' ' | awk "NF" | sed "s/.*/$HOSTNAME,&/"
+  register: rocky_diff_packages
+  when: "'Rocky' in os_family.stdout"
+
+#- name: List non-default packages - CentOS
+#  shell: echo "{{ installed_packages_info.stdout_lines | difference( centos_default_packages_info.stdout_lines ) | to_yaml }}" | tr -d '[]' | tr , '\n' | tr -d ' ' | awk "NF" | sed "s/.*/$HOSTNAME,&/"
+#  register: centos_diff_packages
+#  when: "'CentOS' in os_family.stdout"
+
+- name: Create a non-default packages file - Rocky Linux 
+  shell: echo "{{ rocky_diff_packages.stdout }}" >> /tmp/rocky_non_default_packages.csv
+  when: "'Rocky' in os_family.stdout"
   delegate_to: localhost
 
-- name: copy services info to a local file
-  shell: echo "{{ services_info.stdout }}" >> /tmp/services_info.csv
-  delegate_to: localhost
+#- name: Create a non-default packages file - CentOS
+#  shell: echo "{{ centos_diff_packages.stdout }}" >> /tmp/centos_non_default_packages.csv
+#  when: "'CentOS' in os_family.stdout"
+#  delegate_to: localhost
