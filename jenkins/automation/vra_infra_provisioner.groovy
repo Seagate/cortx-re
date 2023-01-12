@@ -24,7 +24,7 @@ pipeline {
         string(name: 'VM_NAMES', defaultValue: '', description: 'list of VM names need to be procured. (comma separated list of VM names)', trim: true)
         string(name: 'VRA_PROJECT', defaultValue: 'SSC-CICD', description: 'VRA Project under which deployment will be provisioned.', trim: true)
         string(name: 'VRA_CATALOG_ITEM', defaultValue: 'ssc-cicd-rocky', description: 'OS id required for VM', trim: true)
-        string(name: 'VRA_CATALOG_ITEM_VERSION', defaultValue: '5', description: 'Version of OS id. Refer link to get version for catalog - https://seagate-systems.atlassian.net/wiki/spaces/PRIVATECOR/pages/1058210438/Create+VMs+Deployments#2.-List-the-available-versions', trim: true)
+        string(name: 'VRA_CATALOG_ITEM_VERSION', defaultValue: '6', description: 'Version of OS id. Refer link to get version for catalog - https://seagate-systems.atlassian.net/wiki/spaces/PRIVATECOR/pages/1058210438/Create+VMs+Deployments#2.-List-the-available-versions', trim: true)
         choice(
             name: 'VM_CPU',
             choices: ['4', '2', '6', '8'],
