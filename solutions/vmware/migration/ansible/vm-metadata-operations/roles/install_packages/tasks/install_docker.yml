@@ -19,3 +19,10 @@
     name: docker
     state: started
     enabled: yes
+
+- name: Add insecure image registry
+  copy:
+    src: files/daemon.json
+    dest: /etc/docker/daemon.json
+  notify:
+      - Restart docker
