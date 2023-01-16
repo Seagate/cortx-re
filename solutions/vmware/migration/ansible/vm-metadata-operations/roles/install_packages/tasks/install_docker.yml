@@ -1,0 +1,28 @@
+---
+- name: Install yum utils
+  yum:
+    name: yum-utils
+    state: latest
+
+- name: Add Docker repo
+  get_url:
+    url: https://download.docker.com/linux/centos/docker-ce.repo
+    dest: /etc/yum.repos.d/docer-ce.repo
+
+- name: Install Docker
+  package:
+    name: docker-ce
+    state: latest
+
+- name: Start Docker service
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Add insecure image registry
+  copy:
+    src: files/daemon.json
+    dest: /etc/docker/daemon.json
+  notify:
+      - Restart docker

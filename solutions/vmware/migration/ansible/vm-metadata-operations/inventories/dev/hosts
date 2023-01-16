@@ -1,0 +1,5 @@
+[cloudform-vms]
+# Add Cloudform VM's/line here
+
+[vmware-vms]
+# Add VMware VM's/line here
