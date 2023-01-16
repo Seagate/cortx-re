@@ -107,9 +107,9 @@ pipeline {
                         echo "VM list is empty" > vm_details.txt
                         terraform apply --auto-approve
                         if [ "$?" -ne 0 ]; then echo -e \'\\nERROR: Infra Provision Failed!!\\n\'; else echo -e \'\\n---SUCCESS---\\n\'; fi
-                        VM_HOSTNAMES=$(terraform show -json terraform.tfstate | jq .values.root_module.resources[].values.resources | jq -c \'[ .[] | select( .type | contains("Cloud.vSphere.Machine")) ]\' | tr \',\' \'\\n\' | awk -F \'\\\' \'/cloudConfig/ { print $8}\' | sed \'s/nfqdn: //g\')
+                        VM_HOSTNAMES=$(terraform show -json terraform.tfstate | jq .values.root_module.resources[].values.resources | jq -c \'[ .[] | select( .type | contains("Cloud.vSphere.Machine")) ]\' | tr \',\' \'\\n\' | awk -F \'\\\\\' \'/cloudConfig/ { print $8}\' | sed \'s/nfqdn: //g\' | tr \'\\n\' \',\')
                         echo "Following VM\'s are created"
-                        echo $VM_HOSTNAMES | tee vm_details.txt
+                        echo $VM_NAMES | rev | sed \'s/^,//g\' | rev | tee vm_details.txt
                     popd
                 '''
             }
