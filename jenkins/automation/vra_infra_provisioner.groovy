@@ -1,7 +1,7 @@
 pipeline {
     agent {
         node {
-            label 'terraform-node'
+            label 'docker-rockylinux-8.4-vmware-node'
         }
     }
     
@@ -63,6 +63,7 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: '', script: '''
                     pushd solutions/vmware/terraform/
+                        yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo && yum -y install terraform 
                         rm -rf .terraform .terraform.lock.hcl terraform.tfstate terraform.tfstate.backup
                         terraform init
                         if [ "$?" -ne 0 ]; then echo -e '\nERROR: Terraform Initialization Failed!!\n'; else echo -e '\n---SUCCESS---\n'; fi
@@ -103,8 +104,12 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
                 sh label: '', script: '''
                     pushd solutions/vmware/terraform/
+                        echo "VM list is empty" > vm_details.txt
                         terraform apply --auto-approve
-                        if [ "$?" -ne 0 ]; then echo -e '\nERROR: Infra Provision Failed!!\n'; else echo -e '\n---SUCCESS---\n'; fi
+                        if [ "$?" -ne 0 ]; then echo -e \'\\nERROR: Infra Provision Failed!!\\n\'; else echo -e \'\\n---SUCCESS---\\n\'; fi
+                        VM_HOSTNAMES=$(terraform show -json terraform.tfstate | jq .values.root_module.resources[].values.resources | jq -c \'[ .[] | select( .type | contains("Cloud.vSphere.Machine")) ]\' | tr \',\' \'\\n\' | awk -F \'\\\\\' \'/cloudConfig/ { print $8}\' | sed \'s/nfqdn: //g\' | tr \'\\n\' \',\')
+                        echo "Following VM\'s are created"
+                        echo $VM_HOSTNAMES | rev | sed \'s/^,//g\' | rev | tee vm_details.txt
                     popd
                 '''
             }
@@ -116,6 +121,19 @@ pipeline {
             script {
                 // Archive tfstate artifacts in jenkins build
                 archiveArtifacts artifacts: "solutions/vmware/terraform/*.*", onlyIfSuccessful: false, allowEmptyArchive: true
+
+                // Send email notification
+                env.vmnames = sh( script: "cat solutions/vmware/terraform/vm_details.txt", returnStdout: true).trim()
+                def toEmail = "CORTX.DevOps.RE@seagate.com"
+                def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
+                emailext ( 
+                    body: '''${SCRIPT, template="vmware-node-email.template"}''',
+                    mimeType: 'text/html',
+                    subject: "[Jenkins Build ${currentBuild.currentResult}] : ${env.JOB_NAME}",
+                    attachLog: true,
+                    to: toEmail,
+                    recipientProviders: recipientProvidersClass
+                )
             }
         }
     }    
