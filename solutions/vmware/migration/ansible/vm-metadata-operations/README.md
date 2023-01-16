@@ -1,10 +1,11 @@
 This is a Ansible Playbook written for collecting installed packages from Cloudform VM's and install them on VMware VM's 
 There are two roles available mentioned as below -
 1. get_metadata - Gather/collect packages from given list of VM's
-2. install_packages - Install gathered/collected packages or tools on given list of VM's
+2. setup_prerequisites - Install/Setup gathered/collected packages or tools on given list of VM's
    Tags -
-   1. install-packages - install packages gathered/collected from `get_metadata` role.
+   1. install-packages - install packages gathered/collected from `get_metadata` role
    2. install-docker - install/enable docker service and configure internal docker registry
+   3. setup-nfs-mount - configure prerequistes and setup nfs mount
     
 
 ## Pre-requisites
@@ -22,5 +23,5 @@ ansible-playbook -i inventories/dev get_packages.yml --user <GID> --ask-pass --a
 
 To install packages / tools -
 ```
-ansible-playbook -i inventories/dev install_packages.yml --tags <install-packages | install-docker> --user <GID> --ask-pass --ask-become-pass
+ansible-playbook -i inventories/dev setup_prerequisites.yml --tags <install-packages | install-docker> --user <GID> --ask-pass --ask-become-pass
 ```

@@ -9,10 +9,23 @@
     url: https://download.docker.com/linux/centos/docker-ce.repo
     dest: /etc/yum.repos.d/docer-ce.repo
 
-- name: Install Docker
-  package:
-    name: docker-ce
-    state: latest
+- name: Install Docker and Docker Compose
+  yum:
+    name: 
+      - "docker-ce-{{ docker_version }}"
+      - "docker-ce-cli-{{ docker_version }}"
+      - "containerd.io"
+      - "docker-compose-plugin"
+    state: present
+  vars:
+    docker_version: "20.10.8"
+
+- name: Verify Docker and Docker-Compse version
+  shell: docker version && docker compose version
+  register: docker_version_info
+
+- debug:
+    msg: "{{ docker_version_info.stdout }}"
 
 - name: Start Docker service
   service:

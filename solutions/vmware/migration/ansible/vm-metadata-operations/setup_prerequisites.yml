@@ -3,4 +3,4 @@
    gather_facts: True
    become: yes
    roles:
-      - install_packages
+      - setup_prerequisites

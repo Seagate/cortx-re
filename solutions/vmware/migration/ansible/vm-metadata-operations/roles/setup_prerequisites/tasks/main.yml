@@ -3,3 +3,6 @@
   
 - include: install_docker.yml
   tags: install-docker
+
+- include: setup_nfs_mount.yml
+  tags: setup-nfs-mount
