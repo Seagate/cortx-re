@@ -124,7 +124,7 @@ pipeline {
 
                 // Send email notification
                 env.vmnames = sh( script: "cat solutions/vmware/terraform/vm_details.txt", returnStdout: true).trim()
-                def toEmail = ""
+                def toEmail = "CORTX.DevOps.RE@seagate.com"
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]
                 emailext ( 
                     body: '''${SCRIPT, template="vmware-node-email.template"}''',
