@@ -20,18 +20,18 @@
   vars:
     docker_version: "20.10.8"
 
+- name: Start Docker service
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
 - name: Verify Docker and Docker-Compse version
   shell: docker version && docker compose version
   register: docker_version_info
 
 - debug:
     msg: "{{ docker_version_info.stdout }}"
-
-- name: Start Docker service
-  service:
-    name: docker
-    state: started
-    enabled: yes
 
 - name: Add insecure image registry
   copy:
