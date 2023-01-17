@@ -40,9 +40,8 @@
   notify:
       - Restart docker
 
-- name: Pull base image from local docker registry
-  docker_image:
-    name: cortx-build-internal
-    repository: ghcr.io/seagate/cortx-re
-    tag: rockylinux-8.4
-    source: pull 
+- name: Login to GitHub docker registry
+  shell: docker login ghcr.io -u {{ GITHUB_CRED_USR }} -p {{ GITHUB_CRED_PSW }}
+
+- name: Pull base image from GitHub docker registry
+  shell: docker pull ghcr.io/seagate/cortx-re/cortx-build-internal:rockylinux-8.4
