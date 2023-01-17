@@ -21,7 +21,16 @@ To fetch installed packages data -
 ansible-playbook -i inventories/dev get_packages.yml --user <GID> --ask-pass --ask-become-pass
 ```
 
-To install packages / tools -
+To install packages -
 ```
-ansible-playbook -i inventories/dev setup_prerequisites.yml --tags <install-packages | install-docker> --user <GID> --ask-pass --ask-become-pass
+ansible-playbook -i inventories/dev setup_prerequisites.yml --tags install-packages --user <GID> --ask-pass --ask-become-pass
+```
+
+To install docker/docker-compose -
+```
+ansible-playbook -i inventories/dev setup_prerequisites.yml --tags install-docker --user <GID> --ask-pass --ask-become-pass -e "GITHUB_CRED_USR=<GitHub Username> GITHUB_CRED_PSW=<GitHub Token>"
+```
+To setup nfs mounts -
+```
+ansible-playbook -i inventories/dev setup_prerequisites.yml --tags setup-nfs-mount --user <GID> --ask-pass --ask-become-pass
 ```
