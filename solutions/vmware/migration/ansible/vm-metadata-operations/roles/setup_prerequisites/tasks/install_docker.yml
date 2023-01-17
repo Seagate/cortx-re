@@ -39,3 +39,10 @@
     dest: /etc/docker/daemon.json
   notify:
       - Restart docker
+
+- name: Pull base image from local docker registry
+  docker_image:
+    name: cortx-build-internal
+    repository: ghcr.io/seagate/cortx-re
+    tag: rockylinux-8.4
+    source: pull 

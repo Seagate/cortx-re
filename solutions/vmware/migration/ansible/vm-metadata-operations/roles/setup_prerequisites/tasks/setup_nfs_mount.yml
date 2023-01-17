@@ -13,8 +13,11 @@
 - name: Add mount entry in fstab
   lineinfile:
     path: /etc/fstab
-    line: cortx-storage.colo.seagate.com:/mnt/data1/releases/ /mnt/bigstorage/releases/    nfs    defaults    0 0
+    line: "{{ item }}"
     create: yes
+  with_items: 
+    - 'cortx-storage.colo.seagate.com:/mnt/data1/releases/ /mnt/bigstorage/releases/    nfs    defaults    0 0'
+    - '/dev/sdb                        /mnt/docker             ext4    defaults        1 1'  
 
 - name: Mount filesystems available in fstab
   shell: mount -a
