@@ -1,0 +1,6 @@
+---
+ - hosts: vmware-vms
+   gather_facts: True
+   become: yes
+   roles:
+      - install_packages
