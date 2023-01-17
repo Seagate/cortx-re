@@ -1,5 +1,6 @@
 {
-    "insecure-registries": [
-      "cortx-docker.colo.seagate.com"
-    ]
+  "data-root": "/mnt/docker",
+  "insecure-registries": [
+    "cortx-docker.colo.seagate.com"
+  ]
 }  
