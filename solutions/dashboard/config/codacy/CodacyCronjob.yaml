@@ -4,7 +4,7 @@ metadata:
   name: dashboard-codacy
   namespace: dashboard
 spec:
-  schedule: "0 0 * * 6"
+  schedule: "0 0 * * *"
   successfulJobsHistoryLimit: 1
   failedJobsHistoryLimit: 1
   jobTemplate:
@@ -13,7 +13,7 @@ spec:
         spec:
           containers:
             - name: dashboard-codacy
-              image: docker.io/sanket02092001/scs:1.0.0
+              image: cortx-docker.colo.seagate.com/dashboard/codacy:1.0.0-latest
               imagePullPolicy: Always
               env:
                 - name: MONGODB_USERNAME

@@ -13,7 +13,7 @@ spec:
         spec:
           containers:
             - name: dashboard-jenkins
-              image: docker.io/sanket02092001/jenkins:1.0.0
+              image: cortx-docker.colo.seagate.com/dashboard/jenkins:1.0.0-latest
               imagePullPolicy: Always
               env:
                 - name: MONGODB_USERNAME
