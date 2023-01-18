@@ -17,7 +17,7 @@
 # please email opensource@seagate.com or cortx-questions@seagate.com.
 #
 
-version: "3"
+version: "4"
 
 services:
   codacy:
@@ -34,4 +34,9 @@ services:
     image: github:$TAG
     build:
       context: ../tools/github/
+      dockerfile: ./Dockerfile
+  jenkins:
+    image: jenkins:$TAG
+    build:
+      context: ../tools/jenkins/
       dockerfile: ./Dockerfile
