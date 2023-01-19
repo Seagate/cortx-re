@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: dashboard-codacy
+  name: dashboard-jenkins
   namespace: dashboard
 spec:
   schedule: "0 0 * * *"
@@ -12,8 +12,8 @@ spec:
       template:
         spec:
           containers:
-            - name: dashboard-codacy
-              image: cortx-docker.colo.seagate.com/dashboard/codacy:1.0.0-latest
+            - name: dashboard-jenkins
+              image: cortx-docker.colo.seagate.com/dashboard/jenkins:1.0.0-latest
               imagePullPolicy: Always
               env:
                 - name: MONGODB_USERNAME
@@ -31,18 +31,28 @@ spec:
                     configMapKeyRef:
                       key: mongodb_connection_url
                       name: dashboard-configmap
-                - name: CODACY_API_TOKEN
+                - name: JENKINS_SERVER_URL
+                  valueFrom:
+                    configMapKeyRef:
+                      key: jenkins_server_url
+                      name: dashboard-configmap
+                - name: JENKINS_USERNAME
                   valueFrom:
                     secretKeyRef:
-                      key: codacy_api_token
+                      key: jenkins_username
+                      name: dashboard-secret
+                - name: JENKINS_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      key: jenkins_token
                       name: dashboard-secret
               resources:
                 limits:
-                  memory: "768Mi"
+                  memory: "2048Mi"
                   cpu: "5000m"
                 requests:
                   memory: "256Mi"
-                  cpu: "300m"
+                  cpu: "200m"
               securityContext:
                 allowPrivilegeEscalation: false
                 readOnlyRootFilesystem: true

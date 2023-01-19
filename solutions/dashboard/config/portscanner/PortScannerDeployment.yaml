@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: dashboard-port-scanner
-          image: docker.io/sanket02092001/port-scanner:1.0.0
+          image: cortx-docker.colo.seagate.com/dashboard/portscanner:1.0.0-latest
           imagePullPolicy: Always
           env:
             - name: MONGODB_USERNAME

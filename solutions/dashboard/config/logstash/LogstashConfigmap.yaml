@@ -159,211 +159,262 @@ data:
 
   logstash.conf: |
     input {
-      mongodb {
-        uri => 'mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_CONNECTION_URL}/portscanner?authSource=admin'
-        placeholder_db_dir => '/opt/logstash/'
-        placeholder_db_name => 'logstash_sqlite.db'
-        collection => 'operator'
-        batch_size => 5000
-        parse_method => 'simple'
-      }
-      mongodb {
-        uri => 'mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_CONNECTION_URL}/codacy?authSource=admin'
-        placeholder_db_dir => '/opt/logstash/'
-        placeholder_db_name => 'logstash_sqlite.db'
-        collection => 'repositories'
-        batch_size => 5000
-        parse_method => 'simple'
-      }
-      mongodb {
-        uri => 'mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_CONNECTION_URL}/codacy?authSource=admin'
-        placeholder_db_dir => '/opt/logstash/'
-        placeholder_db_name => 'logstash_sqlite.db'
-        collection => 'metadata'
-        batch_size => 5000
-        parse_method => 'simple'
-      }
-      mongodb {
-        uri => 'mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_CONNECTION_URL}/github?authSource=admin'
-        placeholder_db_dir => '/opt/logstash/'
-        placeholder_db_name => 'logstash_sqlite.db'
-        collection => 'github_repo'
-        batch_size => 5000
-        parse_method => 'simple'
-      }
-      mongodb {
-        uri => 'mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_CONNECTION_URL}/github?authSource=admin'
-        placeholder_db_dir => '/opt/logstash/'
-        placeholder_db_name => 'logstash_sqlite.db'
-        collection => 'github_meta'
-        batch_size => 5000
-        parse_method => 'simple'
-      }
-      mongodb {
-        uri => 'mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_CONNECTION_URL}/github?authSource=admin'
-        placeholder_db_dir => '/opt/logstash/'
-        placeholder_db_name => 'logstash_sqlite.db'
-        collection => 'github_branches'
-        batch_size => 5000
-        parse_method => 'simple'
-      }
-      mongodb {
-        uri => 'mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_CONNECTION_URL}/github?authSource=admin'
-        placeholder_db_dir => '/opt/logstash/'
-        placeholder_db_name => 'logstash_sqlite.db'
-        collection => 'github_contributors'
-        batch_size => 5000
-        parse_method => 'simple'
-      }
+      jdbc {
+        jdbc_driver_library => "/usr/share/logstash/logstash-core/lib/jars/mongojdbc4.8.jar"
+        jdbc_driver_class => "com.wisecoders.dbschema.mongodb.JdbcDriver"
+        jdbc_connection_string => "jdbc:mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_CONNECTION_URL}/portscanner?authSource=admin"
+        jdbc_user => "${MONGODB_USERNAME}"
+        jdbc_password => "${MONGODB_PASSWORD}"
+        statement => "db.operator.find({}, {_id: 0})"
+      } 
+      jdbc {
+        jdbc_driver_library => "/usr/share/logstash/logstash-core/lib/jars/mongojdbc4.8.jar"
+        jdbc_driver_class => "com.wisecoders.dbschema.mongodb.JdbcDriver"
+        jdbc_connection_string => "jdbc:mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_CONNECTION_URL}/codacy?authSource=admin"
+        jdbc_user => "${MONGODB_USERNAME}"
+        jdbc_password => "${MONGODB_PASSWORD}"
+        statement => "db.repositories.find({}, {_id: 0})"
+      } 
+      jdbc {
+        jdbc_driver_library => "/usr/share/logstash/logstash-core/lib/jars/mongojdbc4.8.jar"
+        jdbc_driver_class => "com.wisecoders.dbschema.mongodb.JdbcDriver"
+        jdbc_connection_string => "jdbc:mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_CONNECTION_URL}/codacy?authSource=admin"
+        jdbc_user => "${MONGODB_USERNAME}"
+        jdbc_password => "${MONGODB_PASSWORD}"
+        statement => "db.metadata.find({}, {_id: 0})"
+      } 
+      jdbc {
+        jdbc_driver_library => "/usr/share/logstash/logstash-core/lib/jars/mongojdbc4.8.jar"
+        jdbc_driver_class => "com.wisecoders.dbschema.mongodb.JdbcDriver"
+        jdbc_connection_string => "jdbc:mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_CONNECTION_URL}/github?authSource=admin"
+        jdbc_user => "${MONGODB_USERNAME}"
+        jdbc_password => "${MONGODB_PASSWORD}"
+        statement => "db.github_repo.find({}, {_id: 0})"
+      } 
+      jdbc {
+        jdbc_driver_library => "/usr/share/logstash/logstash-core/lib/jars/mongojdbc4.8.jar"
+        jdbc_driver_class => "com.wisecoders.dbschema.mongodb.JdbcDriver"
+        jdbc_connection_string => "jdbc:mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_CONNECTION_URL}/github?authSource=admin"
+        jdbc_user => "${MONGODB_USERNAME}"
+        jdbc_password => "${MONGODB_PASSWORD}"
+        statement => "db.github_meta.find({}, {_id: 0})"
+      } 
+      jdbc {
+        jdbc_driver_library => "/usr/share/logstash/logstash-core/lib/jars/mongojdbc4.8.jar"
+        jdbc_driver_class => "com.wisecoders.dbschema.mongodb.JdbcDriver"
+        jdbc_connection_string => "jdbc:mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_CONNECTION_URL}/github?authSource=admin"
+        jdbc_user => "${MONGODB_USERNAME}"
+        jdbc_password => "${MONGODB_PASSWORD}"
+        statement => "db.github_branches.find({}, {_id: 0})"
+      } 
+      jdbc {
+        jdbc_driver_library => "/usr/share/logstash/logstash-core/lib/jars/mongojdbc4.8.jar"
+        jdbc_driver_class => "com.wisecoders.dbschema.mongodb.JdbcDriver"
+        jdbc_connection_string => "jdbc:mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_CONNECTION_URL}/github?authSource=admin"
+        jdbc_user => "${MONGODB_USERNAME}"
+        jdbc_password => "${MONGODB_PASSWORD}"
+        statement => "db.github_contributors.find({}, {_id: 0})"
+      } 
+      jdbc {
+        jdbc_driver_library => "/usr/share/logstash/logstash-core/lib/jars/mongojdbc4.8.jar"
+        jdbc_driver_class => "com.wisecoders.dbschema.mongodb.JdbcDriver"
+        jdbc_connection_string => "jdbc:mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_CONNECTION_URL}/jenkins?authSource=admin"
+        jdbc_user => "${MONGODB_USERNAME}"
+        jdbc_password => "${MONGODB_PASSWORD}"
+        statement => "db.jenkins_jobs.aggregate([{$lookup: {  from: 'jenkins_nodes',  localField: 'nodename',  foreignField: 'nodename',  as: 'node_details'}},{$lookup: {  from: 'jenkins_builds',  localField: 'jobfullname',  foreignField: 'jobfullname',  as: 'build_details'}}, {$project: {  _id: 0, node_details: { _id: 0}, build_details:{ _id: 0} } }])"
+      } 
+      jdbc {
+        jdbc_driver_library => "/usr/share/logstash/logstash-core/lib/jars/mongojdbc4.8.jar"
+        jdbc_driver_class => "com.wisecoders.dbschema.mongodb.JdbcDriver"
+        jdbc_connection_string => "jdbc:mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_CONNECTION_URL}/jenkins?authSource=admin"
+        jdbc_user => "${MONGODB_USERNAME}"
+        jdbc_password => "${MONGODB_PASSWORD}"
+        statement => "db.jenkins_nodes.find({}, {_id: 0})"
+      } 
+      jdbc {
+        jdbc_driver_library => "/usr/share/logstash/logstash-core/lib/jars/mongojdbc4.8.jar"
+        jdbc_driver_class => "com.wisecoders.dbschema.mongodb.JdbcDriver"
+        jdbc_connection_string => "jdbc:mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_CONNECTION_URL}/jenkins?authSource=admin"
+        jdbc_user => "${MONGODB_USERNAME}"
+        jdbc_password => "${MONGODB_PASSWORD}"
+        statement => "db.jenkins_builds.find({}, {_id: 0})"
+      } 
     }
 
     filter {
-      if ([identifier] == "portscanner.operator") {
+     if ([document][identifier] == "portscanner.operator") {
         mutate {
-          rename => { "[_id]" => "mongo_id" }
-          remove_field => [ "_id" ]
           convert => {
-             "allowed_ports" => "string"
-             "actual_ports" => "string"
-             "non_compliance_ports" => "string"
-             "non_compliance_services" => "string"
+            "[document][allowed_ports]" => "string"
+            "[document][actual_ports]" => "string"
+            "[document][non_compliance_ports]" => "string"
+            "[document][non_compliance_services]" => "string"
           }
         }
       } 
 
-      if ([identifier] == "codacy.repositories") {
-        mutate {
-          rename => { "[_id]" => "mongo_id" }
-          remove_field => [ "_id" ]
-        }
-
+      if ([document][identifier] == "codacy.repositories") {
         date {
-          match => ["created_date", "dd-MMM-yyyy"]
-          target => "created_date"
-        }
+          match => ["[document][created_date]", "dd-MMM-yyyy"]
+          target => "[document][created_date]"
+        }     
       }  
       
-      if ([identifier] == "codacy.metadata") {
-        mutate {
-          rename => { "[_id]" => "mongo_id" }
-          remove_field => [ "_id" ]
-        }
-
+      if ([document][identifier] == "codacy.metadata") {
         date {
-          match => ["created_date", "dd-MMM-yyyy"]
-          target => "created_date"
+          match => ["[document][created_date]", "dd-MMM-yyyy"]
+          target => "[document][created_date]"
         }
       }  
      
-      if ([identifier] == "github_repo") {
-        mutate {
-          rename => { "[_id]" => "mongo_id" }
-          remove_field => [ "_id" ]
-        }
-
+      if ([document][identifier] == "github_repo") {
         date {
-          match => ["created_date", "dd-MMM-yyyy HH:mm:ss"]
-          target => "created_date"
+          match => ["[document][created_date]", "dd-MMM-yyyy HH:mm:ss"]
+          target => "[document][created_date]"
         }
       }  
       
-      if ([identifier] == "github_meta") {
-        mutate {
-          rename => { "[_id]" => "mongo_id" }
-          remove_field => [ "_id" ]
-        }
-
+      if ([document][identifier] == "github_meta") {
         date {
-          match => ["created_date", "dd-MMM-yyyy HH:mm:ss"]
-          target => "created_date"
+          match => ["[document][created_date]", "dd-MMM-yyyy HH:mm:ss"]
+          target => "[document][created_date]"
         }
       }  
       
-      if ([identifier] == "github_branches") {
-        mutate {
-          rename => { "[_id]" => "mongo_id" }
-          remove_field => [ "_id" ]
-        }
-
+      if ([document][identifier] == "github_branches") {
         date {
-          match => ["created_date", "dd-MMM-yyyy HH:mm:ss"]
-          target => "created_date"
+          match => ["[document][created_date]", "dd-MMM-yyyy HH:mm:ss"]
+          target => "[document][created_date]"
         }
       }  
      
-      if ([identifier] == "github_contributors") {
-        mutate {
-          rename => { "[_id]" => "mongo_id" }
-          remove_field => [ "_id" ]
-        }
-
+      if ([document][identifier] == "github_contributors") {
         date {
-          match => ["created_date", "dd-MMM-yyyy HH:mm:ss"]
-          target => "created_date"
+          match => ["[document][created_date]", "dd-MMM-yyyy HH:mm:ss"]
+          target => "[document][created_date]"
         }
       }  
+
+      if ([document][identifier] == "jenkins_jobs") {
+        date {
+          match => ["[document][created_date]", "dd-MMM-yyyy HH:mm:ss"]
+          target => "[document][created_date]"
+        }
+      }
+
+      if ([document][identifier] == "jenkins_nodes") {
+        date {
+          match => ["[document][created_date]", "dd-MMM-yyyy HH:mm:ss"]
+          target => "[document][created_date]"
+        }
+      }
+
+      if ([document][identifier] == "jenkins_builds") {
+        date {
+          match => ["[document][created_date]", "dd-MMM-yyyy HH:mm:ss"]
+          target => "[document][created_date]"
+        }
+        date {
+          match => ["[document][build_timestamp]", "dd-MMM-yyyy HH:mm:ss"]
+          target => "[document][build_timestamp]"
+        }
+      }
     }
 
     output {
       stdout {
         codec => rubydebug
       }
-      if ([identifier] == "portscanner.operator") {
+      if ([document][identifier] == "portscanner.operator" and [document][actual_ports][0] != "-1") {
         elasticsearch {
           index => "dashboard_portscanner_operator"
           hosts => ["http://${MASTER_NODE_INTERNAL_IP}:${ELASTICSEARCH_PORT}"]
           user => "${ELASTICSEARCH_USERNAME}"
           password => "${ELASTICSEARCH_PASSWORD}"
+          document_id => "%{[document][created_at]}"
         }
       } 
 
-      if ([identifier] == "codacy.repositories") {
+      if ([document][identifier] == "codacy.repositories" and [document][repository] != "none") {        
         elasticsearch {
           index => "dashboard_codacy_repositories"
           hosts => ["http://${MASTER_NODE_INTERNAL_IP}:${ELASTICSEARCH_PORT}"]
           user => "${ELASTICSEARCH_USERNAME}"
           password => "${ELASTICSEARCH_PASSWORD}"
+          document_id => "%{[document][repository][0][id]}-%{[document][created_date]}"
         }
       }   
 
-      if ([identifier] == "codacy.metadata") {
+      if ([document][identifier] == "codacy.metadata" and [document][all_categories][0][total_issues] != -1) {
         elasticsearch {
           index => "dashboard_codacy_metadata"
           hosts => ["http://${MASTER_NODE_INTERNAL_IP}:${ELASTICSEARCH_PORT}"]
           user => "${ELASTICSEARCH_USERNAME}"
           password => "${ELASTICSEARCH_PASSWORD}"
+          document_id => "%{[document][created_date]}"
         }
       }   
-      if ([identifier] == "github_repo") {
+      if ([document][identifier] == "github_repo" and [document][repository] != "none") {
         elasticsearch {
           index => "github_repo"
           hosts => ["http://${MASTER_NODE_INTERNAL_IP}:${ELASTICSEARCH_PORT}"]
           user => "${ELASTICSEARCH_USERNAME}"
           password => "${ELASTICSEARCH_PASSWORD}"
+          document_id => "%{[document][repo_id]}-%{[document][repository]}-%{[document][created_date]}"
         }
       }   
-      if ([identifier] == "github_meta") {
+      if ([document][identifier] == "github_meta" and [document][repositories] != -1) {
         elasticsearch {
           index => "github_meta"
           hosts => ["http://${MASTER_NODE_INTERNAL_IP}:${ELASTICSEARCH_PORT}"]
           user => "${ELASTICSEARCH_USERNAME}"
           password => "${ELASTICSEARCH_PASSWORD}"
+          document_id => "%{[document][created_date]}"
         }
       }   
-      if ([identifier] == "github_branches") {
+      if ([document][identifier] == "github_branches" and [document][unique_identity] != "none:none") {
         elasticsearch {
           index => "github_branches"
           hosts => ["http://${MASTER_NODE_INTERNAL_IP}:${ELASTICSEARCH_PORT}"]
           user => "${ELASTICSEARCH_USERNAME}"
           password => "${ELASTICSEARCH_PASSWORD}"
+          document_id => "%{[document][unique_identity]}-%{[document][created_date]}"
         }
       }   
-      if ([identifier] == "github_contributors") {
+      if ([document][identifier] == "github_contributors" and [document][unique_identity] != "none:none") {
         elasticsearch {
           index => "github_contributors"
           hosts => ["http://${MASTER_NODE_INTERNAL_IP}:${ELASTICSEARCH_PORT}"]
           user => "${ELASTICSEARCH_USERNAME}"
           password => "${ELASTICSEARCH_PASSWORD}"
+          document_id => "%{[document][unique_identity]}-%{[document][created_date]}"
         }
       }   
+      if ([document][identifier] == "jenkins_jobs" and [document][jobfullname] != "none") {
+        elasticsearch {
+          index => "jenkins_jobs"
+          hosts => ["http://${MASTER_NODE_INTERNAL_IP}:${ELASTICSEARCH_PORT}"]
+          user => "${ELASTICSEARCH_USERNAME}"
+          password => "${ELASTICSEARCH_PASSWORD}"
+          document_id => "%{[document][jobfullname]}-%{[document][created_date]}"
+        }
+      }         
+      if ([document][identifier] == "jenkins_builds" and [document][unique_build_name] != "none") {
+        elasticsearch {
+          index => "jenkins_builds"
+          hosts => ["http://${MASTER_NODE_INTERNAL_IP}:${ELASTICSEARCH_PORT}"]
+          user => "${ELASTICSEARCH_USERNAME}"
+          password => "${ELASTICSEARCH_PASSWORD}"
+          document_id => "%{[document][unique_build_name]}-%{[document][created_date]}"
+        }
+      }         
+      if ([document][identifier] == "jenkins_nodes" and [document][nodename] != "none") {
+        elasticsearch {
+          index => "jenkins_nodes"
+          hosts => ["http://${MASTER_NODE_INTERNAL_IP}:${ELASTICSEARCH_PORT}"]
+          user => "${ELASTICSEARCH_USERNAME}"
+          password => "${ELASTICSEARCH_PASSWORD}"
+          document_id => "%{[document][nodename]}-%{[document][created_date]}"
+        }
+      }         
     }

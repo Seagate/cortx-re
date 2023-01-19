@@ -35,3 +35,8 @@ services:
     build:
       context: ../tools/github/
       dockerfile: ./Dockerfile
+  jenkins:
+    image: jenkins:$TAG
+    build:
+      context: ../tools/jenkins/
+      dockerfile: ./Dockerfile

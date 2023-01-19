@@ -23,7 +23,7 @@ pipeline {
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch for Dashboard images build.')
         
         choice (
-            choices: ['all', 'codacy', 'portscanner'],
+            choices: ['all', 'codacy', 'portscanner', 'github', 'jenkins'],
             description: 'Dashboard Image to be built. Defaults to all images ',
             name: 'DASHBOARD_IMAGE'
         )
