@@ -85,23 +85,26 @@ class JenkinsNode:
         # Monitor Data
         if "hudson.node_monitors.SwapSpaceMonitor" in node_data["monitorData"]:
             if node_data["monitorData"]["hudson.node_monitors.SwapSpaceMonitor"] is not None:
-                filtered_data["totalPhysicalMemory"] = node_data["monitorData"][
-                    "hudson.node_monitors.SwapSpaceMonitor"]["totalPhysicalMemory"]
-                filtered_data["availablePhysicalMemory"] = node_data["monitorData"][
-                    "hudson.node_monitors.SwapSpaceMonitor"]["availablePhysicalMemory"]
-                filtered_data["totalSwapSpace"] = node_data["monitorData"]["hudson.node_monitors.SwapSpaceMonitor"]["totalSwapSpace"]
-                filtered_data["availableSwapSpace"] = node_data["monitorData"][
-                    "hudson.node_monitors.SwapSpaceMonitor"]["availableSwapSpace"]
+                swap_space_monitor = node_data["monitorData"]["hudson.node_monitors.SwapSpaceMonitor"]
+
+                filtered_data["totalPhysicalMemory"] = swap_space_monitor["totalPhysicalMemory"]
+                filtered_data["availablePhysicalMemory"] = swap_space_monitor["availablePhysicalMemory"]
+                filtered_data["totalSwapSpace"] = swap_space_monitor["totalSwapSpace"]
+                filtered_data["availableSwapSpace"] = swap_space_monitor["availableSwapSpace"]
 
         if "hudson.node_monitors.TemporarySpaceMonitor" in node_data["monitorData"]:
             if node_data["monitorData"]["hudson.node_monitors.TemporarySpaceMonitor"] is not None:
-                filtered_data["temporarySpaceSize"] = node_data["monitorData"]["hudson.node_monitors.TemporarySpaceMonitor"]["size"]
-                filtered_data["temporarySpacePath"] = node_data["monitorData"]["hudson.node_monitors.TemporarySpaceMonitor"]["path"]
+                temporary_space_monitor = node_data["monitorData"]["hudson.node_monitors.TemporarySpaceMonitor"]
+
+                filtered_data["temporarySpaceSize"] = temporary_space_monitor["size"]
+                filtered_data["temporarySpacePath"] = temporary_space_monitor["path"]
 
         if "hudson.node_monitors.DiskSpaceMonitor" in node_data["monitorData"]:
             if node_data["monitorData"]["hudson.node_monitors.DiskSpaceMonitor"] is not None:
-                filtered_data["diskSpaceSize"] = node_data["monitorData"]["hudson.node_monitors.DiskSpaceMonitor"]["size"]
-                filtered_data["diskSpacePath"] = node_data["monitorData"]["hudson.node_monitors.DiskSpaceMonitor"]["path"]
+                disk_space_monitor = node_data["monitorData"]["hudson.node_monitors.DiskSpaceMonitor"]
+
+                filtered_data["diskSpaceSize"] = disk_space_monitor["size"]
+                filtered_data["diskSpacePath"] = disk_space_monitor["path"]
 
         if "hudson.node_monitors.ArchitectureMonitor" in node_data["monitorData"]:
             if node_data["monitorData"]["hudson.node_monitors.ArchitectureMonitor"] is not None:
@@ -109,11 +112,15 @@ class JenkinsNode:
 
         if "hudson.node_monitors.ResponseTimeMonitor" in node_data["monitorData"]:
             if node_data["monitorData"]["hudson.node_monitors.ResponseTimeMonitor"] is not None:
-                filtered_data["responseTimeAverage"] = node_data["monitorData"]["hudson.node_monitors.ResponseTimeMonitor"]["average"]
+                response_time_monitor = node_data["monitorData"]["hudson.node_monitors.ResponseTimeMonitor"]
+
+                filtered_data["responseTimeAverage"] = response_time_monitor["average"]
 
         if "hudson.node_monitors.ClockMonitor" in node_data["monitorData"]:
             if node_data["monitorData"]["hudson.node_monitors.ClockMonitor"] is not None:
-                filtered_data["clockDiff"] = node_data["monitorData"]["hudson.node_monitors.ClockMonitor"]["diff"]
+                clock_monitor = node_data["monitorData"]["hudson.node_monitors.ClockMonitor"]
+
+                filtered_data["clockDiff"] = clock_monitor["diff"]
 
         # Offline Cause
         if node_data["offlineCause"] is not None:

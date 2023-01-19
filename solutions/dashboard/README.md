@@ -227,209 +227,209 @@ Requirements:
 
 For installation using the kubectl please goto the **dashboard/config** directory
 
-- **Storage Class**
+### Storage Class
 
-  The Elasticsearch and MongoDB creates the PV for data storage. For that you need to create the local-path storage class. Please install it using this reference https://github.com/rancher/local-path-provisioner
+The Elasticsearch and MongoDB creates the PV for data storage. For that you need to create the local-path storage class. Please install it using this reference https://github.com/rancher/local-path-provisioner
 
-- **Elasticsearch and Kibana**
+### Elasticsearch and Kibana
 
-  For this use the Elastic Cloud on Kubernetes (ECK). By using this you can install Elasticsearch and Kibana on Kubernetes.
-  Please use **8.4.1** version of Elasticsearch and Kibana. You also need to access them from internet.
+For this use the Elastic Cloud on Kubernetes (ECK). By using this you can install Elasticsearch and Kibana on Kubernetes.
+Please use **8.4.1** version of Elasticsearch and Kibana. You also need to access them from internet.
 
-  Please open **ElasticsearchKibanaInstallation.md** for installation steps.
-  Link: https://github.com/Seagate/cortx-re/blob/dashboard/solutions/dashboard/ElasticsearchKibanaInstallation.md
+Please open **ElasticsearchKibanaInstallation.md** for installation steps.
+Link: https://github.com/Seagate/cortx-re/blob/dashboard/solutions/dashboard/ElasticsearchKibanaInstallation.md
 
-- **Namesapce**
+### Namesapce
 
-  To create the dashboard and elastic namespace use the following commands:
+To create the dashboard and elastic namespace use the following commands:
 
-  ```
-  kubectl create namespace elastic
-  kubectl create namespace dashboard
-  ```
+```
+kubectl create namespace elastic
+kubectl create namespace dashboard
+```
 
-- **Secret**
+### Secret
 
-  Provide the credentials in the DashboardSecret.yaml file. For that you need to provide **base64** values. For converting plain text in base64 format use the following command:
+Provide the credentials in the DashboardSecret.yaml file. For that you need to provide **base64** values. For converting plain text in base64 format use the following command:
 
-  ```
-  echo -n <plain_text> | base64
-  ```
+```
+echo -n <plain_text> | base64
+```
 
-  **Note**:
-  If you have not cleaned old PVC of mongodb **data-dashboard-mongodb-0** then please set the same old username and password for MongoDB in base64 format.
+**Note**:
+If you have not cleaned old PVC of mongodb **data-dashboard-mongodb-0** then please set the same old username and password for MongoDB in base64 format.
 
-  For **elasticsearch** credentials, the username will be **elastic** but you need to take password using following commands (You need to convert this password into **base64** format):
+For **elasticsearch** credentials, the username will be **elastic** but you need to take password using following commands (You need to convert this password into **base64** format):
 
-  ```
-  PASSWORD=$(kubectl get secret dashboard-elasticsearch-es-elastic-user -o go-template='{{.data.elastic | base64decode}}' -n elastic)
-  echo $PASSWORD
-  ```
+```
+PASSWORD=$(kubectl get secret dashboard-elasticsearch-es-elastic-user -o go-template='{{.data.elastic | base64decode}}' -n elastic)
+echo $PASSWORD
+```
 
-  You can create the secret by following command:
+You can create the secret by following command:
 
-  ```
-  kubectl create -f ./DashboardSecret.yaml
-  ```
+```
+kubectl create -f ./DashboardSecret.yaml
+```
 
-- **Configmap**
+### Configmap
 
-  Please enter all values in plain text format.
+Please enter all values in plain text format.
 
-  You can create the configmap by following command:
+You can create the configmap by following command:
 
-  ```
-  kubectl create -f ./DashboardConfigmap.yaml
-  ```
+```
+kubectl create -f ./DashboardConfigmap.yaml
+```
 
-- **MongoDB**
+### MongoDB
 
-  For creating the MongoDB run the following command:
+For creating the MongoDB run the following command:
 
-  ```
-  kubectl create -f ./mongodb/mongodb.yaml
-  ```
+```
+kubectl create -f ./mongodb/mongodb.yaml
+```
 
-  After executing this command, you will see the MongoDB statefulset and the headless service.
-  The MongoDB statefulset will try to provision Persistent Volume (PV) for it.
+After executing this command, you will see the MongoDB statefulset and the headless service.
+The MongoDB statefulset will try to provision Persistent Volume (PV) for it.
 
-  You can exec into mongodb pod using following command:
-  Please replace **\<username>** by your mongodb_username value in plain text.
+You can exec into mongodb pod using following command:
+Please replace **\<username>** by your mongodb_username value in plain text.
 
-  ```
-  kubectl exec -it pod/dashboard-mongodb-0 -n dashboard -- /bin/bash
-  mongosh --username=<username>
-  ```
+```
+kubectl exec -it pod/dashboard-mongodb-0 -n dashboard -  /bin/bash
+mongosh --username=<username>
+```
 
-- **Port Scanner**
+### Port Scanner
 
-  For creating port scanner run the following command:
+For creating port scanner run the following command:
 
-  ```
-  kubectl create -f ./portscanner/PortScannerCRD.yaml
-  kubectl create -f ./portscanner/PortScannerCR.yaml
-  kubectl create -f ./portscanner/PortScannerAccount.yaml
-  kubectl create -f ./portscanner/PortScannerDeployment.yaml
-  ```
+```
+kubectl create -f ./portscanner/PortScannerCRD.yaml
+kubectl create -f ./portscanner/PortScannerCR.yaml
+kubectl create -f ./portscanner/PortScannerAccount.yaml
+kubectl create -f ./portscanner/PortScannerDeployment.yaml
+```
 
-  Once the port scanner started you can verify the logs of the pod. For that you can use following command:
-  Please replace <pod_name> here by actual pod name
+Once the port scanner started you can verify the logs of the pod. For that you can use following command:
+Please replace <pod_name> here by actual pod name
 
-  ```
-  kubectl logs -f pod/<pod_name> -n dashbaord
-  ```
+```
+kubectl logs -f pod/<pod_name> -n dashbaord
+```
 
-  From the logs you can find whether the MongoDB connection is made or not and whether documents are inserted into mongodb or not.
+From the logs you can find whether the MongoDB connection is made or not and whether documents are inserted into mongodb or not.
 
-  **Note on Port Scanner Logs**
-  You will find below exception in logs.
+**Note on Port Scanner Logs**
+You will find below exception in logs.
 
-  ```
-  Exception: HTTPSConnectionPool(host='10.96.0.1', port=443): Read timed out.
-  ```
+```
+Exception: HTTPSConnectionPool(host='10.96.0.1', port=443): Read timed out.
+```
 
-  This exception will raise after every 60 seconds when the operator is idle. This is because the client will try to re-create the connection with the server.
+This exception will raise after every 60 seconds when the operator is idle. This is because the client will try to re-create the connection with the server.
 
-- **Codacy**
+### Codacy
 
-  For creating codacy run the following command:
+For creating codacy run the following command:
 
-  ```
-  kubectl create -f ./codacy/CodacyCronjob.yaml
-  ```
+```
+kubectl create -f ./codacy/CodacyCronjob.yaml
+```
 
-  By default the Cronjob will schedule at 00:00 on every Saturday. If you need to change the schedule, then you can do that by modifying into **config/codacy/CodacyCronjob.yaml**. If you wanted to the job immediately after starting the cronjob use the following command:
+By default the Cronjob will schedule at 00:00 on every Saturday. If you need to change the schedule, then you can do that by modifying into **config/codacy/CodacyCronjob.yaml**. If you wanted to the job immediately after starting the cronjob use the following command:
 
-  ```
-  kubectl create job --from=cronjob/dashboard-codacy dashboard-codacy-manual-001 -n dashboard
-  ```
+```
+kubectl create job --from=cronjob/dashboard-codacy dashboard-codacy-manual-001 -n dashboard
+```
 
-  You can check the codacy logs using following command:
-  Please replcae <pod_name> by actual pod name
+You can check the codacy logs using following command:
+Please replcae <pod_name> by actual pod name
 
-  ```
-  kubectl logs -f pod/<pod_name> -n dashboard
-  ```
+```
+kubectl logs -f pod/<pod_name> -n dashboard
+```
 
-  The codacy script should connect with mongodb and start fetching the data from codacy.
+The codacy script should connect with mongodb and start fetching the data from codacy.
 
-- **GitHub**
+### GitHub
 
-  For creating github run the following command:
+For creating github run the following command:
 
-  ```
-  kubectl create -f ./github/GithubCronjob.yaml
-  ```
+```
+kubectl create -f ./github/GithubCronjob.yaml
+```
 
-  By default the Cronjob will schedule at 00:00 on every Saturday. If you need to change the schedule, then you can do that by modifying into **config/github/GithubCronjob.yaml** If you wanted to the job immediately after starting the cronjob use the following command:
+By default the Cronjob will schedule at 00:00 on every Saturday. If you need to change the schedule, then you can do that by modifying into **config/github/GithubCronjob.yaml** If you wanted to the job immediately after starting the cronjob use the following command:
 
-  ```
-  kubectl create job --from=cronjob/dashboard-github dashboard-github-manual-001 -n dashboard
-  ```
+```
+kubectl create job --from=cronjob/dashboard-github dashboard-github-manual-001 -n dashboard
+```
 
-  You can check the github logs using following command:
-  Please replcae <pod_name> by actual pod name
+You can check the github logs using following command:
+Please replcae <pod_name> by actual pod name
 
-  ```
-  kubectl logs -f pod/<pod_name> -n dashboard
-  ```
+```
+kubectl logs -f pod/<pod_name> -n dashboard
+```
 
-  The github script should connect with mongodb and start fetching the data from github.
+The github script should connect with mongodb and start fetching the data from github.
 
-- **Jenkins**
+### Jenkins
 
-  For creating jenkins run the following command:
+For creating jenkins run the following command:
 
-  ```
-  kubectl create -f ./jenkins/JenkinsCronjob.yaml
-  ```
+```
+kubectl create -f ./jenkins/JenkinsCronjob.yaml
+```
 
-  By default the Cronjob will schedule at 00:00 on every Saturday. If you need to change the schedule, then you can do that by modifying into **config/jenkins/JenkinsCronjob.yaml**. If you wanted to the job immediately after starting the cronjob use the following command:
+By default the Cronjob will schedule at 00:00 on every Saturday. If you need to change the schedule, then you can do that by modifying into **config/jenkins/JenkinsCronjob.yaml**. If you wanted to the job immediately after starting the cronjob use the following command:
 
-  ```
-  kubectl create job --from=cronjob/dashboard-jenkins dashboard-jenkins-manual-001 -n dashboard
-  ```
+```
+kubectl create job --from=cronjob/dashboard-jenkins dashboard-jenkins-manual-001 -n dashboard
+```
 
-  You can check the jenkins logs using following command:
-  Please replcae <pod_name> by actual pod name
+You can check the jenkins logs using following command:
+Please replcae <pod_name> by actual pod name
 
-  ```
-  kubectl logs -f pod/<pod_name> -n dashboard
-  ```
+```
+kubectl logs -f pod/<pod_name> -n dashboard
+```
 
-  The jenkins script should connect with mongodb and start fetching the data from jenkins.
+The jenkins script should connect with mongodb and start fetching the data from jenkins.
 
-- **Logstash**
+### Logstash
 
-  **Note:**
-  The pre-requisite for logstash is mongodb and elasticsearch instance should be running. Because, the logstash pipeline is taking data from MongoDB and sending it to Elasticsearch
+**Note:**
+The pre-requisite for logstash is mongodb and elasticsearch instance should be running. Because, the logstash pipeline is taking data from MongoDB and sending it to Elasticsearch
 
-  For creating logstash tun the following command:
+For creating logstash tun the following command:
 
-  ```
-  kubectl create -f ./logstash/LogstashConfigmap.yaml
-  kubectl create -f ./logstash/LogstashCronjob.yaml
-  ```
+```
+kubectl create -f ./logstash/LogstashConfigmap.yaml
+kubectl create -f ./logstash/LogstashCronjob.yaml
+```
 
-  You can check logstash logs using following command:
-  Please replcae <pod_name> by actual pod name
+You can check logstash logs using following command:
+Please replcae <pod_name> by actual pod name
 
-  ```
-  kubectl logs -f pod/<pod_name> -n dashboard
-  ```
+```
+kubectl logs -f pod/<pod_name> -n dashboard
+```
 
-  By default the Cronjob will schedule after every 2 hours. If you need to change the schedule, then you can do that by modifying into **config/logstash/LogstashCronjob.yaml** If you wanted to the job immediately after starting the cronjob use the following command:
+By default the Cronjob will schedule after every 2 hours. If you need to change the schedule, then you can do that by modifying into **config/logstash/LogstashCronjob.yaml** If you wanted to the job immediately after starting the cronjob use the following command:
 
-  ```
-  kubectl create job --from=cronjob/dashboard-logstash dashboard-logstash-manual-001 -n dashboard
-  ```
+```
+kubectl create job --from=cronjob/dashboard-logstash dashboard-logstash-manual-001 -n dashboard
+```
 
-  After successful execution of logstash pod, you should be able to see the mongodb documents in lostash logs, and in the Kibana GUI, you should be able to see indices.
+After successful execution of logstash pod, you should be able to see the mongodb documents in lostash logs, and in the Kibana GUI, you should be able to see indices.
 
-  To check indices in Kibana,
+To check indices in Kibana,
 
-  - **Login** into Kibana
-  - Open left side menu
-  - Goto Management > Stack Management
-  - Click on **Index Management** in left menu.
-    You should be able to see the indices.
+- **Login** into Kibana
+- Open left side menu
+- Goto Management > Stack Management
+- Click on **Index Management** in left menu.
+  You should be able to see the indices.

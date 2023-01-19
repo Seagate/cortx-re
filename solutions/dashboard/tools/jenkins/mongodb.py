@@ -2,7 +2,6 @@ from const import JENKINS_JOBS_INDEX_IDENTIFIER, MONGODB_DB_NAME
 from const import JENKINS_NODES_INDEX_IDENTIFIER, JENKINS_BUILDS_INDEX_IDENTIFIER, JENKINS_PLUGINS_INDEX_IDENTIFIER
 from const import MONGODB_JENKINS_JOBS_COLLECTION_NAME, MONGODB_JENKINS_NODES_COLLECTION_NAME
 from const import MONGODB_JENKINS_PLUGINS_COLLECTION_NAME, MONGODB_JENKINS_BUILDS_COLLECTION_NAME
-import datetime
 from pymongo import MongoClient
 
 
@@ -83,7 +82,6 @@ class MongoDB:
             "jobparameters": ["none"],
             "downstreamProjects": ["none"],
             "upstreamProjects": ["none"],
-            "identifier": "none",
             "primaryView": "none",
             "views": ["none"],
             "healthScore": 20,
@@ -226,7 +224,6 @@ class MongoDB:
             ],
             "unique_build_name": "none",
             "category": "none",
-            "identifier": "none",
             "created_date": self.today,
             "identifier": JENKINS_BUILDS_INDEX_IDENTIFIER
         }

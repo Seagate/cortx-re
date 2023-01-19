@@ -170,15 +170,15 @@ class JenkinsResources:
         filtered_data = {}
 
         properties_list = []
-        for property in data["property"]:
-            if "_class" in property:
-                properties_list.append(property["_class"])
+        for data_property in data["property"]:
+            if "_class" in data_property:
+                properties_list.append(data_property["_class"])
 
                 # Checking for parameters
-                if property["_class"] == "hudson.model.ParametersDefinitionProperty":
-                    if len(property["parameterDefinitions"]) > 0:
+                if data_property["_class"] == "hudson.model.ParametersDefinitionProperty":
+                    if len(data_property["parameterDefinitions"]) > 0:
                         params_list = []
-                        for param in property["parameterDefinitions"]:
+                        for param in data_property["parameterDefinitions"]:
                             params_list.append(param["name"])
                         filtered_data["jobparameters"] = params_list
 
@@ -432,46 +432,54 @@ class JenkinsResources:
 
         # Taking SCM data
         if "definition" in job_config_json["flow-definition"]:
-            if "scm" in job_config_json["flow-definition"]["definition"] and "userRemoteConfigs" in job_config_json["flow-definition"]["definition"]["scm"]:
-                scm_data = job_config_json["flow-definition"]["definition"]["scm"]
-                local_scm_data = {}
-                if "userRemoteConfigs" in scm_data:
-                    if "hudson.plugins.git.UserRemoteConfig" in scm_data["userRemoteConfigs"]:
-                        if "url" in scm_data["userRemoteConfigs"]["hudson.plugins.git.UserRemoteConfig"]:
-                            local_scm_data["url"] = scm_data["userRemoteConfigs"]["hudson.plugins.git.UserRemoteConfig"]["url"]
-                if "branches" in scm_data:
-                    if "hudson.plugins.git.BranchSpec" in scm_data["branches"]:
-                        local_scm_data["branch"] = scm_data["branches"]["hudson.plugins.git.BranchSpec"]["name"]
+            if "scm" in job_config_json["flow-definition"]["definition"]:
+                if "userRemoteConfigs" in job_config_json["flow-definition"]["definition"]["scm"]:
+                    scm_data = job_config_json["flow-definition"]["definition"]["scm"]
+                    local_scm_data = {}
 
-                if local_scm_data != {}:
-                    data["scm"] = [local_scm_data]
+                    if "userRemoteConfigs" in scm_data:
+                        if "hudson.plugins.git.UserRemoteConfig" in scm_data["userRemoteConfigs"]:
+                            user_remote_config = scm_data["userRemoteConfigs"]["hudson.plugins.git.UserRemoteConfig"]
 
-        if "properties" not in job_config_json["flow-definition"] or job_config_json["flow-definition"]["properties"] is None:
+                            if "url" in user_remote_config:
+                                local_scm_data["url"] = user_remote_config["url"]
+
+                    if "branches" in scm_data:
+                        if "hudson.plugins.git.BranchSpec" in scm_data["branches"]:
+                            local_scm_data["branch"] = scm_data["branches"]["hudson.plugins.git.BranchSpec"]["name"]
+
+                    if local_scm_data != {}:
+                        data["scm"] = [local_scm_data]
+
+        if "properties" not in job_config_json["flow-definition"]:
+            return data
+
+        if job_config_json["flow-definition"]["properties"] is None:
             return data
 
         properties = job_config_json["flow-definition"]["properties"]
 
-        for property in properties:
-            if property == "com.coravy.hudson.plugins.github.GithubProjectProperty":
-                if "projectUrl" in properties[property] and properties[property]["projectUrl"] is not None:
-                    data["projectUrl"] = properties[property]["projectUrl"]
+        for data_property in properties:
+            if data_property == "com.coravy.hudson.plugins.github.GithubProjectProperty":
+                if "projectUrl" in properties[data_property] and properties[data_property]["projectUrl"] is not None:
+                    data["projectUrl"] = properties[data_property]["projectUrl"]
 
-            if property == "org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty":
-                if "triggers" in properties[property] and properties[property]["triggers"] is not None:
+            if data_property == "org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty":
+                if "triggers" in properties[data_property] and properties[data_property]["triggers"] is not None:
                     triggers = []
 
-                    for key in properties[property]["triggers"]:
+                    for key in properties[data_property]["triggers"]:
                         triggers.append(key)
 
                         if key == "hudson.triggers.TimerTrigger":
                             data["TimerTrigger"] = [{
                                 "scheduled": True,
-                                "schedule": properties[property]["triggers"][key]["spec"]
+                                "schedule": properties[data_property]["triggers"][key]["spec"]
                             }]
 
                         if key == "hudson.triggers.SCMTrigger":
                             data["SCMTrigger"] = [
-                                dict(properties[property]["triggers"][key])]
+                                dict(properties[data_property]["triggers"][key])]
 
                     data["triggers"] = triggers
 

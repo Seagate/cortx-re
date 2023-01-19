@@ -1,7 +1,6 @@
 from jenkins_core import JenkinsCore
 from jenkins_resources import JenkinsResources
 from jenkins_nodes import JenkinsNode
-from jenkins_plugins import JenkinsPlugins
 from jenkins_builds import JenkinsBuilds
 from mongodb import MongoDB
 from datetime import datetime
@@ -74,16 +73,6 @@ class Main:
             mongodb=mongodb)
         jenkins_resources_obj.get_total_resources_count()
         jenkins_resources_obj.get_resources()
-
-        """
-        if not mongodb.read_collection(mongodb.jenkins_plugins_collection):
-            print("Existing documents not found...initializing")
-            mongodb.insertPluginsInitializationDocuments()
-
-        jenkins_plugins_obj = JenkinsPlugins(
-            today=today, jenkins_core_obj=jenkins_core_obj, mongodb=mongodb)
-        jenkins_plugins_obj.get_plugins()
-        """
 
 
 if __name__ == "__main__":

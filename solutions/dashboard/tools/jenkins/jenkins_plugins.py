@@ -15,6 +15,8 @@ class JenkinsPlugins:
 
         plugins_data = []
         for k, v in plugins.items():
+            print("Key: ", k)
+
             info = dict({
                 "longName": v["longName"],
                 "shortName": v["shortName"],

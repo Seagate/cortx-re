@@ -15,10 +15,10 @@ class JenkinsCore:
                     password=credentials["password"],
                 )
                 self.server.get_whoami()
-                print("Connection Established")
+                print("(" + str(i) + "/5) Connection Established")
                 break
             except Exception as err:
-                print("Exception: Connection Not Established")
+                print("(" + str(i) + "/5) Exception: Connection Not Established ", err)
 
         self.server.get_whoami()
 
