@@ -9,13 +9,12 @@
     url: https://download.docker.com/linux/centos/docker-ce.repo
     dest: /etc/yum.repos.d/docer-ce.repo
 
-- name: Install Docker and Docker Compose
+- name: Install Docker
   yum:
     name: 
       - "docker-ce-{{ docker_version }}"
       - "docker-ce-cli-{{ docker_version }}"
       - "containerd.io"
-      - "docker-compose-plugin"
     state: present
   vars:
     docker_version: "20.10.8"
@@ -26,8 +25,14 @@
     state: started
     enabled: yes
 
-- name: Verify Docker and Docker-Compse version
-  shell: docker version && docker compose version
+- name: Download docker-compose binary file
+  shell: curl -L "https://github.com/docker/compose/releases/download/1.23.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+
+- name: Update docker-compose binary file permissions
+  shell: chmod +x /usr/local/bin/docker-compose
+
+- name: Verify Docker and Docker-Compose version
+  shell: docker version && /usr/local/bin/docker-compose --version
   register: docker_version_info
 
 - debug:
