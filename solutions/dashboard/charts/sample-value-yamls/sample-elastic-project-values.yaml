@@ -1,0 +1,3 @@
+elasticsearch:
+  volumeClaimTemplates:
+    storage: 5Gi

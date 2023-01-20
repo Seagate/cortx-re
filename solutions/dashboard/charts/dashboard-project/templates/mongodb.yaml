@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "dashboard-project.mongodb.name" . }}
+  namespace: {{ include "dashboard-project.tools.namespace" . }}
+  labels:
+    {{- include "dashboard-project.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      name: {{ include "dashboard-project.mongodb.name" . }}
+  serviceName: {{ include "dashboard-project.mongodb.name" . }}
+  replicas: {{ .Values.mongodb.replicas }}
+  template:
+    metadata:
+      labels:
+        name: {{ include "dashboard-project.mongodb.name" . }}
+        namespace: {{ include "dashboard-project.tools.namespace" . }}
+    spec:
+      containers:
+        - name: {{ include "dashboard-project.mongodb.name" . }}
+          image: {{ .Values.mongodb.image }}
+          imagePullPolicy: {{ .Values.mongodb.imagePullPolicy }}
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  key: mongodb_username
+                  name: {{ include "dashboard-project.tools.dashboard_secret_name" . }}
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: mongodb_password
+                  name: {{ include "dashboard-project.tools.dashboard_secret_name" . }}
+          ports:
+            - containerPort: {{ .Values.mongodb.containerPort }}
+              name: mongo
+          volumeMounts:
+            - name: data
+              mountPath: {{ .Values.mongodb.volumeMounts.mountPath }}
+          resources:
+            limits:
+              memory:  {{ .Values.mongodb.resources.limits.memory }}
+              cpu:  {{ .Values.mongodb.resources.limits.cpu }}
+            requests:
+              memory:  {{ .Values.mongodb.resources.requests.memory }}
+              cpu:  {{ .Values.mongodb.resources.requests.cpu }}
+          securityContext:
+            allowPrivilegeEscalation: false
+      terminationGracePeriodSeconds: {{ .Values.mongodb.terminationGracePeriodSeconds }}
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: 
+          - {{ .Values.mongodb.volumeClaimTemplates.accessMode }}
+        storageClassName: {{ .Values.volumeClaimTemplates.storageClass }}
+        resources:
+          requests:
+            storage: {{ .Values.mongodb.volumeClaimTemplates.storage }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "dashboard-project.mongodb.name" . }}
+  namespace: {{ include "dashboard-project.tools.namespace" . }}
+  labels:
+    {{- include "dashboard-project.labels" . | nindent 4 }}
+spec:
+  selector:
+    name: {{ include "dashboard-project.mongodb.name" . }}
+  type: {{ .Values.mongodb.service.type }}
+  clusterIP: {{ .Values.mongodb.service.clusterIP }}
+  ports:
+    - port: {{ .Values.mongodb.service.port }}
+      targetPort: {{ .Values.mongodb.service.targetPort }}
+      protocol: {{ .Values.mongodb.service.protocol }}

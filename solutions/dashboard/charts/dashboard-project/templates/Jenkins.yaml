@@ -1,0 +1,67 @@
+{{- if .Values.tools.create.jenkins -}}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "dashboard-project.jenkins.name" . }}
+  namespace: {{ include "dashboard-project.tools.namespace" . }}
+  labels:
+    {{- include "dashboard-project.labels" . | nindent 4 }}
+spec:
+  schedule: {{ required "A value must be entered for Jenkins CronJob schedule" .Values.jenkins.schedule }}
+  successfulJobsHistoryLimit: {{ .Values.jenkins.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.jenkins.failedJobsHistoryLimit }}
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: jenkins
+              image: {{ .Values.jenkins.image }}
+              imagePullPolicy: {{ .Values.jenkins.imagePullPolicy }}
+              env:
+                - name: MONGODB_USERNAME
+                  valueFrom:
+                    secretKeyRef:
+                      key: mongodb_username
+                      name: {{ include "dashboard-project.tools.dashboard_secret_name" . }}
+                - name: MONGODB_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      key: mongodb_password
+                      name: {{ include "dashboard-project.tools.dashboard_secret_name" . }}
+                - name: MONGODB_CONNECTION_URL
+                  valueFrom:
+                    configMapKeyRef:
+                      key: mongodb_connection_url
+                      name: {{ include "dashboard-project.tools.dashboard_configmap_name" . }}
+                - name: JENKINS_SERVER_URL
+                  valueFrom:
+                    configMapKeyRef:
+                      key: jenkins_server_url
+                      name: {{ include "dashboard-project.tools.dashboard_configmap_name" . }}
+                - name: JENKINS_USERNAME
+                  valueFrom:
+                    secretKeyRef:
+                      key: jenkins_username
+                      name: {{ include "dashboard-project.tools.dashboard_secret_name" . }}
+                - name: JENKINS_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      key: jenkins_token
+                      name: {{ include "dashboard-project.tools.dashboard_secret_name" . }}
+              resources:
+                limits:
+                  memory: {{ .Values.jenkins.resources.limits.memory }}
+                  cpu: {{ .Values.jenkins.resources.limits.cpu }}
+                requests:
+                  memory: {{ .Values.jenkins.resources.requests.memory }}
+                  cpu: {{ .Values.jenkins.resources.requests.cpu }}
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop:
+                    - NET_RAW
+                    - ALL
+          restartPolicy: {{ .Values.jenkins.restartPolicy }}
+{{- end }}

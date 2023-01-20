@@ -1,0 +1,98 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "dashboard-project.logstash.name" . }}
+  namespace: {{ include "dashboard-project.tools.namespace" . }}
+  labels:
+    {{- include "dashboard-project.labels" . | nindent 4 }}
+spec:
+  schedule: {{ required "A value must be entered for logstash CronJob schedule" .Values.logstash.schedule }}
+  successfulJobsHistoryLimit: {{ .Values.logstash.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.logstash.failedJobsHistoryLimit }}
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: logstash
+              image: {{ .Values.logstash.image }}
+              imagePullPolicy: {{ .Values.logstash.imagePullPolicy }}
+              env:
+                - name: LOGSTASH_PW
+                  valueFrom:
+                    secretKeyRef:
+                      key: logstash_password
+                      name: {{ include "dashboard-project.tools.dashboard_secret_name" . }}
+                - name: MONGODB_USERNAME
+                  valueFrom:
+                    secretKeyRef:
+                      key: mongodb_username
+                      name: {{ include "dashboard-project.tools.dashboard_secret_name" . }}
+                - name: MONGODB_CONNECTION_URL
+                  valueFrom:
+                    configMapKeyRef:
+                      key: mongodb_connection_url
+                      name: {{ include "dashboard-project.tools.dashboard_configmap_name" . }}
+                - name: MONGODB_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      key: mongodb_password
+                      name: {{ include "dashboard-project.tools.dashboard_secret_name" . }}
+                - name: ELASTICSEARCH_USERNAME
+                  valueFrom:
+                    secretKeyRef:
+                      key: elasticsearch_username
+                      name: {{ include "dashboard-project.tools.dashboard_secret_name" . }}
+                - name: ELASTICSEARCH_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      key: elasticsearch_password
+                      name: {{ include "dashboard-project.tools.dashboard_secret_name" . }}
+                - name: MASTER_NODE_INTERNAL_IP
+                  valueFrom:
+                    configMapKeyRef:
+                      key: elasticsearch_http_service
+                      name: {{ include "dashboard-project.tools.dashboard_configmap_name" . }}
+                - name: ELASTICSEARCH_PORT
+                  valueFrom:
+                    configMapKeyRef:
+                      key: elasticsearch_port
+                      name: {{ include "dashboard-project.tools.dashboard_configmap_name" . }}
+              volumeMounts:
+                - name: config-volume
+                  mountPath: /usr/share/logstash/config
+                - name: logstash-pipeline-volume
+                  mountPath: /usr/share/logstash/pipeline
+              resources:
+                limits:
+                  memory: {{ .Values.logstash.resources.limits.memory }}
+                  cpu: {{ .Values.logstash.resources.limits.cpu }}
+                requests:
+                  memory: {{ .Values.logstash.resources.requests.memory }}
+                  cpu: {{ .Values.logstash.resources.requests.cpu }}
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - NET_RAW
+                    - ALL
+          restartPolicy: {{ .Values.logstash.restartPolicy }}
+          volumes:
+            - name: config-volume
+              configMap:
+                name: {{ include "dashboard-project.logstash_configmap.name" . }}
+                items:
+                  - key: logstash.yml
+                    path: logstash.yml
+                  - key: jvm.options
+                    path: jvm.options
+                  - key: log4j2.properties
+                    path: log4j2.properties
+                  - key: startup.options
+                    path: startup.options
+            - name: logstash-pipeline-volume
+              configMap:
+                name: {{ include "dashboard-project.logstash_configmap.name" . }}
+                items:
+                  - key: logstash.conf
+                    path: logstash.conf

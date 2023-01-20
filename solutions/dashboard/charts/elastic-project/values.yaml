@@ -1,0 +1,41 @@
+operator:
+  namespace: ""
+
+tools:
+  namespace: ""
+  version: 8.4.1
+
+elasticsearch:
+  name: ""
+  selfSignedCertificate:
+    disabled: true
+  volumeClaimDeletePolicy: DeleteOnScaledownOnly
+  nodeSetCount: 1
+  service:
+    type: NodePort
+    port: 9200
+    targetPort: 9200
+    nodePort: 30080
+  volumeClaimTemplates:
+    storage: 45Gi
+    accessMode: ReadWriteOnce
+  resources:
+    requests:
+      memory: 4Gi
+      cpu: 4
+    limits:
+      memory: 4Gi
+
+kibana:
+  name: ""
+  selfSignedCertificate:
+    disabled: true
+  count: 1
+  service:
+    type: NodePort
+    port: 5601
+    targetPort: 5601
+    nodePort: 30081
+
+volumeClaimTemplates:
+  storageClass: local-path

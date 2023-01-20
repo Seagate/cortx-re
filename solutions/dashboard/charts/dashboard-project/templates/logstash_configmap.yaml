@@ -1,0 +1,422 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "dashboard-project.logstash_configmap.name" . }}
+  namespace: {{ include "dashboard-project.tools.namespace" . }}
+  labels:
+    {{- include "dashboard-project.labels" . | nindent 4 }}
+data:
+  logstash.yml: |
+    http.host: "0.0.0.0"
+    path.config: /usr/share/logstash/pipeline
+
+  jvm.options: |
+    ## JVM configuration
+
+    # Xms represents the initial size of total heap space
+    # Xmx represents the maximum size of total heap space
+
+    -Xms1g
+    -Xmx1g
+
+    ################################################################
+    ## Expert settings
+    ################################################################
+    ##
+    ## All settings below this section are considered
+    ## expert settings. Don't tamper with them unless
+    ## you understand what you are doing
+    ##
+    ################################################################
+
+    ## GC configuration
+    11-13:-XX:+UseConcMarkSweepGC
+    11-13:-XX:CMSInitiatingOccupancyFraction=75
+    11-13:-XX:+UseCMSInitiatingOccupancyOnly
+
+    ## Locale
+    # Set the locale language
+    #-Duser.language=en
+
+    # Set the locale country
+    #-Duser.country=US
+
+    # Set the locale variant, if any
+    #-Duser.variant=
+
+    ## basic
+
+    # set the I/O temp directory
+    #-Djava.io.tmpdir=$HOME
+
+    # set to headless, just in case
+    -Djava.awt.headless=true
+
+    # ensure UTF-8 encoding by default (e.g. filenames)
+    -Dfile.encoding=UTF-8
+
+    # use our provided JNA always versus the system one
+    #-Djna.nosys=true
+
+    # Turn on JRuby invokedynamic
+    -Djruby.compile.invokedynamic=true
+    # Force Compilation
+    -Djruby.jit.threshold=0
+
+    ## heap dumps
+
+    # generate a heap dump when an allocation from the Java heap fails
+    # heap dumps are created in the working directory of the JVM
+    -XX:+HeapDumpOnOutOfMemoryError
+
+    # specify an alternative path for heap dumps
+    # ensure the directory exists and has sufficient space
+    #-XX:HeapDumpPath=${LOGSTASH_HOME}/heapdump.hprof
+
+    ## GC logging
+    #-Xlog:gc*,gc+age=trace,safepoint:file=@loggc@:utctime,pid,tags:filecount=32,filesize=64m
+
+    # log GC status to a file with time stamps
+    # ensure the directory exists
+    #-Xloggc:${LS_GC_LOG_FILE}
+
+    # Entropy source for randomness
+    -Djava.security.egd=file:/dev/urandom
+
+    # Copy the logging context from parent threads to children
+    -Dlog4j2.isThreadContextMapInheritable=true
+
+  log4j2.properties: |
+    status = error
+    name = LogstashPropertiesConfig
+
+    appender.console.type = Console
+    appender.console.name = plain_console
+    appender.console.layout.type = PatternLayout
+    appender.console.layout.pattern = [%d{ISO8601}][%-5p][%-25c]%notEmpty{[%X{pipeline.id}]}%notEmpty{[%X{plugin.id}]} %m%n
+
+    appender.json_console.type = Console
+    appender.json_console.name = json_console
+    appender.json_console.layout.type = JSONLayout
+    appender.json_console.layout.compact = true
+    appender.json_console.layout.eventEol = true
+
+    rootLogger.level = ${sys:ls.log.level}
+    rootLogger.appenderRef.console.ref = ${sys:ls.log.format}_console
+
+  startup.options: |
+    ################################################################################
+    # These settings are ONLY used by $LS_HOME/bin/system-install to create a custom
+    # startup script for Logstash and is not used by Logstash itself. It should
+    # automagically use the init system (systemd, upstart, sysv, etc.) that your
+    # Linux distribution uses.
+    #
+    # After changing anything here, you need to re-run $LS_HOME/bin/system-install
+    # as root to push the changes to the init script.
+    ################################################################################
+
+    # Override Java location
+    #JAVACMD=/usr/bin/java
+
+    # Set a home directory
+    LS_HOME=/usr/share/logstash
+
+    # logstash settings directory, the path which contains logstash.yml
+    LS_SETTINGS_DIR=/etc/logstash
+
+    # Arguments to pass to logstash
+    LS_OPTS="--path.settings ${LS_SETTINGS_DIR}"
+
+    # Arguments to pass to java
+    LS_JAVA_OPTS=""
+
+    # pidfiles aren't used the same way for upstart and systemd; this is for sysv users.
+    LS_PIDFILE=/var/run/logstash.pid
+
+    # user and group id to be invoked as
+    LS_USER=logstash
+    LS_GROUP=logstash
+
+    # Enable GC logging by uncommenting the appropriate lines in the GC logging
+    # section in jvm.options
+    LS_GC_LOG_FILE=/var/log/logstash/gc.log
+
+    # Open file limit
+    LS_OPEN_FILES=16384
+
+    # Nice level
+    LS_NICE=19
+
+    # Change these to have the init script named and described differently
+    # This is useful when running multiple instances of Logstash on the same
+    # physical box or vm
+    SERVICE_NAME="logstash"
+    SERVICE_DESCRIPTION="logstash"
+
+    # If you need to run a command or script before launching Logstash, put it
+    # between the lines beginning with `read` and `EOM`, and uncomment those lines.
+    ###
+    ## read -r -d '' PRESTART << EOM
+    ## EOM
+
+  logstash.conf: |
+    input {
+      jdbc {
+        jdbc_driver_library => "/usr/share/logstash/logstash-core/lib/jars/mongojdbc4.8.jar"
+        jdbc_driver_class => "com.wisecoders.dbschema.mongodb.JdbcDriver"
+        jdbc_connection_string => "jdbc:mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_CONNECTION_URL}/portscanner?authSource=admin"
+        jdbc_user => "${MONGODB_USERNAME}"
+        jdbc_password => "${MONGODB_PASSWORD}"
+        statement => "db.operator.find({}, {_id: 0})"
+      } 
+      jdbc {
+        jdbc_driver_library => "/usr/share/logstash/logstash-core/lib/jars/mongojdbc4.8.jar"
+        jdbc_driver_class => "com.wisecoders.dbschema.mongodb.JdbcDriver"
+        jdbc_connection_string => "jdbc:mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_CONNECTION_URL}/codacy?authSource=admin"
+        jdbc_user => "${MONGODB_USERNAME}"
+        jdbc_password => "${MONGODB_PASSWORD}"
+        statement => "db.repositories.find({}, {_id: 0})"
+      } 
+      jdbc {
+        jdbc_driver_library => "/usr/share/logstash/logstash-core/lib/jars/mongojdbc4.8.jar"
+        jdbc_driver_class => "com.wisecoders.dbschema.mongodb.JdbcDriver"
+        jdbc_connection_string => "jdbc:mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_CONNECTION_URL}/codacy?authSource=admin"
+        jdbc_user => "${MONGODB_USERNAME}"
+        jdbc_password => "${MONGODB_PASSWORD}"
+        statement => "db.metadata.find({}, {_id: 0})"
+      } 
+      jdbc {
+        jdbc_driver_library => "/usr/share/logstash/logstash-core/lib/jars/mongojdbc4.8.jar"
+        jdbc_driver_class => "com.wisecoders.dbschema.mongodb.JdbcDriver"
+        jdbc_connection_string => "jdbc:mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_CONNECTION_URL}/github?authSource=admin"
+        jdbc_user => "${MONGODB_USERNAME}"
+        jdbc_password => "${MONGODB_PASSWORD}"
+        statement => "db.github_repo.find({}, {_id: 0})"
+      } 
+      jdbc {
+        jdbc_driver_library => "/usr/share/logstash/logstash-core/lib/jars/mongojdbc4.8.jar"
+        jdbc_driver_class => "com.wisecoders.dbschema.mongodb.JdbcDriver"
+        jdbc_connection_string => "jdbc:mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_CONNECTION_URL}/github?authSource=admin"
+        jdbc_user => "${MONGODB_USERNAME}"
+        jdbc_password => "${MONGODB_PASSWORD}"
+        statement => "db.github_meta.find({}, {_id: 0})"
+      } 
+      jdbc {
+        jdbc_driver_library => "/usr/share/logstash/logstash-core/lib/jars/mongojdbc4.8.jar"
+        jdbc_driver_class => "com.wisecoders.dbschema.mongodb.JdbcDriver"
+        jdbc_connection_string => "jdbc:mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_CONNECTION_URL}/github?authSource=admin"
+        jdbc_user => "${MONGODB_USERNAME}"
+        jdbc_password => "${MONGODB_PASSWORD}"
+        statement => "db.github_branches.find({}, {_id: 0})"
+      } 
+      jdbc {
+        jdbc_driver_library => "/usr/share/logstash/logstash-core/lib/jars/mongojdbc4.8.jar"
+        jdbc_driver_class => "com.wisecoders.dbschema.mongodb.JdbcDriver"
+        jdbc_connection_string => "jdbc:mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_CONNECTION_URL}/github?authSource=admin"
+        jdbc_user => "${MONGODB_USERNAME}"
+        jdbc_password => "${MONGODB_PASSWORD}"
+        statement => "db.github_contributors.find({}, {_id: 0})"
+      } 
+      jdbc {
+        jdbc_driver_library => "/usr/share/logstash/logstash-core/lib/jars/mongojdbc4.8.jar"
+        jdbc_driver_class => "com.wisecoders.dbschema.mongodb.JdbcDriver"
+        jdbc_connection_string => "jdbc:mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_CONNECTION_URL}/jenkins?authSource=admin"
+        jdbc_user => "${MONGODB_USERNAME}"
+        jdbc_password => "${MONGODB_PASSWORD}"
+        statement => "db.jenkins_jobs.aggregate([{$lookup: {  from: 'jenkins_nodes',  localField: 'nodename',  foreignField: 'nodename',  as: 'node_details'}},{$lookup: {  from: 'jenkins_builds',  localField: 'jobfullname',  foreignField: 'jobfullname',  as: 'build_details'}}, {$project: {  _id: 0, node_details: { _id: 0}, build_details:{ _id: 0} } }])"
+      } 
+      jdbc {
+        jdbc_driver_library => "/usr/share/logstash/logstash-core/lib/jars/mongojdbc4.8.jar"
+        jdbc_driver_class => "com.wisecoders.dbschema.mongodb.JdbcDriver"
+        jdbc_connection_string => "jdbc:mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_CONNECTION_URL}/jenkins?authSource=admin"
+        jdbc_user => "${MONGODB_USERNAME}"
+        jdbc_password => "${MONGODB_PASSWORD}"
+        statement => "db.jenkins_nodes.find({}, {_id: 0})"
+      } 
+      jdbc {
+        jdbc_driver_library => "/usr/share/logstash/logstash-core/lib/jars/mongojdbc4.8.jar"
+        jdbc_driver_class => "com.wisecoders.dbschema.mongodb.JdbcDriver"
+        jdbc_connection_string => "jdbc:mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_CONNECTION_URL}/jenkins?authSource=admin"
+        jdbc_user => "${MONGODB_USERNAME}"
+        jdbc_password => "${MONGODB_PASSWORD}"
+        statement => "db.jenkins_builds.find({}, {_id: 0})"
+      } 
+    }
+
+    filter {
+     if ([document][identifier] == "portscanner.operator") {
+        mutate {
+          convert => {
+            "[document][allowed_ports]" => "string"
+            "[document][actual_ports]" => "string"
+            "[document][non_compliance_ports]" => "string"
+            "[document][non_compliance_services]" => "string"
+          }
+        }
+      } 
+
+      if ([document][identifier] == "codacy.repositories") {
+        date {
+          match => ["[document][created_date]", "dd-MMM-yyyy"]
+          target => "[document][created_date]"
+        }     
+      }  
+      
+      if ([document][identifier] == "codacy.metadata") {
+        date {
+          match => ["[document][created_date]", "dd-MMM-yyyy"]
+          target => "[document][created_date]"
+        }
+      }  
+     
+      if ([document][identifier] == "github_repo") {
+        date {
+          match => ["[document][created_date]", "dd-MMM-yyyy HH:mm:ss"]
+          target => "[document][created_date]"
+        }
+      }  
+      
+      if ([document][identifier] == "github_meta") {
+        date {
+          match => ["[document][created_date]", "dd-MMM-yyyy HH:mm:ss"]
+          target => "[document][created_date]"
+        }
+      }  
+      
+      if ([document][identifier] == "github_branches") {
+        date {
+          match => ["[document][created_date]", "dd-MMM-yyyy HH:mm:ss"]
+          target => "[document][created_date]"
+        }
+      }  
+     
+      if ([document][identifier] == "github_contributors") {
+        date {
+          match => ["[document][created_date]", "dd-MMM-yyyy HH:mm:ss"]
+          target => "[document][created_date]"
+        }
+      }  
+
+      if ([document][identifier] == "jenkins_jobs") {
+        date {
+          match => ["[document][created_date]", "dd-MMM-yyyy HH:mm:ss"]
+          target => "[document][created_date]"
+        }
+      }
+
+      if ([document][identifier] == "jenkins_nodes") {
+        date {
+          match => ["[document][created_date]", "dd-MMM-yyyy HH:mm:ss"]
+          target => "[document][created_date]"
+        }
+      }
+
+      if ([document][identifier] == "jenkins_builds") {
+        date {
+          match => ["[document][created_date]", "dd-MMM-yyyy HH:mm:ss"]
+          target => "[document][created_date]"
+        }
+        date {
+          match => ["[document][build_timestamp]", "dd-MMM-yyyy HH:mm:ss"]
+          target => "[document][build_timestamp]"
+        }
+      }
+    }
+
+    output {
+      stdout {
+        codec => rubydebug
+      }
+      if ([document][identifier] == "portscanner.operator" and [document][actual_ports][0] != "-1") {
+        elasticsearch {
+          index => "dashboard_portscanner_operator"
+          hosts => ["http://${MASTER_NODE_INTERNAL_IP}:${ELASTICSEARCH_PORT}"]
+          user => "${ELASTICSEARCH_USERNAME}"
+          password => "${ELASTICSEARCH_PASSWORD}"
+          document_id => "%{[document][created_at]}"
+        }
+      } 
+
+      if ([document][identifier] == "codacy.repositories" and [document][repository] != "none") {        
+        elasticsearch {
+          index => "dashboard_codacy_repositories"
+          hosts => ["http://${MASTER_NODE_INTERNAL_IP}:${ELASTICSEARCH_PORT}"]
+          user => "${ELASTICSEARCH_USERNAME}"
+          password => "${ELASTICSEARCH_PASSWORD}"
+          document_id => "%{[document][repository][0][id]}-%{[document][created_date]}"
+        }
+      }   
+
+      if ([document][identifier] == "codacy.metadata" and [document][all_categories][0][total_issues] != -1) {
+        elasticsearch {
+          index => "dashboard_codacy_metadata"
+          hosts => ["http://${MASTER_NODE_INTERNAL_IP}:${ELASTICSEARCH_PORT}"]
+          user => "${ELASTICSEARCH_USERNAME}"
+          password => "${ELASTICSEARCH_PASSWORD}"
+          document_id => "%{[document][created_date]}"
+        }
+      }   
+      if ([document][identifier] == "github_repo" and [document][repository] != "none") {
+        elasticsearch {
+          index => "github_repo"
+          hosts => ["http://${MASTER_NODE_INTERNAL_IP}:${ELASTICSEARCH_PORT}"]
+          user => "${ELASTICSEARCH_USERNAME}"
+          password => "${ELASTICSEARCH_PASSWORD}"
+          document_id => "%{[document][repo_id]}-%{[document][repository]}-%{[document][created_date]}"
+        }
+      }   
+      if ([document][identifier] == "github_meta" and [document][repositories] != -1) {
+        elasticsearch {
+          index => "github_meta"
+          hosts => ["http://${MASTER_NODE_INTERNAL_IP}:${ELASTICSEARCH_PORT}"]
+          user => "${ELASTICSEARCH_USERNAME}"
+          password => "${ELASTICSEARCH_PASSWORD}"
+          document_id => "%{[document][created_date]}"
+        }
+      }   
+      if ([document][identifier] == "github_branches" and [document][unique_identity] != "none:none") {
+        elasticsearch {
+          index => "github_branches"
+          hosts => ["http://${MASTER_NODE_INTERNAL_IP}:${ELASTICSEARCH_PORT}"]
+          user => "${ELASTICSEARCH_USERNAME}"
+          password => "${ELASTICSEARCH_PASSWORD}"
+          document_id => "%{[document][unique_identity]}-%{[document][created_date]}"
+        }
+      }   
+      if ([document][identifier] == "github_contributors" and [document][unique_identity] != "none:none") {
+        elasticsearch {
+          index => "github_contributors"
+          hosts => ["http://${MASTER_NODE_INTERNAL_IP}:${ELASTICSEARCH_PORT}"]
+          user => "${ELASTICSEARCH_USERNAME}"
+          password => "${ELASTICSEARCH_PASSWORD}"
+          document_id => "%{[document][unique_identity]}-%{[document][created_date]}"
+        }
+      }   
+      if ([document][identifier] == "jenkins_jobs" and [document][jobfullname] != "none") {
+        elasticsearch {
+          index => "jenkins_jobs"
+          hosts => ["http://${MASTER_NODE_INTERNAL_IP}:${ELASTICSEARCH_PORT}"]
+          user => "${ELASTICSEARCH_USERNAME}"
+          password => "${ELASTICSEARCH_PASSWORD}"
+          document_id => "%{[document][jobfullname]}-%{[document][created_date]}"
+        }
+      }         
+      if ([document][identifier] == "jenkins_builds" and [document][unique_build_name] != "none") {
+        elasticsearch {
+          index => "jenkins_builds"
+          hosts => ["http://${MASTER_NODE_INTERNAL_IP}:${ELASTICSEARCH_PORT}"]
+          user => "${ELASTICSEARCH_USERNAME}"
+          password => "${ELASTICSEARCH_PASSWORD}"
+          document_id => "%{[document][unique_build_name]}-%{[document][created_date]}"
+        }
+      }         
+      if ([document][identifier] == "jenkins_nodes" and [document][nodename] != "none") {
+        elasticsearch {
+          index => "jenkins_nodes"
+          hosts => ["http://${MASTER_NODE_INTERNAL_IP}:${ELASTICSEARCH_PORT}"]
+          user => "${ELASTICSEARCH_USERNAME}"
+          password => "${ELASTICSEARCH_PASSWORD}"
+          document_id => "%{[document][nodename]}-%{[document][created_date]}"
+        }
+      }         
+    }

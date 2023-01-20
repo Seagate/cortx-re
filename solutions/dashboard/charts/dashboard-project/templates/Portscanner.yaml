@@ -1,0 +1,144 @@
+{{- if .Values.tools.create.portscanner -}}
+apiVersion: seagate.com/v1
+kind: DashboardPortScanner
+metadata:
+  name: {{ include "dashboard-project.port-scanner.name" . }}
+  namespace: {{ include "dashboard-project.tools.namespace" . }}
+  labels:
+    module: portscanner
+    {{- include "dashboard-project.labels" . | nindent 4 }}
+spec:
+  namespace: {{ include "dashboard-project.tools.namespace" . }}
+  scanNamespace: {{ .Values.portscanner.cr.scanNamespace }}
+  scanObject: {{ .Values.portscanner.cr.scanObject }}
+  allowedPorts: 
+    {{- range .Values.portscanner.cr.allowedPorts }}
+    - {{ . | int }}
+    {{- end }}    
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "dashboard-project.port-scanner.service-account-name" . }}
+  namespace: {{ include "dashboard-project.tools.namespace" . }}
+  labels:
+    {{- include "dashboard-project.labels" . | nindent 4 }}
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "dashboard-project.port-scanner.cluster-role-name" . }}
+rules:
+  - apiGroups:
+      - seagate.com
+    resources:
+      - dashboardportscanners
+    verbs:
+      - "*"
+  - apiGroups:
+      - ""
+    resources:
+      - namespaces
+    verbs:
+      - get
+      - watch
+      - list
+  - apiGroups:
+      - apps
+    resources:
+      - statefulsets
+    verbs:
+      - "*"
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+      - services
+      - endpoints
+      - events
+    verbs:
+      - "*"
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+      - secrets
+    verbs:
+      - "*"
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "dashboard-project.port-scanner.cluster-role-binding-name" . }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "dashboard-project.port-scanner.cluster-role-name" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "dashboard-project.port-scanner.service-account-name" . }}
+    namespace: {{ include "dashboard-project.tools.namespace" . }}
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "dashboard-project.port-scanner.name" . }}
+  namespace: {{ include "dashboard-project.tools.namespace" . }}
+  labels:
+    {{- include "dashboard-project.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.portscanner.deployment.replicas }}
+  selector:
+    matchLabels:
+      name: {{ include "dashboard-project.port-scanner.name" . }}
+  template:
+    metadata:
+      labels:
+        name: {{ include "dashboard-project.port-scanner.name" . }}
+    spec:
+      containers:
+        - name: portscanner
+          image: {{ .Values.portscanner.deployment.image }}
+          imagePullPolicy: {{ .Values.portscanner.deployment.imagePullPolicy }}
+          env:
+            - name: MONGODB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  key: mongodb_username
+                  name: {{ include "dashboard-project.tools.dashboard_secret_name" . }}
+            - name: MONGODB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: mongodb_password
+                  name: {{ include "dashboard-project.tools.dashboard_secret_name" . }}
+            - name: MONGODB_CONNECTION_URL
+              valueFrom:
+                configMapKeyRef:
+                  key: mongodb_connection_url
+                  name: {{ include "dashboard-project.tools.dashboard_configmap_name" . }}
+            - name: SECRET_NAME
+              valueFrom:
+                configMapKeyRef:
+                  key: secret_name
+                  name: {{ include "dashboard-project.tools.dashboard_configmap_name" . }}
+          resources:
+            limits:
+              memory: {{ .Values.portscanner.deployment.resources.limits.memory }}
+              cpu: {{ .Values.portscanner.deployment.resources.limits.cpu }}
+            requests:
+              memory: {{ .Values.portscanner.deployment.resources.requests.memory }}
+              cpu: {{ .Values.portscanner.deployment.resources.requests.cpu }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - NET_RAW
+                - ALL
+      serviceAccountName: {{ include "dashboard-project.port-scanner.service-account-name" . }}
+{{- end }}

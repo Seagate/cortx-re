@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "dashboard-project.tools.dashboard_configmap_name" . }}
+  namespace: {{ include "dashboard-project.tools.namespace" . }}
+  labels: {{- include "dashboard-project.labels" . | nindent 4 }}
+data:
+  secret_name: {{ include "dashboard-project.tools.dashboard_secret_name" . }}
+  elasticsearch_http_service: "{{ required "Elasticsearch HTTP service required" .Values.dashboard_configmap.elasticsearch_http_service }}"
+  elasticsearch_port: "{{ required "Elasticsearch port is required" .Values.dashboard_configmap.elasticsearch_port }}"
+  mongodb_connection_url: "{{ required "MongoDb connection URL is required" .Values.dashboard_configmap.mongodb_connection_url }}"
+  {{- if .Values.tools.create.github }}
+  github_api_baseurl: "{{ required "GitHub API baseURL is required" .Values.dashboard_configmap.github_api_baseurl }}"
+  {{- end }}
+  {{- if .Values.tools.create.jenkins }}
+  jenkins_server_url: "{{ required "Jenkins server value is required" .Values.dashboard_configmap.jenkins_server_url }}"
+  {{- end }}
