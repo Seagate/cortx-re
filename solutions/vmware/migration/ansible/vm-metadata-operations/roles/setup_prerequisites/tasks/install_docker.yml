@@ -1,0 +1,52 @@
+---
+- name: Install yum utils
+  yum:
+    name: yum-utils
+    state: latest
+
+- name: Add Docker repo
+  get_url:
+    url: https://download.docker.com/linux/centos/docker-ce.repo
+    dest: /etc/yum.repos.d/docer-ce.repo
+
+- name: Install Docker
+  yum:
+    name: 
+      - "docker-ce-{{ docker_version }}"
+      - "docker-ce-cli-{{ docker_version }}"
+      - "containerd.io"
+    state: present
+  vars:
+    docker_version: "20.10.8"
+
+- name: Start Docker service
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Download docker-compose binary file
+  shell: curl -L "https://github.com/docker/compose/releases/download/1.23.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+
+- name: Update docker-compose binary file permissions
+  shell: chmod +x /usr/local/bin/docker-compose
+
+- name: Verify Docker and Docker-Compose version
+  shell: docker version && /usr/local/bin/docker-compose --version
+  register: docker_version_info
+
+- debug:
+    msg: "{{ docker_version_info.stdout }}"
+
+- name: Add insecure image registry
+  copy:
+    src: files/daemon.json
+    dest: /etc/docker/daemon.json
+  notify:
+      - Restart docker
+
+- name: Login to GitHub docker registry
+  shell: docker login ghcr.io -u {{ GITHUB_CRED_USR }} -p {{ GITHUB_CRED_PSW }}
+
+- name: Pull base image from GitHub docker registry
+  shell: docker pull ghcr.io/seagate/cortx-re/cortx-build-internal:rockylinux-8.4
