@@ -31,6 +31,22 @@ kubectl create -f ./prerequisites/elastic-user.yaml
 kubectl create -f ./prerequisites/dashboard-secret.yaml
 ```
 
+### Helm Installation
+
+Please use the below steps for installing helm if not already installed. You can also take reference from https://helm.sh/docs/intro/install/#from-script.
+
+```
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+chmod 700 get_helm.sh
+./get_helm.sh
+```
+
+Validate helm installation by below command:
+
+```
+helm help
+```
+
 ### Elasticsearch Helm Chart
 
 The **sample-value-yamls/sample-elastic-project-values.yaml** is provided for modification in origional **values.yaml**. You can also verify the origional values.yaml in **./elastic-project** directory
