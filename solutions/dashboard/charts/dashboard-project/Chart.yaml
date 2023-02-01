@@ -1,6 +1,6 @@
 apiVersion: v2
 name: dashboard-project
-description: A Helm chart for Kubernetes
+description: A Helm chart for DevOps Dashboard having support to deploy PortScanner operator and Jenkins, Codacy, GitHub scripts
 
 # A chart can be either an 'application' or a 'library' chart.
 #

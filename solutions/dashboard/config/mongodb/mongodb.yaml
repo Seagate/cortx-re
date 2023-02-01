@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: dashboard-mongodb
-          image: mongo:6.0.2
+          image: cortx-docker.colo.seagate.com/dashboard/mongo:6.0.2
           imagePullPolicy: Always
           env:
             - name: MONGO_INITDB_ROOT_USERNAME
