@@ -1,0 +1,46 @@
+apiVersion: elasticsearch.k8s.elastic.co/v1
+kind: Elasticsearch
+metadata:
+  name: {{ include "elastic-project.elasticsearch.name" . }}
+  namespace: {{ include "elastic-project.tools.namespace" . }}
+  labels:
+    {{- include "elastic-project.labels" . | nindent 4 }}
+spec:
+  version: {{ .Values.tools.version }}
+  http:
+    service:
+      spec:
+        type: {{ .Values.elasticsearch.service.type }}
+        ports:
+          - port: {{ .Values.elasticsearch.service.port }}
+            targetPort: {{ .Values.elasticsearch.service.targetPort }}
+            nodePort: {{ .Values.elasticsearch.service.nodePort }}
+    tls:
+      selfSignedCertificate:
+        disabled: {{ .Values.elasticsearch.selfSignedCertificate.disabled }}
+  volumeClaimDeletePolicy: {{ .Values.elasticsearch.volumeClaimDeletePolicy }}
+  nodeSets:
+  - name: default
+    count: {{ .Values.elasticsearch.nodeSetCount }}
+    podTemplate:
+      spec:
+        containers:
+        - name: elasticsearch
+          resources:
+            requests:
+              memory: {{ .Values.elasticsearch.resources.requests.memory }}
+              cpu: {{ .Values.elasticsearch.resources.requests.cpu }}
+            limits:
+              memory: {{ .Values.elasticsearch.resources.limits.memory }}
+    config:
+      node.store.allow_mmap: false
+    volumeClaimTemplates:
+    - metadata:
+        name: elasticsearch-data
+      spec:
+        accessModes:
+        - {{ .Values.elasticsearch.volumeClaimTemplates.accessMode }}
+        resources:
+          requests:
+            storage: {{ .Values.elasticsearch.volumeClaimTemplates.storage }}
+        storageClassName: {{ .Values.volumeClaimTemplates.storageClass }}

@@ -1,0 +1,24 @@
+apiVersion: kibana.k8s.elastic.co/v1
+kind: Kibana
+metadata:
+  name: {{ include "elastic-project.kibana.name" . }}
+  namespace: {{ include "elastic-project.tools.namespace" . }}
+  labels:
+    {{- include "elastic-project.labels" . | nindent 4 }}
+spec:
+  version: {{ .Values.tools.version }}
+  count: {{ .Values.kibana.count }}
+  elasticsearchRef:
+    name: {{ include "elastic-project.elasticsearch.name" . }}
+    serviceName: {{ include "elastic-project.elasticsearch.name" . }}-es-internal-http
+  http:
+    service:
+      spec:
+        type: {{ .Values.kibana.service.type }}
+        ports:
+          - port: {{ .Values.kibana.service.port }}
+            targetPort: {{ .Values.kibana.service.targetPort }}
+            nodePort: {{ .Values.kibana.service.nodePort }}
+    tls:
+      selfSignedCertificate:
+        disabled: {{ .Values.kibana.selfSignedCertificate.disabled }}

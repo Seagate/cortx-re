@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: dashboard-elasticsearch-es-elastic-user
+  namespace: elastic
+type: Opaque
+data:
+  elastic: <elasticsearch_password>

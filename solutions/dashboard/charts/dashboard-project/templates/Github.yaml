@@ -1,0 +1,62 @@
+{{- if .Values.tools.create.github -}}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "dashboard-project.github.name" . }}
+  namespace: {{ include "dashboard-project.tools.namespace" . }}
+  labels:
+    {{- include "dashboard-project.labels" . | nindent 4 }}
+spec:
+  schedule: {{ required "A value must be entered for GitHub CronJob schedule" .Values.github.schedule }}
+  successfulJobsHistoryLimit: {{ .Values.github.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.github.failedJobsHistoryLimit }}
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: github
+              image: {{ .Values.github.image }}
+              imagePullPolicy: {{ .Values.github.imagePullPolicy }}
+              env:
+                - name: MONGODB_USERNAME
+                  valueFrom:
+                    secretKeyRef:
+                      key: mongodb_username
+                      name: {{ include "dashboard-project.tools.dashboard_secret_name" . }}
+                - name: MONGODB_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      key: mongodb_password
+                      name: {{ include "dashboard-project.tools.dashboard_secret_name" . }}
+                - name: MONGODB_CONNECTION_URL
+                  valueFrom:
+                    configMapKeyRef:
+                      key: mongodb_connection_url
+                      name: {{ include "dashboard-project.tools.dashboard_configmap_name" . }}
+                - name: GITHUB_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      key: github_token
+                      name: {{ include "dashboard-project.tools.dashboard_secret_name" . }}
+                - name: GITHUB_API_BASEURL
+                  valueFrom:
+                    configMapKeyRef:
+                      key: github_api_baseurl
+                      name: {{ include "dashboard-project.tools.dashboard_configmap_name" . }}
+              resources:
+                limits:
+                  memory: {{ .Values.github.resources.limits.memory }}
+                  cpu: {{ .Values.github.resources.limits.cpu }}
+                requests:
+                  memory: {{ .Values.github.resources.requests.memory }}
+                  cpu: {{ .Values.github.resources.requests.cpu }}
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop:
+                    - NET_RAW
+                    - ALL
+          restartPolicy: {{ .Values.github.restartPolicy }}
+{{- end }}

@@ -1,0 +1,154 @@
+tools:
+  namespace: ""
+  dashboard_secret_name: ""
+  dashboard_configmap_name: ""
+  create:
+    portscanner: true
+    codacy: true
+    github: true
+    jenkins: true
+
+dashboard_configmap:
+  elasticsearch_http_service: "dashboard-elasticsearch-es-http.elastic.svc"
+  elasticsearch_port: "9200"
+  mongodb_connection_url: "dashboard-mongodb.dashboard.svc.cluster.local:27017"
+  github_api_baseurl: "https://api.github.com"
+  jenkins_server_url: ""
+
+codacy:
+  name: ""
+  schedule: "0 0 * * *"
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  image: cortx-docker.colo.seagate.com/dashboard/codacy:1.0.0-latest
+  imagePullPolicy: Always
+  resources:
+    limits:
+      memory: "768Mi"
+      cpu: "5000m"
+    requests:
+      memory: "256Mi"
+      cpu: "300m"
+  restartPolicy: OnFailure
+
+github:
+  name: ""
+  schedule: "0 0 * * *"
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  image: cortx-docker.colo.seagate.com/dashboard/github:1.0.0-latest
+  imagePullPolicy: Always
+  resources:
+    limits:
+      memory: "2048Mi"
+      cpu: "5000m"
+    requests:
+      memory: "256Mi"
+      cpu: "200m"
+  restartPolicy: OnFailure
+
+jenkins:
+  name: ""
+  schedule: "0 0 * * *"
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  image: cortx-docker.colo.seagate.com/dashboard/jenkins:1.0.0-latest
+  imagePullPolicy: Always
+  resources:
+    limits:
+      memory: "2048Mi"
+      cpu: "5000m"
+    requests:
+      memory: "256Mi"
+      cpu: "200m"
+  restartPolicy: OnFailure
+
+logstash_configmap:
+  name: ""
+
+logstash:
+  name: ""
+  schedule: "0 */5 * * *"
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  image: docker.io/sanket02092001/customlog:1.0.0
+  imagePullPolicy: Always
+  resources:
+    limits:
+      memory: "2048Mi"
+      cpu: "5000m"
+    requests:
+      memory: "256Mi"
+      cpu: "200m"
+  restartPolicy: OnFailure
+
+mongodb:
+  name: ""
+  replicas: 1
+  image: cortx-docker.colo.seagate.com/dashboard/mongo:6.0.2
+  imagePullPolicy: Always
+  containerPort: 27017
+  terminationGracePeriodSeconds: 10
+  restartPolicy: OnFailure
+  resources:
+    limits:
+      memory: "768Mi"
+      cpu: "5000m"
+    requests:
+      memory: "256Mi"
+      cpu: "300m"
+  volumeMounts:
+    mountPath: /data/db
+  volumeClaimTemplates:
+    storage: 45Gi
+    accessMode: ReadWriteOnce
+  service:
+    type: ClusterIP
+    clusterIP: None
+    port: 27017
+    targetPort: 27017
+    protocol: TCP
+
+portscanner:
+  cr:
+    scanNamespace: cortx
+    scanObject: service
+    allowedPorts:
+      - 53
+      - 80
+      - 443
+      - 2181
+      - 2888
+      - 3888
+      - 5601
+      - 8081
+      - 9092
+      - 9200
+      - 22003
+      - 29000
+      - 29001
+      - 29002
+
+  serviceAccount:
+    name: ""
+
+  clusterRole:
+    name: ""
+
+  clusterRoleBinding:
+    name: ""
+
+  deployment:
+    replicas: 1
+    image: cortx-docker.colo.seagate.com/dashboard/portscanner:1.0.0-latest
+    imagePullPolicy: Always
+    resources:
+      limits:
+        memory: "768Mi"
+        cpu: "5000m"
+      requests:
+        memory: "256Mi"
+        cpu: "300m"
+
+volumeClaimTemplates:
+  storageClass: local-path

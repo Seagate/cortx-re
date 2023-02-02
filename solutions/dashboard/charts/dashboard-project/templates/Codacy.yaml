@@ -1,0 +1,57 @@
+{{- if .Values.tools.create.codacy -}}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "dashboard-project.codacy.name" . }}
+  namespace: {{ include "dashboard-project.tools.namespace" . }}
+  labels:
+    {{- include "dashboard-project.labels" . | nindent 4 }}
+spec:
+  schedule: {{ required "A value must be entered for CODACY CronJob schedule" .Values.codacy.schedule }}
+  successfulJobsHistoryLimit: {{ .Values.codacy.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.codacy.failedJobsHistoryLimit }}
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: codacy
+              image: {{ .Values.codacy.image }}
+              imagePullPolicy: {{ .Values.codacy.imagePullPolicy }}
+              env:
+                - name: MONGODB_USERNAME
+                  valueFrom:
+                    secretKeyRef:
+                      key: mongodb_username
+                      name: {{ include "dashboard-project.tools.dashboard_secret_name" . }}
+                - name: MONGODB_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      key: mongodb_password
+                      name: {{ include "dashboard-project.tools.dashboard_secret_name" . }}
+                - name: MONGODB_CONNECTION_URL
+                  valueFrom:
+                    configMapKeyRef:
+                      key: mongodb_connection_url
+                      name: {{ include "dashboard-project.tools.dashboard_configmap_name" . }}
+                - name: CODACY_API_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      key: codacy_api_token
+                      name: {{ include "dashboard-project.tools.dashboard_secret_name" . }}
+              resources:
+                limits:
+                  memory: {{ .Values.codacy.resources.limits.memory }}
+                  cpu: {{ .Values.codacy.resources.limits.cpu }}
+                requests:
+                  memory: {{ .Values.codacy.resources.requests.memory }}
+                  cpu: {{ .Values.codacy.resources.requests.cpu }}
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop:
+                    - NET_RAW
+                    - ALL
+          restartPolicy: {{ .Values.codacy.restartPolicy }}
+{{- end }}
