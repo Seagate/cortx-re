@@ -21,15 +21,15 @@ version: "3"
 
 services:
   cortx-jenkins-prod:
-    image: jenkins/jenkins:lts
+    image: cortx-docker.colo.seagate.com/seagate/jenkins:2.235.5
     restart: always
     ports:
       - "80:8080"
       - "50000:50000"
       - "443:8443"
     volumes:
-      - /mnt/data1/releases/jenkins/jenkins-prod:/var/jenkins_home
-      - /mnt/data1/releases/jenkins/jenkins-prod/certs/jenkins_keystore.jks:/var/lib/jenkins/jenkins.jks
+      - /mnt/data1/jenkins/jenkins-prod:/var/jenkins_home
+      - /mnt/data1/jenkins/jenkins-prod/certs/jenkins_keystore.jks:/var/lib/jenkins/jenkins.jks
       - /mnt/bigstorage/:/mnt/bigstorage
     environment:
       - JAVA_OPTS=-Xmx8192m
