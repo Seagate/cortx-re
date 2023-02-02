@@ -26,10 +26,10 @@ mv docker-compose /usr/local/bin/
 
 ```
 mkdir -p /mnt/cortx-storage /mnt/bigstorage/releases /mnt/jenkins-dev /mnt/jenkins-prod
-mount -t nfs4 cortx-storage.colo.seagate.com:/mnt/data1/ /mnt/cortx-storage
-mount -t nfs4 cortx-storage.colo.seagate.com:/mnt/data1/releases /mnt/bigstorage/releases
-mount -t nfs4 cortx-storage.colo.seagate.com:/mnt/data1/releases/jenkins/jenkins-dev/jenkins_home-dev /mnt/jenkins-dev
-mount -t nfs4 cortx-storage.colo.seagate.com:/mnt/data1/releases/jenkins/jenkins-prod /mnt/jenkins-prod
+mount -t nfs4 ssc-nfs-cicd1.colo.seagate.com:/mnt/data1/ /mnt/cortx-storage
+mount -t nfs4 ssc-nfs-cicd1.colo.seagate.com:/mnt/data1/releases /mnt/bigstorage/releases
+mount -t nfs4 ssc-nfs-cicd1.colo.seagate.com:/mnt/data1/releases/jenkins/jenkins-dev/jenkins_home-dev /mnt/jenkins-dev
+mount -t nfs4 ssc-nfs-cicd1.colo.seagate.com:/mnt/data1/releases/jenkins/jenkins-prod /mnt/jenkins-prod
 ```
 
 ## Change files configuration

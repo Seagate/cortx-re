@@ -83,7 +83,7 @@ pipeline {
                         if [ "${os_version}" = "ubuntu-22.04" ]; then
                             yes | mk-build-deps --install debian/control
                         else
-                            yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rockylinux/rockylinux-8.4-2.0.0-latest/
+                            yum-config-manager --add-repo=http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx/third-party-deps/rockylinux/rockylinux-8.4-2.0.0-latest/
                             yum --nogpgcheck -y --disablerepo="EOS_Rocky_8_OS_x86_64_Rocky_8" install libfabric-1.11.2 libfabric-devel-1.11.2
                             export build_number=${BUILD_ID}
                             cp cortx-motr.spec.in cortx-motr.spec
@@ -197,7 +197,7 @@ pipeline {
                 script {
                     def releaseBuild = build job: 'Release', propagate: true
                     env.release_build = releaseBuild.number
-                    env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/${env.release_build}"
+                    env.release_build_location = "http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx/github/$branch/$os_version/${env.release_build}"
                     env.cortx_images = releaseBuild.buildVariables.cortx_all_image + "\n" + releaseBuild.buildVariables.cortx_rgw_image + "\n" + releaseBuild.buildVariables.cortx_data_image + "\n" + releaseBuild.buildVariables.cortx_control_image
                 }
             }

@@ -143,7 +143,7 @@ pipeline {
 			body: """
 			<h><span style=color:green>SUCCESSFUL:</span> Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</h>
 			<p>Check console output at "<a href="${env.BUILD_URL}">${env.JOB_NAME} [${env.BUILD_NUMBER}]</a>"</p>
-			<p>RPM's are located at http://cortx-storage.colo.seagate.com/releases/eos/nightly/B${env.BUILD_NUMBER}-${env.RPM_LOCATION}</p>
+			<p>RPM's are located at http://ssc-nfs-cicd1.colo.seagate.com/releases/eos/nightly/B${env.BUILD_NUMBER}-${env.RPM_LOCATION}</p>
 			""",
 			to: 'eos.nightlybuild@seagate.com',
 			recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]

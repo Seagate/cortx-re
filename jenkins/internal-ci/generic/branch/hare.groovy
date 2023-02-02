@@ -45,7 +45,7 @@ pipeline {
                         script { build_stage = env.STAGE_NAME }
                         script {
                             sh label: '', script: '''
-                                yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/components/github/main/$os_version/dev/motr/last_successful/
+                                yum-config-manager --add-repo=http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx/components/github/main/$os_version/dev/motr/last_successful/
                                
                             '''
                         }
@@ -57,7 +57,7 @@ pipeline {
                         script { build_stage = env.STAGE_NAME }
                         script {
                             sh label: '', script: '''
-                                yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/components/github/main/$os_version/dev/motr/current_build/
+                                yum-config-manager --add-repo=http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx/components/github/main/$os_version/dev/motr/current_build/
                             '''
                         }
                     }
@@ -71,11 +71,11 @@ pipeline {
 
                 sh label: '', script: '''
                     yum erase python36-PyYAML -y
-                    pip3 install  --no-cache-dir --trusted-host cortx-storage.colo.seagate.com -i http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/python-packages-$version-latest/ -r https://raw.githubusercontent.com/Seagate/cortx-utils/$branch/py-utils/python_requirements.txt -r https://raw.githubusercontent.com/Seagate/cortx-utils/$branch/py-utils/python_requirements.ext.txt
+                    pip3 install  --no-cache-dir --trusted-host ssc-nfs-cicd1.colo.seagate.com -i http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx/third-party-deps/python-deps/python-packages-$version-latest/ -r https://raw.githubusercontent.com/Seagate/cortx-utils/$branch/py-utils/python_requirements.txt -r https://raw.githubusercontent.com/Seagate/cortx-utils/$branch/py-utils/python_requirements.ext.txt
                 '''
 
                 sh label: '', script: '''
-                    yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/main/$os_version/$release_tag/cortx_iso/
+                    yum-config-manager --add-repo=http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx/github/main/$os_version/$release_tag/cortx_iso/
                     yum clean all;rm -rf /var/cache/yum
                     yum install cortx-py-utils cortx-motr{,-devel} -y --nogpgcheck
                 '''
@@ -131,7 +131,7 @@ pipeline {
                 script {
                     def releaseBuild = build job: 'Release', propagate: true
                     env.release_build = releaseBuild.number
-                    env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/${env.release_build}"
+                    env.release_build_location = "http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx/github/$branch/$os_version/${env.release_build}"
                     env.cortx_images = releaseBuild.buildVariables.cortx_all_image + "\n" + releaseBuild.buildVariables.cortx_rgw_image + "\n" + releaseBuild.buildVariables.cortx_data_image + "\n" + releaseBuild.buildVariables.cortx_control_image
                 }
             }

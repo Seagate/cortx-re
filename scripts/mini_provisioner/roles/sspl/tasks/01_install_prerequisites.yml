@@ -14,7 +14,7 @@
     dest: /etc/yum.repos.d/cortx.repo
 
 - name: "[Pre-Requisites] :1. Install third-party packages" 
-  shell: curl -s http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rpm/install-cortx-prereq.sh | bash -s -- -b {{ CORTX_BUILD }}
+  shell: curl -s http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx/third-party-deps/rpm/install-cortx-prereq.sh | bash -s -- -b {{ CORTX_BUILD }}
 
 - name: "[Pre-Requisites] : 3. SSPL rpm" 
   shell: yum install -y --nogpgcheck cortx-sspl cortx-libsspl cortx-sspl-test

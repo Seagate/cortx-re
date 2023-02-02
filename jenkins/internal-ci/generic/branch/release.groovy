@@ -16,7 +16,7 @@ pipeline {
         release_tag = "$BUILD_ID"
         BUILD_TO_DELETE = ""
         passphrase = credentials('rpm-sign-passphrase')
-        ARTIFACT_LOCATION = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version"
+        ARTIFACT_LOCATION = "http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx/github/$branch/$os_version"
         third_party_dir = "$release_dir/third-party-deps/rockylinux/$os_version-$third_party_version/"
         python_deps = "$release_dir/third-party-deps/python-deps/python-packages-2.0.0-latest"
         // WARNING : 'rm' command where used in this dir path, be conscious while changing the value
@@ -349,7 +349,7 @@ pipeline {
         always {
             script {
                 currentBuild.upstreamBuilds?.each { b -> env.upstream_project = "${b.getProjectName()}";env.upstream_build = "${b.getId()}" }
-                env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/${branch}/${os_version}/${env.release_tag}"
+                env.release_build_location = "http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx/github/${branch}/${os_version}/${env.release_tag}"
                 env.release_build = "${env.release_tag}"
                 env.build_stage = "${build_stage}"
 

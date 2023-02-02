@@ -142,7 +142,7 @@ pipeline {
 
                 sh label: 'Deploy CORTX', script:'''
                 pushd solutions/kubernetes/
-                      curl -l http://cortx-storage.colo.seagate.com/releases/cortx/solution_template/nightly-performance-ci.yml -o solution.yaml
+                      curl -l http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx/solution_template/nightly-performance-ci.yml -o solution.yaml
                       export GITHUB_TOKEN=$GITHUB_TOKEN
                       export CORTX_SCRIPTS_BRANCH=${CORTX_SCRIPTS_BRANCH}
                       export CORTX_SCRIPTS_REPO=${CORTX_SCRIPTS_REPO}

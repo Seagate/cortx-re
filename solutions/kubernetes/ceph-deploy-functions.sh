@@ -93,12 +93,12 @@ function install_prereq() {
             rpm -ivh http://mirror.centos.org/centos/8-stream/HighAvailability/x86_64/os/Packages/resource-agents-4.1.1-97.el8.x86_64.rpm
         ;;
         ubuntu)
-            #echo "deb [trusted=yes] http://cortx-storage.colo.seagate.com/releases/ceph/ceph/ubuntu-20.04/quincy/last_successful/ amd64/" > /etc/apt/sources.list.d/ceph-cortx-storage.list
+            #echo "deb [trusted=yes] http://ssc-nfs-cicd1.colo.seagate.com/releases/ceph/ceph/ubuntu-20.04/quincy/last_successful/ amd64/" > /etc/apt/sources.list.d/ceph-cortx-storage.list
             #apt update
 
             add_common_separator "Currently mounting bigstorage to nodes and installing packages until ubuntu repo is setup."
             mkdir -p /mnt/bigstorage/releases/ceph
-            mount -t nfs4 cortx-storage.colo.seagate.com:/mnt/data1/releases/ceph /mnt/bigstorage/releases/ceph/
+            mount -t nfs4 ssc-nfs-cicd1.colo.seagate.com:/mnt/data1/releases/ceph /mnt/bigstorage/releases/ceph/
         ;;
     esac
 }
@@ -111,7 +111,7 @@ function install_ceph() {
             cat << EOF > /etc/yum.repos.d/ceph.repo
 [Ceph]
 name=Ceph Packages
-baseurl=http://cortx-storage.colo.seagate.com/releases/ceph/ceph/rockylinux-8.4/quincy/last_successful/
+baseurl=http://ssc-nfs-cicd1.colo.seagate.com/releases/ceph/ceph/rockylinux-8.4/quincy/last_successful/
 gpgcheck=0
 enabled=1
 EOF
@@ -131,7 +131,7 @@ EOF
             cat << EOF > /etc/yum.repos.d/ceph.repo
 [Ceph]
 name=Ceph Packages
-baseurl=http://cortx-storage.colo.seagate.com/releases/ceph/ceph/centos-8/quincy/last_successful/
+baseurl=http://ssc-nfs-cicd1.colo.seagate.com/releases/ceph/ceph/centos-8/quincy/last_successful/
 gpgcheck=0
 enabled=1
 EOF
@@ -164,7 +164,7 @@ EOF
                 dpkg -i *.deb; apt-get -f install -y; apt --fix-broken install
             popd
             add_common_separator "Unmounting bigstorage"
-            umount cortx-storage.colo.seagate.com:/mnt/data1/releases/ceph
+            umount ssc-nfs-cicd1.colo.seagate.com:/mnt/data1/releases/ceph
         ;;
     esac
 }

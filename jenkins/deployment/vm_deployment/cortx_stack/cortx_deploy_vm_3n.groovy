@@ -9,7 +9,7 @@ pipeline {
     }
 	
     parameters {
-        string(name: 'CORTX_BUILD', defaultValue: 'http://cortx-storage.colo.seagate.com/releases/cortx/github/main/centos-7.8.2003/last_successful_prod/', description: 'Build URL',  trim: true)
+        string(name: 'CORTX_BUILD', defaultValue: 'http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx/github/main/centos-7.8.2003/last_successful_prod/', description: 'Build URL',  trim: true)
         string(name: 'NODE1', defaultValue: '', description: 'Node 1 Host FQDN',  trim: true)
         string(name: 'NODE2', defaultValue: '', description: 'Node 2 Host FQDN',  trim: true)
         string(name: 'NODE3', defaultValue: '', description: 'Node 3 Host FQDN',  trim: true)

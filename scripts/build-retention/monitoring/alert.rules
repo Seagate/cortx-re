@@ -3,7 +3,7 @@ groups:
   rules:
   - alert: cortx-storage
 # Change all ips below to that of the mounted node.
-    expr: 100 - (100 * ((node_filesystem_avail_bytes{device="cortx-storage.colo.seagate.com:/mnt/data1", fstype="nfs4", instance="10.230.242.163:9100", job="node-exporter", mountpoint="/rootfs/mnt/cortx-storage"} )  / (node_filesystem_size_bytes{device="cortx-storage.colo.seagate.com:/mnt/data1", fstype="nfs4", instance="10.230.242.163:9100", job="node-exporter", mountpoint="/rootfs/mnt/cortx-storage"}) )) > 95
+    expr: 100 - (100 * ((node_filesystem_avail_bytes{device="ssc-nfs-cicd1.colo.seagate.com:/mnt/data1", fstype="nfs4", instance="10.230.242.163:9100", job="node-exporter", mountpoint="/rootfs/mnt/cortx-storage"} )  / (node_filesystem_size_bytes{device="ssc-nfs-cicd1.colo.seagate.com:/mnt/data1", fstype="nfs4", instance="10.230.242.163:9100", job="node-exporter", mountpoint="/rootfs/mnt/cortx-storage"}) )) > 95
     for: 30s
     labels:
       severity: Critical
@@ -13,7 +13,7 @@ groups:
 
   - alert: releases
 # Change all ips below to that of the mounted node.
-    expr: 100 - (100 * ((node_filesystem_avail_bytes{device="cortx-storage.colo.seagate.com:/mnt/data1/releases", fstype="nfs4", instance="10.230.242.163:9100", job="node-exporter", mountpoint="/rootfs/mnt/bigstorage/releases"} )  / (node_filesystem_size_bytes{device="cortx-storage.colo.seagate.com:/mnt/data1/releases", fstype="nfs4", instance="10.230.242.163:9100", job="node-exporter", mountpoint="/rootfs/mnt/bigstorage/releases"}) )) > 90
+    expr: 100 - (100 * ((node_filesystem_avail_bytes{device="ssc-nfs-cicd1.colo.seagate.com:/mnt/data1/releases", fstype="nfs4", instance="10.230.242.163:9100", job="node-exporter", mountpoint="/rootfs/mnt/bigstorage/releases"} )  / (node_filesystem_size_bytes{device="ssc-nfs-cicd1.colo.seagate.com:/mnt/data1/releases", fstype="nfs4", instance="10.230.242.163:9100", job="node-exporter", mountpoint="/rootfs/mnt/bigstorage/releases"}) )) > 90
     for: 30s
     labels:
       severity: Critical
@@ -23,7 +23,7 @@ groups:
 
   - alert: jenkins-dev
 # Change all ips below to that of the mounted node.
-    expr: 100 - (100 * ((node_filesystem_avail_bytes{device="cortx-storage.colo.seagate.com:/mnt/data1/releases/jenkins/jenkins-dev/jenkins_home-dev", fstype="nfs4", instance="10.230.242.163:9100", job="node-exporter", mountpoint="/rootfs/mnt/jenkins-dev"} )  / (node_filesystem_size_bytes{device="cortx-storage.colo.seagate.com:/mnt/data1/releases/jenkins/jenkins-dev/jenkins_home-dev", fstype="nfs4", instance="10.230.242.163:9100", job="node-exporter", mountpoint="/rootfs/mnt/jenkins-dev"}) )) > 95
+    expr: 100 - (100 * ((node_filesystem_avail_bytes{device="ssc-nfs-cicd1.colo.seagate.com:/mnt/data1/releases/jenkins/jenkins-dev/jenkins_home-dev", fstype="nfs4", instance="10.230.242.163:9100", job="node-exporter", mountpoint="/rootfs/mnt/jenkins-dev"} )  / (node_filesystem_size_bytes{device="ssc-nfs-cicd1.colo.seagate.com:/mnt/data1/releases/jenkins/jenkins-dev/jenkins_home-dev", fstype="nfs4", instance="10.230.242.163:9100", job="node-exporter", mountpoint="/rootfs/mnt/jenkins-dev"}) )) > 95
     for: 30s
     labels:
       severity: Critical
@@ -33,7 +33,7 @@ groups:
 
   - alert: jenkins-prod
 # Change all ips below to that of the mounted node.
-    expr: 100 - (100 * ((node_filesystem_avail_bytes{device="cortx-storage.colo.seagate.com:/mnt/data1/releases/jenkins/jenkins-prod", fstype="nfs4", instance="10.230.242.163:9100", job="node-exporter", mountpoint="/rootfs/mnt/jenkins-prod"} )  / (node_filesystem_size_bytes{device="cortx-storage.colo.seagate.com:/mnt/data1/releases/jenkins/jenkins-prod", fstype="nfs4", instance="10.230.242.163:9100", job="node-exporter", mountpoint="/rootfs/mnt/jenkins-prod"}) )) > 95
+    expr: 100 - (100 * ((node_filesystem_avail_bytes{device="ssc-nfs-cicd1.colo.seagate.com:/mnt/data1/releases/jenkins/jenkins-prod", fstype="nfs4", instance="10.230.242.163:9100", job="node-exporter", mountpoint="/rootfs/mnt/jenkins-prod"} )  / (node_filesystem_size_bytes{device="ssc-nfs-cicd1.colo.seagate.com:/mnt/data1/releases/jenkins/jenkins-prod", fstype="nfs4", instance="10.230.242.163:9100", job="node-exporter", mountpoint="/rootfs/mnt/jenkins-prod"}) )) > 95
     for: 30s
     labels:
       severity: Critical

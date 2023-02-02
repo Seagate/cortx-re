@@ -23,13 +23,13 @@ BRANCH=$2
 OS=$3
 
 mkdir -p /mnt/bigstorage/releases
-mount="cortx-storage.colo.seagate.com:/mnt/data1/releases"
+mount="ssc-nfs-cicd1.colo.seagate.com:/mnt/data1/releases"
 echo $mount;
 grep -qs "$mount" /proc/mounts;
 if grep -qs "$mount" /proc/mounts; then
-        echo "cortx-storage.colo.seagate.com:/mnt/data1/releases is mounted."
+        echo "ssc-nfs-cicd1.colo.seagate.com:/mnt/data1/releases is mounted."
 else
-        echo "cortx-storage.colo.seagate.com:/mnt/data1/releases is not mounted."
+        echo "ssc-nfs-cicd1.colo.seagate.com:/mnt/data1/releases is not mounted."
         sudo mount -t nfs4 "$mount" /mnt/bigstorage/releases
         if [ $? -eq 0 ]; then
                 echo "Mount success!"

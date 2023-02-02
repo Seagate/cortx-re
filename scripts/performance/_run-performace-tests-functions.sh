@@ -44,7 +44,7 @@ fi
 function fetch_build_url() {
     RGW_IMAGE=$(kubectl get pod $(kubectl get pods | awk '/cortx-server/{print $1; exit}') -o jsonpath="{.spec.containers[*].image}" | tr ' ' '\n' | uniq)
     BUILD_ID=$(docker run --rm $RGW_IMAGE cat /RELEASE.INFO | grep BUILD | cut -d' ' -f2 | sed 's/"//g')
-    BUILD_URL="http://cortx-storage.colo.seagate.com/releases/cortx/github/main/rockylinux-8.4/$BUILD_ID/prod/"
+    BUILD_URL="http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx/github/main/rockylinux-8.4/$BUILD_ID/prod/"
 }
 
 function create_endpoint_url() {

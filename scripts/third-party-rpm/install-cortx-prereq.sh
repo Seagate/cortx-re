@@ -3,7 +3,7 @@
 usage() { echo "Usage: $0 [ -b build_url] [ -r RPM location]" 1>&2; exit 1; }
 
 #Define Default values
-BUILD_URL="http://cortx-storage.colo.seagate.com/releases/cortx/github/main/centos-7.8.2003/last_successful_prod/"
+BUILD_URL="http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx/github/main/centos-7.8.2003/last_successful_prod/"
 RPM_LOCATION=remote
 
 while getopts "b:r:" opt; do
@@ -32,7 +32,7 @@ cat <<EOF >/etc/pip.conf
 [global]
 timeout: 60
 index-url: $BUILD_URL/python_deps
-trusted-host: cortx-storage.colo.seagate.com
+trusted-host: ssc-nfs-cicd1.colo.seagate.com
 EOF
 
 yum clean all && rm -rf /var/cache/yum
@@ -43,4 +43,4 @@ else
 fi
 
 #Cleanup
-rm -rf  /etc/yum.repos.d/cortx-storage.colo.seagate.com_releases_cortx_* /etc/pip.conf
+rm -rf  /etc/yum.repos.d/ssc-nfs-cicd1.colo.seagate.com_releases_cortx_* /etc/pip.conf

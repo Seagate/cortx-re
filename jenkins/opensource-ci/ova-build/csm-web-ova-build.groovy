@@ -42,7 +42,7 @@ pipeline {
 				script { build_stage=env.STAGE_NAME }
 				sh label: '', script: '''
 					yum-config-manager --disable cortx-C7.7.1908
-					yum-config-manager --add http://cortx-storage.colo.seagate.com/releases/cortx/github/cortx-1.0/$os_version/last_successful/
+					yum-config-manager --add http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx/github/cortx-1.0/$os_version/last_successful/
 					echo "gpgcheck=0" >> \$(ls /etc/yum.repos.d/cortx-storage*.repo)
 					yum clean all && rm -rf /var/cache/yum
 					yum install -y cortx-py-utils cortx-prvsnr

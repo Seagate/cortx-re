@@ -59,7 +59,7 @@ pipeline {
         // Artifacts root location
         
         DESTINATION_RELEASE_LOCATION = "/mnt/bigstorage/releases/cortx/github/pr-build/${BRANCH}/${COMPONENT_NAME}/${BUILD_NUMBER}"
-        CORTX_BUILD = "http://cortx-storage.colo.seagate.com/releases/cortx/github/pr-build/${BRANCH}/${COMPONENT_NAME}/${BUILD_NUMBER}"
+        CORTX_BUILD = "http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx/github/pr-build/${BRANCH}/${COMPONENT_NAME}/${BUILD_NUMBER}"
         PYTHON_DEPS = "/mnt/bigstorage/releases/cortx/third-party-deps/python-deps/python-packages-2.0.0-latest"
         THIRD_PARTY_DEPS = "/mnt/bigstorage/releases/cortx/third-party-deps/${OS_FAMILY}/${THIRD_PARTY_VERSION}/"
         COMPONENTS_RPM = "/mnt/bigstorage/releases/cortx/components/github/${BRANCH}/${OS_VERSION}/dev/"
@@ -243,7 +243,7 @@ pipeline {
                          yum install -y sshpass
                          sshpass -p $NODE_PASS ssh -o StrictHostKeyChecking=no $NODE_USER@$NODE_HOST env TEST_PLAN="$TEST_PLAN" BUILD_NUMBER="$BUILD_NUMBER" 'bash -s' <<'EOF'
                         kubectl exec $(kubectl get pods | awk '/cortx-data/{print $1; exit}') --container cortx-hax -- sh -c "yum install -y wget yum-utils \
-                            && yum-config-manager --add-repo http://cortx-storage.colo.seagate.com/releases/cortx/github/pr-build/main/cortx-utils/$BUILD_NUMBER/cortx_iso \
+                            && yum-config-manager --add-repo http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx/github/pr-build/main/cortx-utils/$BUILD_NUMBER/cortx_iso \
                             && yum install --nogpgcheck -y cortx-py-utils-test-* \
                             && /opt/seagate/cortx/utils/bin/utils_setup test --config yaml:///etc/cortx/cluster.conf --plan $TEST_PLAN"
                         kubectl exec $(kubectl get pods | awk '/cortx-data/{print $1; exit}') --container cortx-hax -- bash -c 'cat /tmp/py_utils_test_report.html' | tee py_utils_test_report.html    
