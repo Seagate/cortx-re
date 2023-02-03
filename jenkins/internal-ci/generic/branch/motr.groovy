@@ -118,12 +118,17 @@ pipeline {
         }
         
         stage ('Upload') {
-            when { expression { params.os_version != 'ubuntu-22.04' } }
+            //when { expression { params.os_version != 'ubuntu-22.04' } }
             steps {
                 script { build_stage = env.STAGE_NAME }
                 sh label: 'Copy RPMS', script: '''
                     mkdir -p $build_upload_dir/$BUILD_NUMBER
-                    cp /root/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir/$BUILD_NUMBER
+                    if [ "${os_version}" = "ubuntu-22.04" ]; then
+                        cp *.deb $build_upload_dir/$BUILD_NUMBER
+                        dpkg-scanpackages $build_upload_dir/$BUILD_NUMBER /dev/null | tee $build_upload_dir/$BUILD_NUMBER/Packages | gzip -9 > $build_upload_dir/$BUILD_NUMBER/Packages.gz 
+                    else
+                        cp /root/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir/$BUILD_NUMBER
+                    fi
                 '''
                 sh label: 'Repo Creation', script: '''pushd $build_upload_dir/$BUILD_NUMBER
                     rpm -qi createrepo || yum install -y createrepo
