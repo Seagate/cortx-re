@@ -108,7 +108,7 @@ pipeline {
                         ./configure --with-user-mode-only
                         export build_number=${BUILD_ID}
                         if [ "${os_version}" = "ubuntu-22.04" ]; then
-                            make deb
+                            export DEB_BUILD_MAINT_OPTIONS=optimize=-lto && make deb
                         else
                             make rpms
                         fi    
