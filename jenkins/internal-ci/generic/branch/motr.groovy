@@ -133,10 +133,10 @@ pipeline {
                 pushd $build_upload_dir/$BUILD_NUMBER
                     if [ "${os_version}" = "ubuntu-22.04" ]; then
                         dpkg-scanpackages . /dev/null | tee Packages | gzip -9 > Packages.gz
-                    else                        
+                    else
                         rpm -qi createrepo || yum install -y createrepo
                         createrepo .
-                    fi    
+                    fi
                 popd
                 '''
             }
@@ -267,7 +267,7 @@ pipeline {
                 def toEmail = ""
                 def recipientProvidersClass = [[$class: 'DevelopersRecipientProvider']]
                 if ( manager.build.result.toString() == "FAILURE" ) {
-                    toEmail = "CORTX.DevOps.RE@seagate.com"
+                    toEmail = "shailesh.vaidya@seagate.com"
                     recipientProvidersClass = [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
                 }
 
