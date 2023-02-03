@@ -130,12 +130,13 @@ pipeline {
                     fi
                 '''
                 sh label: 'Repo Creation', script: '''
-                cd $build_upload_dir/$BUILD_NUMBER/
                     if [ "${os_version}" = "ubuntu-22.04" ]; then
-                        dpkg-scanpackages . /dev/null | tee Packages | gzip -9 > Packages.gz
+                        dpkg-scanpackages $build_upload_dir/$BUILD_NUMBER/ /dev/null | tee $build_upload_dir/$BUILD_NUMBER/Packages | gzip -9 > $build_upload_dir/$BUILD_NUMBER/Packages.gz
                     else
-                        rpm -qi createrepo || yum install -y createrepo
-                        createrepo .
+                        pushd $build_upload_dir/$BUILD_NUMBER
+                            rpm -qi createrepo || yum install -y createrepo
+                            createrepo .
+                        popd
                     fi
                 '''
             }
