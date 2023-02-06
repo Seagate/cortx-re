@@ -10,16 +10,16 @@ pipeline {
     triggers {
         pollSCM '*/5 * * * *'
     }
-    
+
     parameters {
         choice(
             choices: ['libfabric' , 'lustre'],
             description: '',
             name: 'TRANSPORT')
     }
-        
+
     environment {
-        version = "2.0.0"    
+        version = "2.0.0"
         env = "dev"
         component = "motr"
         release_dir = "/mnt/bigstorage/releases/cortx"
@@ -29,16 +29,16 @@ pipeline {
         build_upload_dir_s3_dev = "$release_dir/components/github/$branch/$os_version/$env/s3server"
         build_upload_dir_hare = "$release_dir/components/github/$branch/$os_version/$env/hare"
     }
-    
+
     options {
         timeout(time: 300, unit: 'MINUTES')
         timestamps()
         ansiColor('xterm')
-        disableConcurrentBuilds()  
+        disableConcurrentBuilds()
     }
 
     stages {
-        
+
         stage('Install Prerequisite Packages: Ubuntu') {
             when { expression { params.os_version == 'ubuntu-22.04' } }
             steps {
@@ -49,7 +49,7 @@ pipeline {
                 '''
             }
         }
-        
+
         stage('Checkout') {
             steps {
                 script { build_stage = env.STAGE_NAME }
@@ -58,18 +58,18 @@ pipeline {
                 }
             }
         }
-        
+
         stage('Check TRANSPORT module') {
             steps {
                 script { build_stage = env.STAGE_NAME }
                 dir ('motr') {
                     sh label: '', script: '''
-                        if [[ "$TRANSPORT" == "libfabric" ]]; then
+                        if [ "$TRANSPORT" = "libfabric" ]; then
                             echo "We are using default 'libfabric' module/package"
                         else
                             sed -i '/libfabric/d' cortx-motr.spec.in
                             echo "Removed libfabric from spec file as we are going to use $TRANSPORT"
-                        fi    
+                        fi
                     '''
                 }
             }
@@ -92,8 +92,8 @@ pipeline {
                             sed -i 's/@BUILD_DEPEND_LIBFAB@//g' cortx-motr.spec
                             sed -i 's/@.*@/111/g' cortx-motr.spec
                             yum-builddep -y --nogpgcheck cortx-motr.spec
-                        fi    
-                    ''' 
+                        fi
+                    '''
                 }
             }
         }
@@ -101,38 +101,46 @@ pipeline {
         stage('Build') {
             steps {
                 script { build_stage = env.STAGE_NAME }
-                dir ('motr') {    
+                dir ('motr') {
                     sh label: '', script: '''
                         rm -rf /root/rpmbuild/RPMS/x86_64/*.rpm
                         ./autogen.sh
                         ./configure --with-user-mode-only
                         export build_number=${BUILD_ID}
                         if [ "${os_version}" = "ubuntu-22.04" ]; then
-                            make deb
+                            export DEB_BUILD_MAINT_OPTIONS=optimize=-lto && make deb
                         else
                             make rpms
-                        fi    
+                        fi
                     '''
-                }    
+                }
             }
         }
-        
+
         stage ('Upload') {
-            when { expression { params.os_version != 'ubuntu-22.04' } }
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Copy RPMS', script: '''
+                sh label: 'Copy Packages', script: '''
                     mkdir -p $build_upload_dir/$BUILD_NUMBER
-                    cp /root/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir/$BUILD_NUMBER
+                    if [ "${os_version}" = "ubuntu-22.04" ]; then
+                        cp $WORKSPACE/motr/*.deb $build_upload_dir/$BUILD_NUMBER
+                    else
+                        cp /root/rpmbuild/RPMS/x86_64/*.rpm $build_upload_dir/$BUILD_NUMBER
+                    fi
                 '''
-                sh label: 'Repo Creation', script: '''pushd $build_upload_dir/$BUILD_NUMBER
-                    rpm -qi createrepo || yum install -y createrepo
-                    createrepo .
-                    popd
+                sh label: 'Repo Creation', script: '''
+                    if [ "${os_version}" = "ubuntu-22.04" ]; then
+                        dpkg-scanpackages $build_upload_dir/$BUILD_NUMBER/ /dev/null | tee $build_upload_dir/$BUILD_NUMBER/Packages | gzip -9 > $build_upload_dir/$BUILD_NUMBER/Packages.gz
+                    else
+                        pushd $build_upload_dir/$BUILD_NUMBER
+                            rpm -qi createrepo || yum install -y createrepo
+                            createrepo .
+                        popd
+                    fi
                 '''
             }
         }
-        
+
         stage ('Set Current Build') {
             when { expression { params.os_version != 'ubuntu-22.04' } }
             steps {
@@ -145,7 +153,7 @@ pipeline {
                 '''
             }
         }
-        
+
         stage ("build Hare") {
             when { expression { params.os_version != 'ubuntu-22.04' } }
             steps {
@@ -176,7 +184,7 @@ pipeline {
                     popd
                 '''
                 sh label: 'Tag last_successful for dep component', script: '''
-                    # Hare Build 
+                    # Hare Build
                     test -L $build_upload_dir_hare/last_successful && rm -f $build_upload_dir_hare/last_successful
                     ln -s $build_upload_dir_hare/$HARE_BUILD_NUMBER $build_upload_dir_hare/last_successful
 
@@ -235,7 +243,7 @@ pipeline {
                         // }
                         }
                     }
-                }    
+                }
         }
     }
 
@@ -245,12 +253,12 @@ pipeline {
                 echo 'Cleanup Workspace.'
                 deleteDir() /* clean up our workspace */
 
-                env.release_build = (env.release_build != null) ? env.release_build : "" 
+                env.release_build = (env.release_build != null) ? env.release_build : ""
                 env.release_build_location = (env.release_build_location != null) ? env.release_build_location : ""
                 env.component = (env.component).toUpperCase()
                 env.build_stage = "${build_stage}"
 
-                env.vm_deployment = (env.deployVMURL != null) ? env.deployVMURL : "" 
+                env.vm_deployment = (env.deployVMURL != null) ? env.deployVMURL : ""
                 if ( env.deployVMStatus != null && env.deployVMStatus != "SUCCESS" && manager.build.result.toString() == "SUCCESS" ) {
                     manager.buildUnstable()
                 }
@@ -271,7 +279,7 @@ pipeline {
                     recipientProviders: recipientProvidersClass
                 )
             }
-        }    
+        }
     }
 }
 
