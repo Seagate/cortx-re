@@ -1,9 +1,9 @@
 groups:
 - name: alert.rules
   rules:
-  - alert: cortx-storage
+  - alert: ssc-nfs-cicd1
 # Change all ips below to that of the mounted node.
-    expr: 100 - (100 * ((node_filesystem_avail_bytes{device="ssc-nfs-cicd1.colo.seagate.com:/mnt/data1", fstype="nfs4", instance="10.230.242.163:9100", job="node-exporter", mountpoint="/rootfs/mnt/cortx-storage"} )  / (node_filesystem_size_bytes{device="ssc-nfs-cicd1.colo.seagate.com:/mnt/data1", fstype="nfs4", instance="10.230.242.163:9100", job="node-exporter", mountpoint="/rootfs/mnt/cortx-storage"}) )) > 95
+    expr: 100 - (100 * ((node_filesystem_avail_bytes{device="ssc-nfs-cicd1.colo.seagate.com:/mnt/data1", fstype="nfs4", instance="10.230.242.163:9100", job="node-exporter", mountpoint="/rootfs/mnt/ssc-nfs-cicd1"} )  / (node_filesystem_size_bytes{device="ssc-nfs-cicd1.colo.seagate.com:/mnt/data1", fstype="nfs4", instance="10.230.242.163:9100", job="node-exporter", mountpoint="/rootfs/mnt/ssc-nfs-cicd1"}) )) > 95
     for: 30s
     labels:
       severity: Critical

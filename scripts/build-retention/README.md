@@ -25,8 +25,8 @@ mv docker-compose /usr/local/bin/
 ## Mount LCO NFS on VM
 
 ```
-mkdir -p /mnt/cortx-storage /mnt/bigstorage/releases /mnt/jenkins-dev /mnt/jenkins-prod
-mount -t nfs4 ssc-nfs-cicd1.colo.seagate.com:/mnt/data1/ /mnt/cortx-storage
+mkdir -p /mnt/ssc-nfs-cicd1 /mnt/bigstorage/releases /mnt/jenkins-dev /mnt/jenkins-prod
+mount -t nfs4 ssc-nfs-cicd1.colo.seagate.com:/mnt/data1/ /mnt/ssc-nfs-cicd1
 mount -t nfs4 ssc-nfs-cicd1.colo.seagate.com:/mnt/data1/releases /mnt/bigstorage/releases
 mount -t nfs4 ssc-nfs-cicd1.colo.seagate.com:/mnt/data1/releases/jenkins/jenkins-dev/jenkins_home-dev /mnt/jenkins-dev
 mount -t nfs4 ssc-nfs-cicd1.colo.seagate.com:/mnt/data1/releases/jenkins/jenkins-prod /mnt/jenkins-prod

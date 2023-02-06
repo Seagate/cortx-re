@@ -93,7 +93,7 @@ function install_prereq() {
             rpm -ivh http://mirror.centos.org/centos/8-stream/HighAvailability/x86_64/os/Packages/resource-agents-4.1.1-97.el8.x86_64.rpm
         ;;
         ubuntu)
-            #echo "deb [trusted=yes] http://ssc-nfs-cicd1.colo.seagate.com/releases/ceph/ceph/ubuntu-20.04/quincy/last_successful/ amd64/" > /etc/apt/sources.list.d/ceph-cortx-storage.list
+            #echo "deb [trusted=yes] http://ssc-nfs-cicd1.colo.seagate.com/releases/ceph/ceph/ubuntu-20.04/quincy/last_successful/ amd64/" > /etc/apt/sources.list.d/ceph-ssc-nfs-cicd1.list
             #apt update
 
             add_common_separator "Currently mounting bigstorage to nodes and installing packages until ubuntu repo is setup."

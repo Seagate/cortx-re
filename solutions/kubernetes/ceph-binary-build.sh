@@ -349,10 +349,10 @@ function ceph_build() {
 }
 
 function upload_packages() {
-    add_primary_separator "Upload Binary Packages to CORTX-Storage"
+    add_primary_separator "Upload Binary Packages to ssc-nfs-cicd1"
     mkdir -p "$build_upload_dir"
 
-    add_secondary_separator "Check CORTX-Storage Mountpoint"
+    add_secondary_separator "Check ssc-nfs-cicd1 Mountpoint"
     grep -qs "$MOUNT" /proc/mounts;
     if grep -qs "$MOUNT" /proc/mounts; then
         echo "ssc-nfs-cicd1.colo.seagate.com:/mnt/data1/releases/ceph is mounted."
@@ -362,7 +362,7 @@ function upload_packages() {
         check_status "Mounting $MOUNT to $build_upload_dir has failed."
     fi
 
-    add_secondary_separator "Uploading Binary Packages to CORTX-Storage"
+    add_secondary_separator "Uploading Binary Packages to ssc-nfs-cicd1"
     pushd "$build_upload_dir"
         mkdir -p "$REPO_COMPONENT/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
     popd
