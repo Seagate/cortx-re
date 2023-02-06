@@ -118,10 +118,9 @@ pipeline {
         }
 
         stage ('Upload') {
-            //when { expression { params.os_version != 'ubuntu-22.04' } }
             steps {
                 script { build_stage = env.STAGE_NAME }
-                sh label: 'Copy RPMS', script: '''
+                sh label: 'Copy Packages', script: '''
                     mkdir -p $build_upload_dir/$BUILD_NUMBER
                     if [ "${os_version}" = "ubuntu-22.04" ]; then
                         cp $WORKSPACE/motr/*.deb $build_upload_dir/$BUILD_NUMBER
