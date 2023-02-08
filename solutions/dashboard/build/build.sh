@@ -33,7 +33,7 @@ REGISTRY="cortx-docker.colo.seagate.com"
 PROJECT="dashboard"
 SERVICE=all
 #OS=rockylinux-8.4
-IMAGE_LIST=( "codacy" "portscanner" "github" "jenkins")
+IMAGE_LIST=( "codacy" "portscanner" "github" "jenkins" "logstash")
 
 
 while getopts "b:p:t:r:e:o:s:h:" opt; do
