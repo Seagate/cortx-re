@@ -435,7 +435,7 @@ spec:
         spec:
           containers:
             - name: dashboard-logstash
-              image: docker.io/sanket02092001/customlog:1.0.0
+              image: cortx-docker.colo.seagate.com/dashboard/logstash:1.0.0-latest
               imagePullPolicy: Always
               env:
                 - name: LOGSTASH_PW
