@@ -416,7 +416,7 @@ pipeline {
                 '''
                 sh label: 'Print Release Build and ISO location', script:'''
                 echo "Custom Release Build and ISO is available at,"
-                    echo "http://cortx-storage.colo.seagate.com/releases/cortx/github/kubernetes/$os_version/$release_tag/"
+                    echo "http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx/github/kubernetes/$os_version/$release_tag/"
                 '''
             }
         }
@@ -433,7 +433,7 @@ pipeline {
     
         always {
             script {
-                env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/${env.os_version}/${env.release_tag}"
+                env.release_build_location = "http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx/github/integration-custom-ci/${env.os_version}/${env.release_tag}"
                 env.release_build = "${env.release_tag}"
                 env.build_stage = "${build_stage}"
                 def recipientProvidersClass = [[$class: 'RequesterRecipientProvider']]

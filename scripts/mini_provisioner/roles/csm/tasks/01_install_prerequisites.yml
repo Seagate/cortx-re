@@ -20,7 +20,7 @@
 
 # Execute pre-requisites installation script
 - name: "[install_prereq] : Install RE pre-req"
-  shell: "curl -s -L http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rpm/install-cortx-prereq.sh | bash"
+  shell: "curl -s -L http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx/third-party-deps/rpm/install-cortx-prereq.sh | bash"
 
 # Setup elasticsearch
 - name: "[install_prereq] : Collect private ip address"

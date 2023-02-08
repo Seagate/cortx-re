@@ -7,7 +7,7 @@ pipeline {
 	}
 	
     parameters {  
-		string(name: 'LDR_RELEASE_BUILD', defaultValue: 'http://cortx-storage.colo.seagate.com/releases/cortx_builds/centos-7.8.2003/531/', description: 'LDR Relase build URL.')
+		string(name: 'LDR_RELEASE_BUILD', defaultValue: 'http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx_builds/centos-7.8.2003/531/', description: 'LDR Relase build URL.')
 	}	
 
     environment {
@@ -21,7 +21,7 @@ pipeline {
         BUILD_TO_DELETE=""
         passphrase = credentials('rpm-sign-passphrase')
         token = credentials('shailesh-github-token')
-        ARTIFACT_LOCATION="http://cortx-storage.colo.seagate.com/releases/opensource_builds/ova_builds/$os_version"
+        ARTIFACT_LOCATION="http://ssc-nfs-cicd1.colo.seagate.com/releases/opensource_builds/ova_builds/$os_version"
 		githubrelease_repo="Seagate/cortx"
         thrid_party_dir="$release_dir/third-party-deps/centos/centos-7.8.2003-$thrid_party_version/"
 		python_deps="/mnt/bigstorage/releases/cortx/third-party-deps/python-packages"
@@ -68,7 +68,7 @@ pipeline {
 			steps {
                 script { build_stage=env.STAGE_NAME }
                 sh label: 'Copy RPMS', script:'''
-                    LDR_BUID_PATH=$(sed \'s/http\\:\\/\\/cortx-storage.colo.seagate.com/\\/mnt\\/bigstorage/g\' <<< $LDR_RELEASE_BUILD)
+                    LDR_BUID_PATH=$(sed \'s/http\\:\\/\\/ssc-nfs-cicd1.colo.seagate.com/\\/mnt\\/bigstorage/g\' <<< $LDR_RELEASE_BUILD)
                     mkdir -p $integration_dir/$release_tag/cortx_iso
                     shopt -s extglob
                     cp $LDR_BUID_PATH/cortx_iso/!(ud*|cortx-csm_web*).rpm $integration_dir/$release_tag/cortx_iso
@@ -242,7 +242,7 @@ pipeline {
             script {
                 	
                 currentBuild.upstreamBuilds?.each { b -> env.upstream_project = "${b.getProjectName()}";env.upstream_build = "${b.getId()}" }
-                env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/opensource_builds/ova_builds/${os_version}/${env.release_tag}"
+                env.release_build_location = "http://ssc-nfs-cicd1.colo.seagate.com/releases/opensource_builds/ova_builds/${os_version}/${env.release_tag}"
                 env.release_build = "${env.release_tag}"
                 env.build_stage = "${build_stage}"
 

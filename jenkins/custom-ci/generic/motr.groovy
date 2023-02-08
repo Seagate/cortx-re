@@ -95,7 +95,7 @@ pipeline {
                         if [ "${os_version}" = "ubuntu-22.04" ]; then
                             yes | mk-build-deps --install debian/control
                         else
-                            yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rockylinux/rockylinux-8.4-2.0.0-latest/
+                            yum-config-manager --add-repo=http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx/third-party-deps/rockylinux/rockylinux-8.4-2.0.0-latest/
                             yum --nogpgcheck -y --disablerepo="EOS_Rocky_8_OS_x86_64_Rocky_8" install libfabric-1.11.2 libfabric-devel-1.11.2
                             export build_number=${BUILD_ID}
                             kernel_src=$(ls -1rd /lib/modules/*/build | head -n1)

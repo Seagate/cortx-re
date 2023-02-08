@@ -32,7 +32,7 @@ services:
        CORTX_IMAGE: cortx-rgw
        ENVIRONMENT: internal-ci
        CREATED_DATE: $CREATED_DATE
-       BUILD_URL: http://cortx-storage.colo.seagate.com/releases/cortx/github/main/rockylinux-8.4/last_successful_prod/
+       BUILD_URL: http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx/github/main/rockylinux-8.4/last_successful_prod/
   cortx-data:
     image: cortx-data:$TAG
     build:
@@ -45,7 +45,7 @@ services:
         CORTX_IMAGE: cortx-data
         ENVIRONMENT: internal-ci
         CREATED_DATE: $CREATED_DATE
-        BUILD_URL: http://cortx-storage.colo.seagate.com/releases/cortx/github/main/rockylinux-8.4/last_successful_prod/
+        BUILD_URL: http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx/github/main/rockylinux-8.4/last_successful_prod/
   cortx-control:
     image: cortx-control:$TAG
     build:
@@ -58,4 +58,4 @@ services:
         CORTX_IMAGE: cortx-control
         ENVIRONMENT: internal-ci
         CREATED_DATE: $CREATED_DATE
-        BUILD_URL: http://cortx-storage.colo.seagate.com/releases/cortx/github/main/rockylinux-8.4/last_successful_prod/           
+        BUILD_URL: http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx/github/main/rockylinux-8.4/last_successful_prod/           

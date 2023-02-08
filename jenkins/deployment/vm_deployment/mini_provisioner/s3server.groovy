@@ -9,7 +9,7 @@ pipeline {
     }
 	
     parameters {
-        string(name: 'CORTX_BUILD', defaultValue: 'http://cortx-storage.colo.seagate.com/releases/cortx/github/main/centos-7.9.2009/last_successful_prod/', trim: true, description: '''<pre>
+        string(name: 'CORTX_BUILD', defaultValue: 'http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx/github/main/centos-7.9.2009/last_successful_prod/', trim: true, description: '''<pre>
 Target build URL  
 Example: The URL should contain directory structure like,  
 3rd_party/  

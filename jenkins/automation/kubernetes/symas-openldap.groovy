@@ -21,7 +21,7 @@ pipeline {
     parameters {  
         string(name: 'CORTX_RE_URL', defaultValue: 'https://github.com/Seagate/cortx-re.git', description: 'Repository URL for symas-openldap image build.')
         string(name: 'CORTX_RE_BRANCH', defaultValue: 'main', description: 'Branch for symas-openldap image build.')
-        string(name: 'BUILD_URL', defaultValue: 'http://cortx-storage.colo.seagate.com/releases/cortx/github/main/centos-7.9.2009/last_successful_prod/', description: 'Build URL for symas-openldap docker image')
+        string(name: 'BUILD_URL', defaultValue: 'http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx/github/main/centos-7.9.2009/last_successful_prod/', description: 'Build URL for symas-openldap docker image')
 
         choice (
             choices: ['yes' , 'no'],

@@ -89,14 +89,14 @@ pipeline {
                 rm -rf $release_dir/$component/$branch/rpmbuild/SOURCES/ceph*.tar.bz2
                 rm -rf  $release_dir/$component/$branch/rpmbuild/BUILD/ceph*
                 yum erase cortx-py-utils cortx-motr{,-devel} -y
-                rm -f /etc/yum.repos.d/cortx-storage.colo.seagate.com* /etc/yum.repos.d/root_rpmbuild_RPMS_x86_64.repo
+                rm -f /etc/yum.repos.d/ssc-nfs-cicd1.colo.seagate.com* /etc/yum.repos.d/root_rpmbuild_RPMS_x86_64.repo
                 '''
 
                 sh label: 'prepare', script: '''
                 yum install createrepo systemd-devel libuuid libuuid-devel libaio-devel openssl openssl-devel perl-File-Slurp gcc cmake3 cmake rpm-build rpmdevtools autoconf automake libtool gcc-c++ -y 
                 rpmdev-setuptree
                 mkdir -p /root/rpmbuild/RPMS/x86_64/
-                yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rockylinux/rockylinux-8.4-2.0.0-latest/
+                yum-config-manager --add-repo=http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx/third-party-deps/rockylinux/rockylinux-8.4-2.0.0-latest/
                 '''
             }
         }
@@ -123,7 +123,7 @@ pipeline {
                 pushd cortx-py-utils
                     ./jenkins/build.sh -v $version -b $BUILD_NUMBER
                 popd
-                pip3 install --no-cache-dir --trusted-host cortx-storage.colo.seagate.com -i http://cortx-storage.colo.seagate.com/releases/cortx/github/main/centos-7.9.2009/last_successful_prod/python_deps/ -r https://raw.githubusercontent.com/Seagate/cortx-utils/main/py-utils/python_requirements.txt -r https://raw.githubusercontent.com/Seagate/cortx-utils/main/py-utils/python_requirements.ext.txt
+                pip3 install --no-cache-dir --trusted-host ssc-nfs-cicd1.colo.seagate.com -i http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx/github/main/centos-7.9.2009/last_successful_prod/python_deps/ -r https://raw.githubusercontent.com/Seagate/cortx-utils/main/py-utils/python_requirements.txt -r https://raw.githubusercontent.com/Seagate/cortx-utils/main/py-utils/python_requirements.ext.txt
                 yum localinstall -y ./cortx-py-utils/py-utils/dist/cortx-py-utils-2.0.0*.noarch.rpm
                 mv ./cortx-py-utils/py-utils/dist/cortx-py-utils-2.0.0*.noarch.rpm /root/rpmbuild/RPMS/x86_64/
                 
@@ -150,7 +150,7 @@ pipeline {
                         #rm -rf /root/rpmbuild/RPMS/x86_64/*debug*.rpm
                         createrepo -v  /root/rpmbuild/RPMS/x86_64/ && yum-config-manager --add-repo /root/rpmbuild/RPMS/x86_64/
                         yum install cortx-motr{,-devel} --nogpgcheck -y
-                        rm -rf /etc/yum.repos.d/cortx-storage.colo.seagate.com*
+                        rm -rf /etc/yum.repos.d/ssc-nfs-cicd1.colo.seagate.com*
                 popd
                 '''
             }
@@ -260,7 +260,7 @@ pipeline {
                                         parameters: [
                                             string(name: 'CORTX_RE_URL', value: "${CORTX_RE_URL}"),
                                             string(name: 'CORTX_RE_BRANCH', value: "${CORTX_RE_BRANCH}"),
-                                            string(name: 'BUILD', value: "http://cortx-storage.colo.seagate.com/releases/cortx/rgw-build/release/${release_tag}/"),
+                                            string(name: 'BUILD', value: "http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx/rgw-build/release/${release_tag}/"),
                                             string(name: 'GITHUB_PUSH', value: "yes"),
                                             string(name: 'TAG_LATEST', value: "yes"),
                                             string(name: 'DOCKER_REGISTRY', value: "cortx-docker.colo.seagate.com"),
@@ -283,7 +283,7 @@ pipeline {
 
             sh label: 'Print Release Build and ISO location', script:'''
                 echo "CORTX RGW build is available at "
-                echo "http://cortx-storage.colo.seagate.com/releases/cortx/rgw-build/release/$release_tag/"
+                echo "http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx/rgw-build/release/$release_tag/"
                 echo "CORTX-RGW image is available at,"
                 echo "${cortx_rgw_image}"
                 '''
