@@ -9,7 +9,7 @@ pipeline {
     }
 	
     parameters {
-        string(name: 'CORTX_BUILD', defaultValue: 'http://cortx-storage.colo.seagate.com/releases/cortx/github/main/centos-7.8.2003/last_successful_prod/', description: 'Build URL',  trim: true)
+        string(name: 'CORTX_BUILD', defaultValue: 'http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx/github/main/centos-7.8.2003/last_successful_prod/', description: 'Build URL',  trim: true)
         choice(name: 'DEBUG', choices: ["no", "yes" ], description: 'Keep Host for Debuging')   
     }
 

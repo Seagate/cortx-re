@@ -68,8 +68,8 @@ pipeline {
                     cat <<EOF >>/etc/pip.conf
 [global]
 timeout: 60
-index-url: http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/$python_deps/
-trusted-host: cortx-storage.colo.seagate.com
+index-url: http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx/third-party-deps/python-deps/$python_deps/
+trusted-host: ssc-nfs-cicd1.colo.seagate.com
 EOF
                     pip3 install -r https://raw.githubusercontent.com/$CORTX_UTILS_REPO_OWNER/cortx-utils/$CORTX_UTILS_BRANCH/py-utils/python_requirements.txt
                     pip3 install -r https://raw.githubusercontent.com/$CORTX_UTILS_REPO_OWNER/cortx-utils/$CORTX_UTILS_BRANCH/py-utils/python_requirements.ext.txt
@@ -78,8 +78,8 @@ EOF
                 '''
                 sh label: 'Install Dependencies', script: '''
                     set +x
-                    yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/integration-custom-ci/$os_version/$release_tag/cortx_iso/
-                    yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
+                    yum-config-manager --add-repo=http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx/github/integration-custom-ci/$os_version/$release_tag/cortx_iso/
+                    yum-config-manager --save --setopt=ssc-nfs-cicd1*.gpgcheck=1 ssc-nfs-cicd1* && yum-config-manager --save --setopt=ssc-nfs-cicd1*.gpgcheck=0 ssc-nfs-cicd1*
                     yum clean all;rm -rf /var/cache/yum
                     yum install cortx-py-utils cortx-motr{,-devel} -y --nogpgcheck
                 '''

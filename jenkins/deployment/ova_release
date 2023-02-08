@@ -6,7 +6,7 @@ pipeline {
         }
     }
     parameters {
-        string(name: 'BUILD_URL', defaultValue: 'http://cortx-storage.colo.seagate.com/releases/opensource_builds/ova_builds/centos-7.8.2003/ova-build-21/', description: 'CORTX release build url.')
+        string(name: 'BUILD_URL', defaultValue: 'http://ssc-nfs-cicd1.colo.seagate.com/releases/opensource_builds/ova_builds/centos-7.8.2003/ova-build-21/', description: 'CORTX release build url.')
         string(name: 'HOST', defaultValue: '10.230.246.9', description: 'IP address of VM deploy host')
         string(name: 'VSPHERE_VM_NAME', defaultValue: 'ova-test-3', description: 'Name VM deploy host')
         string(name: 'VSPHERE_VM_SNAPSHOT_NAME', defaultValue: 'ova-test-3-snap', description: 'Snapshot name of VM deploy host')

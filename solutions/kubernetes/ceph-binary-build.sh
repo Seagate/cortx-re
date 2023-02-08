@@ -53,7 +53,7 @@ function check_params() {
     if [ -z "$INSTALL_MOTR" ]; then echo "INSTALL_MOTR for ceph build not provided. Using default: false";INSTALL_MOTR="false"; fi
     if [ -z "$PR_BUILD" ]; then echo "PR_BUILD for ceph build not provided. Using default: false";PR_BUILD="false"; fi
     if [ -z "$PR_ID" ]; then echo "PR_ID for ceph build not provided. Using default: 0";PR_ID="0"; fi
-    if [ -z "$MOUNT" ]; then echo "MOUNT for uploading packages is not provided. Using default: cortx-storage.colo.seagate.com:/mnt/data1/releases/ceph";MOUNT="cortx-storage.colo.seagate.com:/mnt/data1/releases/ceph"; fi
+    if [ -z "$MOUNT" ]; then echo "MOUNT for uploading packages is not provided. Using default: ssc-nfs-cicd1.colo.seagate.com:/mnt/data1/releases/ceph";MOUNT="ssc-nfs-cicd1.colo.seagate.com:/mnt/data1/releases/ceph"; fi
     if [ -z "$build_upload_dir" ]; then echo "build_upload_dir for ceph packages not provided. Using default: /mnt/bigstorage/releases/ceph";build_upload_dir="/mnt/bigstorage/releases/ceph"; fi
 
    echo -e "\n\n########################################################################"
@@ -214,8 +214,8 @@ function ceph_build() {
 
                     if [[ "$INSTALL_MOTR" == true ]]; then
                         add_common_separator "Installing cortx-motr dependencies"
-                        yum-config-manager --add-repo="http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/$release_tag/cortx_iso/"
-                        yum-config-manager --add-repo="http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rockylinux/rockylinux-8.4-2.0.0-latest/"
+                        yum-config-manager --add-repo="http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx/github/$branch/$os_version/$release_tag/cortx_iso/"
+                        yum-config-manager --add-repo="http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx/third-party-deps/rockylinux/rockylinux-8.4-2.0.0-latest/"
                         yum install cortx-motr{,-devel} -y --nogpgcheck
                     fi
 
@@ -283,9 +283,9 @@ function ceph_build() {
 
                     if [[ "$INSTALL_MOTR" == true ]]; then
                         add_common_separator "Installing cortx-motr dependencies"
-                        yum-config-manager --add-repo="http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/$release_tag/cortx_iso/"
+                        yum-config-manager --add-repo="http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx/github/$branch/$os_version/$release_tag/cortx_iso/"
                         check_status "Failed to add motr repo"
-                        yum-config-manager --add-repo="http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/rockylinux/rockylinux-8.4-2.0.0-latest/"
+                        yum-config-manager --add-repo="http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx/third-party-deps/rockylinux/rockylinux-8.4-2.0.0-latest/"
                         check_status "Failed to add motr repo"
                         yum install cortx-motr{,-devel} xmlstarlet -y --nogpgcheck
                         check_status "Failed to install cortx-motr"
@@ -349,20 +349,20 @@ function ceph_build() {
 }
 
 function upload_packages() {
-    add_primary_separator "Upload Binary Packages to CORTX-Storage"
+    add_primary_separator "Upload Binary Packages to ssc-nfs-cicd1"
     mkdir -p "$build_upload_dir"
 
-    add_secondary_separator "Check CORTX-Storage Mountpoint"
+    add_secondary_separator "Check ssc-nfs-cicd1 Mountpoint"
     grep -qs "$MOUNT" /proc/mounts;
     if grep -qs "$MOUNT" /proc/mounts; then
-        echo "cortx-storage.colo.seagate.com:/mnt/data1/releases/ceph is mounted."
+        echo "ssc-nfs-cicd1.colo.seagate.com:/mnt/data1/releases/ceph is mounted."
     else
-        echo "cortx-storage.colo.seagate.com:/mnt/data1/releases/ceph is not mounted. Mounting..."
+        echo "ssc-nfs-cicd1.colo.seagate.com:/mnt/data1/releases/ceph is not mounted. Mounting..."
         sudo mount -t nfs4 "$MOUNT" "$build_upload_dir"
         check_status "Mounting $MOUNT to $build_upload_dir has failed."
     fi
 
-    add_secondary_separator "Uploading Binary Packages to CORTX-Storage"
+    add_secondary_separator "Uploading Binary Packages to ssc-nfs-cicd1"
     pushd "$build_upload_dir"
         mkdir -p "$REPO_COMPONENT/$BUILD_OS/$CEPH_BRANCH/$BUILD_NUMBER"
     popd

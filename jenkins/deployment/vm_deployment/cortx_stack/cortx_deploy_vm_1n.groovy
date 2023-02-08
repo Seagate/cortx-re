@@ -9,7 +9,7 @@ pipeline {
     }
 	
     parameters {
-        string(name: 'CORTX_BUILD', defaultValue: 'http://cortx-storage.colo.seagate.com/releases/cortx/github/main/centos-7.8.2003/last_successful_prod/', description: 'Build URL',  trim: true)
+        string(name: 'CORTX_BUILD', defaultValue: 'http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx/github/main/centos-7.8.2003/last_successful_prod/', description: 'Build URL',  trim: true)
         string(name: 'NODE1', defaultValue: '', description: 'Node 1 Host FQDN',  trim: true)
         string(name: 'NODE_PASS', defaultValue: '', description: 'Host machine root user password',  trim: true)
         booleanParam(name: 'DEBUG', defaultValue: false, description: 'Select this if you want to preserve the VM temporarily for troublshooting')

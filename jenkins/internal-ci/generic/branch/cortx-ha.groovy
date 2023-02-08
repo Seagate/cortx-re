@@ -46,8 +46,8 @@ pipeline {
                     cat <<EOF >>/etc/pip.conf
 [global]
 timeout: 60
-index-url: http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/python-packages-2.0.0-latest/
-trusted-host: cortx-storage.colo.seagate.com
+index-url: http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx/third-party-deps/python-deps/python-packages-2.0.0-latest/
+trusted-host: ssc-nfs-cicd1.colo.seagate.com
 EOF
                     pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/$branch/py-utils/python_requirements.txt
                     pip3 install -r https://raw.githubusercontent.com/Seagate/cortx-utils/$branch/py-utils/python_requirements.ext.txt
@@ -55,8 +55,8 @@ EOF
             '''
 
                 sh label: 'Configure yum repositories', script: """
-                    yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/$release_tag/cortx_iso/
-                    yum-config-manager --save --setopt=cortx-storage*.gpgcheck=1 cortx-storage* && yum-config-manager --save --setopt=cortx-storage*.gpgcheck=0 cortx-storage*
+                    yum-config-manager --add-repo=http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx/github/$branch/$os_version/$release_tag/cortx_iso/
+                    yum-config-manager --save --setopt=ssc-nfs-cicd1*.gpgcheck=1 ssc-nfs-cicd1* && yum-config-manager --save --setopt=ssc-nfs-cicd1*.gpgcheck=0 ssc-nfs-cicd1*
                     yum clean all && rm -rf /var/cache/yum
                 """
 
@@ -129,7 +129,7 @@ EOF
                 script {
                     def releaseBuild = build job: 'Release', propagate: true
                     env.release_build = releaseBuild.number
-                    env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/" + releaseBuild.number
+                    env.release_build_location = "http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx/github/$branch/$os_version/" + releaseBuild.number
                     env.cortx_images = releaseBuild.buildVariables.cortx_all_image + "\n" + releaseBuild.buildVariables.cortx_rgw_image + "\n" + releaseBuild.buildVariables.cortx_data_image + "\n" + releaseBuild.buildVariables.cortx_control_image
                 }
             }

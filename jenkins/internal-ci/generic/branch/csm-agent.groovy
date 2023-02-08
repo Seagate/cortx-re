@@ -49,9 +49,9 @@ pipeline {
                 script { build_stage = env.STAGE_NAME }
 
                 sh label: 'Configure yum repository for cortx-py-utils', script: """
-            yum-config-manager --add-repo=http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/$release_tag/cortx_iso/
+            yum-config-manager --add-repo=http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx/github/$branch/$os_version/$release_tag/cortx_iso/
 
-                    pip3 install --no-cache-dir --trusted-host cortx-storage.colo.seagate.com -i http://cortx-storage.colo.seagate.com/releases/cortx/third-party-deps/python-deps/python-packages-2.0.0-latest/ -r https://raw.githubusercontent.com/Seagate/cortx-utils/$branch/py-utils/python_requirements.txt -r https://raw.githubusercontent.com/Seagate/cortx-utils/$branch/py-utils/python_requirements.ext.txt
+                    pip3 install --no-cache-dir --trusted-host ssc-nfs-cicd1.colo.seagate.com -i http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx/third-party-deps/python-deps/python-packages-2.0.0-latest/ -r https://raw.githubusercontent.com/Seagate/cortx-utils/$branch/py-utils/python_requirements.txt -r https://raw.githubusercontent.com/Seagate/cortx-utils/$branch/py-utils/python_requirements.ext.txt
             yum install cortx-py-utils -y --nogpgcheck
                 """
 
@@ -108,7 +108,7 @@ pipeline {
                 script {
                     def releaseBuild = build job: 'Release', propagate: true
                     env.release_build = releaseBuild.number
-                    env.release_build_location = "http://cortx-storage.colo.seagate.com/releases/cortx/github/$branch/$os_version/${env.release_build}"
+                    env.release_build_location = "http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx/github/$branch/$os_version/${env.release_build}"
                     env.cortx_images = releaseBuild.buildVariables.cortx_all_image + "\n" + releaseBuild.buildVariables.cortx_rgw_image + "\n" + releaseBuild.buildVariables.cortx_data_image + "\n" + releaseBuild.buildVariables.cortx_control_image
                 }
             }

@@ -4,7 +4,7 @@ release_folder=$1
 os_version=$2
 build_num=$3
 release_type="cortx"
-build_location="http://cortx-storage.colo.seagate.com/releases/cortx/github/$release_folder/$os_version/$build_num/prod"
+build_location="http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx/github/$release_folder/$os_version/$build_num/prod"
 
 if [ -z "$release_folder" ] && [ -z "$os_version" ] && [ -z "$build_num" ]; then
    echo "Usage: build-release-metarpm.sh <release folder> <OS name> <release build number>"

@@ -20,7 +20,7 @@
 source /var/tmp/functions.sh
 
 #Download WhiteSource Plugin 
-wget http://cortx-storage.colo.seagate.com/releases/cortx/security/whitesource/ws-k8s-agent.tar && tar -xvf ws-k8s-agent.tar >/dev/null 2>&1
+wget http://ssc-nfs-cicd1.colo.seagate.com/releases/cortx/security/whitesource/ws-k8s-agent.tar && tar -xvf ws-k8s-agent.tar >/dev/null 2>&1
 
 function default_parameter() {
     if [ -z "$WHITESOURCE_SERVER_URL" ]; then echo "WHITESOURCE_SERVER_URL not provided. Using default: https://saas.whitesourcesoftware.com ";WHITESOURCE_SERVER_URL=https://saas.whitesourcesoftware.com; fi
