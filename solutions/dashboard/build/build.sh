@@ -33,7 +33,10 @@ REGISTRY="cortx-docker.colo.seagate.com"
 PROJECT="dashboard"
 SERVICE=all
 #OS=rockylinux-8.4
-IMAGE_LIST=( "codacy" "portscanner" "github" "jenkins" "logstash")
+
+# Logstash image is not built with the other images
+# If you need to build the logstash image then pass the 'logstash' name using -s flag
+IMAGE_LIST=( "codacy" "portscanner" "github" "jenkins" )
 
 
 while getopts "b:p:t:r:e:o:s:h:" opt; do
