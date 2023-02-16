@@ -40,3 +40,8 @@ services:
     build:
       context: ../tools/jenkins/
       dockerfile: ./Dockerfile
+  logstash:
+    image: logstash:$TAG
+    build:
+      context: ./logstash/
+      dockerfile: ./Dockerfile
