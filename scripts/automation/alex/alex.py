@@ -20,7 +20,7 @@ import os
 import sys
 import re
 import argparse
-#from datetime import datetime
+import subprocess
 from collections import defaultdict
 
 eof = ''
@@ -207,13 +207,13 @@ def main():
 
     if eof: TOTAL_FILES_SCANNED += 1
 
-    # date_now = os.environ['DATE_NOW']
+    date_now = subprocess.getoutput('date "+%F"')
     component_name = component_name.replace('.alex', '')
     html_tmpl_cont = html_tmpl_cont.replace('##ROWCONTENT##', rows_cont)
     html_tmpl_cont = html_tmpl_cont.replace('##TotalWords##', str(TOTAL_WORDS_SCANNED))
     html_tmpl_cont = html_tmpl_cont.replace('##TotalFiles##', str(TOTAL_FILES_SCANNED))
     html_tmpl_cont = html_tmpl_cont.replace('##ComponentName##', component_name)
-    # html_tmpl_cont = html_tmpl_cont.replace('##ReportTime##', date_now)
+    html_tmpl_cont = html_tmpl_cont.replace('##ReportTime##', date_now)
     # print(TOTAL_FILES_SCANNED, TOTAL_WORDS_SCANNED)
 
     html_report_file = component_name + '.html'
