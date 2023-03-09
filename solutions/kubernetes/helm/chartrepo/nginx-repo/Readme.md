@@ -1,12 +1,11 @@
 # NGINX Helm Repository
 
-This document covers how to create and configure local Helm repository using NGINX.
+This document covers instructions to set up and configure the local Helm repository using NGINX.
 
 - [Prerequisites](#prerequisites)
-- [Package the Chart](#packaging-chart)
+- [Setup NGINX server](#setup-nginx-server)
 - [Create Helm Repository](#create-helm-repository)
-- [Start NGINX server](#starting-nginx-server)
-- [Use the Helm Repository](#using-helm-repository)
+- [Use Helm Repository](#using-helm-repository)
 - [Add new chart to existing Helm repository](#adding-new-chart)
 - [Update Helm repository](#update-helm-repository)
 
@@ -29,83 +28,110 @@ curl -SL https://github.com/docker/compose/releases/download/v2.16.0/docker-comp
 chmod +x /usr/local/bin/docker-compose
 ```
 
-#### **Volumes**
+#### Helm Installation
 
-For this setup two volumes are required:
+Please check whether helm is exist in your system. You can verify that using below command.
 
-- Configuration Volume:
+```
+helm version
+```
 
-  - This volume is to override the default configuration of NGINX.
-  - The default location if set to **/nginx/conf**.
-  - You can override that in docker-compose.yaml file.
-  - Copy the default.conf file to that location
+Please use the below steps for installing helm if not already installed. You can also take reference from https://helm.sh/docs/intro/install/#from-script.
 
-- Repository Volume:
-  - This volume to add the actual Helm charts and serve them through NGINX.
-  - The default location is **/nginx/repos**.
-  - You can override that in docker-compose.yaml file.
+```
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+chmod 700 get_helm.sh
+./get_helm.sh
+```
 
-<a name="packaging-chart" />
+<a name="setup-nginx-server" />
 
-## Package the Chart
+## Setup NGINX server
 
-For packaging the chart we will take example of Helm chart for DevOps Dashboard project.
-**Note:** You can also use your own chart
-
-1. Clone the “dashboard” branch from “cortx-re” repository.
+1. Clone the “dashboard” branch from “cortx-re” repository
 
 ```
 git clone https://github.com/Seagate/cortx-re.git -b dashboard
 ```
 
-2. Go to the “cortx-re/solutions/dashboard/charts” directory.
+2. Goto **nginx-repo** directory
 
 ```
-cd cortx-re/solutions/dashboard/charts
+cd cortx-re/solutions/kubernetes/helm/chartrepo/nginx-repo
 ```
 
-3. Package dashboard-project helm chart
+3. Create directories for volume mapping with NGINX server
 
 ```
-helm package dashboard-project/
+mkdir -p /nginx/conf /nginx/repos
 ```
 
-4. Package elastic-project helm chart
+4. Copy default.conf file to **/nginx/conf** directory
 
 ```
-helm package elastic-project/
+cp default.conf /nginx/conf
 ```
 
-Step 3 and 4 will generate **.tgz** file and these files we will put in the repository.
+5. Start the NGINX server
+   By default below configuration applied:
+   Port: **30080**
+   Volumes: **/nginx/conf/**, **/nginx/repos/**
+
+   If you want to modify the configuration then please update the **docker-compose.yaml** file.
+
+```
+docker-compose up -d
+```
+
+Open the http://\<host_url>:\<port> in the browser and check the directory structure.
 
 <a name="create-helm-repository" />
 
 ## Create Helm Repository
 
-Create the directory structure in below format in the **Repository Volume** mentioned above.
+1. Create **chartrepo** and **chartrepo/dashboard-charts** directories under **/nginx/repos/**
 
 ```
-chartrepo
-├─── index.yaml
-├─── chart_category_name
-  └─── chart_package.tgz
+mkdir -p /nginx/repos/chartrepo /nginx/repos/chartrepo/dashboard-charts
+```
+#### Package the Chart
+
+For packaging the chart we will take example of Helm chart for DevOps Dashboard project.
+
+**Note:** You can also use your own chart
+
+1. Go to the “cortx-re/solutions/dashboard/charts” directory.
+
+```
+cd cortx-re/solutions/dashboard/charts
 ```
 
-#### **chart_category_name**
+2. Package dashboard-project helm chart
 
-Create the directory named as the chart category like dashboard-charts, sample_charts, etc.
+```
+helm package dashboard-project/
+```
 
-#### **chart_package.tgz**
+3. Package elastic-project helm chart
 
-This is the file generated after packaging the chart. The files mentioned in the above example.
+```
+helm package elastic-project/
+```
 
-#### **index.yaml**
+4. Copy files to repository
+
+```
+cp *.tgz /nginx/repos/chartrepo/dashboard-charts
+```
+
+#### Generate **index.yaml**
 
 To generate the index.yaml file goto **chartrepo** directory and run below command.
 
 In our case the \<port> will replace by **30080**.
 
 ```
+cd /nginx/repos/chartrepo
 helm repo index . --url http://<host_url>:<port>/chartrepo
 ```
 
@@ -122,18 +148,6 @@ chartrepo
   └─── dashboard-project-0.1.0.tgz
   └─── elastic-project-0.1.0.tgz
 ```
-
-<a name="starting-nginx-server" />
-
-## Start NGINX server
-
-Please use below command to start the NGINX server.
-
-```
-docker-compose up -d
-```
-
-Open the \<host_url>:<port>/chartrepo in the browser and check the directory structure.
 
 <a name="using-helm-repository" />
 
@@ -218,6 +232,7 @@ Note: Everytime you add or remove chart from repository then please regenerate t
 Command:
 
 ```
+cd /nginx/repos/chartrepo
 helm repo index . --url http://<host_url>:<port>/chartrepo
 ```
 
@@ -237,9 +252,14 @@ helm repo update <repo_name>
 
 #### **Remove and add the repository**
 
-If the update not worked then remove the repository and add it again
+Try removing repo and adding it again in case of update failure.
 
+Command to remove helm repository
 ```
 helm repo remove <repo_name>
-helm repo add \<repo_name> http://<host_url>:<port>/chartrepo
+```
+
+Command to add helm repository
+```
+helm repo add <repo_name> http://<host_url>:<port>/chartrepo
 ```
