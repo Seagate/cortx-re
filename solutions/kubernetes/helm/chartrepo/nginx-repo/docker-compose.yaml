@@ -19,6 +19,7 @@
 
 version: "3"
 
+# Services
 services:
   devops-helm-repository:
     image: nginx:1.23.3
