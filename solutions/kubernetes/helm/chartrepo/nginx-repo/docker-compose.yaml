@@ -20,9 +20,6 @@
 version: "3"
 
 # Services
-# This is new test comment
-# This is new test comment 2
-# This is new test comment 3
 services:
   devops-helm-repository:
     image: nginx:1.23.3
