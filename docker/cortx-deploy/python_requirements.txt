@@ -25,5 +25,5 @@ idna==2.10                  #cortx-csm_agent
 boto3==1.10.27              #cortx-csm_agent
 marshmallow==3.2.1          #cortx-csm_agent
 secure==0.2.1               #cortx-csm_agent
-requests==2.25.1            #cortx-csm_agent
+requests==2.31.0            #cortx-csm_agent
 urllib3==1.26.8             #cortx-csm_agent
