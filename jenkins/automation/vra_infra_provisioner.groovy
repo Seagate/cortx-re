@@ -65,9 +65,7 @@ pipeline {
                     pushd solutions/vmware/terraform/
                         mv /etc/yum.repos.d/rockylinux-8.4.repo /etc/yum.repos.d/rockylinux-8.4.repo.bkp
                         yum-config-manager --add-repo http://fwinfra-katello2.colo.seagate.com/pulp/content/FWINFRA/Development/Rocky-8-SSC/custom/HashiCorp_EL8_x86_64/HashiCorp_EL8_x86_64/
-                        echo 'gpgcheck = 0' >> /etc/yum.repos.d/fwinfra-katello2.colo*.repo
-                        cat /etc/yum.repos.d/fwinfra-katello2.colo*.repo
-                        yum clean all && yum -y install terraform
+                        yum clean all && yum -y install terraform --nogpgcheck
                         rm -rf .terraform .terraform.lock.hcl terraform.tfstate terraform.tfstate.backup
                         terraform init
                         if [ "$?" -ne 0 ]; then echo -e '\nERROR: Terraform Initialization Failed!!\n'; else echo -e '\n---SUCCESS---\n'; fi
