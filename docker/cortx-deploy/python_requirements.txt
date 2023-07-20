@@ -4,7 +4,7 @@ dataclasses==0.7            #cortx-ha
 pathlib==1.0.1              #cortx-ha
 kubernetes==19.15.0         #cortx-ha
 ############################################
-aiohttp==3.8.1              #cortx-py-utils
+aiohttp==3.8.5              #cortx-py-utils
 configparser==4.0.2         #cortx-py-utils
 confluent-kafka==1.5.0      #cortx-py-utils
 cryptography==3.3.2         #cortx-py-utils
