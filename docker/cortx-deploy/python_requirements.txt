@@ -7,7 +7,7 @@ kubernetes==19.15.0         #cortx-ha
 aiohttp==3.8.1              #cortx-py-utils
 configparser==4.0.2         #cortx-py-utils
 confluent-kafka==1.5.0      #cortx-py-utils
-cryptography==3.3.2         #cortx-py-utils
+cryptography==41.0.3         #cortx-py-utils
 dict2xml==1.6.1             #cortx-py-utils
 elasticsearch-dsl==7.3.0    #cortx-py-utils
 elasticsearch==7.12.0       #cortx-py-utils
