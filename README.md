@@ -1,9 +1,9 @@
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/f20f5b6fe8aa4efabb629cf8f62a5d73)](https://www.codacy.com/gh/Seagate/cortx-re/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Seagate/cortx-re&amp;utm_campaign=Badge_Grade)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://github.com/Seagate/cortx-re/blob/main/LICENSE)
 [![YouTube Badge](https://img.shields.io/badge/Video-YouTube-red)](https://cortx.link/videos )
 [![Slack](https://img.shields.io/badge/chat-on%20Slack-blue")](https://cortx.link/join-slack)
 [![GitHub contributors](https://img.shields.io/github/contributors/Seagate/cortx-re)](https://github.com/Seagate/cortx-re/graphs/contributors/)
 
+# **Disclaimer**: This project is not maintained anymore
 # CORTX DevOps and Release Engineering
 The purpose of this repository is to keep the scripts, tools, and other configuration used in the CORTX DevOps and Release Engineering. 
 
